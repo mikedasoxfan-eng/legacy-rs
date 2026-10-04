@@ -48,6 +48,15 @@ pub fn on_block_added(w: &mut World, id: u8, x: i32, y: i32, z: i32) {
         }
         block::WATER_STILL | block::LAVA_STILL => check_for_harden(w, id, x, y, z),
         block::SAND | block::GRAVEL => w.schedule_block_update(x, y, z, id, tick_rate(id)),
+        block::FIRE => {
+            if w.get_block_id(x, y - 1, z) != block::OBSIDIAN || !try_to_create_portal(w, x, y, z) {
+                if !w.is_block_normal_cube(x, y - 1, z) && !fire_has_fuel(w, x, y, z) {
+                    w.set_block_with_notify(x, y, z, block::AIR);
+                } else {
+                    w.schedule_block_update(x, y, z, id, 40);
+                }
+            }
+        }
         block::CHEST | block::MOB_SPAWNER => w.set_block_tile_entity(x, y, z, TileEntity::for_block(id)),
         _ => assert_plain(id, "onBlockAdded"),
     }
@@ -94,6 +103,12 @@ pub fn on_block_removal(w: &mut World, id: u8, x: i32, y: i32, z: i32) {
 
 pub fn on_neighbor_block_change(w: &mut World, id: u8, x: i32, y: i32, z: i32, _changed: u8) {
     match id {
+        block::FIRE => {
+            if !w.is_block_normal_cube(x, y - 1, z) && !fire_has_fuel(w, x, y, z) {
+                w.set_block_with_notify(x, y, z, block::AIR);
+            }
+        }
+        block::PORTAL => portal_neighbor_change(w, x, y, z),
         block::WATER_MOVING | block::LAVA_MOVING => check_for_harden(w, id, x, y, z),
         block::WATER_STILL | block::LAVA_STILL => {
             check_for_harden(w, id, x, y, z);
@@ -160,6 +175,11 @@ fn assert_plain(id: u8, hook: &str) {
             | block::DIRT
             | block::COBBLESTONE
             | block::BEDROCK
+            | block::NETHERRACK
+            | block::SOUL_SAND
+            | block::GLOWSTONE
+            | block::FIRE
+            | block::PORTAL
             | block::ORE_GOLD
             | block::ORE_IRON
             | block::ORE_COAL
@@ -285,7 +305,7 @@ fn liquid_can_displace(w: &mut World, id: u8, x: i32, y: i32, z: i32) -> bool {
 fn flowing_update_tick(w: &mut World, id: u8, x: i32, y: i32, z: i32, rs: RandSel) {
     let fm = fluid_material(id);
     let mut decay = get_flow_decay(w, fm, x, y, z);
-    let step = if fm == MAT_LAVA { 2 } else { 1 };
+    let step = if fm == MAT_LAVA && !w.dimension.is_hell_world() { 2 } else { 1 };
     let mut keep_flowing = true;
     if decay > 0 {
         w.flow[flow_slot(id)].num_adjacent_sources = 0;
@@ -564,7 +584,7 @@ fn quantity_dropped(w: &mut World, id: u8) -> i32 {
                 0
             }
         }
-        block::SNOW | block::ICE => 0,
+        block::SNOW | block::ICE | block::FIRE | block::PORTAL => 0,
         block::ORE_LAPIS => 4 + w.rand.next_int(5),
         block::ORE_REDSTONE => 4 + w.rand.next_int(2),
         block::CLAY => 4,
@@ -621,6 +641,108 @@ pub fn drop_block_as_item(w: &mut World, id: u8, x: i32, y: i32, z: i32, meta: i
                     w.dropped_items.push(DroppedItem { x: px, y: y as f64 + oy, z: pz, item: ItemStack::new(item, 1, damage) });
                 }
             }
+        }
+    }
+}
+
+// ---------------------------------------------------------------- fire / portals
+
+/// `BlockFire.chanceToEncourageFire`, initialized by `initializeBlock`.
+fn fire_encouragement(id: u8) -> i32 {
+    match id {
+        5 | 85 | 53 | 17 => 5, // planks, fence, wood stairs, log
+        18 | 47 | 35 => 30,    // leaves, bookshelf, wool
+        46 => 15,              // TNT
+        31 => 60,              // tall grass
+        _ => 0,
+    }
+}
+
+/// `BlockFire.func_263_h`; query order is observable through chunk loads.
+fn fire_has_fuel(w: &mut World, x: i32, y: i32, z: i32) -> bool {
+    fire_encouragement(w.get_block_id(x + 1, y, z)) > 0
+        || fire_encouragement(w.get_block_id(x - 1, y, z)) > 0
+        || fire_encouragement(w.get_block_id(x, y - 1, z)) > 0
+        || fire_encouragement(w.get_block_id(x, y + 1, z)) > 0
+        || fire_encouragement(w.get_block_id(x, y, z - 1)) > 0
+        || fire_encouragement(w.get_block_id(x, y, z + 1)) > 0
+}
+
+/// `BlockPortal.tryToCreatePortal`
+fn try_to_create_portal(w: &mut World, mut x: i32, y: i32, mut z: i32) -> bool {
+    let mut dx = 0;
+    let mut dz = 0;
+    if w.get_block_id(x - 1, y, z) == block::OBSIDIAN || w.get_block_id(x + 1, y, z) == block::OBSIDIAN {
+        dx = 1;
+    }
+    if w.get_block_id(x, y, z - 1) == block::OBSIDIAN || w.get_block_id(x, y, z + 1) == block::OBSIDIAN {
+        dz = 1;
+    }
+    if dx == dz {
+        return false;
+    }
+    if w.get_block_id(x - dx, y, z - dz) == block::AIR {
+        x -= dx;
+        z -= dz;
+    }
+    for i in -1..=2 {
+        for j in -1..=3 {
+            let edge = i == -1 || i == 2 || j == -1 || j == 3;
+            if i != -1 && i != 2 || j != -1 && j != 3 {
+                let id = w.get_block_id(x + dx * i, y + j, z + dz * i);
+                if edge {
+                    if id != block::OBSIDIAN {
+                        return false;
+                    }
+                } else if id != block::AIR && id != block::FIRE {
+                    return false;
+                }
+            }
+        }
+    }
+    w.editing_blocks = true;
+    for i in 0..2 {
+        for j in 0..3 {
+            w.set_block_with_notify(x + dx * i, y + j, z + dz * i, block::PORTAL);
+        }
+    }
+    w.editing_blocks = false;
+    true
+}
+
+/// `BlockPortal.onNeighborBlockChange`
+fn portal_neighbor_change(w: &mut World, x: i32, y: i32, z: i32) {
+    let mut dx = 0;
+    let mut dz = 1;
+    if w.get_block_id(x - 1, y, z) == block::PORTAL || w.get_block_id(x + 1, y, z) == block::PORTAL {
+        dx = 1;
+        dz = 0;
+    }
+    let mut bottom = y;
+    while w.get_block_id(x, bottom - 1, z) == block::PORTAL {
+        bottom -= 1;
+    }
+    if w.get_block_id(x, bottom - 1, z) != block::OBSIDIAN {
+        w.set_block_with_notify(x, y, z, block::AIR);
+    } else {
+        let mut height = 1;
+        while height < 4 && w.get_block_id(x, bottom + height, z) == block::PORTAL {
+            height += 1;
+        }
+        if height == 3 && w.get_block_id(x, bottom + height, z) == block::OBSIDIAN {
+            let along_x = w.get_block_id(x - 1, y, z) == block::PORTAL || w.get_block_id(x + 1, y, z) == block::PORTAL;
+            let along_z = w.get_block_id(x, y, z - 1) == block::PORTAL || w.get_block_id(x, y, z + 1) == block::PORTAL;
+            if along_x && along_z {
+                w.set_block_with_notify(x, y, z, block::AIR);
+            } else if (w.get_block_id(x + dx, y, z + dz) != block::OBSIDIAN
+                || w.get_block_id(x - dx, y, z - dz) != block::PORTAL)
+                && (w.get_block_id(x - dx, y, z - dz) != block::OBSIDIAN
+                    || w.get_block_id(x + dx, y, z + dz) != block::PORTAL)
+            {
+                w.set_block_with_notify(x, y, z, block::AIR);
+            }
+        } else {
+            w.set_block_with_notify(x, y, z, block::AIR);
         }
     }
 }

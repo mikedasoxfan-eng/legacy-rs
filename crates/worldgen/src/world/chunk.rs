@@ -121,6 +121,11 @@ impl Chunk {
     /// First half of `func_1024_c`: height map and the straight-down skylight pass.
     /// The neighbour-edge lighting schedules (`func_996_c`) are done by the world.
     pub fn init_height_and_sky(&mut self) {
+        self.init_height_and_sky_for_dimension(super::Dimension::Overworld);
+    }
+
+    /// `func_1024_c` with the provider's `hasNoSky` guard.
+    pub fn init_height_and_sky_for_dimension(&mut self, dimension: super::Dimension) {
         let mut lowest = 127;
         for x in 0..16 {
             for z in 0..16 {
@@ -133,16 +138,18 @@ impl Chunk {
                 if h < lowest {
                     lowest = h;
                 }
-                let mut light = 15;
-                let mut y = 127i32;
-                loop {
-                    light -= light_opacity(self.blocks[base + y as usize]);
-                    if light > 0 {
-                        self.sky_light.set(x, y, z, light);
-                    }
-                    y -= 1;
-                    if !(y > 0 && light > 0) {
-                        break;
+                if !dimension.has_no_sky() {
+                    let mut light = 15;
+                    let mut y = 127i32;
+                    loop {
+                        light -= light_opacity(self.blocks[base + y as usize]);
+                        if light > 0 {
+                            self.sky_light.set(x, y, z, light);
+                        }
+                        y -= 1;
+                        if !(y > 0 && light > 0) {
+                            break;
+                        }
                     }
                 }
             }

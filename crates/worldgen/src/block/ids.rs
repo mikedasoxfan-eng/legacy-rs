@@ -44,3 +44,8 @@ pub const SIGN_POST: u8 = 63;
 pub const DOOR_WOOD: u8 = 64;
 pub const LADDER: u8 = 65;
 pub const DOOR_STEEL: u8 = 71;
+
+pub const NETHERRACK: u8 = 87;
+pub const SOUL_SAND: u8 = 88;
+pub const GLOWSTONE: u8 = 89;
+pub const PORTAL: u8 = 90;

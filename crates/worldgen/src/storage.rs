@@ -319,6 +319,11 @@ impl Storage {
 
     /// `McRegionChunkLoader.loadChunk`
     pub fn load_chunk(&mut self, cx: i32, cz: i32) -> Option<Chunk> {
+        self.load_chunk_for_dimension(cx, cz, crate::world::Dimension::Overworld)
+    }
+
+    /// The chunk loader receives the world provider when repairing missing light arrays.
+    pub fn load_chunk_for_dimension(&mut self, cx: i32, cz: i32, dimension: crate::world::Dimension) -> Option<Chunk> {
         let raw = self.region(cx, cz).ok()?.read_chunk(cx & 31, cz & 31)?;
         let root = nbt::read_root(&mut &raw[..]).ok()?;
         let mut level = match root.compound("Level") {
@@ -337,7 +342,7 @@ impl Storage {
             level.put("xPos", Tag::Int(cx));
             level.put("zPos", Tag::Int(cz));
         }
-        let mut c = chunk_from_nbt(&level)?;
+        let mut c = chunk_from_nbt_for_dimension(&level, dimension)?;
         // ChunkBlockMap: ids without a block become air.
         for b in c.blocks.iter_mut() {
             if *b != 0 && !crate::block::props(*b).exists {
@@ -431,6 +436,11 @@ fn nibbles(bytes: Option<&[u8]>) -> Option<Nibbles> {
 /// `ChunkLoader.loadChunkIntoWorldFromCompound`. Note `lowestBlockHeight` is not stored and
 /// stays 0, as in the original.
 pub fn chunk_from_nbt(l: &Compound) -> Option<Chunk> {
+    chunk_from_nbt_for_dimension(l, crate::world::Dimension::Overworld)
+}
+
+/// `ChunkLoader.loadChunkIntoWorldFromCompound` with the world's provider.
+pub fn chunk_from_nbt_for_dimension(l: &Compound, dimension: crate::world::Dimension) -> Option<Chunk> {
     let blocks = l.bytes("Blocks")?;
     if blocks.len() != CHUNK_VOLUME {
         return None;
@@ -447,7 +457,7 @@ pub fn chunk_from_nbt(l: &Compound) -> Option<Chunk> {
         }
         _ => {
             c.sky_light = Nibbles::default();
-            c.init_height_and_sky();
+            c.init_height_and_sky_for_dimension(dimension);
         }
     }
     c.block_light = nibbles(l.bytes("BlockLight")).unwrap_or_default();
