@@ -3,8 +3,8 @@
 //! window (`RenderGlobal`).
 
 use crate::render::access::Access;
-use crate::render::video::VideoSettings;
 use crate::render::blocks::{Colorizers, RenderBlocks};
+use crate::render::video::VideoSettings;
 use crate::render::{rprops, Tessellator, Vertex};
 use std::cell::RefCell;
 use std::collections::{HashMap, HashSet};
@@ -242,7 +242,7 @@ fn run(opts: WorldOptions, col: Colorizers, mut video: VideoSettings, rx: Receiv
                     }
                     world.leaves_opaque = !next.fancy;
                     video = next;
-                },
+                }
                 Ok(ToWorker::Pause(p)) => {
                     if paused && !p {
                         // The Timer kept running while paused; those ticks are not caught up.
@@ -389,7 +389,14 @@ fn run(opts: WorldOptions, col: Colorizers, mut video: VideoSettings, rx: Receiv
             }));
             let _ = tx.send(FromWorker::Entities(snapshot));
             let chunks = world.chunks.len();
-            let _ = tx.send(FromWorker::Time { time: world.world_time, brightness, fog_brightness, chunks, weather, terrain });
+            let _ = tx.send(FromWorker::Time {
+                time: world.world_time,
+                brightness,
+                fog_brightness,
+                chunks,
+                weather,
+                terrain,
+            });
             next_tick += Duration::from_millis(50);
             ticks += 1;
         }

@@ -1,7 +1,7 @@
 //! `ChunkCache`: the read-only world view `RenderBlocks` uses for one chunk,
 //! covering it and its 8 neighbours.
 
-use super::{rprops, brightness_table};
+use super::{brightness_table, rprops};
 use std::cell::RefCell;
 use worldgen::block::{self, material_of};
 use worldgen::world::chunk::Chunk;
@@ -28,7 +28,16 @@ impl<'a> Access<'a> {
                 *c = world.chunks.get(&(cx - 1 + i as i32, cz - 1 + j as i32)).map(|b| &**b);
             }
         }
-        Access { fancy: true, cx0: cx - 1, cz0: cz - 1, chunks, sky_sub, table: brightness_table(), biomes, clim: RefCell::new(Vec::new()) }
+        Access {
+            fancy: true,
+            cx0: cx - 1,
+            cz0: cz - 1,
+            chunks,
+            sky_sub,
+            table: brightness_table(),
+            biomes,
+            clim: RefCell::new(Vec::new()),
+        }
     }
 
     #[inline]

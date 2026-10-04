@@ -180,7 +180,9 @@ pub fn precipitation(
     let radius = if fancy { 10 } else { 5 };
     for (pass, verts) in out.iter_mut().enumerate() {
         for c in &s.columns {
-            if (c.x - cx).abs() > radius || (c.z - cz).abs() > radius { continue; }
+            if (c.x - cx).abs() > radius || (c.z - cz).abs() > radius {
+                continue;
+            }
             if !(if pass == 0 { snows(c.biome) } else { rains(c.biome) }) {
                 continue;
             }

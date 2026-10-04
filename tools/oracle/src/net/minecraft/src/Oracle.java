@@ -92,14 +92,18 @@ public class Oracle {
             preload(Long.parseLong(a[1]), Long.parseLong(a[2]), a[3]);
         } else if (mode.equals("rendermesh")) {
             // chunk list, or "auto R": every chunk within R of the spawn chunk
+            int meshEnd=a.length;
+            boolean ao=true,fancy=true;
+            if(meshEnd>4 && (a[meshEnd-1].equals("on") || a[meshEnd-1].equals("off"))) ao=!a[--meshEnd].equals("off");
+            if(meshEnd>4 && (a[meshEnd-1].equals("fancy") || a[meshEnd-1].equals("fast"))) fancy=!a[--meshEnd].equals("fast");
             int[] cs;
             if (a[4].equals("auto")) {
                 cs = new int[] {Integer.MIN_VALUE, Integer.parseInt(a[5])};
             } else {
-                cs = new int[a.length - 4];
-                for (int i = 4; i < a.length; i++) cs[i - 4] = Integer.parseInt(a[i]);
+                cs = new int[meshEnd - 4];
+                for (int i = 4; i < meshEnd; i++) cs[i - 4] = Integer.parseInt(a[i]);
             }
-            renderMesh(Long.parseLong(a[1]), Long.parseLong(a[2]), a[3], cs, a.length > 6 && a[6].equals("fast") ? false : true, !(a.length > 7 && a[7].equals("off")));
+            renderMesh(Long.parseLong(a[1]), Long.parseLong(a[2]), a[3], cs, fancy, ao);
         } else if (mode.equals("savepreload")) {
             savePreload(Long.parseLong(a[1]), Long.parseLong(a[2]), a[3], a[4]);
         } else if (mode.equals("readsave")) {
@@ -146,6 +150,8 @@ public class Oracle {
             weatherMesh(a);
         } else if (mode.equals("cloudmesh")) {
             cloudMesh(a);
+        } else if (mode.equals("videowindow")) {
+            videoWindow(a);
         } else if (mode.equals("rendertable")) {
             renderTable(a[1]);
         } else if (mode.equals("ticks")) {
@@ -451,7 +457,8 @@ public class Oracle {
     /**
      * Mesh chunks with the original RenderBlocks, the way WorldRenderer does: per 16-high
      * section, per pass, a ChunkCache over the section +-1, blocks in y, z, x order.
-     * Smooth lighting and Fancy graphics on (the defaults). The Tessellator's raw buffer is
+     * Smooth lighting and Fancy graphics are selected by the caller (default: both on).
+     * The Tessellator's raw buffer is
      * read back instead of drawn; quads were stored as triangles (v0 v1 v2 v0 v2 v3).
      */
     static void renderMesh(long seed, long wrand, String out, int[] cs, boolean fancy, boolean ao) throws Exception {
@@ -863,6 +870,25 @@ public class Oracle {
         } catch(Exception e) { throw new RuntimeException(e); }
     }
     static final ArrayList<double[]> rainSounds = new ArrayList<double[]>();
+    static void videoWindow(String[] a) throws Exception {
+        Field convert=Tessellator.class.getDeclaredField("convertQuadsToTriangles");convert.setAccessible(true);convert.setBoolean(null,false);
+        net.minecraft.client.Minecraft mc=(net.minecraft.client.Minecraft)allocate(MinecraftImpl.class);
+        mc.gameSettings=new GameSettings();mc.gameSettings.renderDistance=Integer.parseInt(a[1]);
+        RenderGlobal global=(RenderGlobal)allocate(RenderGlobal.class);
+        setField(global,"mc",mc);setField(global,"worldRenderersToUpdate",new ArrayList());
+        setField(global,"tileEntities",new ArrayList());
+        // Record display-list compilation as lists, not ambient geometry draws.
+        RendererOracle.active=true;
+        global.loadRenderers();
+        java.lang.reflect.Method move=RenderGlobal.class.getDeclaredMethod("markRenderersForNewPosition",int.class,int.class,int.class);
+        move.setAccessible(true);int p=Integer.parseInt(a[2]);move.invoke(global,p,0,p);
+        RendererOracle.active=false;
+        int wide=(Integer)getField(global,"renderChunksWide");
+        WorldRenderer[] renderers=(WorldRenderer[])getField(global,"worldRenderers");
+        StringBuilder line=new StringBuilder("window "+wide);
+        for(int i=0;i<wide;i++)line.append(" ").append(renderers[i].posX >> 4);
+        System.out.println(line);
+    }
     static void cloudMesh(String[] a) throws Exception {
         long seed=Long.parseLong(a[1]);
         double x=Double.parseDouble(a[2]),y=Double.parseDouble(a[3]),z=Double.parseDouble(a[4]);

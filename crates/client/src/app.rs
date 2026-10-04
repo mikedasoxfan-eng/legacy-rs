@@ -14,7 +14,7 @@ use std::sync::Arc;
 use std::time::{Duration, Instant};
 use winit::application::ApplicationHandler;
 use winit::event::{DeviceEvent, ElementState, MouseButton, WindowEvent};
-use winit::event_loop::ActiveEventLoop;
+use winit::event_loop::{ActiveEventLoop, ControlFlow};
 use winit::keyboard::{KeyCode, PhysicalKey};
 use winit::window::{CursorGrabMode, Window, WindowId};
 use worldgen::BiomeSource;
@@ -145,9 +145,21 @@ struct Flow {
     capture: Option<String>,
 }
 
+struct VideoFlow {
+    dir: std::path::PathBuf,
+    stage: usize,
+    frames: u32,
+    waiting: bool,
+    reset: bool,
+}
+
+const VIDEO_CASES: [(i32, bool, bool, i32); 5] =
+    [(0, true, true, 1), (3, false, false, 2), (1, true, true, 1), (2, false, true, 0), (0, true, false, 1)];
+
 pub struct App {
     opts: Options,
     flow: Option<Flow>,
+    video_flow: Option<VideoFlow>,
     gpu: Option<Gpu>,
     gui: Option<gui::system::GuiSystem>,
     col: Option<Colorizers>,
@@ -184,6 +196,7 @@ pub struct App {
     /// When the last tick arrived from the world thread (for partial ticks).
     last_tick: Instant,
     last_frame: Instant,
+    frame_deadline: Option<Instant>,
     last_cam_sent: DVec3,
     temps: BiomeSource,
     seed: i64,
@@ -206,9 +219,12 @@ impl App {
     pub fn new(opts: Options) -> App {
         let seed = opts.world.seed;
         let flow = opts.flowtest.clone().map(|dir| Flow { dir, step: 0, frames: 0, capture: None });
+        let video_flow =
+            opts.video_flowtest.clone().map(|dir| VideoFlow { dir, stage: 0, frames: 0, waiting: false, reset: false });
         App {
             opts,
             flow,
+            video_flow,
             gpu: None,
             gui: None,
             col: None,
@@ -237,6 +253,7 @@ impl App {
             world_time: 0,
             last_tick: Instant::now(),
             last_frame: Instant::now(),
+            frame_deadline: None,
             last_cam_sent: DVec3::splat(f64::MAX),
             temps: BiomeSource::new(seed),
             seed,
@@ -258,6 +275,18 @@ impl App {
 
     fn video_settings(&self) -> VideoSettings {
         self.gui.as_ref().map_or_else(VideoSettings::default, |g| VideoSettings::from(&g.ui.settings))
+    }
+
+    fn settings_changed(&mut self) {
+        let video = self.video_settings();
+        self.frame_deadline = None;
+        if let Some(gpu) = &mut self.gpu {
+            gpu.apply_video(video);
+        }
+        if let Some(tx) = &self.tx {
+            let _ = tx.send(ToWorker::Settings(video));
+            self.idle = false;
+        }
     }
 
     fn set_grab(&mut self, on: bool) {
@@ -312,7 +341,8 @@ impl App {
         self.exit_after_save = exit;
         if let Some(tx) = &self.tx {
             let _ = tx.send(ToWorker::Quit);
-            self.loading = Some(gui::loading::LoadingScreen { title: String::new(), text: String::new(), progress: -1 });
+            self.loading =
+                Some(gui::loading::LoadingScreen { title: String::new(), text: String::new(), progress: -1 });
         }
         if let Some(g) = &mut self.gui {
             g.screen = None;
@@ -405,10 +435,7 @@ impl App {
                     return;
                 }
                 gui::system::GameAction::SettingsChanged => {
-                    if let Some(tx) = &self.tx {
-                        let _ = tx.send(ToWorker::Settings(self.video_settings()));
-                        self.idle = false;
-                    }
+                    self.settings_changed();
                 }
                 gui::system::GameAction::IngameFocus => {
                     if self.ready {
@@ -521,6 +548,101 @@ impl App {
         Some((f.dir.clone(), name))
     }
 
+    /// Exercise the GUI action -> worker reset -> GPU upload path in one world.
+    fn video_test_step(&mut self, el: &ActiveEventLoop) -> Option<(std::path::PathBuf, String)> {
+        let mut flow = self.video_flow.take()?;
+        flow.frames += 1;
+        if flow.frames > 30000 {
+            eprintln!("video-flowtest: timed out at stage {}", flow.stage);
+            self.shutdown(el);
+            std::process::exit(1);
+        }
+        if !self.ready || self.loading.is_some() || self.ticks_ready < 100 {
+            self.video_flow = Some(flow);
+            return None;
+        }
+        if flow.stage == VIDEO_CASES.len() {
+            eprintln!("VIDEO FLOW EXACT: five live settings combinations, renderer reset and window counts");
+            self.shutdown(el);
+            return None;
+        }
+        let (distance, fancy, ao, limit) = VIDEO_CASES[flow.stage];
+        if !flow.waiting {
+            self.display_ingame_menu();
+            self.apply_gui_actions(el);
+            self.click_button(0);
+            self.apply_gui_actions(el);
+            self.click_button(101);
+            self.apply_gui_actions(el);
+            use gui::settings::EnumOptions;
+            for _ in 0..4 {
+                if self.video_settings().distance != distance {
+                    self.click_button(EnumOptions::RenderDistance.ordinal());
+                    self.apply_gui_actions(el);
+                }
+            }
+            if self.video_settings().fancy != fancy {
+                self.click_button(EnumOptions::Graphics.ordinal());
+                self.apply_gui_actions(el);
+            }
+            if self.video_settings().ao != ao {
+                self.click_button(EnumOptions::AmbientOcclusion.ordinal());
+                self.apply_gui_actions(el);
+            }
+            for _ in 0..3 {
+                if self.video_settings().limit != limit {
+                    self.click_button(EnumOptions::FramerateLimit.ordinal());
+                    self.apply_gui_actions(el);
+                }
+            }
+            let v = self.video_settings();
+            assert_eq!((v.distance, v.fancy, v.ao, v.limit), (distance, fancy, ao, limit));
+            self.click_button(200);
+            self.apply_gui_actions(el);
+            self.click_button(200);
+            self.apply_gui_actions(el);
+            // Stay in the pause menu while meshes rebuild, as when a user edits Video
+            // Settings. Resume for the captured world frame below.
+            flow.waiting = true;
+            flow.frames = 0;
+            flow.reset = flow.stage == 0;
+            eprintln!(
+                "video-flowtest stage {}: distance {distance}, fancy {fancy}, AO {ao}, limit {limit}",
+                flow.stage
+            );
+        } else if flow.reset
+            && flow.frames > 120
+            && self.gpu.as_ref().unwrap().chunk_count() == self.video_settings().chunks_wide().pow(2) as usize
+        {
+            let expected = self.video_settings().chunks_wide().pow(2) as usize;
+            assert_eq!(self.gpu.as_ref().unwrap().chunk_count(), expected, "live renderer window count");
+            self.click_button(4);
+            self.apply_gui_actions(el);
+            eprintln!("video-flowtest stage {}: {expected} chunk meshes, {} fps", flow.stage, self.fps);
+            std::fs::create_dir_all(&flow.dir).expect("video screenshots directory");
+            let shot = (
+                flow.dir.clone(),
+                format!("{}_d{distance}_{}_ao{ao}", flow.stage, if fancy { "fancy" } else { "fast" }),
+            );
+            flow.stage += 1;
+            flow.waiting = false;
+            self.video_flow = Some(flow);
+            return Some(shot);
+        }
+        if flow.frames > 0 && flow.frames % 600 == 0 {
+            eprintln!(
+                "video-flowtest waiting: stage {}, frames {}, chunks {}, ticks {}, reset {}",
+                flow.stage,
+                flow.frames,
+                self.gpu.as_ref().unwrap().chunk_count(),
+                self.ticks_ready,
+                flow.reset
+            );
+        }
+        self.video_flow = Some(flow);
+        None
+    }
+
     /// `Minecraft.displayInGameMenu`
     fn display_ingame_menu(&mut self) {
         if let Some(gui) = &mut self.gui {
@@ -551,7 +673,8 @@ impl App {
             self.gui_ticks = now;
         }
         if let Some(g) = &mut self.gui {
-            g.ui.millis = std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).map_or(0, |d| d.as_millis() as i64);
+            g.ui.millis =
+                std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).map_or(0, |d| d.as_millis() as i64);
         }
         self.apply_gui_actions(el);
 
@@ -589,7 +712,13 @@ impl App {
                             worker::Loading::Progress(p) => ls.progress = p,
                         }
                     }
-                    Ok(FromWorker::ResetMeshes) => { gpu.clear_chunks(); self.idle = false; },
+                    Ok(FromWorker::ResetMeshes) => {
+                        gpu.clear_chunks();
+                        self.idle = false;
+                        if let Some(flow) = &mut self.video_flow {
+                            flow.reset = true;
+                        }
+                    }
                     Ok(FromWorker::Entities(list)) => self.entities = list,
                     Ok(FromWorker::QuickSaved(done)) => {
                         if let Some(gui) = &mut self.gui {
@@ -657,6 +786,8 @@ impl App {
         }
         self.apply_gui_actions(el);
 
+        let flow_shot = self.video_test_step(el).or(flow_shot);
+
         // The pause menu saves a few chunks per frame; screens that pause stop the ticks.
         if let (Some(gui), Some(tx)) = (&mut self.gui, &self.tx) {
             for n in gui.ui.save_requests.drain(..) {
@@ -722,7 +853,9 @@ impl App {
             }
         }
         let partial = if self.paused { 0.0 } else { ((now - self.last_tick).as_secs_f32() * 20.0).min(1.0) };
-        let gui_partial = ((now + Duration::from_millis(50)).saturating_duration_since(self.gui_ticks).as_secs_f32() * 20.0).clamp(0.0, 1.0);
+        let gui_partial = ((now + Duration::from_millis(50)).saturating_duration_since(self.gui_ticks).as_secs_f32()
+            * 20.0)
+            .clamp(0.0, 1.0);
 
         // Menus or the loading screen, no world drawn.
         if !self.ready || self.loading.is_some() {
@@ -803,8 +936,7 @@ impl App {
             gpu.entities.fancy = self.gui.as_ref().is_none_or(|gui| gui.ui.settings.fancy_graphics);
             gpu.entities.view = [self.cam.yaw, self.cam.pitch];
         }
-        let want_shot =
-            self.opts.shot.is_some()
+        let want_shot = self.opts.shot.is_some()
                 && self.ready
                 && uploads == 0
                 // Ticking keeps changing blocks somewhere, so a timed shot doesn't wait for idle.
@@ -918,7 +1050,8 @@ impl ApplicationHandler for App {
             [&assets.snow, &assets.rain, &assets.particles],
             &assets.mobs,
         );
-        let (images, font_txt, lang, splashes) = match assets::Jar::open().and_then(|mut j| gui::load_resources(&mut j)) {
+        let (images, font_txt, lang, splashes) = match assets::Jar::open().and_then(|mut j| gui::load_resources(&mut j))
+        {
             Ok(r) => r,
             Err(e) => {
                 eprintln!("{e}");
@@ -933,10 +1066,12 @@ impl ApplicationHandler for App {
                 let _ = std::fs::create_dir_all(&d);
                 d
             }
-            None => std::env::current_dir().unwrap_or_default(),
+            None => self.opts.options_dir.clone().unwrap_or_else(|| std::env::current_dir().unwrap_or_default()),
         };
         let settings = gui::settings::GameSettings::load(&data_dir);
-        let splash_seed = std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).map_or(0, |d| d.as_nanos() as i64);
+        gpu.apply_video(VideoSettings::from(&settings));
+        let splash_seed =
+            std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).map_or(0, |d| d.as_nanos() as i64);
         let mut gui = gui::system::GuiSystem::new(
             gpu.device(),
             gpu.queue(),
@@ -1033,7 +1168,8 @@ impl ApplicationHandler for App {
                 match event.state {
                     ElementState::Pressed => {
                         if let Some(g) = &mut self.gui {
-                            g.ui.shift_down = self.keys.contains(&KeyCode::ShiftLeft) || self.keys.contains(&KeyCode::ShiftRight);
+                            g.ui.shift_down =
+                                self.keys.contains(&KeyCode::ShiftLeft) || self.keys.contains(&KeyCode::ShiftRight);
                         }
                         if screen_open && self.loading.is_none() {
                             let c = event.text.as_ref().and_then(|t| t.chars().next()).unwrap_or('\0');
@@ -1076,10 +1212,23 @@ impl ApplicationHandler for App {
                 }
             }
             WindowEvent::RedrawRequested => {
-                self.frame(el);
-                if let Some(g) = &self.gpu {
-                    g.window.request_redraw();
+                let started = Instant::now();
+                if self.frame_deadline.is_some_and(|deadline| started < deadline) {
+                    return;
                 }
+                self.frame(el);
+                let video = self.video_settings();
+                self.frame_deadline = video.frame_nanos().map(|nanos| {
+                    let now = Instant::now();
+                    if video.limit == 2 {
+                        let remaining =
+                            nanos as i64 - now.duration_since(started).as_nanos().min(i64::MAX as u128) as i64;
+                        // Wait without blocking input; retain vanilla's whole-millisecond sleep.
+                        now + Duration::from_millis(VideoSettings::power_sleep_millis(remaining, self.ready))
+                    } else {
+                        started + Duration::from_nanos(nanos)
+                    }
+                });
             }
             _ => {}
         }
@@ -1091,6 +1240,17 @@ impl ApplicationHandler for App {
                 // Default sensitivity: 0.15 degrees per mouse count, as in EntityPlayerSP.setAngles.
                 self.cam.yaw += delta.0 as f32 * 0.15;
                 self.cam.pitch = (self.cam.pitch + delta.1 as f32 * 0.15).clamp(-90.0, 90.0);
+            }
+        }
+    }
+
+    fn about_to_wait(&mut self, el: &ActiveEventLoop) {
+        if let Some(deadline) = self.frame_deadline.filter(|&d| d > Instant::now()) {
+            el.set_control_flow(ControlFlow::WaitUntil(deadline));
+        } else {
+            el.set_control_flow(ControlFlow::Poll);
+            if let Some(gpu) = &self.gpu {
+                gpu.window.request_redraw();
             }
         }
     }
@@ -1107,18 +1267,32 @@ fn memory_info() -> gui::ingame::DebugInfo {
     let mut ms: MEMORYSTATUSEX = unsafe { std::mem::zeroed() };
     ms.dwLength = std::mem::size_of::<MEMORYSTATUSEX>() as u32;
     // SAFETY: both structs are sized and owned here; the handle is the current process.
-    let ok = unsafe { GetProcessMemoryInfo(GetCurrentProcess(), &mut pmc, pmc.cb) != 0 && GlobalMemoryStatusEx(&mut ms) != 0 };
+    let ok = unsafe {
+        GetProcessMemoryInfo(GetCurrentProcess(), &mut pmc, pmc.cb) != 0 && GlobalMemoryStatusEx(&mut ms) != 0
+    };
     if !ok {
         return Default::default();
     }
     let total = pmc.PagefileUsage as i64;
     let used = pmc.WorkingSetSize as i64;
-    gui::ingame::DebugInfo { max_memory: (ms.ullTotalPhys / 4) as i64, total_memory: total.max(used), free_memory: (total - used).max(0), ..Default::default() }
+    gui::ingame::DebugInfo {
+        max_memory: (ms.ullTotalPhys / 4) as i64,
+        total_memory: total.max(used),
+        free_memory: (total - used).max(0),
+        ..Default::default()
+    }
 }
 
 /// `World.playSoundEffect` -> `RenderGlobal.playSound`: only within 16 blocks (16 x volume
 /// when louder than 1) of the view entity.
-fn play_world_sound(snd: &mut crate::sound::SoundManager, view: DVec3, name: &str, pos: [f64; 3], volume: f32, pitch: f32) {
+fn play_world_sound(
+    snd: &mut crate::sound::SoundManager,
+    view: DVec3,
+    name: &str,
+    pos: [f64; 3],
+    volume: f32,
+    pitch: f32,
+) {
     let mut range = 16.0f32;
     if volume > 1.0 {
         range *= volume;

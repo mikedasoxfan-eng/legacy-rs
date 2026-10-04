@@ -39,6 +39,9 @@ pub struct Options {
     pub direct: bool,
     /// `--flowtest <dir>`: scripted click-through of the menus with screenshots.
     pub flowtest: Option<std::path::PathBuf>,
+    /// Read options.txt from this directory (default: working directory).
+    pub options_dir: Option<std::path::PathBuf>,
+    pub video_flowtest: Option<std::path::PathBuf>,
     /// `--shot-ticks N`: with --shot, let the world run N ticks first.
     pub shot_ticks: i64,
 }
@@ -100,6 +103,8 @@ fn parse_args() -> Options {
             name: None,
         },
         flowtest: get("--flowtest").map(Into::into),
+        options_dir: get("--options-dir").map(Into::into),
+        video_flowtest: get("--video-flowtest").map(Into::into),
         shot_ticks: get("--shot-ticks").and_then(|s| s.parse().ok()).unwrap_or(0),
         direct: ["--world", "--world-dir", "--seed", "--no-save", "--shot", "--at", "--server"]
             .iter()
@@ -116,7 +121,7 @@ fn parse_args() -> Options {
     }
 }
 
-/// `--skycolor seed x z time partial [rain thunder flash [prev-rain prev-thunder [fog-prev fog-current]]]`: float bits,
+/// `--skycolor seed x z time partial [rain thunder flash [prev-rain prev-thunder [fog-prev fog-current [distance]]]]`: float bits,
 /// in the same format as the oracle's `skycolor` mode, for comparison.
 fn sky_check(a: &[String]) {
     let seed: i64 = a[2].parse().unwrap();
@@ -162,7 +167,7 @@ fn sky_check(a: &[String]) {
     );
 }
 
-/// `--meshcheck seed wrand oracle-mesh.bin`: mesh the same chunks after the vanilla
+/// `--meshcheck seed wrand oracle-mesh.bin [fancy|fast] [on|off]`: mesh the same chunks after the vanilla
 /// preload and compare every vertex with the original RenderBlocks output.
 fn mesh_check(a: &[String]) -> bool {
     let seed: i64 = a[2].parse().unwrap();
@@ -250,6 +255,12 @@ fn main() {
     let args: Vec<String> = std::env::args().collect();
     if args.get(1).map(String::as_str) == Some("--cloudcheck") {
         render::video_check::clouds(&args);
+        return;
+    }
+    if args.get(1).map(String::as_str) == Some("--videowindow") {
+        let video = render::video::VideoSettings { distance: args[2].parse().unwrap(), ..Default::default() };
+        let xs = worker::window_axis(args[3].parse().unwrap(), video.chunks_wide());
+        println!("window {} {}", video.chunks_wide(), xs.iter().map(i32::to_string).collect::<Vec<_>>().join(" "));
         return;
     }
     if args.get(1).map(String::as_str) == Some("--renderershot") {

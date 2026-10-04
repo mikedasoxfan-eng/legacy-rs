@@ -55,4 +55,42 @@ impl VideoSettings {
         let blend = (3 - self.distance) as f32 / 3.0f32;
         brightness * (1.0f32 - blend) + blend
     }
+
+    /// Java integer division in `EntityRenderer.updateCameraAndRender`.
+    pub fn frame_nanos(self) -> Option<u64> {
+        match self.limit {
+            1 => Some(1_000_000_000 / 120),
+            2 => Some(1_000_000_000 / 40),
+            _ => None,
+        }
+    }
+
+    /// The Power saver sleep guard and menu-only negative-delay adjustment.
+    pub fn power_sleep_millis(remaining_nanos: i64, world: bool) -> u64 {
+        let mut millis = remaining_nanos / 1_000_000;
+        if !world && millis < 0 {
+            millis += 10;
+        }
+        if millis > 0 && millis < 500 {
+            millis as u64
+        } else {
+            0
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn power_saver_retains_java_sleep_boundaries() {
+        assert_eq!(VideoSettings::power_sleep_millis(25_999_999, true), 25);
+        assert_eq!(VideoSettings::power_sleep_millis(999_999, true), 0);
+        assert_eq!(VideoSettings::power_sleep_millis(-1_500_000, true), 0);
+        assert_eq!(VideoSettings::power_sleep_millis(-1_500_000, false), 9);
+        assert_eq!(VideoSettings::power_sleep_millis(-10_000_000, false), 0);
+        assert_eq!(VideoSettings::power_sleep_millis(499_999_999, true), 499);
+        assert_eq!(VideoSettings::power_sleep_millis(500_000_000, true), 0);
+    }
 }

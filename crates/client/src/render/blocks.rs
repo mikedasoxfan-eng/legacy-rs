@@ -145,7 +145,8 @@ impl<'a, 'b> RenderBlocks<'a, 'b> {
 
     #[inline]
     fn texture_meta(&self, id: u8, side: usize, meta: i32) -> i32 {
-        rprops(id).textures[(meta & 15) as usize][side] as i32 + if id == block::LEAVES && !self.w.fancy { 1 } else { 0 }
+        rprops(id).textures[(meta & 15) as usize][side] as i32
+            + if id == block::LEAVES && !self.w.fancy { 1 } else { 0 }
     }
 
     /// `colorMultiplier`
@@ -248,10 +249,12 @@ impl<'a, 'b> RenderBlocks<'a, 'b> {
     fn render_standard_block_color(&mut self, id: u8, x: i32, y: i32, z: i32, r: f32, g: f32, b: f32) -> bool {
         self.enable_ao = false;
         let own = self.brightness(id, x, y, z);
-        let neighbours = [(x,y-1,z), (x,y+1,z), (x,y,z-1), (x,y,z+1), (x-1,y,z), (x+1,y,z)];
+        let neighbours = [(x, y - 1, z), (x, y + 1, z), (x, y, z - 1), (x, y, z + 1), (x - 1, y, z), (x + 1, y, z)];
         let mut rendered = false;
         for (side, &(nx, ny, nz)) in neighbours.iter().enumerate() {
-            if !self.should_side_be_rendered(id, nx, ny, nz, side as i32) { continue; }
+            if !self.should_side_be_rendered(id, nx, ny, nz, side as i32) {
+                continue;
+            }
             let mut light = self.brightness(id, nx, ny, nz);
             let bounds = self.b;
             if match side {
@@ -261,15 +264,17 @@ impl<'a, 'b> RenderBlocks<'a, 'b> {
                 4 => bounds.min_x > 0.0,
                 5 => bounds.max_x < 1.0,
                 _ => false,
-            } { light = own; }
+            } {
+                light = own;
+            }
             let shade = [0.5f32, 1.0, 0.8, 0.8, 0.6, 0.6][side];
             let tint = id != block::GRASS || side == 1;
-            let (cr, cg, cb) = if tint { (shade*r, shade*g, shade*b) } else { (shade,shade,shade) };
-            self.t.set_color_opaque_f(cr*light, cg*light, cb*light);
+            let (cr, cg, cb) = if tint { (shade * r, shade * g, shade * b) } else { (shade, shade, shade) };
+            self.t.set_color_opaque_f(cr * light, cg * light, cb * light);
             let tex = self.texture(id, x, y, z, side);
             self.standard_face(side, x, y, z, tex);
             if side >= 2 && self.w.fancy && tex == 3 {
-                self.t.set_color_opaque_f(cr*light*r, cg*light*g, cb*light*b);
+                self.t.set_color_opaque_f(cr * light * r, cg * light * g, cb * light * b);
                 self.standard_face(side, x, y, z, 38);
             }
             rendered = true;
@@ -278,14 +283,14 @@ impl<'a, 'b> RenderBlocks<'a, 'b> {
     }
 
     fn standard_face(&mut self, side: usize, x: i32, y: i32, z: i32, tex: i32) {
-        let (x,y,z) = (x as f64,y as f64,z as f64);
+        let (x, y, z) = (x as f64, y as f64, z as f64);
         match side {
-            0 => self.render_bottom_face(x,y,z,tex),
-            1 => self.render_top_face(x,y,z,tex),
-            2 => self.render_east_face(x,y,z,tex),
-            3 => self.render_west_face(x,y,z,tex),
-            4 => self.render_north_face(x,y,z,tex),
-            _ => self.render_south_face(x,y,z,tex),
+            0 => self.render_bottom_face(x, y, z, tex),
+            1 => self.render_top_face(x, y, z, tex),
+            2 => self.render_east_face(x, y, z, tex),
+            3 => self.render_west_face(x, y, z, tex),
+            4 => self.render_north_face(x, y, z, tex),
+            _ => self.render_south_face(x, y, z, tex),
         }
     }
 
@@ -327,7 +332,8 @@ impl<'a, 'b> RenderBlocks<'a, 'b> {
     fn render_standard_block_ao(&mut self, id: u8, x: i32, y: i32, z: i32, r: f32, g: f32, b: f32) -> bool {
         self.enable_ao = true;
         let mut rendered = false;
-        let (mut tint_bottom, tint_top, mut tint_e, mut tint_w, mut tint_n, mut tint_s) = (true, true, true, true, true, true);
+        let (mut tint_bottom, tint_top, mut tint_e, mut tint_w, mut tint_n, mut tint_s) =
+            (true, true, true, true, true, true);
         let br = |s: &Self, x: i32, y: i32, z: i32| s.brightness(id, x, y, z);
         let ao_x_neg = br(self, x - 1, y, z);
         let ao_y_neg = br(self, x, y - 1, z);
@@ -356,7 +362,13 @@ impl<'a, 'b> RenderBlocks<'a, 'b> {
             tint_n = false;
             tint_s = false;
         }
-        let base = |t: bool, shade: f32| if t { (r * shade, g * shade, b * shade) } else { (shade, shade, shade) };
+        let base = |t: bool, shade: f32| {
+            if t {
+                (r * shade, g * shade, b * shade)
+            } else {
+                (shade, shade, shade)
+            }
+        };
 
         // bottom (y-1)
         if self.should_side_be_rendered(id, x, y - 1, z, 0) {
