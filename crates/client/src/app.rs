@@ -627,6 +627,7 @@ impl App {
                             self.cam.pos.to_array(),
                             self.cloud_ticks as i32,
                             weather.rain_at(1.0),
+                            video.fancy,
                             &mut self.weather_rng,
                             &mut self.rain_sound_counter,
                         );
@@ -760,6 +761,7 @@ impl App {
             self.cloud_ticks as i32,
             partial,
             rain,
+            video.fancy,
             &mut self.weather_rng,
         );
         let lightning = self

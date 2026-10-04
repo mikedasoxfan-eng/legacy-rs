@@ -99,7 +99,7 @@ public class Oracle {
                 cs = new int[a.length - 4];
                 for (int i = 4; i < a.length; i++) cs[i - 4] = Integer.parseInt(a[i]);
             }
-            renderMesh(Long.parseLong(a[1]), Long.parseLong(a[2]), a[3], cs);
+            renderMesh(Long.parseLong(a[1]), Long.parseLong(a[2]), a[3], cs, a.length > 6 && a[6].equals("fast") ? false : true, !(a.length > 7 && a[7].equals("off")));
         } else if (mode.equals("savepreload")) {
             savePreload(Long.parseLong(a[1]), Long.parseLong(a[2]), a[3], a[4]);
         } else if (mode.equals("readsave")) {
@@ -144,6 +144,8 @@ public class Oracle {
                 + " fogrange " + Float.floatToIntBits(org.lwjgl.opengl.GL11.fogStart) + " " + Float.floatToIntBits(org.lwjgl.opengl.GL11.fogEnd));
         } else if (mode.equals("weathermesh")) {
             weatherMesh(a);
+        } else if (mode.equals("cloudmesh")) {
+            cloudMesh(a);
         } else if (mode.equals("rendertable")) {
             renderTable(a[1]);
         } else if (mode.equals("ticks")) {
@@ -452,13 +454,15 @@ public class Oracle {
      * Smooth lighting and Fancy graphics on (the defaults). The Tessellator's raw buffer is
      * read back instead of drawn; quads were stored as triangles (v0 v1 v2 v0 v2 v3).
      */
-    static void renderMesh(long seed, long wrand, String out, int[] cs) throws Exception {
+    static void renderMesh(long seed, long wrand, String out, int[] cs, boolean fancy, boolean ao) throws Exception {
         // Minecraft.isAmbientOcclusionEnabled() reads a Minecraft instance: make a bare one.
         Field uf = sun.misc.Unsafe.class.getDeclaredField("theUnsafe");
         uf.setAccessible(true);
         sun.misc.Unsafe unsafe = (sun.misc.Unsafe) uf.get(null);
         net.minecraft.client.Minecraft mc = (net.minecraft.client.Minecraft) unsafe.allocateInstance(MinecraftImpl.class);
         mc.gameSettings = new GameSettings();
+        mc.gameSettings.ambientOcclusion = ao;
+        mc.gameSettings.fancyGraphics = fancy;
         Field tm = net.minecraft.client.Minecraft.class.getDeclaredField("theMinecraft");
         tm.setAccessible(true);
         tm.set(null, mc);
@@ -483,8 +487,8 @@ public class Oracle {
             for (int cx = scx - r; cx <= scx + r; cx++)
                 for (int cz = scz - r; cz <= scz + r; cz++) { cs[k++] = cx; cs[k++] = cz; }
         }
-        Block.leaves.setGraphicsLevel(true);
-        RenderBlocks.fancyGrass = true;
+        Block.leaves.setGraphicsLevel(fancy);
+        RenderBlocks.fancyGrass = fancy;
         // The client loads the biome color maps at startup (RenderEngine -> Colorizer*).
         ColorizerGrass.func_28181_a(jarImage("misc/grasscolor.png"));
         ColorizerFoliage.func_28152_a(jarImage("misc/foliagecolor.png"));
@@ -859,6 +863,30 @@ public class Oracle {
         } catch(Exception e) { throw new RuntimeException(e); }
     }
     static final ArrayList<double[]> rainSounds = new ArrayList<double[]>();
+    static void cloudMesh(String[] a) throws Exception {
+        long seed=Long.parseLong(a[1]);
+        double x=Double.parseDouble(a[2]),y=Double.parseDouble(a[3]),z=Double.parseDouble(a[4]);
+        World w=newWorld(seed);w.setWorldTime(Long.parseLong(a[7]));
+        w.rainingStrength=w.prevRainingStrength=Float.parseFloat(a[8]);
+        w.thunderingStrength=w.prevThunderingStrength=Float.parseFloat(a[9]);
+        EntityRenderer r=headlessRenderer(w,new EntityItem(w,x,y,z,new ItemStack(1,1,0)));
+        Field mcF=EntityRenderer.class.getDeclaredField("mc");mcF.setAccessible(true);
+        net.minecraft.client.Minecraft mc=(net.minecraft.client.Minecraft)mcF.get(r);
+        mc.gameSettings.fancyGraphics=!a[10].equals("fast");
+        mc.renderViewEntity.prevPosX=x;mc.renderViewEntity.prevPosY=y;mc.renderViewEntity.prevPosZ=z;
+        ((HashMap) getField(mc.renderEngine,"textureMap")).put("/environment/clouds.png",2);
+        RenderGlobal global=(RenderGlobal)allocate(RenderGlobal.class);
+        setField(global,"mc",mc);setField(global,"worldObj",w);setField(global,"renderEngine",mc.renderEngine);
+        setField(global,"cloudOffsetX",Integer.parseInt(a[5]));
+        Field convert=Tessellator.class.getDeclaredField("convertQuadsToTriangles");convert.setAccessible(true);convert.setBoolean(null,false);
+        global.renderClouds(Float.parseFloat(a[6]));
+        DataOut o=new DataOut();o.bytes("B173CLD1".getBytes("US-ASCII"));o.i32(weatherVertices.size());
+        for(float[] v:weatherVertices)for(float f:v)o.i32(Float.floatToIntBits(f));
+        try(OutputStream os=new FileOutputStream(a[11])) {o.writeTo(os);}
+    }
+    static Object getField(Object o,String name) throws Exception {
+        Field f=o.getClass().getDeclaredField(name);f.setAccessible(true);return f.get(o);
+    }
     static void weatherMesh(String[] a) throws Exception {
         long seed=Long.parseLong(a[1]);
         double x=Double.parseDouble(a[2]),y=Double.parseDouble(a[3]),z=Double.parseDouble(a[4]);
@@ -878,7 +906,10 @@ public class Oracle {
         w.addWorldAccess((IWorldAccess)java.lang.reflect.Proxy.newProxyInstance(Oracle.class.getClassLoader(),new Class[]{IWorldAccess.class},
             (proxy,method,args)->{if(method.getName().equals("playSound"))rainSounds.add(new double[]{(Double)args[1],(Double)args[2],(Double)args[3],(Float)args[4],(Float)args[5]});return null;}));
         Entity e=new EntityItem(w,x,y,z,new ItemStack(1,1,0));
-        EntityRenderer r=headlessRenderer(w,e);setField(r,"rendererUpdateCount",tick);setField(r,"rainSoundCounter",soundCounter);
+        EntityRenderer r=headlessRenderer(w,e);
+        Field weatherMc=EntityRenderer.class.getDeclaredField("mc");weatherMc.setAccessible(true);
+        ((net.minecraft.client.Minecraft)weatherMc.get(r)).gameSettings.fancyGraphics=!(a.length>11 && a[11].equals("fast"));
+        setField(r,"rendererUpdateCount",tick);setField(r,"rainSoundCounter",soundCounter);
         DataOut o=new DataOut();o.bytes("B173WTH1".getBytes("US-ASCII"));o.i32(soundCounter);
         BiomeGenBase[] biomes=w.getWorldChunkManager().func_4069_a(cx-10,cz-10,21,21);int k=0;
         for(int xx=cx-10;xx<=cx+10;xx++) for(int zz=cz-10;zz<=cz+10;zz++) {

@@ -176,7 +176,11 @@ fn mesh_check(a: &[String]) -> bool {
     };
     let assets = assets::load().expect("assets");
     let col = Colorizers { grass: assets.grass_color, foliage: assets.foliage_color };
-    let world = worldgen::World::new_vanilla(seed, wrand);
+    let mut video = render::video::VideoSettings::default();
+    video.fancy = a.get(5).map(String::as_str) != Some("fast");
+    video.ao = a.get(6).map(String::as_str) != Some("off");
+    let mut world = worldgen::World::new_vanilla(seed, wrand);
+    world.leaves_opaque = !video.fancy;
     let biomes = std::cell::RefCell::new(BiomeSource::new(seed));
     let magic = i32_();
     let _ = i32_();
@@ -190,7 +194,7 @@ fn mesh_check(a: &[String]) -> bool {
         for &b in world.chunk(cx, cz).blocks.iter() {
             seen[b as usize] += 1;
         }
-        let (opaque, translucent) = worker::mesh_chunk(&world, cx, cz, sky_sub, &biomes, &col);
+        let (opaque, translucent) = worker::mesh_chunk(&world, cx, cz, sky_sub, &biomes, &col, video);
         for (pass, rust) in [(0, &opaque), (1, &translucent)] {
             let nv = i32_() as usize;
             let mut java = Vec::with_capacity(nv);
@@ -244,6 +248,10 @@ fn mesh_check(a: &[String]) -> bool {
 
 fn main() {
     let args: Vec<String> = std::env::args().collect();
+    if args.get(1).map(String::as_str) == Some("--cloudcheck") {
+        render::video_check::clouds(&args);
+        return;
+    }
     if args.get(1).map(String::as_str) == Some("--renderershot") {
         if let Err(e) =
             render::entity::shot::renderer_shot(std::path::Path::new(args.get(2).expect("--renderershot file.png")))

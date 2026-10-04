@@ -798,13 +798,17 @@ impl Gpu {
         self.write_uniforms(&self.water_slot, &tu);
 
         // Clouds (Fancy): rebuilt every frame around the camera, drawn scaled 12x horizontally.
-        let cloud_verts =
-            sky::fancy_clouds(cam.x, cam.y, cam.z, p.cloud_offset, sky::cloud_color(p.celestial, p.rain, p.thunder));
+        let cloud_color = sky::cloud_color(p.celestial, p.rain, p.thunder);
+        let cloud_verts = if p.video.fancy {
+            sky::fancy_clouds(cam.x, cam.y, cam.z, p.cloud_offset, cloud_color)
+        } else {
+            sky::flat_clouds(cam.x, cam.y, cam.z, p.cloud_offset, cloud_color)
+        };
         let cloud_n = cloud_verts.len().min(8192);
         self.queue.write_buffer(&self.cloud_buf, 0, bytemuck::cast_slice(&cloud_verts[..cloud_n]));
         let cu = Uniforms {
             view_proj: view_proj.to_cols_array_2d(),
-            model: Mat4::from_scale(glam::Vec3::new(12.0, 1.0, 12.0)).to_cols_array_2d(),
+            model: if p.video.fancy { Mat4::from_scale(glam::Vec3::new(12.0, 1.0, 12.0)).to_cols_array_2d() } else { ident },
             color: [1.0; 4],
             fog_color: fog4,
             fog: [p.far * 0.25, p.far, 1.0, 0.1],
@@ -943,6 +947,7 @@ impl Gpu {
             rp.set_bind_group(1, &self.origins_bind, &[]);
             // Pass 1 (water, ice), Fancy: depth-only first, then color with LEQUAL.
             for pipe in [&self.p_water_depth, &self.p_water_color] {
+                if !p.video.fancy && std::ptr::eq(pipe, &self.p_water_depth) { continue; }
                 rp.set_pipeline(pipe);
                 rp.set_bind_group(0, &self.water_slot.bind, &[]);
                 for (i, k) in visible.iter().enumerate().rev() {
@@ -962,6 +967,7 @@ impl Gpu {
                 rp.draw_indexed(0..weather_n[i] / 4 * 6, 0, 0..1);
             }
             for pipe in [&self.p_cloud_depth, &self.p_cloud_color] {
+                if !p.video.fancy && std::ptr::eq(pipe, &self.p_cloud_depth) { continue; }
                 rp.set_pipeline(pipe);
                 rp.set_bind_group(0, &self.cloud_slot.bind, &[]);
                 rp.set_vertex_buffer(0, self.cloud_buf.slice(..));

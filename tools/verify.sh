@@ -112,13 +112,18 @@ mesh_cases=("25 1" "1 1")   # snowy taiga; desert with cactus
 [ "$quick" != quick ] && mesh_cases+=("-1 -1" "0 1")
 for c in "${mesh_cases[@]}"; do
   read -r seed wr <<<"$c"
-  echo "== chunk meshes: seed $seed, world rand $wr"
-  if "$oracle" rendermesh "$seed" "$wr" mesh_case.bin auto 5 2>/dev/null | grep -v -i "warning\|unsafe\|\^" ;      "$beta" --meshcheck "$seed" "$wr" "$out/mesh_case.bin" | tail -1 | grep -q "MESHES EXACT"; then
-    echo "MESHES EXACT"
-  else
-    echo "MESHES DIFFER"; fail=1
-  fi
-  rm -f "$out/mesh_case.bin"
+  for mode in "fancy on" "fast on" "fancy off" "fast off"; do
+    read -r graphics ao <<<"$mode"
+    echo "== chunk meshes: seed $seed, world rand $wr, $graphics, AO $ao"
+    if "$oracle" rendermesh "$seed" "$wr" mesh_case.bin auto 5 "$graphics" "$ao" >"$out/mesh_case.log" 2>&1 &&
+       "$beta" --meshcheck "$seed" "$wr" "$out/mesh_case.bin" "$graphics" "$ao" >"$out/mesh_compare.log" 2>&1; then
+      tail -1 "$out/mesh_compare.log"
+    else
+      cat "$out/mesh_case.log" "$out/mesh_compare.log"
+      echo "MESHES DIFFER"; fail=1
+    fi
+    rm -f "$out/mesh_case.bin" "$out/mesh_case.log" "$out/mesh_compare.log"
+  done
 done
 
 # ---- saves: real game reads ours, we read the real game's
@@ -200,13 +205,27 @@ echo "== ambient weather vertices"
 for args in "2 0.5 70 0.5 100 0.75 0.8" "11 0.5 80 0.5 2147483647 0.25 1" \
   "3257840388504953787 -39.5 75 65.5 23 0.5 1" "1 0.5 70 0.5 0 0 1" \
   "42 -20.25 90 -31.75 -2147483648 1.0 0.01"; do
-  if "$oracle" weathermesh $args weather_case.bin && "$beta" --weathercheck $args "$out/weather_case.bin"; then :; else fail=1; fi
+  for graphics in fancy fast; do
+    if "$oracle" weathermesh $args weather_case.bin natural 0 "$graphics" && "$beta" --weathercheck $args "$out/weather_case.bin" natural 0 "$graphics"; then :; else fail=1; fi
+  done
 done
 for scene in lava roof; do
   args="42 0.5 80 0.5 123 0.5 1"
-  if "$oracle" weathermesh $args weather_case.bin "$scene" 5 && "$beta" --weathercheck $args "$out/weather_case.bin" "$scene" 5; then :; else fail=1; fi
+  for graphics in fancy fast; do
+    if "$oracle" weathermesh $args weather_case.bin "$scene" 5 "$graphics" && "$beta" --weathercheck $args "$out/weather_case.bin" "$scene" 5 "$graphics"; then :; else fail=1; fi
+  done
 done
 rm -f "$out/weather_case.bin"
+
+# RenderGlobal cloud geometry, camera wrapping, above/below and within the cloud layer.
+echo "== Fast and Fancy clouds"
+for args in "1 0.5 70 0.5 100 0.75 6000 0 0" "42 -20.25 110 -31.75 123 0.5 13000 0.75 0.4" \
+  "2 30000.25 120 -50000.75 2147483647 0.25 23500 1 1" "11 2048 107 0 -2147483648 1.0 18000 0.1 0.9"; do
+  for graphics in fancy fast; do
+    if "$oracle" cloudmesh $args "$graphics" cloud_case.bin && "$beta" --cloudcheck $args "$graphics" "$out/cloud_case.bin"; then :; else fail=1; fi
+  done
+done
+rm -f "$out/cloud_case.bin"
 
 [ $fail -eq 0 ] && echo "ALL CASES EXACT" || echo "SOME CASES DIFFER"
 exit $fail

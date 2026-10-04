@@ -173,6 +173,8 @@ fn run(opts: WorldOptions, col: Colorizers, mut video: VideoSettings, rx: Receiv
     if let Some(time) = opts.time {
         world.world_time = time;
     }
+    // RenderGlobal.loadRenderers runs after the first-world preload.
+    world.leaves_opaque = !video.fancy;
     world.skylight_subtracted = world.calculate_skylight_subtracted(1.0);
     let (sx, _, sz) = world.spawn;
     // The saved player, if the real game left one; otherwise stand on the spawn column.
@@ -238,6 +240,7 @@ fn run(opts: WorldOptions, col: Colorizers, mut video: VideoSettings, rx: Receiv
                         idle_reported = false;
                         let _ = tx.send(FromWorker::ResetMeshes);
                     }
+                    world.leaves_opaque = !next.fancy;
                     video = next;
                 },
                 Ok(ToWorker::Pause(p)) => {
@@ -460,7 +463,7 @@ fn run(opts: WorldOptions, col: Colorizers, mut video: VideoSettings, rx: Receiv
             if meshed.get(&(cx, cz)).is_some_and(|&v| v >= version) {
                 continue;
             }
-            let (opaque, translucent) = mesh_chunk(&world, cx, cz, sky_sub, &biomes, &col);
+            let (opaque, translucent) = mesh_chunk(&world, cx, cz, sky_sub, &biomes, &col, video);
             meshed.insert((cx, cz), version);
             did_work = true;
             if tx.send(FromWorker::Mesh { cx, cz, opaque, translucent }).is_err() {
@@ -514,8 +517,10 @@ pub fn mesh_chunk(
     sky_sub: i32,
     biomes: &RefCell<BiomeSource>,
     col: &Colorizers,
+    video: VideoSettings,
 ) -> (Vec<Vertex>, Vec<Vertex>) {
-    let access = Access::new(world, cx, cz, sky_sub, biomes);
+    let mut access = Access::new(world, cx, cz, sky_sub, biomes);
+    access.fancy = video.fancy;
     let origin = [cx as f64 * 16.0, 0.0, cz as f64 * 16.0];
     let mut t0 = Tessellator::new(origin);
     let mut t1 = Tessellator::new(origin);
@@ -529,6 +534,7 @@ pub fn mesh_chunk(
                 }
                 let t = if rprops(id).pass == 0 { &mut t0 } else { &mut t1 };
                 let mut rb = RenderBlocks::new(&access, t, col);
+                rb.ao = video.ao;
                 rb.render_block(id, cx * 16 + x, y, cz * 16 + z);
             }
         }

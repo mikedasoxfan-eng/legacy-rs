@@ -234,6 +234,33 @@ pub fn cloud_color(angle: f32, rain: f32, thunder: f32) -> [f32; 3] {
     rgb
 }
 
+/// `RenderGlobal.renderClouds` Fast branch. Camera-relative flat quads, no scale.
+pub fn flat_clouds(cam_x: f64, cam_y: f64, cam_z: f64, offset: f32, color: [f32; 3]) -> Vec<super::Vertex> {
+    let step = 0.5f32 / 1024.0f32;
+    let mut px = cam_x + (offset * 0.03f32) as f64;
+    let mut pz = cam_z;
+    px -= (math::floor_double(px / 2048.0) * 2048) as f64;
+    pz -= (math::floor_double(pz / 2048.0) * 2048) as f64;
+    let y = 108.0f32 - cam_y as f32 + 0.33f32;
+    let u = (px * step as f64) as f32;
+    let v = (pz * step as f64) as f32;
+    let ch = |c: f32| ((c * 255.0f32) as i32).clamp(0, 255) as u8;
+    let color = [ch(color[0]), ch(color[1]), ch(color[2]), ch(0.8)];
+    let mut out = Vec::with_capacity(1024);
+    for x in (-256..256).step_by(32) {
+        for z in (-256..256).step_by(32) {
+            for (xx, zz) in [(x, z + 32), (x + 32, z + 32), (x + 32, z), (x, z)] {
+                out.push(super::Vertex {
+                    pos: [xx as f32, y, zz as f32],
+                    uv: [xx as f32 * step + u, zz as f32 * step + v],
+                    color,
+                });
+            }
+        }
+    }
+    out
+}
+
 /// `RenderGlobal.renderCloudsFancy` geometry, in cloud space (draw with scale 12,1,12)
 /// relative to the camera. `offset` is `cloudOffsetX + partialTicks`. Quads of 4 vertices.
 pub fn fancy_clouds(cam_x: f64, cam_y: f64, cam_z: f64, offset: f32, color: [f32; 3]) -> Vec<super::Vertex> {
