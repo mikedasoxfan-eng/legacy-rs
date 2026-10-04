@@ -112,6 +112,7 @@ impl GuiSystem {
         if let Some(cur) = &mut self.screen {
             cur.on_gui_closed(&mut self.ui);
         }
+        self.ui.stats.sync();
         let mut s = s;
         if s.is_none() && !self.ui.world_open {
             s = Some(self.main_menu());

@@ -18,6 +18,7 @@ pub mod settings;
 pub mod shot;
 pub mod slot;
 pub mod stats;
+pub mod stats_file;
 pub mod system;
 pub mod widgets;
 
