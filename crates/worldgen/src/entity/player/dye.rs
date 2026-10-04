@@ -13,31 +13,8 @@ impl Entity {
         }
         match w.get_block_id(x, y, z) {
             6 => {
-                use crate::features::TreeKind::*;
-                let meta = w.get_block_metadata(x, y, z) & 3;
-                w.set_block(x, y, z, 0);
-                let kind = match meta {
-                    1 => Spruce2,
-                    2 => Birch,
-                    _ => {
-                        if w.rand.next_int(10) == 0 {
-                            BigOak
-                        } else {
-                            Oak
-                        }
-                    }
-                };
-                // Feature generators use the population stream. Bone meal instead
-                // passes World.rand to precisely those original generators.
-                let old = w.prand().clone();
-                let random = w.rand.clone();
-                *w.prand() = random;
-                let grown = crate::features::tree(w, kind, x, y, z);
-                w.rand = w.prand().clone();
-                *w.prand() = old;
-                if !grown {
-                    w.set_block_and_metadata(x, y, z, 6, meta);
-                }
+                // ItemDye: Block.sapling.growTree(world, x, y, z, world.rand)
+                crate::world::ticks_blocks::grow_tree(w, x, y, z, crate::world::RandSel::World);
                 stack.count -= 1;
                 true
             }

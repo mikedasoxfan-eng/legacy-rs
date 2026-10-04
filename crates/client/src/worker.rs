@@ -750,7 +750,8 @@ pub fn mesh_chunk(
 pub fn weather_snapshot(world: &mut World, cam: (f64, f64, f64)) -> crate::render::weather::Snapshot {
     use crate::render::weather::{Column, Snapshot};
     let (cx, cz) = (worldgen::math::floor_double(cam.0), worldgen::math::floor_double(cam.2));
-    let mut bs = BiomeSource::new(world.seed);
+    // The Nether's single hell biome has no rain or snow.
+    let mut bs = biome_source(world);
     let mut biomes = Vec::new();
     bs.biomes(&mut biomes, cx - 10, cz - 10, 21, 21);
     let mut columns = Vec::with_capacity(441);

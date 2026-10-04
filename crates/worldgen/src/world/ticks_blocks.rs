@@ -444,3 +444,49 @@ pub fn melt_ice(w: &mut World, x: i32, y: i32, z: i32) {
         w.set_block_with_notify(x, y, z, block::WATER_STILL);
     }
 }
+
+/// The rest of `BlockSapling.updateTick` (after BlockFlower's check).
+pub fn sapling(w: &mut World, x: i32, y: i32, z: i32, rs: RandSel) {
+    if w.get_block_light_value(x, y + 1, z) >= 9 && w.rng(rs).next_int(30) == 0 {
+        let meta = w.get_block_metadata(x, y, z);
+        if meta & 8 == 0 {
+            w.set_block_metadata_with_notify(x, y, z, meta | 8);
+        } else {
+            grow_tree(w, x, y, z, rs);
+        }
+    }
+}
+
+/// `BlockSapling.growTree(world, x, y, z, rand)`: the tree generators run on `rand`
+/// (World.rand from ticks and bone meal); a tree that doesn't fit puts the sapling back.
+pub fn grow_tree(w: &mut World, x: i32, y: i32, z: i32, rs: RandSel) {
+    use crate::features::TreeKind::*;
+    let meta = w.get_block_metadata(x, y, z) & 3;
+    w.set_block(x, y, z, 0);
+    let kind = match meta {
+        1 => Spruce2,
+        2 => Birch,
+        _ => {
+            if w.rng(rs).next_int(10) == 0 {
+                BigOak
+            } else {
+                Oak
+            }
+        }
+    };
+    // Feature generators read the population stream; hand them `rand` for the call.
+    let grown = if rs == RandSel::World {
+        let old = w.prand().clone();
+        let random = w.rand.clone();
+        *w.prand() = random;
+        let grown = crate::features::tree(w, kind, x, y, z);
+        w.rand = w.prand().clone();
+        *w.prand() = old;
+        grown
+    } else {
+        crate::features::tree(w, kind, x, y, z)
+    };
+    if !grown {
+        w.set_block_and_metadata(x, y, z, block::SAPLING, meta);
+    }
+}

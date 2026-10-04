@@ -11,6 +11,8 @@ pub mod java_hash;
 pub mod light;
 pub mod server;
 pub mod teleporter;
+pub mod redstone;
+pub mod rails;
 pub mod dimension;
 pub mod tick;
 pub mod ticks_blocks;
@@ -142,6 +144,12 @@ pub struct World {
     pub immediate_updates: bool,
     /// `World.editingBlocks`
     pub editing_blocks: bool,
+    /// `BlockRedstoneWire.wiresProvidePower` (false while a wire asks whether it is powered).
+    pub wires_provide_power: bool,
+    /// `BlockRedstoneWire.field_21031_b`: positions to notify after a propagation.
+    pub wire_updates: java_hash::JavaHashSet<(i32, i32, i32)>,
+    /// `BlockRedstoneTorch.torchUpdates` (recent flips, for burnout).
+    pub torch_updates: Vec<redstone::TorchUpdate>,
     /// `BlockSand.fallInstantly` (a static in Java)
     pub sand_fall_instantly: bool,
     /// `Block.leaves.isOpaqueCube()`: true until a renderer sets fancy graphics.
@@ -239,6 +247,9 @@ impl World {
             world_time: 0,
             immediate_updates: false,
             editing_blocks: false,
+            wires_provide_power: true,
+            wire_updates: Default::default(),
+            torch_updates: Vec::new(),
             sand_fall_instantly: false,
             leaves_opaque: true,
             flow: [FlowState::default(); 2],

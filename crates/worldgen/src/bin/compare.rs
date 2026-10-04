@@ -10,6 +10,7 @@
 //!   compare teleport <seed> <wrand> <0|-1> <x> <y> <z> <teleporter rand> <oracle.bin>
 //!   compare useportal <seed> <wrand> <x> <y> <z> <new-world rand> <teleporter rand> <oracle.bin>
 //!   compare respawn <seed> <wrand> <plain|bed|nobed> <oracle.bin>
+//!   compare redstone <script> <oracle.bin>
 
 use std::collections::BTreeMap;
 use std::process::ExitCode;
@@ -311,6 +312,109 @@ rand {}
             }
             world(&w, &a[5])
         }
+        Some("redstone") => {
+            // script: the flat block world of the oracle's redstone mode, driven by the
+            // same commands (place, remove, use, tick).
+            use worldgen::world::chunk::{idx, Chunk};
+            let mut w = World::new(0, 300);
+            w.set_allowed_mob_spawns(false, false);
+            w.set_entity_determinism(100, 200, 1000);
+            w.update_lcg = 0;
+            w.sound_counter = 0;
+            for cx in -3..=3 {
+                for cz in -3..=3 {
+                    let mut c = Chunk::new(cx, cz, vec![0; 32768].into_boxed_slice().try_into().unwrap());
+                    for x in 0..16 {
+                        for z in 0..16 {
+                            c.blocks[idx(x, 63, z)] = 1;
+                        }
+                    }
+                    c.loaded = true;
+                    c.populated = true;
+                    w.chunks.insert((cx, cz), Box::new(c));
+                    w.chunk_list.push((cx, cz));
+                }
+            }
+            let mut p = worldgen::entity::Entity::player(&mut w, "Player");
+            p.set_location_and_angles(0.5, 64.0, 0.5, 0.0, 0.0);
+            let mut ticks = 0;
+            let mut steps = String::new();
+            let text = std::fs::read_to_string(&a[2]).expect("read script");
+            for line in text.lines() {
+                let line = line.split('#').next().unwrap_or("").trim();
+                if line.is_empty() {
+                    continue;
+                }
+                let words: Vec<&str> = line.split_whitespace().collect();
+                let v: Vec<i32> = words[1..].iter().map(|s| s.parse().unwrap()).collect();
+                match words[0] {
+                    "place" => {
+                        w.set_block_and_metadata_with_notify(v[0], v[1], v[2], v[3] as u8, v[4]);
+                    }
+                    "remove" => {
+                        w.set_block_with_notify(v[0], v[1], v[2], 0);
+                    }
+                    "use" => {
+                        if w.get_block_id(v[0], v[1], v[2]) > 0 {
+                            p.activate_block(&mut w, v[0], v[1], v[2]);
+                        }
+                    }
+                    "tick" => {
+                        for _ in 0..v[0] {
+                            w.tick();
+                            w.drain_lighting();
+                            ticks += 1;
+                        }
+                    }
+                    "check" => {
+                        let n = v.get(6).copied().unwrap_or(0);
+                        for t in 0..=n {
+                            if t > 0 {
+                                w.tick();
+                                w.drain_lighting();
+                                ticks += 1;
+                            }
+                            steps.push_str(&format!("{ticks}:"));
+                            for y in v[1]..=v[4] {
+                                for z in v[2]..=v[5] {
+                                    for x in v[0]..=v[3] {
+                                        let id = w.get_block_id(x, y, z);
+                                        let m = w.get_block_metadata(x, y, z);
+                                        steps.push_str(&format!(" {id}/{m}"));
+                                    }
+                                }
+                            }
+                            steps.push('\n');
+                        }
+                    }
+                    other => panic!("unknown command {other}"),
+                }
+                w.drain_lighting();
+            }
+            w.spawn = (0, 64, 0);
+            let state = format!(
+                "ticks {} time {} entities {}
+rand {}
+{steps}",
+                ticks,
+                w.world_time,
+                w.loaded_entity_list.len(),
+                w.rand.next_long()
+            );
+            let java = std::fs::read_to_string(format!("{}.txt", a[3])).expect("read state").replace('\r', "");
+            if java != state {
+                let (jl, rl): (Vec<&str>, Vec<&str>) = (java.lines().collect(), state.lines().collect());
+                match jl.iter().zip(&rl).position(|(a, b)| a != b) {
+                    Some(i) => eprintln!("redstone differs at line {i}:
+ java {}
+ rust {}", jl[i], rl[i]),
+                    None => eprintln!("redstone differs in length: java {} lines, rust {}", jl.len(), rl.len()),
+                }
+                let _ = world(&w, &a[3]);
+                return ExitCode::FAILURE;
+            }
+            world(&w, &a[3])
+        }
         Some("teleport") => {
             // seed wrand dimension x y z teleporter-rand: Minecraft.usePortal's preload, then
             // Teleporter.func_4107_a for an entity at x y z.
@@ -378,13 +482,15 @@ rand {}
                 .split(',')
                 .filter(|f| !f.is_empty())
             {
-                let (fx, fz) = f.split_once(':').expect("dx:dz");
-                let (fx, fz) = (
-                    sx + fx.parse::<i32>().unwrap(),
-                    sz + fz.parse::<i32>().unwrap(),
-                );
+                let v: Vec<i32> = f.split(':').map(|v| v.parse().unwrap()).collect();
+                let (fx, fz) = (sx + v[0], sz + v[1]);
                 let fy = w.get_height_value(fx, fz);
-                w.set_block_with_notify(fx, fy, fz, worldgen::block::FIRE);
+                if v.len() >= 3 {
+                    // dx:dz:id[:meta] places that block on top instead of fire.
+                    w.set_block_and_metadata_with_notify(fx, fy, fz, v[2] as u8, v.get(3).copied().unwrap_or(0));
+                } else {
+                    w.set_block_with_notify(fx, fy, fz, worldgen::block::FIRE);
+                }
             }
             w.drain_lighting();
             let t = std::time::Instant::now();

@@ -1,7 +1,11 @@
-//! `RenderBlocks`, ported for the render types natural terrain uses:
-//! 0 (standard cube, with the smooth-lighting path), 1 (crossed plants),
-//! 4 (fluids) and 13 (cactus). Field and branch structure follow the Java so
-//! the lighting and UVs come out the same; obfuscated names are noted.
+//! `RenderBlocks`: 0 (standard cube, with the smooth-lighting path), 1 (crossed plants),
+//! 4 (fluids) and 13 (cactus) here, every other render type in `blocks_special.rs`.
+//! Field and branch structure follow the Java so the lighting and UVs come out the same;
+//! obfuscated names are noted. Checked vertex for vertex by `tools/verify.sh` (terrain and
+//! the block showcase).
+
+#[path = "blocks_special.rs"]
+mod special;
 
 use super::access::Access;
 use super::{rprops, Tessellator};
@@ -32,7 +36,7 @@ impl Colorizers {
 
 /// The mutable block bounds RenderBlocks reads (`Block.minX` ... as doubles).
 #[derive(Clone, Copy)]
-struct Bounds {
+pub(crate) struct Bounds {
     min_x: f64,
     min_y: f64,
     min_z: f64,
@@ -61,6 +65,20 @@ pub struct RenderBlocks<'a, 'b> {
     b_bl: f32,
     b_br: f32,
     b_tr: f32,
+    /// `overrideBlockTexture`
+    pub override_texture: i32,
+    /// `flipTexture` (doors)
+    flip_texture: bool,
+    /// `renderAllFaces` (`func_31075_a`, pistons being pushed)
+    pub render_all_faces: bool,
+    /// UV rotations `field_31083_k` (top), `field_31082_l` (bottom), `field_31087_g` (east),
+    /// `field_31086_h` (west), `field_31085_i` (south), `field_31084_j` (north).
+    uv_rotate_top: i32,
+    uv_rotate_bottom: i32,
+    uv_rotate_east: i32,
+    uv_rotate_west: i32,
+    uv_rotate_south: i32,
+    uv_rotate_north: i32,
 }
 
 #[inline]
@@ -89,26 +107,22 @@ impl<'a, 'b> RenderBlocks<'a, 'b> {
             b_bl: 0.0,
             b_br: 0.0,
             b_tr: 0.0,
+            override_texture: -1,
+            flip_texture: false,
+            render_all_faces: false,
+            uv_rotate_top: 0,
+            uv_rotate_bottom: 0,
+            uv_rotate_east: 0,
+            uv_rotate_west: 0,
+            uv_rotate_south: 0,
+            uv_rotate_north: 0,
         }
     }
 
     // ---------------------------------------------------------------- Block virtuals
 
     fn set_bounds(&mut self, id: u8, x: i32, y: i32, z: i32) {
-        let p = &rprops(id).bounds;
-        self.b = Bounds {
-            min_x: p[0] as f64,
-            min_y: p[1] as f64,
-            min_z: p[2] as f64,
-            max_x: p[3] as f64,
-            max_y: p[4] as f64,
-            max_z: p[5] as f64,
-        };
-        if id == block::SNOW {
-            // BlockSnow.setBlockBoundsBasedOnState
-            let m = self.w.meta(x, y, z) & 7;
-            self.b.max_y = ((2 * (1 + m)) as f32 / 16.0f32) as f64;
-        }
+        self.load_bounds(id, x, y, z);
     }
 
     /// `getBlockBrightness`; fluids override it with the brighter of their own block and
@@ -139,7 +153,9 @@ impl<'a, 'b> RenderBlocks<'a, 'b> {
                 }
             },
             block::CHEST => self.chest_texture(x, y, z, side as i32),
-            _ => self.texture_meta(id, side, self.w.meta(x, y, z)),
+            _ => self
+                .special_texture(id, x, y, z, side)
+                .unwrap_or_else(|| self.texture_meta(id, side, self.w.meta(x, y, z))),
         }
     }
 
@@ -205,8 +221,37 @@ impl<'a, 'b> RenderBlocks<'a, 'b> {
                     return true;
                 }
             }
+            // BlockPortal: faces only toward the frame's open sides.
+            90 => {
+                let w = self.w;
+                if w.block(x, y, z) == 90 {
+                    return false;
+                }
+                let along_x = w.block(x - 1, y, z) == 90 && w.block(x - 2, y, z) != 90
+                    || w.block(x + 1, y, z) == 90 && w.block(x + 2, y, z) != 90;
+                let along_z = w.block(x, y, z - 1) == 90 && w.block(x, y, z - 2) != 90
+                    || w.block(x, y, z + 1) == 90 && w.block(x, y, z + 2) != 90;
+                return along_x && (side == 4 || side == 5) || along_z && (side == 2 || side == 3);
+            }
+            // BlockRedstoneRepeater
+            93 | 94 => return side != 0 && side != 1,
+            // BlockStep (slabs and double slabs): the top is always drawn.
+            43 | 44 => {
+                if side == 1 {
+                    return true;
+                }
+                if !self.default_side(x, y, z, side) {
+                    return false;
+                }
+                return side == 0 || self.w.block(x, y, z) != id;
+            }
             _ => {}
         }
+        self.default_side(x, y, z, side)
+    }
+
+    /// `Block.shouldSideBeRendered`
+    fn default_side(&self, x: i32, y: i32, z: i32, side: i32) -> bool {
         let b = &self.b;
         if side == 0 && b.min_y > 0.0
             || side == 1 && b.max_y < 1.0
@@ -225,13 +270,34 @@ impl<'a, 'b> RenderBlocks<'a, 'b> {
     /// `renderBlockByRenderType`
     pub fn render_block(&mut self, id: u8, x: i32, y: i32, z: i32) -> bool {
         self.set_bounds(id, x, y, z);
-        match rprops(id).render_type {
+        let r = match rprops(id).render_type {
             0 => self.render_standard_block(id, x, y, z),
             1 => self.render_block_reed(id, x, y, z),
+            2 => self.render_block_torch(id, x, y, z),
+            3 => self.render_block_fire(id, x, y, z),
             4 => self.render_block_fluids(id, x, y, z),
+            5 => self.render_block_redstone_wire(id, x, y, z),
+            6 => self.render_block_crops(id, x, y, z),
+            7 => self.render_block_door(id, x, y, z),
+            8 => self.render_block_ladder(id, x, y, z),
+            9 => self.render_block_rail(id, x, y, z),
+            10 => self.render_block_stairs(id, x, y, z),
+            11 => self.render_block_fence(id, x, y, z),
+            12 => self.render_block_lever(id, x, y, z),
             13 => self.render_block_cactus(id, x, y, z),
+            14 => self.render_block_bed(id, x, y, z),
+            15 => self.render_block_repeater(id, x, y, z),
+            16 => self.render_piston_base(id, x, y, z, false),
+            17 => self.render_piston_head(id, x, y, z, true),
             _ => false,
-        }
+        };
+        self.store_bounds(id);
+        r
+    }
+
+    /// `renderStandardBlock`, for the special renderers.
+    fn render_standard_block_pub(&mut self, id: u8, x: i32, y: i32, z: i32) -> bool {
+        self.render_standard_block(id, x, y, z)
     }
 
     /// `renderStandardBlock` (smooth lighting is on by default in b1.7.3).
@@ -537,104 +603,375 @@ impl<'a, 'b> RenderBlocks<'a, 'b> {
         self.t.vertex_uv(x, y, z, u, v);
     }
 
-    /// Texture rectangle shared by the horizontal faces (no UV rotation in natural terrain).
-    fn uv_xz(&self, tex: i32) -> (f64, f64, f64, f64) {
-        let tu = ((tex & 15) << 4) as f64;
-        let tv = (tex & 240) as f64;
-        let b = &self.b;
-        let mut u0 = (tu + b.min_x * 16.0) / 256.0;
-        let mut u1 = (tu + b.max_x * 16.0 - 0.01) / 256.0;
-        let mut v0 = (tv + b.min_z * 16.0) / 256.0;
-        let mut v1 = (tv + b.max_z * 16.0 - 0.01) / 256.0;
+    /// `overrideBlockTexture` (>= 0 replaces every face texture).
+    #[inline]
+    fn face_tex(&self, tex: i32) -> i32 {
+        if self.override_texture >= 0 {
+            self.override_texture
+        } else {
+            tex
+        }
+    }
+
+    #[inline]
+    fn full_u(tu: i32) -> (f64, f64) {
+        (((tu as f32 + 0.0f32) / 256.0f32) as f64, ((tu as f32 + 15.99f32) / 256.0f32) as f64)
+    }
+
+    /// `renderBottomFace` (UV rotation `field_31082_l`).
+    pub fn render_bottom_face(&mut self, x: f64, y: f64, z: f64, tex: i32) {
+        let tex = self.face_tex(tex);
+        let b = self.b;
+        let tu = (tex & 15) << 4;
+        let tv = tex & 240;
+        let (tuf, tvf) = (tu as f64, tv as f64);
+        let mut v12 = (tuf + b.min_x * 16.0) / 256.0;
+        let mut v14 = (tuf + b.max_x * 16.0 - 0.01) / 256.0;
+        let mut v16 = (tvf + b.min_z * 16.0) / 256.0;
+        let mut v18 = (tvf + b.max_z * 16.0 - 0.01) / 256.0;
         if b.min_x < 0.0 || b.max_x > 1.0 {
-            u0 = ((tu as f32 + 0.0) / 256.0f32) as f64;
-            u1 = ((tu as f32 + 15.99f32) / 256.0f32) as f64;
+            (v12, v14) = Self::full_u(tu);
         }
         if b.min_z < 0.0 || b.max_z > 1.0 {
-            v0 = ((tv as f32 + 0.0) / 256.0f32) as f64;
-            v1 = ((tv as f32 + 15.99f32) / 256.0f32) as f64;
+            (v16, v18) = Self::full_u(tv);
         }
-        (u0, u1, v0, v1)
-    }
-
-    pub fn render_bottom_face(&mut self, x: f64, y: f64, z: f64, tex: i32) {
-        let (u0, u1, v0, v1) = self.uv_xz(tex);
-        let b = self.b;
+        let mut v20 = v14;
+        let mut v22 = v12;
+        let mut v24 = v16;
+        let mut v26 = v18;
+        match self.uv_rotate_bottom {
+            2 => {
+                v12 = (tuf + b.min_z * 16.0) / 256.0;
+                v16 = ((tv + 16) as f64 - b.max_x * 16.0) / 256.0;
+                v14 = (tuf + b.max_z * 16.0) / 256.0;
+                v18 = ((tv + 16) as f64 - b.min_x * 16.0) / 256.0;
+                v24 = v16;
+                v26 = v18;
+                v20 = v12;
+                v22 = v14;
+                v16 = v18;
+                v18 = v24;
+            }
+            1 => {
+                v12 = ((tu + 16) as f64 - b.max_z * 16.0) / 256.0;
+                v16 = (tvf + b.min_x * 16.0) / 256.0;
+                v14 = ((tu + 16) as f64 - b.min_z * 16.0) / 256.0;
+                v18 = (tvf + b.max_x * 16.0) / 256.0;
+                v20 = v14;
+                v22 = v12;
+                v12 = v14;
+                v14 = v22;
+                v24 = v18;
+                v26 = v16;
+            }
+            3 => {
+                v12 = ((tu + 16) as f64 - b.min_x * 16.0) / 256.0;
+                v14 = ((tu + 16) as f64 - b.max_x * 16.0 - 0.01) / 256.0;
+                v16 = ((tv + 16) as f64 - b.min_z * 16.0) / 256.0;
+                v18 = ((tv + 16) as f64 - b.max_z * 16.0 - 0.01) / 256.0;
+                v20 = v14;
+                v22 = v12;
+                v24 = v16;
+                v26 = v18;
+            }
+            _ => {}
+        }
         let (x0, x1, yy, z0, z1) = (x + b.min_x, x + b.max_x, y + b.min_y, z + b.min_z, z + b.max_z);
-        self.emit(0, x0, yy, z1, u0, v1);
-        self.emit(1, x0, yy, z0, u0, v0);
-        self.emit(2, x1, yy, z0, u1, v0);
-        self.emit(3, x1, yy, z1, u1, v1);
+        self.emit(0, x0, yy, z1, v22, v26);
+        self.emit(1, x0, yy, z0, v12, v16);
+        self.emit(2, x1, yy, z0, v20, v24);
+        self.emit(3, x1, yy, z1, v14, v18);
     }
 
+    /// `renderTopFace` (UV rotation `field_31083_k`).
     pub fn render_top_face(&mut self, x: f64, y: f64, z: f64, tex: i32) {
-        let (u0, u1, v0, v1) = self.uv_xz(tex);
+        let tex = self.face_tex(tex);
         let b = self.b;
+        let tu = (tex & 15) << 4;
+        let tv = tex & 240;
+        let (tuf, tvf) = (tu as f64, tv as f64);
+        let mut v12 = (tuf + b.min_x * 16.0) / 256.0;
+        let mut v14 = (tuf + b.max_x * 16.0 - 0.01) / 256.0;
+        let mut v16 = (tvf + b.min_z * 16.0) / 256.0;
+        let mut v18 = (tvf + b.max_z * 16.0 - 0.01) / 256.0;
+        if b.min_x < 0.0 || b.max_x > 1.0 {
+            (v12, v14) = Self::full_u(tu);
+        }
+        if b.min_z < 0.0 || b.max_z > 1.0 {
+            (v16, v18) = Self::full_u(tv);
+        }
+        let mut v20 = v14;
+        let mut v22 = v12;
+        let mut v24 = v16;
+        let mut v26 = v18;
+        match self.uv_rotate_top {
+            1 => {
+                v12 = (tuf + b.min_z * 16.0) / 256.0;
+                v16 = ((tv + 16) as f64 - b.max_x * 16.0) / 256.0;
+                v14 = (tuf + b.max_z * 16.0) / 256.0;
+                v18 = ((tv + 16) as f64 - b.min_x * 16.0) / 256.0;
+                v24 = v16;
+                v26 = v18;
+                v20 = v12;
+                v22 = v14;
+                v16 = v18;
+                v18 = v24;
+            }
+            2 => {
+                v12 = ((tu + 16) as f64 - b.max_z * 16.0) / 256.0;
+                v16 = (tvf + b.min_x * 16.0) / 256.0;
+                v14 = ((tu + 16) as f64 - b.min_z * 16.0) / 256.0;
+                v18 = (tvf + b.max_x * 16.0) / 256.0;
+                v20 = v14;
+                v22 = v12;
+                v12 = v14;
+                v14 = v22;
+                v24 = v18;
+                v26 = v16;
+            }
+            3 => {
+                v12 = ((tu + 16) as f64 - b.min_x * 16.0) / 256.0;
+                v14 = ((tu + 16) as f64 - b.max_x * 16.0 - 0.01) / 256.0;
+                v16 = ((tv + 16) as f64 - b.min_z * 16.0) / 256.0;
+                v18 = ((tv + 16) as f64 - b.max_z * 16.0 - 0.01) / 256.0;
+                v20 = v14;
+                v22 = v12;
+                v24 = v16;
+                v26 = v18;
+            }
+            _ => {}
+        }
         let (x0, x1, yy, z0, z1) = (x + b.min_x, x + b.max_x, y + b.max_y, z + b.min_z, z + b.max_z);
-        self.emit(0, x1, yy, z1, u1, v1);
-        self.emit(1, x1, yy, z0, u1, v0);
-        self.emit(2, x0, yy, z0, u0, v0);
-        self.emit(3, x0, yy, z1, u0, v1);
+        self.emit(0, x1, yy, z1, v14, v18);
+        self.emit(1, x1, yy, z0, v20, v24);
+        self.emit(2, x0, yy, z0, v12, v16);
+        self.emit(3, x0, yy, z1, v22, v26);
     }
 
-    /// UVs for faces spanning (a, y): `a` is x for east/west, z for north/south.
-    fn uv_side(&self, tex: i32, a_min: f64, a_max: f64) -> (f64, f64, f64, f64) {
-        let tu = ((tex & 15) << 4) as f64;
-        let tv = (tex & 240) as f64;
-        let b = &self.b;
-        let mut u0 = (tu + a_min * 16.0) / 256.0;
-        let mut u1 = (tu + a_max * 16.0 - 0.01) / 256.0;
-        let mut v0 = (tv + 16.0 - b.max_y * 16.0) / 256.0;
-        let mut v1 = (tv + 16.0 - b.min_y * 16.0 - 0.01) / 256.0;
+    /// Side-face UVs before rotation: `a` is x (east/west) or z (north/south).
+    #[inline]
+    fn side_uv(&self, tex: i32, a_min: f64, a_max: f64) -> (f64, f64, f64, f64) {
+        let b = self.b;
+        let tu = (tex & 15) << 4;
+        let tv = tex & 240;
+        let mut v12 = (tu as f64 + a_min * 16.0) / 256.0;
+        let mut v14 = (tu as f64 + a_max * 16.0 - 0.01) / 256.0;
+        let mut v16 = ((tv + 16) as f64 - b.max_y * 16.0) / 256.0;
+        let mut v18 = ((tv + 16) as f64 - b.min_y * 16.0 - 0.01) / 256.0;
+        if self.flip_texture {
+            std::mem::swap(&mut v12, &mut v14);
+        }
         if a_min < 0.0 || a_max > 1.0 {
-            u0 = ((tu as f32 + 0.0) / 256.0f32) as f64;
-            u1 = ((tu as f32 + 15.99f32) / 256.0f32) as f64;
+            (v12, v14) = Self::full_u(tu);
         }
         if b.min_y < 0.0 || b.max_y > 1.0 {
-            v0 = ((tv as f32 + 0.0) / 256.0f32) as f64;
-            v1 = ((tv as f32 + 15.99f32) / 256.0f32) as f64;
+            (v16, v18) = Self::full_u(tv);
         }
-        (u0, u1, v0, v1)
+        (v12, v14, v16, v18)
     }
 
+    /// `renderEastFace` (the -Z side; UV rotation `field_31087_g`).
     pub fn render_east_face(&mut self, x: f64, y: f64, z: f64, tex: i32) {
+        let tex = self.face_tex(tex);
         let b = self.b;
-        let (u0, u1, v0, v1) = self.uv_side(tex, b.min_x, b.max_x);
+        let (tu, tv) = ((tex & 15) << 4, tex & 240);
+        let (mut v12, mut v14, mut v16, mut v18) = self.side_uv(tex, b.min_x, b.max_x);
+        let (mut v20, mut v22, mut v24, mut v26) = (v14, v12, v16, v18);
+        match self.uv_rotate_east {
+            2 => {
+                v12 = (tu as f64 + b.min_y * 16.0) / 256.0;
+                v16 = ((tv + 16) as f64 - b.min_x * 16.0) / 256.0;
+                v14 = (tu as f64 + b.max_y * 16.0) / 256.0;
+                v18 = ((tv + 16) as f64 - b.max_x * 16.0) / 256.0;
+                v24 = v16;
+                v26 = v18;
+                v20 = v12;
+                v22 = v14;
+                v16 = v18;
+                v18 = v24;
+            }
+            1 => {
+                v12 = ((tu + 16) as f64 - b.max_y * 16.0) / 256.0;
+                v16 = (tv as f64 + b.max_x * 16.0) / 256.0;
+                v14 = ((tu + 16) as f64 - b.min_y * 16.0) / 256.0;
+                v18 = (tv as f64 + b.min_x * 16.0) / 256.0;
+                v20 = v14;
+                v22 = v12;
+                v12 = v14;
+                v14 = v22;
+                v24 = v18;
+                v26 = v16;
+            }
+            3 => {
+                v12 = ((tu + 16) as f64 - b.min_x * 16.0) / 256.0;
+                v14 = ((tu + 16) as f64 - b.max_x * 16.0 - 0.01) / 256.0;
+                v16 = (tv as f64 + b.max_y * 16.0) / 256.0;
+                v18 = (tv as f64 + b.min_y * 16.0 - 0.01) / 256.0;
+                v20 = v14;
+                v22 = v12;
+                v24 = v16;
+                v26 = v18;
+            }
+            _ => {}
+        }
         let (x0, x1, y0, y1, zz) = (x + b.min_x, x + b.max_x, y + b.min_y, y + b.max_y, z + b.min_z);
-        self.emit(0, x0, y1, zz, u1, v0);
-        self.emit(1, x1, y1, zz, u0, v0);
-        self.emit(2, x1, y0, zz, u0, v1);
-        self.emit(3, x0, y0, zz, u1, v1);
+        self.emit(0, x0, y1, zz, v20, v24);
+        self.emit(1, x1, y1, zz, v12, v16);
+        self.emit(2, x1, y0, zz, v22, v26);
+        self.emit(3, x0, y0, zz, v14, v18);
     }
 
+    /// `renderWestFace` (the +Z side; UV rotation `field_31086_h`).
     pub fn render_west_face(&mut self, x: f64, y: f64, z: f64, tex: i32) {
+        let tex = self.face_tex(tex);
         let b = self.b;
-        let (u0, u1, v0, v1) = self.uv_side(tex, b.min_x, b.max_x);
+        let (tu, tv) = ((tex & 15) << 4, tex & 240);
+        let (mut v12, mut v14, mut v16, mut v18) = self.side_uv(tex, b.min_x, b.max_x);
+        let (mut v20, mut v22, mut v24, mut v26) = (v14, v12, v16, v18);
+        match self.uv_rotate_west {
+            1 => {
+                v12 = (tu as f64 + b.min_y * 16.0) / 256.0;
+                v18 = ((tv + 16) as f64 - b.min_x * 16.0) / 256.0;
+                v14 = (tu as f64 + b.max_y * 16.0) / 256.0;
+                v16 = ((tv + 16) as f64 - b.max_x * 16.0) / 256.0;
+                v24 = v16;
+                v26 = v18;
+                v20 = v12;
+                v22 = v14;
+                v16 = v18;
+                v18 = v24;
+            }
+            2 => {
+                v12 = ((tu + 16) as f64 - b.max_y * 16.0) / 256.0;
+                v16 = (tv as f64 + b.min_x * 16.0) / 256.0;
+                v14 = ((tu + 16) as f64 - b.min_y * 16.0) / 256.0;
+                v18 = (tv as f64 + b.max_x * 16.0) / 256.0;
+                v20 = v14;
+                v22 = v12;
+                v12 = v14;
+                v14 = v22;
+                v24 = v18;
+                v26 = v16;
+            }
+            3 => {
+                v12 = ((tu + 16) as f64 - b.min_x * 16.0) / 256.0;
+                v14 = ((tu + 16) as f64 - b.max_x * 16.0 - 0.01) / 256.0;
+                v16 = (tv as f64 + b.max_y * 16.0) / 256.0;
+                v18 = (tv as f64 + b.min_y * 16.0 - 0.01) / 256.0;
+                v20 = v14;
+                v22 = v12;
+                v24 = v16;
+                v26 = v18;
+            }
+            _ => {}
+        }
         let (x0, x1, y0, y1, zz) = (x + b.min_x, x + b.max_x, y + b.min_y, y + b.max_y, z + b.max_z);
-        self.emit(0, x0, y1, zz, u0, v0);
-        self.emit(1, x0, y0, zz, u0, v1);
-        self.emit(2, x1, y0, zz, u1, v1);
-        self.emit(3, x1, y1, zz, u1, v0);
+        self.emit(0, x0, y1, zz, v12, v16);
+        self.emit(1, x0, y0, zz, v22, v26);
+        self.emit(2, x1, y0, zz, v14, v18);
+        self.emit(3, x1, y1, zz, v20, v24);
     }
 
+    /// `renderNorthFace` (the -X side; UV rotation `field_31084_j`).
     pub fn render_north_face(&mut self, x: f64, y: f64, z: f64, tex: i32) {
+        let tex = self.face_tex(tex);
         let b = self.b;
-        let (u0, u1, v0, v1) = self.uv_side(tex, b.min_z, b.max_z);
+        let (tu, tv) = ((tex & 15) << 4, tex & 240);
+        let (mut v12, mut v14, mut v16, mut v18) = self.side_uv(tex, b.min_z, b.max_z);
+        let (mut v20, mut v22, mut v24, mut v26) = (v14, v12, v16, v18);
+        match self.uv_rotate_north {
+            1 => {
+                v12 = (tu as f64 + b.min_y * 16.0) / 256.0;
+                v16 = ((tv + 16) as f64 - b.max_z * 16.0) / 256.0;
+                v14 = (tu as f64 + b.max_y * 16.0) / 256.0;
+                v18 = ((tv + 16) as f64 - b.min_z * 16.0) / 256.0;
+                v24 = v16;
+                v26 = v18;
+                v20 = v12;
+                v22 = v14;
+                v16 = v18;
+                v18 = v24;
+            }
+            2 => {
+                v12 = ((tu + 16) as f64 - b.max_y * 16.0) / 256.0;
+                v16 = (tv as f64 + b.min_z * 16.0) / 256.0;
+                v14 = ((tu + 16) as f64 - b.min_y * 16.0) / 256.0;
+                v18 = (tv as f64 + b.max_z * 16.0) / 256.0;
+                v20 = v14;
+                v22 = v12;
+                v12 = v14;
+                v14 = v22;
+                v24 = v18;
+                v26 = v16;
+            }
+            3 => {
+                v12 = ((tu + 16) as f64 - b.min_z * 16.0) / 256.0;
+                v14 = ((tu + 16) as f64 - b.max_z * 16.0 - 0.01) / 256.0;
+                v16 = (tv as f64 + b.max_y * 16.0) / 256.0;
+                v18 = (tv as f64 + b.min_y * 16.0 - 0.01) / 256.0;
+                v20 = v14;
+                v22 = v12;
+                v24 = v16;
+                v26 = v18;
+            }
+            _ => {}
+        }
         let (xx, y0, y1, z0, z1) = (x + b.min_x, y + b.min_y, y + b.max_y, z + b.min_z, z + b.max_z);
-        self.emit(0, xx, y1, z1, u1, v0);
-        self.emit(1, xx, y1, z0, u0, v0);
-        self.emit(2, xx, y0, z0, u0, v1);
-        self.emit(3, xx, y0, z1, u1, v1);
+        self.emit(0, xx, y1, z1, v20, v24);
+        self.emit(1, xx, y1, z0, v12, v16);
+        self.emit(2, xx, y0, z0, v22, v26);
+        self.emit(3, xx, y0, z1, v14, v18);
     }
 
+    /// `renderSouthFace` (the +X side; UV rotation `field_31085_i`).
     pub fn render_south_face(&mut self, x: f64, y: f64, z: f64, tex: i32) {
+        let tex = self.face_tex(tex);
         let b = self.b;
-        let (u0, u1, v0, v1) = self.uv_side(tex, b.min_z, b.max_z);
+        let (tu, tv) = ((tex & 15) << 4, tex & 240);
+        let (mut v12, mut v14, mut v16, mut v18) = self.side_uv(tex, b.min_z, b.max_z);
+        let (mut v20, mut v22, mut v24, mut v26) = (v14, v12, v16, v18);
+        match self.uv_rotate_south {
+            2 => {
+                v12 = (tu as f64 + b.min_y * 16.0) / 256.0;
+                v16 = ((tv + 16) as f64 - b.min_z * 16.0) / 256.0;
+                v14 = (tu as f64 + b.max_y * 16.0) / 256.0;
+                v18 = ((tv + 16) as f64 - b.max_z * 16.0) / 256.0;
+                v24 = v16;
+                v26 = v18;
+                v20 = v12;
+                v22 = v14;
+                v16 = v18;
+                v18 = v24;
+            }
+            1 => {
+                v12 = ((tu + 16) as f64 - b.max_y * 16.0) / 256.0;
+                v16 = (tv as f64 + b.max_z * 16.0) / 256.0;
+                v14 = ((tu + 16) as f64 - b.min_y * 16.0) / 256.0;
+                v18 = (tv as f64 + b.min_z * 16.0) / 256.0;
+                v20 = v14;
+                v22 = v12;
+                v12 = v14;
+                v14 = v22;
+                v24 = v18;
+                v26 = v16;
+            }
+            3 => {
+                v12 = ((tu + 16) as f64 - b.min_z * 16.0) / 256.0;
+                v14 = ((tu + 16) as f64 - b.max_z * 16.0 - 0.01) / 256.0;
+                v16 = (tv as f64 + b.max_y * 16.0) / 256.0;
+                v18 = (tv as f64 + b.min_y * 16.0 - 0.01) / 256.0;
+                v20 = v14;
+                v22 = v12;
+                v24 = v16;
+                v26 = v18;
+            }
+            _ => {}
+        }
         let (xx, y0, y1, z0, z1) = (x + b.max_x, y + b.min_y, y + b.max_y, z + b.min_z, z + b.max_z);
-        self.emit(0, xx, y0, z1, u0, v1);
-        self.emit(1, xx, y0, z0, u1, v1);
-        self.emit(2, xx, y1, z0, u1, v0);
-        self.emit(3, xx, y1, z1, u0, v0);
+        self.emit(0, xx, y0, z1, v22, v26);
+        self.emit(1, xx, y0, z0, v14, v18);
+        self.emit(2, xx, y1, z0, v20, v24);
+        self.emit(3, xx, y1, z1, v12, v16);
     }
 
     // ---------------------------------------------------------------- crossed plants

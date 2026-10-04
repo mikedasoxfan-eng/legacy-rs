@@ -60,6 +60,9 @@ pub fn on_block_added(w: &mut World, id: u8, x: i32, y: i32, z: i32) {
             }
         }
         70 | 72 => {} // Pressure plate onBlockAdded is empty.
+        55 => w.wire_added(x, y, z),
+        66 | 27 | 28 => w.rail_added(x, y, z),
+        75 | 76 => w.redstone_torch_added(id, x, y, z),
         block::CHEST | block::MOB_SPAWNER => {
             w.set_block_tile_entity(x, y, z, TileEntity::for_block(id))
         }
@@ -103,6 +106,9 @@ pub fn on_block_removal(w: &mut World, id: u8, x: i32, y: i32, z: i32) {
             }
         }
         46 => {} // BlockTNT inherits Block.onBlockRemoval.
+        55 => w.wire_removed(x, y, z),
+        66 | 27 | 28 => {} // BlockRail inherits Block.onBlockRemoval.
+        75 | 76 => w.redstone_torch_removed(id, x, y, z),
         70 | 72 => {
             if w.get_block_metadata(x, y, z) > 0 {
                 w.notify_blocks_of_neighbor_change(x, y, z, id);
@@ -178,6 +184,9 @@ pub fn on_neighbor_block_change(w: &mut World, id: u8, x: i32, y: i32, z: i32, _
             }
         }
         block::FIRE => tb::fire_neighbor(w, x, y, z),
+        55 => w.wire_neighbor_change(x, y, z),
+        66 | 27 | 28 => w.rail_neighbor_change(id, x, y, z, _changed),
+        75 | 76 => w.redstone_torch_neighbor_change(id, x, y, z),
         46 => {
             if _changed > 0
                 && crate::entity::block_hooks::provides_power(_changed)
@@ -219,6 +228,15 @@ pub fn update_tick(w: &mut World, id: u8, x: i32, y: i32, z: i32, rs: RandSel) {
         block::PLANT_YELLOW | block::PLANT_RED | block::TALL_GRASS | block::DEAD_BUSH => {
             check_flower(w, id, x, y, z)
         }
+        block::SAPLING => {
+            // BlockSapling.updateTick: BlockFlower's check, then maybe grow.
+            check_flower(w, id, x, y, z);
+            tb::sapling(w, x, y, z, rs);
+        }
+        // BlockLockedChest: gone at its first tick.
+        95 => {
+            w.set_block_with_notify(x, y, z, 0);
+        }
         block::GRASS => tb::grass(w, x, y, z, rs),
         block::LEAVES => tb::leaves(w, x, y, z),
         block::LAVA_STILL => tb::still_lava(w, x, y, z, rs),
@@ -236,6 +254,8 @@ pub fn update_tick(w: &mut World, id: u8, x: i32, y: i32, z: i32, rs: RandSel) {
             }
         }
         60 => w.farmland_tick(x, y, z, rs),
+        75 | 76 => w.redstone_torch_tick(id, x, y, z, rs),
+        28 => w.detector_rail_tick(x, y, z),
         block::WATER_STILL | block::PUMPKIN | 91 => {}
         _ => warn_once(id, "updateTick"),
     }

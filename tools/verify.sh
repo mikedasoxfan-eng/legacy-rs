@@ -167,7 +167,37 @@ if [ "$quick" != quick ]; then
   # Seed 6 spawns in forest: set it alight (fire spread, logs burning, leaf decay).
   fires="12:0,12:12,16:0,-16:-16,20:0,20:20,-20:-20,24:0,0:-24,28:28,-28:-28,0:-32,32:32"
   run_extra "ticks: forest fire, seed 6" "$fires" ticks 6 1 777 5 4000 clear 0 0 -- ticks 6 1 777 5 4000 clear 0 0
+  # 49 saplings of each kind around spawn, four days: BlockSapling growth and growTree.
+  saplings=$(cat "$root/tools/oracle/saplings.txt")
+  run_extra "ticks: saplings growing, seed 6" "$saplings" ticks 6 1 777 5 96000 clear 0 0 -- ticks 6 1 777 5 96000 clear 0 0
 fi
+
+# ---- every RenderBlocks render type: each block id x metadata plus neighbour arrangements
+# (tools/oracle/make_showcase.py), in all four graphics / smooth-lighting combinations
+showcase="$root/tools/oracle/showcase.txt"
+for m in "fancy on" "fancy off" "fast on" "fast off"; do
+  [ "$quick" = quick ] && [ "$m" != "fancy on" ] && continue
+  set -- $m
+  echo "== block showcase: $m"
+  if "$oracle" rendershowcase "$(cygpath -w "$showcase")" showcase_mesh.bin "$1" "$2" >/dev/null 2>&1     && "$beta" --meshcheck 0 0 "$out/showcase_mesh.bin" "$1" "$2" "showcase=$showcase" | tail -1 | grep -q "MESHES EXACT"; then
+    echo "MESHES EXACT"; else echo "MESHES DIFFER"; fail=1; fi
+  rm -f "$out/showcase_mesh.bin"
+done
+if [ "$quick" != quick ]; then
+  echo "== Nether terrain meshes (fire, glowstone, the Nether light table)"
+  if "$oracle" rendermeshnether 5 1 mesh_nether.bin auto 2 fancy on >/dev/null 2>&1     && "$beta" --meshcheck 5 1 "$out/mesh_nether.bin" fancy on nether | tail -1 | grep -q "MESHES EXACT"; then
+    echo "MESHES EXACT"; else echo "MESHES DIFFER"; fail=1; fi
+  rm -f "$out/mesh_nether.bin"
+fi
+
+# ---- redstone circuits and rails: scripted block worlds, every tick of the circuit compared
+for script in "$root"/tools/oracle/redstone/*.txt; do
+  name=$(basename "$script" .txt)
+  echo "== redstone: $name"
+  if "$oracle" redstone "$(cygpath -w "$script")" "rs_$name.bin" >/dev/null 2>&1     && "$cmp" redstone "$script" "$out/rs_$name.bin" | tail -1 | grep -q "EXACT MATCH"; then
+    echo "EXACT MATCH"; else echo "DIFFERS"; fail=1; fi
+  rm -f "$out/rs_$name.bin" "$out/rs_$name.bin.txt"
+done
 
 # ---- dimension travel: Teleporter (find, build, platform over the ocean) and the whole
 # Minecraft.usePortal sequence. seed wrand dim x y z teleporter-rand / seed wrand x y z fresh trand

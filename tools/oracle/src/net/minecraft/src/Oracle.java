@@ -166,6 +166,8 @@ public class Oracle {
                 Double.parseDouble(a[4]), Double.parseDouble(a[5]), Long.parseLong(a[6]), Long.parseLong(a[7]), a[8]);
         } else if (mode.equals("respawn")) {
             TeleportOracle.respawn(Long.parseLong(a[1]), Long.parseLong(a[2]), a[3], a[4]);
+        } else if (mode.equals("redstone")) {
+            RedstoneOracle.run(a[1], a[2]);
         } else if (mode.equals("rendershowcase")) {
             // layout out [fancy|fast] [on|off]
             ShowcaseOracle.run(a[1], a[2], a.length <= 3 || !a[3].equals("fast"), a.length <= 4 || !a[4].equals("off"));
@@ -716,7 +718,13 @@ public class Oracle {
             if (f.isEmpty()) continue;
             String[] xz = f.split(":");
             int fx = sp.x + Integer.parseInt(xz[0]), fz = sp.z + Integer.parseInt(xz[1]);
-            w.setBlockWithNotify(fx, w.getHeightValue(fx, fz), fz, Block.fire.blockID);
+            if (xz.length >= 3) {
+                // dx:dz:id[:meta] places that block on top instead of fire.
+                w.setBlockAndMetadataWithNotify(fx, w.getHeightValue(fx, fz), fz, Integer.parseInt(xz[2]),
+                    xz.length >= 4 ? Integer.parseInt(xz[3]) : 0);
+            } else {
+                w.setBlockWithNotify(fx, w.getHeightValue(fx, fz), fz, Block.fire.blockID);
+            }
         }
         drainLighting(w);
         for (int t = 0; t < n; t++) {

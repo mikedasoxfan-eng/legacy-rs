@@ -1,7 +1,7 @@
 use super::{living::Target, AxisAlignedBB as BB, Entity};
 use crate::{block::*, World};
 pub fn provides_power(id: u8) -> bool {
-    matches!(id, 55 | 69 | 70 | 72 | 75 | 76 | 77)
+    matches!(id, 28 | 55 | 69 | 70 | 72 | 75 | 76 | 77)
 }
 impl World {
     pub(crate) fn indirectly_provides_power(&mut self, x: i32, y: i32, z: i32, side: i32) -> bool {
@@ -104,6 +104,8 @@ impl World {
         let meta = self.get_block_metadata(x, y, z);
         match id {
             70 | 72 => meta > 0 && (!strong || side == 1),
+            // BlockDetectorRail
+            28 => meta & 8 != 0 && (!strong || side == 1),
             69 | 77 => {
                 meta & 8 != 0
                     && (!strong
@@ -118,7 +120,7 @@ impl World {
             93 => false,
             94 => matches!((meta & 3, side), (0, 3) | (1, 4) | (2, 2) | (3, 5)),
             55 => {
-                if meta == 0 {
+                if meta == 0 || !self.wires_provide_power {
                     return false;
                 }
                 if side == 1 {
