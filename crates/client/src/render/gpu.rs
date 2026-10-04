@@ -39,6 +39,7 @@ pub struct FrameParams {
     pub sky_color: [f32; 3],
     pub fog_color: [f32; 3],
     pub far: f32,
+    pub video: super::video::VideoSettings,
     /// cloudOffsetX + partialTicks
     pub cloud_offset: f32,
     pub rain: f32,
@@ -883,6 +884,7 @@ impl Gpu {
                 multiview_mask: None,
             });
 
+            if p.video.sky() {
             // Sky plane, sunrise glow, sun, moon, stars, void.
             rp.set_pipeline(&self.p_sky);
             rp.set_bind_group(0, &self.slots[0].bind, &[]);
@@ -911,6 +913,7 @@ impl Gpu {
             rp.set_vertex_buffer(0, self.void_plane.0.slice(..));
             rp.draw(0..self.void_plane.1, 0..1);
 
+            }
             // Terrain pass 0.
             rp.set_index_buffer(self.quad_index.slice(..), wgpu::IndexFormat::Uint32);
             rp.set_pipeline(&self.p_opaque);

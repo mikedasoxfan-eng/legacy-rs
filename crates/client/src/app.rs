@@ -5,6 +5,7 @@
 use crate::render::blocks::Colorizers;
 use crate::render::gpu::{FrameParams, Gpu};
 use crate::render::sky;
+use crate::render::video::VideoSettings;
 use crate::worker::{self, FromWorker, ToWorker, WorldOptions};
 use crate::{assets, gui, render, Options};
 use glam::DVec3;
@@ -255,6 +256,10 @@ impl App {
         }
     }
 
+    fn video_settings(&self) -> VideoSettings {
+        self.gui.as_ref().map_or_else(VideoSettings::default, |g| VideoSettings::from(&g.ui.settings))
+    }
+
     fn set_grab(&mut self, on: bool) {
         let Some(gpu) = &self.gpu else { return };
         let w = &gpu.window;
@@ -295,7 +300,7 @@ impl App {
         }
         self.loading = Some(gui::loading::LoadingScreen { title: String::new(), text: String::new(), progress: -1 });
         let col = self.col.clone().expect("colorizers");
-        let (tx, rx, h) = worker::spawn(w, col);
+        let (tx, rx, h) = worker::spawn(w, col, self.video_settings());
         self.tx = Some(tx);
         self.rx = Some(rx);
         self.worker = Some(h);
@@ -399,7 +404,12 @@ impl App {
                     self.shutdown(el);
                     return;
                 }
-                gui::system::GameAction::SettingsChanged => {}
+                gui::system::GameAction::SettingsChanged => {
+                    if let Some(tx) = &self.tx {
+                        let _ = tx.send(ToWorker::Settings(self.video_settings()));
+                        self.idle = false;
+                    }
+                }
                 gui::system::GameAction::IngameFocus => {
                     if self.ready {
                         self.set_grab(true);
@@ -545,6 +555,7 @@ impl App {
         }
         self.apply_gui_actions(el);
 
+        let video = self.video_settings();
         // World messages: upload a bounded number of meshes per frame.
         let mut uploads = 0;
         let mut new_ticks = 0;
@@ -578,6 +589,7 @@ impl App {
                             worker::Loading::Progress(p) => ls.progress = p,
                         }
                     }
+                    Ok(FromWorker::ResetMeshes) => { gpu.clear_chunks(); self.idle = false; },
                     Ok(FromWorker::Entities(list)) => self.entities = list,
                     Ok(FromWorker::QuickSaved(done)) => {
                         if let Some(gui) = &mut self.gui {
@@ -591,7 +603,7 @@ impl App {
                         self.idle = false;
                     }
                     Ok(FromWorker::Drop { cx, cz }) => gpu.remove_chunk(cx, cz),
-                    Ok(FromWorker::Time { time, brightness, chunks, weather, terrain }) => {
+                    Ok(FromWorker::Time { time, brightness, fog_brightness, chunks, weather, terrain }) => {
                         new_ticks += 1;
                         if self.ready {
                             self.ticks_ready += 1;
@@ -600,8 +612,8 @@ impl App {
                         self.chunks_loaded = chunks;
                         self.cloud_ticks += 1;
                         self.fog_fade[0] = self.fog_fade[1];
-                        // EntityRenderer.updateRenderer: on Far, (3-renderDistance)/3=1.
-                        self.fog_fade[1] += (1.0f32 - self.fog_fade[1]) * 0.1f32;
+                        // EntityRenderer.updateRenderer: distance-dependent fade toward eye brightness.
+                        self.fog_fade[1] += (video.fog_target(fog_brightness) - self.fog_fade[1]) * 0.1f32;
                         self.world_time = time;
                         self.weather = weather;
                         self.weather_terrain = terrain;
@@ -771,9 +783,10 @@ impl App {
             fov_y_deg: 70.0,
             celestial: angle,
             sky_color: sky::sky_color(angle, temp, rain, thunder, self.weather.flash, partial),
-            fog_color: sky::fog_color(angle, temp, 0, rain, thunder, self.weather.flash, partial)
+            fog_color: sky::fog_color(angle, temp, video.distance, rain, thunder, self.weather.flash, partial)
                 .map(|c| c * (self.fog_fade[0] + (self.fog_fade[1] - self.fog_fade[0]) * partial)),
-            far: 256.0,
+            far: video.far(),
+            video,
             cloud_offset: self.cloud_ticks as f32 + partial,
             rain,
             thunder,

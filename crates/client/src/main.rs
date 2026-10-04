@@ -140,7 +140,9 @@ fn sky_check(a: &[String]) {
     let c = sky::cloud_color(angle, rain, thunder);
     let fog_prev = a.get(12).map_or(1.0f32, |v| v.parse().unwrap());
     let fog_current = a.get(13).map_or(1.0f32, |v| v.parse().unwrap());
-    let fog = sky::fog_color(angle, temp, 0, rain, thunder, weather.flash, partial)
+    let distance = a.get(14).map_or(0i32, |v| v.parse().unwrap());
+    let far = (256 >> distance) as f32;
+    let fog = sky::fog_color(angle, temp, distance, rain, thunder, weather.flash, partial)
         .map(|c| c * (fog_prev + (fog_current - fog_prev) * partial));
     let b = |v: f32| v.to_bits() as i32;
     println!(
@@ -156,7 +158,7 @@ fn sky_check(a: &[String]) {
         b(c[0]),
         b(c[1]),
         b(c[2]),
-        b(sky::star_brightness(angle)), b(fog[0]), b(fog[1]), b(fog[2]), b(sky::star_brightness(angle) * (1.0f32 - rain)), b(1.0f32 - rain), b(256.0f32 * 0.25f32), b(256.0f32)
+        b(sky::star_brightness(angle)), b(fog[0]), b(fog[1]), b(fog[2]), b(sky::star_brightness(angle) * (1.0f32 - rain)), b(1.0f32 - rain), b(far * 0.25f32), b(far)
     );
 }
 

@@ -179,8 +179,18 @@ for args in "3257840388504953787 -39 65 6000 0.0" "0 1000 -2000 13000 0.5" "123 
   "123 -500 77 23500 0.25 0.33 0.9 0" "42 99999 -12345 18000 0.9 1 1 1" \
   "2 -1 -17 12500 0.0 0.1 1 2 0.9 0.3" "11 0 0 0 1.0 1 0.7 1 0.2 0.9" \
   "42 0 0 6000 0.25 1 1 2 0.9 0.7 0.0 0.1"; do
-  j=$("$oracle" skycolor $args); r=$("$beta" --skycolor $args)
+  for distance in 0 1 2 3; do
+    read -r -a skyargs <<<"$args"
+    defaults=(0 0 0 0 0 1 1)
+    for ((i=${#skyargs[@]}; i<12; i++)); do
+      # Previous rain/thunder default to current values, like the oracle.
+      if [ "$i" = 8 ]; then skyargs+=("${skyargs[5]}")
+      elif [ "$i" = 9 ]; then skyargs+=("${skyargs[6]}")
+      else skyargs+=("${defaults[i-5]}"); fi
+    done
+    j=$("$oracle" skycolor "${skyargs[@]}" "$distance"); r=$("$beta" --skycolor "${skyargs[@]}" "$distance")
   [ "$j" = "$r" ] || { echo "sky differs for $args"; echo " java $j"; echo " rust $r"; fail=1; }
+  done
 done
 [ $fail -eq 0 ] && echo "sky colors exact"
 

@@ -119,10 +119,14 @@ public class Oracle {
             EntityRenderer renderer = headlessRenderer(w, e);
             setField(renderer, "fogColor2", a.length > 11 ? Float.parseFloat(a[11]) : 1.0F);
             setField(renderer, "fogColor1", a.length > 12 ? Float.parseFloat(a[12]) : 1.0F);
+            int distance = a.length > 13 ? Integer.parseInt(a[13]) : 0;
+            Field mcField = EntityRenderer.class.getDeclaredField("mc");
+            mcField.setAccessible(true);
+            ((net.minecraft.client.Minecraft)mcField.get(renderer)).gameSettings.renderDistance = distance;
             java.lang.reflect.Method updateFog = EntityRenderer.class.getDeclaredMethod("updateFogColor", float.class);
             updateFog.setAccessible(true);
             updateFog.invoke(renderer, partial);
-            setField(renderer, "farPlaneDistance", 256.0F);
+            setField(renderer, "farPlaneDistance", (float)(256 >> distance));
             renderer.fogColorBuffer = ByteBuffer.allocateDirect(64).order(ByteOrder.nativeOrder()).asFloatBuffer();
             java.lang.reflect.Method setupFog = EntityRenderer.class.getDeclaredMethod("setupFog", int.class, float.class);
             setupFog.setAccessible(true); setupFog.invoke(renderer, 0, partial);

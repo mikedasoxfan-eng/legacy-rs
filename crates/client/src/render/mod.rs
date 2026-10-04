@@ -7,6 +7,7 @@ pub mod fx;
 pub mod gpu;
 pub mod sky;
 pub mod table;
+pub mod video;
 pub mod weather;
 pub mod weather_check;
 
