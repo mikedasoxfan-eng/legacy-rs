@@ -71,6 +71,7 @@ pub struct RenderBlocks<'a, 'b> {
     flip_texture: bool,
     /// `renderAllFaces` (`func_31075_a`, pistons being pushed)
     pub render_all_faces: bool,
+    pub piston_head_texture: Option<i32>,
     /// UV rotations `field_31083_k` (top), `field_31082_l` (bottom), `field_31087_g` (east),
     /// `field_31086_h` (west), `field_31085_i` (south), `field_31084_j` (north).
     uv_rotate_top: i32,
@@ -110,6 +111,7 @@ impl<'a, 'b> RenderBlocks<'a, 'b> {
             override_texture: -1,
             flip_texture: false,
             render_all_faces: false,
+            piston_head_texture: None,
             uv_rotate_top: 0,
             uv_rotate_bottom: 0,
             uv_rotate_east: 0,
@@ -161,6 +163,15 @@ impl<'a, 'b> RenderBlocks<'a, 'b> {
 
     #[inline]
     fn texture_meta(&self, id: u8, side: usize, meta: i32) -> i32 {
+        if matches!(id,29|33) && side as i32==meta & 7 && meta & 7<=5 {
+            let b=self.b;
+            return if meta & 8==0 && b.min_x<=0.0 && b.min_y<=0.0 && b.min_z<=0.0 && b.max_x>=1.0 && b.max_y>=1.0 && b.max_z>=1.0 {
+                if id==29 {106} else {107}
+            } else {110};
+        }
+        if id==34 && side as i32==meta & 7 {
+            if let Some(texture)=self.piston_head_texture { return texture; }
+        }
         rprops(id).textures[(meta & 15) as usize][side] as i32
             + if id == block::LEAVES && !self.w.fancy { 1 } else { 0 }
     }

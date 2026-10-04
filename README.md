@@ -11,7 +11,7 @@
 [![GUI](https://img.shields.io/badge/GUI_pixel_diff-23_exact,_3_within_1_shade-2ea44f?style=flat&labelColor=3b3b3b)](#the-gui-pixel-diff)
 
 [![progress](https://img.shields.io/badge/goal_progress-76%25-8fbc3a?style=flat&labelColor=3b3b3b)](#progress)
-[![verified sections](https://img.shields.io/badge/verified_sections-128-2ea44f?style=flat&labelColor=3b3b3b)](#what-is-checked)
+[![verified sections](https://img.shields.io/badge/verified_sections-149-2ea44f?style=flat&labelColor=3b3b3b)](#what-is-checked)
 [![Rust lines](https://img.shields.io/badge/Rust-45k_lines-b7410e?style=flat&labelColor=3b3b3b)](#layout)
 [![Mojang assets](https://img.shields.io/badge/Mojang_assets_bundled-0_bytes-2ea44f?style=flat&labelColor=3b3b3b)](#you-need-your-own-copy)
 [![multiplayer](https://img.shields.io/badge/multiplayer-not_planned-9e9e9e?style=flat&labelColor=3b3b3b)](#scope)
@@ -41,11 +41,11 @@ against the original game code, not just "looks right".
 | Block rendering (all 18 render types, smooth lighting, Fancy/Fast) | 8 | 100 % | ✅ verified |
 | Mob/item/effect rendering, sky, clouds, rain, snow, fog | 8 | 95 % | ✅ verified |
 | Menus, HUD, achievements, death screen | 7 | 90 % | ✅ pixel-exact (statistics screen missing) |
-| Redstone (wire, torches, repeaters, levers, buttons, plates, doors, rails) | 6 | 70 % | ✅ verified (pistons, note blocks missing) |
+| Redstone (wire, torches, repeaters, levers, buttons, plates, doors, rails, pistons, notes) | 6 | 100 % | ✅ verified |
 | Inventory, crafting, chests, furnaces, dispensers | 7 | 15 % | 🟡 inventory simulation done; screens and crafting in progress |
 | First-person view (hand, held item, block outline, cracks, bobbing, third person) | 5 | 0 % | 🟡 in progress |
 | Particles and world sounds | 5 | 10 % | 🟡 in progress (music, rain and menu sounds work) |
-| Tile entities that tick (mob spawners ✅, furnaces 🟡, pistons) | 2 | 40 % | 🟡 spawners verified; pistons next |
+| Tile entities that tick (mob spawners, furnaces, pistons) | 2 | 100 % | ✅ lifecycle, ticking and NBT verified |
 | Vehicles, signs, paintings, maps, fishing, records, statistics | 2 | 0 % | 🔴 not started |
 
 ---
@@ -96,7 +96,7 @@ Details that turned out to matter:
 
 ### What is checked
 
-`tools/verify.sh` (about 128 sections; every one must say `EXACT`):
+`tools/verify.sh` (149 sections; every one must say `EXACT`):
 
 | Category | What is compared |
 |---|---|
@@ -112,7 +112,9 @@ Details that turned out to matter:
 | Collision | Every block's collision and selection box in every state (10,000 cases) |
 | Portals | Teleporter find/build (incl. the ocean platform), the whole `usePortal` sequence |
 | Respawn | At spawn, at a bed, with the bed gone |
-| Redstone | Scripted circuits and rail layouts, every tick of the circuit |
+| Redstone | Scripted circuits, rail layouts, all piston facings and push lengths, sticky pulls, pulses, clocks, entity pushing, note instruments and pitches |
+| Moving pistons | 24,840 original-bytecode renderer cases: partial ticks, all facings, stored blocks, head/base branches, Fancy/Fast and smooth lighting |
+| Tile lifecycle | Object identity, invalidation during scanning, deferred insertion, lazy creation, chunk unload/reload and NBT |
 | Chunk meshes | Every vertex position, UV and colour of real terrain, Fancy/Fast, smooth lighting on/off |
 | Block showcase | Every block id × all 16 metadata values plus neighbour arrangements, all four graphics modes |
 | Models & renderers | Mob geometry, animation poses, full renderer draw calls, shadows, fire |
@@ -248,6 +250,10 @@ Being exact means keeping these too:
   things switch on.
 - **Torch burnout:** a redstone torch that flips 8 times in 100 ticks burns out, sharing one list
   across all torches in the game.
+- **Piston save/load:** moving pistons save the previous progress and omit the render-head flag.
+- **Sticky quick pulses:** retracting before an extending tile finishes can leave its block behind.
+- **Tile identity:** replacing a chunk-map entry leaves the old object in the update list; invalid
+  cleanup can remove a newer object at the same position.
 - **Leftover block bounds:** a block's size is shared state; a renderer that changes it and doesn't
   reset it leaves it for the next block of that kind.
 - **Fog in the Nether:** if it was raining in the Overworld when you left, the Nether fog is darker.
@@ -263,6 +269,8 @@ Being exact means keeping these too:
 - `tools/oracle/make_showcase.py` regenerates the block showcase;
   `tools/oracle/redstone/*.txt` are circuit scripts (`place`, `remove`, `use`, `tick`,
   `check`), run by both the original and the port.
+- [Piston and tile oracle coverage](tools/oracle/PISTONS.md) documents the extended script commands
+  and the moving-piston renderer check.
 - Large parts were ported in parallel by AI coding agents (Claude and Codex), each given one
   subsystem and the same rule: port literally, prove it against the original, keep every
   existing check exact.
@@ -271,8 +279,8 @@ Being exact means keeping these too:
 
 ## Not yet
 
-Minecarts and boats (placing them works; riding and physics don't), pistons and note blocks,
-signs, paintings, maps, fishing, records, the statistics screen, and the 3D anaglyph mode.
+Minecarts and boats (placing them works; riding and physics don't), signs, paintings, maps,
+fishing, records, the statistics screen, and the 3D anaglyph mode.
 
 ---
 

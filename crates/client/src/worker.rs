@@ -158,6 +158,8 @@ pub enum FromWorker {
     QuickSaved(bool),
     /// Entities near the camera after a tick, with `getEntityBrightness`.
     Entities(Vec<crate::render::entity::effects::Snapshot>),
+    /// Moving tile geometry and block audio events, separate from entity snapshots.
+    BlockTiles { pistons:Vec<crate::render::pistons::Snapshot>,events:Vec<worldgen::world::notes::BlockEvent> },
     /// `addChatMessageTranslate(key)` (e.g. "tile.bed.notValid" on respawn).
     Chat(String),
     /// A container window opened (inventory key or a block activation).
@@ -580,6 +582,19 @@ fn run(opts: WorldOptions, col: Colorizers, mut video: VideoSettings, rx: Receiv
                 surfaces: Vec::new(),
             }));
             let _ = tx.send(FromWorker::Entities(snapshot));
+            let mut pistons=Vec::new();
+            for id in &world.loaded_tile_entities {
+                let object=&world.tile_objects[id];
+                if object.invalid {continue;}
+                if let Some(worldgen::world::tile::TileEntity::Piston(p))=world.tile_object(*id) {
+                    let (x,y,z)=object.position;
+                    if (x as f64-cam.0).abs()>128.0 || (z as f64-cam.2).abs()>128.0 {continue;}
+                    let mut access=Access::new(&world,x>>4,z>>4,world.skylight_subtracted,&biomes);
+                    access.fancy=video.fancy;
+                    pistons.push(crate::render::pistons::Snapshot::new(&access,&col,video.ao,[x,y,z],p.clone()));
+                }
+            }
+            let _=tx.send(FromWorker::BlockTiles {pistons,events:std::mem::take(&mut world.block_events)});
             if let Some(id) = player {
                 let events = world.take_player_events(id);
                 // Block activations open their container right here on the world thread.

@@ -2,6 +2,9 @@
 //! menus run without a world; choosing one starts the world thread, shows the loading
 //! screen, then the fly-camera view with the game menu on Esc.
 
+#[path = "app_block_tiles.rs"]
+mod block_tiles;
+
 use crate::render::blocks::Colorizers;
 use crate::render::gpu::{FrameParams, Gpu};
 use crate::render::sky;
@@ -213,6 +216,7 @@ pub struct App {
     sound: Option<crate::sound::SoundManager>,
     /// Entities near the camera from the last tick, with their brightness.
     entities: Vec<render::entity::effects::Snapshot>,
+    pistons: Vec<render::pistons::Snapshot>,
     /// Chunk meshes uploaded this second (`WorldRenderer.chunksUpdated`) and the last count.
     chunk_updates: u32,
     debug_line: String,
@@ -295,6 +299,7 @@ impl App {
             chunks_loaded: 0,
             ticks_ready: 0,
             entities: Vec::new(),
+            pistons: Vec::new(),
             sound: None,
             chunk_updates: 0,
             debug_line: String::new(),
@@ -429,12 +434,14 @@ impl App {
         self.ready = false;
         self.loading = None;
         self.entities.clear();
+        self.pistons.clear();
         if let Some(snd) = &mut self.sound {
             snd.stop_streaming();
         }
         if let Some(g) = &mut self.gpu {
             g.clear_chunks();
             g.entities.states.clear();
+            g.entities.pistons.clear();
         }
         if self.exit_after_save {
             el.exit();
@@ -1022,6 +1029,10 @@ impl App {
                         }
                     }
                     Ok(FromWorker::Entities(list)) => self.entities = list,
+                    Ok(FromWorker::BlockTiles {pistons,events}) => {
+                        self.pistons=pistons;
+                        block_tiles::play_events(&mut self.sound,self.cam.pos,events);
+                    }
                     Ok(FromWorker::ContainerOpened(s)) => {
                         if let Some(g) = &mut self.gui {
                             for a in g.open_container(s) {
@@ -1394,6 +1405,7 @@ impl App {
 
         if let Some(gpu) = &mut self.gpu {
             gpu.entities.snapshots = self.entities.clone();
+            gpu.entities.pistons = self.pistons.clone();
             gpu.entities.partial = partial;
             gpu.entities.fancy = self.gui.as_ref().is_none_or(|gui| gui.ui.settings.fancy_graphics);
             gpu.entities.view = [self.cam.yaw, self.cam.pitch];

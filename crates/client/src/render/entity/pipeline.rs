@@ -32,6 +32,7 @@ pub struct EntityPipeline {
     shadow: wgpu::RenderPipeline,
     tnt_flash: wgpu::RenderPipeline,
     pub snapshots: Vec<super::effects::Snapshot>,
+    pub pistons: Vec<crate::render::pistons::Snapshot>,
     pub partial: f32,
     pub fancy: bool,
     pub view: [f32; 2],
@@ -253,6 +254,7 @@ impl EntityPipeline {
         Self {
             states: Vec::new(),
             snapshots: Vec::new(),
+            pistons: Vec::new(),
             partial: 0.0,
             fancy: true,
             view: [0.0; 2],
@@ -336,6 +338,7 @@ impl EntityPipeline {
                 );
             }
         }
+        batches.extend(self.pistons.iter().filter(|p|p.visible(camera.to_array())).map(|p|p.batch(self.partial,camera.to_array())));
         self.upload(device, queue, batches, view_proj, fog, far);
     }
 

@@ -192,6 +192,10 @@ if [ "$quick" != quick ]; then
   rm -f "$out/mesh_nether.bin"
 fi
 
+echo "== moving piston renderer (original TileEntityRendererPiston vertex bits)"
+if "$oracle" pistonrender piston_renderer.bin && "$beta" --pistoncheck "$out/piston_renderer.bin"; then :; else fail=1; fi
+rm -f "$out/piston_renderer.bin"
+
 # ---- redstone circuits and rails: scripted block worlds, every tick of the circuit compared
 for script in "$root"/tools/oracle/redstone/*.txt; do
   name=$(basename "$script" .txt)
