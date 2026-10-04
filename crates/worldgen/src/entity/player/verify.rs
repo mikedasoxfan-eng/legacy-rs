@@ -43,7 +43,8 @@ pub fn player_bytes(scenario:&str,ticks:i32)->Vec<u8> {
     for x in 10..=15 {for y in 64..=67 {for z in -2..=2 {raw(&mut w,x,y,z,9,0);}}}
     for x in -15..=-10 {for y in 64..=67 {for z in -2..=2 {raw(&mut w,x,y,z,11,0);}}}
     raw(&mut w,1,64,-5,30,0);for y in 64..=71 {raw(&mut w,0,y,-8,65,3);raw(&mut w,0,y,-9,1,0);}
-    let mut out=Vec::new();snapshot(&w,&mut out);if scenario=="look" {picking_bytes(&mut w,id,&mut out);}
+    let interaction=matches!(scenario,"dig"|"place"|"use"|"shoot"|"interact"|"fertilize"|"activate");let mut result=0;let mut controller=super::controller::PlayerControllerSP::default();
+    let mut out=Vec::new();snapshot(&w,&mut out);if scenario=="look" {picking_bytes(&mut w,id,&mut out);}if interaction {controller_bytes(&controller,result,&mut out);}
     for t in 0..ticks {
         if let Some(mut p)=w.entities.remove(&id) {
             if t%120==0 {let phase=t/120%8;p.motion=Default::default();let x=match phase {2=>4.5,3=>11.5,4=>-12.5,_=>0.5};let z=match phase {6=>-7.5,7=>-4.5,_=>0.5};let y=match phase {5=>76.0,3|4=>66.0,_=>64.0};p.set_location_and_angles(x,y,z,if phase==2 {-90.0}else if phase>=6 {180.0}else{0.0},0.0);if scenario=="movement" {p.living.health=20;p.living.hearts_life=0;}}
@@ -56,12 +57,38 @@ pub fn player_bytes(scenario:&str,ticks:i32)->Vec<u8> {
             if scenario=="sleep" {if t==0 {w.skylight_subtracted=11;w.world_time=18000;p.set_location_and_angles(0.5,64.0,0.5,0.0,0.0);raw(&mut w,0,64,0,26,0);raw(&mut w,0,64,1,26,8);p.sleep_in_bed(&mut w,0,64,1);}if t==120 {p.wake_up(&mut w,false,true);}}
             if scenario=="portal" {let s=p.player_state_mut().unwrap();s.input.forward=false;s.input.left=false;s.input.jump=false;if t<110||(150..160).contains(&t) {p.set_in_portal();}}
             if scenario=="look" {p.living.health=20;p.living.hearts_life=0;p.set_angles((t%7-3) as f32*33.7,(t%11-5) as f32*9.8);}
+            if interaction {
+                p.set_location_and_angles(0.5,64.0,0.5,t as f32*33.7,0.0);p.motion=Default::default();p.set_player_input(Default::default());p.on_ground=true;controller.update();result=0;
+                if scenario=="dig" {
+                    let phase=(t/100%10) as usize;let blocks=[1,17,56,49,35,18,78,79,4,3];let tools=[0,271,257,278,359,359,269,278,0,0];
+                    if t%100==0 {raw(&mut w,8,64,8,blocks[phase],if phase==4{7}else{0});p.player_state_mut().unwrap().inventory.main[0]=if tools[phase]==0{None}else{Some(ItemStack::new(tools[phase],1,0))};controller.reset();controller.click_block(&mut p,&mut w,8,64,8,1);}
+                    controller.dig(&mut p,&mut w,8,64,8,1);
+                }else if scenario=="place" {
+                    let blocks=[1,5,35,44,53,67,86,50,65,69,77,324,330,355,54];let block=blocks[t as usize%blocks.len()];let x=8+t%6*3;let z=8+t/6%6*3;
+                    raw(&mut w,x,64,z,1,0);p.player_state_mut().unwrap().inventory.main[0]=Some(ItemStack::new(block,10,t%4));result=p.use_on_block(&mut w,x,64,z,t%6) as i32;
+                }else if scenario=="interact" {
+                    let phase=t/30%7;let item=[359,351,325,329,352,276,278][phase as usize];p.player_state_mut().unwrap().inventory.main[0]=Some(ItemStack::new(item,10,if phase==1{t%16}else{0}));
+                    if t%30==0 {let mut mob=Entity::living(&mut w,if phase<2{"Sheep"}else if phase==2{"Cow"}else if phase==3{"Pig"}else if phase==4{"Wolf"}else{"Zombie"}).unwrap();mob.set_location_and_angles(0.5,64.0,1.5,0.0,0.0);w.entity_joined_world(mob);}
+                    let mut mob=*w.loaded_entity_list.last().unwrap();if matches!(w.entities.get(&mob).map(|e|&e.kind),Some(crate::entity::EntityKind::Item{..})) {for &i in &w.loaded_entity_list {if i!=id&&w.entities.get(&i).is_some_and(|e|e.kind.is_living()) {mob=i;}}}
+                    if phase>=5 {p.attack_with_item(&mut w,mob);}else{p.use_on_entity(&mut w,mob);}
+                }else if scenario=="fertilize" {
+                    let phase=t%5;let block=if phase<3{6}else if phase==3{59}else{2};raw(&mut w,8,63,8,if phase==3{60}else{2},0);raw(&mut w,8,64,8,block,if phase<3{phase}else{0});p.player_state_mut().unwrap().inventory.main[0]=Some(ItemStack::new(351,10,15));result=p.use_on_block(&mut w,8,64,8,1) as i32;
+                }else if scenario=="activate" {
+                    let block=[64,69,77,96,93,92,58,54,61,23][t as usize%10];w.remove_block_tile_entity(8,64,8);raw(&mut w,8,64,8,block,if block==69||block==77{5}else{0});if block==64 {raw(&mut w,8,65,8,block,8);}p.living.health=5;p.player_state_mut().unwrap().inventory.main[0]=None;result=p.use_on_block(&mut w,8,64,8,1) as i32;
+                }else if scenario=="shoot" {
+                    let item=if t%3==0{261}else if t%3==1{332}else{344};p.player_state_mut().unwrap().inventory.main[0]=Some(ItemStack::new(item,16,0));p.player_state_mut().unwrap().inventory.main[1]=Some(ItemStack::new(262,64,0));result=p.use_item(&mut w) as i32;
+                }else {
+                    let items=[260,282,297,319,320,322,349,350,357,259,290,325,326,327,335];let item=items[t as usize%items.len()];p.living.health=5;p.player_state_mut().unwrap().inventory.main[0]=Some(ItemStack::new(item,1,0));
+                    if item==259||item==290 {raw(&mut w,8,64,8,3,0);result=p.use_on_block(&mut w,8,64,8,t%6) as i32;}else{result=p.use_item(&mut w) as i32;}
+                }
+            }
             if scenario=="nbt"&&t%100==99 {let n=p.player_nbt().unwrap();w.loaded_entity_list.retain(|&v|v!=id);for c in w.chunks.values_mut(){for list in &mut c.entity_lists {list.retain(|&v|v!=id);}}w.players.clear();w.player_entities.clear();p=Entity::player_from_nbt(&mut w,&n,"Player").unwrap();id=p.entity_id;w.entity_joined_world(p);}else{w.entities.insert(id,p);}
         }
-        w.update_entities();snapshot(&w,&mut out);if scenario=="look" {picking_bytes(&mut w,id,&mut out);}
+        w.update_entities();snapshot(&w,&mut out);if scenario=="look" {picking_bytes(&mut w,id,&mut out);}if interaction {controller_bytes(&controller,result,&mut out);}
     }
     append_world(&w,&mut out);out
 }
+fn controller_bytes(c:&super::controller::PlayerControllerSP,result:i32,out:&mut Vec<u8>) {out.extend_from_slice(&result.to_le_bytes());for v in [c.cur_block_damage,c.prev_block_damage,c.step_sound_counter]{out.extend_from_slice(&v.to_bits().to_le_bytes());}for v in [c.target.0,c.target.1,c.target.2,c.block_hit_wait]{out.extend_from_slice(&v.to_le_bytes());}}
 fn picking_bytes(w:&mut crate::World,id:i32,out:&mut Vec<u8>) {
     use crate::entity::MovingObjectPosition;
     let Some(p)=w.entities.get(&id).cloned() else {return;};

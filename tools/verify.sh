@@ -38,7 +38,7 @@ echo "== MathHelper sine table"
 
 echo "== player inventory (10000 original-bytecode operations)"
 "$oracle" playerinventory player_inventory.bin && "$cmp" playerinventory "$out/player_inventory.bin" || fail=1
-for player_case in "movement 1000" "damage 1000" "pickup 1000" "sleep 300" "portal 300" "nbt 300" "look 1000"; do
+for player_case in "movement 1000" "damage 1000" "pickup 1000" "sleep 300" "portal 300" "nbt 300" "look 1000" "dig 1000" "place 180" "use 300" "shoot 300" "interact 210" "fertilize 50" "activate 100"; do
   read -r kind ticks <<<"$player_case"
   run "player: $kind, every frame and final world" player "$kind" "$ticks" -- player "$kind" "$ticks"
 done

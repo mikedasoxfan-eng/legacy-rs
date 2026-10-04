@@ -1,0 +1,56 @@
+use super::*;
+use crate::block::*;
+#[derive(Clone, Debug)]
+pub struct PlayerControllerSP {
+    pub target:(i32,i32,i32),pub cur_block_damage:f32,pub prev_block_damage:f32,pub step_sound_counter:f32,pub block_hit_wait:i32,
+}
+impl Default for PlayerControllerSP {fn default()->Self {Self {target:(-1,-1,-1),cur_block_damage:0.0,prev_block_damage:0.0,step_sound_counter:0.0,block_hit_wait:0}}}
+impl PlayerControllerSP {
+    pub fn update(&mut self) {self.prev_block_damage=self.cur_block_damage;}
+    pub fn reset(&mut self) {self.cur_block_damage=0.0;self.block_hit_wait=0;}
+    pub fn damage_partial(&self,partial:f32)->f32 {if self.cur_block_damage<=0.0 {0.0}else{self.prev_block_damage+(self.cur_block_damage-self.prev_block_damage)*partial}}
+    pub fn click_block(&mut self,p:&mut Entity,w:&mut World,x:i32,y:i32,z:i32,side:i32) {
+        let (fx,fy,fz)=super::placement::offset(x,y,z,side);if w.get_block_id(fx,fy,fz)==FIRE {w.set_block_with_notify(fx,fy,fz,0);}
+        let id=w.get_block_id(x,y,z);
+        if id>0&&self.cur_block_damage==0.0 {p.block_clicked(w,id,x,y,z);}
+        if id>0&&p.relative_block_hardness(w,id)>=1.0 {self.remove_block(p,w,x,y,z,side);}
+    }
+    pub fn dig(&mut self,p:&mut Entity,w:&mut World,x:i32,y:i32,z:i32,side:i32) {
+        if self.block_hit_wait>0 {self.block_hit_wait-=1;return;}
+        if self.target==(x,y,z) {
+            let id=w.get_block_id(x,y,z);if id==0 {return;}
+            self.cur_block_damage+=p.relative_block_hardness(w,id);self.step_sound_counter+=1.0;
+            if self.cur_block_damage>=1.0 {self.remove_block(p,w,x,y,z,side);self.cur_block_damage=0.0;self.prev_block_damage=0.0;self.step_sound_counter=0.0;self.block_hit_wait=5;}
+        } else {self.cur_block_damage=0.0;self.prev_block_damage=0.0;self.step_sound_counter=0.0;self.target=(x,y,z);}
+    }
+    pub fn remove_block(&mut self,p:&mut Entity,w:&mut World,x:i32,y:i32,z:i32,_side:i32)->bool {
+        let id=w.get_block_id(x,y,z);if id==0 {return false;}let meta=w.get_block_metadata(x,y,z);
+        let removed=w.set_block_with_notify(x,y,z,0);
+        if removed&&id==46&&meta&1!=0 {w.ignite_tnt(x,y,z);}
+        let can=p.can_harvest(id);
+        if let Some(s)=p.held_item() {let cost=if matches!(s.id,267|268|272|276|283) {2}else if matches!(s.id,256..=258|269..=271|273..=275|277..=279|284..=286)||(s.id==359&&matches!(id,18|30)) {1}else{0};p.damage_held(cost);}
+        if removed&&can {p.harvest_block(w,id,x,y,z,meta);}
+        removed
+    }
+}
+impl Entity {
+    pub fn held_item(&self)->Option<ItemStack> {self.player_state()?.inventory.held()}
+    pub fn can_harvest(&self,block:u8)->bool {registry::can_harvest(self.held_item().map_or(-1,|s|s.id),block)}
+    pub fn relative_block_hardness(&self,w:&mut World,id:u8)->f32 {
+        let hardness=registry::hardness(id);if hardness<0.0 {0.0}else if !self.can_harvest(id) {1.0/hardness/100.0}else {
+            let mut strength=registry::strength(self.held_item().map_or(-1,|s|s.id),id);
+            if self.is_inside_material(w,MAT_WATER) {strength/=5.0;}if !self.on_ground {strength/=5.0;}strength/hardness/30.0
+        }
+    }
+    pub fn damage_held(&mut self,amount:i32) {let inv=&mut self.player_state_mut().unwrap().inventory;if let Some(s)=inv.main[inv.current_item as usize].as_mut(){s.damage_item(amount);if s.count==0 {inv.main[inv.current_item as usize]=None;}}}
+    pub fn block_clicked(&mut self,w:&mut World,id:u8,x:i32,y:i32,z:i32) {
+        if matches!(id,64|71|69|77) {self.activate_block(w,x,y,z);}
+        if matches!(id,73|74) {w.redstone_display(x,y,z);if id==73 {w.set_block_with_notify(x,y,z,74);}}
+    }
+    pub fn harvest_block(&mut self,w:&mut World,id:u8,x:i32,y:i32,z:i32,meta:i32) {
+        if id==18&&self.held_item().is_some_and(|s|s.id==359) {super::block_hooks::drop_stack(w,x,y,z,ItemStack::new(18,1,meta&3));}
+        else if id==78 {super::block_hooks::drop_stack(w,x,y,z,ItemStack::new(332,1,0));}
+        else {crate::world::behavior::drop_block_as_item(w,id,x,y,z,meta);}
+        if id==79 {let m=mat(w.get_block_material(x,y-1,z));if m.blocks_movement||m.is_liquid {w.set_block_with_notify(x,y,z,8);}}
+    }
+}

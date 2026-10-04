@@ -3,6 +3,7 @@ use crate::{math::floor_double as floor, JavaRandom, World};
 impl World {
     pub fn set_entity_determinism(&mut self, entity_seed: i64, math_seed: i64, next_id: i32) {
         self.chest_random = JavaRandom::new(entity_seed + 400);
+        self.item_random = JavaRandom::new(entity_seed + 500);
         self.explosion_seed_source = EntitySeedSource::Deterministic(entity_seed + 300);
         self.entity_seed_source = EntitySeedSource::Deterministic(entity_seed);
         self.math_random = JavaRandom::new(math_seed);
@@ -124,6 +125,7 @@ impl World {
         if !e.pitch.is_finite() {
             e.pitch = e.prev_pitch;
         }
+        if let Some(index)=e.player_state().and_then(|s|s.player_index) {self.players[index]=(e.pos.x,e.pos.y,e.pos.z);}
         let (cx, cy, cz) = (
             floor(e.pos.x / 16.0),
             floor(e.pos.y / 16.0),

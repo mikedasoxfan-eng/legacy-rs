@@ -19,9 +19,19 @@ class Reader:
             self.many(p,'fire air ticks chunkx chunky chunkz','<i');self.many(p,'ground dead water filed','<?')
             if kind=='Item':
                 self.many(p,'age delay item count damage','<i');self.read(p+'hover','<f');self.read(p+'health','<i')
-            else:
+            elif kind not in ("Arrow","Snowball","ThrownEgg"):
                 self.many(p,'health prevhealth hearts halves hurt maxhurt death attack sound age lastdamage','<i')
                 self.many(p,'attackyaw body prevbody limb amount prevamount swing prevswing walk prevwalk phase prevphase random speed scale strafe forward randomyaw','<f');self.read(p+'jump','<?')
+            if kind in ('Snowball','ThrownEgg'):
+                self.many(p,'tilex tiley tilez block','<i');self.read(p+'inground','<?');self.many(p,'shake owner groundticks airticks','<i')
+            if kind=='Arrow':
+                self.many(p,'tilex tiley tilez block meta','<i');self.many(p,'inground belongs','<?');self.many(p,'shake owner groundticks airticks','<i')
+            if kind=='Sheep': self.read(p+'sheared','<?');self.read(p+'color','<i')
+            if kind=='Pig': self.read(p+'saddled','<?')
+            if kind=='Wolf':
+                self.read(p+'flags','<i');n=self.read(p+'ownerlen','>H');self.at+=n;self.read(p+'watchedhealth','<i');self.many(p,'interested shaking active','<?');self.many(p,'interest previnterest shaketime prevshaketime','<f')
+            if kind=='Chicken':
+                self.many(p,'flap prevflap flapamount prevflapamount flapspeed','<f');self.read(p+'eggtimer','<i')
             if kind=='Player':
                 self.many(p,'prevcamerayaw camerayaw prevcamerapitch camerapitch portal prevportal','<f')
                 self.many(p,'swingticks portalcooldown sleeptimer armor currentitem remainder','<i');self.many(p,'swinging sleeping sneaking','<?')
@@ -36,6 +46,8 @@ class Reader:
                 p=f'pick{partial}.';self.many(p,'x y z','<d');kind=self.read(p+'kind','<i')
                 if kind==1:self.read(p+'entity','<i')
                 elif kind==0:self.many(p,'bx by bz side','<i');self.many(p,'hitx hity hitz','<d')
+        if len(sys.argv)>4 and sys.argv[4] in ('dig','place','use','activate','shoot','interact','fertilize'):
+            self.read('controller.result','<i');self.many('controller.','damage prevdamage sounds','<f');self.many('controller.','x y z wait','<i')
         return self.fields
 a,b=Reader(sys.argv[1]),Reader(sys.argv[2])
 for frame in range(int(sys.argv[3])+1):

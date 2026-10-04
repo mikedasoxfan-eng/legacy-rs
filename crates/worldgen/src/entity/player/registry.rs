@@ -20,3 +20,4 @@ pub fn can_harvest(id: i32, block: u8) -> bool {
 }
 pub fn harvestable(block: u8) -> bool { DATA[2258*ITEM_SIZE + block as usize * 5 + 4] != 0 }
 pub fn hardness(block: u8) -> f32 { f32::from_bits(int(2258*ITEM_SIZE + block as usize*5) as u32) }
+pub fn attack_damage(id:i32)->i32 {if item(id).is_none() {1}else{int(2258*ITEM_SIZE+256*5+id as usize*4)}}

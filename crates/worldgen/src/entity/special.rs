@@ -148,7 +148,7 @@ impl Entity {
             };
             self.set_position(
                 parent.pos.x,
-                parent.pos.y + offset + self.y_offset as f64,
+                parent.pos.y + offset + if self.player_state().is_some() {(self.y_offset-0.5) as f64}else{self.y_offset as f64},
                 parent.pos.z,
             );
             self.rider_yaw_delta += (parent.yaw - parent.prev_yaw) as f64;
@@ -172,6 +172,7 @@ impl Entity {
             self.yaw = (self.yaw as f64 + yaw) as f32;
             self.pitch = (self.pitch as f64 + pitch) as f32;
         }
+        if let Some(s)=self.player_state_mut() {s.prev_camera_yaw=s.camera_yaw;s.camera_yaw=0.0;}
     }
     pub(super) fn wolf_attack_target(&mut self, w: &mut World, target: Target, distance: f32) {
         let Some((p, _, _)) = self.target_position(w, target) else {

@@ -17,11 +17,11 @@ impl Entity {
         let end=start.add(look.x*reach,look.y*reach,look.z*reach);
         let mut pointed=None;let mut distance=0.0;
         for id in w.entities_within_aabb(Some(self.entity_id),self.bounding_box.add_coord(look.x*reach,look.y*reach,look.z*reach).expand(1.0,1.0,1.0)) {
-            let e=&w.entities[&id];if e.dead || !e.kind.is_living() {continue;}
+            let e=&w.entities[&id];if !e.can_be_collided_with() {continue;}
             let b=e.bounding_box.expand(0.1f32 as f64,0.1f32 as f64,0.1f32 as f64);
             if b.contains(start) {if 0.0<distance||distance==0.0 {pointed=Some(id);distance=0.0;}}
             else if let Some(MovingObjectPosition::Block{hit,..})=b.ray_trace(start,end) {let d=start.distance(hit);if d<distance||distance==0.0 {pointed=Some(id);distance=d;}}
         }
-        pointed.map(|id|MovingObjectPosition::Entity{id,hit:Vec3D::default()}).or(block)
+        pointed.map(|id|MovingObjectPosition::Entity{id,hit:w.entities[&id].pos}).or(block)
     }
 }

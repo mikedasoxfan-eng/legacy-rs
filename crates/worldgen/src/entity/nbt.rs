@@ -16,7 +16,7 @@ impl Entity {
         if self.dead
             || matches!(
                 self.kind,
-                EntityKind::Fireball(..) | EntityKind::Lightning { .. }
+                EntityKind::Fireball(..) | EntityKind::Egg(..) | EntityKind::Lightning { .. }
             )
         {
             return None;
@@ -94,6 +94,7 @@ impl Entity {
                 n.put("Owner", Tag::String(s.owner.clone()));
             }
             EntityKind::Arrow(s) => write_projectile(&mut n, s, true),
+            EntityKind::Snowball(s) | EntityKind::Egg(s) => write_projectile(&mut n, s, false),
             _ => {}
         }
         Some(n)
@@ -175,6 +176,10 @@ impl Entity {
                 e.height = 0.5;
                 e
             }
+            "Snowball" | "ThrownEgg" => {
+                let mut e = Self::base(w, if name == "Snowball" {EntityKind::Snowball(Default::default())} else {EntityKind::Egg(Default::default())});
+                e.width=0.25;e.height=0.25;e
+            }
             _ => Self::living(w, &name)?,
         };
         e.motion = Vec3D::new(
@@ -253,6 +258,7 @@ impl Entity {
                 }
             }
             EntityKind::Arrow(s) => *s = read_projectile(n, true),
+            EntityKind::Snowball(s) | EntityKind::Egg(s) => *s = read_projectile(n, false),
             EntityKind::Fireball(s) => {
                 *s = FireballState {
                     arrow: read_projectile(n, false),

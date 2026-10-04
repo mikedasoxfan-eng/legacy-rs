@@ -57,6 +57,7 @@ impl Entity {
             w,
             EntityKind::Arrow(ArrowState {
                 owner: Some(owner.entity_id),
+                belongs_to_player: owner.player_state().is_some(),
                 ..Default::default()
             }),
         );
@@ -171,7 +172,7 @@ impl Entity {
             false
         }
     }
-    fn projectile_angles(&mut self) {
+    pub(super) fn projectile_angles(&mut self) {
         let horizontal =
             (self.motion.x * self.motion.x + self.motion.z * self.motion.z).sqrt() as f32 as f64;
         self.yaw =
@@ -218,7 +219,7 @@ impl Entity {
         }
         hit
     }
-    fn projectile_advance(&mut self, drag: f32, gravity: f32, accel: Vec3D) {
+    pub(super) fn projectile_advance(&mut self, drag: f32, gravity: f32, accel: Vec3D) {
         self.pos.x += self.motion.x;
         self.pos.y += self.motion.y;
         self.pos.z += self.motion.z;

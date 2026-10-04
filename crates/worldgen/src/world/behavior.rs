@@ -40,6 +40,7 @@ fn tick_rate(id: u8) -> i32 {
 // ---------------------------------------------------------------- dispatch
 
 pub fn on_block_added(w: &mut World, id: u8, x: i32, y: i32, z: i32) {
+    if crate::entity::player::block_hooks::added(w,id,x,y,z) {return;}
     match id {
         block::WATER_MOVING | block::LAVA_MOVING => {
             check_for_harden(w, id, x, y, z);
@@ -65,6 +66,7 @@ pub fn on_block_added(w: &mut World, id: u8, x: i32, y: i32, z: i32) {
 }
 
 pub fn on_block_removal(w: &mut World, id: u8, x: i32, y: i32, z: i32) {
+    if crate::entity::player::block_hooks::removed(w,id,x,y,z) {return;}
     match id {
         block::LEAVES => {
             if w.check_chunks_exist(x - 2, y - 2, z - 2, x + 2, y + 2, z + 2) {
@@ -110,6 +112,7 @@ pub fn on_block_removal(w: &mut World, id: u8, x: i32, y: i32, z: i32) {
 }
 
 pub fn on_neighbor_block_change(w: &mut World, id: u8, x: i32, y: i32, z: i32, _changed: u8) {
+    if id!=26&&crate::entity::player::block_hooks::neighbor(w,id,x,y,z,_changed) {return;}
     if id==26 {
         let meta=w.get_block_metadata(x,y,z);let (dx,dz)=[(0,1),(-1,0),(0,-1),(1,0)][(meta&3) as usize];
         let valid=if meta&8!=0 {w.get_block_id(x-dx,y,z-dz)==26}else{w.get_block_id(x+dx,y,z+dz)==26};
@@ -190,6 +193,7 @@ pub static TICK_COUNTS: [std::sync::atomic::AtomicU32; 256] =
     [const { std::sync::atomic::AtomicU32::new(0) }; 256];
 
 pub fn update_tick(w: &mut World, id: u8, x: i32, y: i32, z: i32, rs: RandSel) {
+    if crate::entity::player::block_hooks::tick(w,id,x,y,z,rs) {return;}
     TICK_COUNTS[id as usize].fetch_add(1, std::sync::atomic::Ordering::Relaxed);
     match id {
         block::WATER_MOVING | block::LAVA_MOVING => flowing_update_tick(w, id, x, y, z, rs),
@@ -613,6 +617,7 @@ fn try_to_fall(w: &mut World, id: u8, x: i32, mut y: i32, z: i32) {
 /// `BlockFlower.canThisPlantGrowOnThisBlockID` and overrides.
 fn plant_grows_on(id: u8, below: u8) -> bool {
     match id {
+        59 => below == 60,
         block::MUSHROOM_BROWN | block::MUSHROOM_RED => opaque_cube_lookup(below),
         block::DEAD_BUSH => below == block::SAND,
         _ => below == block::GRASS || below == block::DIRT || below == block::TILLED_FIELD,
@@ -700,7 +705,9 @@ fn quantity_dropped(w: &mut World, id: u8) -> i32 {
                 0
             }
         }
-        block::SNOW | block::ICE | block::FIRE | block::PORTAL | 8 | 9 | 10 | 11 | 20 | 46 => 0,
+        block::SNOW | block::ICE | block::FIRE | block::PORTAL | 8 | 9 | 10 | 11 | 20 | 46 | 92 => 0,
+        43=>2,
+        47=>3,
         tb::SNOW_BLOCK => 4,
         block::ORE_LAPIS => 4 + w.rand.next_int(5),
         block::ORE_REDSTONE | super::ticks_blocks::ORE_REDSTONE_GLOWING => 4 + w.rand.next_int(2),
@@ -710,8 +717,9 @@ fn quantity_dropped(w: &mut World, id: u8) -> i32 {
     }
 }
 
-fn id_dropped(w: &mut World, id: u8) -> i32 {
+fn id_dropped(w: &mut World, id: u8, meta:i32) -> i32 {
     match id {
+        59 => if meta==7 {296}else{-1},
         block::TALL_GRASS => {
             if w.rand.next_int(8) == 0 {
                 ITEM_SEEDS
@@ -741,6 +749,15 @@ fn id_dropped(w: &mut World, id: u8) -> i32 {
         block::ORE_REDSTONE | super::ticks_blocks::ORE_REDSTONE_GLOWING => ITEM_REDSTONE,
         block::CLAY => ITEM_CLAY,
         block::SNOW | super::ticks_blocks::SNOW_BLOCK => ITEM_SNOWBALL,
+        26=>if meta&8!=0 {0}else{355},
+        30=>287,
+        43|44=>44,
+        47=>340,
+        62=>61,
+        64=>if meta&8!=0 {0}else{324},
+        71=>if meta&8!=0 {0}else{330},
+        75=>76,
+        93|94=>356,
         _ => id as i32,
     }
 }
@@ -762,12 +779,13 @@ pub fn drop_block_with_chance(
     let n = quantity_dropped(w, id);
     for _ in 0..n {
         if w.rand.next_float() <= chance {
-            let item = id_dropped(w, id);
+            let item = id_dropped(w, id,meta);
             if item > 0 {
                 let damage = match id {
                     block::LOG => meta,
                     block::ORE_LAPIS => 4,
                     block::LEAVES => meta & 3,
+                    35|43|44=>meta,
                     _ => 0,
                 };
                 let s = 0.7f32;
@@ -800,4 +818,9 @@ pub fn drop_block_with_chance(
             }
         }
     }
+    if id==59 {for _ in 0..3 {if w.rand.next_int(15)<=meta {
+        let s=0.7f32;let ox=w.rand.next_float()*s+(1.0-s)*0.5;let oy=w.rand.next_float()*s+(1.0-s)*0.5;let oz=w.rand.next_float()*s+(1.0-s)*0.5;
+        let mut e=crate::entity::Entity::item(w,(x as f32+ox) as f64,(y as f32+oy) as f64,(z as f32+oz) as f64,ItemStack::new(295,1,0));if let crate::entity::EntityKind::Item{pickup_delay,..}=&mut e.kind {*pickup_delay=10;}w.entity_joined_world(e);
+    }}}
+
 }

@@ -77,6 +77,8 @@ pub enum EntityKind {
         fuse: i32,
     },
     Arrow(projectile::ArrowState),
+    Snowball(projectile::ArrowState),
+    Egg(projectile::ArrowState),
     Fireball(projectile::FireballState),
     Lightning {
         state: i32,
@@ -131,6 +133,8 @@ impl EntityKind {
             Self::Wolf(..) => "Wolf",
             Self::Tnt { .. } => "PrimedTnt",
             Self::Arrow(..) => "Arrow",
+            Self::Snowball(..) => "Snowball",
+            Self::Egg(..) => "ThrownEgg",
             Self::Fireball(..) => "Fireball",
             Self::Lightning { .. } => "LightningBolt",
             Self::Zombie => "Zombie",
@@ -167,6 +171,8 @@ impl EntityKind {
                 | Self::FallingSand { .. }
                 | Self::Tnt { .. }
                 | Self::Arrow(..)
+                | Self::Snowball(..)
+                | Self::Egg(..)
                 | Self::Fireball(..)
                 | Self::Lightning { .. }
         )
@@ -462,6 +468,7 @@ impl Entity {
             EntityKind::FallingSand { .. } => self.update_falling_sand(w),
             EntityKind::Tnt { .. } => self.update_tnt(w),
             EntityKind::Arrow(..) => self.update_arrow(w),
+            EntityKind::Snowball(..) | EntityKind::Egg(..) => self.update_throwable(w),
             EntityKind::Fireball(..) => self.update_fireball(w),
             EntityKind::Lightning { .. } => self.update_lightning(w),
             _ => self.update_hostile_living(w),

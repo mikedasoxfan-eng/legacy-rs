@@ -4,6 +4,14 @@ pub mod registry;
 pub mod verify;
 pub mod persistence;
 pub mod picking;
+pub mod controller;
+pub mod placement;
+pub mod activation;
+pub mod block_hooks;
+pub mod items;
+pub mod throwable;
+pub mod interactions;
+pub mod dye;
 pub use inventory::{InventoryPlayer, ItemStack};
 use super::{Entity, EntityKind, Vec3D};
 use crate::{math::{self, floor_double as floor}, World};
@@ -27,6 +35,7 @@ pub enum PlayerEvent { Pickup { entity: i32, count: i32 }, ChangeDimension, Open
 pub enum SleepStatus { Ok, OtherProblem, NotPossibleHere, NotPossibleNow, TooFarAway }
 #[derive(Clone, Debug)]
 pub struct PlayerState {
+    pub controller: controller::PlayerControllerSP,
     pub inventory: InventoryPlayer, pub input: PlayerInput, pub username: String,
     pub camera_yaw: f32, pub prev_camera_yaw: f32, pub camera_pitch: f32, pub prev_camera_pitch: f32,
     pub is_swinging: bool, pub swing_ticks: i32, pub score: i32, pub dimension: i32,
@@ -36,7 +45,7 @@ pub struct PlayerState {
     pub damage_remainder: i32, pub events: Vec<PlayerEvent>, pub player_index: Option<usize>,
 }
 impl Default for PlayerState {
-    fn default()->Self {Self {inventory:Default::default(),input:Default::default(),username:"Player".into(),camera_yaw:0.0,prev_camera_yaw:0.0,camera_pitch:0.0,prev_camera_pitch:0.0,is_swinging:false,swing_ticks:0,score:0,dimension:0,cloak:Vec3D::default(),prev_cloak:Vec3D::default(),sleeping:false,sleep_timer:0,bed:None,spawn:None,bed_offset:Vec3D::default(),portal_cooldown:20,in_portal:false,time_in_portal:0.0,prev_time_in_portal:0.0,damage_remainder:0,events:Vec::new(),player_index:None}}
+    fn default()->Self {Self {controller:Default::default(),inventory:Default::default(),input:Default::default(),username:"Player".into(),camera_yaw:0.0,prev_camera_yaw:0.0,camera_pitch:0.0,prev_camera_pitch:0.0,is_swinging:false,swing_ticks:0,score:0,dimension:0,cloak:Vec3D::default(),prev_cloak:Vec3D::default(),sleeping:false,sleep_timer:0,bed:None,spawn:None,bed_offset:Vec3D::default(),portal_cooldown:20,in_portal:false,time_in_portal:0.0,prev_time_in_portal:0.0,damage_remainder:0,events:Vec::new(),player_index:None}}
 }
 impl Entity {
     pub fn player(w:&mut World,username:impl Into<String>)->Self {
@@ -152,6 +161,7 @@ impl Entity {
         if attacker.and_then(|id|w.entities.get(&id)).is_some_and(|e|e.kind.is_mob()||matches!(e.kind,EntityKind::Arrow(..))) {
             *damage=match w.difficulty {0=>0,1=>*damage/3+1,3=>*damage*3/2,_=>*damage};
         }
+        if *damage!=0 {if let Some(mut source)=attacker.and_then(|id|w.entities.get(&id)).cloned() {if let EntityKind::Arrow(a)=&source.kind {if let Some(owner)=a.owner.and_then(|id|w.entities.get(&id)).cloned() {source=owner;}}if source.kind.is_living(){self.alert_wolves(w,&source,false);}}}
         *damage!=0
     }
     pub(super) fn damage_living(&mut self,mut amount:i32) {

@@ -197,6 +197,7 @@ pub struct World {
     pub entity_seed_source: crate::entity::EntitySeedSource,
     pub chest_random: JavaRandom,
     pub math_random: JavaRandom,
+    pub item_random: JavaRandom,
     pub next_entity_id: i32,
     pub difficulty: i32,
     pub spawn_hostile_mobs: bool,
@@ -274,6 +275,7 @@ impl World {
             explosion_seed_source: crate::entity::EntitySeedSource::Time,
             entity_seed_source: crate::entity::EntitySeedSource::Time,
             chest_random: JavaRandom::new(crate::entity::EntitySeedSource::Time.next_seed()),
+            item_random: JavaRandom::new(crate::entity::EntitySeedSource::Time.next_seed()),
             math_random: JavaRandom::new(
                 std::time::SystemTime::now()
                     .duration_since(std::time::UNIX_EPOCH)
@@ -986,6 +988,11 @@ impl World {
             return None;
         }
         let key = (x & 15, y, z & 15);
+        let id=self.chunk(cx,cz).block(x&15,y,z&15);
+        if matches!(id,23|61|62) {
+            if !self.chunk(cx,cz).raw_tile_entities.iter().any(|n|n.int("x")==x&&n.int("y")==y&&n.int("z")==z) {crate::entity::player::block_hooks::added(self,id,x,y,z);}
+            return None;
+        }
         if !self.chunk(cx, cz).tile_entities.contains_key(&key) {
             let id = self.chunk(cx, cz).block(x & 15, y, z & 15);
             if !props(id).container {
@@ -1027,6 +1034,7 @@ impl World {
         }
         let c = self.chunk_mut(cx, cz);
         if c.loaded {
+            c.raw_tile_entities.retain(|n|n.int("x")!=x||n.int("y")!=y||n.int("z")!=z);
             c.tile_entities.remove(&(x & 15, y, z & 15));
             c.tile_entity_order.retain(|p| *p != (x & 15, y, z & 15));
         }

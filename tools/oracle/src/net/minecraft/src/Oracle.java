@@ -726,6 +726,10 @@ public class Oracle {
                     o.u8(2);
                     byte[] id = ((TileEntityMobSpawner) te).getMobID().getBytes("US-ASCII");
                     o.u8(id.length); o.bytes(id);
+                } else if(te instanceof TileEntityFurnace||te instanceof TileEntityDispenser) {
+                    boolean furnace=te instanceof TileEntityFurnace;o.u8(furnace?3:4);IInventory inv=(IInventory)te;
+                    for(int i=0;i<inv.getSizeInventory();i++){ItemStack st=inv.getStackInSlot(i);o.i16(st==null?-1:st.itemID);o.u8(st==null?0:st.stackSize);o.i16(st==null?0:st.getItemDamage());}
+                    if(furnace){TileEntityFurnace f=(TileEntityFurnace)te;o.i16(f.furnaceBurnTime);o.i16(f.furnaceCookTime);}
                 } else {
                     throw new IllegalStateException("unexpected tile entity " + te);
                 }
