@@ -18,6 +18,7 @@ pub mod settings;
 pub mod shot;
 pub mod slot;
 pub mod stats;
+pub mod stats_file;
 pub mod system;
 pub mod widgets;
 
@@ -40,6 +41,7 @@ pub const TEXTURES: &[&str] = &[
     "terrain.png",
     "%blur%/misc/vignette.png",
     "achievement/bg.png",
+    "gui/slot.png",
     "gui/inventory.png",
     "gui/crafting.png",
     "gui/container.png",

@@ -181,6 +181,8 @@ public class Oracle {
             TeleportOracle.respawn(Long.parseLong(a[1]), Long.parseLong(a[2]), a[3], a[4]);
         } else if (mode.equals("statlist")) {
             StatsOracle.run(a[1]);
+        } else if (mode.equals("statsfile")) {
+            StatsOracle.file(a[1], a[2]);
         } else if (mode.equals("redstone")) {
             RedstoneOracle.run(a[1], a[2]);
         } else if (mode.equals("rendershowcase")) {

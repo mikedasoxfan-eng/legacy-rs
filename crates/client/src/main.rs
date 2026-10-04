@@ -386,6 +386,33 @@ fn main() {
         println!("{}", if ok { "MODELS EXACT" } else { "MODELS DIFFER" });
         std::process::exit(if ok { 0 } else { 1 });
     }
+    // `--statsfile write <dir> id=n,id=n...` writes <dir>/stats/stats_player_unsent.dat;
+    // `--statsfile read <file>` prints the stats a file holds, sorted ("null" if rejected).
+    if args.get(1).map(String::as_str) == Some("--statsfile") {
+        let map = assets::Jar::open().and_then(|mut j| j.text("achievement/map.txt")).unwrap_or_default();
+        match args.get(2).map(String::as_str) {
+            Some("write") => {
+                let _ = std::fs::create_dir_all(&args[3]);
+                let mut stats = gui::stats::Stats::open(std::path::Path::new(&args[3]), "Player", &map);
+                for kv in args.get(4).map_or("", String::as_str).split(',').filter(|s| !s.is_empty()) {
+                    let (k, v) = kv.split_once('=').expect("id=n");
+                    stats.add(k.parse().expect("stat id"), v.parse().expect("stat value"));
+                }
+                stats.sync();
+            }
+            _ => match gui::stats_file::Syncher::read_file(std::path::Path::new(&args[3]), &map) {
+                None => println!("null"),
+                Some(m) => {
+                    let mut rows: Vec<_> = m.into_iter().collect();
+                    rows.sort_unstable();
+                    for (k, v) in rows {
+                        println!("{k} {v}");
+                    }
+                }
+            },
+        }
+        return;
+    }
     if args.get(1).map(String::as_str) == Some("--guishot") {
         let script = args.get(2).expect("--guishot script.txt outdir");
         let out = std::path::Path::new(args.get(3).map(String::as_str).unwrap_or("shots/gui"));

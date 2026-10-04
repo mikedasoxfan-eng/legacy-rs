@@ -1,6 +1,12 @@
 package net.minecraft.src;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
 import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 import java.lang.reflect.Field;
 
 /** StatList as the original registers it: the general/block/item lists the statistics
@@ -36,6 +42,30 @@ class StatsOracle {
                     if (arrays[a][i] != null) pw.println(names[a] + "\t" + i + "\t" + arrays[a][i].statId);
                 }
             }
+        }
+    }
+
+    /** Read a stats file the way StatsSyncher does (lines joined, checksum checked), print the
+     *  stats sorted by id ("null" if rejected), then write the map back in the original format. */
+    static void file(String in, String out) throws Exception {
+        Block.stone.getClass();
+        Item.shovelSteel.getClass();
+        StringBuilder text = new StringBuilder();
+        try (BufferedReader r = new BufferedReader(new FileReader(in))) {
+            String line;
+            while ((line = r.readLine()) != null) text.append(line);
+        }
+        Map map = StatFileWriter.func_27177_a(text.toString());
+        if (map == null) {
+            System.out.println("null");
+            return;
+        }
+        List<String> rows = new ArrayList<>();
+        for (Object k : map.keySet()) rows.add(((StatBase) k).statId + " " + map.get(k));
+        Collections.sort(rows, (x, y) -> Integer.compare(Integer.parseInt(x.split(" ")[0]), Integer.parseInt(y.split(" ")[0])));
+        for (String row : rows) System.out.println(row);
+        try (PrintWriter pw = new PrintWriter(out)) {
+            pw.print(StatFileWriter.func_27185_a("Player", "local", map));
         }
     }
 }

@@ -55,25 +55,79 @@ pub fn display_bounds() -> (i32, i32, i32, i32) {
 /// `StatFileWriter`'s counters (stat id -> value).
 #[derive(Default, Clone, Debug)]
 pub struct Stats {
-    values: HashMap<i32, i32>,
+    /// `field_25102_a`: everything, shown by the screens.
+    total: HashMap<i32, i32>,
+    /// `field_25101_b`: what goes to the stats file.
+    unsent: HashMap<i32, i32>,
+    /// `field_27189_c`: set by the first change and never cleared.
+    dirty: bool,
+    file: Option<super::stats_file::Syncher>,
 }
 
 impl Stats {
-    pub fn get(&self, id: i32) -> i32 {
-        self.values.get(&id).copied().unwrap_or(0)
+    /// The client's `StatFileWriter`: stats from `<dir>/stats/stats_<user>_unsent.dat`.
+    pub fn open(dir: &std::path::Path, user: &str, map_txt: &str) -> Stats {
+        let (file, loaded) = super::stats_file::Syncher::open(dir, user, map_txt);
+        let mut s = Stats { file: Some(file), ..Default::default() };
+        // func_27179_a
+        if let Some(map) = loaded {
+            s.dirty = true;
+            for (id, n) in map {
+                *s.unsent.entry(id).or_insert(0) += n;
+                *s.total.entry(id).or_insert(0) += n;
+            }
+        }
+        s
     }
 
+    pub fn get(&self, id: i32) -> i32 {
+        self.total.get(&id).copied().unwrap_or(0)
+    }
+
+    /// `readStat`
     pub fn add(&mut self, id: i32, n: i32) {
-        *self.values.entry(id).or_insert(0) += n;
+        *self.unsent.entry(id).or_insert(0) += n;
+        *self.total.entry(id).or_insert(0) += n;
+        self.dirty = true;
+    }
+
+    /// `syncStats`: write the file now (screen changes, world changes, quitting).
+    pub fn sync(&mut self) {
+        if let Some(f) = &self.file {
+            f.write(&self.unsent);
+        }
+    }
+
+    /// `func_27178_d`, once per game tick: a periodic write, then the syncher's tick.
+    pub fn tick(&mut self) {
+        let Some(f) = &mut self.file else { return };
+        if self.dirty && f.ready() {
+            f.send(&self.unsent);
+        }
+        // func_27180_b: the sent file's stats plus what is still unsent.
+        if let Some(sent) = f.tick() {
+            for (id, n) in sent {
+                let unsent = self.unsent.get(&id).copied().unwrap_or(0);
+                self.total.insert(id, n + unsent);
+            }
+        }
     }
 
     /// `hasAchievementUnlocked`
     pub fn unlocked(&self, i: usize) -> bool {
-        self.values.contains_key(&ACHIEVEMENTS[i].id)
+        self.total.contains_key(&ACHIEVEMENTS[i].id)
     }
 
     /// `func_27181_b`: no parent, or the parent is unlocked.
     pub fn can_unlock(&self, i: usize) -> bool {
         ACHIEVEMENTS[i].parent.is_none_or(|p| self.unlocked(p))
     }
+}
+
+/// `StatList.func_27361_a(id) != null`: the stat ids the original registers.
+pub fn is_registered(id: i32) -> bool {
+    use super::stats_table as t;
+    t::GENERAL.iter().any(|g| g.0 == id)
+        || [&t::MINE[..], &t::CRAFT[..], &t::USE[..], &t::BREAK[..]].iter().any(|tb| tb.iter().any(|e| e.1 == id))
+        || ACHIEVEMENTS.iter().any(|a| a.id == id)
 }

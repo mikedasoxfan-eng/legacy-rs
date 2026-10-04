@@ -21,6 +21,11 @@ use worldgen::BiomeSource;
 
 type PlayerView = render::player_view::View;
 
+/// `StatList.startGameStat`, `createWorldStat`, `loadWorldStat`
+const STAT_START_GAME: i32 = 1000;
+const STAT_CREATE_WORLD: i32 = 1001;
+const STAT_LOAD_WORLD: i32 = 1002;
+
 /// `MouseFilter.func_22386_a` (smooth camera).
 fn mouse_filter(f: &mut [f32; 3], v: f32, k: f32) -> f32 {
     f[0] += v;
@@ -395,6 +400,13 @@ impl App {
             self.cam = Camera { pos: DVec3::new(x, y, z), yaw, pitch };
         }
         self.loading = Some(gui::loading::LoadingScreen { title: String::new(), text: String::new(), progress: -1 });
+        // Minecraft.startWorld: count the start, then changeWorld syncs the stats file.
+        if let Some(g) = &mut self.gui {
+            let is_new = w.dir.as_ref().is_none_or(|d| !d.join("level.dat").exists());
+            g.ui.stats.add(if is_new { STAT_CREATE_WORLD } else { STAT_LOAD_WORLD }, 1);
+            g.ui.stats.add(STAT_START_GAME, 1);
+            g.ui.stats.sync();
+        }
         let col = self.col.clone().expect("colorizers");
         let (tx, rx, h) = worker::spawn(w, col, self.video_settings());
         self.tx = Some(tx);
@@ -406,6 +418,10 @@ impl App {
     /// screen (or the program exits).
     fn quit_world(&mut self, exit: bool) {
         self.exit_after_save = exit;
+        // changeWorld(null) syncs the stats file.
+        if let Some(g) = &mut self.gui {
+            g.ui.stats.sync();
+        }
         if let Some(tx) = &self.tx {
             let _ = tx.send(ToWorker::Quit);
             self.loading =
@@ -460,6 +476,10 @@ impl App {
                 }
             }
             self.world_closed(el);
+        }
+        // shutdownMinecraftApplet
+        if let Some(g) = &mut self.gui {
+            g.ui.stats.sync();
         }
         el.exit();
     }
@@ -955,6 +975,10 @@ impl App {
         // GuiScreen.updateScreen runs every game tick (20 per second).
         let mut gui_ticks = 0;
         while now >= self.gui_ticks && gui_ticks < 20 {
+            // runTick: statFileWriter.func_27178_d, then the HUD.
+            if let Some(g) = &mut self.gui {
+                g.ui.stats.tick();
+            }
             self.ingame.update_tick();
             if let Some(g) = &mut self.gui {
                 g.update_screen();
@@ -1588,6 +1612,7 @@ impl ApplicationHandler for App {
             None => self.opts.options_dir.clone().unwrap_or_else(|| std::env::current_dir().unwrap_or_default()),
         };
         let settings = gui::settings::GameSettings::load(&data_dir);
+        let stat_map = assets::Jar::open().and_then(|mut j| j.text("achievement/map.txt")).unwrap_or_default();
         gpu.apply_video(VideoSettings::from(&settings));
         let splash_seed =
             std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).map_or(0, |d| d.as_nanos() as i64);
@@ -1602,6 +1627,7 @@ impl ApplicationHandler for App {
             splash_seed,
             1,
         );
+        gui.ui.stats = gui::stats::Stats::open(&data_dir, "Player", &stat_map);
         // Minecraft.loadScreen: the Mojang logo while starting up.
         gpu.render_overlay_only(false, &mut |device, queue, view, size| {
             gui.ui.gl.begin_frame();
