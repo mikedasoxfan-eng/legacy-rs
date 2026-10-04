@@ -91,6 +91,25 @@ for c in "${mesh_cases[@]}"; do
   rm -f "$out/mesh_case.bin"
 done
 
+# ---- saves: real game reads ours, we read the real game's
+echo "== save format: Java saves, Rust loads"
+rm -rf "$root/saves/_verify_java" "$root/saves/_verify_rust"
+if "$oracle" savepreload 0 1 ../../../saves/_verify_java v_mem.bin 2>/dev/null | grep -v -i "warning\|unsafe\|\^";    "$cmp" savecheck "$root/saves/_verify_java" "$out/v_mem.bin" | tail -1 | grep -q "EXACT MATCH"; then echo "EXACT MATCH"; else echo "DIFFERS"; fail=1; fi
+echo "== save format: Rust saves, Java loads"
+"$cmp" makesave 0 1 "$root/saves/_verify_rust" >/dev/null
+if "$oracle" readsave ../../../saves/_verify_rust v_read.bin 2>/dev/null | grep -v -i "warning\|unsafe\|\^";    "$cmp" preload-worldonly 0 1 "$out/v_read.bin" | tail -1 | grep -q "EXACT MATCH"; then echo "EXACT MATCH"; else echo "DIFFERS"; fail=1; fi
+
+# ---- server chunk handling: original server classes walking a player out and back
+if [ "$quick" != quick ]; then
+  echo "== server mode: 900-tick walk, unload/reload through region files"
+  rm -rf "$root/saves/_verify_srv_java" "$root/saves/_verify_srv_rust"
+  "$root/tools/oracle/server_oracle.sh" serverwalk 0 1 10 ../../../saves/_verify_srv_java 900 v_srv.bin >/dev/null 2>&1
+  "$cmp" serverwalk 0 1 10 "$root/saves/_verify_srv_rust" 900 "$out/v_srv.bin" | tail -1 | grep -q "EXACT MATCH" && echo "in memory: EXACT MATCH" || { echo "in memory: DIFFERS"; fail=1; }
+  "$oracle" readsave ../../../saves/_verify_srv_java v_srv_saved.bin >/dev/null 2>&1
+  "$cmp" savecheck "$root/saves/_verify_srv_rust" "$out/v_srv_saved.bin" | tail -1 | grep -q "EXACT MATCH" && echo "on disk: EXACT MATCH" || { echo "on disk: DIFFERS"; fail=1; }
+fi
+rm -rf "$root"/saves/_verify_* "$out"/v_*.bin
+
 # ---- sky, fog and cloud colors, sun angle, night darkness
 echo "== sky colors"
 for args in "3257840388504953787 -39 65 6000 0.0" "0 1000 -2000 13000 0.5" "123 -500 77 23500 0.25" "42 99999 -12345 18000 0.9" "1 0 0 12500 0.75"; do

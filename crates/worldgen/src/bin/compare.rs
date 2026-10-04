@@ -32,6 +32,25 @@ fn main() -> ExitCode {
             eprintln!("rust: {} chunks in {:.2?}", w.chunks.len(), t.elapsed());
             world(&w, &a[9])
         }
+        Some("serverwalk") => {
+            // seed wrand radius dir ticks java.bin: the server oracle's scripted walk.
+            let dir = std::path::PathBuf::from(&a[5]);
+            let (mut w, _) = World::open(Some(&dir), p(2), p(3), true).expect("open");
+            let mut pm = worldgen::world::server::PlayerManager::new(p(4) as i32);
+            let (sx, sz) = (w.spawn.0 as f64 + 0.5, w.spawn.2 as f64 + 0.5);
+            pm.add_player(&mut w, sx, sz);
+            for t in 0..p(6) as i32 {
+                w.tick();
+                w.drain_lighting();
+                let (x, z) = walk_path(sx, sz, t);
+                pm.update_player(&mut w, x, z);
+            }
+            pm.remove_player(&mut w);
+            w.save_world(true);
+            println!("rust: {} chunks loaded at the end", w.chunks.len());
+            WORLD_ONLY.store(true, std::sync::atomic::Ordering::Relaxed);
+            world(&w, &a[7])
+        }
         Some("makesave") => {
             // Create a world in a save directory the way the viewer does (preload, then save).
             let (w, new) = World::open(Some(std::path::Path::new(&a[4])), p(2), p(3), false).expect("open");
@@ -215,6 +234,15 @@ impl Tally {
             eprintln!("  {what}: {}", msg());
         }
     }
+}
+
+/// The server oracle's scripted walk (ServerOracle.path).
+fn walk_path(sx: f64, sz: f64, t: i32) -> (f64, f64) {
+    if t < 600 {
+        return (sx + 3.0 * t as f64, sz + 1.0 * t as f64);
+    }
+    let (x600, z600) = (sx + 3.0 * 600.0, sz + 1.0 * 600.0);
+    (x600 - 3.0 * (t - 600) as f64, z600 + 0.5 * (t - 600) as f64)
 }
 
 static WORLD_ONLY: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(false);

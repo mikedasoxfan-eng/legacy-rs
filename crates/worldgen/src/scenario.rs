@@ -115,8 +115,9 @@ impl World {
         } else {
             w.preload_spawn_area();
         }
-        if is_new {
-            // Minecraft.changeWorld saves a freshly generated world straight away.
+        if is_new && !server {
+            // Minecraft.changeWorld saves a freshly generated world straight away
+            // (the server only saves when it shuts down).
             w.save_world(true);
         }
         Ok((w, is_new))
