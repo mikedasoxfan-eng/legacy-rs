@@ -6,6 +6,8 @@ import org.lwjgl.opengl.GL11;
 /** Execute original renderer bytecode and record GL inputs + original Tessellator bytes. */
 public final class RendererOracle {
     public static boolean active=false;
+    public static boolean pistonCapture=false;
+    static Raw pistonRaw;
     public static int flags=297,src=1,dst=0,depth=515;
     public static float[] normal={0,0,1};
     static ArrayList<float[]> ops=new ArrayList<float[]>();
@@ -28,14 +30,14 @@ public final class RendererOracle {
     public static void endList(){compiling=0;}
     public static void callList(int id){if(active)for(Raw r:lists.get(id))emit(r);}
     public static void record(int mode,int n) {
-        if(!active && compiling==0)return;
+        if(!active && compiling==0 && !pistonCapture)return;
         try {
-            if(mode!=7)throw new AssertionError("expected quads, got "+mode);
+            if(mode!=7 && !(pistonCapture && mode==4))throw new AssertionError("expected quads, got "+mode);
             Tessellator t=Tessellator.instance;
             boolean color=field("hasColor").getBoolean(t),normalArray=field("hasNormals").getBoolean(t),uv=field("hasTexture").getBoolean(t);
             int[] raw=(int[])field("rawBuffer").get(t);
             Raw r=new Raw(n,(color?64:0)|(normalArray?128:0)|(uv?512:0),Arrays.copyOf(raw,n*8));
-            if(compiling!=0)lists.get(compiling).add(r);else emit(r);
+            if(pistonCapture){pistonRaw=r;}else if(compiling!=0)lists.get(compiling).add(r);else emit(r);
         }catch(Exception e){throw new RuntimeException(e);}
     }
     static void emit(Raw r) {

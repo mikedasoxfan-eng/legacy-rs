@@ -5,6 +5,7 @@ import net.minecraft.src.RendererOracle;
 /** No GL context: record the original Tessellator immediately before draw resets it. */
 public final class GL11 {
     public static final int GL_DST_ALPHA=772, GL_NORMALIZE=2977, GL_EQUAL=514, GL_LEQUAL=515, GL_COMPILE=4864, GL_QUADS=7;
+    public static final int GL_LIGHT0=16384,GL_LIGHT1=16385,GL_FRONT_AND_BACK=1032,GL_AMBIENT_AND_DIFFUSE=5634,GL_POSITION=4611,GL_DIFFUSE=4609,GL_SPECULAR=4610,GL_LIGHT_MODEL_AMBIENT=2899;
     public static final int GL_GREATER = 516;
     public static final int GL_DEPTH_BUFFER_BIT = 256;
     public static final int GL_COLOR_BUFFER_BIT = 16384;
@@ -62,6 +63,9 @@ public final class GL11 {
     }
     public static void glFogi(int name,int value) {}
     public static void glColorMaterial(int face,int mode) {}
+    public static void glLight(int light,int name,FloatBuffer data) {}
+    public static void glLightModel(int name,FloatBuffer data) {}
+    public static void glShadeModel(int mode) {}
     public static void glDisable(int x) { RendererOracle.enable(x,false); }
     public static void glEnable(int x) { RendererOracle.enable(x,true); }
     public static void glBlendFunc(int x,int y) { RendererOracle.src=x;RendererOracle.dst=y; }
@@ -81,5 +85,5 @@ public final class GL11 {
     public static void glVertexPointer(int a,int b,int c,long d) { throw new AssertionError("VBO"); }
     public static void glEnableClientState(int x) {}
     public static void glDisableClientState(int x) {}
-    public static void glDrawArrays(int mode,int first,int count) { if(RendererOracle.active) RendererOracle.record(mode,count); else Oracle.recordWeatherDraw(mode,count,color,texture); }
+    public static void glDrawArrays(int mode,int first,int count) { if(RendererOracle.active || RendererOracle.pistonCapture) RendererOracle.record(mode,count); else Oracle.recordWeatherDraw(mode,count,color,texture); }
 }

@@ -1,0 +1,18 @@
+place 1 64 0 35 7
+place 0 64 0 29 5
+place 0 64 1 69 5
+place 4 64 0 25 0
+use 4 64 0
+use 0 64 1
+tick 1
+state
+chunkreload 0 0
+state
+check 0 64 0 5 64 1 4
+state
+use 0 64 1
+state
+check 0 64 0 5 64 1 4
+state
+use 4 64 0
+events
