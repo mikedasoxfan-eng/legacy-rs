@@ -47,7 +47,10 @@ pub struct RenderBlocks<'a, 'b> {
     col: &'b Colorizers,
     b: Bounds,
     pub ao: bool,
+    pub override_texture: Option<i32>,
     enable_ao: bool,
+    damage_uv: [i32; 6],
+    damage_flip: bool,
     // per-vertex colors for the AO face functions
     r_tl: f32,
     r_bl: f32,
@@ -74,9 +77,19 @@ impl<'a, 'b> RenderBlocks<'a, 'b> {
             w,
             t,
             col,
-            b: Bounds { min_x: 0.0, min_y: 0.0, min_z: 0.0, max_x: 1.0, max_y: 1.0, max_z: 1.0 },
+            b: Bounds {
+                min_x: 0.0,
+                min_y: 0.0,
+                min_z: 0.0,
+                max_x: 1.0,
+                max_y: 1.0,
+                max_z: 1.0,
+            },
             ao: true,
+            override_texture: None,
             enable_ao: false,
+            damage_uv: [0; 6],
+            damage_flip: false,
             r_tl: 0.0,
             r_bl: 0.0,
             r_br: 0.0,
@@ -95,6 +108,33 @@ impl<'a, 'b> RenderBlocks<'a, 'b> {
     // ---------------------------------------------------------------- Block virtuals
 
     fn set_bounds(&mut self, id: u8, x: i32, y: i32, z: i32) {
+        if self.override_texture.is_some() {
+            use worldgen::entity::block_table as table;
+            let m = self.w.meta(x, y, z) as usize;
+            let retain = (matches!(id, 29 | 33 | 34) && m & 7 > 5)
+                || (id == 77 && !(1..=4).contains(&(m & 7)));
+            let mut b = if table::HAS_STATE_BOUNDS[id as usize] && !retain {
+                table::STATE_BOUNDS[id as usize][m]
+            } else {
+                self.w.world.block_bounds[id as usize]
+            };
+            if id == 90 {
+                b = if self.w.block(x - 1, y, z) != id && self.w.block(x + 1, y, z) != id {
+                    worldgen::entity::AxisAlignedBB::new(0.375, 0.0, 0.0, 0.625, 1.0, 1.0)
+                } else {
+                    worldgen::entity::AxisAlignedBB::new(0.0, 0.0, 0.375, 1.0, 1.0, 0.625)
+                };
+            }
+            self.b = Bounds {
+                min_x: b.min_x,
+                min_y: b.min_y,
+                min_z: b.min_z,
+                max_x: b.max_x,
+                max_y: b.max_y,
+                max_z: b.max_z,
+            };
+            return;
+        }
         let p = &rprops(id).bounds;
         self.b = Bounds {
             min_x: p[0] as f64,
@@ -125,6 +165,9 @@ impl<'a, 'b> RenderBlocks<'a, 'b> {
 
     /// `getBlockTexture(IBlockAccess, x, y, z, side)`
     fn texture(&self, id: u8, x: i32, y: i32, z: i32, side: usize) -> i32 {
+        if let Some(tex) = self.override_texture {
+            return tex;
+        }
         match id {
             block::GRASS => match side {
                 1 => 0,
@@ -145,6 +188,9 @@ impl<'a, 'b> RenderBlocks<'a, 'b> {
 
     #[inline]
     fn texture_meta(&self, id: u8, side: usize, meta: i32) -> i32 {
+        if let Some(tex) = self.override_texture {
+            return tex;
+        }
         rprops(id).textures[(meta & 15) as usize][side] as i32
             + if id == block::LEAVES && !self.w.fancy { 1 } else { 0 }
     }
@@ -185,6 +231,19 @@ impl<'a, 'b> RenderBlocks<'a, 'b> {
 
     /// `shouldSideBeRendered`, called for block `id` with the neighbour position.
     fn should_side_be_rendered(&self, id: u8, x: i32, y: i32, z: i32, side: i32) -> bool {
+        if matches!(id, 93 | 94) && self.override_texture.is_some() {
+            return side != 0 && side != 1;
+        }
+        if id == 90 && self.override_texture.is_some() {
+            if self.w.block(x, y, z) == id {
+                return false;
+            }
+            let a = (self.w.block(x - 1, y, z) == id && self.w.block(x - 2, y, z) != id)
+                || (self.w.block(x + 1, y, z) == id && self.w.block(x + 2, y, z) != id);
+            let b = (self.w.block(x, y, z - 1) == id && self.w.block(x, y, z - 2) != id)
+                || (self.w.block(x, y, z + 1) == id && self.w.block(x, y, z + 2) != id);
+            return (a && matches!(side, 4 | 5)) || (b && matches!(side, 2 | 3));
+        }
         match id {
             block::WATER_MOVING | block::WATER_STILL | block::LAVA_MOVING | block::LAVA_STILL => {
                 let m = self.w.material(x, y, z);
@@ -219,6 +278,10 @@ impl<'a, 'b> RenderBlocks<'a, 'b> {
         }
         !self.w.is_opaque_cube(x, y, z)
     }
+    fn damage_normal_cube(&self, x: i32, y: i32, z: i32) -> bool {
+        let id = self.w.block(x, y, z);
+        block::mat(block::material_of(id)).translucent_solid && rprops(id).normal
+    }
 
     // ---------------------------------------------------------------- dispatch
 
@@ -230,6 +293,23 @@ impl<'a, 'b> RenderBlocks<'a, 'b> {
             1 => self.render_block_reed(id, x, y, z),
             4 => self.render_block_fluids(id, x, y, z),
             13 => self.render_block_cactus(id, x, y, z),
+            2 if self.override_texture.is_some() => self.damage_torch(id as i32, x, y, z),
+            9 if self.override_texture.is_some() => self.damage_rail(id as i32, x, y, z),
+            6 if self.override_texture.is_some() => self.damage_crops(id as i32, x, y, z),
+            8 if self.override_texture.is_some() => self.damage_ladder(id as i32, x, y, z),
+            10 if self.override_texture.is_some() => self.damage_stairs(id as i32, x, y, z),
+            11 if self.override_texture.is_some() => self.damage_fence(id as i32, x, y, z),
+            16 if self.override_texture.is_some() => self.damage_piston(id as i32, x, y, z, false),
+            17 if self.override_texture.is_some() => {
+                self.damage_extension(id as i32, x, y, z, true);
+                true
+            }
+            7 if self.override_texture.is_some() => self.damage_door(id as i32, x, y, z),
+            14 if self.override_texture.is_some() => self.damage_bed(id as i32, x, y, z),
+            15 if self.override_texture.is_some() => self.damage_repeater(id as i32, x, y, z),
+            3 if self.override_texture.is_some() => self.damage_fire(id as i32, x, y, z),
+            5 if self.override_texture.is_some() => self.damage_wire(id as i32, x, y, z),
+            12 if self.override_texture.is_some() => self.damage_lever(id, x, y, z),
             _ => false,
         }
     }
@@ -258,7 +338,10 @@ impl<'a, 'b> RenderBlocks<'a, 'b> {
             let mut light = self.brightness(id, nx, ny, nz);
             let bounds = self.b;
             if match side {
-                1 => bounds.max_y != 1.0 && !matches!(block::material_of(id), block::MAT_WATER | block::MAT_LAVA),
+                1 => {
+                    bounds.max_y != 1.0
+                        && !matches!(block::material_of(id), block::MAT_WATER | block::MAT_LAVA)
+                }
                 2 => bounds.min_z > 0.0,
                 3 => bounds.max_z < 1.0,
                 4 => bounds.min_x > 0.0,
@@ -539,6 +622,7 @@ impl<'a, 'b> RenderBlocks<'a, 'b> {
 
     /// Texture rectangle shared by the horizontal faces (no UV rotation in natural terrain).
     fn uv_xz(&self, tex: i32) -> (f64, f64, f64, f64) {
+        let tex = self.override_texture.unwrap_or(tex);
         let tu = ((tex & 15) << 4) as f64;
         let tv = (tex & 240) as f64;
         let b = &self.b;
@@ -558,6 +642,10 @@ impl<'a, 'b> RenderBlocks<'a, 'b> {
     }
 
     pub fn render_bottom_face(&mut self, x: f64, y: f64, z: f64, tex: i32) {
+        if self.override_texture.is_some() {
+            self.damage_bottom_face(0, x, y, z, tex);
+            return;
+        }
         let (u0, u1, v0, v1) = self.uv_xz(tex);
         let b = self.b;
         let (x0, x1, yy, z0, z1) = (x + b.min_x, x + b.max_x, y + b.min_y, z + b.min_z, z + b.max_z);
@@ -568,6 +656,10 @@ impl<'a, 'b> RenderBlocks<'a, 'b> {
     }
 
     pub fn render_top_face(&mut self, x: f64, y: f64, z: f64, tex: i32) {
+        if self.override_texture.is_some() {
+            self.damage_top_face(0, x, y, z, tex);
+            return;
+        }
         let (u0, u1, v0, v1) = self.uv_xz(tex);
         let b = self.b;
         let (x0, x1, yy, z0, z1) = (x + b.min_x, x + b.max_x, y + b.max_y, z + b.min_z, z + b.max_z);
@@ -579,6 +671,7 @@ impl<'a, 'b> RenderBlocks<'a, 'b> {
 
     /// UVs for faces spanning (a, y): `a` is x for east/west, z for north/south.
     fn uv_side(&self, tex: i32, a_min: f64, a_max: f64) -> (f64, f64, f64, f64) {
+        let tex = self.override_texture.unwrap_or(tex);
         let tu = ((tex & 15) << 4) as f64;
         let tv = (tex & 240) as f64;
         let b = &self.b;
@@ -598,6 +691,10 @@ impl<'a, 'b> RenderBlocks<'a, 'b> {
     }
 
     pub fn render_east_face(&mut self, x: f64, y: f64, z: f64, tex: i32) {
+        if self.override_texture.is_some() {
+            self.damage_east_face(0, x, y, z, tex);
+            return;
+        }
         let b = self.b;
         let (u0, u1, v0, v1) = self.uv_side(tex, b.min_x, b.max_x);
         let (x0, x1, y0, y1, zz) = (x + b.min_x, x + b.max_x, y + b.min_y, y + b.max_y, z + b.min_z);
@@ -608,6 +705,10 @@ impl<'a, 'b> RenderBlocks<'a, 'b> {
     }
 
     pub fn render_west_face(&mut self, x: f64, y: f64, z: f64, tex: i32) {
+        if self.override_texture.is_some() {
+            self.damage_west_face(0, x, y, z, tex);
+            return;
+        }
         let b = self.b;
         let (u0, u1, v0, v1) = self.uv_side(tex, b.min_x, b.max_x);
         let (x0, x1, y0, y1, zz) = (x + b.min_x, x + b.max_x, y + b.min_y, y + b.max_y, z + b.max_z);
@@ -618,6 +719,10 @@ impl<'a, 'b> RenderBlocks<'a, 'b> {
     }
 
     pub fn render_north_face(&mut self, x: f64, y: f64, z: f64, tex: i32) {
+        if self.override_texture.is_some() {
+            self.damage_north_face(0, x, y, z, tex);
+            return;
+        }
         let b = self.b;
         let (u0, u1, v0, v1) = self.uv_side(tex, b.min_z, b.max_z);
         let (xx, y0, y1, z0, z1) = (x + b.min_x, y + b.min_y, y + b.max_y, z + b.min_z, z + b.max_z);
@@ -628,6 +733,10 @@ impl<'a, 'b> RenderBlocks<'a, 'b> {
     }
 
     pub fn render_south_face(&mut self, x: f64, y: f64, z: f64, tex: i32) {
+        if self.override_texture.is_some() {
+            self.damage_south_face(0, x, y, z, tex);
+            return;
+        }
         let b = self.b;
         let (u0, u1, v0, v1) = self.uv_side(tex, b.min_z, b.max_z);
         let (xx, y0, y1, z0, z1) = (x + b.max_x, y + b.min_y, y + b.max_y, z + b.min_z, z + b.max_z);
@@ -855,6 +964,9 @@ impl<'a, 'b> RenderBlocks<'a, 'b> {
 
     /// `renderBlockFluids`
     fn render_block_fluids(&mut self, id: u8, x: i32, y: i32, z: i32) -> bool {
+        // Fluid top and sides ignore overrideBlockTexture in vanilla. Only
+        // renderBottomFace applies the destruction texture.
+        let damage_texture = self.override_texture.take();
         let (r, g, b) = rgb(self.color_multiplier(id, x, y, z));
         let top = self.should_side_be_rendered(id, x, y + 1, z, 1);
         let bottom = self.should_side_be_rendered(id, x, y - 1, z, 0);
@@ -865,6 +977,7 @@ impl<'a, 'b> RenderBlocks<'a, 'b> {
             self.should_side_be_rendered(id, x + 1, y, z, 5),
         ];
         if !top && !bottom && !sides.iter().any(|&s| s) {
+            self.override_texture = damage_texture;
             return false;
         }
         let mut rendered = false;
@@ -906,8 +1019,10 @@ impl<'a, 'b> RenderBlocks<'a, 'b> {
         if bottom {
             let l = self.brightness(id, x, y - 1, z);
             self.t.set_color_opaque_f(s_bottom * l, s_bottom * l, s_bottom * l);
-            let tex = self.texture_meta(id, 0, meta);
+            let tex = damage_texture.unwrap_or_else(|| self.texture_meta(id, 0, meta));
+            self.override_texture = damage_texture;
             self.render_bottom_face(x as f64, y as f64, z as f64, tex);
+            self.override_texture = None;
             rendered = true;
         }
         for (i, &draw) in sides.iter().enumerate() {
@@ -944,6 +1059,7 @@ impl<'a, 'b> RenderBlocks<'a, 'b> {
             self.t.vertex_uv(xb as f64, y as f64, zb as f64, u1, v1);
             self.t.vertex_uv(xa as f64, y as f64, za as f64, u0, v1);
         }
+        self.override_texture = damage_texture;
         rendered
     }
 
@@ -1048,3 +1164,5 @@ fn flow_angle(v: (f64, f64, f64)) -> f64 {
         v.2.atan2(v.0) - std::f64::consts::PI * 0.5
     }
 }
+include!("blocks_damage.rs");
+include!("blocks_damage_special.rs");

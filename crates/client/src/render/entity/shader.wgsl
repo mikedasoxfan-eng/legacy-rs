@@ -3,6 +3,7 @@
 // the CPU, preserving GL_FLAT lighting and the original packed BYTE normals.
 struct Uniforms {
     view_proj: mat4x4<f32>,
+    fog_view: mat4x4<f32>,
     fog_color: vec4<f32>,
     fog: vec4<f32>,
 };
@@ -26,11 +27,13 @@ struct Out {
     o.clip = u.view_proj * vec4<f32>(v.pos,1.0);
     o.uv = v.uv;
     o.color = v.color;
-    o.dist = length(v.pos);
+    o.dist = length((u.fog_view * vec4<f32>(v.pos,1.0)).xyz);
     return o;
 }
 fn fog(c: vec4<f32>, dist: f32) -> vec4<f32> {
-    let f = clamp((u.fog.y-dist)/(u.fog.y-u.fog.x),0.0,1.0);
+    if u.fog.z < 0.5 { return c; }
+    var f = clamp((u.fog.y-dist)/(u.fog.y-u.fog.x),0.0,1.0);
+    if u.fog.z > 1.5 { f = clamp(exp(-u.fog.x*dist),0.0,1.0); }
     return vec4<f32>(mix(u.fog_color.rgb,c.rgb,f),c.a);
 }
 @fragment fn fs_test(i: Out) -> @location(0) vec4<f32> {

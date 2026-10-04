@@ -14,6 +14,7 @@ pub mod models;
 pub mod object_check;
 pub mod objects;
 pub mod pipeline;
+pub mod player;
 pub mod shot;
 pub mod special;
 

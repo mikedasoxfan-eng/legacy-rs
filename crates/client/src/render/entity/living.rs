@@ -163,6 +163,9 @@ pub enum Pass {
     Overlay,
     TntFlash,
     Shadow,
+    Damage,
+    Untested,
+    UntestedAlpha,
 }
 
 pub struct Batch {
