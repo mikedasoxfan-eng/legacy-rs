@@ -2,31 +2,81 @@
 //!
 //!   compare raw <seed> <oracle.bin>
 //!   compare sin <oracle-sin.bin>
+//!   compare grid <seed> <wrand> <x0> <z0> <x1> <z1> <each|end|none> <oracle.bin>
+//!   compare preload <seed> <wrand> <oracle.bin> [fancy]
 
+use std::collections::BTreeMap;
 use std::process::ExitCode;
-use worldgen::{math, OverworldGenerator};
+use worldgen::scenario::{self, LightMode};
+use worldgen::world::tile::TileEntity;
+use worldgen::{math, OverworldGenerator, World};
 
 const CHUNK_RECORD: usize = 8 + 32768 + 16384 + 256 + 256 * 16;
 
 fn main() -> ExitCode {
-    let args: Vec<String> = std::env::args().collect();
-    match args.get(1).map(String::as_str) {
-        Some("raw") => raw(args[2].parse().expect("seed"), &args[3]),
-        Some("sin") => sin(&args[2]),
+    let a: Vec<String> = std::env::args().collect();
+    let p = |i: usize| a[i].parse::<i64>().expect("number");
+    match a.get(1).map(String::as_str) {
+        Some("raw") => raw(p(2), &a[3]),
+        Some("sin") => sin(&a[2]),
+        Some("math") => java_math(&a[2]),
+        Some("grid") => {
+            let light = match a[8].as_str() {
+                "each" => LightMode::Each,
+                "end" => LightMode::End,
+                _ => LightMode::None,
+            };
+            let mut w = World::new(p(2), p(3));
+            let t = std::time::Instant::now();
+            scenario::grid(&mut w, p(4) as i32, p(5) as i32, p(6) as i32, p(7) as i32, light);
+            eprintln!("rust: {} chunks in {:.2?}", w.chunks.len(), t.elapsed());
+            world(&w, &a[9])
+        }
+        Some("preload") => {
+            let t = std::time::Instant::now();
+            let mut w = World::new(p(2), p(3));
+            w.leaves_opaque = a.get(5).map(String::as_str) != Some("fancy");
+            w.find_initial_spawn();
+            w.preload_spawn_area();
+            eprintln!("rust: spawn {:?}, {} chunks in {:.2?}", w.spawn, w.chunks.len(), t.elapsed());
+            world(&w, &a[4])
+        }
         _ => {
-            eprintln!("usage: compare raw <seed> <oracle.bin> | compare sin <oracle-sin.bin>");
+            eprintln!("see header of compare.rs for usage");
             ExitCode::from(2)
         }
     }
 }
 
-fn i32_at(b: &[u8], o: usize) -> i32 {
-    i32::from_le_bytes(b[o..o + 4].try_into().unwrap())
+struct Reader<'a> {
+    b: &'a [u8],
+    o: usize,
 }
 
-fn f64_at(b: &[u8], o: usize) -> f64 {
-    f64::from_le_bytes(b[o..o + 8].try_into().unwrap())
+impl<'a> Reader<'a> {
+    fn take(&mut self, n: usize) -> &'a [u8] {
+        let s = &self.b[self.o..self.o + n];
+        self.o += n;
+        s
+    }
+    fn u8(&mut self) -> u8 {
+        self.take(1)[0]
+    }
+    fn i16(&mut self) -> i16 {
+        i16::from_le_bytes(self.take(2).try_into().unwrap())
+    }
+    fn i32(&mut self) -> i32 {
+        i32::from_le_bytes(self.take(4).try_into().unwrap())
+    }
+    fn i64(&mut self) -> i64 {
+        i64::from_le_bytes(self.take(8).try_into().unwrap())
+    }
+    fn f64(&mut self) -> f64 {
+        f64::from_le_bytes(self.take(8).try_into().unwrap())
+    }
 }
+
+// ------------------------------------------------------------------ raw terrain
 
 fn raw(seed: i64, path: &str) -> ExitCode {
     let data = std::fs::read(path).expect("read oracle dump");
@@ -38,18 +88,19 @@ fn raw(seed: i64, path: &str) -> ExitCode {
     let (mut chunks, mut bad_chunks, mut bad_blocks) = (0, 0, 0usize);
     let (mut bad_biomes, mut bad_climate) = (0usize, 0usize);
     for rec in body.chunks(CHUNK_RECORD) {
-        let (cx, cz) = (i32_at(rec, 0), i32_at(rec, 4));
-        let blocks = &rec[8..8 + 32768];
-        let biomes = &rec[8 + 32768 + 16384..8 + 32768 + 16384 + 256];
-        let climate = &rec[8 + 32768 + 16384 + 256..];
-
+        let mut r = Reader { b: rec, o: 0 };
+        let (cx, cz) = (r.i32(), r.i32());
+        let blocks = r.take(32768);
+        let _data = r.take(16384);
+        let biomes = r.take(256);
         let chunk = gen.generate(cx, cz);
         chunks += 1;
 
         // Climate arrays still hold this chunk's 16x16 values right after generate().
+        let temps: Vec<f64> = (0..256).map(|_| r.f64()).collect();
+        let humid: Vec<f64> = (0..256).map(|_| r.f64()).collect();
         for i in 0..256 {
-            let t = f64_at(climate, i * 8);
-            let h = f64_at(climate, 2048 + i * 8);
+            let (t, h) = (temps[i], humid[i]);
             if t.to_bits() != gen.biome_source.temperature[i].to_bits()
                 || h.to_bits() != gen.biome_source.humidity[i].to_bits()
             {
@@ -86,7 +137,11 @@ fn raw(seed: i64, path: &str) -> ExitCode {
         "seed {seed}: {chunks} chunks, {bad_chunks} differ ({bad_blocks} blocks), \
          {bad_biomes} biome columns differ, {bad_climate} climate values differ"
     );
-    if bad_chunks == 0 && bad_biomes == 0 && bad_climate == 0 {
+    verdict(bad_chunks == 0 && bad_biomes == 0 && bad_climate == 0)
+}
+
+fn verdict(ok: bool) -> ExitCode {
+    if ok {
         println!("EXACT MATCH");
         ExitCode::SUCCESS
     } else {
@@ -112,4 +167,214 @@ fn sin(path: &str) -> ExitCode {
     } else {
         ExitCode::FAILURE
     }
+}
+
+// ------------------------------------------------------------------ whole worlds
+
+#[derive(Default)]
+struct Tally {
+    count: usize,
+    shown: usize,
+}
+
+impl Tally {
+    fn hit(&mut self, what: &str, msg: impl FnOnce() -> String) {
+        self.count += 1;
+        if self.shown < 8 {
+            self.shown += 1;
+            eprintln!("  {what}: {}", msg());
+        }
+    }
+}
+
+const BLOCK_NAMES: fn(u8) -> &'static str = |id| worldgen::block::props(id).name;
+
+fn world(w: &World, path: &str) -> ExitCode {
+    let data = std::fs::read(path).expect("read world dump");
+    let mut r = Reader { b: &data, o: 0 };
+    assert_eq!(r.take(8), b"B173WLD1", "not a world dump");
+    let spawn = (r.i32(), r.i32(), r.i32());
+    let n = r.i32() as usize;
+
+    let mut cats: BTreeMap<&str, Tally> = BTreeMap::new();
+    let mut ok = true;
+    if spawn != w.spawn {
+        eprintln!("spawn differs: java {spawn:?} rust {:?}", w.spawn);
+        ok = false;
+    }
+    if n != w.chunks.len() {
+        eprintln!("chunk count differs: java {n} rust {}", w.chunks.len());
+        ok = false;
+    }
+
+    let mut populated = 0;
+    for _ in 0..n {
+        let (cx, cz) = (r.i32(), r.i32());
+        let pop = r.u8() != 0;
+        let blocks = r.take(32768);
+        let meta = r.take(16384);
+        let sky = r.take(16384);
+        let blk = r.take(16384);
+        let height = r.take(256);
+        let nte = r.i32();
+        let mut tes = Vec::new();
+        for _ in 0..nte {
+            let (x, y, z) = (r.i32(), r.i32(), r.i32());
+            let te = match r.u8() {
+                1 => {
+                    let mut slots = Box::new([None; 27]);
+                    for s in slots.iter_mut() {
+                        let (id, count, dmg) = (r.i16(), r.u8(), r.i16());
+                        if id >= 0 {
+                            *s = Some(worldgen::world::tile::ItemStack { id, count, damage: dmg });
+                        }
+                    }
+                    TileEntity::Chest(slots)
+                }
+                2 => {
+                    let len = r.u8() as usize;
+                    let mob = String::from_utf8(r.take(len).to_vec()).unwrap();
+                    TileEntity::MobSpawner { mob, delay: 20 }
+                }
+                t => panic!("bad tile entity tag {t}"),
+            };
+            tes.push(((x, y, z), te));
+        }
+        populated += pop as usize;
+
+        let Some(c) = w.chunks.get(&(cx, cz)) else {
+            cats.entry("missing chunk").or_default().hit("missing chunk", || format!("({cx},{cz})"));
+            continue;
+        };
+        if c.populated != pop {
+            cats.entry("populated flag").or_default().hit("populated", || format!("({cx},{cz}) java={pop}"));
+        }
+        for i in 0..32768 {
+            if blocks[i] != c.blocks[i] {
+                let (x, z, y) = (cx * 16 + (i >> 11) as i32, cz * 16 + ((i >> 7) & 15) as i32, (i & 127) as i32);
+                cats.entry("block").or_default().hit("block", || {
+                    format!(
+                        "({x},{y},{z}) java={} ({}) rust={} ({})",
+                        blocks[i],
+                        BLOCK_NAMES(blocks[i]),
+                        c.blocks[i],
+                        BLOCK_NAMES(c.blocks[i])
+                    )
+                });
+            }
+        }
+        for (name, java, rust) in [("metadata", meta, &c.data.0[..]), ("skylight", sky, &c.sky_light.0[..]), ("blocklight", blk, &c.block_light.0[..])] {
+            for i in 0..16384 {
+                if java[i] != rust[i] {
+                    let lo = i * 2;
+                    let (x, z, y) = (cx * 16 + (lo >> 11) as i32, cz * 16 + ((lo >> 7) & 15) as i32, (lo & 127) as i32);
+                    cats.entry(name).or_default().hit(name, || {
+                        format!("({x},{y}..{},{z}) java={:#04x} rust={:#04x}", y + 1, java[i], rust[i])
+                    });
+                }
+            }
+        }
+        if height != &c.height_map[..] {
+            cats.entry("heightmap").or_default().hit("heightmap", || format!("chunk ({cx},{cz})"));
+        }
+        let mut rust_tes: Vec<_> = c
+            .tile_entities
+            .iter()
+            .map(|(&(x, y, z), te)| ((cx * 16 + x, y, cz * 16 + z), te.clone()))
+            .collect();
+        rust_tes.sort_by_key(|(p, _)| *p);
+        let norm = |t: &TileEntity| match t {
+            TileEntity::MobSpawner { mob, .. } => TileEntity::MobSpawner { mob: mob.clone(), delay: 20 },
+            o => o.clone(),
+        };
+        let rust_tes: Vec<_> = rust_tes.into_iter().map(|(p, t)| (p, norm(&t))).collect();
+        if rust_tes != tes {
+            cats.entry("tile entities").or_default().hit("tile entities", || {
+                format!("chunk ({cx},{cz}) java={tes:?} rust={rust_tes:?}")
+            });
+        }
+    }
+
+    let nt = r.i32() as usize;
+    let mut java_ticks = Vec::new();
+    for _ in 0..nt {
+        java_ticks.push((r.i32(), r.i32(), r.i32(), r.i32(), r.i64()));
+    }
+    let mut rust_ticks: Vec<_> = w.pending_ticks.iter().map(|(k, &t)| (k.x, k.y, k.z, k.block, t)).collect();
+    rust_ticks.sort();
+    if java_ticks != rust_ticks {
+        cats.entry("pending ticks").or_default().hit("pending ticks", || {
+            format!("java {} entries, rust {}", java_ticks.len(), rust_ticks.len())
+        });
+    }
+    let java_lq = r.i32() as usize;
+    if java_lq != w.light_queue.len() {
+        cats.entry("light queue").or_default().hit("light queue", || {
+            format!("java {java_lq} rust {}", w.light_queue.len())
+        });
+    }
+
+    println!(
+        "{n} chunks ({populated} populated), {} chests/spawners, {} pending ticks",
+        w.chunks.values().map(|c| c.tile_entities.len()).sum::<usize>(),
+        nt
+    );
+    for (name, t) in &cats {
+        println!("  {name}: {} mismatches", t.count);
+        ok = false;
+    }
+    verdict(ok)
+}
+
+/// Our Java-math emulation vs Java's Math/StrictMath sin/cos over every input
+/// WorldGenBigTree can produce, plus Math.pow(x, 2.0) vs x*x.
+fn java_math(path: &str) -> ExitCode {
+    use worldgen::jmath;
+    let data = std::fs::read(path).expect("read math dump");
+    let mut r = Reader { b: &data, o: 0 };
+    let n = 1usize << 24;
+    let arg = |i: usize| (i as f32 / (1u32 << 24) as f32) as f64 * 2.0 * 3.14159;
+    let read = |r: &mut Reader| (0..n).map(|_| r.f64()).collect::<Vec<f64>>();
+    let (msin, mcos, ssin, scos) = (read(&mut r), read(&mut r), read(&mut r), read(&mut r));
+    let mut ok = true;
+    let checks: [(&str, &Vec<f64>, fn(f64) -> f64); 4] = [
+        ("StrictMath.sin vs fdlibm port", &ssin, jmath::fdlibm_sin),
+        ("StrictMath.cos vs fdlibm port", &scos, jmath::fdlibm_cos),
+        ("Math.sin vs java_sin", &msin, jmath::java_sin),
+        ("Math.cos vs java_cos", &mcos, jmath::java_cos),
+    ];
+    for (name, java, f) in checks {
+        let (mut small, mut large, mut shown) = (0, 0, 0);
+        for i in 0..n {
+            let a = arg(i);
+            let v = f(a);
+            if v.to_bits() != java[i].to_bits() {
+                if a.abs() < std::f64::consts::FRAC_PI_4 { small += 1 } else { large += 1 }
+                if shown < 4 {
+                    shown += 1;
+                    eprintln!("  {name}: x={a:e} java={:e} rust={v:e}", java[i]);
+                }
+                if std::env::var_os("JMATH_TABLE").is_some() {
+                    println!("    ({:#018x}, {:#018x}), // {name} x={a:e}", a.to_bits(), java[i].to_bits());
+                }
+            }
+        }
+        let libm = (0..n).filter(|&i| {
+            let a = arg(i);
+            let v = if name.contains("sin") { a.sin() } else { a.cos() };
+            v.to_bits() != java[i].to_bits()
+        }).count();
+        println!("{name}: {small} differ below pi/4, {large} above (plain libm would differ in {libm})");
+        ok &= small + large == 0;
+    }
+    let (mut bad_mul, mut pows) = (0, 0);
+    while r.o < data.len() {
+        let (x, java) = (r.f64(), r.f64());
+        pows += 1;
+        if (x * x).to_bits() != java.to_bits() {
+            bad_mul += 1;
+        }
+    }
+    println!("Math.pow(x, 2.0) vs x*x: {bad_mul} of {pows} differ");
+    verdict(ok && bad_mul == 0)
 }
