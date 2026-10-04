@@ -18,7 +18,7 @@ fn angles(g: &mut Fixed, p: &ModelRenderer) {
         g.rotate(p.rotate_angle_x * (180.0 / PI_F32), 1.0, 0.0, 0.0);
     }
 }
-fn part(g: &mut Fixed, p: &ModelRenderer, post: bool) {
+pub(crate) fn part(g: &mut Fixed, p: &ModelRenderer, post: bool) {
     if p.hidden || !p.show_model {
         return;
     }
@@ -50,7 +50,7 @@ fn part(g: &mut Fixed, p: &ModelRenderer, post: bool) {
         }
     }
 }
-fn model(g: &mut Fixed, m: &Model) {
+pub(crate) fn model(g: &mut Fixed, m: &Model) {
     for (p, _) in m.render_parts() {
         part(g, p, false);
     }
@@ -132,8 +132,14 @@ fn held(g: &mut Fixed, m: &Model, icon: i32) {
     g.scale(0.625, -0.625, 0.625);
     g.rotate(-100.0, 1.0, 0.0, 0.0);
     g.rotate(45.0, 0.0, 1.0, 0.0);
+    sprite(g, icon, false);
+    g.pop();
+}
+
+/// ItemRenderer.renderItem flat item extrusion.
+pub(crate) fn sprite(g: &mut Fixed, icon: i32, terrain: bool) {
     g.push();
-    g.texture = 2;
+    g.texture = if terrain { 1 } else { 2 };
     g.enable(2, true);
     g.translate(-0.0, -0.3, 0.0);
     g.scale(1.5, 1.5, 1.5);
@@ -188,6 +194,5 @@ fn held(g: &mut Fixed, m: &Model, icon: i32) {
         g.end();
     }
     g.enable(2, false);
-    g.pop();
     g.pop();
 }

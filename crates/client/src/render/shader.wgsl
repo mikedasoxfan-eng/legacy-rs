@@ -3,6 +3,7 @@
 
 struct Uniforms {
     view_proj: mat4x4<f32>,
+    fog_view: mat4x4<f32>,
     model: mat4x4<f32>,
     color: vec4<f32>,
     fog_color: vec4<f32>,
@@ -35,7 +36,7 @@ fn vs_terrain(v: VIn, @builtin(instance_index) inst: u32) -> VOut {
     o.clip = u.view_proj * vec4<f32>(rel, 1.0);
     o.uv = v.uv;
     o.color = v.color;
-    o.dist = length(rel);
+    o.dist = length((u.fog_view * vec4<f32>(rel,1.0)).xyz);
     return o;
 }
 
@@ -46,7 +47,7 @@ fn vs_sky(v: VIn) -> VOut {
     o.clip = u.view_proj * p;
     o.uv = v.uv;
     o.color = v.color;
-    o.dist = length(p.xyz);
+    o.dist = length((u.fog_view * p).xyz);
     return o;
 }
 
@@ -57,7 +58,8 @@ fn fs_main(i: VOut) -> @location(0) vec4<f32> {
         discard;
     }
     if (u.fog.z > 0.5) {
-        let f = clamp((u.fog.y - i.dist) / (u.fog.y - u.fog.x), 0.0, 1.0);
+        var f = clamp((u.fog.y - i.dist) / (u.fog.y - u.fog.x), 0.0, 1.0);
+        if (u.fog.z > 1.5) { f = clamp(exp(-u.fog.x*i.dist),0.0,1.0); }
         c = vec4<f32>(mix(u.fog_color.rgb, c.rgb, f), c.a);
     }
     return c;

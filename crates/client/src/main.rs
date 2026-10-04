@@ -113,7 +113,10 @@ fn parse_args() -> Options {
         play_script: get("--play-script").map(Into::into),
         direct: ["--world", "--world-dir", "--seed", "--no-save", "--shot", "--at", "--server"]
             .iter()
-            .any(|f| args.iter().any(|a| a == f || a.starts_with(&format!("{f}=")))),
+        .any(|f| {
+            args.iter()
+                .any(|a| a == f || a.starts_with(&format!("{f}=")))
+        }),
         at,
         shot: get("--shot").map(Into::into),
         bolt: get("--bolt").map(|v| {
@@ -365,6 +368,11 @@ fn main() {
     if args.get(1).map(String::as_str) == Some("--effectcheck") {
         let ok = render::entity::object_check::effects_check(args.get(2).expect("--effectcheck oracle-effects.bin"));
         println!("{}", if ok { "EFFECTS EXACT" } else { "EFFECTS DIFFER" });
+        std::process::exit(if ok { 0 } else { 1 });
+    }
+    if args.get(1).map(String::as_str) == Some("--firstpersoncheck") {
+        let ok =
+            render::first_person_check::check(args.get(2).expect("--firstpersoncheck oracle.bin"));
         std::process::exit(if ok { 0 } else { 1 });
     }
     if args.get(1).map(String::as_str) == Some("--renderercheck") {

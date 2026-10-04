@@ -2,11 +2,17 @@
 
 pub mod access;
 pub mod blocks;
+pub mod camera;
 pub mod entity;
+pub mod first_person;
+pub mod first_person_check;
 pub mod fx;
 pub mod gpu;
+pub mod map;
+pub mod player_view;
 pub mod sky;
 pub mod table;
+pub mod targeting;
 pub mod video;
 pub mod video_check;
 pub mod weather;

@@ -19,10 +19,7 @@ use winit::keyboard::{KeyCode, PhysicalKey};
 use winit::window::{CursorGrabMode, Window, WindowId};
 use worldgen::BiomeSource;
 
-/// `thePlayer` as of the last world tick.
-struct PlayerView {
-    entity: worldgen::entity::Entity,
-}
+type PlayerView = render::player_view::View;
 
 /// `MouseFilter.func_22386_a` (smooth camera).
 fn mouse_filter(f: &mut [f32; 3], v: f32, k: f32) -> f32 {
@@ -1046,7 +1043,16 @@ impl App {
                             self.ingame.add_chat_message(&g.ui, text);
                         }
                     }
-                    Ok(FromWorker::Player { entity, hud, events, in_water, input_seq, score, life }) => {
+                    Ok(FromWorker::Player {
+                        entity,
+                        hud,
+                        view,
+                        events,
+                        in_water,
+                        input_seq,
+                        score,
+                        life,
+                    }) => {
                         if life < self.life {
                             continue;
                         }
@@ -1117,7 +1123,11 @@ impl App {
                             self.nether = nether;
                             self.temps = if nether { BiomeSource::hell() } else { BiomeSource::new(self.seed) };
                         }
-                        self.player = Some(PlayerView { entity: *entity });
+                        if let Some(p) = &mut self.player {
+                            p.update(*entity, *hud, view);
+                        } else {
+                            self.player = Some(PlayerView::new(*entity, *hud, view));
+                        }
                     }
                     Ok(FromWorker::QuickSaved(done)) => {
                         if let Some(gui) = &mut self.gui {
@@ -1299,9 +1309,9 @@ impl App {
             let e = &p.entity;
             let t = partial as f64;
             self.cam.pos = DVec3::new(
-                e.prev_pos.x + (e.pos.x - e.prev_pos.x) * t,
-                e.prev_pos.y + (e.pos.y - e.prev_pos.y) * t,
-                e.prev_pos.z + (e.pos.z - e.prev_pos.z) * t,
+                e.last_tick_pos.x + (e.pos.x - e.last_tick_pos.x) * t,
+                e.last_tick_pos.y + (e.pos.y - e.last_tick_pos.y) * t,
+                e.last_tick_pos.z + (e.pos.z - e.last_tick_pos.z) * t,
             );
             let l = self.look;
             self.cam.yaw = l[2] + (l[0] - l[2]) * partial;
@@ -1367,6 +1377,28 @@ impl App {
             self.cam.pitch,
             partial,
         );
+        // First-person camera, player model and targeting use a private render snapshot.
+        let settings = self.gui.as_ref().map(|g| &g.ui.settings);
+        let camera_settings = render::camera::Settings {
+            bobbing: settings.is_none_or(|s| s.view_bobbing),
+            third_person: settings.is_some_and(|s| s.third_person_view),
+            anaglyph: video.anaglyph,
+            distance: video.distance,
+            ticks: self.cloud_ticks as i32,
+            zoom: 1.0,
+            ..Default::default()
+        };
+        let player_frame = self.player.as_mut().map(|p| {
+            p.frame(
+                partial,
+                self.look,
+                camera_settings,
+                settings.is_some_and(|s| s.hide_gui),
+                self.cam.pos.to_array(),
+                self.col.as_ref().expect("world colorizers"),
+                video.fancy,
+            )
+        });
         let params = FrameParams {
             cam_pos: self.cam.pos,
             yaw: self.cam.yaw,
@@ -1374,13 +1406,17 @@ impl App {
             fov_y_deg: 70.0,
             celestial: angle,
             sky_color: sky::sky_color(angle, temp, rain, thunder, self.weather.flash, partial),
-            fog_color: if self.nether {
-                let sky = sky::sky_color(angle, temp, rain, thunder, self.weather.flash, partial);
-                sky::nether_fog_color(sky, video.distance, rain, thunder)
-            } else {
-                sky::fog_color(angle, temp, video.distance, rain, thunder, self.weather.flash, partial)
-            }
-            .map(|c| c * (self.fog_fade[0] + (self.fog_fade[1] - self.fog_fade[0]) * partial)),
+            fog_color: render::camera::fog_color(
+                if self.nether {
+                    let sky = sky::sky_color(angle, temp, rain, thunder, self.weather.flash, partial);
+                    sky::nether_fog_color(sky, video.distance, rain, thunder)
+                } else {
+                    sky::fog_color(angle, temp, video.distance, rain, thunder, self.weather.flash, partial)
+                },
+                player_frame.as_ref().map_or(render::camera::Medium::Air, |v| v.medium),
+                self.fog_fade[0] + (self.fog_fade[1] - self.fog_fade[0]) * partial,
+                video.anaglyph,
+            ),
             far: video.far(),
             video,
             cloud_offset: self.cloud_ticks as f32 + partial,
@@ -1390,6 +1426,7 @@ impl App {
             lightning,
             particles,
             nether: self.nether,
+            player: player_frame,
         };
 
         if let Some(gpu) = &mut self.gpu {

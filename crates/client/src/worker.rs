@@ -168,6 +168,7 @@ pub enum FromWorker {
     Player {
         entity: Box<worldgen::entity::Entity>,
         hud: Box<worldgen::entity::player::PlayerHud>,
+        view: crate::render::player_view::Snapshot,
         events: Vec<worldgen::entity::player::PlayerEvent>,
         /// `isInsideOfMaterial(Material.water)` (the air bubbles).
         in_water: bool,
@@ -611,6 +612,7 @@ fn run(opts: WorldOptions, col: Colorizers, mut video: VideoSettings, rx: Receiv
                     let in_water = e.is_inside_material(&mut world, worldgen::block::table::MAT_WATER);
                     let score = e.player_state().map_or(0, |s| s.score);
                     let _ = tx.send(FromWorker::Player {
+                        view: crate::render::player_view::Snapshot::capture(&world, &e),
                         entity: Box::new(e),
                         hud: Box::new(hud),
                         events,

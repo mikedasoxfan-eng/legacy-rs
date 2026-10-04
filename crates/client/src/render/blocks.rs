@@ -92,7 +92,14 @@ impl<'a, 'b> RenderBlocks<'a, 'b> {
             w,
             t,
             col,
-            b: Bounds { min_x: 0.0, min_y: 0.0, min_z: 0.0, max_x: 1.0, max_y: 1.0, max_z: 1.0 },
+            b: Bounds {
+                min_x: 0.0,
+                min_y: 0.0,
+                min_z: 0.0,
+                max_x: 1.0,
+                max_y: 1.0,
+                max_z: 1.0,
+            },
             ao: true,
             enable_ao: false,
             r_tl: 0.0,
@@ -122,6 +129,33 @@ impl<'a, 'b> RenderBlocks<'a, 'b> {
     // ---------------------------------------------------------------- Block virtuals
 
     fn set_bounds(&mut self, id: u8, x: i32, y: i32, z: i32) {
+        if self.override_texture >= 0 {
+            use worldgen::entity::block_table as table;
+            let m = self.w.meta(x, y, z) as usize;
+            let retain = (matches!(id, 29 | 33 | 34) && m & 7 > 5)
+                || (id == 77 && !(1..=4).contains(&(m & 7)));
+            let mut b = if table::HAS_STATE_BOUNDS[id as usize] && !retain {
+                table::STATE_BOUNDS[id as usize][m]
+            } else {
+                self.w.world.block_bounds[id as usize]
+            };
+            if id == 90 {
+                b = if self.w.block(x - 1, y, z) != id && self.w.block(x + 1, y, z) != id {
+                    worldgen::entity::AxisAlignedBB::new(0.375, 0.0, 0.0, 0.625, 1.0, 1.0)
+                } else {
+                    worldgen::entity::AxisAlignedBB::new(0.0, 0.0, 0.375, 1.0, 1.0, 0.625)
+                };
+            }
+            self.b = Bounds {
+                min_x: b.min_x,
+                min_y: b.min_y,
+                min_z: b.min_z,
+                max_x: b.max_x,
+                max_y: b.max_y,
+                max_z: b.max_z,
+            };
+            return;
+        }
         self.load_bounds(id, x, y, z);
     }
 
@@ -201,6 +235,19 @@ impl<'a, 'b> RenderBlocks<'a, 'b> {
 
     /// `shouldSideBeRendered`, called for block `id` with the neighbour position.
     fn should_side_be_rendered(&self, id: u8, x: i32, y: i32, z: i32, side: i32) -> bool {
+        if matches!(id, 93 | 94) && self.override_texture >= 0 {
+            return side != 0 && side != 1;
+        }
+        if id == 90 && self.override_texture >= 0 {
+            if self.w.block(x, y, z) == id {
+                return false;
+            }
+            let a = (self.w.block(x - 1, y, z) == id && self.w.block(x - 2, y, z) != id)
+                || (self.w.block(x + 1, y, z) == id && self.w.block(x + 2, y, z) != id);
+            let b = (self.w.block(x, y, z - 1) == id && self.w.block(x, y, z - 2) != id)
+                || (self.w.block(x, y, z + 1) == id && self.w.block(x, y, z + 2) != id);
+            return (a && matches!(side, 4 | 5)) || (b && matches!(side, 2 | 3));
+        }
         match id {
             block::WATER_MOVING | block::WATER_STILL | block::LAVA_MOVING | block::LAVA_STILL => {
                 let m = self.w.material(x, y, z);
@@ -324,7 +371,10 @@ impl<'a, 'b> RenderBlocks<'a, 'b> {
             let mut light = self.brightness(id, nx, ny, nz);
             let bounds = self.b;
             if match side {
-                1 => bounds.max_y != 1.0 && !matches!(block::material_of(id), block::MAT_WATER | block::MAT_LAVA),
+                1 => {
+                    bounds.max_y != 1.0
+                        && !matches!(block::material_of(id), block::MAT_WATER | block::MAT_LAVA)
+                }
                 2 => bounds.min_z > 0.0,
                 3 => bounds.max_z < 1.0,
                 4 => bounds.min_x > 0.0,
@@ -339,7 +389,7 @@ impl<'a, 'b> RenderBlocks<'a, 'b> {
             self.t.set_color_opaque_f(cr * light, cg * light, cb * light);
             let tex = self.texture(id, x, y, z, side);
             self.standard_face(side, x, y, z, tex);
-            if side >= 2 && self.w.fancy && tex == 3 {
+            if side >= 2 && self.w.fancy && tex == 3 && self.override_texture < 0 {
                 self.t.set_color_opaque_f(cr * light * r, cg * light * g, cb * light * b);
                 self.standard_face(side, x, y, z, 38);
             }
@@ -420,8 +470,8 @@ impl<'a, 'b> RenderBlocks<'a, 'b> {
         let g_yp_zn = cbg(self, x, y + 1, z - 1); // field_22339_T
         let g_yn_zp = cbg(self, x, y - 1, z + 1); // field_22355_ae
         let g_yn_zn = cbg(self, x, y - 1, z - 1); // field_22361_ab
-        if rprops(id).tex_index == 3 {
-            // Grass: only the top face is biome-tinted.
+        if rprops(id).tex_index == 3 || self.override_texture >= 0 {
+            // Grass: only the top face is biome-tinted; nothing is while cracking.
             tint_bottom = false;
             tint_e = false;
             tint_w = false;
@@ -496,7 +546,7 @@ impl<'a, 'b> RenderBlocks<'a, 'b> {
             self.set_corner_colors(base(tint_e, 0.8), v9, v10, v11, v12);
             let tex = self.texture(id, x, y, z, 2);
             self.render_east_face(x as f64, y as f64, z as f64, tex);
-            if self.w.fancy && tex == 3 {
+            if self.w.fancy && tex == 3 && self.override_texture < 0 {
                 self.tint_corners(r, g, b);
                 self.render_east_face(x as f64, y as f64, z as f64, 38);
             }
@@ -521,7 +571,7 @@ impl<'a, 'b> RenderBlocks<'a, 'b> {
             self.set_corner_colors(base(tint_w, 0.8), v9, v10, v11, v12);
             let tex = self.texture(id, x, y, z, 3);
             self.render_west_face(x as f64, y as f64, z as f64, tex);
-            if self.w.fancy && tex == 3 {
+            if self.w.fancy && tex == 3 && self.override_texture < 0 {
                 self.tint_corners(r, g, b);
                 self.render_west_face(x as f64, y as f64, z as f64, 38);
             }
@@ -546,7 +596,7 @@ impl<'a, 'b> RenderBlocks<'a, 'b> {
             self.set_corner_colors(base(tint_n, 0.6), v9, v10, v11, v12);
             let tex = self.texture(id, x, y, z, 4);
             self.render_north_face(x as f64, y as f64, z as f64, tex);
-            if self.w.fancy && tex == 3 {
+            if self.w.fancy && tex == 3 && self.override_texture < 0 {
                 self.tint_corners(r, g, b);
                 self.render_north_face(x as f64, y as f64, z as f64, 38);
             }
@@ -571,7 +621,7 @@ impl<'a, 'b> RenderBlocks<'a, 'b> {
             self.set_corner_colors(base(tint_s, 0.6), v9, v10, v11, v12);
             let tex = self.texture(id, x, y, z, 5);
             self.render_south_face(x as f64, y as f64, z as f64, tex);
-            if self.w.fancy && tex == 3 {
+            if self.w.fancy && tex == 3 && self.override_texture < 0 {
                 self.tint_corners(r, g, b);
                 self.render_south_face(x as f64, y as f64, z as f64, 38);
             }
@@ -996,7 +1046,7 @@ impl<'a, 'b> RenderBlocks<'a, 'b> {
 
     /// `renderCrossedSquares`
     fn render_crossed_squares(&mut self, id: u8, meta: i32, x: f64, y: f64, z: f64) {
-        let tex = self.texture_meta(id, 0, meta);
+        let tex = self.face_tex(self.texture_meta(id, 0, meta));
         let tu = (tex & 15) << 4;
         let tv = tex & 240;
         let u0 = (tu as f32 / 256.0f32) as f64;
@@ -1192,6 +1242,9 @@ impl<'a, 'b> RenderBlocks<'a, 'b> {
 
     /// `renderBlockFluids`
     fn render_block_fluids(&mut self, id: u8, x: i32, y: i32, z: i32) -> bool {
+        // Fluid top and sides ignore overrideBlockTexture in vanilla. Only
+        // renderBottomFace applies the destruction texture.
+        let damage_texture = std::mem::replace(&mut self.override_texture, -1);
         let (r, g, b) = rgb(self.color_multiplier(id, x, y, z));
         let top = self.should_side_be_rendered(id, x, y + 1, z, 1);
         let bottom = self.should_side_be_rendered(id, x, y - 1, z, 0);
@@ -1202,6 +1255,7 @@ impl<'a, 'b> RenderBlocks<'a, 'b> {
             self.should_side_be_rendered(id, x + 1, y, z, 5),
         ];
         if !top && !bottom && !sides.iter().any(|&s| s) {
+            self.override_texture = damage_texture;
             return false;
         }
         let mut rendered = false;
@@ -1243,8 +1297,10 @@ impl<'a, 'b> RenderBlocks<'a, 'b> {
         if bottom {
             let l = self.brightness(id, x, y - 1, z);
             self.t.set_color_opaque_f(s_bottom * l, s_bottom * l, s_bottom * l);
-            let tex = self.texture_meta(id, 0, meta);
+            let tex = if damage_texture >= 0 { damage_texture } else { self.texture_meta(id, 0, meta) };
+            self.override_texture = damage_texture;
             self.render_bottom_face(x as f64, y as f64, z as f64, tex);
+            self.override_texture = -1;
             rendered = true;
         }
         for (i, &draw) in sides.iter().enumerate() {
@@ -1281,6 +1337,7 @@ impl<'a, 'b> RenderBlocks<'a, 'b> {
             self.t.vertex_uv(xb as f64, y as f64, zb as f64, u1, v1);
             self.t.vertex_uv(xa as f64, y as f64, za as f64, u0, v1);
         }
+        self.override_texture = damage_texture;
         rendered
     }
 

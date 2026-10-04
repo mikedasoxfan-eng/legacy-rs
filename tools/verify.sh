@@ -238,6 +238,12 @@ echo "== entity shadows and fire"
 if "$oracle" rendereffects effects_case.bin && "$beta" --effectcheck "$out/effects_case.bin"; then :; else fail=1; fi
 rm -f "$out/renderers_case.bin" "$out/effects_case.bin" "$out/living_case.bin"
 
+# ---- first-person camera, hand, overlays, player armor and targeting
+# Original bytecode GL inputs, projection matrices and Tessellator vertex bits.
+echo "== first-person view, player and block targeting"
+if "$oracle" firstperson firstperson_case.bin && "$beta" --firstpersoncheck "$out/firstperson_case.bin"; then :; else fail=1; fi
+rm -f "$out/firstperson_case.bin"
+
 # ---- sky, fog and cloud colors, sun angle, night darkness
 echo "== renderer window sizes and Java negative-coordinate wrapping"
 for distance in 0 1 2 3; do

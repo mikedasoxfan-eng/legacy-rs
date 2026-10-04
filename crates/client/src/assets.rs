@@ -54,8 +54,12 @@ fn colormap(img: &Image) -> Vec<u32> {
 
 pub fn load() -> Result<Assets, String> {
     let path = jar_path();
-    let file = std::fs::File::open(&path)
-        .map_err(|e| format!("can't open {} ({e}). Install b1.7.3 in the launcher first.", path.display()))?;
+    let file = std::fs::File::open(&path).map_err(|e| {
+        format!(
+            "can't open {} ({e}). Install b1.7.3 in the launcher first.",
+            path.display()
+        )
+    })?;
     let mut zip = zip::ZipArchive::new(file).map_err(|e| format!("bad jar: {e}"))?;
     let mut read = |name: &str| -> Result<Image, String> {
         let mut f = zip.by_name(name).map_err(|e| format!("{name} missing from jar: {e}"))?;
@@ -76,6 +80,18 @@ pub fn load() -> Result<Assets, String> {
     for &name in crate::render::entity::living::TEXTURES {
         mobs.insert(name.to_owned(), read(name)?);
     }
+    for name in crate::render::entity::player::ARMOR.into_iter().chain([
+        "misc/water.png",
+        "misc/mapbg.png",
+        "misc/mapicons.png",
+        "font/default.png",
+    ]) {
+        mobs.insert(name.to_owned(), read(name)?);
+    }
+    mobs.insert(
+        "__map".into(),
+        crate::render::map::image(&Default::default(), false),
+    );
     Ok(Assets {
         terrain,
         sun,
@@ -98,8 +114,12 @@ pub struct Jar {
 impl Jar {
     pub fn open() -> Result<Jar, String> {
         let path = jar_path();
-        let file = std::fs::File::open(&path)
-            .map_err(|e| format!("can't open {} ({e}). Install b1.7.3 in the launcher first.", path.display()))?;
+        let file = std::fs::File::open(&path).map_err(|e| {
+            format!(
+                "can't open {} ({e}). Install b1.7.3 in the launcher first.",
+                path.display()
+            )
+        })?;
         Ok(Jar { zip: zip::ZipArchive::new(file).map_err(|e| format!("bad jar: {e}"))? })
     }
 

@@ -11,6 +11,7 @@ use winit::window::Window;
 #[derive(Clone, Copy, bytemuck::Pod, bytemuck::Zeroable)]
 struct Uniforms {
     view_proj: [[f32; 4]; 4],
+    fog_view: [[f32; 4]; 4],
     model: [[f32; 4]; 4],
     color: [f32; 4],
     fog_color: [f32; 4],
@@ -31,6 +32,7 @@ struct ChunkGpu {
 
 /// Everything the frame needs from the game state.
 pub struct FrameParams {
+    pub player: Option<super::player_view::Frame>,
     pub cam_pos: DVec3,
     pub yaw: f32,
     pub pitch: f32,
@@ -59,6 +61,9 @@ struct DrawSlot {
 pub struct Gpu {
     /// Entity simulation can fill these render states before each frame.
     pub entities: super::entity::pipeline::EntityPipeline,
+    hand: super::entity::pipeline::EntityPipeline,
+    overlays: super::entity::pipeline::EntityPipeline,
+    targeting: super::entity::pipeline::EntityPipeline,
     pub window: Arc<Window>,
     surface: wgpu::Surface<'static>,
     device: wgpu::Device,
@@ -433,6 +438,30 @@ impl Gpu {
                 config.format,
                 mobs.iter().map(|(n, i)| (n.as_str(), i)).chain(std::iter::once(("terrain.png", terrain))),
             ),
+            hand: super::entity::pipeline::EntityPipeline::new(
+                &device,
+                &queue,
+                config.format,
+                mobs.iter()
+                    .map(|(n, i)| (n.as_str(), i))
+                    .chain(std::iter::once(("terrain.png", terrain))),
+            ),
+            overlays: super::entity::pipeline::EntityPipeline::new(
+                &device,
+                &queue,
+                config.format,
+                mobs.iter()
+                    .map(|(n, i)| (n.as_str(), i))
+                    .chain(std::iter::once(("terrain.png", terrain))),
+            ),
+            targeting: super::entity::pipeline::EntityPipeline::new(
+                &device,
+                &queue,
+                config.format,
+                mobs.iter()
+                    .map(|(n, i)| (n.as_str(), i))
+                    .chain(std::iter::once(("terrain.png", terrain))),
+            ),
             window,
             surface,
             depth,
@@ -524,6 +553,9 @@ impl Gpu {
     /// RenderEngine.updateDynamicTextures: copy animated tiles into terrain.png.
     pub fn update_fx(&self, fx: &[super::fx::TextureFx]) {
         self.entities.update_fx(&self.queue, fx);
+        self.hand.update_fx(&self.queue, fx);
+        self.overlays.update_fx(&self.queue, fx);
+        self.targeting.update_fx(&self.queue, fx);
         for f in fx {
             for i in 0..f.tile_size {
                 for j in 0..f.tile_size {
@@ -695,18 +727,106 @@ impl Gpu {
         let view = frame.texture.create_view(&Default::default());
         let (w, h) = (self.config.width, self.config.height);
 
-        // Camera: glRotatef(pitch, 1,0,0); glRotatef(yaw + 180, 0,1,0); gluPerspective(fov, aspect, 0.05, far*2).
-        let rot = Mat4::from_rotation_x(p.pitch.to_radians()) * Mat4::from_rotation_y((p.yaw + 180.0).to_radians());
-        let proj = perspective(p.fov_y_deg.to_radians(), w as f32 / h as f32, 0.05, p.far * 2.0);
+        let rot = p.player.as_ref().map_or_else(
+            || {
+                Mat4::from_rotation_x(p.pitch.to_radians())
+                    * Mat4::from_rotation_y((p.yaw + 180.0).to_radians())
+            },
+            |v| super::camera::matrix(&v.ops),
+        );
+        let proj = p.player.as_ref().map_or_else(
+            || {
+                perspective(
+                    p.fov_y_deg.to_radians(),
+                    w as f32 / h as f32,
+                    0.05,
+                    p.far * 2.0,
+                )
+            },
+            |v| super::camera::projection(v.fov, w as f32 / h as f32, p.far * 2.0, v.settings),
+        );
         let view_proj = proj * rot;
-        self.entities.prepare(&self.device, &self.queue, view_proj, p.cam_pos, p.fog_color, p.far);
+        let medium = p
+            .player
+            .as_ref()
+            .map_or(super::camera::Medium::Air, |v| v.medium);
+        let nether = p.nether || p.player.as_ref().is_some_and(|v| v.nether);
+        let fog_color = p.fog_color;
+        let fog = super::camera::fog(medium, p.far, false, nether);
+        self.entities.fog_override = Some(fog);
+        self.entities.fog_view = rot;
+        if let Some(v) = &p.player {
+            if let Some(image) = &v.map_image {
+                self.hand.update_map(&self.queue, image);
+            }
+            self.entities.extra = v.player.draws.iter().map(|d| d.batch()).collect();
+            self.hand.upload(
+                &self.device,
+                &self.queue,
+                v.hand.draws.iter().map(|d| d.batch()).collect(),
+                proj,
+                [0.0; 3],
+                0.0,
+            );
+            let overlays = v
+                .overlays
+                .draws
+                .iter()
+                .map(|d| {
+                    let mut b = d.batch();
+                    b.pass = if d.flags & 16 == 0 {
+                        super::entity::living::Pass::Untested
+                    } else {
+                        super::entity::living::Pass::UntestedAlpha
+                    };
+                    b
+                })
+                .collect();
+            self.overlays
+                .upload(&self.device, &self.queue, overlays, proj, [0.0; 3], 0.0);
+            let mut batches: Vec<_> = v.damage.draws.iter().map(|d| d.batch()).collect();
+            batches.extend(super::targeting::line_batches(&v.outline, view_proj, w, h));
+            self.targeting.fog_override = Some(fog);
+            self.targeting.fog_view = rot;
+            self.targeting.upload(
+                &self.device,
+                &self.queue,
+                batches,
+                view_proj,
+                fog_color,
+                p.far,
+            );
+        } else {
+            self.hand
+                .upload(&self.device, &self.queue, vec![], proj, [0.0; 3], 0.0);
+            self.overlays
+                .upload(&self.device, &self.queue, vec![], proj, [0.0; 3], 0.0);
+            self.targeting.upload(
+                &self.device,
+                &self.queue,
+                vec![],
+                view_proj,
+                fog_color,
+                p.far,
+            );
+        }
+        self.entities.prepare(
+            &self.device,
+            &self.queue,
+            view_proj,
+            p.cam_pos,
+            fog_color,
+            p.far,
+        );
         let ident = Mat4::IDENTITY.to_cols_array_2d();
-        let fog4 = [p.fog_color[0], p.fog_color[1], p.fog_color[2], 1.0];
+        let fog4 = [fog_color[0], fog_color[1], fog_color[2], 1.0];
 
         // ---- sky (RenderGlobal.renderSky)
-        let sky_fog = [0.0, p.far * 0.8, 1.0, -1.0];
+        let sf = super::camera::fog(medium, p.far, true, nether);
+        let sky_fog = [sf[0], sf[1], sf[2], -1.0];
         let sky_u = Uniforms {
             view_proj: view_proj.to_cols_array_2d(),
+            fog_view: rot.to_cols_array_2d(),
             model: ident,
             color: [p.sky_color[0], p.sky_color[1], p.sky_color[2], 1.0],
             fog_color: fog4,
@@ -736,6 +856,7 @@ impl Gpu {
             let model = Mat4::from_rotation_x(90f32.to_radians()) * Mat4::from_rotation_z(z.to_radians());
             let u = Uniforms {
                 view_proj: view_proj.to_cols_array_2d(),
+                fog_view: rot.to_cols_array_2d(),
                 model: model.to_cols_array_2d(),
                 color: [1.0; 4],
                 fog_color: fog4,
@@ -746,6 +867,7 @@ impl Gpu {
         let celestial_rot = Mat4::from_rotation_x((p.celestial * 360.0).to_radians());
         let sunmoon_u = Uniforms {
             view_proj: view_proj.to_cols_array_2d(),
+            fog_view: rot.to_cols_array_2d(),
             model: celestial_rot.to_cols_array_2d(),
             color: [1.0, 1.0, 1.0, 1.0f32 - p.rain],
             fog_color: fog4,
@@ -755,6 +877,7 @@ impl Gpu {
         let stars_u = Uniforms { color: [star_b; 4], ..sunmoon_u };
         let void_u = Uniforms {
             view_proj: view_proj.to_cols_array_2d(),
+            fog_view: rot.to_cols_array_2d(),
             model: ident,
             color: [p.sky_color[0] * 0.2 + 0.04, p.sky_color[1] * 0.2 + 0.04, p.sky_color[2] * 0.6 + 0.1, 1.0],
             fog_color: fog4,
@@ -805,11 +928,10 @@ impl Gpu {
         if !origins.is_empty() {
             self.queue.write_buffer(&self.origins_buf, 0, bytemuck::cast_slice(&origins));
         }
-        // setupFog: GL_FOG_START far/4, or 0 in the Nether.
-        let fog_start = if p.nether { 0.0 } else { p.far * 0.25 };
-        let terrain_fog = [fog_start, p.far, 1.0, 0.1];
+        let terrain_fog = [fog[0], fog[1], fog[2], 0.1];
         let tu = Uniforms {
             view_proj: view_proj.to_cols_array_2d(),
+            fog_view: rot.to_cols_array_2d(),
             model: ident,
             color: [1.0; 4],
             fog_color: fog4,
@@ -829,6 +951,7 @@ impl Gpu {
         self.queue.write_buffer(&self.cloud_buf, 0, bytemuck::cast_slice(&cloud_verts[..cloud_n]));
         let cu = Uniforms {
             view_proj: view_proj.to_cols_array_2d(),
+            fog_view: rot.to_cols_array_2d(),
             model: if p.video.fancy {
                 Mat4::from_scale(glam::Vec3::new(12.0, 1.0, 12.0)).to_cols_array_2d()
             } else {
@@ -836,7 +959,7 @@ impl Gpu {
             },
             color: [1.0; 4],
             fog_color: fog4,
-            fog: [fog_start, p.far, 1.0, 0.1],
+            fog: terrain_fog,
         };
         self.write_uniforms(&self.cloud_slot, &cu);
 
@@ -849,13 +972,14 @@ impl Gpu {
             }
             let u = Uniforms {
                 view_proj: view_proj.to_cols_array_2d(),
+                fog_view: rot.to_cols_array_2d(),
                 model: ident,
                 color: [1.0; 4],
                 fog_color: fog4,
                 fog: [
-                    fog_start,
-                    p.far,
-                    if i == 3 { 0.0 } else { 1.0 },
+                    fog[0],
+                    fog[1],
+                    if i == 3 { 0.0 } else { fog[2] },
                     if i < 2 {
                         0.01
                     } else if i == 2 {
@@ -968,6 +1092,9 @@ impl Gpu {
                 rp.set_vertex_buffer(0, self.weather_bufs[2].slice(..));
                 rp.draw_indexed(0..weather_n[2] / 4 * 6, 0, 0..1);
             }
+            if medium == super::camera::Medium::Water {
+                self.targeting.draw(&mut rp);
+            }
             // Entity textures occupy group 1; restore the terrain origins binding.
             rp.set_bind_group(1, &self.origins_bind, &[]);
             // Pass 1 (water, ice): Fancy prepass, Fast a single blended depth-writing pass.
@@ -984,6 +1111,10 @@ impl Gpu {
                     }
                 }
             }
+            if medium != super::camera::Medium::Water {
+                self.targeting.draw(&mut rp);
+            }
+            rp.set_bind_group(1, &self.origins_bind, &[]);
             for i in 0..2 {
                 if weather_n[i] == 0 {
                     continue;
@@ -1003,6 +1134,36 @@ impl Gpu {
                 rp.set_vertex_buffer(0, self.cloud_buf.slice(..));
                 rp.draw_indexed(0..(cloud_n / 4 * 6) as u32, 0, 0..1);
             }
+        }
+
+        // EntityRenderer clears depth before renderHand; overlays use the same
+        // projection and fresh modelview, after the hand's hurt/bob transforms.
+        {
+            let mut rp = enc.begin_render_pass(&wgpu::RenderPassDescriptor {
+                label: Some("first person"),
+                color_attachments: &[Some(wgpu::RenderPassColorAttachment {
+                    view: target,
+                    resolve_target: None,
+                    ops: wgpu::Operations {
+                        load: wgpu::LoadOp::Load,
+                        store: wgpu::StoreOp::Store,
+                    },
+                    depth_slice: None,
+                })],
+                depth_stencil_attachment: Some(wgpu::RenderPassDepthStencilAttachment {
+                    view: &self.depth,
+                    depth_ops: Some(wgpu::Operations {
+                        load: wgpu::LoadOp::Clear(1.0),
+                        store: wgpu::StoreOp::Store,
+                    }),
+                    stencil_ops: None,
+                }),
+                timestamp_writes: None,
+                occlusion_query_set: None,
+                multiview_mask: None,
+            });
+            self.hand.draw(&mut rp);
+            self.overlays.draw(&mut rp);
         }
 
         let world = std::mem::replace(&mut enc, self.device.create_command_encoder(&Default::default()));

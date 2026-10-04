@@ -12,33 +12,38 @@ public final class RendererOracle {
     static ArrayList<ArrayList<float[]>> stack=new ArrayList<ArrayList<float[]>>();
     static Oracle.DataOut draws;
     static int count;
+    public static void identity(){ops.clear();}
     public static void push(){stack.add(new ArrayList<float[]>(ops));}
     public static void pop(){ops=stack.remove(stack.size()-1);}
-    public static void op(int c,float a,float b,float d,float e){ops.add(new float[]{c,a,b,d,e});}
+    public static void op(int c,float a,float b,float d,float e){if(compiling!=0){Raw r=new Raw(0,0,new int[0],7);r.command=new float[]{c,a,b,d,e};lists.get(compiling).add(r);}else ops.add(new float[]{c,a,b,d,e});}
+    public static void color3(float r,float g,float b){if(compiling!=0){Raw raw=new Raw(0,0,new int[0],7);raw.command=new float[]{3,r,g,b,1};lists.get(compiling).add(raw);}else GL11.color=new float[]{r,g,b,1};}
     public static void enable(int c,boolean on) {
         int bit=c==2896?1:c==32826?2:c==2977?4:c==3553?8:c==3042?16:c==2929?256:0;
         if(on)flags|=bit;else flags&=~bit;
     }
     static Field field(String n) throws Exception {Field f=Tessellator.class.getDeclaredField(n);f.setAccessible(true);return f;}
-    static class Raw {int n,mask;int[] data;Raw(int n,int mask,int[] data){this.n=n;this.mask=mask;this.data=data;}}
+    static class Raw {int n,mask,mode;int[] data;float[] command;Raw(int n,int mask,int[] data,int mode){this.n=n;this.mask=mask;this.data=data;this.mode=mode;}}
     static Map<Integer,ArrayList<Raw>> lists=new HashMap<Integer,ArrayList<Raw>>();
     static int compiling=0,nextList=1;
+    public static boolean isCompiling(){return compiling!=0;}
     public static int genLists(int n){int id=nextList;nextList+=n;return id;}
     public static void newList(int id){compiling=id;lists.put(id,new ArrayList<Raw>());}
     public static void endList(){compiling=0;}
-    public static void callList(int id){if(active)for(Raw r:lists.get(id))emit(r);}
+    public static void callList(int id){if(active)for(Raw r:lists.get(id)){if(r.command==null)emit(r);else{float[] c=r.command;if(c[0]==3)color3(c[1],c[2],c[3]);else op((int)c[0],c[1],c[2],c[3],c[4]);}}}
     public static void record(int mode,int n) {
         if(!active && compiling==0)return;
         try {
-            if(mode!=7)throw new AssertionError("expected quads, got "+mode);
+            if(mode!=7 && mode!=1 && mode!=3)throw new AssertionError("unexpected primitive "+mode);
             Tessellator t=Tessellator.instance;
             boolean color=field("hasColor").getBoolean(t),normalArray=field("hasNormals").getBoolean(t),uv=field("hasTexture").getBoolean(t);
             int[] raw=(int[])field("rawBuffer").get(t);
-            Raw r=new Raw(n,(color?64:0)|(normalArray?128:0)|(uv?512:0),Arrays.copyOf(raw,n*8));
+            Raw r=new Raw(n,(color?64:0)|(normalArray?128:0)|(uv?512:0),Arrays.copyOf(raw,n*8),mode);
             if(compiling!=0)lists.get(compiling).add(r);else emit(r);
         }catch(Exception e){throw new RuntimeException(e);}
     }
     static void emit(Raw r) {
+        FirstPersonOracle.recordMode(r.mode);
+        FirstPersonOracle.recordMatrix();
         draws.i32(GL11.texture);for(float f:GL11.color)Oracle.modelFloat(draws,f);
         for(float f:normal)Oracle.modelFloat(draws,f);
         draws.i32(flags|r.mask);draws.i32(src);draws.i32(dst);draws.i32(depth);
@@ -48,7 +53,7 @@ public final class RendererOracle {
         count++;
     }
     static void reset(float brightness) {
-        ops.clear();stack.clear();flags=297;src=1;dst=0;depth=515;normal=new float[]{0,0,1};
+        GL11.matrixMode=5888;ops.clear();stack.clear();flags=297;src=1;dst=0;depth=515;normal=new float[]{0,0,1};
         GL11.color=new float[]{brightness,brightness,brightness,1};GL11.texture=0;
         draws=new Oracle.DataOut();count=0;
     }

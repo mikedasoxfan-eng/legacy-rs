@@ -12,6 +12,7 @@ use wgpu::util::DeviceExt;
 #[derive(Clone, Copy, bytemuck::Pod, bytemuck::Zeroable)]
 struct Uniforms {
     view_proj: [[f32; 4]; 4],
+    fog_view: [[f32; 4]; 4],
     fog_color: [f32; 4],
     fog: [f32; 4],
 }
@@ -31,6 +32,12 @@ pub struct EntityPipeline {
     overlay: wgpu::RenderPipeline,
     shadow: wgpu::RenderPipeline,
     tnt_flash: wgpu::RenderPipeline,
+    damage: wgpu::RenderPipeline,
+    untested: wgpu::RenderPipeline,
+    untested_alpha: wgpu::RenderPipeline,
+    pub extra: Vec<Batch>,
+    pub fog_override: Option<[f32; 3]>,
+    pub fog_view: Mat4,
     pub snapshots: Vec<super::effects::Snapshot>,
     pub partial: f32,
     pub fancy: bool,
@@ -39,6 +46,7 @@ pub struct EntityPipeline {
     frame_bind: wgpu::BindGroup,
     textures: HashMap<String, wgpu::BindGroup>,
     terrain_tex: Option<wgpu::Texture>,
+    map_tex: Option<wgpu::Texture>,
     vertices: wgpu::Buffer,
     capacity: usize,
     draws: Vec<Draw>,
@@ -115,7 +123,7 @@ impl EntityPipeline {
                     depth_write_enabled: Some(write),
                     depth_compare: Some(depth),
                     stencil: Default::default(),
-                    bias: Default::default(),
+                    bias: if label == "block damage" { wgpu::DepthBiasState { constant: -3, slope_scale: -3.0, clamp: 0.0 } } else { Default::default() },
                 }),
                 multisample: Default::default(),
                 fragment: Some(wgpu::FragmentState {
@@ -171,6 +179,32 @@ impl EntityPipeline {
             "fs_test",
             true,
         );
+        let damage = make(
+            "block damage",
+            Some(wgpu::BlendState {
+                color: wgpu::BlendComponent {
+                    src_factor: wgpu::BlendFactor::Dst,
+                    dst_factor: wgpu::BlendFactor::Src,
+                    operation: wgpu::BlendOperation::Add,
+                },
+                alpha: wgpu::BlendComponent {
+                    src_factor: wgpu::BlendFactor::Dst,
+                    dst_factor: wgpu::BlendFactor::Src,
+                    operation: wgpu::BlendOperation::Add,
+                },
+            }),
+            LessEqual,
+            "fs_test",
+            true,
+        );
+        let untested = make("overlay opaque", None, LessEqual, "fs_main", true);
+        let untested_alpha = make(
+            "overlay alpha",
+            Some(wgpu::BlendState::ALPHA_BLENDING),
+            LessEqual,
+            "fs_main",
+            true,
+        );
         let uniforms = device.create_buffer(&wgpu::BufferDescriptor {
             label: Some("entity uniforms"),
             size: std::mem::size_of::<Uniforms>() as u64,
@@ -201,6 +235,7 @@ impl EntityPipeline {
         let white = Image { width: 1, height: 1, rgba: vec![255; 4] };
         let mut textures = HashMap::new();
         let mut terrain_tex = None;
+        let mut map_tex = None;
         let mut upload = |name: &str, img: &Image| {
             let tex = device.create_texture_with_data(
                 queue,
@@ -219,6 +254,9 @@ impl EntityPipeline {
             );
             if name == "terrain.png" {
                 terrain_tex = Some(tex.clone());
+            }
+            if name == "__map" {
+                map_tex = Some(tex.clone());
             }
             let view = tex.create_view(&Default::default());
             textures.insert(
@@ -252,6 +290,12 @@ impl EntityPipeline {
         });
         Self {
             states: Vec::new(),
+            damage,
+            untested,
+            untested_alpha,
+            extra: Vec::new(),
+            fog_override: None,
+            fog_view: Mat4::IDENTITY,
             snapshots: Vec::new(),
             partial: 0.0,
             fancy: true,
@@ -267,6 +311,7 @@ impl EntityPipeline {
             frame_bind,
             textures,
             terrain_tex,
+            map_tex,
             vertices,
             capacity: 0,
             draws: Vec::new(),
@@ -275,6 +320,29 @@ impl EntityPipeline {
     }
 
     /// RenderEngine.updateDynamicTextures also updates the terrain atlas bound by entities.
+    pub fn update_map(&self, queue: &wgpu::Queue, image: &Image) {
+        if let Some(texture) = &self.map_tex {
+            queue.write_texture(
+                wgpu::TexelCopyTextureInfo {
+                    texture,
+                    mip_level: 0,
+                    origin: wgpu::Origin3d::ZERO,
+                    aspect: wgpu::TextureAspect::All,
+                },
+                &image.rgba,
+                wgpu::TexelCopyBufferLayout {
+                    offset: 0,
+                    bytes_per_row: Some(512),
+                    rows_per_image: Some(128),
+                },
+                wgpu::Extent3d {
+                    width: 128,
+                    height: 128,
+                    depth_or_array_layers: 1,
+                },
+            );
+        }
+    }
     pub fn update_fx(&self, queue: &wgpu::Queue, fx: &[crate::render::fx::TextureFx]) {
         let Some(texture) = &self.terrain_tex else {
             return;
@@ -336,6 +404,7 @@ impl EntityPipeline {
                 );
             }
         }
+        batches.append(&mut self.extra);
         self.upload(device, queue, batches, view_proj, fog, far);
     }
 
@@ -348,13 +417,19 @@ impl EntityPipeline {
         fog: [f32; 3],
         far: f32,
     ) {
+        let f = self.fog_override.unwrap_or(if far > 0.0 {
+            [far * 0.25, far, 1.0]
+        } else {
+            [0.0, 1.0, 0.0]
+        });
         queue.write_buffer(
             &self.uniforms,
             0,
             bytemuck::bytes_of(&Uniforms {
                 view_proj: view_proj.to_cols_array_2d(),
+                fog_view: self.fog_view.to_cols_array_2d(),
                 fog_color: [fog[0], fog[1], fog[2], 1.0],
-                fog: [far * 0.25, far, 0.0, 0.0],
+                fog: [f[0], f[1], f[2], 0.0],
             }),
         );
         self.draws.clear();
@@ -397,6 +472,9 @@ impl EntityPipeline {
                 Pass::Overlay => &self.overlay,
                 Pass::Shadow => &self.shadow,
                 Pass::TntFlash => &self.tnt_flash,
+                Pass::Damage => &self.damage,
+                Pass::Untested => &self.untested,
+                Pass::UntestedAlpha => &self.untested_alpha,
             });
             rp.set_bind_group(1, &self.textures[&d.texture], &[]);
             rp.draw(d.range.clone(), 0..1);

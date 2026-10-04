@@ -25,7 +25,9 @@ pub struct Draw {
     pub dst: u32,
     pub depth: u32,
     pub vertices: Vec<RawVertex>,
+    pub mode: u32,
     pub light_rotation: f32,
+    pub light_transform: Option<Mat4>,
 }
 /// Flag bits, in order: lighting, rescale, normalize, texturing, blending,
 /// depth-write, vertex-color, vertex-normal, depth-test, vertex-UV.
@@ -41,11 +43,13 @@ pub struct Fixed {
     pub dst: u32,
     pub depth: u32,
     pub vertices: Vec<RawVertex>,
+    pub mode: u32,
     pub vertex_color: Option<u32>,
     pub vertex_normal: Option<u32>,
     pub textured: bool,
     /// Degrees the GUI rotated the lights about X before enabling them (0 in the world).
     pub light_rotation: f32,
+    pub light_transform: Option<Mat4>,
 }
 impl Fixed {
     pub fn new(brightness: f32) -> Self {
@@ -61,10 +65,12 @@ impl Fixed {
             dst: 0,
             depth: 515,
             vertices: vec![],
+            mode: 7,
             vertex_color: None,
             vertex_normal: None,
             textured: false,
             light_rotation: 0.0,
+            light_transform: None,
         }
     }
     pub fn push(&mut self) {
@@ -138,49 +144,16 @@ impl Fixed {
             src: self.src,
             dst: self.dst,
             depth: self.depth,
-            vertices: std::mem::take(&mut self.vertices), light_rotation: self.light_rotation });
+            vertices: std::mem::take(&mut self.vertices),
+            mode: self.mode,
+            light_rotation: self.light_rotation,
+            light_transform: self.light_transform,
+        });
     }
 }
 impl Draw {
     pub fn matrix(&self) -> Mat4 {
-        let mut m = Mat4::IDENTITY;
-        for o in &self.ops {
-            let [a, b, c, d] = o.args;
-            m *= match o.code {
-                0 => Mat4::from_translation(Vec3::new(a, b, c)),
-                1 => Mat4::from_scale(Vec3::new(a, b, c)),
-                2 => {
-                    // GL's axis-angle matrix, with the same conversion as gui::Gl.
-                    let r = (a as f64) * std::f64::consts::PI / 180.0;
-                    let (s, c) = r.sin_cos();
-                    let t = 1.0 - c;
-                    let len =
-                        ((b as f64) * (b as f64) + (o.args[2] as f64) * (o.args[2] as f64) + (d as f64) * (d as f64))
-                            .sqrt();
-                    let (x, y, z) = (b as f64 / len, o.args[2] as f64 / len, d as f64 / len);
-                    Mat4::from_cols_array(&[
-                        (x * x * t + c) as f32,
-                        (y * x * t + z * s) as f32,
-                        (z * x * t - y * s) as f32,
-                        0.0,
-                        (x * y * t - z * s) as f32,
-                        (y * y * t + c) as f32,
-                        (z * y * t + x * s) as f32,
-                        0.0,
-                        (x * z * t + y * s) as f32,
-                        (y * z * t - x * s) as f32,
-                        (z * z * t + c) as f32,
-                        0.0,
-                        0.0,
-                        0.0,
-                        0.0,
-                        1.0,
-                    ])
-                }
-                _ => unreachable!(),
-            };
-        }
-        m
+        matrix(&self.ops)
     }
     pub fn batch(&self) -> Batch {
         let m = self.matrix();
@@ -199,13 +172,24 @@ impl Draw {
                 6 => "mob/ghast_fire.png",
                 7 => "mob/zombie.png",
                 8 => "mob/pigzombie.png",
+                9 => "mob/char.png",
+                10 => "misc/water.png",
+                11 => "misc/mapbg.png",
+                12 => "__map",
+                13 => "misc/mapicons.png",
+                14 => "font/default.png",
+                20..=29 => super::player::ARMOR[(self.texture - 20) as usize],
                 _ => "__white",
             })
         };
-        let pass = if self.depth == 514 {
+        let pass = if self.texture == 12 {
+            Pass::UntestedAlpha
+        } else if self.depth == 514 {
             Pass::Overlay
         } else if self.flags & 16 == 0 {
             Pass::Opaque
+        } else if self.dst == 768 {
+            Pass::Damage
         } else if self.dst == 772 {
             Pass::TntFlash
         } else if self.flags & 32 == 0 {
@@ -217,8 +201,11 @@ impl Draw {
             .vertices
             .iter()
             .map(|v| {
-                let mut color =
-                    if self.flags & 64 != 0 { v.color.to_le_bytes().map(|x| x as f32 / 255.0) } else { self.material };
+                let mut color = if self.flags & 64 != 0 {
+                    v.color.to_le_bytes().map(|x| x as f32 / 255.0)
+                } else {
+                    self.material
+                };
                 if self.flags & 1 != 0 {
                     let n = if self.flags & 128 != 0 {
                         living::normal_from_packed(v.normal)
@@ -231,9 +218,16 @@ impl Draw {
                     } else if self.flags & 2 != 0 {
                         n *= rescale;
                     }
+                    if let Some(light) = self.light_transform {
+                        n = light.inverse().transform_vector3(n);
+                    }
                     color = living::lit_color_rotated(n, color, self.light_rotation);
                 }
-                EntityVertex { pos: m.transform_point3(Vec3::from_array(v.pos)).to_array(), uv: v.uv, color }
+                EntityVertex {
+                    pos: m.transform_point3(Vec3::from_array(v.pos)).to_array(),
+                    uv: v.uv,
+                    color,
+                }
             })
             .collect();
         let mut vertices = Vec::with_capacity(verts.len() / 4 * 6);
@@ -242,6 +236,52 @@ impl Draw {
                 vertices.push(q[i]);
             }
         }
-        Batch { texture, pass, vertices }
+        Batch {
+            texture,
+            pass,
+            vertices,
+        }
     }
+}
+
+pub fn matrix(ops: &[Op]) -> Mat4 {
+    let mut m = Mat4::IDENTITY;
+    for o in ops {
+        let [a, b, c, d] = o.args;
+        m *= match o.code {
+            0 => Mat4::from_translation(Vec3::new(a, b, c)),
+            1 => Mat4::from_scale(Vec3::new(a, b, c)),
+            2 => {
+                // GL's axis-angle matrix, with the same conversion as gui::Gl.
+                let r = (a as f64) * std::f64::consts::PI / 180.0;
+                let (s, c) = r.sin_cos();
+                let t = 1.0 - c;
+                let len = ((b as f64) * (b as f64)
+                    + (o.args[2] as f64) * (o.args[2] as f64)
+                    + (d as f64) * (d as f64))
+                    .sqrt();
+                let (x, y, z) = (b as f64 / len, o.args[2] as f64 / len, d as f64 / len);
+                Mat4::from_cols_array(&[
+                    (x * x * t + c) as f32,
+                    (y * x * t + z * s) as f32,
+                    (z * x * t - y * s) as f32,
+                    0.0,
+                    (x * y * t - z * s) as f32,
+                    (y * y * t + c) as f32,
+                    (z * y * t + x * s) as f32,
+                    0.0,
+                    (x * z * t + y * s) as f32,
+                    (y * z * t - x * s) as f32,
+                    (z * z * t + c) as f32,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    1.0,
+                ])
+            }
+            _ => unreachable!(),
+        };
+    }
+    m
 }

@@ -8,6 +8,7 @@ use worldgen::world::chunk::Chunk;
 use worldgen::{BiomeSource, World};
 
 pub struct Access<'a> {
+    pub world: &'a World,
     pub fancy: bool,
     cx0: i32,
     cz0: i32,
@@ -29,6 +30,7 @@ impl<'a> Access<'a> {
             }
         }
         Access {
+            world,
             fancy: true,
             cx0: cx - 1,
             cz0: cz - 1,
