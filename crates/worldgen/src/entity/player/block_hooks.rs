@@ -277,7 +277,9 @@ pub fn tick(w: &mut World, id: u8, x: i32, y: i32, z: i32, rs: crate::world::Ran
         return true;
     }
     if id == 23 {
-        if w.is_block_indirectly_getting_powered(x, y, z) || w.is_block_indirectly_getting_powered(x, y + 1, z) {
+        if w.is_block_indirectly_getting_powered(x, y, z)
+            || w.is_block_indirectly_getting_powered(x, y + 1, z)
+        {
             w.dispense_item(x, y, z, rs);
         }
         return true;
@@ -350,11 +352,17 @@ pub fn repeater_input(w: &mut World, x: i32, y: i32, z: i32, m: i32) -> bool {
         || (w.get_block_id(x + dx, y, z + dz) == 55 && w.get_block_metadata(x + dx, y, z + dz) > 0)
 }
 pub fn ensure_container(w: &mut World, id: u8, x: i32, y: i32, z: i32) {
-    if w.chunk(x >> 4, z >> 4).tile_entities.contains_key(&(x & 15, y, z & 15)) {
+    if w.chunk(x >> 4, z >> 4)
+        .tile_entities
+        .contains_key(&(x & 15, y, z & 15))
+    {
         return;
     }
     w.set_block_tile_entity(x, y, z, crate::world::tile::TileEntity::for_block(id));
     if id == 23 {
-        w.dispenser_random.insert((x,y,z), crate::JavaRandom::new(crate::entity::EntitySeedSource::Time.next_seed()));
+        w.dispenser_random.insert(
+            (x, y, z),
+            crate::JavaRandom::new(crate::entity::EntitySeedSource::Time.next_seed()),
+        );
     }
 }

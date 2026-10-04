@@ -3,10 +3,10 @@ use super::{AxisAlignedBB as BB, MovingObjectPosition, Vec3D};
 use super::{Entity, EntityKind, EntitySeedSource};
 use crate::JavaRandom;
 use crate::{
-    block::*,
-    world::chunk::{idx, Chunk},
-    world::tile::ItemStack,
     World,
+    block::*,
+    world::chunk::{Chunk, idx},
+    world::tile::ItemStack,
 };
 pub fn geometry_bytes() -> Vec<u8> {
     let mut r = JavaRandom::new(1729);
@@ -1047,12 +1047,27 @@ pub fn append_world(w: &World, out: &mut Vec<u8>) {
                 }
                 crate::world::tile::TileEntity::Furnace(f) => {
                     out.push(3);
-                    for s in f.items { let s: ItemStack = s.unwrap_or(crate::entity::player::ItemStack::new(-1,0,0)).into(); out.extend_from_slice(&s.id.to_le_bytes()); out.push(s.count); out.extend_from_slice(&s.damage.to_le_bytes()); }
-                    out.extend_from_slice(&(f.burn as i16).to_le_bytes()); out.extend_from_slice(&(f.cook as i16).to_le_bytes());
+                    for s in f.items {
+                        let s: ItemStack = s
+                            .unwrap_or(crate::entity::player::ItemStack::new(-1, 0, 0))
+                            .into();
+                        out.extend_from_slice(&s.id.to_le_bytes());
+                        out.push(s.count);
+                        out.extend_from_slice(&s.damage.to_le_bytes());
+                    }
+                    out.extend_from_slice(&(f.burn as i16).to_le_bytes());
+                    out.extend_from_slice(&(f.cook as i16).to_le_bytes());
                 }
                 crate::world::tile::TileEntity::Dispenser(items) => {
                     out.push(4);
-                    for s in items.iter() { let s: ItemStack = s.unwrap_or(crate::entity::player::ItemStack::new(-1,0,0)).into(); out.extend_from_slice(&s.id.to_le_bytes()); out.push(s.count); out.extend_from_slice(&s.damage.to_le_bytes()); }
+                    for s in items.iter() {
+                        let s: ItemStack = s
+                            .unwrap_or(crate::entity::player::ItemStack::new(-1, 0, 0))
+                            .into();
+                        out.extend_from_slice(&s.id.to_le_bytes());
+                        out.push(s.count);
+                        out.extend_from_slice(&s.damage.to_le_bytes());
+                    }
                 }
             }
         }

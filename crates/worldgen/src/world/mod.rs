@@ -196,7 +196,7 @@ pub struct World {
     pub keep_furnace_inventory: bool,
     pub container_sessions: HashMap<i32, crate::container::session::ContainerSession>,
     pub map_id: i32,
-    pub container_effects: Vec<(i32, (i32,i32,i32), i32)>,
+    pub container_effects: Vec<(i32, (i32, i32, i32), i32)>,
     pub spawner_animations: std::collections::HashMap<(i32, i32, i32), (f64, f64)>,
     pub weather_effects: Vec<crate::entity::Entity>,
     pub explosion_seed_source: crate::entity::EntitySeedSource,
@@ -278,7 +278,9 @@ impl World {
             spawn_eligible_chunks: Default::default(),
             loaded_tile_entities: Vec::new(),
             dispenser_random: HashMap::new(),
-            container_drop_random: std::array::from_fn(|_| JavaRandom::new(crate::entity::EntitySeedSource::Time.next_seed())),
+            container_drop_random: std::array::from_fn(|_| {
+                JavaRandom::new(crate::entity::EntitySeedSource::Time.next_seed())
+            }),
             keep_furnace_inventory: false,
             container_sessions: HashMap::new(),
             map_id: -1,
