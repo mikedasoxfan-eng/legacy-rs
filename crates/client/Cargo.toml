@@ -1,0 +1,19 @@
+[package]
+name = "client"
+version = "0.1.0"
+edition = "2021"
+description = "Beta 1.7.3 client: renderer and (later) gameplay"
+
+[[bin]]
+name = "beta"
+path = "src/main.rs"
+
+[dependencies]
+bytemuck = { version = "1.25.2", features = ["derive"] }
+glam = "0.34.0"
+png = "0.18.1"
+pollster = "1.0.1"
+wgpu = "30.0.1"
+winit = "0.30.13"
+worldgen = { path = "../worldgen" }
+zip = { version = "8.6.0", default-features = false, features = ["deflate"] }

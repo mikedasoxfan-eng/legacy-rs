@@ -66,6 +66,8 @@ pub struct Chunk {
     pub loaded: bool,
     /// Keyed by chunk-local (x, y, z).
     pub tile_entities: HashMap<(i32, i32, i32), TileEntity>,
+    /// `World::mod_count` at this chunk's last block/metadata/light change (for renderers).
+    pub version: u64,
 }
 
 #[inline]
@@ -87,6 +89,7 @@ impl Chunk {
             populated: false,
             loaded: false,
             tile_entities: HashMap::new(),
+            version: 0,
         }
     }
 

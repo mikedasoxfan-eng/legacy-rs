@@ -104,6 +104,8 @@ pub struct World {
     pub spawn: (i32, i32, i32),
     pub dropped_items: Vec<DroppedItem>,
     pub falling_sand: Vec<(i32, i32, i32, u8)>,
+    /// Bumped on every chunk modification; chunks record it in `Chunk::version`.
+    pub mod_count: u64,
 }
 
 impl World {
@@ -126,6 +128,17 @@ impl World {
             spawn: (0, 0, 0),
             dropped_items: Vec::new(),
             falling_sand: Vec::new(),
+            mod_count: 0,
+        }
+    }
+
+    /// Mark a chunk as changed for renderers. No effect on generation.
+    #[inline]
+    fn touch(&mut self, cx: i32, cz: i32) {
+        self.mod_count += 1;
+        let v = self.mod_count;
+        if let Some(c) = self.chunks.get_mut(&(cx, cz)) {
+            c.version = v;
         }
     }
 
@@ -184,6 +197,7 @@ impl World {
         }
         c.loaded = true;
         self.chunks.insert((cx, cz), c);
+        self.touch(cx, cz);
 
         if !self.chunk(cx, cz).populated
             && self.chunk_exists(cx + 1, cz + 1)
@@ -287,6 +301,7 @@ impl World {
         }
         self.provide_chunk(x >> 4, z >> 4);
         self.chunk_mut(x >> 4, z >> 4).data.set(x & 15, y, z & 15, meta);
+        self.touch(x >> 4, z >> 4);
         true
     }
 
@@ -347,6 +362,7 @@ impl World {
         let wx = cx * 16 + x;
         let wz = cz * 16 + z;
         c.blocks[idx(x, y, z)] = id;
+        self.touch(cx, cz);
         if old != block::AIR {
             behavior::on_block_removal(self, old, wx, y, wz);
         }
@@ -380,6 +396,7 @@ impl World {
         let wx = cx * 16 + x;
         let wz = cz * 16 + z;
         c.blocks[idx(x, y, z)] = id;
+        self.touch(cx, cz);
         if old != block::AIR {
             behavior::on_block_removal(self, old, wx, y, wz);
         }
@@ -413,6 +430,8 @@ impl World {
         if h == old_h {
             return;
         }
+        self.touch(cx, cz);
+        let c = self.chunk_mut(cx, cz);
         c.height_map[(z << 4 | x) as usize] = h as u8;
         if h < c.lowest_block_height {
             c.lowest_block_height = h;
@@ -577,6 +596,7 @@ impl World {
     pub fn set_light_value(&mut self, kind: LightKind, x: i32, y: i32, z: i32, v: i32) {
         if in_xz_bounds(x, z) && (0..128).contains(&y) && self.chunk_exists(x >> 4, z >> 4) {
             self.chunk_mut(x >> 4, z >> 4).set_light(kind, x & 15, y, z & 15, v);
+            self.touch(x >> 4, z >> 4);
         }
     }
 

@@ -178,6 +178,14 @@ impl BiomeSource {
         out[0]
     }
 
+    /// `WorldChunkManager.getTemperature(x, z)`: the raw (unnormalised) temperature noise,
+    /// used for the sky color.
+    pub fn raw_temperature(&self, x: i32, z: i32) -> f64 {
+        let mut buf = Vec::new();
+        self.temp_noise.generate(&mut buf, x as f64, z as f64, 1, 1, 0.025f32 as f64, 0.025f32 as f64, 0.5);
+        buf[0]
+    }
+
     /// `getTemperatures`: temperature only, without humidity. Does not touch `self.temperature`.
     pub fn temperatures(&mut self, out: &mut Vec<f64>, x: i32, z: i32, width: i32, depth: i32) {
         let n = (width * depth) as usize;

@@ -6,8 +6,9 @@ set -uo pipefail
 root="$(cd "$(dirname "$0")/.." && pwd)"
 oracle="$root/tools/oracle/oracle.sh"
 out="$root/tools/oracle/out"
-cargo build --release -q --manifest-path "$root/Cargo.toml" -p worldgen || exit 1
+cargo build --release -q --manifest-path "$root/Cargo.toml" -p worldgen -p client || exit 1
 cmp="$root/target/release/compare"
+beta="$root/target/release/beta"
 quick="${1:-}"
 
 fail=0
@@ -75,6 +76,28 @@ if [ "$quick" != quick ]; then
   run "grid 16x16, light only at the end"   grid 5555 8 0 0 15 15 end -- grid 5555 8 0 0 15 15 end
   run "grid 16x16, no light processing"     grid -98765 4 -40 20 -25 35 none -- grid -98765 4 -40 20 -25 35 none
 fi
+
+# ---- rendering: RenderBlocks vertex output (smooth lighting, Fancy) over 11x11 chunks
+mesh_cases=("25 1" "1 1")   # snowy taiga; desert with cactus
+[ "$quick" != quick ] && mesh_cases+=("-1 -1" "0 1")
+for c in "${mesh_cases[@]}"; do
+  read -r seed wr <<<"$c"
+  echo "== chunk meshes: seed $seed, world rand $wr"
+  if "$oracle" rendermesh "$seed" "$wr" mesh_case.bin auto 5 2>/dev/null | grep -v -i "warning\|unsafe\|\^" ;      "$beta" --meshcheck "$seed" "$wr" "$out/mesh_case.bin" | tail -1 | grep -q "MESHES EXACT"; then
+    echo "MESHES EXACT"
+  else
+    echo "MESHES DIFFER"; fail=1
+  fi
+  rm -f "$out/mesh_case.bin"
+done
+
+# ---- sky, fog and cloud colors, sun angle, night darkness
+echo "== sky colors"
+for args in "3257840388504953787 -39 65 6000 0.0" "0 1000 -2000 13000 0.5" "123 -500 77 23500 0.25" "42 99999 -12345 18000 0.9" "1 0 0 12500 0.75"; do
+  j=$("$oracle" skycolor $args); r=$("$beta" --skycolor $args)
+  [ "$j" = "$r" ] || { echo "sky differs for $args"; echo " java $j"; echo " rust $r"; fail=1; }
+done
+[ $fail -eq 0 ] && echo "sky colors exact"
 
 [ $fail -eq 0 ] && echo "ALL CASES EXACT" || echo "SOME CASES DIFFER"
 exit $fail

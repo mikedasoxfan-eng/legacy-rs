@@ -4,6 +4,8 @@
 set -euo pipefail
 here="$(cd "$(dirname "$0")" && pwd -W)"  # -W: Windows-style path for java/javac
 jar="$here/../retromcp/minecraft/jars/deobfuscated.jar"
+# Client libraries (LWJGL etc.) are only needed so client classes can load; nothing opens a window.
+libs=$(find "$here/../retromcp/libraries" -name '*.jar' ! -name '*sources*' ! -name '*natives*' 2>/dev/null | while read -r f; do printf ';%s' "$(cygpath -w "$f")"; done)
 [ -f "$jar" ] || { echo "missing $jar - run RetroMCP setup+decompile for b1.7.3 first" >&2; exit 1; }
 mkdir -p "$here/build" "$here/out"
 if [ ! -f "$here/build/net/minecraft/src/Oracle.class" ] || [ "$here/src/net/minecraft/src/Oracle.java" -nt "$here/build/net/minecraft/src/Oracle.class" ]; then
@@ -17,4 +19,4 @@ for jl in "$LOCALAPPDATA"/Packages/Microsoft.4297127D64EC6_*/LocalCache/Local/ru
 done
 [ -n "${ORACLE_JAVA:-}" ] && java="$ORACLE_JAVA"
 cd "$here/out"
-"$java" -cp "$here/build;$jar" net.minecraft.src.Oracle "$@" 2>&1 | { grep -v -E '^(16 achievements|151 recipes)$' || true; }
+"$java" -cp "$here/build;$jar$libs" net.minecraft.src.Oracle "$@" 2>&1 | { grep -v -E '^(16 achievements|151 recipes)$' || true; }
