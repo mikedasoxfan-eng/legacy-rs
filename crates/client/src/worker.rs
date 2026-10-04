@@ -16,7 +16,18 @@ use worldgen::{BiomeSource, World};
 pub enum ToWorker {
     Camera { x: f64, y: f64, z: f64 },
     AddTime(i64),
+    /// `isGamePaused`: a screen that pauses the game is open (no ticks, no catch-up).
+    Pause(bool),
+    /// `World.func_650_a(n)`: the pause menu saves a few chunks every frame.
+    QuickSave(i32),
     Quit,
+}
+
+/// `LoadingScreenRenderer` calls made by the world thread.
+pub enum Loading {
+    Title(String),
+    Text(String),
+    Progress(i32),
 }
 
 pub enum FromWorker {
@@ -43,6 +54,9 @@ pub enum FromWorker {
     },
     /// Everything in the renderer window is loaded and meshed.
     Idle,
+    Loading(Loading),
+    /// Answer to `QuickSave`: true once nothing was left to save.
+    QuickSaved(bool),
     Saved,
     Error(String),
 }
@@ -57,6 +71,8 @@ pub struct WorldOptions {
     pub view_distance: i32,
     pub weather: Option<crate::render::weather::Weather>,
     pub time: Option<i64>,
+    /// Name for a newly created world (`GuiCreateWorld`'s text box).
+    pub name: Option<String>,
 }
 
 /// `RenderGlobal`: 26 renderers across on Far (render distance capped at 400 blocks).
@@ -97,7 +113,28 @@ fn window_axis(p: i32) -> Vec<i32> {
 
 fn run(opts: WorldOptions, col: Colorizers, rx: Receiver<ToWorker>, tx: Sender<FromWorker>) {
     let t = Instant::now();
-    let (mut world, is_new) = match World::open(opts.dir.as_deref(), opts.seed, opts.world_rand, opts.server) {
+    let mut last_progress = -2;
+    let mut progress = |step: worldgen::scenario::LoadStep| {
+        use worldgen::scenario::LoadStep;
+        let msg = match step {
+            LoadStep::Title(t) => Loading::Title(t.to_string()),
+            LoadStep::Text(t) => {
+                last_progress = -2;
+                Loading::Text(t.to_string())
+            }
+            LoadStep::Progress(p) => {
+                if p == last_progress {
+                    return;
+                }
+                last_progress = p;
+                Loading::Progress(p)
+            }
+        };
+        let _ = tx.send(FromWorker::Loading(msg));
+    };
+    let opened =
+        World::open_with(opts.dir.as_deref(), opts.seed, opts.world_rand, opts.server, opts.name.as_deref(), &mut progress);
+    let (mut world, is_new) = match opened {
         Ok(w) => w,
         Err(e) => {
             let _ = tx.send(FromWorker::Error(format!("could not open world: {e}")));
@@ -169,6 +206,7 @@ fn run(opts: WorldOptions, col: Colorizers, rx: Receiver<ToWorker>, tx: Sender<F
     let mut strike_cursor = 0;
     let mut weather_tail = 0;
     let mut bolt_rng = worldgen::JavaRandom::new(opts.world_rand ^ 0x4c494748544e);
+    let mut paused = false;
 
     loop {
         // Messages.
@@ -176,8 +214,25 @@ fn run(opts: WorldOptions, col: Colorizers, rx: Receiver<ToWorker>, tx: Sender<F
             match rx.try_recv() {
                 Ok(ToWorker::Camera { x, y, z }) => cam = (x, y, z),
                 Ok(ToWorker::AddTime(t)) => world.world_time += t,
+                Ok(ToWorker::Pause(p)) => {
+                    if paused && !p {
+                        // The Timer kept running while paused; those ticks are not caught up.
+                        next_tick = Instant::now();
+                    }
+                    paused = p;
+                }
+                Ok(ToWorker::QuickSave(n)) => {
+                    if n == 0 {
+                        world.save_level();
+                    }
+                    let done = world.save_chunks(false);
+                    let _ = tx.send(FromWorker::QuickSaved(done));
+                }
                 Ok(ToWorker::Quit) | Err(mpsc::TryRecvError::Disconnected) => {
                     // Minecraft quitting to the title screen / server shutdown: save everything.
+                    // changeWorld(null, ""): printText(""), then saveWorldIndirectly.
+                    let _ = tx.send(FromWorker::Loading(Loading::Title(String::new())));
+                    let _ = tx.send(FromWorker::Loading(Loading::Text("Saving chunks".into())));
                     if let Some(pm) = &mut players {
                         pm.remove_player(&mut world);
                     }
@@ -191,7 +246,11 @@ fn run(opts: WorldOptions, col: Colorizers, rx: Receiver<ToWorker>, tx: Sender<F
 
         // Ticks (at most a second's worth of catch-up).
         let mut ticks = 0;
-        while Instant::now() >= next_tick && ticks < 20 {
+        if paused {
+            // No ticks while paused, but keep the clock moving so meshing isn't starved.
+            next_tick = Instant::now() + Duration::from_millis(50);
+        }
+        while !paused && Instant::now() >= next_tick && ticks < 20 {
             world.players.clear();
             world.players.push(cam);
             if players.is_none() {

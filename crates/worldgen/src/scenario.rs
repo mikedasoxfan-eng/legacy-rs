@@ -45,12 +45,21 @@ impl World {
     /// `Minecraft.func_6255_d` ("Building terrain"): touch a 17x17 chunk grid
     /// around spawn, draining the lighting queue after each.
     pub fn preload_spawn_area(&mut self) {
+        self.preload_spawn_area_with(&mut |_| {});
+    }
+
+    /// `Minecraft.func_6255_d` with `setLoadingProgress(n * 100 / 289)` before each chunk.
+    pub fn preload_spawn_area_with(&mut self, progress: &mut dyn FnMut(i32)) {
+        let total = (128 * 2 / 16 + 1) * (128 * 2 / 16 + 1);
+        let mut n = 0;
         let (sx, _, sz) = self.spawn;
         let r = 128;
         let mut dx = -r;
         while dx <= r {
             let mut dz = -r;
             while dz <= r {
+                progress(n * 100 / total);
+                n += 1;
                 self.get_block_id(sx + dx, 64, sz + dz);
                 self.drain_lighting();
                 dz += 16;
@@ -93,6 +102,19 @@ impl World {
         world_rand_seed: i64,
         server: bool,
     ) -> std::io::Result<(World, bool)> {
+        Self::open_with(dir, seed, world_rand_seed, server, None, &mut |_| {})
+    }
+
+    /// `open` reporting what the loading screen shows (`Minecraft.startWorld` /
+    /// `changeWorld`), with the name a new world gets (`GuiCreateWorld`'s text box).
+    pub fn open_with(
+        dir: Option<&std::path::Path>,
+        seed: i64,
+        world_rand_seed: i64,
+        server: bool,
+        new_name: Option<&str>,
+        progress: &mut dyn FnMut(LoadStep),
+    ) -> std::io::Result<(World, bool)> {
         let storage = match dir {
             Some(d) => Some(crate::storage::Storage::open(d)?),
             None => None,
@@ -105,6 +127,9 @@ impl World {
         }
         w.storage = storage;
         let is_new = existing.is_none();
+        let title = if is_new { "Generating level" } else { "Loading level" };
+        progress(LoadStep::Title(title));
+        progress(LoadStep::Text(""));
         if let Some(info) = existing {
             w.spawn = info.spawn;
             w.world_time = info.time;
@@ -114,13 +139,19 @@ impl World {
             if let Some(d) = dir {
                 w.info.name = d.file_name().map(|n| n.to_string_lossy().into_owned()).unwrap_or_else(|| "world".into());
             }
+            if let Some(n) = new_name {
+                w.info.name = n.to_string();
+            }
             w.init_weather_and_light();
             w.find_initial_spawn();
         }
         if server {
             w.prepare_server_spawn_area();
         } else {
-            w.preload_spawn_area();
+            progress(LoadStep::Title(title));
+            progress(LoadStep::Text("Building terrain"));
+            w.preload_spawn_area_with(&mut |p| progress(LoadStep::Progress(p)));
+            progress(LoadStep::Text("Simulating world for a bit"));
         }
         // Both are unseeded in vanilla (`new Random().nextInt()` and a World.rand draw made
         // before anything else); take them from a side generator so World.rand stays put.
@@ -129,11 +160,24 @@ impl World {
         w.sound_counter = side.next_int(12000);
         if is_new && !server {
             // Minecraft.changeWorld saves a freshly generated world straight away
-            // (the server only saves when it shuts down).
+            // (the server only saves when it shuts down). func_594_b("Saving level") keeps
+            // the old title, then "Saving chunks".
+            progress(LoadStep::Text("Saving chunks"));
             w.save_world(true);
         }
         Ok((w, is_new))
     }
+}
+
+/// What `LoadingScreenRenderer` is told while a world opens.
+#[derive(Clone, Copy, Debug)]
+pub enum LoadStep<'a> {
+    /// `printText`
+    Title(&'a str),
+    /// `displayLoadingString` (hides the bar)
+    Text(&'a str),
+    /// `setLoadingProgress`
+    Progress(i32),
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]

@@ -560,6 +560,11 @@ impl Gpu {
         self.chunks.remove(&(cx, cz));
     }
 
+    /// Leaving a world: drop every chunk mesh.
+    pub fn clear_chunks(&mut self) {
+        self.chunks.clear();
+    }
+
     pub fn chunk_count(&self) -> usize {
         self.chunks.len()
     }
@@ -569,7 +574,95 @@ impl Gpu {
     }
 
     /// Render one frame to the window (or, with `capture`, also return the pixels).
+    pub fn device(&self) -> &wgpu::Device {
+        &self.device
+    }
+
+    pub fn queue(&self) -> &wgpu::Queue {
+        &self.queue
+    }
+
+    pub fn surface_format(&self) -> wgpu::TextureFormat {
+        self.config.format
+    }
+
+    pub fn size(&self) -> (u32, u32) {
+        (self.config.width, self.config.height)
+    }
+
+    /// A frame with no world (menus): `overlay` draws everything (the GUI clears itself).
+    /// With `capture`, the frame is also returned as an image.
+    pub fn render_overlay_only(
+        &mut self,
+        capture: bool,
+        overlay: &mut dyn FnMut(&wgpu::Device, &wgpu::Queue, &wgpu::TextureView, (u32, u32)),
+    ) -> Option<Image> {
+        let frame = match self.surface.get_current_texture() {
+            wgpu::CurrentSurfaceTexture::Success(f) | wgpu::CurrentSurfaceTexture::Suboptimal(f) => f,
+            wgpu::CurrentSurfaceTexture::Outdated | wgpu::CurrentSurfaceTexture::Lost => {
+                self.surface.configure(&self.device, &self.config);
+                return None;
+            }
+            _ => return None,
+        };
+        let view = frame.texture.create_view(&Default::default());
+        let (w, h) = (self.config.width, self.config.height);
+        overlay(&self.device, &self.queue, &view, (w, h));
+        let out = capture.then(|| self.read_back(&frame.texture));
+        self.queue.present(frame);
+        out
+    }
+
+    /// Copy a surface-format texture into an RGBA image.
+    fn read_back(&self, tex: &wgpu::Texture) -> Image {
+        let (w, h) = (self.config.width, self.config.height);
+        let bpr = (w * 4).div_ceil(256) * 256;
+        let buf = self.device.create_buffer(&wgpu::BufferDescriptor {
+            label: Some("readback"),
+            size: (bpr * h) as u64,
+            usage: wgpu::BufferUsages::COPY_DST | wgpu::BufferUsages::MAP_READ,
+            mapped_at_creation: false,
+        });
+        let mut enc = self.device.create_command_encoder(&Default::default());
+        enc.copy_texture_to_buffer(
+            wgpu::TexelCopyTextureInfo { texture: tex, mip_level: 0, origin: Default::default(), aspect: Default::default() },
+            wgpu::TexelCopyBufferInfo {
+                buffer: &buf,
+                layout: wgpu::TexelCopyBufferLayout { offset: 0, bytes_per_row: Some(bpr), rows_per_image: Some(h) },
+            },
+            wgpu::Extent3d { width: w, height: h, depth_or_array_layers: 1 },
+        );
+        self.queue.submit([enc.finish()]);
+        let slice = buf.slice(..);
+        slice.map_async(wgpu::MapMode::Read, |_| {});
+        let _ = self.device.poll(wgpu::PollType::wait_indefinitely());
+        let data = slice.get_mapped_range().expect("map readback");
+        let bgra = matches!(self.config.format, wgpu::TextureFormat::Bgra8Unorm | wgpu::TextureFormat::Bgra8UnormSrgb);
+        let mut rgba = Vec::with_capacity((w * h * 4) as usize);
+        for y in 0..h {
+            let row = &data[(y * bpr) as usize..(y * bpr + w * 4) as usize];
+            for px in row.chunks(4) {
+                if bgra {
+                    rgba.extend_from_slice(&[px[2], px[1], px[0], 255]);
+                } else {
+                    rgba.extend_from_slice(&[px[0], px[1], px[2], 255]);
+                }
+            }
+        }
+        Image { width: w, height: h, rgba }
+    }
+
     pub fn render(&mut self, p: &FrameParams, capture: bool) -> Option<Image> {
+        self.render_with_overlay(p, capture, &mut |_, _, _, _| {})
+    }
+
+    /// The world, then `overlay` (GUI) into the same frame.
+    pub fn render_with_overlay(
+        &mut self,
+        p: &FrameParams,
+        capture: bool,
+        overlay: &mut dyn FnMut(&wgpu::Device, &wgpu::Queue, &wgpu::TextureView, (u32, u32)),
+    ) -> Option<Image> {
         let frame = match self.surface.get_current_texture() {
             wgpu::CurrentSurfaceTexture::Success(f) | wgpu::CurrentSurfaceTexture::Suboptimal(f) => f,
             wgpu::CurrentSurfaceTexture::Outdated | wgpu::CurrentSurfaceTexture::Lost => {
@@ -871,6 +964,10 @@ impl Gpu {
                 rp.draw_indexed(0..(cloud_n / 4 * 6) as u32, 0, 0..1);
             }
         }
+
+        let world = std::mem::replace(&mut enc, self.device.create_command_encoder(&Default::default()));
+        self.queue.submit([world.finish()]);
+        overlay(&self.device, &self.queue, target, (w, h));
 
         let mut out = None;
         if let Some(tex) = &capture_tex {

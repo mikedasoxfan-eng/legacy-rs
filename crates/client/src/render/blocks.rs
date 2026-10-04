@@ -9,6 +9,7 @@ use worldgen::block::{self, mat, MAT_BUILTSNOW, MAT_ICE, MAT_SNOW};
 use worldgen::math;
 
 /// Biome color lookup tables (`grasscolor.png`, `foliagecolor.png`), 256x256 RGB.
+#[derive(Clone)]
 pub struct Colorizers {
     pub grass: Vec<u32>,
     pub foliage: Vec<u32>,
