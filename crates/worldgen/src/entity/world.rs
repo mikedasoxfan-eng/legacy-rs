@@ -202,6 +202,9 @@ impl World {
             if e.dead {
                 self.unfile_entity(&e);
                 self.loaded_entity_list.remove(i);
+                // PlayerEntities and Minecraft.thePlayer keep the dead object
+                // until explicit removal/respawn, including its level.dat data.
+                if e.player_state().is_some() {self.entities.insert(id,e);}
             } else {
                 self.entities.insert(id, e);
                 i += 1;

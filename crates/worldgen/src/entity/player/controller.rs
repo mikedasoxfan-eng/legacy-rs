@@ -44,7 +44,7 @@ impl Entity {
     }
     pub fn damage_held(&mut self,amount:i32) {let inv=&mut self.player_state_mut().unwrap().inventory;if let Some(s)=inv.main[inv.current_item as usize].as_mut(){s.damage_item(amount);if s.count==0 {inv.main[inv.current_item as usize]=None;}}}
     pub fn block_clicked(&mut self,w:&mut World,id:u8,x:i32,y:i32,z:i32) {
-        if matches!(id,64|71|69|77) {self.activate_block(w,x,y,z);}
+        if matches!(id,64|71|69|77|96) {self.activate_block(w,x,y,z);}
         if matches!(id,73|74) {w.redstone_display(x,y,z);if id==73 {w.set_block_with_notify(x,y,z,74);}}
     }
     pub fn harvest_block(&mut self,w:&mut World,id:u8,x:i32,y:i32,z:i32,meta:i32) {

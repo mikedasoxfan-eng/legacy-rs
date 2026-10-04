@@ -197,8 +197,8 @@ pub fn snapshot(w: &World, out: &mut Vec<u8>) {
         o.extend_from_slice(&(if v.is_nan() { 0x7fc00000 } else { v.to_bits() }).to_le_bytes());
     }
     let mut entities: Vec<_> = w
-        .entities
-        .values()
+        .loaded_entity_list
+        .iter().filter_map(|id|w.entities.get(id))
         .chain(w.weather_effects.iter())
         .collect();
     entities.sort_by_key(|e| e.entity_id);

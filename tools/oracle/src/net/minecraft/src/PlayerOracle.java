@@ -13,6 +13,10 @@ public final class PlayerOracle {
         public void displayUnexpectedThrowable(UnexpectedThrowable t) {throw new RuntimeException();}
         public void usePortal() {portalRequests++;}
     }
+    static final class HeadlessEffects extends EffectRenderer {
+        HeadlessEffects(World w){super(w,null);}
+        public void addBlockHitEffects(int x,int y,int z,int side) {}
+    }
     static final class HeadlessPlayer extends EntityPlayerSP {
         HeadlessPlayer(Minecraft mc,World w) {super(mc,w,new Session("Player",""),0);}
         public void addStat(StatBase stat,int count) {}
@@ -51,15 +55,16 @@ public final class PlayerOracle {
         Field ids=Entity.class.getDeclaredField("nextEntityID");ids.setAccessible(true);ids.setInt(null,0);
         Item.itemRand.setSeed(600);OracleHooks.reset(100);EntityOracle.mathRandom().setSeed(200);w.rand.setSeed(300);w.field_9437_g=0;Field sound=World.class.getDeclaredField("soundCounter");sound.setAccessible(true);sound.setInt(w,0);
         Field chest=BlockChest.class.getDeclaredField("random");chest.setAccessible(true);((Random)chest.get(Block.chest)).setSeed(500);
+        if(scenario.equals("pipeline")||scenario.equals("sleepworld")) {EntityOracle.FlatProvider f=(EntityOracle.FlatProvider)w.chunkProvider;for(int x=-12;x<=12;x++)for(int z=-12;z<=12;z++)if(!f.chunkExists(x,z)){byte[] blocks=new byte[32768];for(int bx=0;bx<16;bx++)for(int bz=0;bz<16;bz++)blocks[(bx<<11)|(bz<<7)|63]=1;Chunk c=new Chunk(w,blocks,x,z);c.isTerrainPopulated=true;c.isChunkLoaded=true;f.chunks.put(f.key(x,z),c);}}
         HeadlessPlayer p=player(w);p.setLocationAndAngles(0.5,64,0.5,0,0);w.entityJoinedWorld(p);
-        PlayerControllerSP controller=new PlayerControllerSP(p.mc);boolean interaction=scenario.equals("dig")||scenario.equals("place")||scenario.equals("use")||scenario.equals("shoot")||scenario.equals("interact")||scenario.equals("fertilize")||scenario.equals("activate");int result=0;
+        PlayerControllerSP controller=new PlayerControllerSP(p.mc);p.mc.playerController=controller;p.mc.effectRenderer=new HeadlessEffects(w);p.mc.entityRenderer=(EntityRenderer)Oracle.allocate(EntityRenderer.class);p.mc.entityRenderer.itemRenderer=(ItemRenderer)Oracle.allocate(ItemRenderer.class);boolean interaction=scenario.equals("dig")||scenario.equals("place")||scenario.equals("use")||scenario.equals("shoot")||scenario.equals("interact")||scenario.equals("fertilize")||scenario.equals("activate")||scenario.equals("api")||scenario.equals("pipeline")||scenario.equals("bucket");int result=0;
         for(int z=3;z<=5;z++)for(int x=-2;x<=2;x++)EntityOracle.rawBlock(w,x,64,z,1,0);
         for(int x=4;x<=8;x++)for(int z=-2;z<=2;z++)EntityOracle.rawBlock(w,x,64,z,53,0);
         for(int x=10;x<=15;x++)for(int y=64;y<=67;y++)for(int z=-2;z<=2;z++)EntityOracle.rawBlock(w,x,y,z,9,0);
         for(int x=-15;x<=-10;x++)for(int y=64;y<=67;y++)for(int z=-2;z<=2;z++)EntityOracle.rawBlock(w,x,y,z,11,0);
         EntityOracle.rawBlock(w,1,64,-5,30,0);for(int y=64;y<=71;y++){EntityOracle.rawBlock(w,0,y,-8,65,3);EntityOracle.rawBlock(w,0,y,-9,1,0);}
         try(DataOutputStream o=new DataOutputStream(new BufferedOutputStream(new FileOutputStream(path)))) {
-            EntityOracle.snapshot(w,o);if(scenario.equals("look"))picking(p,o);if(interaction)controllerState(controller,result,o);
+            EntityOracle.snapshot(w,o);if(scenario.equals("look"))picking(p,o);if(interaction)controllerState(controller,result,o);if(scenario.equals("api")||scenario.equals("pipeline"))apiState(p,o);if(scenario.equals("nbt"))nbtState(p,o);
             for(int t=0;t<ticks;t++) {
                 if(!p.isDead) {
                     if(t%120==0) {
@@ -76,23 +81,40 @@ public final class PlayerOracle {
                     p.movementInput.moveForward=t%120<80?1:0;p.movementInput.moveStrafe=t%120>=80?1:0;p.movementInput.jump=t%31<8;p.movementInput.sneak=t%120>=90;
                     if(p.movementInput.sneak){p.movementInput.moveForward=(float)((double)p.movementInput.moveForward*0.3);p.movementInput.moveStrafe=(float)((double)p.movementInput.moveStrafe*0.3);}
                     if(t%13==0)p.swingItem();
-                    if(scenario.equals("sleep")) {
-                        if(t==0){w.skylightSubtracted=11;w.worldInfo.setWorldTime(18000);p.setLocationAndAngles(0.5,64,0.5,0,0);EntityOracle.rawBlock(w,0,64,0,26,0);EntityOracle.rawBlock(w,0,64,1,26,8);p.sleepInBedAt(0,64,1);}
-                        if(t==120)p.wakeUpPlayer(false,true,true);
+                    if(scenario.equals("survival")) {
+                        p.movementInput.moveForward=p.movementInput.moveStrafe=0;p.movementInput.jump=p.movementInput.sneak=false;
+                        if(t<400){p.setLocationAndAngles(11.5,65.5,0.5,0,0);p.motionX=p.motionY=p.motionZ=0;}
+                        if(t==400){p.setLocationAndAngles(0.5,64,0.5,0,0);p.motionX=p.motionY=p.motionZ=0;p.health=5;w.difficultySetting=0;}
+                        if(t==700){p.username="Notch";p.inventory.mainInventory[0]=new ItemStack(264,20,0);p.attackEntityFrom(null,100);}
                     }
+
+                    if(scenario.equals("sleep")||scenario.equals("night")||scenario.equals("sleepworld")) {
+                        if(t==0){w.skylightSubtracted=11;w.worldInfo.setWorldTime(18000);p.setLocationAndAngles(0.5,64,0.5,0,0);EntityOracle.rawBlock(w,0,64,0,26,0);EntityOracle.rawBlock(w,0,64,1,26,8);p.sleepInBedAt(0,64,1);}
+                        if(scenario.equals("sleep")&&t==120)p.wakeUpPlayer(false,true,true);
+                    }
+                    if(scenario.equals("night")&&t==100)SpawnerAnimals.performSleepSpawning(w,w.playerEntities);
                     if(scenario.equals("portal")){p.movementInput.moveForward=p.movementInput.moveStrafe=0;p.movementInput.jump=false;if(t<110||t>=150&&t<160)p.setInPortal();}
                     if(scenario.equals("look")){p.health=20;p.heartsLife=0;p.func_346_d((t%7-3)*33.7F,(t%11-5)*9.8F);}
                     if(interaction) {
                         p.setLocationAndAngles(0.5,64,0.5,t*33.7F,0);p.motionX=p.motionY=p.motionZ=0;p.movementInput.moveStrafe=p.movementInput.moveForward=0;p.movementInput.jump=p.movementInput.sneak=false;p.onGround=true;
                         controller.updateController();result=0;
-                        if(scenario.equals("dig")) {
+                        if(scenario.equals("bucket")) {
+                            p.setLocationAndAngles(0.5,64,0.5,0,90);int item=t%4==0||t%4==1?325:t%4==2?326:327;
+                            EntityOracle.rawBlock(w,0,64,0,t%4==0?8:t%4==1?10:0,0);p.inventory.mainInventory[0]=new ItemStack(item,1,0);result=controller.sendUseItem(p,w,p.inventory.mainInventory[0])?1:0;
+                        } else if(scenario.equals("dig")) {
                             int phase=t/100%10;int[] blocks={1,17,56,49,35,18,78,79,4,3},tools={0,271,257,278,359,359,269,278,0,0};
                             if(t%100==0){EntityOracle.rawBlock(w,8,64,8,blocks[phase],phase==4?7:0);p.inventory.mainInventory[0]=tools[phase]==0?null:new ItemStack(tools[phase],1,0);controller.resetBlockRemoving();controller.clickBlock(8,64,8,1);}
                             controller.sendBlockRemoving(8,64,8,1);
                         } else if(scenario.equals("place")) {
-                            int[] blocks={1,5,35,44,53,67,86,50,65,69,77,324,330,355,54};int block=blocks[t%blocks.length],x=8+t%6*3,z=8+t/6%6*3,side=t%6;
+                            int[] blocks={1,5,35,44,53,67,86,50,65,69,77,324,330,355,54,23,61,96,356,354,338,32,39,40};int block=blocks[t%blocks.length],x=8+t%6*3,z=8+t/6%6*3,side=t%6;
                             EntityOracle.rawBlock(w,x,64,z,1,0);p.inventory.mainInventory[0]=new ItemStack(block,10,t%4);result=controller.sendPlaceBlock(p,w,p.inventory.mainInventory[0],x,64,z,side)?1:0;
                             if(p.inventory.mainInventory[0]!=null&&p.inventory.mainInventory[0].stackSize==0)p.inventory.mainInventory[0]=null;
+                        } else if(scenario.equals("api")||scenario.equals("pipeline")) {
+                            if(t%40==0){EntityOracle.rawBlock(w,8,64,8,1,0);p.inventory.mainInventory[0]=new ItemStack(278,1,0);}
+                            if(t%40==20)p.inventory.mainInventory[0]=new ItemStack(5,64,0);
+                            if(t%40==30)p.inventory.mainInventory[0]=new ItemStack(260,3,0);
+                            p.mc.objectMouseOver=t%40<30?new MovingObjectPosition(8,64,8,1,Vec3D.createVector(8,65,8)):null;
+                            api(p,controller,t);
                         } else if(scenario.equals("interact")) {
                             int phase=t/30%7;int[] items={359,351,325,329,352,276,278};int item=items[phase];p.inventory.mainInventory[0]=new ItemStack(item,10,phase==1?t%16:0);
                             if(t%30==0){EntityLiving mob=phase<2?new EntitySheep(w):phase==2?new EntityCow(w):phase==3?new EntityPig(w):phase==4?new EntityWolf(w):new EntityZombie(w);mob.setLocationAndAngles(0.5,64,1.5,0,0);w.entityJoinedWorld(mob);}
@@ -118,15 +140,36 @@ public final class PlayerOracle {
                         p=player(w);p.readFromNBT(n);w.entityJoinedWorld(p);
                     }
                 }
-                AxisAlignedBB.clearBoundingBoxPool();Vec3D.initialize();w.updateEntities();EntityOracle.snapshot(w,o);if(scenario.equals("look"))picking(p,o);if(interaction)controllerState(controller,result,o);
+                AxisAlignedBB.clearBoundingBoxPool();Vec3D.initialize();if((scenario.equals("pipeline")||scenario.equals("sleepworld"))&&(t+1)%30==0)w.joinEntityInSurroundings(p);w.updateEntities();if(scenario.equals("pipeline")||scenario.equals("sleepworld")){w.tick();w.randomDisplayUpdates(MathHelper.floor_double(p.posX),MathHelper.floor_double(p.posY),MathHelper.floor_double(p.posZ));}EntityOracle.snapshot(w,o);if(scenario.equals("look"))picking(p,o);if(interaction)controllerState(controller,result,o);if(scenario.equals("api")||scenario.equals("pipeline"))apiState(p,o);if(scenario.equals("nbt"))nbtState(p,o);
             }
         }
         Oracle.dumpWorld(w,path+".world",0,0,0);
         try(FileOutputStream o=new FileOutputStream(path,true)){o.write(java.nio.file.Files.readAllBytes(new File(path+".world").toPath()));}new File(path+".world").delete();
     }
+    static void canonical(NBTBase n,DataOutputStream o)throws Exception {
+        if(n instanceof NBTTagCompound) {Field map=NBTTagCompound.class.getDeclaredField("tagMap");map.setAccessible(true);Map<String,NBTBase> tags=(Map)map.get(n);for(String key:new TreeSet<String>(tags.keySet())) {NBTBase child=tags.get(key);o.writeByte(child.getType());o.writeUTF(key);canonical(child,o);}o.writeByte(0);}
+        else if(n instanceof NBTTagList) {NBTTagList list=(NBTTagList)n;o.writeByte(list.tagCount()==0?1:list.tagAt(0).getType());o.writeInt(list.tagCount());for(int i=0;i<list.tagCount();i++)canonical(list.tagAt(i),o);}
+        else n.writeTagContents(o);
+    }
+    static void nbtState(HeadlessPlayer p,DataOutputStream o)throws Exception {NBTTagCompound n=new NBTTagCompound();p.writeToNBT(n);ByteArrayOutputStream b=new ByteArrayOutputStream();DataOutputStream d=new DataOutputStream(b);d.writeByte(10);d.writeUTF("");canonical(n,d);byte[] bytes=b.toByteArray();i(o,bytes.length);o.write(bytes);}
+    static void api(HeadlessPlayer p,PlayerControllerSP c,int ticks)throws Exception {
+        Minecraft mc=p.mc;Method click=Minecraft.class.getDeclaredMethod("clickMouse",int.class);click.setAccessible(true);Method held=Minecraft.class.getDeclaredMethod("func_6254_a",int.class,boolean.class);held.setAccessible(true);
+        boolean left=ticks%40<15||ticks%40>=35,right=ticks%40>=20&&ticks%40<34;
+        int last=EntityOracle.intField(Minecraft.class,"mouseTicksRan",mc);
+        if(ticks%40==0||ticks%40==35){click.invoke(mc,0);last=ticks;}
+        if(ticks%40==20){click.invoke(mc,1);last=ticks;}
+        int counter=EntityOracle.intField(Minecraft.class,"leftClickCounter",mc);Field f=Minecraft.class.getDeclaredField("leftClickCounter");f.setAccessible(true);if(counter>0)f.setInt(mc,counter-1);
+        if(left&&ticks-last>=5){click.invoke(mc,0);last=ticks;}
+        if(right&&ticks-last>=5){click.invoke(mc,1);last=ticks;}
+        Field mouse=Minecraft.class.getDeclaredField("mouseTicksRan");mouse.setAccessible(true);mouse.setInt(mc,last);held.invoke(mc,0,left);
+    }
+    static void apiState(HeadlessPlayer p,DataOutputStream o)throws Exception {
+        i(o,EntityOracle.intField(Minecraft.class,"leftClickCounter",p.mc));i(o,EntityOracle.intField(Minecraft.class,"mouseTicksRan",p.mc));EntityOracle.f(o,p.getEntityBrightness(1));
+    }
     static void controllerState(PlayerControllerSP c,int result,DataOutputStream o)throws Exception {
         i(o,result);for(String name:new String[]{"curBlockDamage","prevBlockDamage","field_1069_h"})EntityOracle.f(o,EntityOracle.floatField(PlayerControllerSP.class,name,c));
         for(String name:new String[]{"field_1074_c","field_1073_d","field_1072_e","blockHitWait"})i(o,EntityOracle.intField(PlayerControllerSP.class,name,c));
+        EntityOracle.l(o,EntityOracle.rngState(Item.itemRand));
     }
     static void i(DataOutputStream o,int n)throws IOException {EntityOracle.i(o,n);}
     static void stack(DataOutputStream o,ItemStack s)throws IOException {

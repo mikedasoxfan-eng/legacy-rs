@@ -450,7 +450,7 @@ impl Entity {
         if matches!(self.kind, EntityKind::Squid(..)) {
             self.squid_living_update(w);
         }
-        self.wolf_living();
+        self.wolf_living(w);
         if matches!(self.kind,EntityKind::Player(..)) {self.player_after_living(w);}
         if let EntityKind::Chicken {
             flap,

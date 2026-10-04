@@ -1,6 +1,16 @@
 use super::*;
 use crate::nbt::{Compound,Tag};
 impl Entity {
+    /// EntityPlayer.preparePlayerToSpawn, before the controller's yaw flip.
+    pub fn prepare_player_to_spawn(&mut self,w:&mut World) {
+        self.y_offset=1.62;self.width=0.6;self.height=1.8;
+        while self.pos.y>0.0 {
+            self.set_position(self.pos.x,self.pos.y,self.pos.z);
+            if w.get_colliding_bounding_boxes(Some(self.entity_id),self.bounding_box).is_empty() {break;}
+            self.pos.y+=1.0;
+        }
+        self.motion=Vec3D::default();self.pitch=0.0;self.living.health=20;self.living.death_time=0;
+    }
     /// level.dat's Player compound does not contain an EntityList id.
     pub fn player_nbt(&self)->Option<Compound> {
         let s=self.player_state()?;let mut e=self.clone();e.dead=false;
@@ -22,7 +32,8 @@ impl World {
     /// Construct and join the singleplayer saved in level.dat, or a new player at spawn.
     pub fn spawn_player(&mut self,username:impl Into<String>)->i32 {
         let username=username.into();
-        let mut e=if let Some(n)=self.info.player.clone() {Entity::player_from_nbt(self,&n,&username).unwrap_or_else(||Entity::player(self,&username))}else{Entity::player(self,&username)};
+        let saved=self.info.player.take();
+        let mut e=if let Some(n)=saved {Entity::player_from_nbt(self,&n,&username).unwrap_or_else(||Entity::player(self,&username))}else{let mut e=Entity::player(self,&username);e.prepare_player_to_spawn(self);e.yaw=-180.0;e};
         e.player_state_mut().unwrap().dimension=if self.dimension.is_hell_world(){-1}else{0};
         let id=e.entity_id;self.join_entity_in_surroundings(e.pos);self.entity_joined_world(e);id
     }

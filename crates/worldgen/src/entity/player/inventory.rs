@@ -74,7 +74,7 @@ impl InventoryPlayer {
     pub fn to_nbt(&self)->Tag {
         let mut tags=Vec::new();
         for (slots,offset) in [(&self.main[..],0),(&self.armor[..],100)] { for (slot,s) in slots.iter().enumerate() { if let Some(s)=s { let mut n=s.to_nbt(); n.put("Slot",Tag::Byte((slot+offset) as i8)); tags.push(Tag::Compound(n)); } } }
-        Tag::List(10,tags)
+        Tag::List(if tags.is_empty(){1}else{10},tags)
     }
     pub fn read_nbt(&mut self,tags:&[Tag]) {
         self.main=[None;36]; self.armor=[None;4];

@@ -46,8 +46,11 @@ class Reader:
                 p=f'pick{partial}.';self.many(p,'x y z','<d');kind=self.read(p+'kind','<i')
                 if kind==1:self.read(p+'entity','<i')
                 elif kind==0:self.many(p,'bx by bz side','<i');self.many(p,'hitx hity hitz','<d')
-        if len(sys.argv)>4 and sys.argv[4] in ('dig','place','use','activate','shoot','interact','fertilize'):
-            self.read('controller.result','<i');self.many('controller.','damage prevdamage sounds','<f');self.many('controller.','x y z wait','<i')
+        if len(sys.argv)>4 and sys.argv[4] in ('dig','place','use','activate','shoot','interact','fertilize','api','pipeline'):
+            self.read('controller.result','<i');self.many('controller.','damage prevdamage sounds','<f');self.many('controller.','x y z wait','<i');self.read('item_rng','<q')
+        if len(sys.argv)>4 and sys.argv[4] in ('api','pipeline'): self.many('api.','leftcounter lastclick','<i');self.read('api.brightness','<f')
+        if len(sys.argv)>4 and sys.argv[4]=='nbt':
+            n=self.read('nbt_len','<i');data=self.data[self.at:self.at+n];self.at+=n;self.fields['nbt']=(data,data)
         return self.fields
 a,b=Reader(sys.argv[1]),Reader(sys.argv[2])
 for frame in range(int(sys.argv[3])+1):

@@ -196,6 +196,7 @@ impl World {
     /// `World.tick` (no sleeping players or mob spawning yet).
     pub fn tick(&mut self) {
         self.update_weather();
+        self.tick_sleeping_players();
         self.perform_spawning(self.spawn_hostile_mobs, self.spawn_peaceful_mobs);
         self.unload_oldest_chunks();
         let s = self.calculate_skylight_subtracted(1.0);

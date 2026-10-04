@@ -7,11 +7,13 @@ pub fn drop_stack(w:&mut World,x:i32,y:i32,z:i32,stack:ItemStack) {
 /// Empty inherited Block hooks, explicitly enumerated for player-placeable blocks.
 fn plain(id:u8)->bool {matches!(id,21|22|25|26|30|35|41|42|47|53|58|64|65|67|69|71|77|84|85|89|91|92|96)}
 pub fn added(w:&mut World,id:u8,x:i32,y:i32,z:i32)->bool {
+    if matches!(id,93|94) {for (dx,dy,dz) in [(1,0,0),(-1,0,0),(0,0,1),(0,0,-1),(0,-1,0),(0,1,0)] {w.notify_blocks_of_neighbor_change(x+dx,y+dy,z+dz,id);}return true;}
     if matches!(id,6|59) {return true;}
     if matches!(id,43|44) {
         if id==44&&w.get_block_id(x,y-1,z)==44&&w.get_block_metadata(x,y,z)==w.get_block_metadata(x,y-1,z) {let m=w.get_block_metadata(x,y,z);w.set_block_with_notify(x,y,z,0);w.set_block_and_metadata_with_notify(x,y-1,z,43,m);}return true;
     }
     if id==50 {
+        if w.get_block_metadata(x,y,z)!=0 {neighbor(w,id,x,y,z,0);return true;}
         let mut meta=None;for (dx,dy,dz,m) in [(-1,0,0,1),(1,0,0,2),(0,0,-1,3),(0,0,1,4),(0,-1,0,5)] {
             if w.is_block_normal_cube(x+dx,y+dy,z+dz)||(m==5&&w.get_block_id(x,y-1,z)==85) {meta=Some(m);break;}
         }if let Some(m)=meta {w.set_block_metadata_with_notify(x,y,z,m);}neighbor(w,id,x,y,z,0);return true;
@@ -25,9 +27,12 @@ pub fn added(w:&mut World,id:u8,x:i32,y:i32,z:i32)->bool {
 pub fn removed(w:&mut World,id:u8,x:i32,y:i32,z:i32)->bool {
     if matches!(id,69|77) {let m=w.get_block_metadata(x,y,z);if m&8>0 {super::activation::notify_power(w,id,x,y,z,m&7);}return true;}
     if matches!(id,23|61|62) {w.chunk_mut(x>>4,z>>4).raw_tile_entities.retain(|n|n.int("x")!=x||n.int("y")!=y||n.int("z")!=z);return true;}
-    plain(id)||matches!(id,6|43|44|50|59)
+    plain(id)||matches!(id,6|43|44|50|59|93|94)
 }
 pub fn neighbor(w:&mut World,id:u8,x:i32,y:i32,z:i32,changed:u8)->bool {
+    if matches!(id,93|94) {let m=w.get_block_metadata(x,y,z);if !w.is_block_normal_cube(x,y-1,z) {crate::world::behavior::drop_block_as_item(w,id,x,y,z,m);w.set_block_with_notify(x,y,z,0);}else{let powered=repeater_input(w,x,y,z,m);if (id==94&&!powered)||(id==93&&powered) {w.schedule_block_update(x,y,z,id,((m&12)>>2)*2+2);}}return true;}
+    if id==23 {if changed>0&&crate::entity::block_hooks::provides_power(changed)&&(w.is_block_indirectly_getting_powered(x,y,z)||w.is_block_indirectly_getting_powered(x,y+1,z)) {w.schedule_block_update(x,y,z,id,4);}return true;}
+    if id==96 {let m=w.get_block_metadata(x,y,z);let (dx,dz)=[(0,1),(0,-1),(1,0),(-1,0)][(m&3) as usize];if !w.is_block_normal_cube(x+dx,y,z+dz) {w.set_block_with_notify(x,y,z,0);crate::world::behavior::drop_block_as_item(w,id,x,y,z,m);}if changed>0&&crate::entity::block_hooks::provides_power(changed) {let powered=w.is_block_indirectly_getting_powered(x,y,z);if (w.get_block_metadata(x,y,z)&4!=0)!=powered {let m=w.get_block_metadata(x,y,z);w.set_block_metadata_with_notify(x,y,z,m^4);}}return true;}
     if id==59 {crop_check(w,x,y,z);return true;}
     if matches!(id,64|71) {
         let m=w.get_block_metadata(x,y,z);
@@ -52,6 +57,8 @@ pub fn neighbor(w:&mut World,id:u8,x:i32,y:i32,z:i32,changed:u8)->bool {
     plain(id)||matches!(id,23|43|44|61|62)
 }
 pub fn tick(w:&mut World,id:u8,x:i32,y:i32,z:i32,rs:crate::world::RandSel)->bool {
+    if matches!(id,93|94) {let m=w.get_block_metadata(x,y,z);let input=repeater_input(w,x,y,z,m);if id==94&&!input {w.set_block_and_metadata_with_notify(x,y,z,93,m);}else if id==93 {w.set_block_and_metadata_with_notify(x,y,z,94,m);if !input {w.schedule_block_update(x,y,z,94,((m&12)>>2)*2+2);}}return true;}
+    if id==23 {return true;}
     if id==59 {
         crop_check(w,x,y,z);
         if w.get_block_light_value(x,y+1,z)>=9 {let m=w.get_block_metadata(x,y,z);if m<7 {
@@ -67,9 +74,10 @@ pub fn tick(w:&mut World,id:u8,x:i32,y:i32,z:i32,rs:crate::world::RandSel)->bool
     false
 }
 fn crop_check(w:&mut World,x:i32,y:i32,z:i32) {if !crate::world::behavior::flower_can_stay(w,59,x,y,z) {let m=w.get_block_metadata(x,y,z);crate::world::behavior::drop_block_as_item(w,59,x,y,z,m);w.set_block_with_notify(x,y,z,0);}}
+pub fn repeater_input(w:&mut World,x:i32,y:i32,z:i32,m:i32)->bool {let (dx,dz,side)=[(0,1,3),(-1,0,4),(0,-1,2),(1,0,5)][(m&3) as usize];w.indirectly_provides_power(x+dx,y,z+dz,side)||(w.get_block_id(x+dx,y,z+dz)==55&&w.get_block_metadata(x+dx,y,z+dz)>0)}
 pub fn ensure_container(w:&mut World,id:u8,x:i32,y:i32,z:i32) {
     if w.chunk(x>>4,z>>4).raw_tile_entities.iter().any(|n|n.int("x")==x&&n.int("y")==y&&n.int("z")==z) {return;}
-    let mut n=crate::nbt::Compound::new();n.put("id",crate::nbt::Tag::String(if id==23{"Trap"}else{"Furnace"}.into()));for (key,v) in [("x",x),("y",y),("z",z)] {n.put(key,crate::nbt::Tag::Int(v));}n.put("Items",crate::nbt::Tag::List(10,Vec::new()));
+    let mut n=crate::nbt::Compound::new();n.put("id",crate::nbt::Tag::String(if id==23{"Trap"}else{"Furnace"}.into()));for (key,v) in [("x",x),("y",y),("z",z)] {n.put(key,crate::nbt::Tag::Int(v));}n.put("Items",crate::nbt::Tag::List(1,Vec::new()));
     if id!=23 {n.put("BurnTime",crate::nbt::Tag::Short(0));n.put("CookTime",crate::nbt::Tag::Short(0));}
     w.chunk_mut(x>>4,z>>4).raw_tile_entities.push(n);
 }

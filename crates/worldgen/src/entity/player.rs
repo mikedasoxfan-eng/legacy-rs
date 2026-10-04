@@ -12,6 +12,9 @@ pub mod items;
 pub mod throwable;
 pub mod interactions;
 pub mod dye;
+pub mod api;
+pub mod sleep_world;
+pub use api::{PlayerHud,PlayerTarget,PlayerTickInput};
 pub use inventory::{InventoryPlayer, ItemStack};
 use super::{Entity, EntityKind, Vec3D};
 use crate::{math::{self, floor_double as floor}, World};
@@ -30,11 +33,14 @@ impl PlayerInput {
     }
 }
 #[derive(Clone, Debug)]
-pub enum PlayerEvent { Pickup { entity: i32, count: i32 }, ChangeDimension, OpenContainer { block: u8, position: (i32,i32,i32) } }
+pub enum PlayerEvent { Pickup { entity: i32, count: i32 }, ChangeDimension, OpenContainer { block: u8, position: (i32,i32,i32) }, SpawnVehicle { vehicle:VehicleKind,position:Vec3D } }
+#[derive(Clone,Copy,Debug,PartialEq,Eq)]
+pub enum VehicleKind { Boat, Minecart, StorageMinecart, PoweredMinecart }
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum SleepStatus { Ok, OtherProblem, NotPossibleHere, NotPossibleNow, TooFarAway }
 #[derive(Clone, Debug)]
 pub struct PlayerState {
+    pub left_click_counter:i32,pub last_click_tick:i32,
     pub controller: controller::PlayerControllerSP,
     pub inventory: InventoryPlayer, pub input: PlayerInput, pub username: String,
     pub camera_yaw: f32, pub prev_camera_yaw: f32, pub camera_pitch: f32, pub prev_camera_pitch: f32,
@@ -45,7 +51,7 @@ pub struct PlayerState {
     pub damage_remainder: i32, pub events: Vec<PlayerEvent>, pub player_index: Option<usize>,
 }
 impl Default for PlayerState {
-    fn default()->Self {Self {controller:Default::default(),inventory:Default::default(),input:Default::default(),username:"Player".into(),camera_yaw:0.0,prev_camera_yaw:0.0,camera_pitch:0.0,prev_camera_pitch:0.0,is_swinging:false,swing_ticks:0,score:0,dimension:0,cloak:Vec3D::default(),prev_cloak:Vec3D::default(),sleeping:false,sleep_timer:0,bed:None,spawn:None,bed_offset:Vec3D::default(),portal_cooldown:20,in_portal:false,time_in_portal:0.0,prev_time_in_portal:0.0,damage_remainder:0,events:Vec::new(),player_index:None}}
+    fn default()->Self {Self {left_click_counter:0,last_click_tick:0,controller:Default::default(),inventory:Default::default(),input:Default::default(),username:"Player".into(),camera_yaw:0.0,prev_camera_yaw:0.0,camera_pitch:0.0,prev_camera_pitch:0.0,is_swinging:false,swing_ticks:0,score:0,dimension:0,cloak:Vec3D::default(),prev_cloak:Vec3D::default(),sleeping:false,sleep_timer:0,bed:None,spawn:None,bed_offset:Vec3D::default(),portal_cooldown:20,in_portal:false,time_in_portal:0.0,prev_time_in_portal:0.0,damage_remainder:0,events:Vec::new(),player_index:None}}
 }
 impl Entity {
     pub fn player(w:&mut World,username:impl Into<String>)->Self {
@@ -78,6 +84,7 @@ impl Entity {
         self.living.swing_progress=swing;self.living.move_strafing=strafe;self.living.move_forward=forward;self.living.is_jumping=jump;
     }
     pub(super) fn player_before_living(&mut self,w:&mut World) {
+        if self.player_state().unwrap().in_portal&&self.riding.is_some() {self.mount_entity(w,None);}
         let s=self.player_state_mut().unwrap();
         s.prev_time_in_portal=s.time_in_portal;
         let mut draws=0;
@@ -190,6 +197,7 @@ impl Entity {
     pub fn set_in_portal(&mut self) {if let Some(s)=self.player_state_mut(){if s.portal_cooldown>0 {s.portal_cooldown=10;}else {s.in_portal=true;}}}
     pub fn wake_up(&mut self,w:&mut World,reset_timer:bool,set_spawn:bool) {
         self.width=0.6;self.height=1.8;self.y_offset=1.62;
+        self.sneaking=self.player_state().unwrap().input.sneak;
         if let Some((x,y,z))=self.player_state().unwrap().bed {
             if w.get_block_id(x,y,z)==26 {
                 let meta=w.get_block_metadata(x,y,z);w.set_block_metadata_with_notify(x,y,z,meta&!4);
@@ -205,6 +213,7 @@ impl Entity {
         if w.skylight_subtracted<4 {return SleepStatus::NotPossibleNow;}
         if (self.pos.x-x as f64).abs()>3.0 || (self.pos.y-y as f64).abs()>2.0 || (self.pos.z-z as f64).abs()>3.0 {return SleepStatus::TooFarAway;}
         self.width=0.2;self.height=0.2;self.y_offset=0.2;
+        self.sneaking=false;
         let direction=w.get_block_metadata(x,y,z)&3;
         let (ox,oz)=match direction {0=>(0.5f32,0.9f32),1=>(0.1,0.5),2=>(0.5,0.1),_=>(0.9,0.5)};
         self.set_position((x as f32+ox) as f64,(y as f32+15.0/16.0) as f64,(z as f32+oz) as f64);

@@ -10,14 +10,34 @@ import subprocess
 import sys
 root = Path(__file__).resolve().parents[1]
 if sys.argv[1:] == ['--commit']:
-    for manifest in sorted((root / 'target/player-stages').glob('*/manifest.json')):
-        data = json.loads(manifest.read_text())
-        for name in data['files']:
-            target = root / name
-            target.parent.mkdir(parents=True, exist_ok=True)
-            shutil.copy2(manifest.parent / name, target)
-        subprocess.run(['git', 'add', '--', *data['files']], cwd=root, check=True)
-        subprocess.run(['git', '-c', 'user.name=logiu', '-c', 'user.email=224190594+mikedasoxfan-eng@users.noreply.github.com', 'commit', '-m', data['title'], '-m', 'Co-Authored-By: Codex (gpt-6.1-sol) <noreply@openai.com>'], cwd=root, check=True)
+    manifests = sorted((root / 'target/player-stages').glob('*/manifest.json'))
+    stages = [(p, json.loads(p.read_text())) for p in manifests]
+    latest = {name: p.parent / name for p, data in stages for name in data['files']}
+    # Refuse to overwrite work performed after the last snapshot.
+    changed = [name for name, saved in latest.items()
+               if not (root / name).is_file() or (root / name).read_bytes() != saved.read_bytes()]
+    if changed:
+        sys.exit('Newer work differs from the snapshots; capture another stage first:\n' + '\n'.join(changed))
+    subprocess.run(['git', 'rev-parse', '--git-dir'], cwd=root, check=True)
+    try:
+        for manifest, data in stages:
+            if data.get('commit'):
+                subprocess.run(['git', 'merge-base', '--is-ancestor', data['commit'], 'HEAD'], cwd=root, check=True)
+                continue
+            for name in data['files']:
+                target = root / name
+                target.parent.mkdir(parents=True, exist_ok=True)
+                shutil.copy2(manifest.parent / name, target)
+            subprocess.run(['git', 'add', '--', *data['files']], cwd=root, check=True)
+            subprocess.run(['git', '-c', 'user.name=logiu', '-c', 'user.email=224190594+mikedasoxfan-eng@users.noreply.github.com',
+                            'commit', '--only', '-m', data['title'], '-m',
+                            'Co-Authored-By: Codex (gpt-6.1-sol) <noreply@openai.com>', '--', *data['files']], cwd=root, check=True)
+            data['commit'] = subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=root, text=True).strip()
+            manifest.write_text(json.dumps(data, indent=2))
+    finally:
+        # Preserve the finished work even if a commit is blocked or interrupted.
+        for name, saved in latest.items():
+            shutil.copy2(saved, root / name)
     sys.exit(0)
 stage, title, *paths = sys.argv[1:]
 dest = root / 'target/player-stages' / stage

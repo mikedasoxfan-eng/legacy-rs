@@ -9,10 +9,11 @@ impl Entity {
             324|330=>self.place_door(w,&mut stack,x,y,z,side),
             355=>self.place_bed(w,&mut stack,x,y,z,side),
             351=>self.dye_block(w,&mut stack,x,y,z),
+            328|342|343=>{if matches!(w.get_block_id(x,y,z),27|28|66) {let vehicle=match stack.id {342=>VehicleKind::StorageMinecart,343=>VehicleKind::PoweredMinecart,_=>VehicleKind::Minecart};self.player_state_mut().unwrap().events.push(PlayerEvent::SpawnVehicle{vehicle,position:Vec3D::new((x as f32+0.5) as f64,(y as f32+0.5) as f64,(z as f32+0.5) as f64)});stack.count-=1;true}else{false}},
             259=>{let (x,y,z)=super::placement::offset(x,y,z,side);if w.get_block_id(x,y,z)==0 {w.item_random.next_float();w.set_block_with_notify(x,y,z,51);}stack.damage_item(1);true},
             290..=294=>{let id=w.get_block_id(x,y,z);if (side==0||w.get_block_id(x,y+1,z)!=0||id!=2)&&id!=3 {false}else{w.set_block_with_notify(x,y,z,60);stack.damage_item(1);true}},
             295=>{if side==1&&w.get_block_id(x,y,z)==60&&w.get_block_id(x,y+1,z)==0 {w.set_block_with_notify(x,y+1,z,59);stack.count-=1;true}else{false}},
-            338|354|356=>{let block=match stack.id {338=>83,354=>92,_=>93};let (x,y,z)=if w.get_block_id(x,y,z)==78 {(x,y,z)}else{super::placement::offset(x,y,z,side)};if w.get_block_id(x,y,z)==0&&super::placement::can_place_at(w,block,x,y,z,side) {w.set_block_with_notify(x,y,z,block);self.block_placed(w,block,x,y,z,side);stack.count-=1;true}else{false}},
+            338|354|356=>{let block=match stack.id {338=>83,354=>92,_=>93};let side=if w.get_block_id(x,y,z)==78 {0}else{side};let (x,y,z)=if w.get_block_id(x,y,z)==78 {(x,y,z)}else{super::placement::offset(x,y,z,side)};if stack.count==0 {false}else{w.entities.insert(self.entity_id,self.clone());let place=super::placement::can_place(w,block,x,y,z,side);w.entities.remove(&self.entity_id);if place&&w.set_block_with_notify(x,y,z,block) {self.block_placed(w,block,x,y,z,side);stack.count-=1;}true}},
             _=>false,
         };
         let inv=&mut self.player_state_mut().unwrap().inventory;inv.main[inv.current_item as usize]=if stack.count<=0 {None}else{Some(stack)};used
@@ -23,6 +24,7 @@ impl Entity {
         if heal>0 {stack.count-=1;self.heal(heal);if stack.id==282 {stack=ItemStack::new(281,1,0);}}
         else if stack.id==261 {if self.player_state_mut().unwrap().inventory.consume(262) {w.item_random.next_float();let arrow=Entity::arrow_from_owner(w,self);w.entity_joined_world(arrow);}}
         else if matches!(stack.id,332|344) {stack.count-=1;w.item_random.next_float();let projectile=Entity::throwable(w,self,stack.id==344);w.entity_joined_world(projectile);}
+        else if stack.id==333 {let start=Vec3D::new(self.prev_pos.x+(self.pos.x-self.prev_pos.x),self.prev_pos.y+(self.pos.y-self.prev_pos.y)+1.62-self.y_offset as f64,self.prev_pos.z+(self.pos.z-self.prev_pos.z));let look=self.look(1.0);if let Some(MovingObjectPosition::Block{x,mut y,z,..})=w.ray_trace_blocks_options(start,start.add(look.x*5.0,look.y*5.0,look.z*5.0),true,false) {if w.get_block_id(x,y,z)==78 {y-=1;}self.player_state_mut().unwrap().events.push(PlayerEvent::SpawnVehicle{vehicle:VehicleKind::Boat,position:Vec3D::new((x as f32+0.5) as f64,(y as f32+1.0) as f64,(z as f32+0.5) as f64)});stack.count-=1;}}
         else if matches!(stack.id,325..=327|335) {
             let full=match stack.id {326=>8,327=>10,335=>-1,_=>0};
             let start=Vec3D::new(self.prev_pos.x+(self.pos.x-self.prev_pos.x),self.prev_pos.y+(self.pos.y-self.prev_pos.y)+1.62-self.y_offset as f64,self.prev_pos.z+(self.pos.z-self.prev_pos.z));let look=self.look(1.0);
