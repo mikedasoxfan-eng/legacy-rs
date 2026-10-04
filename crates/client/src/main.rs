@@ -39,6 +39,9 @@ pub struct Options {
     pub direct: bool,
     /// `--flowtest <dir>`: scripted click-through of the menus with screenshots.
     pub flowtest: Option<std::path::PathBuf>,
+    /// Read options.txt from this directory (default: working directory).
+    pub options_dir: Option<std::path::PathBuf>,
+    pub video_flowtest: Option<std::path::PathBuf>,
     /// `--shot-ticks N`: with --shot, let the world run N ticks first.
     pub shot_ticks: i64,
 }
@@ -100,6 +103,8 @@ fn parse_args() -> Options {
             name: None,
         },
         flowtest: get("--flowtest").map(Into::into),
+        options_dir: get("--options-dir").map(Into::into),
+        video_flowtest: get("--video-flowtest").map(Into::into),
         shot_ticks: get("--shot-ticks").and_then(|s| s.parse().ok()).unwrap_or(0),
         direct: ["--world", "--world-dir", "--seed", "--no-save", "--shot", "--at", "--server"]
             .iter()
@@ -116,7 +121,7 @@ fn parse_args() -> Options {
     }
 }
 
-/// `--skycolor seed x z time partial [rain thunder flash [prev-rain prev-thunder [fog-prev fog-current]]]`: float bits,
+/// `--skycolor seed x z time partial [rain thunder flash [prev-rain prev-thunder [fog-prev fog-current [distance]]]]`: float bits,
 /// in the same format as the oracle's `skycolor` mode, for comparison.
 fn sky_check(a: &[String]) {
     let seed: i64 = a[2].parse().unwrap();
@@ -140,7 +145,9 @@ fn sky_check(a: &[String]) {
     let c = sky::cloud_color(angle, rain, thunder);
     let fog_prev = a.get(12).map_or(1.0f32, |v| v.parse().unwrap());
     let fog_current = a.get(13).map_or(1.0f32, |v| v.parse().unwrap());
-    let fog = sky::fog_color(angle, temp, 0, rain, thunder, weather.flash, partial)
+    let distance = a.get(14).map_or(0i32, |v| v.parse().unwrap());
+    let far = (256 >> distance) as f32;
+    let fog = sky::fog_color(angle, temp, distance, rain, thunder, weather.flash, partial)
         .map(|c| c * (fog_prev + (fog_current - fog_prev) * partial));
     let b = |v: f32| v.to_bits() as i32;
     println!(
@@ -156,11 +163,11 @@ fn sky_check(a: &[String]) {
         b(c[0]),
         b(c[1]),
         b(c[2]),
-        b(sky::star_brightness(angle)), b(fog[0]), b(fog[1]), b(fog[2]), b(sky::star_brightness(angle) * (1.0f32 - rain)), b(1.0f32 - rain), b(256.0f32 * 0.25f32), b(256.0f32)
+        b(sky::star_brightness(angle)), b(fog[0]), b(fog[1]), b(fog[2]), b(sky::star_brightness(angle) * (1.0f32 - rain)), b(1.0f32 - rain), b(far * 0.25f32), b(far)
     );
 }
 
-/// `--meshcheck seed wrand oracle-mesh.bin`: mesh the same chunks after the vanilla
+/// `--meshcheck seed wrand oracle-mesh.bin [fancy|fast] [on|off]`: mesh the same chunks after the vanilla
 /// preload and compare every vertex with the original RenderBlocks output.
 fn mesh_check(a: &[String]) -> bool {
     let seed: i64 = a[2].parse().unwrap();
@@ -174,7 +181,11 @@ fn mesh_check(a: &[String]) -> bool {
     };
     let assets = assets::load().expect("assets");
     let col = Colorizers { grass: assets.grass_color, foliage: assets.foliage_color };
-    let world = worldgen::World::new_vanilla(seed, wrand);
+    let mut video = render::video::VideoSettings::default();
+    video.fancy = a.get(5).map(String::as_str) != Some("fast");
+    video.ao = a.get(6).map(String::as_str) != Some("off");
+    let mut world = worldgen::World::new_vanilla(seed, wrand);
+    world.leaves_opaque = !video.fancy;
     let biomes = std::cell::RefCell::new(BiomeSource::new(seed));
     let magic = i32_();
     let _ = i32_();
@@ -188,7 +199,7 @@ fn mesh_check(a: &[String]) -> bool {
         for &b in world.chunk(cx, cz).blocks.iter() {
             seen[b as usize] += 1;
         }
-        let (opaque, translucent) = worker::mesh_chunk(&world, cx, cz, sky_sub, &biomes, &col);
+        let (opaque, translucent) = worker::mesh_chunk(&world, cx, cz, sky_sub, &biomes, &col, video);
         for (pass, rust) in [(0, &opaque), (1, &translucent)] {
             let nv = i32_() as usize;
             let mut java = Vec::with_capacity(nv);
@@ -242,6 +253,16 @@ fn mesh_check(a: &[String]) -> bool {
 
 fn main() {
     let args: Vec<String> = std::env::args().collect();
+    if args.get(1).map(String::as_str) == Some("--cloudcheck") {
+        render::video_check::clouds(&args);
+        return;
+    }
+    if args.get(1).map(String::as_str) == Some("--videowindow") {
+        let video = render::video::VideoSettings { distance: args[2].parse().unwrap(), ..Default::default() };
+        let xs = worker::window_axis(args[3].parse().unwrap(), video.chunks_wide());
+        println!("window {} {}", video.chunks_wide(), xs.iter().map(i32::to_string).collect::<Vec<_>>().join(" "));
+        return;
+    }
     if args.get(1).map(String::as_str) == Some("--renderershot") {
         if let Err(e) =
             render::entity::shot::renderer_shot(std::path::Path::new(args.get(2).expect("--renderershot file.png")))

@@ -46,6 +46,7 @@ pub struct RenderBlocks<'a, 'b> {
     pub t: &'b mut Tessellator,
     col: &'b Colorizers,
     b: Bounds,
+    pub ao: bool,
     enable_ao: bool,
     // per-vertex colors for the AO face functions
     r_tl: f32,
@@ -74,6 +75,7 @@ impl<'a, 'b> RenderBlocks<'a, 'b> {
             t,
             col,
             b: Bounds { min_x: 0.0, min_y: 0.0, min_z: 0.0, max_x: 1.0, max_y: 1.0, max_z: 1.0 },
+            ao: true,
             enable_ao: false,
             r_tl: 0.0,
             r_bl: 0.0,
@@ -144,6 +146,7 @@ impl<'a, 'b> RenderBlocks<'a, 'b> {
     #[inline]
     fn texture_meta(&self, id: u8, side: usize, meta: i32) -> i32 {
         rprops(id).textures[(meta & 15) as usize][side] as i32
+            + if id == block::LEAVES && !self.w.fancy { 1 } else { 0 }
     }
 
     /// `colorMultiplier`
@@ -234,7 +237,61 @@ impl<'a, 'b> RenderBlocks<'a, 'b> {
     /// `renderStandardBlock` (smooth lighting is on by default in b1.7.3).
     fn render_standard_block(&mut self, id: u8, x: i32, y: i32, z: i32) -> bool {
         let (r, g, b) = rgb(self.color_multiplier(id, x, y, z));
-        self.render_standard_block_ao(id, x, y, z, r, g, b)
+        if self.ao {
+            self.render_standard_block_ao(id, x, y, z, r, g, b)
+        } else {
+            self.render_standard_block_color(id, x, y, z, r, g, b)
+        }
+    }
+
+    /// `renderStandardBlockWithColorMultiplier`. Preserve Java's multiplication order.
+    #[allow(clippy::too_many_arguments)]
+    fn render_standard_block_color(&mut self, id: u8, x: i32, y: i32, z: i32, r: f32, g: f32, b: f32) -> bool {
+        self.enable_ao = false;
+        let own = self.brightness(id, x, y, z);
+        let neighbours = [(x, y - 1, z), (x, y + 1, z), (x, y, z - 1), (x, y, z + 1), (x - 1, y, z), (x + 1, y, z)];
+        let mut rendered = false;
+        for (side, &(nx, ny, nz)) in neighbours.iter().enumerate() {
+            if !self.should_side_be_rendered(id, nx, ny, nz, side as i32) {
+                continue;
+            }
+            let mut light = self.brightness(id, nx, ny, nz);
+            let bounds = self.b;
+            if match side {
+                1 => bounds.max_y != 1.0 && !matches!(block::material_of(id), block::MAT_WATER | block::MAT_LAVA),
+                2 => bounds.min_z > 0.0,
+                3 => bounds.max_z < 1.0,
+                4 => bounds.min_x > 0.0,
+                5 => bounds.max_x < 1.0,
+                _ => false,
+            } {
+                light = own;
+            }
+            let shade = [0.5f32, 1.0, 0.8, 0.8, 0.6, 0.6][side];
+            let tint = id != block::GRASS || side == 1;
+            let (cr, cg, cb) = if tint { (shade * r, shade * g, shade * b) } else { (shade, shade, shade) };
+            self.t.set_color_opaque_f(cr * light, cg * light, cb * light);
+            let tex = self.texture(id, x, y, z, side);
+            self.standard_face(side, x, y, z, tex);
+            if side >= 2 && self.w.fancy && tex == 3 {
+                self.t.set_color_opaque_f(cr * light * r, cg * light * g, cb * light * b);
+                self.standard_face(side, x, y, z, 38);
+            }
+            rendered = true;
+        }
+        rendered
+    }
+
+    fn standard_face(&mut self, side: usize, x: i32, y: i32, z: i32, tex: i32) {
+        let (x, y, z) = (x as f64, y as f64, z as f64);
+        match side {
+            0 => self.render_bottom_face(x, y, z, tex),
+            1 => self.render_top_face(x, y, z, tex),
+            2 => self.render_east_face(x, y, z, tex),
+            3 => self.render_west_face(x, y, z, tex),
+            4 => self.render_north_face(x, y, z, tex),
+            _ => self.render_south_face(x, y, z, tex),
+        }
     }
 
     // ---------------------------------------------------------------- smooth lighting
@@ -275,7 +332,8 @@ impl<'a, 'b> RenderBlocks<'a, 'b> {
     fn render_standard_block_ao(&mut self, id: u8, x: i32, y: i32, z: i32, r: f32, g: f32, b: f32) -> bool {
         self.enable_ao = true;
         let mut rendered = false;
-        let (mut tint_bottom, tint_top, mut tint_e, mut tint_w, mut tint_n, mut tint_s) = (true, true, true, true, true, true);
+        let (mut tint_bottom, tint_top, mut tint_e, mut tint_w, mut tint_n, mut tint_s) =
+            (true, true, true, true, true, true);
         let br = |s: &Self, x: i32, y: i32, z: i32| s.brightness(id, x, y, z);
         let ao_x_neg = br(self, x - 1, y, z);
         let ao_y_neg = br(self, x, y - 1, z);
@@ -304,7 +362,13 @@ impl<'a, 'b> RenderBlocks<'a, 'b> {
             tint_n = false;
             tint_s = false;
         }
-        let base = |t: bool, shade: f32| if t { (r * shade, g * shade, b * shade) } else { (shade, shade, shade) };
+        let base = |t: bool, shade: f32| {
+            if t {
+                (r * shade, g * shade, b * shade)
+            } else {
+                (shade, shade, shade)
+            }
+        };
 
         // bottom (y-1)
         if self.should_side_be_rendered(id, x, y - 1, z, 0) {
@@ -366,7 +430,7 @@ impl<'a, 'b> RenderBlocks<'a, 'b> {
             self.set_corner_colors(base(tint_e, 0.8), v9, v10, v11, v12);
             let tex = self.texture(id, x, y, z, 2);
             self.render_east_face(x as f64, y as f64, z as f64, tex);
-            if tex == 3 {
+            if self.w.fancy && tex == 3 {
                 self.tint_corners(r, g, b);
                 self.render_east_face(x as f64, y as f64, z as f64, 38);
             }
@@ -391,7 +455,7 @@ impl<'a, 'b> RenderBlocks<'a, 'b> {
             self.set_corner_colors(base(tint_w, 0.8), v9, v10, v11, v12);
             let tex = self.texture(id, x, y, z, 3);
             self.render_west_face(x as f64, y as f64, z as f64, tex);
-            if tex == 3 {
+            if self.w.fancy && tex == 3 {
                 self.tint_corners(r, g, b);
                 self.render_west_face(x as f64, y as f64, z as f64, 38);
             }
@@ -416,7 +480,7 @@ impl<'a, 'b> RenderBlocks<'a, 'b> {
             self.set_corner_colors(base(tint_n, 0.6), v9, v10, v11, v12);
             let tex = self.texture(id, x, y, z, 4);
             self.render_north_face(x as f64, y as f64, z as f64, tex);
-            if tex == 3 {
+            if self.w.fancy && tex == 3 {
                 self.tint_corners(r, g, b);
                 self.render_north_face(x as f64, y as f64, z as f64, 38);
             }
@@ -441,7 +505,7 @@ impl<'a, 'b> RenderBlocks<'a, 'b> {
             self.set_corner_colors(base(tint_s, 0.6), v9, v10, v11, v12);
             let tex = self.texture(id, x, y, z, 5);
             self.render_south_face(x as f64, y as f64, z as f64, tex);
-            if tex == 3 {
+            if self.w.fancy && tex == 3 {
                 self.tint_corners(r, g, b);
                 self.render_south_face(x as f64, y as f64, z as f64, 38);
             }

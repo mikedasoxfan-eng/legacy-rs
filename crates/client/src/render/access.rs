@@ -1,13 +1,14 @@
 //! `ChunkCache`: the read-only world view `RenderBlocks` uses for one chunk,
 //! covering it and its 8 neighbours.
 
-use super::{rprops, brightness_table};
+use super::{brightness_table, rprops};
 use std::cell::RefCell;
 use worldgen::block::{self, material_of};
 use worldgen::world::chunk::Chunk;
 use worldgen::{BiomeSource, World};
 
 pub struct Access<'a> {
+    pub fancy: bool,
     cx0: i32,
     cz0: i32,
     chunks: [[Option<&'a Chunk>; 3]; 3],
@@ -27,7 +28,16 @@ impl<'a> Access<'a> {
                 *c = world.chunks.get(&(cx - 1 + i as i32, cz - 1 + j as i32)).map(|b| &**b);
             }
         }
-        Access { cx0: cx - 1, cz0: cz - 1, chunks, sky_sub, table: brightness_table(), biomes, clim: RefCell::new(Vec::new()) }
+        Access {
+            fancy: true,
+            cx0: cx - 1,
+            cz0: cz - 1,
+            chunks,
+            sky_sub,
+            table: brightness_table(),
+            biomes,
+            clim: RefCell::new(Vec::new()),
+        }
     }
 
     #[inline]
@@ -66,7 +76,7 @@ impl<'a> Access<'a> {
     #[inline]
     pub fn is_opaque_cube(&self, x: i32, y: i32, z: i32) -> bool {
         let id = self.block(x, y, z);
-        rprops(id).exists && rprops(id).opaque
+        rprops(id).exists && (rprops(id).opaque || id == block::LEAVES && !self.fancy)
     }
 
     /// `getLightValueExt(x, y, z, true)`

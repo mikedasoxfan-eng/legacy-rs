@@ -168,6 +168,7 @@ pub fn precipitation(
     tick: i32,
     partial: f32,
     rain: f32,
+    fancy: bool,
     rng: &mut ClientRandom,
 ) -> [Vec<WeatherVertex>; 2] {
     let mut out = [Vec::new(), Vec::new()];
@@ -175,14 +176,19 @@ pub fn precipitation(
         return out;
     }
     let cy = math::floor_double(cam[1]);
+    let (cx, cz) = (math::floor_double(cam[0]), math::floor_double(cam[2]));
+    let radius = if fancy { 10 } else { 5 };
     for (pass, verts) in out.iter_mut().enumerate() {
         for c in &s.columns {
+            if (c.x - cx).abs() > radius || (c.z - cz).abs() > radius {
+                continue;
+            }
             if !(if pass == 0 { snows(c.biome) } else { rains(c.biome) }) {
                 continue;
             }
             let top = if pass == 0 { c.top.max(0) } else { c.top };
-            let lo = (cy - 10).max(top);
-            let hi = (cy + 10).max(top);
+            let lo = (cy - radius).max(top);
+            let hi = (cy + radius).max(top);
             if lo == hi {
                 continue;
             }
@@ -191,7 +197,7 @@ pub fn precipitation(
             let (u, scroll, drift, bright, alpha);
             let dx = (c.x as f32 + 0.5f32) as f64 - cam[0];
             let dz = (c.z as f32 + 0.5f32) as f64 - cam[2];
-            let distance = (dx * dx + dz * dz).sqrt() as f32 / 10.0f32;
+            let distance = (dx * dx + dz * dz).sqrt() as f32 / radius as f32;
             if pass == 0 {
                 let t = tick as f32 + partial;
                 scroll = ((tick & 511) as f32 + partial) / 512.0f32;
@@ -250,9 +256,11 @@ pub fn add_rain_particles(
     cam: [f64; 3],
     tick: i32,
     rain: f32,
+    fancy: bool,
     rng: &mut ClientRandom,
     sound_counter: &mut i32,
 ) -> (Vec<Splash>, Option<RainSound>) {
+    let rain = if fancy { rain } else { rain / 2.0f32 };
     let mut out = Vec::new();
     if rain == 0.0 {
         return (out, None);

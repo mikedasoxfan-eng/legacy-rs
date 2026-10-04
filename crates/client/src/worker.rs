@@ -4,6 +4,7 @@
 
 use crate::render::access::Access;
 use crate::render::blocks::{Colorizers, RenderBlocks};
+use crate::render::video::VideoSettings;
 use crate::render::{rprops, Tessellator, Vertex};
 use std::cell::RefCell;
 use std::collections::{HashMap, HashSet};
@@ -20,6 +21,7 @@ pub enum ToWorker {
         z: f64,
     },
     AddTime(i64),
+    Settings(VideoSettings),
     /// `isGamePaused`: a screen that pauses the game is open (no ticks, no catch-up).
     Pause(bool),
     /// `World.func_650_a(n)`: the pause menu saves a few chunks every frame.
@@ -35,6 +37,8 @@ pub enum Loading {
 }
 
 pub enum FromWorker {
+    /// Ordered after old meshes, before meshes using the new settings.
+    ResetMeshes,
     Ready {
         spawn: (f64, f64, f64),
         seed: i64,
@@ -54,6 +58,7 @@ pub enum FromWorker {
         time: i64,
         /// `EntityPlayer.getEntityBrightness` at the camera (vignette), loaded chunk count.
         brightness: f32,
+        fog_brightness: f32,
         chunks: usize,
         weather: crate::render::weather::Weather,
         terrain: crate::render::weather::Snapshot,
@@ -83,29 +88,27 @@ pub struct WorldOptions {
     pub name: Option<String>,
 }
 
-/// `RenderGlobal`: 26 renderers across on Far (render distance capped at 400 blocks).
-pub const RENDER_CHUNKS_WIDE: i32 = 26;
-
 pub fn spawn(
     opts: WorldOptions,
     col: Colorizers,
+    video: VideoSettings,
 ) -> (Sender<ToWorker>, Receiver<FromWorker>, std::thread::JoinHandle<()>) {
     let (to_tx, to_rx) = mpsc::channel();
     let (from_tx, from_rx) = mpsc::channel();
     let h = std::thread::Builder::new()
         .name("world".into())
-        .spawn(move || run(opts, col, to_rx, from_tx))
+        .spawn(move || run(opts, col, video, to_rx, from_tx))
         .expect("spawn world thread");
     (to_tx, from_rx, h)
 }
 
 /// `RenderGlobal.markRenderersForNewPosition` along one axis: the chunk coordinates the
 /// renderer window covers around block position `p`.
-fn window_axis(p: i32) -> Vec<i32> {
+pub(crate) fn window_axis(p: i32, wide: i32) -> Vec<i32> {
     let p = p - 8;
-    let w = RENDER_CHUNKS_WIDE * 16;
+    let w = wide * 16;
     let half = w / 2;
-    (0..RENDER_CHUNKS_WIDE)
+    (0..wide)
         .map(|i| {
             let mut x = i * 16;
             let mut k = x + half - p;
@@ -119,7 +122,7 @@ fn window_axis(p: i32) -> Vec<i32> {
         .collect()
 }
 
-fn run(opts: WorldOptions, col: Colorizers, rx: Receiver<ToWorker>, tx: Sender<FromWorker>) {
+fn run(opts: WorldOptions, col: Colorizers, mut video: VideoSettings, rx: Receiver<ToWorker>, tx: Sender<FromWorker>) {
     let t = Instant::now();
     let mut last_progress = -2;
     let mut progress = |step: worldgen::scenario::LoadStep| {
@@ -170,6 +173,8 @@ fn run(opts: WorldOptions, col: Colorizers, rx: Receiver<ToWorker>, tx: Sender<F
     if let Some(time) = opts.time {
         world.world_time = time;
     }
+    // RenderGlobal.loadRenderers runs after the first-world preload.
+    world.leaves_opaque = !video.fancy;
     world.skylight_subtracted = world.calculate_skylight_subtracted(1.0);
     let (sx, _, sz) = world.spawn;
     // The saved player, if the real game left one; otherwise stand on the spawn column.
@@ -228,6 +233,16 @@ fn run(opts: WorldOptions, col: Colorizers, rx: Receiver<ToWorker>, tx: Sender<F
             match rx.try_recv() {
                 Ok(ToWorker::Camera { x, y, z }) => cam = (x, y, z),
                 Ok(ToWorker::AddTime(t)) => world.world_time += t,
+                Ok(ToWorker::Settings(next)) => {
+                    if next.remesh(video) {
+                        meshed.clear();
+                        sort_pos = (f64::MAX, f64::MAX, f64::MAX);
+                        idle_reported = false;
+                        let _ = tx.send(FromWorker::ResetMeshes);
+                    }
+                    world.leaves_opaque = !next.fancy;
+                    video = next;
+                }
                 Ok(ToWorker::Pause(p)) => {
                     if paused && !p {
                         // The Timer kept running while paused; those ticks are not caught up.
@@ -311,6 +326,8 @@ fn run(opts: WorldOptions, col: Colorizers, rx: Receiver<ToWorker>, tx: Sender<F
                 crate::render::weather::Snapshot::default()
             };
             let brightness = entity_brightness(&mut world, cam);
+            let l = world.get_block_light_value(cam.0.floor() as i32, cam.1.floor() as i32, cam.2.floor() as i32);
+            let fog_brightness = world.light_brightness_table[l as usize];
             // Entities near the camera, with their brightness, for the renderer.
             let near: Vec<i32> = world
                 .loaded_entity_list
@@ -372,7 +389,14 @@ fn run(opts: WorldOptions, col: Colorizers, rx: Receiver<ToWorker>, tx: Sender<F
             }));
             let _ = tx.send(FromWorker::Entities(snapshot));
             let chunks = world.chunks.len();
-            let _ = tx.send(FromWorker::Time { time: world.world_time, brightness, chunks, weather, terrain });
+            let _ = tx.send(FromWorker::Time {
+                time: world.world_time,
+                brightness,
+                fog_brightness,
+                chunks,
+                weather,
+                terrain,
+            });
             next_tick += Duration::from_millis(50);
             ticks += 1;
         }
@@ -392,8 +416,8 @@ fn run(opts: WorldOptions, col: Colorizers, rx: Receiver<ToWorker>, tx: Sender<F
         let (dx, dy, dz) = (cam.0 - sort_pos.0, cam.1 - sort_pos.1, cam.2 - sort_pos.2);
         if dx * dx + dy * dy + dz * dz > 16.0 {
             sort_pos = cam;
-            let xs = window_axis(cam.0.floor() as i32);
-            let zs = window_axis(cam.2.floor() as i32);
+            let xs = window_axis(cam.0.floor() as i32, video.chunks_wide());
+            let zs = window_axis(cam.2.floor() as i32, video.chunks_wide());
             window.clear();
             for &x in &xs {
                 for &z in &zs {
@@ -446,7 +470,7 @@ fn run(opts: WorldOptions, col: Colorizers, rx: Receiver<ToWorker>, tx: Sender<F
             if meshed.get(&(cx, cz)).is_some_and(|&v| v >= version) {
                 continue;
             }
-            let (opaque, translucent) = mesh_chunk(&world, cx, cz, sky_sub, &biomes, &col);
+            let (opaque, translucent) = mesh_chunk(&world, cx, cz, sky_sub, &biomes, &col, video);
             meshed.insert((cx, cz), version);
             did_work = true;
             if tx.send(FromWorker::Mesh { cx, cz, opaque, translucent }).is_err() {
@@ -500,8 +524,10 @@ pub fn mesh_chunk(
     sky_sub: i32,
     biomes: &RefCell<BiomeSource>,
     col: &Colorizers,
+    video: VideoSettings,
 ) -> (Vec<Vertex>, Vec<Vertex>) {
-    let access = Access::new(world, cx, cz, sky_sub, biomes);
+    let mut access = Access::new(world, cx, cz, sky_sub, biomes);
+    access.fancy = video.fancy;
     let origin = [cx as f64 * 16.0, 0.0, cz as f64 * 16.0];
     let mut t0 = Tessellator::new(origin);
     let mut t1 = Tessellator::new(origin);
@@ -515,6 +541,7 @@ pub fn mesh_chunk(
                 }
                 let t = if rprops(id).pass == 0 { &mut t0 } else { &mut t1 };
                 let mut rb = RenderBlocks::new(&access, t, col);
+                rb.ao = video.ao;
                 rb.render_block(id, cx * 16 + x, y, cz * 16 + z);
             }
         }

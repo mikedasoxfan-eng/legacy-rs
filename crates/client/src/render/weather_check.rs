@@ -8,6 +8,7 @@ pub fn check(a: &[String]) {
     let tick = a[6].parse().unwrap();
     let partial = a[7].parse().unwrap();
     let rain = a[8].parse().unwrap();
+    let fancy = a.get(12).map(String::as_str) != Some("fast");
     let data = std::fs::read(&a[9]).expect("weather oracle dump");
     let mut d = Reader { data: &data, offset: 0 };
     assert_eq!(d.bytes(8), b"B173WTH1");
@@ -27,9 +28,9 @@ pub fn check(a: &[String]) {
         s.columns.push(Column { x, z, top, biome, particle_rain, blocks, meta, brightness });
     }
     let mut rng = ClientRandom::new(0);
-    let [snow, water] = precipitation(&s, cam, tick, partial, rain, &mut rng);
+    let [snow, water] = precipitation(&s, cam, tick, partial, rain, fancy, &mut rng);
     let mut counter = initial_counter;
-    let (splashes, sound) = add_rain_particles(&s, cam, tick, rain, &mut rng, &mut counter);
+    let (splashes, sound) = add_rain_particles(&s, cam, tick, rain, fancy, &mut rng, &mut counter);
     assert_eq!(splashes.len(), d.i32() as usize, "splash count");
     for (i, p) in splashes.iter().enumerate() {
         assert_eq!(p.smoke, d.bytes(1)[0] != 0, "particle kind {i}");

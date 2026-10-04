@@ -39,6 +39,7 @@ pub struct FrameParams {
     pub sky_color: [f32; 3],
     pub fog_color: [f32; 3],
     pub far: f32,
+    pub video: super::video::VideoSettings,
     /// cloudOffsetX + partialTicks
     pub cloud_offset: f32,
     pub rain: f32,
@@ -473,6 +474,18 @@ impl Gpu {
         gpu
     }
 
+    pub fn apply_video(&mut self, video: super::video::VideoSettings) {
+        // Like LWJGL with swap interval zero: FIFO remains the fallback if required.
+        if self.config.present_mode != wgpu::PresentMode::AutoNoVsync {
+            self.config.present_mode = wgpu::PresentMode::AutoNoVsync;
+            self.surface.configure(&self.device, &self.config);
+        }
+        self.entities.fancy = video.fancy;
+        if video.anaglyph {
+            eprintln!("video: anaglyph is not implemented; stereo passes and RenderEngine texture recoloring are still required");
+        }
+    }
+
     fn make_depth(device: &wgpu::Device, w: u32, h: u32) -> wgpu::TextureView {
         device
             .create_texture(&wgpu::TextureDescriptor {
@@ -626,7 +639,12 @@ impl Gpu {
         });
         let mut enc = self.device.create_command_encoder(&Default::default());
         enc.copy_texture_to_buffer(
-            wgpu::TexelCopyTextureInfo { texture: tex, mip_level: 0, origin: Default::default(), aspect: Default::default() },
+            wgpu::TexelCopyTextureInfo {
+                texture: tex,
+                mip_level: 0,
+                origin: Default::default(),
+                aspect: Default::default(),
+            },
             wgpu::TexelCopyBufferInfo {
                 buffer: &buf,
                 layout: wgpu::TexelCopyBufferLayout { offset: 0, bytes_per_row: Some(bpr), rows_per_image: Some(h) },
@@ -797,13 +815,21 @@ impl Gpu {
         self.write_uniforms(&self.water_slot, &tu);
 
         // Clouds (Fancy): rebuilt every frame around the camera, drawn scaled 12x horizontally.
-        let cloud_verts =
-            sky::fancy_clouds(cam.x, cam.y, cam.z, p.cloud_offset, sky::cloud_color(p.celestial, p.rain, p.thunder));
+        let cloud_color = sky::cloud_color(p.celestial, p.rain, p.thunder);
+        let cloud_verts = if p.video.fancy {
+            sky::fancy_clouds(cam.x, cam.y, cam.z, p.cloud_offset, cloud_color)
+        } else {
+            sky::flat_clouds(cam.x, cam.y, cam.z, p.cloud_offset, cloud_color)
+        };
         let cloud_n = cloud_verts.len().min(8192);
         self.queue.write_buffer(&self.cloud_buf, 0, bytemuck::cast_slice(&cloud_verts[..cloud_n]));
         let cu = Uniforms {
             view_proj: view_proj.to_cols_array_2d(),
-            model: Mat4::from_scale(glam::Vec3::new(12.0, 1.0, 12.0)).to_cols_array_2d(),
+            model: if p.video.fancy {
+                Mat4::from_scale(glam::Vec3::new(12.0, 1.0, 12.0)).to_cols_array_2d()
+            } else {
+                ident
+            },
             color: [1.0; 4],
             fog_color: fog4,
             fog: [p.far * 0.25, p.far, 1.0, 0.1],
@@ -883,34 +909,35 @@ impl Gpu {
                 multiview_mask: None,
             });
 
-            // Sky plane, sunrise glow, sun, moon, stars, void.
-            rp.set_pipeline(&self.p_sky);
-            rp.set_bind_group(0, &self.slots[0].bind, &[]);
-            rp.set_vertex_buffer(0, self.sky_plane.0.slice(..));
-            rp.draw(0..self.sky_plane.1, 0..1);
-            if sunrise.is_some() {
-                rp.set_pipeline(&self.p_sky_alpha);
-                rp.set_bind_group(0, &self.slots[1].bind, &[]);
-                rp.set_vertex_buffer(0, self.fan.slice(..));
-                rp.draw(0..48, 0..1);
+            if p.video.sky() {
+                // Sky plane, sunrise glow, sun, moon, stars, void.
+                rp.set_pipeline(&self.p_sky);
+                rp.set_bind_group(0, &self.slots[0].bind, &[]);
+                rp.set_vertex_buffer(0, self.sky_plane.0.slice(..));
+                rp.draw(0..self.sky_plane.1, 0..1);
+                if sunrise.is_some() {
+                    rp.set_pipeline(&self.p_sky_alpha);
+                    rp.set_bind_group(0, &self.slots[1].bind, &[]);
+                    rp.set_vertex_buffer(0, self.fan.slice(..));
+                    rp.draw(0..48, 0..1);
+                }
+                rp.set_pipeline(&self.p_sky_add);
+                rp.set_bind_group(0, &self.sun_slot.bind, &[]);
+                rp.set_vertex_buffer(0, self.sun_quad.0.slice(..));
+                rp.draw(0..self.sun_quad.1, 0..1);
+                rp.set_bind_group(0, &self.moon_slot.bind, &[]);
+                rp.set_vertex_buffer(0, self.moon_quad.0.slice(..));
+                rp.draw(0..self.moon_quad.1, 0..1);
+                if star_b > 0.0 {
+                    rp.set_bind_group(0, &self.slots[2].bind, &[]);
+                    rp.set_vertex_buffer(0, self.stars.0.slice(..));
+                    rp.draw(0..self.stars.1, 0..1);
+                }
+                rp.set_pipeline(&self.p_sky);
+                rp.set_bind_group(0, &self.slots[3].bind, &[]);
+                rp.set_vertex_buffer(0, self.void_plane.0.slice(..));
+                rp.draw(0..self.void_plane.1, 0..1);
             }
-            rp.set_pipeline(&self.p_sky_add);
-            rp.set_bind_group(0, &self.sun_slot.bind, &[]);
-            rp.set_vertex_buffer(0, self.sun_quad.0.slice(..));
-            rp.draw(0..self.sun_quad.1, 0..1);
-            rp.set_bind_group(0, &self.moon_slot.bind, &[]);
-            rp.set_vertex_buffer(0, self.moon_quad.0.slice(..));
-            rp.draw(0..self.moon_quad.1, 0..1);
-            if star_b > 0.0 {
-                rp.set_bind_group(0, &self.slots[2].bind, &[]);
-                rp.set_vertex_buffer(0, self.stars.0.slice(..));
-                rp.draw(0..self.stars.1, 0..1);
-            }
-            rp.set_pipeline(&self.p_sky);
-            rp.set_bind_group(0, &self.slots[3].bind, &[]);
-            rp.set_vertex_buffer(0, self.void_plane.0.slice(..));
-            rp.draw(0..self.void_plane.1, 0..1);
-
             // Terrain pass 0.
             rp.set_index_buffer(self.quad_index.slice(..), wgpu::IndexFormat::Uint32);
             rp.set_pipeline(&self.p_opaque);
@@ -938,8 +965,11 @@ impl Gpu {
             }
             // Entity textures occupy group 1; restore the terrain origins binding.
             rp.set_bind_group(1, &self.origins_bind, &[]);
-            // Pass 1 (water, ice), Fancy: depth-only first, then color with LEQUAL.
-            for pipe in [&self.p_water_depth, &self.p_water_color] {
+            // Pass 1 (water, ice): Fancy prepass, Fast a single blended depth-writing pass.
+            for (pass, pipe) in [&self.p_water_depth, &self.p_water_color].into_iter().enumerate() {
+                if !p.video.fancy && pass == 0 {
+                    continue;
+                }
                 rp.set_pipeline(pipe);
                 rp.set_bind_group(0, &self.water_slot.bind, &[]);
                 for (i, k) in visible.iter().enumerate().rev() {
@@ -958,7 +988,10 @@ impl Gpu {
                 rp.set_vertex_buffer(0, self.weather_bufs[i].slice(..));
                 rp.draw_indexed(0..weather_n[i] / 4 * 6, 0, 0..1);
             }
-            for pipe in [&self.p_cloud_depth, &self.p_cloud_color] {
+            for (pass, pipe) in [&self.p_cloud_depth, &self.p_cloud_color].into_iter().enumerate() {
+                if !p.video.fancy && pass == 0 {
+                    continue;
+                }
                 rp.set_pipeline(pipe);
                 rp.set_bind_group(0, &self.cloud_slot.bind, &[]);
                 rp.set_vertex_buffer(0, self.cloud_buf.slice(..));

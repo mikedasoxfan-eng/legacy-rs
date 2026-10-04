@@ -66,6 +66,7 @@ public final class GL11 {
     public static void glEnable(int x) { RendererOracle.enable(x,true); }
     public static void glBlendFunc(int x,int y) { RendererOracle.src=x;RendererOracle.dst=y; }
     public static void glAlphaFunc(int x,float y) {}
+    public static void glColorMask(boolean r,boolean g,boolean b,boolean a) {}
     public static void glNormal3f(float x,float y,float z) { RendererOracle.normal=new float[]{x,y,z}; }
     public static void glBindTexture(int x,int y) { texture=y; }
     public static void glColor4f(float r,float g,float b,float a) { color=new float[]{r,g,b,a}; }
