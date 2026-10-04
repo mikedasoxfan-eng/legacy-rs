@@ -39,11 +39,20 @@ struct Options {
     world: WorldOptions,
     at: Option<(f64, f64, f64, f32, f32)>,
     shot: Option<std::path::PathBuf>,
+    bolt: Option<render::weather::Lightning>,
 }
 
 fn parse_args() -> Options {
     let args: Vec<String> = std::env::args().collect();
-    let get = |name: &str| args.iter().position(|a| a == name).and_then(|i| args.get(i + 1)).cloned();
+    let get = |name: &str| {
+        args.iter().enumerate().find_map(|(i, a)| {
+            if a == name {
+                args.get(i + 1).cloned()
+            } else {
+                a.strip_prefix(&format!("{name}=")).map(str::to_owned)
+            }
+        })
+    };
     let has = |name: &str| args.iter().any(|a| a == name);
     let seed_arg = get("--seed");
     let seed = match &seed_arg {
@@ -76,9 +85,27 @@ fn parse_args() -> Options {
             world_rand: get("--world-rand").and_then(|s| s.parse().ok()).unwrap_or(seed ^ 0x5DEECE66D),
             server: has("--server"),
             view_distance: get("--view-distance").and_then(|s| s.parse().ok()).unwrap_or(10),
+            weather: get("--weather").map(|v| {
+                let v: Vec<f32> = v.split(',').map(|s| s.parse().expect("--weather rain,thunder,flash")).collect();
+                render::weather::Weather {
+                    rain: v[0],
+                    prev_rain: v[0],
+                    thunder: v[1],
+                    prev_thunder: v[1],
+                    flash: v.get(2).copied().unwrap_or(0.0) as i32,
+                }
+            }),
+            time: get("--time").map(|s| s.parse().expect("--time ticks")),
         },
         at,
         shot: get("--shot").map(Into::into),
+        bolt: get("--bolt").map(|v| {
+            let v: Vec<&str> = v.split(',').collect();
+            render::weather::Lightning {
+                pos: [v[0].parse().unwrap(), v[1].parse().unwrap(), v[2].parse().unwrap()],
+                bolt_vertex: v[3].parse().unwrap(),
+            }
+        }),
     }
 }
 
@@ -113,6 +140,13 @@ struct App {
     fx: Vec<render::fx::TextureFx>,
     fx_rng: render::fx::Rng,
     cloud_ticks: i64,
+    weather: render::weather::Weather,
+    weather_terrain: render::weather::Snapshot,
+    weather_rng: render::weather::ClientRandom,
+    rain_sound_counter: i32,
+    fog_fade: [f32; 2],
+    particles: render::weather::Particles,
+    bolts: Vec<(render::weather::Lightning, i32)>,
 }
 
 impl App {
@@ -142,6 +176,13 @@ impl App {
             fx: render::fx::TextureFx::terrain_set(),
             fx_rng: render::fx::Rng::new(0x9E3779B97F4A7C15),
             cloud_ticks: 0,
+            weather: Default::default(),
+            weather_terrain: Default::default(),
+            weather_rng: render::weather::ClientRandom::new(seed),
+            rain_sound_counter: 0,
+            fog_fade: [0.0; 2],
+            particles: render::weather::Particles::new(seed),
+            bolts: Vec::new(),
         }
     }
 
@@ -201,12 +242,31 @@ impl App {
                         self.idle = false;
                     }
                     Ok(FromWorker::Drop { cx, cz }) => gpu.remove_chunk(cx, cz),
-                    Ok(FromWorker::Time(t)) => {
-                        if t > self.world_time {
-                            new_ticks += (t - self.world_time).min(20);
-                        }
-                        self.world_time = t;
+                    Ok(FromWorker::Time { time, weather, terrain, bolts }) => {
+                        new_ticks += 1;
+                        self.cloud_ticks += 1;
+                        self.fog_fade[0] = self.fog_fade[1];
+                        // EntityRenderer.updateRenderer: on Far, (3-renderDistance)/3=1.
+                        self.fog_fade[1] += (1.0f32 - self.fog_fade[1]) * 0.1f32;
+                        self.world_time = time;
+                        self.weather = weather;
+                        self.weather_terrain = terrain;
                         self.last_tick = now;
+                        for (_, life) in &mut self.bolts {
+                            *life -= 1;
+                        }
+                        self.bolts.retain(|(_, life)| *life > 0);
+                        self.bolts.extend(bolts.into_iter().map(|b| (b, 3)));
+                        let (splashes, _) = render::weather::add_rain_particles(
+                            &self.weather_terrain,
+                            self.cam.pos.to_array(),
+                            self.cloud_ticks as i32,
+                            weather.rain_at(1.0),
+                            &mut self.weather_rng,
+                            &mut self.rain_sound_counter,
+                        );
+                        self.particles.spawn(splashes);
+                        self.particles.tick(&self.weather_terrain);
                     }
                     Ok(FromWorker::Idle) => self.idle = true,
                     Ok(FromWorker::Saved) => {}
@@ -264,7 +324,7 @@ impl App {
                 f.tick(&mut self.fx_rng);
             }
         }
-        self.cloud_ticks += new_ticks;
+
         if new_ticks > 0 {
             if let Some(g) = &self.gpu {
                 g.update_fx(&self.fx);
@@ -274,16 +334,46 @@ impl App {
         let angle = sky::celestial_angle(self.world_time, partial);
 
         let temp = self.temps.raw_temperature(self.cam.pos.x.floor() as i32, self.cam.pos.z.floor() as i32) as f32;
+        let rain = self.weather.rain_at(partial);
+        let thunder = self.weather.thunder_at(partial);
+        let precipitation = render::weather::precipitation(
+            &self.weather_terrain,
+            self.cam.pos.to_array(),
+            self.cloud_ticks as i32,
+            partial,
+            rain,
+            &mut self.weather_rng,
+        );
+        let lightning = self
+            .bolts
+            .iter()
+            .map(|(b, _)| *b)
+            .chain(self.opts.bolt)
+            .flat_map(|b| render::weather::lightning(b, self.cam.pos.to_array()))
+            .collect();
+        let particles = self.particles.vertices(
+            &self.weather_terrain,
+            self.cam.pos.to_array(),
+            self.cam.yaw,
+            self.cam.pitch,
+            partial,
+        );
         let params = FrameParams {
             cam_pos: self.cam.pos,
             yaw: self.cam.yaw,
             pitch: self.cam.pitch,
             fov_y_deg: 70.0,
             celestial: angle,
-            sky_color: sky::sky_color(angle, temp),
-            fog_color: sky::fog_color(angle, temp, 0),
+            sky_color: sky::sky_color(angle, temp, rain, thunder, self.weather.flash, partial),
+            fog_color: sky::fog_color(angle, temp, 0, rain, thunder, self.weather.flash, partial)
+                .map(|c| c * (self.fog_fade[0] + (self.fog_fade[1] - self.fog_fade[0]) * partial)),
             far: 256.0,
             cloud_offset: self.cloud_ticks as f32 + partial,
+            rain,
+            thunder,
+            precipitation,
+            lightning,
+            particles,
         };
 
         let want_shot = self.opts.shot.is_some() && self.ready && self.idle && uploads == 0;
@@ -346,7 +436,15 @@ impl ApplicationHandler for App {
             .with_title("Minecraft Beta 1.7.3 (Rust)")
             .with_inner_size(winit::dpi::LogicalSize::new(854.0, 480.0));
         let window = Arc::new(el.create_window(attrs).expect("create window"));
-        self.gpu = Some(Gpu::new(window, &assets.terrain, &assets.sun, &assets.moon, &assets.clouds, &assets.mobs));
+        self.gpu = Some(Gpu::new(
+            window,
+            &assets.terrain,
+            &assets.sun,
+            &assets.moon,
+            &assets.clouds,
+            [&assets.snow, &assets.rain, &assets.particles],
+            &assets.mobs,
+        ));
         let col = Colorizers { grass: assets.grass_color, foliage: assets.foliage_color };
         let (tx, rx, h) = worker::spawn(self.opts.world.clone(), col);
         self.tx = Some(tx);
@@ -415,7 +513,7 @@ impl ApplicationHandler for App {
     }
 }
 
-/// `--skycolor seed x z time partial`: print sky/fog/cloud values as float bits,
+/// `--skycolor seed x z time partial [rain thunder flash [prev-rain prev-thunder [fog-prev fog-current]]]`: float bits,
 /// in the same format as the oracle's `skycolor` mode, for comparison.
 fn sky_check(a: &[String]) {
     let seed: i64 = a[2].parse().unwrap();
@@ -424,14 +522,28 @@ fn sky_check(a: &[String]) {
     let partial: f32 = a[6].parse().unwrap();
     let angle = sky::celestial_angle(time, partial);
     let temp = BiomeSource::new(seed).raw_temperature(x.floor() as i32, z.floor() as i32) as f32;
-    let s = sky::sky_color(angle, temp);
+    let value = |i: usize| a.get(i).map_or(0.0, |v| v.parse::<f32>().unwrap());
+    let weather = render::weather::Weather {
+        rain: value(7),
+        thunder: value(8),
+        flash: value(9) as i32,
+        prev_rain: a.get(10).map_or(value(7), |v| v.parse().unwrap()),
+        prev_thunder: a.get(11).map_or(value(8), |v| v.parse().unwrap()),
+    };
+    let rain = weather.rain_at(partial);
+    let thunder = weather.thunder_at(partial);
+    let s = sky::sky_color(angle, temp, rain, thunder, weather.flash, partial);
     let f = sky::fog_color_base(angle);
-    let c = sky::cloud_color(angle);
+    let c = sky::cloud_color(angle, rain, thunder);
+    let fog_prev = a.get(12).map_or(1.0f32, |v| v.parse().unwrap());
+    let fog_current = a.get(13).map_or(1.0f32, |v| v.parse().unwrap());
+    let fog = sky::fog_color(angle, temp, 0, rain, thunder, weather.flash, partial)
+        .map(|c| c * (fog_prev + (fog_current - fog_prev) * partial));
     let b = |v: f32| v.to_bits() as i32;
     println!(
-        "angle {} sub {} sky {} {} {} fog {} {} {} cloud {} {} {} stars {}",
+        "angle {} sub {} sky {} {} {} fog {} {} {} cloud {} {} {} stars {} renderfog {} {} {} renderstars {} sunalpha {} fogrange {} {}",
         b(angle),
-        sky::skylight_subtracted(sky::celestial_angle(time, 1.0)),
+        sky::skylight_subtracted(sky::celestial_angle(time, 1.0), weather.rain_at(1.0), weather.thunder_at(1.0)),
         b(s[0]),
         b(s[1]),
         b(s[2]),
@@ -441,7 +553,7 @@ fn sky_check(a: &[String]) {
         b(c[0]),
         b(c[1]),
         b(c[2]),
-        b(sky::star_brightness(angle))
+        b(sky::star_brightness(angle)), b(fog[0]), b(fog[1]), b(fog[2]), b(sky::star_brightness(angle) * (1.0f32 - rain)), b(1.0f32 - rain), b(256.0f32 * 0.25f32), b(256.0f32)
     );
 }
 
@@ -504,7 +616,12 @@ fn mesh_check(a: &[String]) -> bool {
                     bad += 1;
                 }
             }
-            let status = if bad == 0 && java.len() == rust.len() { "exact" } else { ok = false; "DIFFERS" };
+            let status = if bad == 0 && java.len() == rust.len() {
+                "exact"
+            } else {
+                ok = false;
+                "DIFFERS"
+            };
             println!(
                 "chunk ({cx},{cz}) pass {pass}: java {} vertices, rust {}, {bad} differ: {status}",
                 java.len(),
@@ -556,6 +673,10 @@ fn main() {
         );
         println!("{}", if ok { "GUI EXACT" } else { "GUI DIFFERS" });
         std::process::exit(if ok { 0 } else { 1 });
+    }
+    if args.get(1).map(String::as_str) == Some("--weathercheck") {
+        render::weather_check::check(&args);
+        return;
     }
     if args.get(1).map(String::as_str) == Some("--skycolor") {
         sky_check(&args);

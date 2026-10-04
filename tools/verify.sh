@@ -155,11 +155,29 @@ rm -f "$out/models_case.bin"
 
 # ---- sky, fog and cloud colors, sun angle, night darkness
 echo "== sky colors"
-for args in "3257840388504953787 -39 65 6000 0.0" "0 1000 -2000 13000 0.5" "123 -500 77 23500 0.25" "42 99999 -12345 18000 0.9" "1 0 0 12500 0.75"; do
+for args in "3257840388504953787 -39 65 6000 0.0" "0 1000 -2000 13000 0.5" "123 -500 77 23500 0.25" "42 99999 -12345 18000 0.9" "1 0 0 12500 0.75" \
+  "1 0 0 6000 0.5 1 1 2" "0 1000 -2000 13000 0.5 0.75 0.4 1" \
+  "123 -500 77 23500 0.25 0.33 0.9 0" "42 99999 -12345 18000 0.9 1 1 1" \
+  "2 -1 -17 12500 0.0 0.1 1 2 0.9 0.3" "11 0 0 0 1.0 1 0.7 1 0.2 0.9" \
+  "42 0 0 6000 0.25 1 1 2 0.9 0.7 0.0 0.1"; do
   j=$("$oracle" skycolor $args); r=$("$beta" --skycolor $args)
   [ "$j" = "$r" ] || { echo "sky differs for $args"; echo " java $j"; echo " rust $r"; fail=1; }
 done
 [ $fail -eq 0 ] && echo "sky colors exact"
+
+# ---- original EntityRenderer precipitation quads and particle spawn RNG,
+# RenderLightningBolt strips. Inputs: seed camera-x y z renderer-tick partial rain.
+echo "== ambient weather vertices"
+for args in "2 0.5 70 0.5 100 0.75 0.8" "11 0.5 80 0.5 2147483647 0.25 1" \
+  "3257840388504953787 -39.5 75 65.5 23 0.5 1" "1 0.5 70 0.5 0 0 1" \
+  "42 -20.25 90 -31.75 -2147483648 1.0 0.01"; do
+  if "$oracle" weathermesh $args weather_case.bin && "$beta" --weathercheck $args "$out/weather_case.bin"; then :; else fail=1; fi
+done
+for scene in lava roof; do
+  args="42 0.5 80 0.5 123 0.5 1"
+  if "$oracle" weathermesh $args weather_case.bin "$scene" 5 && "$beta" --weathercheck $args "$out/weather_case.bin" "$scene" 5; then :; else fail=1; fi
+done
+rm -f "$out/weather_case.bin"
 
 [ $fail -eq 0 ] && echo "ALL CASES EXACT" || echo "SOME CASES DIFFER"
 exit $fail

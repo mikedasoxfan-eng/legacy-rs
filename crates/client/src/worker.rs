@@ -20,10 +20,27 @@ pub enum ToWorker {
 }
 
 pub enum FromWorker {
-    Ready { spawn: (f64, f64, f64), seed: i64, name: String },
-    Mesh { cx: i32, cz: i32, opaque: Vec<Vertex>, translucent: Vec<Vertex> },
-    Drop { cx: i32, cz: i32 },
-    Time(i64),
+    Ready {
+        spawn: (f64, f64, f64),
+        seed: i64,
+        name: String,
+    },
+    Mesh {
+        cx: i32,
+        cz: i32,
+        opaque: Vec<Vertex>,
+        translucent: Vec<Vertex>,
+    },
+    Drop {
+        cx: i32,
+        cz: i32,
+    },
+    Time {
+        time: i64,
+        weather: crate::render::weather::Weather,
+        terrain: crate::render::weather::Snapshot,
+        bolts: Vec<crate::render::weather::Lightning>,
+    },
     /// Everything in the renderer window is loaded and meshed.
     Idle,
     Saved,
@@ -38,12 +55,17 @@ pub struct WorldOptions {
     /// Multiplayer-server chunk loading/unloading instead of singleplayer's.
     pub server: bool,
     pub view_distance: i32,
+    pub weather: Option<crate::render::weather::Weather>,
+    pub time: Option<i64>,
 }
 
 /// `RenderGlobal`: 26 renderers across on Far (render distance capped at 400 blocks).
 pub const RENDER_CHUNKS_WIDE: i32 = 26;
 
-pub fn spawn(opts: WorldOptions, col: Colorizers) -> (Sender<ToWorker>, Receiver<FromWorker>, std::thread::JoinHandle<()>) {
+pub fn spawn(
+    opts: WorldOptions,
+    col: Colorizers,
+) -> (Sender<ToWorker>, Receiver<FromWorker>, std::thread::JoinHandle<()>) {
     let (to_tx, to_rx) = mpsc::channel();
     let (from_tx, from_rx) = mpsc::channel();
     let h = std::thread::Builder::new()
@@ -82,11 +104,28 @@ fn run(opts: WorldOptions, col: Colorizers, rx: Receiver<ToWorker>, tx: Sender<F
             return;
         }
     };
+    if let Some(w) = opts.weather {
+        world.info.raining = w.rain > 0.0;
+        world.info.thundering = w.thunder > 0.0;
+        world.info.rain_time = 1000000;
+        world.info.thunder_time = 1000000;
+        world.raining_strength = w.rain;
+        world.prev_raining_strength = w.prev_rain;
+        world.thundering_strength = w.thunder;
+        world.prev_thundering_strength = w.prev_thunder;
+        world.lightning_flash = w.flash;
+    }
+    if let Some(time) = opts.time {
+        world.world_time = time;
+    }
+    world.skylight_subtracted = world.calculate_skylight_subtracted(1.0);
     let (sx, _, sz) = world.spawn;
     // The saved player, if the real game left one; otherwise stand on the spawn column.
     let mut start = None;
     if let Some(p) = &world.info.player {
-        if let [worldgen::nbt::Tag::Double(x), worldgen::nbt::Tag::Double(y), worldgen::nbt::Tag::Double(z)] = p.list("Pos") {
+        if let [worldgen::nbt::Tag::Double(x), worldgen::nbt::Tag::Double(y), worldgen::nbt::Tag::Double(z)] =
+            p.list("Pos")
+        {
             start = Some((*x, *y + 1.62, *z));
         }
     }
@@ -127,6 +166,9 @@ fn run(opts: WorldOptions, col: Colorizers, rx: Receiver<ToWorker>, tx: Sender<F
     let mut join_player_counter = 0;
     let mut next_tick = Instant::now();
     let mut idle_reported = false;
+    let mut strike_cursor = 0;
+    let mut weather_tail = 0;
+    let mut bolt_rng = worldgen::JavaRandom::new(opts.world_rand ^ 0x4c494748544e);
 
     loop {
         // Messages.
@@ -175,7 +217,33 @@ fn run(opts: WorldOptions, col: Colorizers, rx: Receiver<ToWorker>, tx: Sender<F
                 meshed.clear();
                 idle_reported = false;
             }
-            let _ = tx.send(FromWorker::Time(world.world_time));
+            let weather = crate::render::weather::Weather {
+                rain: world.raining_strength,
+                prev_rain: world.prev_raining_strength,
+                thunder: world.thundering_strength,
+                prev_thunder: world.prev_thundering_strength,
+                flash: world.lightning_flash,
+            };
+            if weather.rain > 0.0 || weather.prev_rain > 0.0 {
+                weather_tail = 40;
+            }
+            let terrain = if weather_tail > 0 {
+                weather_tail -= 1;
+                weather_snapshot(&mut world, cam)
+            } else {
+                crate::render::weather::Snapshot::default()
+            };
+            // The simulation currently supplies positions only. Entity integration will
+            // provide its own boltVertex; never borrow World.rand to invent a visual seed.
+            let bolts = world.lightning_strikes[strike_cursor..]
+                .iter()
+                .map(|&(x, y, z)| crate::render::weather::Lightning {
+                    pos: [x as f64, y as f64, z as f64],
+                    bolt_vertex: bolt_rng.next_long(),
+                })
+                .collect();
+            strike_cursor = world.lightning_strikes.len();
+            let _ = tx.send(FromWorker::Time { time: world.world_time, weather, terrain, bolts });
             next_tick += Duration::from_millis(50);
             ticks += 1;
         }
@@ -295,4 +363,39 @@ pub fn mesh_chunk(
         }
     }
     (t0.verts, t1.verts)
+}
+
+/// World.getLightBrightness uses World (y>=128 clamps to 127), not ChunkCache.
+pub fn weather_snapshot(world: &mut World, cam: (f64, f64, f64)) -> crate::render::weather::Snapshot {
+    use crate::render::weather::{Column, Snapshot};
+    let (cx, cz) = (worldgen::math::floor_double(cam.0), worldgen::math::floor_double(cam.2));
+    let mut bs = BiomeSource::new(world.seed);
+    let mut biomes = Vec::new();
+    bs.biomes(&mut biomes, cx - 10, cz - 10, 21, 21);
+    let mut columns = Vec::with_capacity(441);
+    for x in cx - 10..=cx + 10 {
+        for z in cz - 10..=cz + 10 {
+            let top = world.find_top_solid_block(x, z);
+            let mut c = Column {
+                x,
+                z,
+                top,
+                biome: biomes[columns.len()],
+                particle_rain: crate::render::weather::rains(bs.biome_at(x, z)),
+                blocks: [0; 128],
+                meta: [0; 128],
+                brightness: [0.0; 129],
+            };
+            for y in 0..128 {
+                c.blocks[y] = world.get_block_id(x, y as i32, z);
+                c.meta[y] = world.get_block_metadata(x, y as i32, z) as u8;
+                let l = world.get_block_light_value(x, y as i32, z);
+                c.brightness[y] = world.light_brightness_table[l as usize];
+            }
+            let light = world.get_block_light_value(x, 128, z);
+            c.brightness[128] = world.light_brightness_table[light as usize];
+            columns.push(c);
+        }
+    }
+    Snapshot { columns }
 }

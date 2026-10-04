@@ -101,6 +101,23 @@ public class Oracle {
             w.setWorldTime(Long.parseLong(a[4]));
             EntityItem e = new EntityItem(w, Double.parseDouble(a[2]), 64.0, Double.parseDouble(a[3]), new ItemStack(1, 1, 0));
             float partial = Float.parseFloat(a[5]);
+            float rain = a.length > 6 ? Float.parseFloat(a[6]) : 0.0F;
+            float thunder = a.length > 7 ? Float.parseFloat(a[7]) : 0.0F;
+            setField(w, "rainingStrength", rain);
+            setField(w, "prevRainingStrength", a.length > 9 ? Float.parseFloat(a[9]) : rain);
+            setField(w, "thunderingStrength", thunder);
+            setField(w, "prevThunderingStrength", a.length > 10 ? Float.parseFloat(a[10]) : thunder);
+            setField(w, "field_27172_i", a.length > 8 ? Integer.parseInt(a[8]) : 0);
+            EntityRenderer renderer = headlessRenderer(w, e);
+            setField(renderer, "fogColor2", a.length > 11 ? Float.parseFloat(a[11]) : 1.0F);
+            setField(renderer, "fogColor1", a.length > 12 ? Float.parseFloat(a[12]) : 1.0F);
+            java.lang.reflect.Method updateFog = EntityRenderer.class.getDeclaredMethod("updateFogColor", float.class);
+            updateFog.setAccessible(true);
+            updateFog.invoke(renderer, partial);
+            setField(renderer, "farPlaneDistance", 256.0F);
+            renderer.fogColorBuffer = ByteBuffer.allocateDirect(64).order(ByteOrder.nativeOrder()).asFloatBuffer();
+            java.lang.reflect.Method setupFog = EntityRenderer.class.getDeclaredMethod("setupFog", int.class, float.class);
+            setupFog.setAccessible(true); setupFog.invoke(renderer, 0, partial);
             Vec3D sky = w.func_4079_a(e, partial);
             Vec3D fog = w.getFogColor(partial);
             Vec3D cloud = w.func_628_d(partial);
@@ -108,7 +125,13 @@ public class Oracle {
                 + " sky " + Float.floatToIntBits((float) sky.xCoord) + " " + Float.floatToIntBits((float) sky.yCoord) + " " + Float.floatToIntBits((float) sky.zCoord)
                 + " fog " + Float.floatToIntBits((float) fog.xCoord) + " " + Float.floatToIntBits((float) fog.yCoord) + " " + Float.floatToIntBits((float) fog.zCoord)
                 + " cloud " + Float.floatToIntBits((float) cloud.xCoord) + " " + Float.floatToIntBits((float) cloud.yCoord) + " " + Float.floatToIntBits((float) cloud.zCoord)
-                + " stars " + Float.floatToIntBits(w.getStarBrightness(partial)));
+                + " stars " + Float.floatToIntBits(w.getStarBrightness(partial))
+                + " renderfog " + Float.floatToIntBits(renderer.fogColorRed) + " " + Float.floatToIntBits(renderer.fogColorGreen) + " " + Float.floatToIntBits(renderer.fogColorBlue)
+                + " renderstars " + Float.floatToIntBits(w.getStarBrightness(partial) * (1.0F - w.func_27162_g(partial)))
+                + " sunalpha " + Float.floatToIntBits(1.0F - w.func_27162_g(partial))
+                + " fogrange " + Float.floatToIntBits(org.lwjgl.opengl.GL11.fogStart) + " " + Float.floatToIntBits(org.lwjgl.opengl.GL11.fogEnd));
+        } else if (mode.equals("weathermesh")) {
+            weatherMesh(a);
         } else if (mode.equals("rendertable")) {
             renderTable(a[1]);
         } else if (mode.equals("ticks")) {
@@ -763,4 +786,120 @@ public class Oracle {
         dumpWorld(w, out, sp.x, sp.y, sp.z);
     }
 
+
+    static Object allocate(Class<?> cls) throws Exception {
+        Field f = sun.misc.Unsafe.class.getDeclaredField("theUnsafe"); f.setAccessible(true);
+        return ((sun.misc.Unsafe) f.get(null)).allocateInstance(cls);
+    }
+    static void setField(Object o, String name, Object v) throws Exception {
+        Field f = o.getClass().getDeclaredField(name); f.setAccessible(true); f.set(o, v);
+    }
+    static EntityRenderer headlessRenderer(World w, Entity e) throws Exception {
+        net.minecraft.client.Minecraft mc = (net.minecraft.client.Minecraft) allocate(MinecraftImpl.class);
+        EntityLiving camera = (EntityLiving) allocate(EntityPlayerSP.class);
+        camera.worldObj = w;
+        camera.posX = camera.lastTickPosX = e.posX;
+        camera.posY = camera.lastTickPosY = e.posY;
+        camera.posZ = camera.lastTickPosZ = e.posZ;
+        Field box = Entity.class.getDeclaredField("boundingBox"); box.setAccessible(true);
+        box.set(camera, AxisAlignedBB.getBoundingBox(e.posX-.3, e.posY, e.posZ-.3, e.posX+.3, e.posY+1.8, e.posZ+.3));
+        mc.theWorld = w; mc.renderViewEntity = camera;
+        mc.gameSettings = (GameSettings) allocate(GameSettings.class);
+        mc.gameSettings.fancyGraphics = true; mc.gameSettings.renderDistance = 0;
+        mc.renderEngine = (RenderEngine) allocate(RenderEngine.class);
+        HashMap<String,Integer> textures = new HashMap<String,Integer>();
+        textures.put("/environment/snow.png", 0); textures.put("/environment/rain.png", 1);
+        setField(mc.renderEngine, "textureMap", textures);
+        setField(mc.renderEngine, "texturePack", allocate(TexturePackList.class));
+        mc.effectRenderer = new EffectRenderer(w, mc.renderEngine);
+        EntityRenderer renderer = (EntityRenderer) allocate(EntityRenderer.class);
+        setField(renderer, "mc", mc); setField(renderer, "random", new Random(0));
+        setField(renderer, "fogColor1", 1.0F); setField(renderer, "fogColor2", 1.0F);
+        return renderer;
+    }
+    static final ArrayList<float[]> weatherVertices = new ArrayList<float[]>();
+    public static void recordWeatherDraw(int mode, int count, float[] color, int texture) {
+        try {
+            Tessellator t = Tessellator.instance;
+            Field rawF = Tessellator.class.getDeclaredField("rawBuffer"); rawF.setAccessible(true);
+            Field colF = Tessellator.class.getDeclaredField("hasColor"); colF.setAccessible(true);
+            int[] raw = (int[]) rawF.get(t);
+            ArrayList<float[]> strip = new ArrayList<float[]>();
+            for (int i=0; i<count; i++) {
+                int o=i*8;
+                float[] v={texture,Float.intBitsToFloat(raw[o]),Float.intBitsToFloat(raw[o+1]),Float.intBitsToFloat(raw[o+2]),
+                    mode==5?0:Float.intBitsToFloat(raw[o+3]),mode==5?0:Float.intBitsToFloat(raw[o+4]),color[0],color[1],color[2],color[3]};
+                if (colF.getBoolean(t)) for (int c=0;c<4;c++) v[6+c]=(float)(raw[o+5] >>> (c*8) & 255)/255.0F;
+                strip.add(v);
+            }
+            if(mode==5) for(int i=2;i<strip.size();i++) {
+                weatherVertices.add(strip.get(i%2==0?i-2:i-1));
+                weatherVertices.add(strip.get(i%2==0?i-1:i-2)); weatherVertices.add(strip.get(i));
+            } else weatherVertices.addAll(strip);
+        } catch(Exception e) { throw new RuntimeException(e); }
+    }
+    static final ArrayList<double[]> rainSounds = new ArrayList<double[]>();
+    static void weatherMesh(String[] a) throws Exception {
+        long seed=Long.parseLong(a[1]);
+        double x=Double.parseDouble(a[2]),y=Double.parseDouble(a[3]),z=Double.parseDouble(a[4]);
+        int tick=Integer.parseInt(a[5]); float partial=Float.parseFloat(a[6]), rain=Float.parseFloat(a[7]);
+        World w=newWorld(seed); w.setWorldTime(6000L); w.rainingStrength=w.prevRainingStrength=rain;
+        w.skylightSubtracted=w.calculateSkylightSubtracted(1.0F);
+        int cx=MathHelper.floor_double(x),cz=MathHelper.floor_double(z);
+        // Explicit x-major loading makes lighting independent of renderer queries.
+        for(int xx=(cx-11)>>4;xx<=(cx+11)>>4;xx++) for(int zz=(cz-11)>>4;zz<=(cz+11)>>4;zz++) {w.getBlockId(xx*16,64,zz*16);drainLighting(w);}
+        String scene=a.length>9?a[9]:"natural";
+        int soundCounter=a.length>10?Integer.parseInt(a[10]):0;
+        if(!scene.equals("natural")) for(int xx=cx-10;xx<=cx+10;xx++) for(int zz=cz-10;zz<=cz+10;zz++) {
+            int yy=MathHelper.floor_double(y)+(scene.equals("roof")?4:-1);
+            w.setBlock(xx,yy,zz,scene.equals("lava") && ((xx+zz)&1)==0?11:1);
+        }
+        drainLighting(w);
+        w.addWorldAccess((IWorldAccess)java.lang.reflect.Proxy.newProxyInstance(Oracle.class.getClassLoader(),new Class[]{IWorldAccess.class},
+            (proxy,method,args)->{if(method.getName().equals("playSound"))rainSounds.add(new double[]{(Double)args[1],(Double)args[2],(Double)args[3],(Float)args[4],(Float)args[5]});return null;}));
+        Entity e=new EntityItem(w,x,y,z,new ItemStack(1,1,0));
+        EntityRenderer r=headlessRenderer(w,e);setField(r,"rendererUpdateCount",tick);setField(r,"rainSoundCounter",soundCounter);
+        DataOut o=new DataOut();o.bytes("B173WTH1".getBytes("US-ASCII"));o.i32(soundCounter);
+        BiomeGenBase[] biomes=w.getWorldChunkManager().func_4069_a(cx-10,cz-10,21,21);int k=0;
+        for(int xx=cx-10;xx<=cx+10;xx++) for(int zz=cz-10;zz<=cz+10;zz++) {
+            o.i32(xx);o.i32(zz);o.i32(w.findTopSolidBlock(xx,zz));
+            BiomeGenBase b=biomes[k++];o.u8(b.getEnableSnow()?0:b.canSpawnLightningBolt()?1:2);
+            o.u8(w.getWorldChunkManager().getBiomeGenAt(xx,zz).canSpawnLightningBolt()?1:0);
+            for(int yy=0;yy<128;yy++)o.u8(w.getBlockId(xx,yy,zz));
+            for(int yy=0;yy<128;yy++)o.u8(w.getBlockMetadata(xx,yy,zz));
+            for(int yy=0;yy<=128;yy++)o.i32(Float.floatToIntBits(w.getLightBrightness(xx,yy,zz)));
+        }
+        Field convert=Tessellator.class.getDeclaredField("convertQuadsToTriangles");convert.setAccessible(true);convert.setBoolean(null,false);
+        r.renderRainSnow(partial);
+        java.lang.reflect.Method particles=EntityRenderer.class.getDeclaredMethod("addRainParticles");particles.setAccessible(true);particles.invoke(r);
+        Field mcF=EntityRenderer.class.getDeclaredField("mc");mcF.setAccessible(true);
+        net.minecraft.client.Minecraft mc=(net.minecraft.client.Minecraft)mcF.get(r);
+        Field layersF=EffectRenderer.class.getDeclaredField("fxLayers");layersF.setAccessible(true);
+        List[] layers=(List[])layersF.get(mc.effectRenderer);
+        o.i32(layers[0].size());
+        for(Object obj:layers[0]) {
+            EntityFX fx=(EntityFX)obj;o.u8(fx instanceof EntitySmokeFX?1:0);
+            o.i64(Double.doubleToLongBits(fx.posX));o.i64(Double.doubleToLongBits(fx.posY));o.i64(Double.doubleToLongBits(fx.posZ));
+        }
+        Field randomF=EntityRenderer.class.getDeclaredField("random");randomF.setAccessible(true);
+        o.i64(((Random)randomF.get(r)).nextLong());
+        Field soundF=EntityRenderer.class.getDeclaredField("rainSoundCounter");soundF.setAccessible(true);o.i32(soundF.getInt(r));
+        o.i32(rainSounds.size());
+        for(double[] sound:rainSounds) {
+            for(int i=0;i<3;i++)o.i64(Double.doubleToLongBits(sound[i]));
+            o.i32(Float.floatToIntBits((float)sound[3]));o.i32(Float.floatToIntBits((float)sound[4]));
+        }
+        EntityLightningBolt bolt=(EntityLightningBolt)allocate(EntityLightningBolt.class);bolt.field_27029_a=seed;
+        org.lwjgl.opengl.GL11.glBindTexture(3553,3);
+        new RenderLightningBolt().doRender(bolt,0.25,10.5,-2.75,0.0F,partial);
+        o.i32(weatherVertices.size());
+        for(float[] v:weatherVertices)for(float f:v)o.i32(Float.floatToIntBits(f));
+        Random gaussian=new Random(seed);
+        for(int i=0;i<256;i++)o.i64(Double.doubleToLongBits(gaussian.nextGaussian()));
+        gaussian.setSeed(seed);
+        for(int i=0;i<3;i++)o.i64(Double.doubleToLongBits(gaussian.nextGaussian()));
+        gaussian.setSeed(seed);
+        o.i64(Double.doubleToLongBits(gaussian.nextGaussian()));
+        try(OutputStream os=new FileOutputStream(a[8])) { o.writeTo(os); }
+    }
 }

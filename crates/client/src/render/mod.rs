@@ -7,6 +7,8 @@ pub mod fx;
 pub mod gpu;
 pub mod sky;
 pub mod table;
+pub mod weather;
+pub mod weather_check;
 
 /// Static per-block render data, generated from the original classes (Fancy graphics).
 #[derive(Clone, Copy, Debug)]

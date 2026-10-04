@@ -41,6 +41,11 @@ pub struct FrameParams {
     pub far: f32,
     /// cloudOffsetX + partialTicks
     pub cloud_offset: f32,
+    pub rain: f32,
+    pub thunder: f32,
+    pub precipitation: [Vec<super::weather::WeatherVertex>; 2],
+    pub lightning: Vec<super::weather::WeatherVertex>,
+    pub particles: Vec<super::weather::WeatherVertex>,
 }
 
 struct DrawSlot {
@@ -70,6 +75,10 @@ pub struct Gpu {
     p_cloud_color: wgpu::RenderPipeline,
     cloud_slot: DrawSlot,
     cloud_buf: wgpu::Buffer,
+    weather_slots: [DrawSlot; 4],
+    weather_bufs: [wgpu::Buffer; 4],
+    p_weather: wgpu::RenderPipeline,
+    p_lightning: wgpu::RenderPipeline,
     terrain_tex: wgpu::Texture,
     quad_index: wgpu::Buffer,
     quad_index_quads: u32,
@@ -95,7 +104,12 @@ fn tri_list(verts: &[[f32; 3]], color: [u8; 4]) -> Vec<Vertex> {
 
 impl Gpu {
     pub fn new(
-        window: Arc<Window>, terrain: &Image, sun: &Image, moon: &Image, clouds: &Image,
+        window: Arc<Window>,
+        terrain: &Image,
+        sun: &Image,
+        moon: &Image,
+        clouds: &Image,
+        weather_images: [&Image; 3],
         mobs: &HashMap<String, Image>,
     ) -> Gpu {
         let size = window.inner_size();
@@ -110,9 +124,8 @@ impl Gpu {
         .expect("no GPU adapter");
         let (device, queue) =
             pollster::block_on(adapter.request_device(&wgpu::DeviceDescriptor::default())).expect("request device");
-        let mut config = surface
-            .get_default_config(&adapter, size.width.max(1), size.height.max(1))
-            .expect("surface not supported");
+        let mut config =
+            surface.get_default_config(&adapter, size.width.max(1), size.height.max(1)).expect("surface not supported");
         // The original wrote colors straight to the framebuffer: no sRGB encoding.
         config.format = config.format.remove_srgb_suffix();
         config.usage |= wgpu::TextureUsages::COPY_SRC;
@@ -185,6 +198,8 @@ impl Gpu {
             attributes: &wgpu::vertex_attr_array![0 => Float32x3, 1 => Float32x2, 2 => Unorm8x4],
         };
         let alpha_blend = wgpu::BlendState::ALPHA_BLENDING;
+        const WEATHER_ATTRIBUTES: [wgpu::VertexAttribute; 3] =
+            wgpu::vertex_attr_array![0 => Float32x3, 1 => Float32x2, 2 => Float32x4];
         let add_blend = wgpu::BlendState {
             color: wgpu::BlendComponent {
                 src_factor: wgpu::BlendFactor::SrcAlpha,
@@ -208,7 +223,15 @@ impl Gpu {
                     module: &shader,
                     entry_point: Some(vs),
                     compilation_options: Default::default(),
-                    buffers: &[Some(vertex_layout.clone())],
+                    buffers: &[Some(if label.starts_with("weather") {
+                        wgpu::VertexBufferLayout {
+                            array_stride: std::mem::size_of::<super::weather::WeatherVertex>() as u64,
+                            step_mode: wgpu::VertexStepMode::Vertex,
+                            attributes: &WEATHER_ATTRIBUTES,
+                        }
+                    } else {
+                        vertex_layout.clone()
+                    })],
                 },
                 primitive: wgpu::PrimitiveState {
                     topology: wgpu::PrimitiveTopology::TriangleList,
@@ -236,7 +259,8 @@ impl Gpu {
         };
         use wgpu::CompareFunction::{Always, LessEqual};
         let all = wgpu::ColorWrites::ALL;
-        let p_opaque = make("opaque", &terrain_layout, "vs_terrain", None, all, true, LessEqual, Some(wgpu::Face::Back));
+        let p_opaque =
+            make("opaque", &terrain_layout, "vs_terrain", None, all, true, LessEqual, Some(wgpu::Face::Back));
         let p_water_depth = make(
             "water depth",
             &terrain_layout,
@@ -247,14 +271,34 @@ impl Gpu {
             LessEqual,
             None,
         );
-        let p_water_color = make("water color", &terrain_layout, "vs_terrain", Some(alpha_blend), all, true, LessEqual, None);
+        let p_water_color =
+            make("water color", &terrain_layout, "vs_terrain", Some(alpha_blend), all, true, LessEqual, None);
         let p_sky = make("sky", &sky_layout, "vs_sky", None, all, false, Always, None);
         let p_sky_alpha = make("sky alpha", &sky_layout, "vs_sky", Some(alpha_blend), all, false, Always, None);
         let p_sky_add = make("sky add", &sky_layout, "vs_sky", Some(add_blend), all, false, Always, None);
-        let p_cloud_depth =
-            make("cloud depth", &sky_layout, "vs_sky", Some(alpha_blend), wgpu::ColorWrites::empty(), true, LessEqual, None);
+        let p_cloud_depth = make(
+            "cloud depth",
+            &sky_layout,
+            "vs_sky",
+            Some(alpha_blend),
+            wgpu::ColorWrites::empty(),
+            true,
+            LessEqual,
+            None,
+        );
         let p_cloud_color = make("cloud color", &sky_layout, "vs_sky", Some(alpha_blend), all, true, LessEqual, None);
 
+        let p_weather = make("weather", &sky_layout, "vs_sky", Some(alpha_blend), all, true, LessEqual, None);
+        let p_lightning = make(
+            "weather lightning",
+            &sky_layout,
+            "vs_sky",
+            Some(add_blend),
+            all,
+            true,
+            LessEqual,
+            Some(wgpu::Face::Back),
+        );
         let upload = |img: &Image, label: &str| -> (wgpu::Texture, wgpu::TextureView) {
             let tex = device.create_texture_with_data(
                 &queue,
@@ -320,22 +364,22 @@ impl Gpu {
         };
         let s = 30.0;
         let sun_quad = vbuf(
-            &quad(100.0, s, [[0.0, 0.0], [1.0, 0.0], [1.0, 1.0], [0.0, 1.0]], [
-                [-s, 100.0, -s],
-                [s, 100.0, -s],
-                [s, 100.0, s],
-                [-s, 100.0, s],
-            ]),
+            &quad(
+                100.0,
+                s,
+                [[0.0, 0.0], [1.0, 0.0], [1.0, 1.0], [0.0, 1.0]],
+                [[-s, 100.0, -s], [s, 100.0, -s], [s, 100.0, s], [-s, 100.0, s]],
+            ),
             "sun",
         );
         let s = 20.0;
         let moon_quad = vbuf(
-            &quad(-100.0, s, [[1.0, 1.0], [0.0, 1.0], [0.0, 0.0], [1.0, 0.0]], [
-                [-s, -100.0, s],
-                [s, -100.0, s],
-                [s, -100.0, -s],
-                [-s, -100.0, -s],
-            ]),
+            &quad(
+                -100.0,
+                s,
+                [[1.0, 1.0], [0.0, 1.0], [0.0, 0.0], [1.0, 0.0]],
+                [[-s, -100.0, s], [s, -100.0, s], [s, -100.0, -s], [-s, -100.0, -s]],
+            ),
             "moon",
         );
         let fan = device.create_buffer(&wgpu::BufferDescriptor {
@@ -351,6 +395,20 @@ impl Gpu {
         let sun_slot = slot(&sun_view);
         let moon_slot = slot(&moon_view);
         let cloud_slot = slot(&clouds_view);
+        let weather_slots = [
+            slot(&upload(weather_images[0], "snow").1),
+            slot(&upload(weather_images[1], "rain").1),
+            slot(&upload(weather_images[2], "particles").1),
+            slot(&white_view),
+        ];
+        let weather_bufs = std::array::from_fn(|_| {
+            device.create_buffer(&wgpu::BufferDescriptor {
+                label: Some("weather vertices"),
+                size: (65536 * std::mem::size_of::<super::weather::WeatherVertex>()) as u64,
+                usage: wgpu::BufferUsages::VERTEX | wgpu::BufferUsages::COPY_DST,
+                mapped_at_creation: false,
+            })
+        });
         let cloud_buf = device.create_buffer(&wgpu::BufferDescriptor {
             label: Some("clouds"),
             size: (8192 * std::mem::size_of::<Vertex>()) as u64,
@@ -367,7 +425,9 @@ impl Gpu {
 
         let mut gpu = Gpu {
             entities: super::entity::pipeline::EntityPipeline::new(
-                &device, &queue, config.format,
+                &device,
+                &queue,
+                config.format,
                 mobs.iter().map(|(n, i)| (n.as_str(), i)).chain(std::iter::once(("terrain.png", terrain))),
             ),
             window,
@@ -386,6 +446,10 @@ impl Gpu {
             p_cloud_color,
             cloud_slot,
             cloud_buf,
+            weather_slots,
+            weather_bufs,
+            p_weather,
+            p_lightning,
             terrain_tex,
             quad_index,
             quad_index_quads: 0,
@@ -543,7 +607,11 @@ impl Gpu {
             for i in 0..=16 {
                 let a = i as f32 * std::f64::consts::PI as f32 * 2.0 / 16.0;
                 let (s, co) = (worldgen::math::sin(a), worldgen::math::cos(a));
-                rim.push(Vertex { pos: [s * 120.0, co * 120.0, -co * 40.0 * c[3]], uv: [0.0; 2], color: rgba(c[0], c[1], c[2], 0.0) });
+                rim.push(Vertex {
+                    pos: [s * 120.0, co * 120.0, -co * 40.0 * c[3]],
+                    uv: [0.0; 2],
+                    color: rgba(c[0], c[1], c[2], 0.0),
+                });
             }
             let mut fan = Vec::new();
             for i in 0..16 {
@@ -552,18 +620,24 @@ impl Gpu {
             self.queue.write_buffer(&self.fan, 0, bytemuck::cast_slice(&fan));
             let z = if p.celestial > 0.5 { 180.0f32 } else { 0.0 };
             let model = Mat4::from_rotation_x(90f32.to_radians()) * Mat4::from_rotation_z(z.to_radians());
-            let u = Uniforms { view_proj: view_proj.to_cols_array_2d(), model: model.to_cols_array_2d(), color: [1.0; 4], fog_color: fog4, fog: [0.0, 1.0, 0.0, -1.0] };
+            let u = Uniforms {
+                view_proj: view_proj.to_cols_array_2d(),
+                model: model.to_cols_array_2d(),
+                color: [1.0; 4],
+                fog_color: fog4,
+                fog: [0.0, 1.0, 0.0, -1.0],
+            };
             self.write_uniforms(&self.slots[1], &u);
         }
         let celestial_rot = Mat4::from_rotation_x((p.celestial * 360.0).to_radians());
         let sunmoon_u = Uniforms {
             view_proj: view_proj.to_cols_array_2d(),
             model: celestial_rot.to_cols_array_2d(),
-            color: [1.0, 1.0, 1.0, 1.0],
+            color: [1.0, 1.0, 1.0, 1.0f32 - p.rain],
             fog_color: fog4,
             fog: [0.0, 1.0, 0.0, -1.0],
         };
-        let star_b = sky::star_brightness(p.celestial);
+        let star_b = sky::star_brightness(p.celestial) * (1.0f32 - p.rain);
         let stars_u = Uniforms { color: [star_b; 4], ..sunmoon_u };
         let void_u = Uniforms {
             view_proj: view_proj.to_cols_array_2d(),
@@ -618,12 +692,19 @@ impl Gpu {
             self.queue.write_buffer(&self.origins_buf, 0, bytemuck::cast_slice(&origins));
         }
         let terrain_fog = [p.far * 0.25, p.far, 1.0, 0.1];
-        let tu = Uniforms { view_proj: view_proj.to_cols_array_2d(), model: ident, color: [1.0; 4], fog_color: fog4, fog: terrain_fog };
+        let tu = Uniforms {
+            view_proj: view_proj.to_cols_array_2d(),
+            model: ident,
+            color: [1.0; 4],
+            fog_color: fog4,
+            fog: terrain_fog,
+        };
         self.write_uniforms(&self.terrain_slot, &tu);
         self.write_uniforms(&self.water_slot, &tu);
 
         // Clouds (Fancy): rebuilt every frame around the camera, drawn scaled 12x horizontally.
-        let cloud_verts = sky::fancy_clouds(cam.x, cam.y, cam.z, p.cloud_offset, sky::cloud_color(p.celestial));
+        let cloud_verts =
+            sky::fancy_clouds(cam.x, cam.y, cam.z, p.cloud_offset, sky::cloud_color(p.celestial, p.rain, p.thunder));
         let cloud_n = cloud_verts.len().min(8192);
         self.queue.write_buffer(&self.cloud_buf, 0, bytemuck::cast_slice(&cloud_verts[..cloud_n]));
         let cu = Uniforms {
@@ -634,6 +715,35 @@ impl Gpu {
             fog: [p.far * 0.25, p.far, 1.0, 0.1],
         };
         self.write_uniforms(&self.cloud_slot, &cu);
+
+        let weather_verts = [&p.precipitation[0], &p.precipitation[1], &p.particles, &p.lightning];
+        let weather_n: [u32; 4] = std::array::from_fn(|i| {
+            let v = weather_verts[i];
+            assert!(v.len() <= 65536, "weather buffer capacity exceeded");
+            if !v.is_empty() {
+                self.queue.write_buffer(&self.weather_bufs[i], 0, bytemuck::cast_slice(v));
+            }
+            let u = Uniforms {
+                view_proj: view_proj.to_cols_array_2d(),
+                model: ident,
+                color: [1.0; 4],
+                fog_color: fog4,
+                fog: [
+                    p.far * 0.25,
+                    p.far,
+                    if i == 3 { 0.0 } else { 1.0 },
+                    if i < 2 {
+                        0.01
+                    } else if i == 2 {
+                        0.1
+                    } else {
+                        -1.0
+                    },
+                ],
+            };
+            self.write_uniforms(&self.weather_slots[i], &u);
+            v.len() as u32
+        });
 
         // Offscreen copy target for screenshots.
         let capture_tex = capture.then(|| {
@@ -719,6 +829,19 @@ impl Gpu {
                 }
             }
             self.entities.draw(&mut rp);
+            // Weather effects belong to renderEntities, before particles and water.
+            if weather_n[3] > 0 {
+                rp.set_pipeline(&self.p_lightning);
+                rp.set_bind_group(0, &self.weather_slots[3].bind, &[]);
+                rp.set_vertex_buffer(0, self.weather_bufs[3].slice(..));
+                rp.draw(0..weather_n[3], 0..1);
+            }
+            if weather_n[2] > 0 {
+                rp.set_pipeline(&self.p_weather);
+                rp.set_bind_group(0, &self.weather_slots[2].bind, &[]);
+                rp.set_vertex_buffer(0, self.weather_bufs[2].slice(..));
+                rp.draw_indexed(0..weather_n[2] / 4 * 6, 0, 0..1);
+            }
             // Entity textures occupy group 1; restore the terrain origins binding.
             rp.set_bind_group(1, &self.origins_bind, &[]);
             // Pass 1 (water, ice), Fancy: depth-only first, then color with LEQUAL.
@@ -731,6 +854,15 @@ impl Gpu {
                         rp.draw_indexed(0..*n, 0, i as u32..i as u32 + 1);
                     }
                 }
+            }
+            for i in 0..2 {
+                if weather_n[i] == 0 {
+                    continue;
+                }
+                rp.set_pipeline(&self.p_weather);
+                rp.set_bind_group(0, &self.weather_slots[i].bind, &[]);
+                rp.set_vertex_buffer(0, self.weather_bufs[i].slice(..));
+                rp.draw_indexed(0..weather_n[i] / 4 * 6, 0, 0..1);
             }
             for pipe in [&self.p_cloud_depth, &self.p_cloud_color] {
                 rp.set_pipeline(pipe);
@@ -750,10 +882,19 @@ impl Gpu {
                 mapped_at_creation: false,
             });
             enc.copy_texture_to_buffer(
-                wgpu::TexelCopyTextureInfo { texture: tex, mip_level: 0, origin: Default::default(), aspect: Default::default() },
+                wgpu::TexelCopyTextureInfo {
+                    texture: tex,
+                    mip_level: 0,
+                    origin: Default::default(),
+                    aspect: Default::default(),
+                },
                 wgpu::TexelCopyBufferInfo {
                     buffer: &buf,
-                    layout: wgpu::TexelCopyBufferLayout { offset: 0, bytes_per_row: Some(bpr), rows_per_image: Some(h) },
+                    layout: wgpu::TexelCopyBufferLayout {
+                        offset: 0,
+                        bytes_per_row: Some(bpr),
+                        rows_per_image: Some(h),
+                    },
                 },
                 wgpu::Extent3d { width: w, height: h, depth_or_array_layers: 1 },
             );
@@ -762,7 +903,8 @@ impl Gpu {
             slice.map_async(wgpu::MapMode::Read, |_| {});
             let _ = self.device.poll(wgpu::PollType::wait_indefinitely());
             let data = slice.get_mapped_range().expect("map readback");
-            let bgra = matches!(self.config.format, wgpu::TextureFormat::Bgra8Unorm | wgpu::TextureFormat::Bgra8UnormSrgb);
+            let bgra =
+                matches!(self.config.format, wgpu::TextureFormat::Bgra8Unorm | wgpu::TextureFormat::Bgra8UnormSrgb);
             let mut rgba = Vec::with_capacity((w * h * 4) as usize);
             for y in 0..h {
                 let row = &data[(y * bpr) as usize..(y * bpr + w * 4) as usize];
@@ -783,7 +925,12 @@ impl Gpu {
     }
 }
 
-fn make_slot(device: &wgpu::Device, layout0: &wgpu::BindGroupLayout, sampler: &wgpu::Sampler, view: &wgpu::TextureView) -> DrawSlot {
+fn make_slot(
+    device: &wgpu::Device,
+    layout0: &wgpu::BindGroupLayout,
+    sampler: &wgpu::Sampler,
+    view: &wgpu::TextureView,
+) -> DrawSlot {
     let buf = device.create_buffer(&wgpu::BufferDescriptor {
         label: Some("uniforms"),
         size: std::mem::size_of::<Uniforms>() as u64,
