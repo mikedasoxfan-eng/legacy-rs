@@ -44,7 +44,7 @@ public final class EntityOracle {
         ArrayList<Entity> entities=new ArrayList<Entity>(w.loadedEntityList);entities.addAll(w.weatherEffects);Collections.sort(entities,(a,b)->Integer.compare(a.entityId,b.entityId));
         i(out,entities.size());
         for(Entity e:entities) {
-            i(out,e.entityId);out.writeUTF(e instanceof EntityFireball?"Fireball":e instanceof EntityLightningBolt?"LightningBolt":EntityList.getEntityString(e));
+            i(out,e.entityId);out.writeUTF(e instanceof EntityPlayer?"Player":e instanceof EntityFireball?"Fireball":e instanceof EntityLightningBolt?"LightningBolt":e instanceof EntityEgg?"ThrownEgg":EntityList.getEntityString(e));
             for(double n:new double[]{e.posX,e.posY,e.posZ,e.motionX,e.motionY,e.motionZ,e.prevPosX,e.prevPosY,e.prevPosZ,e.lastTickPosX,e.lastTickPosY,e.lastTickPosZ,e.boundingBox.minX,e.boundingBox.minY,e.boundingBox.minZ,e.boundingBox.maxX,e.boundingBox.maxY,e.boundingBox.maxZ})d(out,n);
             for(float n:new float[]{e.rotationYaw,e.rotationPitch,e.prevRotationYaw,e.prevRotationPitch,e.fallDistance,e.ySize,e.distanceWalkedModified})f(out,n);
             for(int n:new int[]{e.fire,e.air,e.ticksExisted,e.chunkCoordX,e.chunkCoordY,e.chunkCoordZ})i(out,n);
@@ -63,6 +63,7 @@ public final class EntityOracle {
                 if(e instanceof EntityChicken){EntityChicken c=(EntityChicken)e;for(float n:new float[]{c.field_752_b,c.field_756_e,c.destPos,c.field_757_d,c.field_755_h})f(out,n);i(out,c.timeUntilNextEgg);}
             }
             if(e instanceof EntityTNTPrimed)i(out,((EntityTNTPrimed)e).fuse);
+            if(e instanceof EntitySnowball||e instanceof EntityEgg){boolean egg=e instanceof EntityEgg;Class c=egg?EntityEgg.class:EntitySnowball.class;for(String name:egg?new String[]{"field_20056_b","field_20055_c","field_20054_d","field_20053_e"}:new String[]{"xTileSnowball","yTileSnowball","zTileSnowball","inTileSnowball"})i(out,intField(c,name,e));Field g=c.getDeclaredField(egg?"field_20052_f":"inGroundSnowball");g.setAccessible(true);out.writeBoolean(g.getBoolean(e));i(out,intField(c,egg?"field_20057_a":"shakeSnowball",e));Field owner=c.getDeclaredField(egg?"field_20051_g":"thrower");owner.setAccessible(true);Entity a=(Entity)owner.get(e);i(out,a==null?-1:a.entityId);i(out,intField(c,egg?"field_20050_h":"ticksInGroundSnowball",e));i(out,intField(c,egg?"field_20049_i":"ticksInAirSnowball",e));}
             if(e instanceof EntityArrow){EntityArrow a=(EntityArrow)e;for(String name:new String[]{"xTile","yTile","zTile","inTile","field_28019_h"})i(out,intField(EntityArrow.class,name,a));Field ground=EntityArrow.class.getDeclaredField("inGround");ground.setAccessible(true);out.writeBoolean(ground.getBoolean(a));out.writeBoolean(a.doesArrowBelongToPlayer);i(out,a.arrowShake);i(out,a.owner==null?-1:a.owner.entityId);i(out,intField(EntityArrow.class,"ticksInGround",a));i(out,intField(EntityArrow.class,"ticksInAir",a));}
             if(e instanceof EntityCreeper){EntityCreeper a=(EntityCreeper)e;i(out,intField(EntityCreeper.class,"timeSinceIgnited",a));i(out,intField(EntityCreeper.class,"lastActiveTime",a));i(out,a.dataWatcher.getWatchableObjectByte(16));out.writeBoolean(a.getPowered());}
             if(e instanceof EntityPigZombie){i(out,intField(EntityPigZombie.class,"angerLevel",e));i(out,intField(EntityPigZombie.class,"randomSoundDelay",e));}
@@ -72,6 +73,7 @@ public final class EntityOracle {
             if(e instanceof EntitySlime){EntitySlime a=(EntitySlime)e;i(out,a.getSlimeSize());f(out,a.field_768_a);f(out,a.field_767_b);i(out,intField(EntitySlime.class,"slimeJumpDelay",a));}
             if(e instanceof EntitySquid){EntitySquid a=(EntitySquid)e;for(float n:new float[]{a.field_21089_a,a.field_21088_b,a.field_21087_c,a.field_21086_f,a.field_21085_g,a.field_21084_h,a.field_21083_i,a.field_21082_j})f(out,n);for(String name:new String[]{"randomMotionSpeed","field_21080_l","field_21079_m","randomMotionVecX","randomMotionVecY","randomMotionVecZ"})f(out,floatField(EntitySquid.class,name,a));}
             if(e instanceof EntityLightningBolt){i(out,intField(EntityLightningBolt.class,"field_27028_b",e));l(out,((EntityLightningBolt)e).field_27029_a);i(out,intField(EntityLightningBolt.class,"field_27030_c",e));}
+            if(e instanceof EntityPlayer)PlayerOracle.state((EntityPlayer)e,out);
             l(out,rngState(e.rand));
         }
         l(out,rngState(w.rand));l(out,rngState(mathRandom()));l(out,OracleHooks.nextSeed());l(out,OracleHooks.explosionSeed());l(out,w.worldInfo.getWorldTime());for(int n:new int[]{w.field_9437_g,intField(World.class,"soundCounter",w),w.skylightSubtracted,w.field_27168_F,w.field_27172_i,w.worldInfo.getRainTime(),w.worldInfo.getThunderTime()})i(out,n);out.writeBoolean(w.worldInfo.getRaining());out.writeBoolean(w.worldInfo.getThundering());for(float v:new float[]{w.rainingStrength,w.prevRainingStrength,w.thunderingStrength,w.prevThunderingStrength})f(out,v);

@@ -1,7 +1,7 @@
 use super::Vec3D;
 use crate::{math::floor_double as floor, World};
 impl World {
-    /// The singleplayer client tick, with its non-ticking player/camera stand-in.
+    /// The singleplayer client tick, for a real player or the legacy camera stand-in.
     pub fn client_tick(&mut self, player: usize, client_ticks: i32) {
         if let Some(&(x, y, z)) = self.players.get(player) {
             let pos = Vec3D::new(x, y, z);
@@ -10,6 +10,7 @@ impl World {
             }
             self.update_entities();
             self.tick();
+            let (x, y, z) = self.players[player];
             self.random_display_updates(floor(x), floor(y), floor(z));
         }
     }

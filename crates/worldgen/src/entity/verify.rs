@@ -197,8 +197,9 @@ pub fn snapshot(w: &World, out: &mut Vec<u8>) {
         o.extend_from_slice(&(if v.is_nan() { 0x7fc00000 } else { v.to_bits() }).to_le_bytes());
     }
     let mut entities: Vec<_> = w
-        .entities
-        .values()
+        .loaded_entity_list
+        .iter()
+        .filter_map(|id| w.entities.get(id))
         .chain(w.weather_effects.iter())
         .collect();
     entities.sort_by_key(|e| e.entity_id);
@@ -336,6 +337,15 @@ pub fn snapshot(w: &World, out: &mut Vec<u8>) {
         if let EntityKind::Tnt { fuse } = e.kind {
             i(out, fuse);
         }
+        if let EntityKind::Snowball(s) | EntityKind::Egg(s) = &e.kind {
+            for v in [s.tile[0], s.tile[1], s.tile[2], s.block as i32] {
+                i(out, v);
+            }
+            out.push(s.in_ground as u8);
+            for v in [s.shake, s.owner.unwrap_or(-1), s.ticks_ground, s.ticks_air] {
+                i(out, v);
+            }
+        }
         if let EntityKind::Arrow(s) = &e.kind {
             for v in [s.tile[0], s.tile[1], s.tile[2], s.block as i32, s.metadata] {
                 i(out, v);
@@ -448,6 +458,9 @@ pub fn snapshot(w: &World, out: &mut Vec<u8>) {
             i(out, state);
             l(out, seed);
             i(out, remaining);
+        }
+        if let Some(s) = e.player_state() {
+            super::player::verify::state_bytes(s, e, out);
         }
         l(out, e.rand.state());
     }
@@ -963,8 +976,57 @@ pub fn append_world(w: &World, out: &mut Vec<u8>) {
         out.extend_from_slice(&c.height_map);
         let mut tiles: Vec<_> = c.tile_entities.keys().copied().collect();
         tiles.sort();
+        let raw: Vec<_> = c
+            .raw_tile_entities
+            .iter()
+            .filter(|n| matches!(n.string("id").as_str(), "Furnace" | "Trap"))
+            .collect();
+        tiles.extend(
+            raw.iter()
+                .map(|n| (n.int("x") - cx * 16, n.int("y"), n.int("z") - cz * 16)),
+        );
+        tiles.sort();
         i(out, tiles.len() as i32);
         for (x, y, z) in tiles {
+            if let Some(n) = raw
+                .iter()
+                .find(|n| n.int("x") == cx * 16 + x && n.int("y") == y && n.int("z") == cz * 16 + z)
+            {
+                for v in [cx * 16 + x, y, cz * 16 + z] {
+                    i(out, v);
+                }
+                let furnace = n.string("id") == "Furnace";
+                out.push(if furnace { 3 } else { 4 });
+                for slot in 0..if furnace { 3 } else { 9 } {
+                    let item = n
+                        .list("Items")
+                        .iter()
+                        .find_map(|t| {
+                            if let crate::nbt::Tag::Compound(c) = t {
+                                if c.byte("Slot") as i32 == slot {
+                                    Some(ItemStack::new(
+                                        c.short("id") as i32,
+                                        c.byte("Count") as i32,
+                                        c.short("Damage") as i32,
+                                    ))
+                                } else {
+                                    None
+                                }
+                            } else {
+                                None
+                            }
+                        })
+                        .unwrap_or(ItemStack::new(-1, 0, 0));
+                    out.extend_from_slice(&item.id.to_le_bytes());
+                    out.push(item.count);
+                    out.extend_from_slice(&item.damage.to_le_bytes());
+                }
+                if furnace {
+                    out.extend_from_slice(&n.short("BurnTime").to_le_bytes());
+                    out.extend_from_slice(&n.short("CookTime").to_le_bytes());
+                }
+                continue;
+            }
             for v in [cx * 16 + x, y, cz * 16 + z] {
                 i(out, v);
             }

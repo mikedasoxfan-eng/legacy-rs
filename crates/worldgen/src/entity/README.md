@@ -2,24 +2,32 @@
 
 `Entity` holds shared physics and living/creature state. `EntityKind` carries the
 class-specific state for items, falling sand/gravel, primed TNT, arrows,
-fireballs, lightning, pig, sheep, cow, chicken, squid, wolf, zombie, skeleton,
-spider, creeper, slime, ghast, pig zombie, and giant.
+fireballs, lightning, snowballs/eggs, the singleplayer player, pig, sheep, cow,
+chicken, squid, wolf, zombie, skeleton, spider, creeper, slime, ghast, pig zombie,
+and giant.
 
 ## Client integration
 
-Add camera/player positions to `World.players`, then call
-`World::client_tick(player_index, client_tick_number)` once per game tick. It
-joins the surrounding chunks every 30 ticks, updates entities and tile entities,
-ticks the world (including natural spawning), and consumes random display draws.
-Players are non-ticking, invulnerable targets whose attacks count as successful.
-`living::Target` distinguishes entity and player combat sources;
-`World::damage_entity` is the public combat entry point.
+Use `World::spawn_player(username)` and
+`World::player_tick(id, PlayerTickInput, client_tick_number)` for the survival
+player. It runs controller/input actions, surrounding chunk joins, entity/tile
+updates, world ticks and random display draws in SP order. `player_hud` exposes
+renderer/HUD state; `take_player_events` returns pickup, portal, container and
+vehicle requests. See [player/README.md](player/README.md) for input semantics,
+persistence, verification coverage and remaining machinery.
+
+Camera-only callers can still add positions to `World.players` and call
+`World::client_tick(player_index, client_tick_number)`; those entries remain
+invulnerable stand-ins. Real players have IDs in `World.player_entities`, tick
+with other entities, and receive normal combat damage. `living::Target`
+distinguishes entity and player combat sources; `World::damage_entity` is the
+public combat entry point.
 
 Worlds default to Normal difficulty and allow hostile and peaceful spawning.
 `set_allowed_mob_spawns` controls both categories. Entity construction consumes
 an independent `EntitySeedSource`; it supports time seeds, a deterministic
 counter, and a caller-supplied closure. `set_entity_determinism` also seeds the
-world-owned Math.random stream and independent chest/explosion streams.
+world-owned Math.random stream and independent item/chest/explosion streams.
 
 Positions, previous positions, body rotation, limb and swing state, health/hurt/
 death timers, and all kind-specific animation fields are public. Interpolation
@@ -73,7 +81,8 @@ chunk slice, rejection of joins into missing chunks, unloaded-list removal, and 
 Existing world/terrain/lighting/storage/mesh/server comparisons remain enabled.
 
 Exactness is established for these replay inputs, not every possible game state.
-The player inventory/interaction/network simulation and unsupported entities
-(boats, minecarts, paintings, and the real player) remain outside this task.
+The player inventory/controller simulation is now included; see its linked
+README. Unsupported entities include boats, minecarts and paintings; boat/cart
+item use emits explicit placement requests.
 Existing unsupported block machinery such as full redstone/piston circuits and
 furnace ticking remains outside the entity port; its existing checks remain.

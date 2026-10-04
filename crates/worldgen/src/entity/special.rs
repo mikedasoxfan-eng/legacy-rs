@@ -49,8 +49,20 @@ impl Entity {
         attacker: Option<i32>,
         damage: &mut i32,
     ) {
-        if matches!(self.kind, EntityKind::PigZombie { .. }) && attacker.is_some_and(|id| id < 0) {
-            let target = Target::Player((-1 - attacker.unwrap()) as usize);
+        if matches!(self.kind, EntityKind::PigZombie { .. })
+            && attacker.is_some_and(|id| {
+                id < 0
+                    || w.entities
+                        .get(&id)
+                        .is_some_and(|e| e.player_state().is_some())
+            })
+        {
+            let id = attacker.unwrap();
+            let target = if id < 0 {
+                Target::Player((-1 - id) as usize)
+            } else {
+                Target::Entity(id)
+            };
             for id in w.entities_within_aabb(
                 Some(self.entity_id),
                 self.bounding_box.expand(32.0, 32.0, 32.0),
@@ -67,10 +79,9 @@ impl Entity {
             s.flags &= !1;
             if attacker.is_some_and(|id| {
                 id >= 0
-                    && !w
-                        .entities
-                        .get(&id)
-                        .is_some_and(|e| matches!(e.kind, EntityKind::Arrow(..)))
+                    && !w.entities.get(&id).is_some_and(|e| {
+                        matches!(e.kind, EntityKind::Arrow(..) | EntityKind::Player(..))
+                    })
             }) {
                 *damage = (*damage + 1) / 2;
             }
@@ -80,9 +91,13 @@ impl Entity {
         if !hit {
             return;
         }
-        let Some(id) = attacker else {
+        let Some(mut id) = attacker else {
             return;
         };
+        let source_player = id < 0
+            || w.entities
+                .get(&id)
+                .is_some_and(|e| e.player_state().is_some());
         let target = if id < 0 {
             Target::Player((-1 - id) as usize)
         } else {
@@ -92,10 +107,24 @@ impl Entity {
             return;
         };
         if s.flags & 6 == 0 {
-            if id < 0 {
+            if source_player {
                 s.flags |= 2;
                 self.living.target = Some(target);
             }
+            if let Some(EntityKind::Arrow(a)) = w.entities.get(&id).map(|e| &e.kind) {
+                if let Some(owner) = a.owner {
+                    id = owner;
+                }
+            }
+            let target = if id < 0 {
+                Target::Player((-1 - id) as usize)
+            } else {
+                Target::Entity(id)
+            };
+            let source_player = id < 0
+                || w.entities
+                    .get(&id)
+                    .is_some_and(|e| e.player_state().is_some());
             let source_living = id < 0 || w.entities.get(&id).is_some_and(|e| e.kind.is_living());
             if source_living {
                 if self.living.target.is_none() {
@@ -115,7 +144,7 @@ impl Entity {
                         if let EntityKind::Wolf(s) = &mut e.kind {
                             if s.flags & 4 == 0 && e.living.target.is_none() {
                                 e.living.target = Some(target);
-                                if id < 0 {
+                                if source_player {
                                     s.flags |= 2;
                                 }
                             }
@@ -124,7 +153,15 @@ impl Entity {
                 }
             }
         } else if id != self.entity_id {
-            if !(s.flags & 4 != 0 && id < 0 && s.owner.eq_ignore_ascii_case("Player")) {
+            let owner = if id < 0 {
+                Some("Player")
+            } else {
+                w.entities
+                    .get(&id)
+                    .and_then(|e| e.player_state())
+                    .map(|s| s.username.as_str())
+            };
+            if !(s.flags & 4 != 0 && owner.is_some_and(|name| s.owner.eq_ignore_ascii_case(name))) {
                 self.living.target = Some(target);
             }
         }
@@ -148,7 +185,13 @@ impl Entity {
             };
             self.set_position(
                 parent.pos.x,
-                parent.pos.y + offset + self.y_offset as f64,
+                parent.pos.y
+                    + offset
+                    + if self.player_state().is_some() {
+                        (self.y_offset - 0.5) as f64
+                    } else {
+                        self.y_offset as f64
+                    },
                 parent.pos.z,
             );
             self.rider_yaw_delta += (parent.yaw - parent.prev_yaw) as f64;
@@ -172,6 +215,10 @@ impl Entity {
             self.yaw = (self.yaw as f64 + yaw) as f32;
             self.pitch = (self.pitch as f64 + pitch) as f32;
         }
+        if let Some(s) = self.player_state_mut() {
+            s.prev_camera_yaw = s.camera_yaw;
+            s.camera_yaw = 0.0;
+        }
     }
     pub(super) fn wolf_attack_target(&mut self, w: &mut World, target: Target, distance: f32) {
         let Some((p, _, _)) = self.target_position(w, target) else {
@@ -188,7 +235,12 @@ impl Entity {
             }
         } else if (distance as f64) < 1.5 {
             let (min, max) = match target {
-                Target::Player(_) => (p.y, p.y + 1.8f32 as f64),
+                Target::Player(_) => w
+                    .target_entity_id(target)
+                    .and_then(|id| w.entities.get(&id))
+                    .map_or((p.y, p.y + 1.8f32 as f64), |e| {
+                        (e.bounding_box.min_y, e.bounding_box.max_y)
+                    }),
                 Target::Entity(id) => {
                     let e = &w.entities[&id];
                     (e.bounding_box.min_y, e.bounding_box.max_y)
@@ -201,7 +253,7 @@ impl Entity {
                 } else {
                     2
                 };
-                if let Target::Entity(id) = target {
+                if let Some(id) = w.target_entity_id(target) {
                     if let Some(mut e) = w.entities.remove(&id) {
                         w.entities.insert(self.entity_id, self.clone());
                         e.attack(w, Some(self.entity_id), damage);
@@ -391,17 +443,33 @@ impl Entity {
         let tamed = s.flags & 4 != 0;
         if !self.living.has_attacked && self.living.path.is_none() && tamed && self.riding.is_none()
         {
-            if let Some(p) = w.players.first() {
+            let owner = w
+                .player_entities
+                .iter()
+                .flatten()
+                .filter_map(|id| w.entities.get(id))
+                .find(|e| e.player_state().is_some_and(|p| p.username == s.owner))
+                .cloned();
+            let target = owner.as_ref().map(|e| (e.pos, e.bounding_box.min_y));
+            let target = target.or_else(|| {
                 if s.owner == "Player" {
-                    let target = Vec3D::new(p.0, p.1, p.2);
-                    let distance = target.distance(self.pos) as f32;
-                    if distance > 5.0 {
-                        self.follow_owner(w, target, distance);
-                    }
-                } else if !self.in_water {
-                    if let EntityKind::Wolf(s) = &mut self.kind {
-                        s.flags |= 1;
-                    }
+                    w.players
+                        .iter()
+                        .enumerate()
+                        .find(|(i, _)| w.player_entities.get(*i).copied().flatten().is_none())
+                        .map(|(_, p)| (Vec3D::new(p.0, p.1, p.2), p.1))
+                } else {
+                    None
+                }
+            });
+            if let Some((target, feet)) = target {
+                let distance = target.distance(self.pos) as f32;
+                if distance > 5.0 {
+                    self.follow_owner(w, Vec3D::new(target.x, feet, target.z), distance);
+                }
+            } else if !self.in_water {
+                if let EntityKind::Wolf(s) = &mut self.kind {
+                    s.flags |= 1;
                 }
             }
         } else if self.living.target.is_none()
@@ -464,9 +532,32 @@ impl Entity {
             self.living.path = path;
         }
     }
-    pub(super) fn wolf_living(&mut self) {
+    pub(super) fn wolf_living(&mut self, w: &World) {
+        let held = self
+            .living
+            .current_target
+            .and_then(|target| match target {
+                Target::Entity(id) => w.entities.get(&id).and_then(Entity::player_state),
+                Target::Player(index) => w
+                    .player_entities
+                    .get(index)
+                    .copied()
+                    .flatten()
+                    .and_then(|id| w.entities.get(&id))
+                    .and_then(Entity::player_state),
+            })
+            .and_then(|p| p.inventory.held())
+            .map(|s| s.id);
         if let EntityKind::Wolf(s) = &mut self.kind {
-            s.interested = false;
+            s.interested = self.living.path.is_none()
+                && s.flags & 2 == 0
+                && held.is_some_and(|id| {
+                    if s.flags & 4 == 0 {
+                        id == 352
+                    } else {
+                        matches!(id, 319 | 320)
+                    }
+                });
             if s.shaking && !s.shake_active && self.living.path.is_none() && self.on_ground {
                 s.shake_active = true;
                 s.shake_time = 0.0;

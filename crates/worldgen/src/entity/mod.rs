@@ -13,6 +13,7 @@ pub mod nbt;
 pub mod objects;
 pub mod path;
 pub mod physics;
+pub mod player;
 pub mod projectile;
 pub mod spawning;
 pub mod special;
@@ -59,6 +60,7 @@ impl EntitySeedSource {
 
 #[derive(Clone, Debug)]
 pub enum EntityKind {
+    Player(Box<player::PlayerState>),
     Item {
         item: ItemStack,
         age: i32,
@@ -75,6 +77,8 @@ pub enum EntityKind {
         fuse: i32,
     },
     Arrow(projectile::ArrowState),
+    Snowball(projectile::ArrowState),
+    Egg(projectile::ArrowState),
     Fireball(projectile::FireballState),
     Lightning {
         state: i32,
@@ -124,10 +128,13 @@ pub enum EntityKind {
 impl EntityKind {
     pub fn name(&self) -> &'static str {
         match self {
+            Self::Player(..) => "Player",
             Self::Ghast(..) => "Ghast",
             Self::Wolf(..) => "Wolf",
             Self::Tnt { .. } => "PrimedTnt",
             Self::Arrow(..) => "Arrow",
+            Self::Snowball(..) => "Snowball",
+            Self::Egg(..) => "ThrownEgg",
             Self::Fireball(..) => "Fireball",
             Self::Lightning { .. } => "LightningBolt",
             Self::Zombie => "Zombie",
@@ -164,6 +171,8 @@ impl EntityKind {
                 | Self::FallingSand { .. }
                 | Self::Tnt { .. }
                 | Self::Arrow(..)
+                | Self::Snowball(..)
+                | Self::Egg(..)
                 | Self::Fireball(..)
                 | Self::Lightning { .. }
         )
@@ -395,6 +404,11 @@ impl Entity {
         self.pitch = pitch;
     }
     pub fn attack(&mut self, w: &mut World, attacker: Option<i32>, mut damage: i32) -> bool {
+        if matches!(self.kind, EntityKind::Player(..))
+            && !self.player_damage(w, attacker, &mut damage)
+        {
+            return false;
+        }
         self.prepare_special_attack(w, attacker, &mut damage);
         if self.kind.is_living() {
             let hit = self.living_attack(w, attacker, damage);
@@ -453,10 +467,12 @@ impl Entity {
     }
     pub fn on_update(&mut self, w: &mut World) {
         match self.kind {
+            EntityKind::Player(..) => self.update_player(w),
             EntityKind::Item { .. } => self.update_item(w),
             EntityKind::FallingSand { .. } => self.update_falling_sand(w),
             EntityKind::Tnt { .. } => self.update_tnt(w),
             EntityKind::Arrow(..) => self.update_arrow(w),
+            EntityKind::Snowball(..) | EntityKind::Egg(..) => self.update_throwable(w),
             EntityKind::Fireball(..) => self.update_fireball(w),
             EntityKind::Lightning { .. } => self.update_lightning(w),
             _ => self.update_hostile_living(w),

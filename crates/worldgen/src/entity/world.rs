@@ -3,6 +3,7 @@ use crate::{math::floor_double as floor, JavaRandom, World};
 impl World {
     pub fn set_entity_determinism(&mut self, entity_seed: i64, math_seed: i64, next_id: i32) {
         self.chest_random = JavaRandom::new(entity_seed + 400);
+        self.item_random = JavaRandom::new(entity_seed + 500);
         self.explosion_seed_source = EntitySeedSource::Deterministic(entity_seed + 300);
         self.entity_seed_source = EntitySeedSource::Deterministic(entity_seed);
         self.math_random = JavaRandom::new(math_seed);
@@ -27,8 +28,17 @@ impl World {
     pub fn entity_joined_world(&mut self, mut e: Entity) -> bool {
         let cx = floor(e.pos.x / 16.0);
         let cz = floor(e.pos.z / 16.0);
-        if !self.chunk_exists(cx, cz) {
+        let player = matches!(e.kind, super::EntityKind::Player(..));
+        if !player && !self.chunk_exists(cx, cz) {
             return false;
+        }
+        if player {
+            self.provide_chunk(cx, cz);
+            let index = self.players.len();
+            self.player_entities.resize(index, None);
+            self.player_entities.push(Some(e.entity_id));
+            self.players.push((e.pos.x, e.pos.y, e.pos.z));
+            e.player_state_mut().unwrap().player_index = Some(index);
         }
         self.file_entity(&mut e);
         let id = e.entity_id;
@@ -115,6 +125,9 @@ impl World {
         if !e.pitch.is_finite() {
             e.pitch = e.prev_pitch;
         }
+        if let Some(index) = e.player_state().and_then(|s| s.player_index) {
+            self.players[index] = (e.pos.x, e.pos.y, e.pos.z);
+        }
         let (cx, cy, cz) = (
             floor(e.pos.x / 16.0),
             floor(e.pos.y / 16.0),
@@ -187,9 +200,17 @@ impl World {
             if !e.dead {
                 self.update_entity_with_optional_force(&mut e, true);
             }
+            if let Some(index) = e.player_state().and_then(|s| s.player_index) {
+                self.players[index] = (e.pos.x, e.pos.y, e.pos.z);
+            }
             if e.dead {
                 self.unfile_entity(&e);
                 self.loaded_entity_list.remove(i);
+                // PlayerEntities and Minecraft.thePlayer keep the dead object
+                // until explicit removal/respawn, including its level.dat data.
+                if e.player_state().is_some() {
+                    self.entities.insert(id, e);
+                }
             } else {
                 self.entities.insert(id, e);
                 i += 1;
@@ -205,6 +226,12 @@ impl World {
             for z in cz - 2..=cz + 2 {
                 self.provide_chunk(x, z);
             }
+        }
+    }
+    pub fn target_entity_id(&self, target: super::living::Target) -> Option<i32> {
+        match target {
+            super::living::Target::Entity(id) => Some(id),
+            super::living::Target::Player(i) => self.player_entities.get(i).copied().flatten(),
         }
     }
 }

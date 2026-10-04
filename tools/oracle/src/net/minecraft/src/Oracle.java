@@ -73,6 +73,12 @@ public class Oracle {
                 Integer.parseInt(a[4]), Integer.parseInt(a[5]), a[6]);
         } else if (mode.equals("sin")) {
             sin(a[1]);
+        } else if (mode.equals("player")) {
+            PlayerOracle.simulation(a[1],Integer.parseInt(a[2]),a[3]);
+        } else if (mode.equals("playerregistry")) {
+            PlayerOracle.registry(a[1]);
+        } else if (mode.equals("playerinventory")) {
+            PlayerOracle.inventory(a[1]);
         } else if (mode.equals("entities")) {
             EntityOracle.objects(a[1],Integer.parseInt(a[2]),a[3]);
         } else if (mode.equals("entityblocks")) {
@@ -744,6 +750,10 @@ public class Oracle {
                     o.u8(2);
                     byte[] id = ((TileEntityMobSpawner) te).getMobID().getBytes("US-ASCII");
                     o.u8(id.length); o.bytes(id);
+                } else if(te instanceof TileEntityFurnace||te instanceof TileEntityDispenser) {
+                    boolean furnace=te instanceof TileEntityFurnace;o.u8(furnace?3:4);IInventory inv=(IInventory)te;
+                    for(int i=0;i<inv.getSizeInventory();i++){ItemStack st=inv.getStackInSlot(i);o.i16(st==null?-1:st.itemID);o.u8(st==null?0:st.stackSize);o.i16(st==null?0:st.getItemDamage());}
+                    if(furnace){TileEntityFurnace f=(TileEntityFurnace)te;o.i16(f.furnaceBurnTime);o.i16(f.furnaceCookTime);}
                 } else {
                     throw new IllegalStateException("unexpected tile entity " + te);
                 }

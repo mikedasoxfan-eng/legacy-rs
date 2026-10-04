@@ -9,10 +9,16 @@ use crate::{
 };
 impl Entity {
     pub fn to_nbt(&self) -> Option<Compound> {
+        if matches!(self.kind, EntityKind::Player(..)) {
+            return None;
+        }
+        self.write_entity_nbt()
+    }
+    pub(super) fn write_entity_nbt(&self) -> Option<Compound> {
         if self.dead
             || matches!(
                 self.kind,
-                EntityKind::Fireball(..) | EntityKind::Lightning { .. }
+                EntityKind::Fireball(..) | EntityKind::Egg(..) | EntityKind::Lightning { .. }
             )
         {
             return None;
@@ -90,6 +96,7 @@ impl Entity {
                 n.put("Owner", Tag::String(s.owner.clone()));
             }
             EntityKind::Arrow(s) => write_projectile(&mut n, s, true),
+            EntityKind::Snowball(s) | EntityKind::Egg(s) => write_projectile(&mut n, s, false),
             _ => {}
         }
         Some(n)
@@ -128,6 +135,7 @@ impl Entity {
         }
         let name = n.string("id");
         let mut e = match name.as_str() {
+            "Player" | "ThrownEgg" => return None,
             "Item" => {
                 let mut e = Self::base(
                     w,
@@ -170,9 +178,54 @@ impl Entity {
                 e.height = 0.5;
                 e
             }
+            "Snowball" => {
+                let mut e = Self::base(w, EntityKind::Snowball(Default::default()));
+                e.width = 0.25;
+                e.height = 0.25;
+                e
+            }
             _ => Self::living(w, &name)?,
         };
-        e.motion = Vec3D::new(
+        e.read_existing_nbt(w, n)?;
+        Some(e)
+    }
+    pub(in crate::entity) fn read_existing_nbt(
+        &mut self,
+        w: &mut World,
+        n: &Compound,
+    ) -> Option<()> {
+        fn doubles(n: &Compound, key: &str) -> Option<Vec<f64>> {
+            n.list(key)
+                .iter()
+                .map(|t| {
+                    if let Tag::Double(v) = t {
+                        Some(*v)
+                    } else {
+                        None
+                    }
+                })
+                .collect()
+        }
+        let pos = doubles(n, "Pos")?;
+        let motion = doubles(n, "Motion")?;
+        if pos.len() < 3 || motion.len() < 3 {
+            return None;
+        }
+        let rotation: Vec<_> = n
+            .list("Rotation")
+            .iter()
+            .filter_map(|t| {
+                if let Tag::Float(v) = t {
+                    Some(*v)
+                } else {
+                    None
+                }
+            })
+            .collect();
+        if rotation.len() < 2 {
+            return None;
+        }
+        self.motion = Vec3D::new(
             if motion[0].abs() > 10.0 {
                 0.0
             } else {
@@ -189,33 +242,33 @@ impl Entity {
                 motion[2]
             },
         );
-        e.set_position(pos[0], pos[1], pos[2]);
-        e.prev_pos = e.pos;
-        e.last_tick_pos = e.pos;
-        e.yaw = rotation[0];
-        e.pitch = rotation[1];
-        e.prev_yaw = e.yaw;
-        e.prev_pitch = e.pitch;
-        e.fall_distance = match n.get("FallDistance") {
+        self.set_position(pos[0], pos[1], pos[2]);
+        self.prev_pos = self.pos;
+        self.last_tick_pos = self.pos;
+        self.yaw = rotation[0];
+        self.pitch = rotation[1];
+        self.prev_yaw = self.yaw;
+        self.prev_pitch = self.pitch;
+        self.fall_distance = match n.get("FallDistance") {
             Some(Tag::Float(v)) => *v,
             _ => 0.0,
         };
-        e.fire = n.short("Fire") as i32;
-        e.air = n.short("Air") as i32;
-        e.on_ground = n.boolean("OnGround");
-        e.yaw %= 360.0;
-        e.pitch %= 360.0;
-        if e.kind.is_living() {
-            e.living.health = if n.has("Health") {
+        self.fire = n.short("Fire") as i32;
+        self.air = n.short("Air") as i32;
+        self.on_ground = n.boolean("OnGround");
+        self.yaw %= 360.0;
+        self.pitch %= 360.0;
+        if self.kind.is_living() {
+            self.living.health = if n.has("Health") {
                 n.short("Health") as i32
             } else {
                 10
             };
-            e.living.hurt_time = n.short("HurtTime") as i32;
-            e.living.death_time = n.short("DeathTime") as i32;
-            e.living.attack_time = n.short("AttackTime") as i32;
+            self.living.hurt_time = n.short("HurtTime") as i32;
+            self.living.death_time = n.short("DeathTime") as i32;
+            self.living.attack_time = n.short("AttackTime") as i32;
         }
-        match &mut e.kind {
+        match &mut self.kind {
             EntityKind::Item {
                 item, age, health, ..
             } => {
@@ -248,6 +301,7 @@ impl Entity {
                 }
             }
             EntityKind::Arrow(s) => *s = read_projectile(n, true),
+            EntityKind::Snowball(s) | EntityKind::Egg(s) => *s = read_projectile(n, false),
             EntityKind::Fireball(s) => {
                 *s = FireballState {
                     arrow: read_projectile(n, false),
@@ -256,10 +310,13 @@ impl Entity {
             }
             _ => {}
         }
-        if matches!(e.kind, EntityKind::Slime { .. }) {
-            e.set_slime_size(n.int("Size") + 1);
+        if matches!(self.kind, EntityKind::Slime { .. }) {
+            self.set_slime_size(n.int("Size") + 1);
         }
-        Some(e)
+        if matches!(self.kind, EntityKind::Player(..)) {
+            self.read_player_tags(w, n);
+        }
+        Some(())
     }
 }
 fn write_projectile(n: &mut Compound, s: &ArrowState, arrow: bool) {

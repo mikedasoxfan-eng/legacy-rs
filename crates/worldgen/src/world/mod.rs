@@ -179,6 +179,8 @@ pub struct World {
     pub sound_counter: i32,
     /// Positions of the players (`playerEntities`); drive random ticks.
     pub players: Vec<(f64, f64, f64)>,
+    /// Entity IDs for simulated players; legacy camera entries have no ID.
+    pub player_entities: Vec<Option<i32>>,
     positions_to_update: tick::JavaHashSet<(i32, i32)>,
     /// `BlockLeaves.adjacentTreeBlocks`: scratch kept between decay checks, as in the original.
     pub leaf_scratch: Option<Vec<i32>>,
@@ -195,6 +197,7 @@ pub struct World {
     pub entity_seed_source: crate::entity::EntitySeedSource,
     pub chest_random: JavaRandom,
     pub math_random: JavaRandom,
+    pub item_random: JavaRandom,
     pub next_entity_id: i32,
     pub difficulty: i32,
     pub spawn_hostile_mobs: bool,
@@ -258,6 +261,7 @@ impl World {
             update_lcg: 0,
             sound_counter: 0,
             players: Vec::new(),
+            player_entities: Vec::new(),
             positions_to_update: Default::default(),
             leaf_scratch: None,
             lightning_strikes: Vec::new(),
@@ -271,6 +275,7 @@ impl World {
             explosion_seed_source: crate::entity::EntitySeedSource::Time,
             entity_seed_source: crate::entity::EntitySeedSource::Time,
             chest_random: JavaRandom::new(crate::entity::EntitySeedSource::Time.next_seed()),
+            item_random: JavaRandom::new(crate::entity::EntitySeedSource::Time.next_seed()),
             math_random: JavaRandom::new(
                 std::time::SystemTime::now()
                     .duration_since(std::time::UNIX_EPOCH)
@@ -983,6 +988,18 @@ impl World {
             return None;
         }
         let key = (x & 15, y, z & 15);
+        let id = self.chunk(cx, cz).block(x & 15, y, z & 15);
+        if matches!(id, 23 | 61 | 62) {
+            if !self
+                .chunk(cx, cz)
+                .raw_tile_entities
+                .iter()
+                .any(|n| n.int("x") == x && n.int("y") == y && n.int("z") == z)
+            {
+                crate::entity::player::block_hooks::added(self, id, x, y, z);
+            }
+            return None;
+        }
         if !self.chunk(cx, cz).tile_entities.contains_key(&key) {
             let id = self.chunk(cx, cz).block(x & 15, y, z & 15);
             if !props(id).container {
@@ -1024,6 +1041,8 @@ impl World {
         }
         let c = self.chunk_mut(cx, cz);
         if c.loaded {
+            c.raw_tile_entities
+                .retain(|n| n.int("x") != x || n.int("y") != y || n.int("z") != z);
             c.tile_entities.remove(&(x & 15, y, z & 15));
             c.tile_entity_order.retain(|p| *p != (x & 15, y, z & 15));
         }
@@ -1098,6 +1117,14 @@ impl World {
 
     /// `World.saveLevel`: level.dat (refusing if another program took the session lock).
     pub fn save_level(&mut self) {
+        if let Some(n) = self
+            .player_entities
+            .iter()
+            .flatten()
+            .find_map(|id| self.entities.get(id).and_then(|e| e.player_nbt()))
+        {
+            self.info.player = Some(n);
+        }
         let info = self.level_info();
         if let Some(s) = &self.storage {
             if !s.session_ok() {
