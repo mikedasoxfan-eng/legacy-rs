@@ -1,5 +1,6 @@
 //! Literal b1.7.3 mob models and `RenderLiving`, independent of simulation.
 
+pub mod bridge;
 pub mod check;
 pub mod equipped;
 pub mod geometry;

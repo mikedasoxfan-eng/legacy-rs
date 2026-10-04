@@ -169,6 +169,10 @@ pub struct App {
     ingame: gui::ingame::GuiIngame,
     hud: gui::ingame::HudPlayer,
     chunks_loaded: usize,
+    /// World ticks seen since the world became ready.
+    ticks_ready: i64,
+    /// Entities near the camera from the last tick, with their brightness.
+    entities: Vec<(worldgen::entity::Entity, f32)>,
     /// Chunk meshes uploaded this second (`WorldRenderer.chunksUpdated`) and the last count.
     chunk_updates: u32,
     debug_line: String,
@@ -222,6 +226,8 @@ impl App {
             ingame: gui::ingame::GuiIngame::new(),
             hud: gui::ingame::HudPlayer::default(),
             chunks_loaded: 0,
+            ticks_ready: 0,
+            entities: Vec::new(),
             chunk_updates: 0,
             debug_line: String::new(),
             started: Instant::now(),
@@ -318,8 +324,10 @@ impl App {
         }
         self.ready = false;
         self.loading = None;
+        self.entities.clear();
         if let Some(g) = &mut self.gpu {
             g.clear_chunks();
+            g.entities.states.clear();
         }
         if self.exit_after_save {
             el.exit();
@@ -553,6 +561,7 @@ impl App {
                             worker::Loading::Progress(p) => ls.progress = p,
                         }
                     }
+                    Ok(FromWorker::Entities(list)) => self.entities = list,
                     Ok(FromWorker::QuickSaved(done)) => {
                         if let Some(gui) = &mut self.gui {
                             gui.ui.world_saved = done;
@@ -567,6 +576,9 @@ impl App {
                     Ok(FromWorker::Drop { cx, cz }) => gpu.remove_chunk(cx, cz),
                     Ok(FromWorker::Time { time, brightness, chunks, weather, terrain, bolts }) => {
                         new_ticks += 1;
+                        if self.ready {
+                            self.ticks_ready += 1;
+                        }
                         self.hud.brightness = brightness;
                         self.chunks_loaded = chunks;
                         self.cloud_ticks += 1;
@@ -746,7 +758,19 @@ impl App {
             particles,
         };
 
-        let want_shot = self.opts.shot.is_some() && self.ready && self.idle && uploads == 0;
+        if let Some(gpu) = &mut self.gpu {
+            gpu.entities.states = self
+                .entities
+                .iter()
+                .filter_map(|(e, b)| render::entity::bridge::render_state(e, partial, *b))
+                .collect();
+        }
+        let want_shot =
+            self.opts.shot.is_some()
+                && self.ready
+                && uploads == 0
+                // Ticking keeps changing blocks somewhere, so a timed shot doesn't wait for idle.
+                && if self.opts.shot_ticks > 0 { self.ticks_ready >= self.opts.shot_ticks } else { self.idle };
         let capture = want_shot || self.keys.remove(&KeyCode::F2) || flow_shot.is_some();
         let (Some(gpu), Some(gui)) = (&mut self.gpu, &mut self.gui) else { return };
         let cursor = self.cursor;

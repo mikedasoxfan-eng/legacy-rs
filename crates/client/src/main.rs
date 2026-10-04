@@ -38,6 +38,8 @@ pub struct Options {
     pub direct: bool,
     /// `--flowtest <dir>`: scripted click-through of the menus with screenshots.
     pub flowtest: Option<std::path::PathBuf>,
+    /// `--shot-ticks N`: with --shot, let the world run N ticks first.
+    pub shot_ticks: i64,
 }
 
 fn parse_args() -> Options {
@@ -97,6 +99,7 @@ fn parse_args() -> Options {
             name: None,
         },
         flowtest: get("--flowtest").map(Into::into),
+        shot_ticks: get("--shot-ticks").and_then(|s| s.parse().ok()).unwrap_or(0),
         direct: ["--world", "--world-dir", "--seed", "--no-save", "--shot", "--at", "--server"]
             .iter()
             .any(|f| args.iter().any(|a| a == f || a.starts_with(&format!("{f}=")))),

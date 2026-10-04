@@ -60,6 +60,8 @@ pub enum FromWorker {
     Loading(Loading),
     /// Answer to `QuickSave`: true once nothing was left to save.
     QuickSaved(bool),
+    /// Entities near the camera after a tick, with `getEntityBrightness`.
+    Entities(Vec<(worldgen::entity::Entity, f32)>),
     Saved,
     Error(String),
 }
@@ -257,14 +259,16 @@ fn run(opts: WorldOptions, col: Colorizers, rx: Receiver<ToWorker>, tx: Sender<F
             world.players.clear();
             world.players.push(cam);
             if players.is_none() {
-                // Minecraft.runTick: pull in the chunks around the player every 30 ticks.
+                // Minecraft.runTick: joinEntityInSurroundings every 30 ticks, updateEntities,
+                // World.tick (with mob spawning), randomDisplayUpdates.
                 join_player_counter += 1;
-                if join_player_counter == 30 {
-                    join_player_counter = 0;
-                    world.join_player_surroundings(cam.0, cam.2);
-                }
+                world.client_tick(0, join_player_counter);
+            } else {
+                // MinecraftServer.doTick: world tick, lighting, then entities.
+                world.tick();
+                world.drain_lighting();
+                world.update_entities();
             }
-            world.tick();
             // The client relights a little every frame and the server once per tick; here
             // the queue is simply emptied.
             world.drain_lighting();
@@ -306,6 +310,25 @@ fn run(opts: WorldOptions, col: Colorizers, rx: Receiver<ToWorker>, tx: Sender<F
                 .collect();
             strike_cursor = world.lightning_strikes.len();
             let brightness = entity_brightness(&mut world, cam);
+            // Entities near the camera, with their brightness, for the renderer.
+            let near: Vec<i32> = world
+                .loaded_entity_list
+                .iter()
+                .copied()
+                .filter(|id| {
+                    world.entities.get(id).is_some_and(|e| {
+                        let (dx, dy, dz) = (e.pos.x - cam.0, e.pos.y - cam.1, e.pos.z - cam.2);
+                        dx * dx + dy * dy + dz * dz < 128.0 * 128.0
+                    })
+                })
+                .collect();
+            let mut snapshot = Vec::with_capacity(near.len());
+            for id in near {
+                let e = world.entities[&id].clone();
+                let b = living_brightness(&mut world, &e);
+                snapshot.push((e, b));
+            }
+            let _ = tx.send(FromWorker::Entities(snapshot));
             let chunks = world.chunks.len();
             let _ = tx.send(FromWorker::Time { time: world.world_time, brightness, chunks, weather, terrain, bolts });
             next_tick += Duration::from_millis(50);
@@ -397,6 +420,19 @@ fn run(opts: WorldOptions, col: Colorizers, rx: Receiver<ToWorker>, tx: Sender<F
             std::thread::sleep(wait);
         }
     }
+}
+
+/// `Entity.getEntityBrightness` for a simulated entity.
+fn living_brightness(world: &mut World, e: &worldgen::entity::Entity) -> f32 {
+    let fl = worldgen::math::floor_double;
+    let b = &e.bounding_box;
+    if !world.check_chunks_exist(fl(b.min_x), fl(b.min_y), fl(b.min_z), fl(b.max_x), fl(b.max_y), fl(b.max_z)) {
+        return 0.0;
+    }
+    let h = (b.max_y - b.min_y) * 0.66;
+    let (x, y, z) = (fl(e.pos.x), fl(e.pos.y - e.y_offset as f64 + h), fl(e.pos.z));
+    let l = world.get_block_light_value(x, y, z);
+    world.light_brightness_table[l.clamp(0, 15) as usize]
 }
 
 /// `Entity.getEntityBrightness` for a player whose eyes are at `cam` (1.8 tall, eyes 1.62 up).
