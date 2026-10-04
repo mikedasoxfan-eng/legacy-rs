@@ -1,6 +1,7 @@
 /target
 /tools/retromcp/
 /tools/oracle/build/
+/tools/oracle/generated/
 /tools/oracle/out/
 /shots/
 /saves/

@@ -8,8 +8,11 @@ jar="$here/../retromcp/minecraft/jars/deobfuscated.jar"
 libs=$(find "$here/../retromcp/libraries" -name '*.jar' ! -name '*sources*' ! -name '*natives*' 2>/dev/null | while read -r f; do printf ';%s' "$(cygpath -w "$f")"; done)
 [ -f "$jar" ] || { echo "missing $jar - run RetroMCP setup+decompile for b1.7.3 first" >&2; exit 1; }
 mkdir -p "$here/build" "$here/out"
-if [ ! -f "$here/build/net/minecraft/src/Oracle.class" ] || [ "$here/src/net/minecraft/src/Oracle.java" -nt "$here/build/net/minecraft/src/Oracle.class" ]; then
-  javac -nowarn -cp "$jar" -d "$here/build" "$here/src/net/minecraft/src/Oracle.java"
+if [ ! -f "$here/build/net/minecraft/src/Oracle.class" ] || find "$here/src" -name '*.java' -newer "$here/build/net/minecraft/src/Oracle.class" | grep -q .; then
+  javac -nowarn -cp "$jar" -d "$here/build" "$here/src/net/minecraft/src/Oracle.java" "$here/src/net/minecraft/src/EntityOracle.java" "$here/src/net/minecraft/src/OracleHooks.java"
+fi
+if [ ! -f "$here/build/net/minecraft/src/Explosion.class" ] || [ ! -f "$here/build/net/minecraft/src/Entity.class" ] || [ "$here/build_entity.py" -nt "$here/build/net/minecraft/src/Entity.class" ] || [ "$here/src/net/minecraft/src/OracleHooks.java" -nt "$here/build/net/minecraft/src/Entity.class" ]; then
+  python "$here/build_entity.py"
 fi
 # Prefer the JRE Mojang's launcher runs b1.7.3 on (8u51): Math.sin & co. differ
 # between Java builds, and that is the one vanilla actually uses.
@@ -18,5 +21,6 @@ for jl in "$LOCALAPPDATA"/Packages/Microsoft.4297127D64EC6_*/LocalCache/Local/ru
   [ -x "$jl" ] && { java="$jl"; break; }
 done
 [ -n "${ORACLE_JAVA:-}" ] && java="$ORACLE_JAVA"
+"$java" -version 2>&1 | grep -q '1.8.0_51' || { echo "oracle requires Mojang Java 8u51; refusing another JVM" >&2; exit 1; }
 cd "$here/out"
 "$java" -cp "$here/build;$jar$libs" net.minecraft.src.Oracle "$@" 2>&1 | { grep -v -E '^(16 achievements|151 recipes)$' || true; }
