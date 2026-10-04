@@ -64,102 +64,102 @@ pub const MAT_FIELD_31067_B: u8 = 27;
 
 pub const BLOCKS: [BlockProps; 256] = [
     BlockProps::NONE, // 0
-    BlockProps { exists: true, material: 4, light_opacity: 255, light_value: 0, opaque_cube: true, normal_render: true, container: false, name: "tile.stone" }, // 1
-    BlockProps { exists: true, material: 1, light_opacity: 255, light_value: 0, opaque_cube: true, normal_render: true, container: false, name: "tile.grass" }, // 2
-    BlockProps { exists: true, material: 2, light_opacity: 255, light_value: 0, opaque_cube: true, normal_render: true, container: false, name: "tile.dirt" }, // 3
-    BlockProps { exists: true, material: 4, light_opacity: 255, light_value: 0, opaque_cube: true, normal_render: true, container: false, name: "tile.stonebrick" }, // 4
-    BlockProps { exists: true, material: 3, light_opacity: 255, light_value: 0, opaque_cube: true, normal_render: true, container: false, name: "tile.wood" }, // 5
-    BlockProps { exists: true, material: 9, light_opacity: 0, light_value: 0, opaque_cube: false, normal_render: false, container: false, name: "tile.sapling" }, // 6
-    BlockProps { exists: true, material: 4, light_opacity: 255, light_value: 0, opaque_cube: true, normal_render: true, container: false, name: "tile.bedrock" }, // 7
-    BlockProps { exists: true, material: 6, light_opacity: 3, light_value: 0, opaque_cube: false, normal_render: false, container: false, name: "tile.water" }, // 8
-    BlockProps { exists: true, material: 6, light_opacity: 3, light_value: 0, opaque_cube: false, normal_render: false, container: false, name: "tile.water" }, // 9
-    BlockProps { exists: true, material: 7, light_opacity: 255, light_value: 15, opaque_cube: false, normal_render: false, container: false, name: "tile.lava" }, // 10
-    BlockProps { exists: true, material: 7, light_opacity: 255, light_value: 15, opaque_cube: false, normal_render: false, container: false, name: "tile.lava" }, // 11
-    BlockProps { exists: true, material: 13, light_opacity: 255, light_value: 0, opaque_cube: true, normal_render: true, container: false, name: "tile.sand" }, // 12
-    BlockProps { exists: true, material: 13, light_opacity: 255, light_value: 0, opaque_cube: true, normal_render: true, container: false, name: "tile.gravel" }, // 13
-    BlockProps { exists: true, material: 4, light_opacity: 255, light_value: 0, opaque_cube: true, normal_render: true, container: false, name: "tile.oreGold" }, // 14
-    BlockProps { exists: true, material: 4, light_opacity: 255, light_value: 0, opaque_cube: true, normal_render: true, container: false, name: "tile.oreIron" }, // 15
-    BlockProps { exists: true, material: 4, light_opacity: 255, light_value: 0, opaque_cube: true, normal_render: true, container: false, name: "tile.oreCoal" }, // 16
-    BlockProps { exists: true, material: 3, light_opacity: 255, light_value: 0, opaque_cube: true, normal_render: true, container: false, name: "tile.log" }, // 17
-    BlockProps { exists: true, material: 8, light_opacity: 1, light_value: 0, opaque_cube: true, normal_render: true, container: false, name: "tile.leaves" }, // 18
-    BlockProps { exists: true, material: 10, light_opacity: 255, light_value: 0, opaque_cube: true, normal_render: true, container: false, name: "tile.sponge" }, // 19
-    BlockProps { exists: true, material: 15, light_opacity: 0, light_value: 0, opaque_cube: false, normal_render: true, container: false, name: "tile.glass" }, // 20
-    BlockProps { exists: true, material: 4, light_opacity: 255, light_value: 0, opaque_cube: true, normal_render: true, container: false, name: "tile.oreLapis" }, // 21
-    BlockProps { exists: true, material: 4, light_opacity: 255, light_value: 0, opaque_cube: true, normal_render: true, container: false, name: "tile.blockLapis" }, // 22
-    BlockProps { exists: true, material: 4, light_opacity: 255, light_value: 0, opaque_cube: true, normal_render: true, container: true, name: "tile.dispenser" }, // 23
-    BlockProps { exists: true, material: 4, light_opacity: 255, light_value: 0, opaque_cube: true, normal_render: true, container: false, name: "tile.sandStone" }, // 24
-    BlockProps { exists: true, material: 3, light_opacity: 255, light_value: 0, opaque_cube: true, normal_render: true, container: true, name: "tile.musicBlock" }, // 25
-    BlockProps { exists: true, material: 11, light_opacity: 0, light_value: 0, opaque_cube: false, normal_render: false, container: false, name: "tile.bed" }, // 26
-    BlockProps { exists: true, material: 14, light_opacity: 0, light_value: 0, opaque_cube: false, normal_render: false, container: false, name: "tile.goldenRail" }, // 27
-    BlockProps { exists: true, material: 14, light_opacity: 0, light_value: 0, opaque_cube: false, normal_render: false, container: false, name: "tile.detectorRail" }, // 28
-    BlockProps { exists: true, material: 27, light_opacity: 0, light_value: 0, opaque_cube: false, normal_render: false, container: false, name: "tile.pistonStickyBase" }, // 29
-    BlockProps { exists: true, material: 26, light_opacity: 1, light_value: 0, opaque_cube: false, normal_render: false, container: false, name: "tile.web" }, // 30
-    BlockProps { exists: true, material: 9, light_opacity: 0, light_value: 0, opaque_cube: false, normal_render: false, container: false, name: "tile.tallgrass" }, // 31
-    BlockProps { exists: true, material: 9, light_opacity: 0, light_value: 0, opaque_cube: false, normal_render: false, container: false, name: "tile.deadbush" }, // 32
-    BlockProps { exists: true, material: 27, light_opacity: 0, light_value: 0, opaque_cube: false, normal_render: false, container: false, name: "tile.pistonBase" }, // 33
-    BlockProps { exists: true, material: 27, light_opacity: 0, light_value: 0, opaque_cube: false, normal_render: false, container: false, name: "null" }, // 34
-    BlockProps { exists: true, material: 11, light_opacity: 255, light_value: 0, opaque_cube: true, normal_render: true, container: false, name: "tile.cloth" }, // 35
-    BlockProps { exists: true, material: 27, light_opacity: 0, light_value: 0, opaque_cube: false, normal_render: false, container: true, name: "null" }, // 36
-    BlockProps { exists: true, material: 9, light_opacity: 0, light_value: 0, opaque_cube: false, normal_render: false, container: false, name: "tile.flower" }, // 37
-    BlockProps { exists: true, material: 9, light_opacity: 0, light_value: 0, opaque_cube: false, normal_render: false, container: false, name: "tile.rose" }, // 38
-    BlockProps { exists: true, material: 9, light_opacity: 0, light_value: 1, opaque_cube: false, normal_render: false, container: false, name: "tile.mushroom" }, // 39
-    BlockProps { exists: true, material: 9, light_opacity: 0, light_value: 0, opaque_cube: false, normal_render: false, container: false, name: "tile.mushroom" }, // 40
-    BlockProps { exists: true, material: 5, light_opacity: 255, light_value: 0, opaque_cube: true, normal_render: true, container: false, name: "tile.blockGold" }, // 41
-    BlockProps { exists: true, material: 5, light_opacity: 255, light_value: 0, opaque_cube: true, normal_render: true, container: false, name: "tile.blockIron" }, // 42
-    BlockProps { exists: true, material: 4, light_opacity: 255, light_value: 0, opaque_cube: false, normal_render: true, container: false, name: "tile.stoneSlab" }, // 43
-    BlockProps { exists: true, material: 4, light_opacity: 255, light_value: 0, opaque_cube: false, normal_render: false, container: false, name: "tile.stoneSlab" }, // 44
-    BlockProps { exists: true, material: 4, light_opacity: 255, light_value: 0, opaque_cube: true, normal_render: true, container: false, name: "tile.brick" }, // 45
-    BlockProps { exists: true, material: 16, light_opacity: 255, light_value: 0, opaque_cube: true, normal_render: true, container: false, name: "tile.tnt" }, // 46
-    BlockProps { exists: true, material: 3, light_opacity: 255, light_value: 0, opaque_cube: true, normal_render: true, container: false, name: "tile.bookshelf" }, // 47
-    BlockProps { exists: true, material: 4, light_opacity: 255, light_value: 0, opaque_cube: true, normal_render: true, container: false, name: "tile.stoneMoss" }, // 48
-    BlockProps { exists: true, material: 4, light_opacity: 255, light_value: 0, opaque_cube: true, normal_render: true, container: false, name: "tile.obsidian" }, // 49
-    BlockProps { exists: true, material: 14, light_opacity: 0, light_value: 14, opaque_cube: false, normal_render: false, container: false, name: "tile.torch" }, // 50
-    BlockProps { exists: true, material: 12, light_opacity: 0, light_value: 15, opaque_cube: false, normal_render: false, container: false, name: "tile.fire" }, // 51
-    BlockProps { exists: true, material: 4, light_opacity: 0, light_value: 0, opaque_cube: false, normal_render: true, container: true, name: "tile.mobSpawner" }, // 52
-    BlockProps { exists: true, material: 3, light_opacity: 255, light_value: 0, opaque_cube: false, normal_render: false, container: false, name: "tile.stairsWood" }, // 53
-    BlockProps { exists: true, material: 3, light_opacity: 255, light_value: 0, opaque_cube: true, normal_render: true, container: true, name: "tile.chest" }, // 54
-    BlockProps { exists: true, material: 14, light_opacity: 0, light_value: 0, opaque_cube: false, normal_render: false, container: false, name: "tile.redstoneDust" }, // 55
-    BlockProps { exists: true, material: 4, light_opacity: 255, light_value: 0, opaque_cube: true, normal_render: true, container: false, name: "tile.oreDiamond" }, // 56
-    BlockProps { exists: true, material: 5, light_opacity: 255, light_value: 0, opaque_cube: true, normal_render: true, container: false, name: "tile.blockDiamond" }, // 57
-    BlockProps { exists: true, material: 3, light_opacity: 255, light_value: 0, opaque_cube: true, normal_render: true, container: false, name: "tile.workbench" }, // 58
-    BlockProps { exists: true, material: 9, light_opacity: 0, light_value: 0, opaque_cube: false, normal_render: false, container: false, name: "tile.crops" }, // 59
-    BlockProps { exists: true, material: 2, light_opacity: 255, light_value: 0, opaque_cube: false, normal_render: false, container: false, name: "tile.farmland" }, // 60
-    BlockProps { exists: true, material: 4, light_opacity: 255, light_value: 0, opaque_cube: true, normal_render: true, container: true, name: "tile.furnace" }, // 61
-    BlockProps { exists: true, material: 4, light_opacity: 255, light_value: 13, opaque_cube: true, normal_render: true, container: true, name: "tile.furnace" }, // 62
-    BlockProps { exists: true, material: 3, light_opacity: 0, light_value: 0, opaque_cube: false, normal_render: false, container: true, name: "tile.sign" }, // 63
-    BlockProps { exists: true, material: 3, light_opacity: 0, light_value: 0, opaque_cube: false, normal_render: false, container: false, name: "tile.doorWood" }, // 64
-    BlockProps { exists: true, material: 14, light_opacity: 0, light_value: 0, opaque_cube: false, normal_render: false, container: false, name: "tile.ladder" }, // 65
-    BlockProps { exists: true, material: 14, light_opacity: 0, light_value: 0, opaque_cube: false, normal_render: false, container: false, name: "tile.rail" }, // 66
-    BlockProps { exists: true, material: 4, light_opacity: 255, light_value: 0, opaque_cube: false, normal_render: false, container: false, name: "tile.stairsStone" }, // 67
-    BlockProps { exists: true, material: 3, light_opacity: 0, light_value: 0, opaque_cube: false, normal_render: false, container: true, name: "tile.sign" }, // 68
-    BlockProps { exists: true, material: 14, light_opacity: 0, light_value: 0, opaque_cube: false, normal_render: false, container: false, name: "tile.lever" }, // 69
-    BlockProps { exists: true, material: 4, light_opacity: 0, light_value: 0, opaque_cube: false, normal_render: false, container: false, name: "tile.pressurePlate" }, // 70
-    BlockProps { exists: true, material: 5, light_opacity: 0, light_value: 0, opaque_cube: false, normal_render: false, container: false, name: "tile.doorIron" }, // 71
-    BlockProps { exists: true, material: 3, light_opacity: 0, light_value: 0, opaque_cube: false, normal_render: false, container: false, name: "tile.pressurePlate" }, // 72
-    BlockProps { exists: true, material: 4, light_opacity: 255, light_value: 0, opaque_cube: true, normal_render: true, container: false, name: "tile.oreRedstone" }, // 73
-    BlockProps { exists: true, material: 4, light_opacity: 255, light_value: 9, opaque_cube: true, normal_render: true, container: false, name: "tile.oreRedstone" }, // 74
-    BlockProps { exists: true, material: 14, light_opacity: 0, light_value: 0, opaque_cube: false, normal_render: false, container: false, name: "tile.notGate" }, // 75
-    BlockProps { exists: true, material: 14, light_opacity: 0, light_value: 7, opaque_cube: false, normal_render: false, container: false, name: "tile.notGate" }, // 76
-    BlockProps { exists: true, material: 14, light_opacity: 0, light_value: 0, opaque_cube: false, normal_render: false, container: false, name: "tile.button" }, // 77
-    BlockProps { exists: true, material: 19, light_opacity: 0, light_value: 0, opaque_cube: false, normal_render: false, container: false, name: "tile.snow" }, // 78
-    BlockProps { exists: true, material: 18, light_opacity: 3, light_value: 0, opaque_cube: false, normal_render: true, container: false, name: "tile.ice" }, // 79
-    BlockProps { exists: true, material: 20, light_opacity: 255, light_value: 0, opaque_cube: true, normal_render: true, container: false, name: "tile.snow" }, // 80
-    BlockProps { exists: true, material: 21, light_opacity: 0, light_value: 0, opaque_cube: false, normal_render: false, container: false, name: "tile.cactus" }, // 81
-    BlockProps { exists: true, material: 22, light_opacity: 255, light_value: 0, opaque_cube: true, normal_render: true, container: false, name: "tile.clay" }, // 82
-    BlockProps { exists: true, material: 9, light_opacity: 0, light_value: 0, opaque_cube: false, normal_render: false, container: false, name: "tile.reeds" }, // 83
-    BlockProps { exists: true, material: 3, light_opacity: 255, light_value: 0, opaque_cube: true, normal_render: true, container: true, name: "tile.jukebox" }, // 84
-    BlockProps { exists: true, material: 3, light_opacity: 0, light_value: 0, opaque_cube: false, normal_render: false, container: false, name: "tile.fence" }, // 85
-    BlockProps { exists: true, material: 23, light_opacity: 255, light_value: 0, opaque_cube: true, normal_render: true, container: false, name: "tile.pumpkin" }, // 86
-    BlockProps { exists: true, material: 4, light_opacity: 255, light_value: 0, opaque_cube: true, normal_render: true, container: false, name: "tile.hellrock" }, // 87
-    BlockProps { exists: true, material: 13, light_opacity: 255, light_value: 0, opaque_cube: true, normal_render: true, container: false, name: "tile.hellsand" }, // 88
-    BlockProps { exists: true, material: 4, light_opacity: 255, light_value: 15, opaque_cube: true, normal_render: true, container: false, name: "tile.lightgem" }, // 89
-    BlockProps { exists: true, material: 24, light_opacity: 0, light_value: 11, opaque_cube: false, normal_render: false, container: false, name: "tile.portal" }, // 90
-    BlockProps { exists: true, material: 23, light_opacity: 255, light_value: 15, opaque_cube: true, normal_render: true, container: false, name: "tile.litpumpkin" }, // 91
-    BlockProps { exists: true, material: 25, light_opacity: 0, light_value: 0, opaque_cube: false, normal_render: false, container: false, name: "tile.cake" }, // 92
-    BlockProps { exists: true, material: 14, light_opacity: 0, light_value: 0, opaque_cube: false, normal_render: false, container: false, name: "tile.diode" }, // 93
-    BlockProps { exists: true, material: 14, light_opacity: 0, light_value: 9, opaque_cube: false, normal_render: false, container: false, name: "tile.diode" }, // 94
-    BlockProps { exists: true, material: 3, light_opacity: 255, light_value: 15, opaque_cube: true, normal_render: true, container: false, name: "tile.lockedchest" }, // 95
-    BlockProps { exists: true, material: 3, light_opacity: 0, light_value: 0, opaque_cube: false, normal_render: false, container: false, name: "tile.trapdoor" }, // 96
+    BlockProps { exists: true, material: 4, light_opacity: 255, light_value: 0, opaque_cube: true, normal_render: true, container: false, ticks: false, tick_rate: 10, name: "tile.stone" }, // 1
+    BlockProps { exists: true, material: 1, light_opacity: 255, light_value: 0, opaque_cube: true, normal_render: true, container: false, ticks: true, tick_rate: 10, name: "tile.grass" }, // 2
+    BlockProps { exists: true, material: 2, light_opacity: 255, light_value: 0, opaque_cube: true, normal_render: true, container: false, ticks: false, tick_rate: 10, name: "tile.dirt" }, // 3
+    BlockProps { exists: true, material: 4, light_opacity: 255, light_value: 0, opaque_cube: true, normal_render: true, container: false, ticks: false, tick_rate: 10, name: "tile.stonebrick" }, // 4
+    BlockProps { exists: true, material: 3, light_opacity: 255, light_value: 0, opaque_cube: true, normal_render: true, container: false, ticks: false, tick_rate: 10, name: "tile.wood" }, // 5
+    BlockProps { exists: true, material: 9, light_opacity: 0, light_value: 0, opaque_cube: false, normal_render: false, container: false, ticks: true, tick_rate: 10, name: "tile.sapling" }, // 6
+    BlockProps { exists: true, material: 4, light_opacity: 255, light_value: 0, opaque_cube: true, normal_render: true, container: false, ticks: false, tick_rate: 10, name: "tile.bedrock" }, // 7
+    BlockProps { exists: true, material: 6, light_opacity: 3, light_value: 0, opaque_cube: false, normal_render: false, container: false, ticks: true, tick_rate: 5, name: "tile.water" }, // 8
+    BlockProps { exists: true, material: 6, light_opacity: 3, light_value: 0, opaque_cube: false, normal_render: false, container: false, ticks: false, tick_rate: 5, name: "tile.water" }, // 9
+    BlockProps { exists: true, material: 7, light_opacity: 255, light_value: 15, opaque_cube: false, normal_render: false, container: false, ticks: true, tick_rate: 30, name: "tile.lava" }, // 10
+    BlockProps { exists: true, material: 7, light_opacity: 255, light_value: 15, opaque_cube: false, normal_render: false, container: false, ticks: true, tick_rate: 30, name: "tile.lava" }, // 11
+    BlockProps { exists: true, material: 13, light_opacity: 255, light_value: 0, opaque_cube: true, normal_render: true, container: false, ticks: false, tick_rate: 3, name: "tile.sand" }, // 12
+    BlockProps { exists: true, material: 13, light_opacity: 255, light_value: 0, opaque_cube: true, normal_render: true, container: false, ticks: false, tick_rate: 3, name: "tile.gravel" }, // 13
+    BlockProps { exists: true, material: 4, light_opacity: 255, light_value: 0, opaque_cube: true, normal_render: true, container: false, ticks: false, tick_rate: 10, name: "tile.oreGold" }, // 14
+    BlockProps { exists: true, material: 4, light_opacity: 255, light_value: 0, opaque_cube: true, normal_render: true, container: false, ticks: false, tick_rate: 10, name: "tile.oreIron" }, // 15
+    BlockProps { exists: true, material: 4, light_opacity: 255, light_value: 0, opaque_cube: true, normal_render: true, container: false, ticks: false, tick_rate: 10, name: "tile.oreCoal" }, // 16
+    BlockProps { exists: true, material: 3, light_opacity: 255, light_value: 0, opaque_cube: true, normal_render: true, container: false, ticks: false, tick_rate: 10, name: "tile.log" }, // 17
+    BlockProps { exists: true, material: 8, light_opacity: 1, light_value: 0, opaque_cube: true, normal_render: true, container: false, ticks: true, tick_rate: 10, name: "tile.leaves" }, // 18
+    BlockProps { exists: true, material: 10, light_opacity: 255, light_value: 0, opaque_cube: true, normal_render: true, container: false, ticks: false, tick_rate: 10, name: "tile.sponge" }, // 19
+    BlockProps { exists: true, material: 15, light_opacity: 0, light_value: 0, opaque_cube: false, normal_render: true, container: false, ticks: false, tick_rate: 10, name: "tile.glass" }, // 20
+    BlockProps { exists: true, material: 4, light_opacity: 255, light_value: 0, opaque_cube: true, normal_render: true, container: false, ticks: false, tick_rate: 10, name: "tile.oreLapis" }, // 21
+    BlockProps { exists: true, material: 4, light_opacity: 255, light_value: 0, opaque_cube: true, normal_render: true, container: false, ticks: false, tick_rate: 10, name: "tile.blockLapis" }, // 22
+    BlockProps { exists: true, material: 4, light_opacity: 255, light_value: 0, opaque_cube: true, normal_render: true, container: true, ticks: false, tick_rate: 4, name: "tile.dispenser" }, // 23
+    BlockProps { exists: true, material: 4, light_opacity: 255, light_value: 0, opaque_cube: true, normal_render: true, container: false, ticks: false, tick_rate: 10, name: "tile.sandStone" }, // 24
+    BlockProps { exists: true, material: 3, light_opacity: 255, light_value: 0, opaque_cube: true, normal_render: true, container: true, ticks: false, tick_rate: 10, name: "tile.musicBlock" }, // 25
+    BlockProps { exists: true, material: 11, light_opacity: 0, light_value: 0, opaque_cube: false, normal_render: false, container: false, ticks: false, tick_rate: 10, name: "tile.bed" }, // 26
+    BlockProps { exists: true, material: 14, light_opacity: 0, light_value: 0, opaque_cube: false, normal_render: false, container: false, ticks: false, tick_rate: 10, name: "tile.goldenRail" }, // 27
+    BlockProps { exists: true, material: 14, light_opacity: 0, light_value: 0, opaque_cube: false, normal_render: false, container: false, ticks: true, tick_rate: 20, name: "tile.detectorRail" }, // 28
+    BlockProps { exists: true, material: 27, light_opacity: 0, light_value: 0, opaque_cube: false, normal_render: false, container: false, ticks: false, tick_rate: 10, name: "tile.pistonStickyBase" }, // 29
+    BlockProps { exists: true, material: 26, light_opacity: 1, light_value: 0, opaque_cube: false, normal_render: false, container: false, ticks: false, tick_rate: 10, name: "tile.web" }, // 30
+    BlockProps { exists: true, material: 9, light_opacity: 0, light_value: 0, opaque_cube: false, normal_render: false, container: false, ticks: true, tick_rate: 10, name: "tile.tallgrass" }, // 31
+    BlockProps { exists: true, material: 9, light_opacity: 0, light_value: 0, opaque_cube: false, normal_render: false, container: false, ticks: true, tick_rate: 10, name: "tile.deadbush" }, // 32
+    BlockProps { exists: true, material: 27, light_opacity: 0, light_value: 0, opaque_cube: false, normal_render: false, container: false, ticks: false, tick_rate: 10, name: "tile.pistonBase" }, // 33
+    BlockProps { exists: true, material: 27, light_opacity: 0, light_value: 0, opaque_cube: false, normal_render: false, container: false, ticks: false, tick_rate: 10, name: "null" }, // 34
+    BlockProps { exists: true, material: 11, light_opacity: 255, light_value: 0, opaque_cube: true, normal_render: true, container: false, ticks: false, tick_rate: 10, name: "tile.cloth" }, // 35
+    BlockProps { exists: true, material: 27, light_opacity: 0, light_value: 0, opaque_cube: false, normal_render: false, container: true, ticks: false, tick_rate: 10, name: "null" }, // 36
+    BlockProps { exists: true, material: 9, light_opacity: 0, light_value: 0, opaque_cube: false, normal_render: false, container: false, ticks: true, tick_rate: 10, name: "tile.flower" }, // 37
+    BlockProps { exists: true, material: 9, light_opacity: 0, light_value: 0, opaque_cube: false, normal_render: false, container: false, ticks: true, tick_rate: 10, name: "tile.rose" }, // 38
+    BlockProps { exists: true, material: 9, light_opacity: 0, light_value: 1, opaque_cube: false, normal_render: false, container: false, ticks: true, tick_rate: 10, name: "tile.mushroom" }, // 39
+    BlockProps { exists: true, material: 9, light_opacity: 0, light_value: 0, opaque_cube: false, normal_render: false, container: false, ticks: true, tick_rate: 10, name: "tile.mushroom" }, // 40
+    BlockProps { exists: true, material: 5, light_opacity: 255, light_value: 0, opaque_cube: true, normal_render: true, container: false, ticks: false, tick_rate: 10, name: "tile.blockGold" }, // 41
+    BlockProps { exists: true, material: 5, light_opacity: 255, light_value: 0, opaque_cube: true, normal_render: true, container: false, ticks: false, tick_rate: 10, name: "tile.blockIron" }, // 42
+    BlockProps { exists: true, material: 4, light_opacity: 255, light_value: 0, opaque_cube: false, normal_render: true, container: false, ticks: false, tick_rate: 10, name: "tile.stoneSlab" }, // 43
+    BlockProps { exists: true, material: 4, light_opacity: 255, light_value: 0, opaque_cube: false, normal_render: false, container: false, ticks: false, tick_rate: 10, name: "tile.stoneSlab" }, // 44
+    BlockProps { exists: true, material: 4, light_opacity: 255, light_value: 0, opaque_cube: true, normal_render: true, container: false, ticks: false, tick_rate: 10, name: "tile.brick" }, // 45
+    BlockProps { exists: true, material: 16, light_opacity: 255, light_value: 0, opaque_cube: true, normal_render: true, container: false, ticks: false, tick_rate: 10, name: "tile.tnt" }, // 46
+    BlockProps { exists: true, material: 3, light_opacity: 255, light_value: 0, opaque_cube: true, normal_render: true, container: false, ticks: false, tick_rate: 10, name: "tile.bookshelf" }, // 47
+    BlockProps { exists: true, material: 4, light_opacity: 255, light_value: 0, opaque_cube: true, normal_render: true, container: false, ticks: false, tick_rate: 10, name: "tile.stoneMoss" }, // 48
+    BlockProps { exists: true, material: 4, light_opacity: 255, light_value: 0, opaque_cube: true, normal_render: true, container: false, ticks: false, tick_rate: 10, name: "tile.obsidian" }, // 49
+    BlockProps { exists: true, material: 14, light_opacity: 0, light_value: 14, opaque_cube: false, normal_render: false, container: false, ticks: true, tick_rate: 10, name: "tile.torch" }, // 50
+    BlockProps { exists: true, material: 12, light_opacity: 0, light_value: 15, opaque_cube: false, normal_render: false, container: false, ticks: true, tick_rate: 40, name: "tile.fire" }, // 51
+    BlockProps { exists: true, material: 4, light_opacity: 0, light_value: 0, opaque_cube: false, normal_render: true, container: true, ticks: false, tick_rate: 10, name: "tile.mobSpawner" }, // 52
+    BlockProps { exists: true, material: 3, light_opacity: 255, light_value: 0, opaque_cube: false, normal_render: false, container: false, ticks: false, tick_rate: 10, name: "tile.stairsWood" }, // 53
+    BlockProps { exists: true, material: 3, light_opacity: 255, light_value: 0, opaque_cube: true, normal_render: true, container: true, ticks: false, tick_rate: 10, name: "tile.chest" }, // 54
+    BlockProps { exists: true, material: 14, light_opacity: 0, light_value: 0, opaque_cube: false, normal_render: false, container: false, ticks: false, tick_rate: 10, name: "tile.redstoneDust" }, // 55
+    BlockProps { exists: true, material: 4, light_opacity: 255, light_value: 0, opaque_cube: true, normal_render: true, container: false, ticks: false, tick_rate: 10, name: "tile.oreDiamond" }, // 56
+    BlockProps { exists: true, material: 5, light_opacity: 255, light_value: 0, opaque_cube: true, normal_render: true, container: false, ticks: false, tick_rate: 10, name: "tile.blockDiamond" }, // 57
+    BlockProps { exists: true, material: 3, light_opacity: 255, light_value: 0, opaque_cube: true, normal_render: true, container: false, ticks: false, tick_rate: 10, name: "tile.workbench" }, // 58
+    BlockProps { exists: true, material: 9, light_opacity: 0, light_value: 0, opaque_cube: false, normal_render: false, container: false, ticks: true, tick_rate: 10, name: "tile.crops" }, // 59
+    BlockProps { exists: true, material: 2, light_opacity: 255, light_value: 0, opaque_cube: false, normal_render: false, container: false, ticks: true, tick_rate: 10, name: "tile.farmland" }, // 60
+    BlockProps { exists: true, material: 4, light_opacity: 255, light_value: 0, opaque_cube: true, normal_render: true, container: true, ticks: false, tick_rate: 10, name: "tile.furnace" }, // 61
+    BlockProps { exists: true, material: 4, light_opacity: 255, light_value: 13, opaque_cube: true, normal_render: true, container: true, ticks: false, tick_rate: 10, name: "tile.furnace" }, // 62
+    BlockProps { exists: true, material: 3, light_opacity: 0, light_value: 0, opaque_cube: false, normal_render: false, container: true, ticks: false, tick_rate: 10, name: "tile.sign" }, // 63
+    BlockProps { exists: true, material: 3, light_opacity: 0, light_value: 0, opaque_cube: false, normal_render: false, container: false, ticks: false, tick_rate: 10, name: "tile.doorWood" }, // 64
+    BlockProps { exists: true, material: 14, light_opacity: 0, light_value: 0, opaque_cube: false, normal_render: false, container: false, ticks: false, tick_rate: 10, name: "tile.ladder" }, // 65
+    BlockProps { exists: true, material: 14, light_opacity: 0, light_value: 0, opaque_cube: false, normal_render: false, container: false, ticks: false, tick_rate: 10, name: "tile.rail" }, // 66
+    BlockProps { exists: true, material: 4, light_opacity: 255, light_value: 0, opaque_cube: false, normal_render: false, container: false, ticks: false, tick_rate: 10, name: "tile.stairsStone" }, // 67
+    BlockProps { exists: true, material: 3, light_opacity: 0, light_value: 0, opaque_cube: false, normal_render: false, container: true, ticks: false, tick_rate: 10, name: "tile.sign" }, // 68
+    BlockProps { exists: true, material: 14, light_opacity: 0, light_value: 0, opaque_cube: false, normal_render: false, container: false, ticks: false, tick_rate: 10, name: "tile.lever" }, // 69
+    BlockProps { exists: true, material: 4, light_opacity: 0, light_value: 0, opaque_cube: false, normal_render: false, container: false, ticks: true, tick_rate: 20, name: "tile.pressurePlate" }, // 70
+    BlockProps { exists: true, material: 5, light_opacity: 0, light_value: 0, opaque_cube: false, normal_render: false, container: false, ticks: false, tick_rate: 10, name: "tile.doorIron" }, // 71
+    BlockProps { exists: true, material: 3, light_opacity: 0, light_value: 0, opaque_cube: false, normal_render: false, container: false, ticks: true, tick_rate: 20, name: "tile.pressurePlate" }, // 72
+    BlockProps { exists: true, material: 4, light_opacity: 255, light_value: 0, opaque_cube: true, normal_render: true, container: false, ticks: false, tick_rate: 30, name: "tile.oreRedstone" }, // 73
+    BlockProps { exists: true, material: 4, light_opacity: 255, light_value: 9, opaque_cube: true, normal_render: true, container: false, ticks: true, tick_rate: 30, name: "tile.oreRedstone" }, // 74
+    BlockProps { exists: true, material: 14, light_opacity: 0, light_value: 0, opaque_cube: false, normal_render: false, container: false, ticks: true, tick_rate: 2, name: "tile.notGate" }, // 75
+    BlockProps { exists: true, material: 14, light_opacity: 0, light_value: 7, opaque_cube: false, normal_render: false, container: false, ticks: true, tick_rate: 2, name: "tile.notGate" }, // 76
+    BlockProps { exists: true, material: 14, light_opacity: 0, light_value: 0, opaque_cube: false, normal_render: false, container: false, ticks: true, tick_rate: 20, name: "tile.button" }, // 77
+    BlockProps { exists: true, material: 19, light_opacity: 0, light_value: 0, opaque_cube: false, normal_render: false, container: false, ticks: true, tick_rate: 10, name: "tile.snow" }, // 78
+    BlockProps { exists: true, material: 18, light_opacity: 3, light_value: 0, opaque_cube: false, normal_render: true, container: false, ticks: true, tick_rate: 10, name: "tile.ice" }, // 79
+    BlockProps { exists: true, material: 20, light_opacity: 255, light_value: 0, opaque_cube: true, normal_render: true, container: false, ticks: true, tick_rate: 10, name: "tile.snow" }, // 80
+    BlockProps { exists: true, material: 21, light_opacity: 0, light_value: 0, opaque_cube: false, normal_render: false, container: false, ticks: true, tick_rate: 10, name: "tile.cactus" }, // 81
+    BlockProps { exists: true, material: 22, light_opacity: 255, light_value: 0, opaque_cube: true, normal_render: true, container: false, ticks: false, tick_rate: 10, name: "tile.clay" }, // 82
+    BlockProps { exists: true, material: 9, light_opacity: 0, light_value: 0, opaque_cube: false, normal_render: false, container: false, ticks: true, tick_rate: 10, name: "tile.reeds" }, // 83
+    BlockProps { exists: true, material: 3, light_opacity: 255, light_value: 0, opaque_cube: true, normal_render: true, container: true, ticks: false, tick_rate: 10, name: "tile.jukebox" }, // 84
+    BlockProps { exists: true, material: 3, light_opacity: 0, light_value: 0, opaque_cube: false, normal_render: false, container: false, ticks: false, tick_rate: 10, name: "tile.fence" }, // 85
+    BlockProps { exists: true, material: 23, light_opacity: 255, light_value: 0, opaque_cube: true, normal_render: true, container: false, ticks: true, tick_rate: 10, name: "tile.pumpkin" }, // 86
+    BlockProps { exists: true, material: 4, light_opacity: 255, light_value: 0, opaque_cube: true, normal_render: true, container: false, ticks: false, tick_rate: 10, name: "tile.hellrock" }, // 87
+    BlockProps { exists: true, material: 13, light_opacity: 255, light_value: 0, opaque_cube: true, normal_render: true, container: false, ticks: false, tick_rate: 10, name: "tile.hellsand" }, // 88
+    BlockProps { exists: true, material: 4, light_opacity: 255, light_value: 15, opaque_cube: true, normal_render: true, container: false, ticks: false, tick_rate: 10, name: "tile.lightgem" }, // 89
+    BlockProps { exists: true, material: 24, light_opacity: 0, light_value: 11, opaque_cube: false, normal_render: false, container: false, ticks: false, tick_rate: 10, name: "tile.portal" }, // 90
+    BlockProps { exists: true, material: 23, light_opacity: 255, light_value: 15, opaque_cube: true, normal_render: true, container: false, ticks: true, tick_rate: 10, name: "tile.litpumpkin" }, // 91
+    BlockProps { exists: true, material: 25, light_opacity: 0, light_value: 0, opaque_cube: false, normal_render: false, container: false, ticks: true, tick_rate: 10, name: "tile.cake" }, // 92
+    BlockProps { exists: true, material: 14, light_opacity: 0, light_value: 0, opaque_cube: false, normal_render: false, container: false, ticks: false, tick_rate: 10, name: "tile.diode" }, // 93
+    BlockProps { exists: true, material: 14, light_opacity: 0, light_value: 9, opaque_cube: false, normal_render: false, container: false, ticks: false, tick_rate: 10, name: "tile.diode" }, // 94
+    BlockProps { exists: true, material: 3, light_opacity: 255, light_value: 15, opaque_cube: true, normal_render: true, container: false, ticks: true, tick_rate: 10, name: "tile.lockedchest" }, // 95
+    BlockProps { exists: true, material: 3, light_opacity: 0, light_value: 0, opaque_cube: false, normal_render: false, container: false, ticks: false, tick_rate: 10, name: "tile.trapdoor" }, // 96
     BlockProps::NONE, // 97
     BlockProps::NONE, // 98
     BlockProps::NONE, // 99

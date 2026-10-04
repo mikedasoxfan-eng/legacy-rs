@@ -9,6 +9,9 @@ pub mod behavior;
 pub mod chunk;
 pub mod light;
 pub mod server;
+pub mod java_hash;
+pub mod tick;
+pub mod ticks_blocks;
 pub mod tile;
 
 use crate::block::{self, light_opacity, material_of, mat, props, MAT_AIR};
@@ -90,8 +93,12 @@ pub struct World {
     /// `World.lightingToUpdate`
     pub light_queue: Vec<LightUpdate>,
     lighting_updates_counter: i32,
-    /// `scheduledTickSet` with each entry's scheduled time.
-    pub pending_ticks: HashMap<TickKey, i64>,
+    /// `scheduledTickSet`: entry -> (scheduled time, `tickEntryID`).
+    pub pending_ticks: HashMap<TickKey, (i64, u64)>,
+    /// `scheduledTickTreeSet`, ordered like `NextTickListEntry.compareTo`.
+    pub tick_order: std::collections::BTreeSet<(i64, u64, TickKey)>,
+    /// `NextTickListEntry.nextTickEntryID` (a JVM-wide static in the original).
+    pub next_tick_entry_id: u64,
     pub world_time: i64,
     /// `World.scheduledUpdatesAreImmediate`
     pub immediate_updates: bool,
@@ -119,6 +126,27 @@ pub struct World {
     pub level_saving: bool,
     /// Chunks unloaded since the renderer last looked (drained by the client).
     pub unloaded: Vec<(i32, i32)>,
+    pub raining_strength: f32,
+    pub prev_raining_strength: f32,
+    pub thundering_strength: f32,
+    pub prev_thundering_strength: f32,
+    /// `field_27168_F`: sky flash after lightning.
+    pub lightning_flash: i32,
+    /// `skylightSubtracted`
+    pub skylight_subtracted: i32,
+    /// Set when `skylightSubtracted` changes (`updateAllRenderers`); cleared by the client.
+    pub renderers_dirty: bool,
+    /// `field_9437_g`: the LCG picking random-tick positions (unseeded in vanilla).
+    pub update_lcg: i32,
+    /// `soundCounter` for cave ambience.
+    pub sound_counter: i32,
+    /// Positions of the players (`playerEntities`); drive random ticks.
+    pub players: Vec<(f64, f64, f64)>,
+    positions_to_update: tick::JavaHashSet<(i32, i32)>,
+    /// `BlockLeaves.adjacentTreeBlocks`: scratch kept between decay checks, as in the original.
+    pub leaf_scratch: Option<Vec<i32>>,
+    /// Lightning strikes (`EntityLightningBolt`), recorded until entities exist.
+    pub lightning_strikes: Vec<(i32, i32, i32)>,
 }
 
 impl World {
@@ -132,6 +160,8 @@ impl World {
             light_queue: Vec::new(),
             lighting_updates_counter: 0,
             pending_ticks: HashMap::new(),
+            tick_order: Default::default(),
+            next_tick_entry_id: 0,
             world_time: 0,
             immediate_updates: false,
             editing_blocks: false,
@@ -148,7 +178,26 @@ impl World {
             server: None,
             level_saving: false,
             unloaded: Vec::new(),
+            raining_strength: 0.0,
+            prev_raining_strength: 0.0,
+            thundering_strength: 0.0,
+            prev_thundering_strength: 0.0,
+            lightning_flash: 0,
+            skylight_subtracted: 0,
+            renderers_dirty: false,
+            update_lcg: 0,
+            sound_counter: 0,
+            players: Vec::new(),
+            positions_to_update: Default::default(),
+            leaf_scratch: None,
+            lightning_strikes: Vec::new(),
         }
+    }
+
+    /// `provideChunk` for other world modules (see `access_chunk`).
+    #[inline]
+    pub(crate) fn access_chunk_pub(&mut self, cx: i32, cz: i32) -> bool {
+        self.access_chunk(cx, cz)
     }
 
     /// Mark a chunk as changed: `isModified` for saving, and a new version for renderers.
@@ -742,6 +791,9 @@ impl World {
 
     /// `scheduleBlockUpdate`
     pub fn schedule_block_update(&mut self, x: i32, y: i32, z: i32, id: u8, delay: i32) {
+        // new NextTickListEntry(...) takes an id from the global counter every time.
+        let entry_id = self.next_tick_entry_id;
+        self.next_tick_entry_id += 1;
         let r = 8;
         if self.immediate_updates {
             if self.check_chunks_exist(x - r, y - r, z - r, x + r, y + r, z + r) {
@@ -753,7 +805,10 @@ impl World {
         } else if self.check_chunks_exist(x - r, y - r, z - r, x + r, y + r, z + r) {
             let key = TickKey { x, y, z, block: id as i32 };
             let t = delay as i64 + self.world_time;
-            self.pending_ticks.entry(key).or_insert(t);
+            if let std::collections::hash_map::Entry::Vacant(e) = self.pending_ticks.entry(key) {
+                e.insert((t, entry_id));
+                self.tick_order.insert((t, entry_id, key));
+            }
         }
     }
 
@@ -879,17 +934,6 @@ impl World {
             self.save_level();
             self.save_chunks(all);
         }
-    }
-
-    /// The parts of `World.tick` this port runs: chunk unloading (server only), the
-    /// 40-tick autosave and the clock. Block ticks and mob spawning are not simulated yet.
-    pub fn tick(&mut self) {
-        self.unload_oldest_chunks();
-        let t = self.world_time + 1;
-        if t % 40 == 0 {
-            self.save_world(false);
-        }
-        self.world_time = t;
     }
 
     // ------------------------------------------------------------ helpers for features

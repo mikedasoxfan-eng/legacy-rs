@@ -25,6 +25,11 @@ import java.util.*;
  *   readsave <dir> <out>                     open a save made elsewhere, load every chunk stored in
  *                                            its region files with the game's own loader, dump
  *   mathcheck <out>                          Math.sin/cos/pow results BigTree can observe
+ *   ticks <seed> <wrand> <lcg> <sound> <n> <clear|rain|thunder> <dx> <dz> <out> [fires]
+ *                                            vanilla preload, a player at spawn+(dx,dz), then n
+ *                                            World.tick() calls (lighting drained after each);
+ *                                            dump plus <out>.txt with the world's tick state;
+ *                                            fires "dx:dz,..." lights fire on top of those columns
  *
  * <wrand> seeds World.rand, which vanilla leaves unseeded (it drives spawn search,
  * lava flow during generation and item-drop jitter).
@@ -103,6 +108,10 @@ public class Oracle {
                 + " stars " + Float.floatToIntBits(w.getStarBrightness(partial)));
         } else if (mode.equals("rendertable")) {
             renderTable(a[1]);
+        } else if (mode.equals("ticks")) {
+            ticks(Long.parseLong(a[1]), Long.parseLong(a[2]), Integer.parseInt(a[3]), Integer.parseInt(a[4]),
+                  Integer.parseInt(a[5]), a[6], Double.parseDouble(a[7]), Double.parseDouble(a[8]), a[9],
+                  a.length > 10 ? a[10] : "");
         } else if (mode.equals("mathcheck")) {
             mathCheck(a[1]);
         } else {
@@ -211,9 +220,9 @@ public class Oracle {
             }
             int mat = mats.indexOf(b.blockMaterial);
             s.append(String.format(
-                "    BlockProps { exists: true, material: %d, light_opacity: %d, light_value: %d, opaque_cube: %b, normal_render: %b, container: %b, name: \"%s\" }, // %d\n",
+                "    BlockProps { exists: true, material: %d, light_opacity: %d, light_value: %d, opaque_cube: %b, normal_render: %b, container: %b, ticks: %b, tick_rate: %d, name: \"%s\" }, // %d\n",
                 mat, Block.lightOpacity[id], Block.lightValue[id], Block.opaqueCubeLookup[id], b.renderAsNormalBlock(),
-                Block.isBlockContainer[id], b.getBlockName(), id));
+                Block.isBlockContainer[id], Block.tickOnLoad[id], b.tickRate(), b.getBlockName(), id));
         }
         s.append("];\n");
         try (Writer w = new OutputStreamWriter(new FileOutputStream(out), "UTF-8")) { w.write(s.toString()); }
@@ -443,6 +452,66 @@ public class Oracle {
             }
         }
         dumpWorld(w, out, sp.x, sp.y, sp.z);
+    }
+
+    static void ticks(long seed, long wrand, int lcg, int sound, int n, String weather,
+                      double dx, double dz, String out, String fires) throws Exception {
+        World w = newWorld(seed);
+        w.rand.setSeed(wrand);
+        w.getInitialSpawnLocation();
+        ChunkCoordinates sp = w.getSpawnPoint();
+        for (int x = -128; x <= 128; x += 16) {
+            for (int z = -128; z <= 128; z += 16) {
+                w.getBlockId(sp.x + x, 64, sp.z + z);
+                drainLighting(w);
+            }
+        }
+        w.field_9437_g = lcg;
+        Field sc = World.class.getDeclaredField("soundCounter");
+        sc.setAccessible(true);
+        sc.setInt(w, sound);
+        if (!weather.equals("clear")) {
+            w.worldInfo.setRaining(true);
+            w.worldInfo.setRainTime(1000000);
+            w.rainingStrength = w.prevRainingStrength = 1.0F;
+            if (weather.equals("thunder")) {
+                w.worldInfo.setThundering(true);
+                w.worldInfo.setThunderTime(1000000);
+                w.thunderingStrength = w.prevThunderingStrength = 1.0F;
+            }
+        }
+        w.skylightSubtracted = w.calculateSkylightSubtracted(1.0F);
+        Field uf = sun.misc.Unsafe.class.getDeclaredField("theUnsafe");
+        uf.setAccessible(true);
+        sun.misc.Unsafe U = (sun.misc.Unsafe) uf.get(null);
+        EntityPlayer pl = (EntityPlayer) U.allocateInstance(EntityPlayerSP.class);
+        pl.posX = sp.x + 0.5 + dx;
+        pl.posY = sp.y + 1.62;
+        pl.posZ = sp.z + 0.5 + dz;
+        w.playerEntities.add(pl);
+        w.setAllowedMobSpawns(false, false);
+        for (String f : fires.split(",")) {
+            if (f.isEmpty()) continue;
+            String[] xz = f.split(":");
+            int fx = sp.x + Integer.parseInt(xz[0]), fz = sp.z + Integer.parseInt(xz[1]);
+            w.setBlockWithNotify(fx, w.getHeightValue(fx, fz), fz, Block.fire.blockID);
+        }
+        drainLighting(w);
+        for (int t = 0; t < n; t++) {
+            w.tick();
+            drainLighting(w);
+        }
+        dumpWorld(w, out, sp.x, sp.y, sp.z);
+        try (PrintWriter pw = new PrintWriter(out + ".txt")) {
+            pw.println("time " + w.getWorldTime());
+            pw.println("lcg " + w.field_9437_g);
+            pw.println("sound " + sc.getInt(w));
+            pw.println("rain " + w.worldInfo.getRaining() + " " + w.worldInfo.getRainTime() + " " + Float.floatToIntBits(w.rainingStrength));
+            pw.println("thunder " + w.worldInfo.getThundering() + " " + w.worldInfo.getThunderTime() + " " + Float.floatToIntBits(w.thunderingStrength));
+            pw.println("skylight " + w.skylightSubtracted);
+            pw.println("flash " + w.field_27168_F + " bolts " + w.weatherEffects.size());
+            pw.println("rand " + w.rand.nextLong());
+        }
     }
 
     @SuppressWarnings("unchecked")

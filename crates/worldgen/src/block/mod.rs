@@ -39,6 +39,10 @@ pub struct BlockProps {
     pub normal_render: bool,
     /// `Block.isBlockContainer`
     pub container: bool,
+    /// `Block.tickOnLoad`: receives random ticks.
+    pub ticks: bool,
+    /// `tickRate()`
+    pub tick_rate: i32,
     pub name: &'static str,
 }
 
@@ -51,6 +55,8 @@ impl BlockProps {
         opaque_cube: false,
         normal_render: false,
         container: false,
+        ticks: false,
+        tick_rate: 10,
         name: "",
     };
 }

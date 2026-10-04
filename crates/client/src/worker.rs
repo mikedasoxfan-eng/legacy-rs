@@ -123,7 +123,8 @@ fn run(opts: WorldOptions, col: Colorizers, rx: Receiver<ToWorker>, tx: Sender<F
     let mut window: Vec<(i32, i32)> = Vec::new();
     let mut window_set: HashSet<(i32, i32)>;
     let mut meshed: HashMap<(i32, i32), u64> = HashMap::new();
-    let mut sky_sub = crate::render::sky::skylight_subtracted(crate::render::sky::celestial_angle(world.world_time, 1.0));
+    let mut sky_sub = world.skylight_subtracted;
+    let mut join_player_counter = 0;
     let mut next_tick = Instant::now();
     let mut idle_reported = false;
 
@@ -149,16 +150,29 @@ fn run(opts: WorldOptions, col: Colorizers, rx: Receiver<ToWorker>, tx: Sender<F
         // Ticks (at most a second's worth of catch-up).
         let mut ticks = 0;
         while Instant::now() >= next_tick && ticks < 20 {
+            world.players.clear();
+            world.players.push(cam);
+            if players.is_none() {
+                // Minecraft.runTick: pull in the chunks around the player every 30 ticks.
+                join_player_counter += 1;
+                if join_player_counter == 30 {
+                    join_player_counter = 0;
+                    world.join_player_surroundings(cam.0, cam.2);
+                }
+            }
             world.tick();
+            // The client relights a little every frame and the server once per tick; here
+            // the queue is simply emptied.
+            world.drain_lighting();
             if let Some(pm) = &mut players {
                 // MinecraftServer.doTick: world tick, lighting, then player movement packets.
-                world.drain_lighting();
                 pm.update_player(&mut world, cam.0, cam.2);
             }
-            let s = crate::render::sky::skylight_subtracted(crate::render::sky::celestial_angle(world.world_time, 1.0));
-            if s != sky_sub {
-                sky_sub = s;
-                meshed.clear(); // updateAllRenderers
+            if world.renderers_dirty {
+                // skylightSubtracted changed (dusk, dawn, rain): updateAllRenderers.
+                world.renderers_dirty = false;
+                sky_sub = world.skylight_subtracted;
+                meshed.clear();
                 idle_reported = false;
             }
             let _ = tx.send(FromWorker::Time(world.world_time));

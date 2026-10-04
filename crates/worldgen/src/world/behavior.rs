@@ -5,6 +5,7 @@
 //! loudly instead of silently diverging.
 
 use super::tile::{ItemStack, TileEntity};
+use super::ticks_blocks as tb;
 use super::{DroppedItem, RandSel, World};
 use crate::block::{self, mat, material_of, opaque_cube_lookup, MAT_LAVA, MAT_WATER};
 
@@ -48,6 +49,7 @@ pub fn on_block_added(w: &mut World, id: u8, x: i32, y: i32, z: i32) {
         }
         block::WATER_STILL | block::LAVA_STILL => check_for_harden(w, id, x, y, z),
         block::SAND | block::GRAVEL => w.schedule_block_update(x, y, z, id, tick_rate(id)),
+        block::FIRE => tb::fire_added(w, x, y, z),
         block::CHEST | block::MOB_SPAWNER => w.set_block_tile_entity(x, y, z, TileEntity::for_block(id)),
         _ => assert_plain(id, "onBlockAdded"),
     }
@@ -135,11 +137,17 @@ pub fn on_neighbor_block_change(w: &mut World, id: u8, x: i32, y: i32, z: i32, _
                 w.set_block_with_notify(x, y, z, block::AIR);
             }
         }
+        block::FIRE => tb::fire_neighbor(w, x, y, z),
+        tb::PORTAL => tb::portal_neighbor(w, x, y, z),
         _ => assert_plain(id, "onNeighborBlockChange"),
     }
 }
 
+/// How many `updateTick` calls each block id received (for test coverage reports).
+pub static TICK_COUNTS: [std::sync::atomic::AtomicU32; 256] = [const { std::sync::atomic::AtomicU32::new(0) }; 256];
+
 pub fn update_tick(w: &mut World, id: u8, x: i32, y: i32, z: i32, rs: RandSel) {
+    TICK_COUNTS[id as usize].fetch_add(1, std::sync::atomic::Ordering::Relaxed);
     match id {
         block::WATER_MOVING | block::LAVA_MOVING => flowing_update_tick(w, id, x, y, z, rs),
         block::SAND | block::GRAVEL => try_to_fall(w, id, x, y, z),
@@ -147,7 +155,35 @@ pub fn update_tick(w: &mut World, id: u8, x: i32, y: i32, z: i32, rs: RandSel) {
         | block::PLANT_RED
         | block::TALL_GRASS
         | block::DEAD_BUSH => check_flower(w, id, x, y, z),
-        _ => panic!("updateTick for block {id} ({}) not ported", block::props(id).name),
+        block::GRASS => tb::grass(w, x, y, z, rs),
+        block::LEAVES => tb::leaves(w, x, y, z),
+        block::LAVA_STILL => tb::still_lava(w, x, y, z, rs),
+        block::FIRE => tb::fire(w, x, y, z, rs),
+        block::MUSHROOM_BROWN | block::MUSHROOM_RED => tb::mushroom(w, id, x, y, z, rs),
+        block::REED | block::CACTUS => tb::grow_column(w, id, x, y, z),
+        block::SNOW | tb::SNOW_BLOCK => tb::melt_snow(w, id, x, y, z),
+        block::ICE => tb::melt_ice(w, x, y, z),
+        tb::ORE_REDSTONE_GLOWING => {
+            w.set_block_with_notify(x, y, z, block::ORE_REDSTONE);
+        }
+        block::WATER_STILL | block::PUMPKIN | 91 => {}
+        _ => warn_once(id, "updateTick"),
+    }
+}
+
+/// Hooks of blocks the player can place but whose behaviour is not ported yet:
+/// report once and do nothing rather than crash the game.
+fn warn_once(id: u8, hook: &str) {
+    use std::sync::Mutex;
+    static SEEN: Mutex<Vec<(u8, &'static str)>> = Mutex::new(Vec::new());
+    let hook: &'static str = match hook {
+        "updateTick" => "updateTick",
+        _ => "hook",
+    };
+    let mut seen = SEEN.lock().unwrap();
+    if !seen.contains(&(id, hook)) {
+        seen.push((id, hook));
+        eprintln!("warning: {hook} for block {id} ({}) not ported; skipped", block::props(id).name);
     }
 }
 
@@ -191,6 +227,10 @@ fn assert_plain(id: u8, hook: &str) {
             | block::GRAVEL
             | block::CHEST
             | block::MOB_SPAWNER
+            | block::FIRE
+            | tb::PORTAL
+            | tb::SNOW_BLOCK
+            | tb::ORE_REDSTONE_GLOWING
     );
     assert!(plain, "{hook} for block {id} ({}) not ported", block::props(id).name);
 }
@@ -538,7 +578,7 @@ pub fn cactus_can_stay(w: &mut World, x: i32, y: i32, z: i32) -> bool {
 }
 
 /// `BlockSnow.canPlaceBlockAt`
-fn snow_can_place(w: &mut World, x: i32, y: i32, z: i32) -> bool {
+pub fn snow_can_place(w: &mut World, x: i32, y: i32, z: i32) -> bool {
     let below = w.get_block_id(x, y - 1, z);
     if below != block::AIR && w.is_opaque_cube_instance(below) {
         mat(w.get_block_material(x, y - 1, z)).blocks_movement
@@ -565,8 +605,9 @@ fn quantity_dropped(w: &mut World, id: u8) -> i32 {
             }
         }
         block::SNOW | block::ICE => 0,
+        super::ticks_blocks::SNOW_BLOCK => 4,
         block::ORE_LAPIS => 4 + w.rand.next_int(5),
-        block::ORE_REDSTONE => 4 + w.rand.next_int(2),
+        block::ORE_REDSTONE | super::ticks_blocks::ORE_REDSTONE_GLOWING => 4 + w.rand.next_int(2),
         block::CLAY => 4,
         _ => 1,
     }
@@ -596,9 +637,9 @@ fn id_dropped(w: &mut World, id: u8) -> i32 {
         block::ORE_COAL => ITEM_COAL,
         block::ORE_DIAMOND => ITEM_DIAMOND,
         block::ORE_LAPIS => ITEM_DYE,
-        block::ORE_REDSTONE => ITEM_REDSTONE,
+        block::ORE_REDSTONE | super::ticks_blocks::ORE_REDSTONE_GLOWING => ITEM_REDSTONE,
         block::CLAY => ITEM_CLAY,
-        block::SNOW => ITEM_SNOWBALL,
+        block::SNOW | super::ticks_blocks::SNOW_BLOCK => ITEM_SNOWBALL,
         _ => id as i32,
     }
 }
@@ -611,7 +652,11 @@ pub fn drop_block_as_item(w: &mut World, id: u8, x: i32, y: i32, z: i32, meta: i
         if w.rand.next_float() <= 1.0 {
             let item = id_dropped(w, id);
             if item > 0 {
-                let damage = if id == block::LOG { meta } else { 0 };
+                let damage = match id {
+                    block::LOG => meta,
+                    block::LEAVES => meta & 3,
+                    _ => 0,
+                };
                 let s = 0.7f32;
                 let ox = (w.rand.next_float() * s) as f64 + (1.0 - s) as f64 * 0.5;
                 let oy = (w.rand.next_float() * s) as f64 + (1.0 - s) as f64 * 0.5;

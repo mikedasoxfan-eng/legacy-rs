@@ -20,17 +20,17 @@ run() { # label, oracle args..., then "--", compare args (oracle output file app
   local f="case_$(echo "${oargs[*]}" | tr ' ' '_').bin"
   echo "== $label"
   if "$oracle" "${oargs[@]:0:1}" "${oargs[@]:1}" "$f" >/dev/null && "$cmp" "${cargs[@]}" "$out/$f"; then :; else fail=1; fi
-  rm -f "$out/$f"
+  rm -f "$out/$f" "$out/$f.txt"
 }
 run_extra() { # like run, but the oracle takes an argument after the output file
   local label="$1" extra="$2"; shift 2
   local oargs=() cargs=()
   while [ "$1" != "--" ]; do oargs+=("$1"); shift; done; shift
   cargs=("$@")
-  local f="case_$(echo "${oargs[*]}_$extra" | tr ' ' '_').bin"
+  local f="case_$(echo "${oargs[*]}_$extra" | tr ' :,' '_xc' | cut -c1-80).bin"
   echo "== $label"
   if "$oracle" "${oargs[@]}" "$f" "$extra" >/dev/null && "$cmp" "${cargs[@]}" "$out/$f" "$extra"; then :; else fail=1; fi
-  rm -f "$out/$f"
+  rm -f "$out/$f" "$out/$f.txt"
 }
 
 echo "== MathHelper sine table"
@@ -109,6 +109,23 @@ if [ "$quick" != quick ]; then
   "$cmp" savecheck "$root/saves/_verify_srv_rust" "$out/v_srv_saved.bin" | tail -1 | grep -q "EXACT MATCH" && echo "on disk: EXACT MATCH" || { echo "on disk: DIFFERS"; fail=1; }
 fi
 rm -rf "$root"/saves/_verify_* "$out"/v_*.bin
+
+# ---- world ticking: weather, scheduled and random block ticks, cave-sound and lightning
+# draws, chunk loading around the player. seed wrand lcg sound ticks weather dx dz [fires]
+tick_cases=(
+  "2 3 -77 3000 2000 thunder 0 0"      # snow and ice forming, lightning
+  "1 7 999 100 2000 rain 40 -30"
+  "-1 5 4242 0 2000 rain -100 60"
+)
+[ "$quick" = quick ] && tick_cases=("1 1 12345 5 300 clear 0 0")
+for c in "${tick_cases[@]}"; do
+  run "ticks: $c" ticks $c -- ticks $c
+done
+if [ "$quick" != quick ]; then
+  # Seed 6 spawns in forest: set it alight (fire spread, logs burning, leaf decay).
+  fires="12:0,12:12,16:0,-16:-16,20:0,20:20,-20:-20,24:0,0:-24,28:28,-28:-28,0:-32,32:32"
+  run_extra "ticks: forest fire, seed 6" "$fires" ticks 6 1 777 5 4000 clear 0 0 -- ticks 6 1 777 5 4000 clear 0 0
+fi
 
 # ---- sky, fog and cloud colors, sun angle, night darkness
 echo "== sky colors"

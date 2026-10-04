@@ -104,10 +104,12 @@ impl World {
             w.spawn = info.spawn;
             w.world_time = info.time;
             w.info = info;
+            w.init_weather_and_light();
         } else {
             if let Some(d) = dir {
                 w.info.name = d.file_name().map(|n| n.to_string_lossy().into_owned()).unwrap_or_else(|| "world".into());
             }
+            w.init_weather_and_light();
             w.find_initial_spawn();
         }
         if server {
@@ -115,6 +117,11 @@ impl World {
         } else {
             w.preload_spawn_area();
         }
+        // Both are unseeded in vanilla (`new Random().nextInt()` and a World.rand draw made
+        // before anything else); take them from a side generator so World.rand stays put.
+        let mut side = crate::random::JavaRandom::new(world_rand_seed ^ 0x5DEECE66D);
+        w.update_lcg = side.next_int_unbounded();
+        w.sound_counter = side.next_int(12000);
         if is_new && !server {
             // Minecraft.changeWorld saves a freshly generated world straight away
             // (the server only saves when it shuts down).

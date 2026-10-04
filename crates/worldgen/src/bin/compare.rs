@@ -4,6 +4,7 @@
 //!   compare sin <oracle-sin.bin>
 //!   compare grid <seed> <wrand> <x0> <z0> <x1> <z1> <each|end|none> <oracle.bin>
 //!   compare preload <seed> <wrand> <oracle.bin> [fancy]
+//!   compare ticks <seed> <wrand> <lcg> <sound> <n> <clear|rain|thunder> <dx> <dz> <oracle.bin> [fires]
 
 use std::collections::BTreeMap;
 use std::process::ExitCode;
@@ -80,6 +81,72 @@ fn main() -> ExitCode {
             }
             WORLD_ONLY.store(true, std::sync::atomic::Ordering::Relaxed);
             world(&w, &a[3])
+        }
+        Some("ticks") => {
+            let mut w = World::new(p(2), p(3));
+            w.find_initial_spawn();
+            w.preload_spawn_area();
+            w.update_lcg = p(4) as i32;
+            w.sound_counter = p(5) as i32;
+            if a[7] != "clear" {
+                w.info.raining = true;
+                w.info.rain_time = 1000000;
+                w.raining_strength = 1.0;
+                w.prev_raining_strength = 1.0;
+                if a[7] == "thunder" {
+                    w.info.thundering = true;
+                    w.info.thunder_time = 1000000;
+                    w.thundering_strength = 1.0;
+                    w.prev_thundering_strength = 1.0;
+                }
+            }
+            w.skylight_subtracted = w.calculate_skylight_subtracted(1.0);
+            let f = |i: usize| a[i].parse::<f64>().expect("number");
+            let (sx, sy, sz) = w.spawn;
+            w.players.push((sx as f64 + 0.5 + f(8), sy as f64 + 1.62, sz as f64 + 0.5 + f(9)));
+            for f in a.get(11).map_or("", String::as_str).split(',').filter(|f| !f.is_empty()) {
+                let (fx, fz) = f.split_once(':').expect("dx:dz");
+                let (fx, fz) = (sx + fx.parse::<i32>().unwrap(), sz + fz.parse::<i32>().unwrap());
+                let fy = w.get_height_value(fx, fz);
+                w.set_block_with_notify(fx, fy, fz, worldgen::block::FIRE);
+            }
+            w.drain_lighting();
+            let t = std::time::Instant::now();
+            for _ in 0..p(6) {
+                w.tick();
+                w.drain_lighting();
+            }
+            eprintln!("rust: {} ticks, {} chunks in {:.2?}", p(6), w.chunks.len(), t.elapsed());
+            let counts: Vec<String> = (0..256)
+                .filter_map(|i| {
+                    let n = worldgen::world::behavior::TICK_COUNTS[i].load(std::sync::atomic::Ordering::Relaxed);
+                    (n > 0).then(|| format!("{}={n}", worldgen::block::props(i as u8).name.trim_start_matches("tile.")))
+                })
+                .collect();
+            eprintln!("block ticks: {}", counts.join(" "));
+            let state = format!(
+                "time {}\nlcg {}\nsound {}\nrain {} {} {}\nthunder {} {} {}\nskylight {}\nflash {} bolts {}\nrand {}\n",
+                w.world_time,
+                w.update_lcg,
+                w.sound_counter,
+                w.info.raining,
+                w.info.rain_time,
+                w.raining_strength.to_bits() as i32,
+                w.info.thundering,
+                w.info.thunder_time,
+                w.thundering_strength.to_bits() as i32,
+                w.skylight_subtracted,
+                w.lightning_flash,
+                w.lightning_strikes.len(),
+                w.rand.next_long()
+            );
+            let java = std::fs::read_to_string(format!("{}.txt", a[10])).expect("read state").replace('\r', "");
+            let state_ok = java == state;
+            if !state_ok {
+                eprintln!("tick state differs:\n--- java\n{java}--- rust\n{state}");
+            }
+            let r = world(&w, &a[10]);
+            if state_ok { r } else { ExitCode::FAILURE }
         }
         Some("preload") => {
             let t = std::time::Instant::now();
@@ -385,7 +452,7 @@ fn world(w: &World, path: &str) -> ExitCode {
     for _ in 0..nt {
         java_ticks.push((r.i32(), r.i32(), r.i32(), r.i32(), r.i64()));
     }
-    let mut rust_ticks: Vec<_> = w.pending_ticks.iter().map(|(k, &t)| (k.x, k.y, k.z, k.block, t)).collect();
+    let mut rust_ticks: Vec<_> = w.pending_ticks.iter().map(|(k, &(t, _))| (k.x, k.y, k.z, k.block, t)).collect();
     rust_ticks.sort();
     let world_only = WORLD_ONLY.load(std::sync::atomic::Ordering::Relaxed);
     if java_ticks != rust_ticks && !world_only {
