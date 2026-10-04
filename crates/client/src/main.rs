@@ -1,8 +1,9 @@
-//! Minecraft Beta 1.7.3 in Rust: the original menus, then a world viewer (fly camera) on
-//! the bit-exact world simulation.
+//! Minecraft Beta 1.7.3 in Rust: the original menus and the singleplayer game on the
+//! bit-exact world simulation.
 //!
-//! Controls in a world: WASD to fly, Space/Shift up/down, Ctrl faster, T skips 1000 ticks,
-//! F2 saves a screenshot, Esc opens the game menu.
+//! Controls are the original's (rebindable in Options): WASD, Space, Shift, mouse, 1-9,
+//! Q, F1/F2/F3/F5/F8, F for render distance, Esc for the game menu. With `--server` there is
+//! no player: WASD flies the camera, Space/Shift up/down, Ctrl faster.
 //!
 //! Worlds are saved in the b1.7.3 format under `saves/<name>` (copy a folder into
 //! `.minecraft/saves` to open it in the real game, or point --world-dir at a real save).
