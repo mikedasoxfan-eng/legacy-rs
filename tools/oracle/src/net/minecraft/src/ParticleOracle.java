@@ -25,11 +25,13 @@ public final class ParticleOracle {
         for(int n:new int[]{p.particleTextureIndex,p.particleAge,p.particleMaxAge,p.getFXLayer(),p instanceof EntityFootStepFX?EntityOracle.intField(EntityFootStepFX.class,"field_27018_a",p):p instanceof EntityPickupFX?EntityOracle.intField(EntityPickupFX.class,"field_678_p",p):0})EntityOracle.i(o,n);
         o.writeBoolean(p.isDead);o.writeBoolean(p.onGround);o.writeBoolean(p.noClip);o.writeBoolean(p.isInWeb);EntityOracle.l(o,EntityOracle.rngState(p.rand));EntityOracle.l(o,EntityOracle.rngState(EntityOracle.mathRandom()));
     }
-    public static void pickupDraws(String path)throws Exception {
+    public static void pickupDraws(String path)throws Exception {pickupDraws(path,true);}
+    public static void pickupDraws(String path,boolean fancy)throws Exception {
+        Block.leaves.setGraphicsLevel(fancy);
         World w=Oracle.newWorld(0);w.chunkProvider=new EntityOracle.FlatProvider(w);w.skylightSubtracted=0;
         RenderManager boot=RendererOracle.manager(w),m=RenderManager.instance;m.worldObj=w;m.options=boot.options;m.options.fancyGraphics=false;m.renderEngine=boot.renderEngine;m.playerViewY=37.25F;m.playerViewX=-21.5F;
         Field convert=Tessellator.class.getDeclaredField("convertQuadsToTriangles");convert.setAccessible(true);convert.setBoolean(null,false);
-        Oracle.DataOut out=new Oracle.DataOut();out.i32(0x33373152);out.i32(1);out.i32(14*4*3*4+12);
+        Oracle.DataOut out=new Oracle.DataOut();out.i32(0x33373152);out.i32(fancy?1:2);out.i32(14*4*3*4+12);
         for(int id:new int[]{1,2,18,35,44,53,67,81,85,96,263,331,2256,351})for(int variant=0;variant<4;variant++)for(int age=0;age<3;age++)for(float partial:new float[]{0,.25F,.75F,1}) {
             EntityItem source=new EntityItem(w,.25,64.5,-2.75,new ItemStack(id,new int[]{0,1,6,21}[variant],variant*5));source.age=variant*317;source.field_804_d=variant*.73F;
             Entity target=new EntityItem(w);target.lastTickPosX=-.125;target.lastTickPosY=65.875;target.lastTickPosZ=-1.25;target.posX=.5;target.posY=66.5;target.posZ=.75;
@@ -74,10 +76,11 @@ public final class ParticleOracle {
         Field layers=EffectRenderer.class.getDeclaredField("fxLayers");layers.setAccessible(true);Field random=EffectRenderer.class.getDeclaredField("rand");random.setAccessible(true);
         Field raw=Tessellator.class.getDeclaredField("rawBuffer");raw.setAccessible(true);Field convert=Tessellator.class.getDeclaredField("convertQuadsToTriangles");convert.setAccessible(true);convert.setBoolean(null,false);
         try(DataOutputStream o=new DataOutputStream(new BufferedOutputStream(new FileOutputStream(path)))) {
-            o.writeBytes("B173EFX1");EntityOracle.i(o,15*16);
-            for(int id:new int[]{1,2,18,31,35,44,53,67,64,71,78,85,88,92,96})for(int meta=0;meta<16;meta++) {
+            o.writeBytes("B173EFX1");EntityOracle.i(o,16*16);int scene=0;
+            for(int id:new int[]{1,2,18,31,35,44,53,67,64,71,78,85,88,92,96,18})for(int meta=0;meta<16;meta++) {
+                boolean fancy=scene++<240;Block.leaves.setGraphicsLevel(fancy);
                 int x=8,y=64,z=8;EntityOracle.rawBlock(w,x,y,z,id,meta);Block b=Block.blocksList[id];b.setBlockBoundsBasedOnState(w,x,y,z);
-                EntityOracle.i(o,id);EntityOracle.i(o,meta);for(double v:new double[]{b.minX,b.minY,b.minZ,b.maxX,b.maxY,b.maxZ})EntityOracle.d(o,v);EntityOracle.i(o,id==2?0xffffff:b.colorMultiplier(w,x,y,z));
+                EntityOracle.i(o,id);EntityOracle.i(o,meta);EntityOracle.i(o,fancy?1:0);for(double v:new double[]{b.minX,b.minY,b.minZ,b.maxX,b.maxY,b.maxZ})EntityOracle.d(o,v);EntityOracle.i(o,id==2?0xffffff:b.colorMultiplier(w,x,y,z));
                 EntityOracle.i(o,21);for(int xx=-2;xx<=18;xx++)for(int zz=-2;zz<=18;zz++){EntityOracle.i(o,xx);EntityOracle.i(o,zz);EntityOracle.i(o,w.findTopSolidBlock(xx,zz));for(int yy=0;yy<128;yy++)o.writeByte(w.getBlockId(xx,yy,zz));for(int yy=0;yy<128;yy++)o.writeByte(w.getBlockMetadata(xx,yy,zz));for(int yy=0;yy<=128;yy++)EntityOracle.f(o,w.getLightBrightness(xx,yy,zz));}
                 OracleHooks.reset(800);EntityOracle.mathRandom().setSeed(900);EffectRenderer r=new EffectRenderer(w,engine);random.set(r,new Random(700));
                 r.addBlockDestroyEffects(x,y,z,id,meta);for(int side=0;side<6;side++)r.addBlockHitEffects(x,y,z,side);

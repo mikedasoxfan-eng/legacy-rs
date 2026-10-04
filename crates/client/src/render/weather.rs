@@ -52,12 +52,13 @@ impl Snapshot {
     pub fn column(&self, x: i32, z: i32) -> Option<&Column> {
         let first = self.columns.first()?;
         let (dx, dz) = (x - first.x, z - first.z);
-        if !(0..21).contains(&dx) || !(0..21).contains(&dz) {
+        let width=(self.columns.len() as f64).sqrt() as i32;
+        if !(0..width).contains(&dx) || !(0..width).contains(&dz) {
             return None;
         }
-        self.columns.get((dx * 21 + dz) as usize)
+        self.columns.get((dx * width + dz) as usize)
     }
-    fn brightness(&self, p: [f64; 3]) -> f32 {
+    pub(crate) fn brightness(&self, p: [f64; 3]) -> f32 {
         self.column(math::floor_double(p[0]), math::floor_double(p[2]))
             .map_or(0.0, |c| c.brightness[math::floor_double(p[1]).clamp(0, 128) as usize])
     }

@@ -64,7 +64,8 @@ impl Input {
 pub fn check(path: &str) -> bool {
     let mut d = Input { data: std::fs::read(path).unwrap(), at: 0, checks: 0, bad: 0 };
     assert_eq!(d.u(), u32::from_le_bytes(*b"R173"));
-    assert_eq!(d.u(), 1);
+    let version=d.u();
+    assert!(matches!(version,1|2));
     let n = d.u();
     let mut draws = 0;
     for case in 0..n {
@@ -103,7 +104,7 @@ pub fn check(path: &str) -> bool {
                 super::gui_item::durability(&item, 12, 9)
             }
         } else {
-            super::objects::render(&s, [0.0; 3], view)
+            crate::world_effects::Effects::object_draws(&s, [0.0; 3], view, version==1)
         };
         let nd = d.u() as usize;
         assert_eq!(nd, r.draws.len(), "case {case} id {id}: draw count");

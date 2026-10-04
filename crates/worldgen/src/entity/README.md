@@ -50,7 +50,8 @@ the existing terrain suite. The oracle requires Mojang Java 8u51 and executes
 the original client jar. The seed-hook builder recompiles the requested Entity
 initializer as a check, then patches only its original Random initializer in the
 original class file. Explosion's independent Random initializer gets the same
-deterministic treatment. All other bytecode is retained, with a byte-for-byte
+deterministic treatment. World.randomDisplayUpdates also gets a deterministic
+call-local Random hook. All other bytecode is retained, with a byte-for-byte
 reverse-patch assertion. Math.random, entity IDs, World.rand, and chest Random
 are seeded explicitly after constructing the real player stand-in.
 
@@ -86,3 +87,6 @@ README. Unsupported entities include boats, minecarts and paintings; boat/cart
 item use emits explicit placement requests.
 Existing unsupported block machinery such as full redstone/piston circuits and
 furnace ticking remains outside the entity port; its existing checks remain.
+
+World sound/particle callbacks are now retained and compared per frame. Slime/player
+contact is included in the player replay checks. See [the effects coverage report](../../../../EFFECTS.md).

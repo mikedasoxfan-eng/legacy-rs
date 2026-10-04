@@ -4,6 +4,8 @@ pub mod access;
 pub mod blocks;
 pub mod entity;
 pub mod fx;
+pub mod particles;
+pub mod particle_check;
 pub mod gpu;
 pub mod sky;
 pub mod table;

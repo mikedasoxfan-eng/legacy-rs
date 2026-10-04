@@ -46,7 +46,7 @@ pub struct FrameParams {
     pub thunder: f32,
     pub precipitation: [Vec<super::weather::WeatherVertex>; 2],
     pub lightning: Vec<super::weather::WeatherVertex>,
-    pub particles: Vec<super::weather::WeatherVertex>,
+    pub particles: [Vec<super::weather::WeatherVertex>; 3],
 }
 
 struct DrawSlot {
@@ -57,6 +57,8 @@ struct DrawSlot {
 pub struct Gpu {
     /// Entity simulation can fill these render states before each frame.
     pub entities: super::entity::pipeline::EntityPipeline,
+    lit_effects: super::entity::pipeline::EntityPipeline,
+    pub lit_effect_batches: Vec<super::entity::living::Batch>,
     pub window: Arc<Window>,
     surface: wgpu::Surface<'static>,
     device: wgpu::Device,
@@ -76,8 +78,8 @@ pub struct Gpu {
     p_cloud_color: wgpu::RenderPipeline,
     cloud_slot: DrawSlot,
     cloud_buf: wgpu::Buffer,
-    weather_slots: [DrawSlot; 4],
-    weather_bufs: [wgpu::Buffer; 4],
+    weather_slots: [DrawSlot; 6],
+    weather_bufs: [wgpu::Buffer; 6],
     p_weather: wgpu::RenderPipeline,
     p_lightning: wgpu::RenderPipeline,
     terrain_tex: wgpu::Texture,
@@ -110,7 +112,7 @@ impl Gpu {
         sun: &Image,
         moon: &Image,
         clouds: &Image,
-        weather_images: [&Image; 3],
+        weather_images: [&Image; 5],
         mobs: &HashMap<String, Image>,
     ) -> Gpu {
         let size = window.inner_size();
@@ -401,6 +403,8 @@ impl Gpu {
             slot(&upload(weather_images[1], "rain").1),
             slot(&upload(weather_images[2], "particles").1),
             slot(&white_view),
+            slot(&terrain_view),
+            slot(&upload(weather_images[3], "particle items").1),
         ];
         let weather_bufs = std::array::from_fn(|_| {
             device.create_buffer(&wgpu::BufferDescriptor {
@@ -425,6 +429,12 @@ impl Gpu {
         });
 
         let mut gpu = Gpu {
+            lit_effect_batches: Vec::new(),
+            lit_effects: super::entity::pipeline::EntityPipeline::new(
+                &device, &queue, config.format,
+                mobs.iter().map(|(n, i)| (n.as_str(), i))
+                    .chain([("terrain.png", terrain), ("misc/footprint.png", weather_images[4])]),
+            ),
             entities: super::entity::pipeline::EntityPipeline::new(
                 &device,
                 &queue,
@@ -522,6 +532,7 @@ impl Gpu {
     /// RenderEngine.updateDynamicTextures: copy animated tiles into terrain.png.
     pub fn update_fx(&self, fx: &[super::fx::TextureFx]) {
         self.entities.update_fx(&self.queue, fx);
+        self.lit_effects.update_fx(&self.queue, fx);
         for f in fx {
             for i in 0..f.tile_size {
                 for j in 0..f.tile_size {
@@ -698,6 +709,10 @@ impl Gpu {
         let proj = perspective(p.fov_y_deg.to_radians(), w as f32 / h as f32, 0.05, p.far * 2.0);
         let view_proj = proj * rot;
         self.entities.prepare(&self.device, &self.queue, view_proj, p.cam_pos, p.fog_color, p.far);
+        self.lit_effects.upload(
+            &self.device, &self.queue, std::mem::take(&mut self.lit_effect_batches),
+            view_proj, p.fog_color, p.far,
+        );
         let ident = Mat4::IDENTITY.to_cols_array_2d();
         let fog4 = [p.fog_color[0], p.fog_color[1], p.fog_color[2], 1.0];
 
@@ -836,8 +851,8 @@ impl Gpu {
         };
         self.write_uniforms(&self.cloud_slot, &cu);
 
-        let weather_verts = [&p.precipitation[0], &p.precipitation[1], &p.particles, &p.lightning];
-        let weather_n: [u32; 4] = std::array::from_fn(|i| {
+        let weather_verts = [&p.precipitation[0], &p.precipitation[1], &p.particles[0], &p.lightning, &p.particles[1], &p.particles[2]];
+        let weather_n: [u32; 6] = std::array::from_fn(|i| {
             let v = weather_verts[i];
             assert!(v.len() <= 65536, "weather buffer capacity exceeded");
             if !v.is_empty() {
@@ -854,7 +869,7 @@ impl Gpu {
                     if i == 3 { 0.0 } else { 1.0 },
                     if i < 2 {
                         0.01
-                    } else if i == 2 {
+                    } else if matches!(i, 2 | 4 | 5) {
                         0.1
                     } else {
                         -1.0
@@ -957,11 +972,16 @@ impl Gpu {
                 rp.draw(0..weather_n[3], 0..1);
             }
             self.entities.draw(&mut rp);
-            if weather_n[2] > 0 {
-                rp.set_pipeline(&self.p_weather);
-                rp.set_bind_group(0, &self.weather_slots[2].bind, &[]);
-                rp.set_vertex_buffer(0, self.weather_bufs[2].slice(..));
-                rp.draw_indexed(0..weather_n[2] / 4 * 6, 0, 0..1);
+            self.lit_effects.draw(&mut rp);
+            // Lit layer 3 precedes the sprite, terrain and item layers.
+            rp.set_bind_group(1, &self.origins_bind, &[]);
+            for i in [2, 4, 5] {
+                if weather_n[i] > 0 {
+                    rp.set_pipeline(&self.p_weather);
+                    rp.set_bind_group(0, &self.weather_slots[i].bind, &[]);
+                    rp.set_vertex_buffer(0, self.weather_bufs[i].slice(..));
+                    rp.draw_indexed(0..weather_n[i] / 4 * 6, 0, 0..1);
+                }
             }
             // Entity textures occupy group 1; restore the terrain origins binding.
             rp.set_bind_group(1, &self.origins_bind, &[]);

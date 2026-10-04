@@ -213,12 +213,27 @@ for args in "3257840388504953787 -39 65 6000 0.0" "0 1000 -2000 13000 0.5" "123 
 done
 [ $fail -eq 0 ] && echo "sky colors exact"
 
+echo "== original MusInputStream encrypted audio bytes"
+if "$oracle" musaudio mus_case.bin && "$beta" --muscheck "$out/mus_case.bin"; then :; else fail=1; fi
+rm -f "$out/mus_case.bin"
+
+echo "== EntityPickupFX item and arrow renderer draws"
+if "$oracle" pickuprenderers pickup_draws.bin && "$beta" --renderercheck "$out/pickup_draws.bin"; then :; else fail=1; fi
+if "$oracle" pickuprenderersfast pickup_draws_fast.bin && "$beta" --renderercheck "$out/pickup_draws_fast.bin"; then :; else fail=1; fi
+rm -f "$out/pickup_draws.bin" "$out/pickup_draws_fast.bin"
 echo "== note instruments, jukebox insertion/ejection and every step/break sound"
 if "$oracle" musicevents music_case.bin && "$cmp" musicevents "$out/music_case.bin"; then :; else fail=1; fi
 rm -f "$out/music_case.bin"
 echo "== all ambient block callbacks, metadata and adjacent faces"
 if "$oracle" displayevents display_case.bin && "$cmp" displayevents "$out/display_case.bin"; then :; else fail=1; fi
 rm -f "$out/display_case.bin"
+echo "== original EntityFX motion and vertex bits"
+if "$oracle" particles particles_case.bin && "$beta" --particlecheck "$out/particles_case.bin"; then :; else fail=1; fi
+rm -f "$out/particles_case.bin"
+echo "== EffectRenderer destruction, hits, tint, eviction and vertex bits"
+if "$oracle" particleeffects particlefx_case.bin && "$beta" --particlefxcheck "$out/particlefx_case.bin"; then :; else fail=1; fi
+rm -f "$out/particlefx_case.bin"
+
 # ---- original EntityRenderer precipitation quads and particle spawn RNG,
 # RenderLightningBolt strips. Inputs: seed camera-x y z renderer-tick partial rain.
 echo "== ambient weather vertices"

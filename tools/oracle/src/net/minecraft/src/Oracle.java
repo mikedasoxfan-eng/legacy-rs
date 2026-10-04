@@ -68,7 +68,8 @@ public class Oracle {
 
     public static void main(String[] a) throws Exception {
         String mode = a.length > 0 ? a[0] : "";
-        if (mode.equals("musaudio")) { SoundOracle.run(a[1]);
+        if (mode.equals("pickuprenderersfast")) { ParticleOracle.pickupDraws(a[1],false);
+        } else if (mode.equals("musaudio")) { SoundOracle.run(a[1]);
         } else if (mode.equals("pickuprenderers")) { ParticleOracle.pickupDraws(a[1]);
         } else if (mode.equals("musicevents")) { ParticleOracle.music(a[1]);
         } else if (mode.equals("particleeffects")) { ParticleOracle.effects(a[1]);

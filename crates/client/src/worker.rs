@@ -156,6 +156,8 @@ pub enum FromWorker {
     QuickSaved(bool),
     /// Entities near the camera after a tick, with `getEntityBrightness`.
     Entities(Vec<crate::render::entity::effects::Snapshot>),
+    /// Ordered presentation callbacks and collision/light data for EntityFX.
+    Effects { events: Vec<worldgen::world::events::WorldEvent>, terrain: crate::render::weather::Snapshot },
     /// The player after a tick: entity (positions, rotation), HUD state, events.
     Player {
         entity: Box<worldgen::entity::Entity>,
@@ -551,6 +553,10 @@ fn run(opts: WorldOptions, col: Colorizers, mut video: VideoSettings, rx: Receiv
                     });
                 }
             }
+            // World effects: drain once after the player and world tick, before Time.
+            let events = world.drain_events();
+            let effect_terrain = weather_snapshot_radius(&mut world, cam, 20);
+            let _ = tx.send(FromWorker::Effects { events, terrain: effect_terrain });
             let chunks = world.chunks.len();
             let _ = tx.send(FromWorker::Time {
                 time: world.world_time,
@@ -714,14 +720,18 @@ pub fn mesh_chunk(
 
 /// World.getLightBrightness uses World (y>=128 clamps to 127), not ChunkCache.
 pub fn weather_snapshot(world: &mut World, cam: (f64, f64, f64)) -> crate::render::weather::Snapshot {
+    weather_snapshot_radius(world, cam, 10)
+}
+
+fn weather_snapshot_radius(world: &mut World, cam: (f64, f64, f64), radius: i32) -> crate::render::weather::Snapshot {
     use crate::render::weather::{Column, Snapshot};
     let (cx, cz) = (worldgen::math::floor_double(cam.0), worldgen::math::floor_double(cam.2));
     let mut bs = BiomeSource::new(world.seed);
     let mut biomes = Vec::new();
-    bs.biomes(&mut biomes, cx - 10, cz - 10, 21, 21);
-    let mut columns = Vec::with_capacity(441);
-    for x in cx - 10..=cx + 10 {
-        for z in cz - 10..=cz + 10 {
+    bs.biomes(&mut biomes, cx - radius, cz - radius, radius * 2 + 1, radius * 2 + 1);
+    let mut columns = Vec::with_capacity(((radius * 2 + 1) * (radius * 2 + 1)) as usize);
+    for x in cx - radius..=cx + radius {
+        for z in cz - radius..=cz + radius {
             let top = world.find_top_solid_block(x, z);
             let mut c = Column {
                 x,
