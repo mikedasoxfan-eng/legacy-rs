@@ -2,8 +2,8 @@
 //! matrix stacks, current color, enable flags, blend/alpha functions, texture binding and a
 //! `Tessellator` that turns quads into draw commands for `gui::render`.
 //!
-//! Vertices are transformed by the modelview matrix here (in f32, like the GL pipeline);
-//! the projection is applied on the GPU.
+//! GUI vertices use a CPU modelview and GPU projection. Display-list models
+//! retain object coordinates and use a combined GPU modelview/projection.
 
 use glam::{Mat4, Vec3, Vec4};
 
@@ -46,6 +46,7 @@ pub struct DrawState {
     pub texture: Option<TexId>,
     /// `glDepthFunc`: true = GL_GEQUAL (the achievements background), false = GL_LEQUAL.
     pub depth_gequal: bool,
+    pub depth_equal: bool,
     pub blend: Option<(Factor, Factor)>,
     pub depth_test: bool,
     pub depth_write: bool,
@@ -58,6 +59,7 @@ pub struct Draw {
     pub state: DrawState,
     /// Projection in effect for this draw.
     pub proj: Mat4,
+    pub modelview: Mat4,
 }
 
 /// `Tessellator` vertex as captured between `startDrawing` and `draw`.
@@ -82,6 +84,7 @@ pub struct Gl {
     pub depth_mask: bool,
     /// `glDepthFunc(GL_GEQUAL)` instead of the usual GL_LEQUAL.
     pub depth_gequal: bool,
+    pub depth_equal: bool,
     pub shade: Shade,
     pub bound: Option<TexId>,
     /// Current texture coordinate (`glTexCoord`), left behind by textured draws.
@@ -119,6 +122,7 @@ impl Gl {
             depth_test: true,
             depth_mask: true,
             depth_gequal: false,
+            depth_equal: false,
             shade: Shade::Smooth,
             bound: None,
             current_uv: [0.0; 2],
@@ -147,6 +151,9 @@ impl Gl {
 
     pub fn load_identity(&mut self) {
         *self.top() = Mat4::IDENTITY;
+    }
+    pub fn modelview_matrix(&self) -> Mat4 {
+        *self.modelview.last().unwrap()
     }
 
     pub fn push_matrix(&mut self) {
@@ -199,7 +206,12 @@ impl Gl {
             Vec4::new(2.0 / (r - l), 0.0, 0.0, 0.0),
             Vec4::new(0.0, 2.0 / (t - b), 0.0, 0.0),
             Vec4::new(0.0, 0.0, -2.0 / (f - n), 0.0),
-            Vec4::new(-(r + l) / (r - l), -(t + b) / (t - b), -(f + n) / (f - n), 1.0),
+            Vec4::new(
+                -(r + l) / (r - l),
+                -(t + b) / (t - b),
+                -(f + n) / (f - n),
+                1.0,
+            ),
         );
     }
 
@@ -257,7 +269,12 @@ impl Gl {
     }
 
     pub fn set_color_rgba_f(&mut self, r: f32, g: f32, b: f32, a: f32) {
-        self.set_color_rgba((r * 255.0) as i32, (g * 255.0) as i32, (b * 255.0) as i32, (a * 255.0) as i32);
+        self.set_color_rgba(
+            (r * 255.0) as i32,
+            (g * 255.0) as i32,
+            (b * 255.0) as i32,
+            (a * 255.0) as i32,
+        );
     }
 
     pub fn set_color_opaque_f(&mut self, r: f32, g: f32, b: f32) {
@@ -272,8 +289,16 @@ impl Gl {
 
     pub fn add_vertex(&mut self, x: f64, y: f64, z: f64) {
         // Tessellator stores (float)(x + xOffset).
-        let p = Vec3::new((x + self.offset[0]) as f32, (y + self.offset[1]) as f32, (z + self.offset[2]) as f32);
-        self.tess.push(TessVertex { pos: p, uv: self.tess_uv, color: self.tess_color });
+        let p = Vec3::new(
+            (x + self.offset[0]) as f32,
+            (y + self.offset[1]) as f32,
+            (z + self.offset[2]) as f32,
+        );
+        self.tess.push(TessVertex {
+            pos: p,
+            uv: self.tess_uv,
+            color: self.tess_color,
+        });
     }
 
     /// `Tessellator.draw` with the current GL state.
@@ -293,7 +318,14 @@ impl Gl {
         }
         let first = self.verts.len() as u32;
         let mv = *self.modelview.last().unwrap();
-        let flags = [if self.texture_2d { 1.0 } else { 0.0 }, if self.alpha_test { self.alpha_ref } else { -1.0 }];
+        let flags = [
+            if self.texture_2d { 1.0 } else { 0.0 },
+            if self.alpha_test {
+                self.alpha_ref
+            } else {
+                -1.0
+            },
+        ];
         self.verts.extend(vertices.iter().map(|v| GuiVertex {
             pos: mv.transform_point3(Vec3::from_array(v.pos)).to_array(),
             uv: v.uv,
@@ -302,16 +334,45 @@ impl Gl {
         }));
         let state = DrawState {
             texture: if self.texture_2d { self.bound } else { None },
-            blend: if self.blend { Some(self.blend_func) } else { None },
+            blend: if self.blend {
+                Some(self.blend_func)
+            } else {
+                None
+            },
             depth_test: self.depth_test,
             depth_write: self.depth_mask,
             depth_gequal: self.depth_gequal,
+            depth_equal: self.depth_equal,
         };
-        self.draws.push(Draw { first, count: vertices.len() as u32, state, proj: self.proj });
+        self.draws.push(Draw {
+            first,
+            count: vertices.len() as u32,
+            state,
+            proj: self.proj,
+            modelview: Mat4::IDENTITY,
+        });
         if let Some(v) = vertices.last() {
             self.color = v.color;
             self.current_uv = v.uv;
         }
+    }
+
+    /// Display-list model vertices retain their object coordinates until the
+    /// vertex shader, preserving depth rounding at intersecting armor faces.
+    pub fn model_triangles(
+        &mut self,
+        vertices: &[crate::render::entity::living::EntityVertex],
+        matrix: Mat4,
+    ) {
+        if vertices.is_empty() {
+            return;
+        }
+        let first = self.verts.len();
+        self.triangles(vertices);
+        for (stored, raw) in self.verts[first..].iter_mut().zip(vertices) {
+            stored.pos = raw.pos;
+        }
+        self.draws.last_mut().unwrap().modelview = matrix;
     }
 
     fn submit_quads(&mut self, q: &[TessVertex]) {
@@ -321,12 +382,24 @@ impl Gl {
         let mv = *self.modelview.last().unwrap();
         let state = DrawState {
             texture: if self.texture_2d { self.bound } else { None },
-            blend: if self.blend { Some(self.blend_func) } else { None },
+            blend: if self.blend {
+                Some(self.blend_func)
+            } else {
+                None
+            },
             depth_test: self.depth_test,
             depth_write: self.depth_mask,
             depth_gequal: self.depth_gequal,
+            depth_equal: self.depth_equal,
         };
-        let flags = [if self.texture_2d { 1.0 } else { 0.0 }, if self.alpha_test { self.alpha_ref } else { -1.0 }];
+        let flags = [
+            if self.texture_2d { 1.0 } else { 0.0 },
+            if self.alpha_test {
+                self.alpha_ref
+            } else {
+                -1.0
+            },
+        ];
         let first = self.verts.len() as u32;
         let to_f = |c: u32| {
             [
@@ -352,10 +425,20 @@ impl Gl {
             if self.shade == Shade::Flat {
                 colors = [colors[3]; 4];
             }
-            let mut out = [GuiVertex { pos: [0.0; 3], uv: [0.0; 2], color: [0.0; 4], flags }; 4];
+            let mut out = [GuiVertex {
+                pos: [0.0; 3],
+                uv: [0.0; 2],
+                color: [0.0; 4],
+                flags,
+            }; 4];
             for i in 0..4 {
                 let e = mv * quad[i].pos.extend(1.0);
-                out[i] = GuiVertex { pos: [e.x, e.y, e.z], uv: uvs[i], color: colors[i], flags };
+                out[i] = GuiVertex {
+                    pos: [e.x, e.y, e.z],
+                    uv: uvs[i],
+                    color: colors[i],
+                    flags,
+                };
             }
             for &i in &[0, 1, 2, 0, 2, 3] {
                 self.verts.push(out[i]);
@@ -373,16 +456,36 @@ impl Gl {
         let count = self.verts.len() as u32 - first;
         let proj = self.proj;
         if let Some(d) = self.draws.last_mut() {
-            if d.state == state && d.proj == proj && d.first + d.count == first {
+            if d.state == state
+                && d.proj == proj
+                && d.modelview == Mat4::IDENTITY
+                && d.first + d.count == first
+            {
                 d.count += count;
                 return;
             }
         }
-        self.draws.push(Draw { first, count, state, proj });
+        self.draws.push(Draw {
+            first,
+            count,
+            state,
+            proj,
+            modelview: Mat4::IDENTITY,
+        });
     }
 
     /// Draw a quad list built elsewhere (font glyphs) at the current modelview.
-    pub fn quad_uv(&mut self, x0: f32, y0: f32, x1: f32, y1: f32, u0: f32, v0: f32, u1: f32, v1: f32) {
+    pub fn quad_uv(
+        &mut self,
+        x0: f32,
+        y0: f32,
+        x1: f32,
+        y1: f32,
+        u0: f32,
+        v0: f32,
+        u1: f32,
+        v1: f32,
+    ) {
         self.start_drawing_quads();
         self.add_vertex_with_uv(x0 as f64, y1 as f64, 0.0, u0 as f64, v1 as f64);
         self.add_vertex_with_uv(x1 as f64, y1 as f64, 0.0, u1 as f64, v1 as f64);

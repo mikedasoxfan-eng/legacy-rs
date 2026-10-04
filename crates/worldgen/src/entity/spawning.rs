@@ -1,5 +1,5 @@
 use super::{AxisAlignedBB as BB, Entity, EntityKind, Vec3D};
-use crate::{biome::Biome, block::*, math::floor_double as floor, JavaRandom, World};
+use crate::{JavaRandom, World, biome::Biome, block::*, math::floor_double as floor};
 impl Entity {
     pub fn get_can_spawn_here(&mut self, w: &mut World) -> bool {
         let (x, y, z) = (
@@ -271,6 +271,15 @@ impl World {
             if let Some(mut te) = te {
                 if let crate::world::tile::TileEntity::MobSpawner { mob, delay } = &mut te {
                     self.tick_mob_spawner(x, y, z, mob, delay);
+                }
+                if let crate::world::tile::TileEntity::Furnace(furnace) = &mut te {
+                    let (transition, dirty) = furnace.tick(false);
+                    if let Some(lit) = transition {
+                        self.swap_furnace_block(lit, x, y, z);
+                    }
+                    if dirty {
+                        self.mark_container_dirty(x, z);
+                    }
                 }
                 if crate::block::props(self.get_block_id(x, y, z)).container {
                     self.chunk_mut(x >> 4, z >> 4).tile_entities.insert(key, te);

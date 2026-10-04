@@ -17,7 +17,7 @@ orig="$here/../retromcp/minecraft/src/net/minecraft/src/GuiMainMenu.java"
 sed 's/System\.currentTimeMillis()/GuiShot.millis/' "$orig" > "$build/src/GuiMainMenu.java"
 sed 's/System\.currentTimeMillis()/GuiShot.millis/g' "${orig%GuiMainMenu.java}GuiAchievements.java" > "$build/src/GuiAchievements.java"
 if [ ! -f "$build/net/minecraft/src/GuiShot.class" ] || [ "$here/gui/GuiShot.java" -nt "$build/net/minecraft/src/GuiShot.class" ]; then
-  javac -nowarn -cp "$jar$libs" -d "$build" "$here/gui/GuiShot.java" "$build/src/GuiMainMenu.java" "$build/src/GuiAchievements.java" 2>&1 | grep -v -i "^Note:" || true
+  javac -nowarn -cp "$jar$libs" -d "$build" "$here/gui/GuiShot.java" "$build/src/GuiMainMenu.java" "$build/src/GuiAchievements.java"
 fi
 
 # A throwaway .minecraft: default options, the fixture saves.

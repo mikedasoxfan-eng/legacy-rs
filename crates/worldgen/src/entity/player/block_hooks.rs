@@ -124,9 +124,10 @@ pub fn removed(w: &mut World, id: u8, x: i32, y: i32, z: i32) -> bool {
         return true;
     }
     if matches!(id, 23 | 61 | 62) {
-        w.chunk_mut(x >> 4, z >> 4)
-            .raw_tile_entities
-            .retain(|n| n.int("x") != x || n.int("y") != y || n.int("z") != z);
+        if id == 23 || !w.keep_furnace_inventory {
+            w.scatter_machine_contents(id, x, y, z);
+        }
+        w.remove_block_tile_entity(x, y, z);
         return true;
     }
     plain(id) || matches!(id, 6 | 43 | 44 | 50 | 59 | 93 | 94)
@@ -276,6 +277,11 @@ pub fn tick(w: &mut World, id: u8, x: i32, y: i32, z: i32, rs: crate::world::Ran
         return true;
     }
     if id == 23 {
+        if w.is_block_indirectly_getting_powered(x, y, z)
+            || w.is_block_indirectly_getting_powered(x, y + 1, z)
+        {
+            w.dispense_item(x, y, z, rs);
+        }
         return true;
     }
     if id == 59 {
@@ -347,24 +353,16 @@ pub fn repeater_input(w: &mut World, x: i32, y: i32, z: i32, m: i32) -> bool {
 }
 pub fn ensure_container(w: &mut World, id: u8, x: i32, y: i32, z: i32) {
     if w.chunk(x >> 4, z >> 4)
-        .raw_tile_entities
-        .iter()
-        .any(|n| n.int("x") == x && n.int("y") == y && n.int("z") == z)
+        .tile_entities
+        .contains_key(&(x & 15, y, z & 15))
     {
         return;
     }
-    let mut n = crate::nbt::Compound::new();
-    n.put(
-        "id",
-        crate::nbt::Tag::String(if id == 23 { "Trap" } else { "Furnace" }.into()),
-    );
-    for (key, v) in [("x", x), ("y", y), ("z", z)] {
-        n.put(key, crate::nbt::Tag::Int(v));
+    w.set_block_tile_entity(x, y, z, crate::world::tile::TileEntity::for_block(id));
+    if id == 23 {
+        w.dispenser_random.insert(
+            (x, y, z),
+            crate::JavaRandom::new(crate::entity::EntitySeedSource::Time.next_seed()),
+        );
     }
-    n.put("Items", crate::nbt::Tag::List(1, Vec::new()));
-    if id != 23 {
-        n.put("BurnTime", crate::nbt::Tag::Short(0));
-        n.put("CookTime", crate::nbt::Tag::Short(0));
-    }
-    w.chunk_mut(x >> 4, z >> 4).raw_tile_entities.push(n);
 }

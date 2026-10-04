@@ -480,6 +480,12 @@ pub fn chunk_to_nbt(c: &Chunk, world_time: i64) -> Compound {
                 t.put("EntityId", Tag::String(mob.clone()));
                 t.put("Delay", Tag::Short(*delay as i16));
             }
+            TileEntity::Furnace(f) => {
+                t = f.to_nbt(x, y, z);
+            }
+            TileEntity::Dispenser(items) => {
+                t = crate::container::tiles::inventory_nbt("Trap", x, y, z, items.as_ref());
+            }
         }
         tes.push(Tag::Compound(t));
     }
@@ -557,6 +563,12 @@ pub fn chunk_from_nbt_for_dimension(
                 mob: t.string("EntityId"),
                 delay: t.short("Delay") as i32,
             },
+            "Furnace" => TileEntity::Furnace(crate::container::tiles::Furnace::from_nbt(t)),
+            "Trap" => {
+                let mut items = Box::new([None; 9]);
+                crate::container::tiles::read_items(t, items.as_mut());
+                TileEntity::Dispenser(items)
+            }
             _ => {
                 // Not modelled yet: keep it for the next save if it sits on a container block.
                 let (lx, lz) = (x - c.x * 16, z - c.z * 16);

@@ -1,10 +1,25 @@
 //! The original snowball and egg methods share all arithmetic except hatching.
 use crate::{
-    entity::{projectile::ArrowState, Entity, EntityKind, MovingObjectPosition as Hit, Vec3D},
-    math::{self, PI_F32 as PI},
     World,
+    entity::{Entity, EntityKind, MovingObjectPosition as Hit, Vec3D, projectile::ArrowState},
+    math::{self, PI_F32 as PI},
 };
 impl Entity {
+    pub fn throwable_at(w: &mut World, x: f64, y: f64, z: f64, egg: bool) -> Self {
+        let mut e = Self::base(
+            w,
+            if egg {
+                EntityKind::Egg(Default::default())
+            } else {
+                EntityKind::Snowball(Default::default())
+            },
+        );
+        e.width = 0.25;
+        e.height = 0.25;
+        e.set_position(x, y, z);
+        e.y_offset = 0.0;
+        e
+    }
     pub fn throwable(w: &mut World, owner: &Entity, egg: bool) -> Self {
         let state = ArrowState {
             owner: Some(owner.entity_id),

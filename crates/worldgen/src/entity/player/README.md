@@ -111,10 +111,12 @@ failed replay. The compare command writes `player-rust.bin` only on failure.
 ## Boundaries
 
 Exactness is established for the replay inputs, not every possible state.
-Existing unsupported block machinery remains: full redstone/piston circuits,
-furnace smelting, filled dispenser operation, and scattering filled furnace/
-dispenser inventories. Empty furnace/dispenser placement, activation and NBT
-creation are implemented; their existing raw saved contents are preserved.
+Existing unsupported block machinery remains: full redstone/piston circuits.
+Furnace smelting, filled dispenser operation, lit/unlit swaps, machine inventory
+scattering and typed machine NBT are implemented in `crate::container` and
+verified against original bytecode. Container sessions process window-tagged
+open/click/close messages and synchronize real player and tile inventories.
+See `crates/client/src/gui/CONTAINERS.md` for the UI/world-thread contract.
 Sapling random growth, maps, fishing rods, signs/paintings/records and redstone
 dust item use are not implemented. The requested foods, buckets, flint/steel,
 bow, snowballs/eggs, hoe/seeds, shears and dyes are implemented. Boats and carts
