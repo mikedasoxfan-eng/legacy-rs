@@ -4,6 +4,7 @@
 
 pub mod font;
 pub mod gl;
+pub mod ingame;
 pub mod keynames;
 pub mod lang;
 pub mod loading;
@@ -31,7 +32,27 @@ pub const TEXTURES: &[&str] = &[
     "title/mclogo.png",
     "title/mojang.png",
     "pack.png",
+    "terrain.png",
+    "%blur%/misc/vignette.png",
 ];
+
+/// A texture name without `RenderEngine`'s `%blur%` / `%clamp%` prefixes, and the flags.
+pub fn texture_options(name: &str) -> (&str, bool, bool) {
+    let mut n = name;
+    let (mut blur, mut clamp) = (false, false);
+    loop {
+        if let Some(r) = n.strip_prefix("%blur%") {
+            blur = true;
+            n = r;
+        } else if let Some(r) = n.strip_prefix("%clamp%") {
+            clamp = true;
+            n = r;
+        } else {
+            break;
+        }
+    }
+    (n.trim_start_matches('/'), blur, clamp)
+}
 
 /// `ScaledResolution`
 #[derive(Clone, Copy, Debug)]
@@ -109,7 +130,8 @@ pub struct Ui {
 
 impl Ui {
     pub fn texture(&self, name: &str) -> TexId {
-        *self.textures.get(name.trim_start_matches('/')).unwrap_or_else(|| panic!("GUI texture {name} not loaded"))
+        let key = if name.starts_with('%') { name } else { name.trim_start_matches('/') };
+        *self.textures.get(key).unwrap_or_else(|| panic!("GUI texture {name} not loaded"))
     }
 
     pub fn translate(&self, key: &str) -> String {
@@ -393,7 +415,7 @@ pub fn set_world_and_resolution(s: &mut dyn Screen, ui: &mut Ui, w: i32, h: i32)
 pub fn load_resources(jar: &mut crate::assets::Jar) -> Result<(HashMap<String, Image>, String, lang::Lang, Vec<String>), String> {
     let mut imgs = HashMap::new();
     for &t in TEXTURES {
-        imgs.insert(t.to_string(), jar.image(t)?);
+        imgs.insert(t.to_string(), jar.image(texture_options(t).0)?);
     }
     let font_txt = jar.text("font.txt")?;
     let mut lang = lang::Lang::default();

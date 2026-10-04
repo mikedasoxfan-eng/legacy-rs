@@ -264,6 +264,7 @@ dependencies = [
  "png",
  "pollster",
  "wgpu",
+ "windows-sys 0.61.2",
  "winit",
  "worldgen",
  "zip",

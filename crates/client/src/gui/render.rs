@@ -61,6 +61,9 @@ pub struct GuiRenderer {
     format: wgpu::TextureFormat,
     /// Multisample count (the driver may force MSAA on the original's GL window).
     samples: u32,
+    /// Rasterize bottom-up like an OpenGL framebuffer (the image comes out upside down).
+    /// Interpolation rounds the same way as the original's then, down to the last bit.
+    pub gl_orientation: bool,
     shader: wgpu::ShaderModule,
     layout: wgpu::PipelineLayout,
     pipes: HashMap<PipeKey, wgpu::RenderPipeline>,
@@ -70,6 +73,8 @@ pub struct GuiRenderer {
     uniform_stride: u64,
     uniform_slots: u64,
     sampler: wgpu::Sampler,
+    /// `%blur%` (GL_LINEAR) and `%clamp%` variants: [nearest/linear][repeat/clamp].
+    samplers: [[wgpu::Sampler; 2]; 2],
     textures: Vec<GuiTexture>,
     white: GuiTexture,
     vbuf: Option<(wgpu::Buffer, u64)>,
@@ -117,7 +122,7 @@ impl GuiRenderer {
                     binding: 0,
                     visibility: wgpu::ShaderStages::FRAGMENT,
                     ty: wgpu::BindingType::Texture {
-                        sample_type: wgpu::TextureSampleType::Float { filterable: false },
+                        sample_type: wgpu::TextureSampleType::Float { filterable: true },
                         view_dimension: wgpu::TextureViewDimension::D2,
                         multisampled: false,
                     },
@@ -126,7 +131,7 @@ impl GuiRenderer {
                 wgpu::BindGroupLayoutEntry {
                     binding: 1,
                     visibility: wgpu::ShaderStages::FRAGMENT,
-                    ty: wgpu::BindingType::Sampler(wgpu::SamplerBindingType::NonFiltering),
+                    ty: wgpu::BindingType::Sampler(wgpu::SamplerBindingType::Filtering),
                     count: None,
                 },
             ],
@@ -166,10 +171,24 @@ impl GuiRenderer {
             min_filter: wgpu::FilterMode::Nearest,
             ..Default::default()
         });
+        let mk = |linear: bool, clamp: bool| {
+            let f = if linear { wgpu::FilterMode::Linear } else { wgpu::FilterMode::Nearest };
+            let a = if clamp { wgpu::AddressMode::ClampToEdge } else { wgpu::AddressMode::Repeat };
+            device.create_sampler(&wgpu::SamplerDescriptor {
+                label: Some("gui sampler"),
+                address_mode_u: a,
+                address_mode_v: a,
+                mag_filter: f,
+                min_filter: f,
+                ..Default::default()
+            })
+        };
+        let samplers = [[mk(false, false), mk(false, true)], [mk(true, false), mk(true, true)]];
         let white = make_texture(device, queue, &tex_layout, &sampler, &Image { width: 1, height: 1, rgba: vec![255; 4] });
         GuiRenderer {
             format,
             samples,
+            gl_orientation: false,
             shader,
             layout,
             pipes: HashMap::new(),
@@ -179,6 +198,7 @@ impl GuiRenderer {
             uniform_stride,
             uniform_slots,
             sampler,
+            samplers,
             textures: Vec::new(),
             white,
             vbuf: None,
@@ -189,7 +209,13 @@ impl GuiRenderer {
 
     /// Register a texture (like `RenderEngine.getTexture`); returns its id.
     pub fn add_texture(&mut self, device: &wgpu::Device, queue: &wgpu::Queue, img: &Image) -> TexId {
-        let t = make_texture(device, queue, &self.tex_layout, &self.sampler, img);
+        self.add_texture_with(device, queue, img, false, false)
+    }
+
+    /// With `RenderEngine`'s name prefixes: `%blur%` = linear filtering, `%clamp%` = clamped.
+    pub fn add_texture_with(&mut self, device: &wgpu::Device, queue: &wgpu::Queue, img: &Image, blur: bool, clamp: bool) -> TexId {
+        let s = &self.samplers[blur as usize][clamp as usize];
+        let t = make_texture(device, queue, &self.tex_layout, s, img);
         self.textures.push(t);
         (self.textures.len() - 1) as TexId
     }
@@ -306,6 +332,7 @@ impl GuiRenderer {
             slot_of.push(i.min(self.uniform_slots as usize - 1));
         }
         for (i, p) in projs.iter().enumerate().take(self.uniform_slots as usize) {
+            let p = if self.gl_orientation { glam::Mat4::from_scale(glam::Vec3::new(1.0, -1.0, 1.0)) * *p } else { *p };
             queue.write_buffer(&self.uniforms, i as u64 * self.uniform_stride, bytemuck::cast_slice(&p.to_cols_array()));
         }
         let keys: Vec<PipeKey> = gl.draws.iter().map(|d| key_of(&d.state)).collect();

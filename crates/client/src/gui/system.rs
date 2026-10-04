@@ -52,7 +52,8 @@ impl GuiSystem {
         let mut renderer = GuiRenderer::new(device, queue, format, samples);
         let mut textures = HashMap::new();
         for (name, img) in &res.images {
-            let id = renderer.add_texture(device, queue, img);
+            let (_, blur, clamp) = super::texture_options(name);
+            let id = renderer.add_texture_with(device, queue, img, blur, clamp);
             textures.insert(name.clone(), id);
         }
         let font_tex = textures["font/default.png"];

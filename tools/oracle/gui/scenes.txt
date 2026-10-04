@@ -46,3 +46,17 @@ loading 42 Generating level|Building terrain
 shot loading
 loading -1 Loading level|
 shot loading_nobar
+# The in-game overlay over a real world (vignette, hotbar, crosshair, hearts).
+world 42
+clear 128
+hud health=20 prev=20 item=0 pos=0.5,120,0.5 brightness=1.0
+counter 0
+shot hud_full
+hud health=7 prev=7 item=3 pos=0.5,120,0.5 brightness=1.0
+shot hud_hurt
+hud health=3 prev=9 hearts_life=13 item=8 pos=0.5,120,0.5 brightness=1.0
+counter 17
+shot hud_low_flash
+hud health=12 prev=16 hearts_life=11 item=5 pos=0.5,120,0.5 brightness=1.0
+counter 3
+shot hud_flash

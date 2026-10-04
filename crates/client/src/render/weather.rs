@@ -400,6 +400,11 @@ pub struct Particles {
     entity_seeds: JavaRandom,
 }
 impl Particles {
+    /// `EffectRenderer.getStatistics`: particles alive.
+    pub fn len(&self) -> usize {
+        self.particles.len()
+    }
+
     pub fn new(seed: i64) -> Self {
         Self {
             particles: Vec::new(),

@@ -59,10 +59,14 @@ pub fn run(script: &str, out_dir: &std::path::Path) -> Result<(), String> {
         std::env::var("GUI_MSAA").ok().and_then(|v| v.parse().ok()).unwrap_or(4),
     );
     sys.ui.fixed_date = true;
+    sys.renderer.gl_orientation = true;
     let mut splash = String::from("missingno");
     let (mut mx, mut my) = (-1, -1);
     let mut loading: Option<LoadingScreen> = None;
     let mut mojang = false;
+    let mut hud: Option<super::ingame::HudPlayer> = None;
+    let mut ingame = super::ingame::GuiIngame::new();
+    let mut clear_level = 0.0f64;
     for line in text.lines() {
         let line = line.split('#').next().unwrap().trim();
         if line.is_empty() {
@@ -91,6 +95,7 @@ pub fn run(script: &str, out_dir: &std::path::Path) -> Result<(), String> {
             "open" => {
                 mojang = false;
                 loading = None;
+                hud = None;
                 let title: Box<dyn super::Screen> = Box::new(screens::main_menu::GuiMainMenu::with_splash(&splash));
                 let s: Box<dyn super::Screen> = match arg(0).as_str() {
                     "title" => title,
@@ -106,6 +111,28 @@ pub fn run(script: &str, out_dir: &std::path::Path) -> Result<(), String> {
                 let mut acts = Vec::new();
                 sys.display_gui_screen(Some(s), &mut acts);
             }
+            "world" => {}
+            "hud" => {
+                mojang = false;
+                loading = None;
+                let mut p = super::ingame::HudPlayer::default();
+                for kv in rest.split_whitespace() {
+                    let (k, v) = kv.split_once('=').ok_or("hud key=value")?;
+                    let i = || v.parse::<i32>().map_err(|_| format!("hud {k}"));
+                    match k {
+                        "health" => p.health = i()?,
+                        "prev" => p.prev_health = i()?,
+                        "hearts_life" => p.hearts_life = i()?,
+                        "item" => p.current_item = i()?,
+                        "brightness" => p.brightness = v.parse().map_err(|_| "hud brightness")?,
+                        "pos" => {}
+                        _ => return Err(format!("unknown hud field {k}")),
+                    }
+                }
+                hud = Some(p);
+            }
+            "clear" => clear_level = rest.parse::<f64>().map_err(|_| "clear")? / 255.0,
+            "counter" => ingame.set_update_counter(rest.parse().map_err(|_| "counter")?),
             "mouse" => {
                 mx = arg(0).parse().map_err(|_| "mouse x")?;
                 my = arg(1).parse().map_err(|_| "mouse y")?;
@@ -138,6 +165,10 @@ pub fn run(script: &str, out_dir: &std::path::Path) -> Result<(), String> {
                 if mojang {
                     sys.draw_mojang_logo();
                     clear = Some([0.0, 0.0, 0.0, 0.0]);
+                } else if let Some(p) = &hud {
+                    ingame = super::ingame::GuiIngame::new_with_counter(&ingame);
+                    ingame.render_game_overlay(&mut sys.ui, 0.0, false, p, &Default::default());
+                    clear = Some([clear_level, clear_level, clear_level, 0.0]);
                 } else if let Some(l) = &loading {
                     l.draw(&mut sys.ui);
                     clear = Some([0.0, 0.0, 0.0, 0.0]);
@@ -187,6 +218,15 @@ fn read_back(device: &wgpu::Device, queue: &wgpu::Queue, tex: &wgpu::Texture) ->
         let r = &data[(y * row) as usize..(y * row + w * 4) as usize];
         rgba.extend_from_slice(r);
     }
+    {
+        // Rendered in OpenGL orientation (see GuiRenderer::gl_orientation): flip back.
+        let row = (w * 4) as usize;
+        let mut flipped = Vec::with_capacity(rgba.len());
+        for y in (0..h as usize).rev() {
+            flipped.extend_from_slice(&rgba[y * row..(y + 1) * row]);
+        }
+        rgba = flipped;
+    }
     // Opaque output like the GL color buffer read as RGB.
     for px in rgba.chunks_mut(4) {
         px[3] = 255;
@@ -197,10 +237,15 @@ fn read_back(device: &wgpu::Device, queue: &wgpu::Queue, tex: &wgpu::Texture) ->
 /// `beta --guidiff <java dir> <rust dir> [diff dir]`: compare same-named PNGs pixel by pixel.
 /// Differences are drawn red over a dimmed copy of the Java image in the diff dir.
 pub fn diff(java_dir: &std::path::Path, rust_dir: &std::path::Path, diff_dir: Option<&std::path::Path>) -> bool {
-    let mut names: Vec<String> = std::fs::read_dir(java_dir)
-        .map(|rd| rd.filter_map(|e| e.ok()).map(|e| e.file_name().to_string_lossy().into_owned()).filter(|n| n.ends_with(".png")).collect())
-        .unwrap_or_default();
+    let list = |d: &std::path::Path| -> Vec<String> {
+        std::fs::read_dir(d)
+            .map(|rd| rd.filter_map(|e| e.ok()).map(|e| e.file_name().to_string_lossy().into_owned()).filter(|n| n.ends_with(".png")).collect())
+            .unwrap_or_default()
+    };
+    let mut names = list(java_dir);
+    names.extend(list(rust_dir));
     names.sort();
+    names.dedup();
     let mut all = true;
     for n in names {
         let load = |p: std::path::PathBuf| -> Option<Image> {

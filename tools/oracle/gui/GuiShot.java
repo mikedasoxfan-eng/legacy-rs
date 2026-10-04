@@ -55,6 +55,11 @@ public class GuiShot {
 
         public void displayGuiScreen(GuiScreen s) {
             super.displayGuiScreen(s);
+            if (this.currentScreen == null && capture != null) {
+                // Keep running the script after a world starts (it displays no screen).
+                this.currentScreen = capture;
+                return;
+            }
             if (this.currentScreen != null && this.currentScreen != capture) {
                 if (capture == null) {
                     // Started: from now on there is no session, so Multiplayer is disabled
@@ -151,6 +156,34 @@ public class GuiShot {
                     else if (which.equals("texturepacks")) s = new GuiTexturePacks(title);
                     else throw new IllegalArgumentException("unknown screen " + which);
                     mc.displayGuiScreen(s);
+                } else if (cmd.equals("world")) {
+                    mc.session = new Session("Player", "-"); // EntityPlayerSP reads the username
+                    mc.playerController = new PlayerControllerSP(mc);
+                    mc.startWorld("guishot_world", "guishot", Long.parseLong(a[0]));
+                    mc.currentScreen = this;
+                    inner = null;
+                } else if (cmd.equals("hud")) {
+                    mode = "hud";
+                    EntityPlayerSP p = mc.thePlayer;
+                    for (String kv : a) {
+                        String[] e = kv.split("=");
+                        int v = e.length > 1 && !e[0].equals("pos") && !e[0].equals("brightness") ? Integer.parseInt(e[1]) : 0;
+                        if (e[0].equals("health")) p.health = v;
+                        else if (e[0].equals("prev")) p.prevHealth = v;
+                        else if (e[0].equals("hearts_life")) p.heartsLife = v;
+                        else if (e[0].equals("item")) p.inventory.currentItem = v;
+                        else if (e[0].equals("pos")) {
+                            String[] c = e[1].split(",");
+                            p.setPosition(Double.parseDouble(c[0]), Double.parseDouble(c[1]), Double.parseDouble(c[2]));
+                        }
+                    }
+                    System.out.println("java: player brightness " + p.getEntityBrightness(0.0F));
+                } else if (cmd.equals("clear")) {
+                    clear = Integer.parseInt(a[0]) / 255.0F;
+                } else if (cmd.equals("counter")) {
+                    Field f = GuiIngame.class.getDeclaredField("updateCounter");
+                    f.setAccessible(true);
+                    f.setInt(mc.ingameGUI, Integer.parseInt(a[0]));
                 } else if (cmd.equals("mouse")) {
                     mx = Integer.parseInt(a[0]);
                     my = Integer.parseInt(a[1]);
@@ -193,6 +226,7 @@ public class GuiShot {
         }
 
         int fbo = -1;
+        float clear = 0.0F;
 
         /** Draw into a plain (single-sample) framebuffer: drivers may force MSAA on the window. */
         void bindFbo() {
@@ -213,7 +247,7 @@ public class GuiShot {
                     + GL11.glGetInteger(org.lwjgl.opengl.GL13.GL_SAMPLES));
             }
             org.lwjgl.opengl.EXTFramebufferObject.glBindFramebufferEXT(org.lwjgl.opengl.EXTFramebufferObject.GL_FRAMEBUFFER_EXT, fbo);
-            GL11.glClearColor(0.0F, 0.0F, 0.0F, 0.0F);
+            GL11.glClearColor(clear, clear, clear, 0.0F);
             GL11.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);
         }
 
@@ -235,6 +269,12 @@ public class GuiShot {
                 Method m = Minecraft.class.getDeclaredMethod("loadScreen");
                 m.setAccessible(true);
                 m.invoke(mc);
+                save(name, org.lwjgl.opengl.EXTFramebufferObject.GL_COLOR_ATTACHMENT0_EXT);
+            } else if (mode.equals("hud")) {
+                Field v = GuiIngame.class.getDeclaredField("prevVignetteBrightness");
+                v.setAccessible(true);
+                v.setFloat(mc.ingameGUI, 1.0F);
+                mc.ingameGUI.renderGameOverlay(0.0F, false, mx, my);
                 save(name, org.lwjgl.opengl.EXTFramebufferObject.GL_COLOR_ATTACHMENT0_EXT);
             } else if (mode.equals("loading")) {
                 LoadingScreenRenderer l = new LoadingScreenRenderer(mc);

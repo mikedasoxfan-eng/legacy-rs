@@ -165,6 +165,13 @@ pub struct App {
     /// Cursor position in window pixels (for the GUI).
     cursor: (f64, f64),
     paused: bool,
+    /// `GuiIngame` and the player state it draws.
+    ingame: gui::ingame::GuiIngame,
+    hud: gui::ingame::HudPlayer,
+    chunks_loaded: usize,
+    /// Chunk meshes uploaded this second (`WorldRenderer.chunksUpdated`) and the last count.
+    chunk_updates: u32,
+    debug_line: String,
     started: Instant,
     gui_ticks: Instant,
     world_time: i64,
@@ -212,6 +219,11 @@ impl App {
             grabbed: false,
             cursor: (0.0, 0.0),
             paused: false,
+            ingame: gui::ingame::GuiIngame::new(),
+            hud: gui::ingame::HudPlayer::default(),
+            chunks_loaded: 0,
+            chunk_updates: 0,
+            debug_line: String::new(),
             started: Instant::now(),
             gui_ticks: Instant::now(),
             world_time: 0,
@@ -493,6 +505,7 @@ impl App {
         // GuiScreen.updateScreen runs every game tick (20 per second).
         let mut gui_ticks = 0;
         while now >= self.gui_ticks && gui_ticks < 20 {
+            self.ingame.update_tick();
             if let Some(g) = &mut self.gui {
                 g.update_screen();
             }
@@ -548,11 +561,14 @@ impl App {
                     Ok(FromWorker::Mesh { cx, cz, opaque, translucent }) => {
                         gpu.upload_chunk(cx, cz, &opaque, &translucent);
                         uploads += 1;
+                        self.chunk_updates += 1;
                         self.idle = false;
                     }
                     Ok(FromWorker::Drop { cx, cz }) => gpu.remove_chunk(cx, cz),
-                    Ok(FromWorker::Time { time, weather, terrain, bolts }) => {
+                    Ok(FromWorker::Time { time, brightness, chunks, weather, terrain, bolts }) => {
                         new_ticks += 1;
+                        self.hud.brightness = brightness;
+                        self.chunks_loaded = chunks;
                         self.cloud_ticks += 1;
                         self.fog_fade[0] = self.fog_fade[1];
                         // EntityRenderer.updateRenderer: on Far, (3-renderDistance)/3=1.
@@ -734,21 +750,37 @@ impl App {
         let capture = want_shot || self.keys.remove(&KeyCode::F2) || flow_shot.is_some();
         let (Some(gpu), Some(gui)) = (&mut self.gpu, &mut self.gui) else { return };
         let cursor = self.cursor;
+        let ingame = &mut self.ingame;
+        let mut hud = self.hud.clone();
+        hud.pos = [self.cam.pos.x, self.cam.pos.y, self.cam.pos.z];
+        hud.yaw = self.cam.yaw;
+        let debug = gui::ingame::DebugInfo {
+            fps_line: self.debug_line.clone(),
+            renders: format!("C: {}/{}. F: 0, O: 0, E: 0", gpu.chunk_count(), gpu.chunk_count()),
+            entities: "E: 0/0. B: 0, I: 0".into(),
+            particles: format!("P: {}. T: All: 0", self.particles.len()),
+            chunks: format!("ServerChunkCache: {} Drop: 0", self.chunks_loaded),
+            ..memory_info()
+        };
         let shot = gpu.render_with_overlay(&params, capture, &mut |device, queue, view, size| {
-            if gui.screen.is_none() {
-                return;
-            }
-            gui.ui.gl.begin_frame();
-            // What renderWorld + renderGameOverlay leave behind.
-            let gl = &mut gui.ui.gl;
-            gl.texture_2d = true;
-            gl.blend = false;
-            gl.alpha_test = true;
-            gl.depth_test = true;
-            gl.color4f(1.0, 1.0, 1.0, 1.0);
             let (mx, my) = gui.gui_mouse(cursor.0, cursor.1);
-            gui.draw_screen(mx, my, gui_partial);
-            gui.renderer.render(device, queue, view, size, &gui.ui.gl, None);
+            let screen_open = gui.screen.is_some();
+            // EntityRenderer: the game overlay (unless F1), then the screen on a cleared depth.
+            if !gui.ui.settings.hide_gui || screen_open {
+                gui.ui.gl.begin_frame();
+                let gl = &mut gui.ui.gl;
+                gl.texture_2d = true;
+                gl.alpha_test = true;
+                gl.depth_test = true;
+                gl.color4f(1.0, 1.0, 1.0, 1.0);
+                ingame.render_game_overlay(&mut gui.ui, gui_partial, false, &hud, &debug);
+                gui.renderer.render(device, queue, view, size, &gui.ui.gl, None);
+            }
+            if screen_open {
+                gui.ui.gl.begin_frame();
+                gui.draw_screen(mx, my, gui_partial);
+                gui.renderer.render(device, queue, view, size, &gui.ui.gl, None);
+            }
         });
         if let (Some(img), Some((dir, name))) = (&shot, &flow_shot) {
             let _ = assets::save_png(img, &dir.join(format!("{name}.png")));
@@ -773,6 +805,8 @@ impl App {
         if self.fps_time.elapsed().as_secs_f64() >= 1.0 {
             self.fps = self.fps_frames;
             self.fps_frames = 0;
+            self.debug_line = format!("{} fps, {} chunk updates", self.fps, self.chunk_updates);
+            self.chunk_updates = 0;
             let Some(gpu) = &self.gpu else { return };
             if std::env::var_os("BETA_FPS").is_some() {
                 eprintln!("fps {} chunks {}", self.fps, gpu.chunk_count());
@@ -945,6 +979,16 @@ impl ApplicationHandler for App {
                                     self.display_ingame_menu();
                                     self.apply_gui_actions(el);
                                 }
+                                KeyCode::F1 => {
+                                    if let Some(g) = &mut self.gui {
+                                        g.ui.settings.hide_gui = !g.ui.settings.hide_gui;
+                                    }
+                                }
+                                KeyCode::F3 => {
+                                    if let Some(g) = &mut self.gui {
+                                        g.ui.settings.show_debug_info = !g.ui.settings.show_debug_info;
+                                    }
+                                }
                                 KeyCode::KeyT if !event.repeat => {
                                     if let Some(tx) = &self.tx {
                                         let _ = tx.send(ToWorker::AddTime(1000));
@@ -981,4 +1025,24 @@ impl ApplicationHandler for App {
             }
         }
     }
+}
+
+/// The F3 memory lines' numbers. The original shows the Java heap; here: this process's
+/// working set out of a quarter of physical memory (the JVM's default maximum heap).
+fn memory_info() -> gui::ingame::DebugInfo {
+    use windows_sys::Win32::System::ProcessStatus::{GetProcessMemoryInfo, PROCESS_MEMORY_COUNTERS};
+    use windows_sys::Win32::System::SystemInformation::{GlobalMemoryStatusEx, MEMORYSTATUSEX};
+    use windows_sys::Win32::System::Threading::GetCurrentProcess;
+    let mut pmc: PROCESS_MEMORY_COUNTERS = unsafe { std::mem::zeroed() };
+    pmc.cb = std::mem::size_of::<PROCESS_MEMORY_COUNTERS>() as u32;
+    let mut ms: MEMORYSTATUSEX = unsafe { std::mem::zeroed() };
+    ms.dwLength = std::mem::size_of::<MEMORYSTATUSEX>() as u32;
+    // SAFETY: both structs are sized and owned here; the handle is the current process.
+    let ok = unsafe { GetProcessMemoryInfo(GetCurrentProcess(), &mut pmc, pmc.cb) != 0 && GlobalMemoryStatusEx(&mut ms) != 0 };
+    if !ok {
+        return Default::default();
+    }
+    let total = pmc.PagefileUsage as i64;
+    let used = pmc.WorkingSetSize as i64;
+    gui::ingame::DebugInfo { max_memory: (ms.ullTotalPhys / 4) as i64, total_memory: total.max(used), free_memory: (total - used).max(0), ..Default::default() }
 }

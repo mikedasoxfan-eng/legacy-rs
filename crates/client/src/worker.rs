@@ -48,6 +48,9 @@ pub enum FromWorker {
     },
     Time {
         time: i64,
+        /// `EntityPlayer.getEntityBrightness` at the camera (vignette), loaded chunk count.
+        brightness: f32,
+        chunks: usize,
         weather: crate::render::weather::Weather,
         terrain: crate::render::weather::Snapshot,
         bolts: Vec<crate::render::weather::Lightning>,
@@ -302,7 +305,9 @@ fn run(opts: WorldOptions, col: Colorizers, rx: Receiver<ToWorker>, tx: Sender<F
                 })
                 .collect();
             strike_cursor = world.lightning_strikes.len();
-            let _ = tx.send(FromWorker::Time { time: world.world_time, weather, terrain, bolts });
+            let brightness = entity_brightness(&mut world, cam);
+            let chunks = world.chunks.len();
+            let _ = tx.send(FromWorker::Time { time: world.world_time, brightness, chunks, weather, terrain, bolts });
             next_tick += Duration::from_millis(50);
             ticks += 1;
         }
@@ -392,6 +397,21 @@ fn run(opts: WorldOptions, col: Colorizers, rx: Receiver<ToWorker>, tx: Sender<F
             std::thread::sleep(wait);
         }
     }
+}
+
+/// `Entity.getEntityBrightness` for a player whose eyes are at `cam` (1.8 tall, eyes 1.62 up).
+fn entity_brightness(world: &mut World, cam: (f64, f64, f64)) -> f32 {
+    let feet = cam.1 - 1.62;
+    let (x0, x1) = (cam.0 - 0.3, cam.0 + 0.3);
+    let (z0, z1) = (cam.2 - 0.3, cam.2 + 0.3);
+    let fl = worldgen::math::floor_double;
+    if !world.check_chunks_exist(fl(x0), fl(feet), fl(z0), fl(x1), fl(feet + 1.8), fl(z1)) {
+        return 0.0;
+    }
+    let h = (feet + 1.8 - feet) * 0.66;
+    let (x, y, z) = (fl(cam.0), fl(cam.1 - 1.62 + h), fl(cam.2));
+    let l = world.get_block_light_value(x, y, z);
+    world.light_brightness_table[l.clamp(0, 15) as usize]
 }
 
 /// `WorldRenderer.updateRenderer` for a whole 16x128x16 chunk: both render passes.
