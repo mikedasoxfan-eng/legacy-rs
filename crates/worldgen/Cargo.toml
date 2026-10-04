@@ -1,0 +1,7 @@
+[package]
+name = "worldgen"
+version = "0.1.0"
+edition = "2021"
+description = "Bit-exact port of Minecraft Beta 1.7.3 overworld generation"
+
+[dependencies]
