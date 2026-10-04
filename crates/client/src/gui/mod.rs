@@ -40,6 +40,7 @@ pub const TEXTURES: &[&str] = &[
     "terrain.png",
     "%blur%/misc/vignette.png",
     "achievement/bg.png",
+    "gui/slot.png",
     "gui/inventory.png",
     "gui/crafting.png",
     "gui/container.png",

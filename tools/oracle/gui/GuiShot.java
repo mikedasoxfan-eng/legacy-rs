@@ -160,6 +160,7 @@ public class GuiShot {
                     else if (which.equals("texturepacks")) s = new GuiTexturePacks(title);
                     else if (which.equals("achievements")) s = new GuiAchievements(mc.statFileWriter);
                     else if (which.equals("gameover")) s = new GuiGameOver();
+                    else if (which.equals("stats")) s = new GuiStats(title, mc.statFileWriter);
                     else if (which.equals("inventory") || which.equals("crafting") || which.equals("chest") || which.equals("largechest") || which.equals("furnace") || which.equals("dispenser")) {
                         EntityPlayerSP p = mc.thePlayer;
                         p.inventory = new InventoryPlayer(p); p.inventorySlots = new ContainerPlayer(p.inventory);
@@ -210,6 +211,14 @@ public class GuiShot {
                     int id=Integer.parseInt(a[0]);mc.thePlayer.inventory.setItemStack(id<0?null:new ItemStack(id,Integer.parseInt(a[1]),Integer.parseInt(a[2])));
                 } else if(cmd.equals("furnace")) {
                     furnace.furnaceCookTime=Integer.parseInt(a[0]);furnace.furnaceBurnTime=Integer.parseInt(a[1]);furnace.currentItemBurnTime=Integer.parseInt(a[2]);
+                } else if (cmd.equals("statsreset")) {
+                    for (String fn : new String[] {"field_25102_a", "field_25101_b"}) {
+                        Field f = StatFileWriter.class.getDeclaredField(fn);
+                        f.setAccessible(true);
+                        ((java.util.Map) f.get(mc.statFileWriter)).clear();
+                    }
+                } else if (cmd.equals("stat")) {
+                    mc.statFileWriter.readStat(StatList.func_27361_a(Integer.parseInt(a[0])), Integer.parseInt(a[1]));
                 } else if (cmd.equals("clear")) {
                     clear = Integer.parseInt(a[0]) / 255.0F;
                 } else if (cmd.equals("normalprobe")) {
