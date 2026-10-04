@@ -45,6 +45,7 @@ impl PlayerControllerSP {
     ) {
         let (fx, fy, fz) = super::placement::offset(x, y, z, side);
         if w.get_block_id(fx, fy, fz) == FIRE {
+            w.auxiliary_effect(1004, (fx, fy, fz), 0);
             w.set_block_with_notify(fx, fy, fz, 0);
         }
         let id = w.get_block_id(x, y, z);
@@ -66,6 +67,19 @@ impl PlayerControllerSP {
                 return;
             }
             self.cur_block_damage += p.relative_block_hardness(w, id);
+            if self.step_sound_counter % 4.0 == 0.0 {
+                let (name, volume, pitch) = crate::world::events::step_sound(id);
+                w.direct_sound(
+                    name,
+                    Some(Vec3D::new(
+                        (x as f32 + 0.5) as f64,
+                        (y as f32 + 0.5) as f64,
+                        (z as f32 + 0.5) as f64,
+                    )),
+                    (volume + 1.0) / 8.0,
+                    pitch * 0.5,
+                );
+            }
             self.step_sound_counter += 1.0;
             if self.cur_block_damage >= 1.0 {
                 self.remove_block(p, w, x, y, z, side);
@@ -95,6 +109,7 @@ impl PlayerControllerSP {
             return false;
         }
         let meta = w.get_block_metadata(x, y, z);
+        w.auxiliary_effect(2001, (x, y, z), id as i32 + meta * 256);
         let removed = w.set_block_with_notify(x, y, z, 0);
         if removed && id == 46 && meta & 1 != 0 {
             w.ignite_tnt(x, y, z);
@@ -152,6 +167,9 @@ impl Entity {
         }
     }
     pub fn block_clicked(&mut self, w: &mut World, id: u8, x: i32, y: i32, z: i32) {
+        if id == 25 {
+            w.trigger_note(x, y, z, false);
+        }
         if matches!(id, 64 | 71 | 69 | 77 | 96) {
             self.activate_block(w, x, y, z);
         }

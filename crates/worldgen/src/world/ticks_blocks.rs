@@ -149,7 +149,7 @@ pub fn still_lava(w: &mut World, mut x: i32, mut y: i32, mut z: i32, rs: RandSel
     }
 }
 
-fn can_catch_fire(w: &mut World, x: i32, y: i32, z: i32) -> bool {
+pub(crate) fn can_catch_fire(w: &mut World, x: i32, y: i32, z: i32) -> bool {
     fire_rates(w.get_block_id(x, y, z)).0 > 0
 }
 

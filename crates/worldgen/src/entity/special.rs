@@ -379,13 +379,13 @@ impl Entity {
             self.living.render_yaw_offset = self.yaw;
             if self.can_see_target(w, t) {
                 if s.attack_counter == 10 {
-                    self.rand.next_float();
-                    self.rand.next_float();
+                    let pitch = (self.rand.next_float() - self.rand.next_float()) * 0.2 + 1.0;
+                    w.play_sound_at_entity(self, "mob.ghast.charge", 10.0, pitch);
                 }
                 s.attack_counter += 1;
                 if s.attack_counter == 20 {
-                    self.rand.next_float();
-                    self.rand.next_float();
+                    let pitch = (self.rand.next_float() - self.rand.next_float()) * 0.2 + 1.0;
+                    w.play_sound_at_entity(self, "mob.ghast.fireball", 10.0, pitch);
                     let mut fireball = Self::fireball_from_owner(w, self, aim);
                     let look = self.look_vector().unwrap();
                     fireball.pos = Vec3D::new(
@@ -580,8 +580,13 @@ impl Entity {
                 s.prev_shake_time = 0.0;
             } else if (s.shaking || s.shake_active) && s.shake_active {
                 if s.shake_time == 0.0 {
-                    self.rand.next_float();
-                    self.rand.next_float();
+                    let pitch = (self.rand.next_float() - self.rand.next_float()) * 0.2 + 1.0;
+                    w.play_sound(
+                        "mob.wolf.shake",
+                        self.pos.add(0.0, -(self.y_offset as f64), 0.0),
+                        0.4,
+                        pitch,
+                    );
                 }
                 s.prev_shake_time = s.shake_time;
                 s.shake_time += 0.05;
@@ -594,8 +599,17 @@ impl Entity {
                 if s.shake_time > 0.4 {
                     let n = (math::sin((s.shake_time - 0.4) * PI) * 7.0) as i32;
                     for _ in 0..n {
-                        self.rand.next_float();
-                        self.rand.next_float();
+                        let dx = (self.rand.next_float() * 2.0 - 1.0) * self.width * 0.5;
+                        let dz = (self.rand.next_float() * 2.0 - 1.0) * self.width * 0.5;
+                        w.spawn_particle(
+                            "splash",
+                            super::Vec3D::new(
+                                self.pos.x + dx as f64,
+                                (self.bounding_box.min_y as f32 + 0.8) as f64,
+                                self.pos.z + dz as f64,
+                            ),
+                            self.motion,
+                        );
                     }
                 }
             }

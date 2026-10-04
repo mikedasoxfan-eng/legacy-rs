@@ -15,7 +15,8 @@ impl Entity {
             self.motion.y = 0.2f32 as f64;
             self.motion.x = ((self.rand.next_float() - self.rand.next_float()) * 0.2) as f64;
             self.motion.z = ((self.rand.next_float() - self.rand.next_float()) * 0.2) as f64;
-            self.rand.next_float();
+            let pitch = 2.0 + self.rand.next_float() * 0.4;
+            w.play_sound_at_entity(self, "random.fizz", 0.4, pitch);
         }
         self.push_out_of_blocks(
             w,
@@ -129,6 +130,12 @@ impl super::Entity {
             if old <= 0 {
                 self.dead = true;
                 w.create_explosion(None, self.pos, 4.0);
+            } else {
+                w.spawn_particle(
+                    "smoke",
+                    self.pos.add(0.0, 0.5, 0.0),
+                    super::Vec3D::new(0.0, 0.0, 0.0),
+                );
             }
         }
     }
@@ -181,8 +188,10 @@ impl super::Entity {
         } = &mut self.kind
         {
             if *state == 2 {
-                self.rand.next_float();
-                self.rand.next_float();
+                let pitch = 0.8 + self.rand.next_float() * 0.2;
+                w.play_sound("ambient.weather.thunder", self.pos, 10000.0, pitch);
+                let pitch = 0.5 + self.rand.next_float() * 0.2;
+                w.play_sound("random.explode", self.pos, 2.0, pitch);
             }
             *state -= 1;
             let mut fire = false;

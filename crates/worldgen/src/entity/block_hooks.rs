@@ -199,7 +199,9 @@ impl World {
             (y as f32 + 0.5) as f64,
             (z as f32 + 0.5) as f64,
         );
+        let position = e.pos.add(0.0, -(e.y_offset as f64), 0.0);
         self.entity_joined_world(e);
+        self.play_sound("random.fuse", position, 1.0, 1.0);
     }
     pub fn update_pressure_plate(&mut self, id: u8, x: i32, y: i32, z: i32) {
         let old = self.get_block_metadata(x, y, z) == 1;
@@ -219,6 +221,12 @@ impl World {
             self.set_block_metadata_with_notify(x, y, z, pressed as i32);
             self.notify_blocks_of_neighbor_change(x, y, z, id);
             self.notify_blocks_of_neighbor_change(x, y - 1, z, id);
+            self.play_sound(
+                "random.click",
+                super::Vec3D::new(x as f64 + 0.5, y as f64 + 0.1, z as f64 + 0.5),
+                0.3,
+                if pressed { 0.6 } else { 0.5 },
+            );
         }
         if pressed {
             self.schedule_block_update(x, y, z, id, 20);

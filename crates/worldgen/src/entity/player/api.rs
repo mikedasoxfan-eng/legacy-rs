@@ -177,6 +177,19 @@ impl World {
             if input.left_held {
                 if let Some(Hit::Block { x, y, z, side, .. }) = hit {
                     controller.dig(&mut p, self, x, y, z, side);
+                    let block = self.get_block_id(x, y, z);
+                    let metadata = self.get_block_metadata(x, y, z);
+                    self.events
+                        .push(crate::world::events::WorldEvent::BlockHit {
+                            position: (x, y, z),
+                            side,
+                            block,
+                            metadata,
+                            bounds: {
+                                let b = self.block_bounds[block as usize];
+                                [b.min_x, b.min_y, b.min_z, b.max_x, b.max_y, b.max_z]
+                            },
+                        });
                 } else {
                     controller.reset();
                 }

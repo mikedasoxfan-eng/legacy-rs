@@ -7,8 +7,10 @@
 
 pub mod behavior;
 pub mod chunk;
+pub mod events;
 pub mod java_hash;
 pub mod light;
+pub mod music;
 pub mod server;
 pub mod tick;
 pub mod ticks_blocks;
@@ -118,6 +120,11 @@ impl Dimension {
 }
 
 pub struct World {
+    /// Ordered IWorldAccess callbacks since the last client tick.
+    pub events: Vec<events::WorldEvent>,
+    pub note_power: HashMap<(i32, i32, i32), bool>,
+    /// Call-local Random used by World.randomDisplayUpdates.
+    pub display_seed_source: crate::entity::EntitySeedSource,
     pub seed: i64,
     pub terrain: OverworldGenerator,
     pub dimension: Dimension,
@@ -218,6 +225,9 @@ impl World {
             terrain.biome_source = crate::biome::BiomeSource::hell();
         }
         World {
+            events: Vec::new(),
+            note_power: HashMap::new(),
+            display_seed_source: crate::entity::EntitySeedSource::Time,
             seed,
             dimension,
             light_brightness_table: dimension.light_brightness_table(),
@@ -989,7 +999,7 @@ impl World {
         }
         let key = (x & 15, y, z & 15);
         let id = self.chunk(cx, cz).block(x & 15, y, z & 15);
-        if matches!(id, 23 | 61 | 62) {
+        if matches!(id, 23 | 25 | 61 | 62 | 84) {
             if !self
                 .chunk(cx, cz)
                 .raw_tile_entities
@@ -1034,6 +1044,7 @@ impl World {
     pub fn remove_block_tile_entity(&mut self, x: i32, y: i32, z: i32) {
         self.loaded_tile_entities.retain(|p| *p != (x, y, z));
         self.spawner_animations.remove(&(x, y, z));
+        self.note_power.remove(&(x, y, z));
         let _ = self.get_block_tile_entity(x, y, z);
         let (cx, cz) = (x >> 4, z >> 4);
         if !self.access_chunk(cx, cz) {

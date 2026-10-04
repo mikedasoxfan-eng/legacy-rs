@@ -78,9 +78,10 @@ public final class EntityOracle {
         }
         l(out,rngState(w.rand));l(out,rngState(mathRandom()));l(out,OracleHooks.nextSeed());l(out,OracleHooks.explosionSeed());l(out,w.worldInfo.getWorldTime());for(int n:new int[]{w.field_9437_g,intField(World.class,"soundCounter",w),w.skylightSubtracted,w.field_27168_F,w.field_27172_i,w.worldInfo.getRainTime(),w.worldInfo.getThunderTime()})i(out,n);out.writeBoolean(w.worldInfo.getRaining());out.writeBoolean(w.worldInfo.getThundering());for(float v:new float[]{w.rainingStrength,w.prevRainingStrength,w.thunderingStrength,w.prevThunderingStrength})f(out,v);
         ArrayList<TileEntityMobSpawner> spawners=new ArrayList<>();for(Object te:w.loadedTileEntityList)if(te instanceof TileEntityMobSpawner)spawners.add((TileEntityMobSpawner)te);Collections.sort(spawners,(a,b)->a.xCoord!=b.xCoord?Integer.compare(a.xCoord,b.xCoord):a.yCoord!=b.yCoord?Integer.compare(a.yCoord,b.yCoord):Integer.compare(a.zCoord,b.zCoord));i(out,spawners.size());for(TileEntityMobSpawner te:spawners){i(out,te.xCoord);i(out,te.yCoord);i(out,te.zCoord);i(out,te.delay);d(out,te.yaw);d(out,te.yaw2);}
+        WorldEventOracle.snapshot(w,out);
     }
     static void objects(String scenario,int ticks,String out) throws Exception {
-        World w=scenario.equals("nether")?Oracle.newNetherWorld(0):Oracle.newWorld(0);w.chunkProvider=new FlatProvider(w);
+        World w=scenario.equals("nether")?Oracle.newNetherWorld(0):Oracle.newWorld(0);w.chunkProvider=new FlatProvider(w);WorldEventOracle.attach(w);
         EntityOtherPlayerMP player=new EntityOtherPlayerMP(w,"Player");player.setPosition(0.5,65.62,0.5);w.playerEntities.add(player);
         w.difficultySetting=2;w.setAllowedMobSpawns(false,false);
         Field id=Entity.class.getDeclaredField("nextEntityID");id.setAccessible(true);id.setInt(null,0);

@@ -130,6 +130,17 @@ impl Entity {
         };
         if w.set_block_and_metadata_with_notify(x, y, z, id, meta) {
             self.block_placed(w, id, x, y, z, side);
+            let (name, volume, pitch) = crate::world::events::step_sound(id);
+            w.play_sound(
+                name,
+                Vec3D::new(
+                    (x as f32 + 0.5) as f64,
+                    (y as f32 + 0.5) as f64,
+                    (z as f32 + 0.5) as f64,
+                ),
+                (volume + 1.0) / 2.0,
+                pitch * 0.8,
+            );
             stack.count -= 1;
         }
         true

@@ -339,16 +339,30 @@ fn check_for_harden(w: &mut World, id: u8, x: i32, y: i32, z: i32) {
         } else if meta <= 4 {
             w.set_block_with_notify(x, y, z, block::COBBLESTONE);
         }
-        trigger_lava_mix_effects(w);
+        trigger_lava_mix_effects(w, x, y, z);
     }
 }
 
 /// `triggerLavaMixEffects`: only the sound pitch touches World.rand.
-fn trigger_lava_mix_effects(w: &mut World) {
-    let _ = w.rand.next_float();
-    let _ = w.rand.next_float();
-    for _ in 0..16 {
-        w.math_random.next_double();
+fn trigger_lava_mix_effects(w: &mut World, x: i32, y: i32, z: i32) {
+    let pitch = 2.6 + (w.rand.next_float() - w.rand.next_float()) * 0.8;
+    w.play_sound(
+        "random.fizz",
+        crate::entity::Vec3D::new(
+            (x as f32 + 0.5) as f64,
+            (y as f32 + 0.5) as f64,
+            (z as f32 + 0.5) as f64,
+        ),
+        0.5,
+        pitch,
+    );
+    for _ in 0..8 {
+        let p = crate::entity::Vec3D::new(
+            x as f64 + w.math_random.next_double(),
+            y as f64 + 1.2,
+            z as f64 + w.math_random.next_double(),
+        );
+        w.spawn_particle("largesmoke", p, crate::entity::Vec3D::new(0.0, 0.0, 0.0));
     }
 }
 
@@ -507,7 +521,7 @@ fn flow_into_block(w: &mut World, id: u8, x: i32, y: i32, z: i32, decay: i32) {
         let cur = w.get_block_id(x, y, z);
         if cur > 0 {
             if fluid_material(id) == MAT_LAVA {
-                trigger_lava_mix_effects(w);
+                trigger_lava_mix_effects(w, x, y, z);
             } else {
                 let meta = w.get_block_metadata(x, y, z);
                 drop_block_as_item(w, cur, x, y, z, meta);

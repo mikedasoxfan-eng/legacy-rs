@@ -288,9 +288,13 @@ impl World {
         {
             return;
         }
-        for _ in 0..3 {
-            self.rand.next_float();
-        }
+        let p = Vec3D::new(
+            (x as f32 + self.rand.next_float()) as f64,
+            (y as f32 + self.rand.next_float()) as f64,
+            (z as f32 + self.rand.next_float()) as f64,
+        );
+        self.spawn_particle("smoke", p, Vec3D::default());
+        self.spawn_particle("flame", p, Vec3D::default());
         let animation = self
             .spawner_animations
             .entry((x, y, z))
@@ -338,11 +342,18 @@ impl World {
             if e.get_can_spawn_here(self) {
                 let id = e.entity_id;
                 self.entity_joined_world(e);
-                for _ in 0..60 {
-                    self.rand.next_float();
+                for _ in 0..20 {
+                    let p = Vec3D::new(
+                        x as f64 + 0.5 + ((self.rand.next_float() as f64) - 0.5) * 2.0,
+                        y as f64 + 0.5 + ((self.rand.next_float() as f64) - 0.5) * 2.0,
+                        z as f64 + 0.5 + ((self.rand.next_float() as f64) - 0.5) * 2.0,
+                    );
+                    self.spawn_particle("smoke", p, Vec3D::default());
+                    self.spawn_particle("flame", p, Vec3D::default());
                 }
-                if let Some(e) = self.entities.get_mut(&id) {
-                    e.explosion_particle();
+                if let Some(mut e) = self.entities.remove(&id) {
+                    e.explosion_particle(self);
+                    self.entities.insert(id, e);
                 }
                 *delay = 200 + self.rand.next_int(600);
             }

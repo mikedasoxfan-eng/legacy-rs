@@ -6,6 +6,7 @@ impl World {
         self.item_random = JavaRandom::new(entity_seed + 500);
         self.explosion_seed_source = EntitySeedSource::Deterministic(entity_seed + 300);
         self.entity_seed_source = EntitySeedSource::Deterministic(entity_seed);
+        self.display_seed_source = EntitySeedSource::Deterministic(10000);
         self.math_random = JavaRandom::new(math_seed);
         self.next_entity_id = next_id;
     }

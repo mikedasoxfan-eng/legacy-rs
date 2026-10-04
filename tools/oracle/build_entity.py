@@ -19,7 +19,7 @@ assert text.count(old) == 1
 generated.write_text(text.replace(old, "protected Random rand = OracleHooks.newEntityRandom();"))
 subprocess.run(["javac", "-nowarn", "-cp", str(jar)+";"+str(build), "-d", str(build), str(generated)], check=True)
 
-def patch(class_name,hook):
+def patch(class_name,hook,method="<init>"):
     with zipfile.ZipFile(jar) as z:
         original = z.read("net/minecraft/src/"+class_name+".class")
     data = bytearray(original)
@@ -59,7 +59,7 @@ def patch(class_name,hook):
         name=utf(u2(at+2)); attributes=u2(at+6);at+=8
         for _ in range(attributes):
             attr=utf(u2(at));size=u4(at+2);body=at+6
-            if name=="<init>" and attr=="Code":
+            if name==method and attr=="Code":
                 start=body+8;end=start+u4(body+4)
                 index=data.find(pattern,start,end)
                 assert index>=0 and data.find(pattern,index+1,end)<0
@@ -84,3 +84,5 @@ def patch(class_name,hook):
 
 patch("Entity","newEntityRandom")
 patch("Explosion","newExplosionRandom")
+
+patch("World","newDisplayRandom","randomDisplayUpdates")

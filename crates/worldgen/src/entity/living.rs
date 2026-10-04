@@ -268,21 +268,9 @@ impl Entity {
             } else {
                 -120
             };
-            if let EntityKind::Wolf(s) = &self.kind {
-                if s.flags & 2 == 0 {
-                    self.rand.next_int(3);
-                }
-            }
-            if !matches!(
-                self.kind,
-                EntityKind::Squid(..)
-                    | EntityKind::Slime { .. }
-                    | EntityKind::Creeper { .. }
-                    | EntityKind::Giant
-                    | EntityKind::Player(..)
-            ) {
-                self.rand.next_float();
-                self.rand.next_float();
+            if let Some(name) = self.living_sound() {
+                let pitch = (self.rand.next_float() - self.rand.next_float()) * 0.2 + 1.0;
+                w.play_sound_at_entity(self, name, self.sound_volume(), pitch);
             }
         }
         if !self.dead && self.living.health > 0 && self.inside_opaque_block(w) {
@@ -299,8 +287,15 @@ impl Entity {
             self.air -= 1;
             if self.air == -20 {
                 self.air = 0;
-                for _ in 0..48 {
-                    self.rand.next_float();
+                for _ in 0..8 {
+                    let x = self.rand.next_float() - self.rand.next_float();
+                    let y = self.rand.next_float() - self.rand.next_float();
+                    let z = self.rand.next_float() - self.rand.next_float();
+                    w.spawn_particle(
+                        "bubble",
+                        self.pos.add(x as f64, y as f64, z as f64),
+                        self.motion,
+                    );
                 }
                 self.attack(w, None, 2);
             }
@@ -321,7 +316,7 @@ impl Entity {
             self.living.death_time += 1;
             if self.living.death_time > 20 {
                 self.set_dead(w);
-                self.explosion_particle();
+                self.death_particles(w);
             }
         }
         self.living.prev_walk_phase = self.living.walk_phase;
@@ -329,14 +324,29 @@ impl Entity {
         self.prev_yaw = self.yaw;
         self.prev_pitch = self.pitch;
     }
-    pub fn explosion_particle(&mut self) {
+    pub fn explosion_particle(&mut self, w: &mut World) {
+        self.emit_explosion_particles(w, 10.0);
+    }
+    fn death_particles(&mut self, w: &mut World) {
+        self.emit_explosion_particles(w, 0.0);
+    }
+    fn emit_explosion_particles(&mut self, w: &mut World, offset: f64) {
         for _ in 0..20 {
-            self.rand.next_gaussian();
-            self.rand.next_gaussian();
-            self.rand.next_gaussian();
-            self.rand.next_float();
-            self.rand.next_float();
-            self.rand.next_float();
+            let v = super::Vec3D::new(
+                self.rand.next_gaussian() * 0.02,
+                self.rand.next_gaussian() * 0.02,
+                self.rand.next_gaussian() * 0.02,
+            );
+            let p = super::Vec3D::new(
+                self.pos.x + (self.rand.next_float() * self.width * 2.0) as f64
+                    - self.width as f64
+                    - v.x * offset,
+                self.pos.y + (self.rand.next_float() * self.height) as f64 - v.y * offset,
+                self.pos.z + (self.rand.next_float() * self.width * 2.0) as f64
+                    - self.width as f64
+                    - v.z * offset,
+            );
+            w.spawn_particle("explode", p, v);
         }
     }
     pub(super) fn update_living(&mut self, w: &mut World) {
@@ -406,7 +416,7 @@ impl Entity {
             self.prev_pitch += 360.0;
         }
         self.living.walk_phase += phase;
-        self.slime_after_update(was_on_ground);
+        self.slime_after_update(w, was_on_ground);
     }
     fn living_update(&mut self, w: &mut World) {
         if matches!(self.kind, EntityKind::Player(..)) {
@@ -485,8 +495,8 @@ impl Entity {
             *flap += *flap_speed * 2.0;
             *egg_timer -= 1;
             if *egg_timer <= 0 {
-                self.rand.next_float();
-                self.rand.next_float();
+                let pitch = (self.rand.next_float() - self.rand.next_float()) * 0.2 + 1.0;
+                w.play_sound_at_entity(self, "mob.chickenplop", 1.0, pitch);
                 self.drop_item(w, 344, 1, 0, 0.0);
                 let next = self.rand.next_int(6000) + 6000;
                 if let EntityKind::Chicken { egg_timer, .. } = &mut self.kind {
@@ -680,8 +690,17 @@ impl Entity {
                 self.living.attacked_at_yaw =
                     (w.math_random.next_double() * 2.0) as i32 as f32 * 180.0;
             }
-            self.rand.next_float();
-            self.rand.next_float();
+            let pitch = (self.rand.next_float() - self.rand.next_float()) * 0.2 + 1.0;
+            if matches!(self.kind, EntityKind::Squid(..)) {
+                w.play_null_sound_at_entity(self, self.sound_volume(), pitch);
+            } else {
+                w.play_sound_at_entity(
+                    self,
+                    self.damage_sound(self.living.health <= 0),
+                    self.sound_volume(),
+                    pitch,
+                );
+            }
         }
         if self.living.health <= 0 {
             self.living.dying = true;

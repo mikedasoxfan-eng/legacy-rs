@@ -49,6 +49,7 @@ pub enum PlayerEvent {
     Pickup {
         entity: i32,
         count: i32,
+        source: Box<Entity>,
     },
     ChangeDimension,
     OpenContainer {
@@ -219,16 +220,16 @@ impl Entity {
         }
         let s = self.player_state_mut().unwrap();
         s.prev_time_in_portal = s.time_in_portal;
-        let mut draws = 0;
+        let mut sounds = Vec::new();
         if s.in_portal {
             if s.time_in_portal == 0.0 {
-                draws += 1;
+                sounds.push("portal.trigger");
             }
             s.time_in_portal += 0.0125;
             if s.time_in_portal >= 1.0 {
                 s.time_in_portal = 1.0;
                 s.portal_cooldown = 10;
-                draws += 1;
+                sounds.push("portal.travel");
                 s.events.push(PlayerEvent::ChangeDimension);
             }
             s.in_portal = false;
@@ -245,8 +246,9 @@ impl Entity {
         }
         let sneak = s.input.sneak;
         self.sneaking = sneak && !s.sleeping;
-        for _ in 0..draws {
-            self.rand.next_float();
+        for name in sounds {
+            let pitch = self.rand.next_float() * 0.4 + 0.8;
+            w.direct_sound(name, None, 1.0, pitch);
         }
         if sneak && self.y_size < 0.2 {
             self.y_size = 0.2;
@@ -317,14 +319,40 @@ impl Entity {
             ) {
                 if let Some(mut e) = w.entities.remove(&id) {
                     if !e.dead {
-                        self.player_pickup(&mut e);
+                        self.player_pickup(w, &mut e);
                     }
                     w.entities.insert(id, e);
                 }
             }
         }
     }
-    fn player_pickup(&mut self, e: &mut Entity) {
+    fn player_pickup(&mut self, w: &mut World, e: &mut Entity) {
+        // EntitySlime.onCollideWithPlayer runs in the same player collision pass as pickups.
+        if let EntityKind::Slime { size, .. } = e.kind {
+            let delta = Vec3D::new(
+                e.pos.x - self.pos.x,
+                e.pos.y - self.pos.y,
+                e.pos.z - self.pos.z,
+            );
+            let distance =
+                (delta.x * delta.x + delta.y * delta.y + delta.z * delta.z).sqrt() as f32;
+            if size > 1
+                && w.ray_trace_blocks(
+                    e.pos.add(0.0, e.eye_height() as f64, 0.0),
+                    self.pos.add(0.0, self.eye_height() as f64, 0.0),
+                )
+                .is_none()
+                && (distance as f64) < 0.6 * size as f64
+            {
+                w.entities.insert(e.entity_id, e.clone());
+                let hit = self.attack(w, Some(e.entity_id), size);
+                w.entities.remove(&e.entity_id);
+                if hit {
+                    let pitch = (e.rand.next_float() - e.rand.next_float()) * 0.2 + 1.0;
+                    w.play_sound_at_entity(e, "mob.slimeattack", 1.0, pitch);
+                }
+            }
+        }
         let mut pickup = None;
         if let EntityKind::Item {
             item, pickup_delay, ..
@@ -355,14 +383,15 @@ impl Entity {
             }
         }
         if let Some(count) = pickup {
-            e.rand.next_float();
-            e.rand.next_float();
+            let pitch = ((e.rand.next_float() - e.rand.next_float()) * 0.7 + 1.0) * 2.0;
+            w.play_sound_at_entity(&e, "random.pop", 0.2, pitch);
             self.player_state_mut()
                 .unwrap()
                 .events
                 .push(PlayerEvent::Pickup {
                     entity: e.entity_id,
                     count,
+                    source: Box::new(e.clone()),
                 });
         }
     }

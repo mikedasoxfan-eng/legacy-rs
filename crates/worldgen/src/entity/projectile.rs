@@ -219,7 +219,13 @@ impl Entity {
         }
         hit
     }
-    pub(super) fn projectile_advance(&mut self, drag: f32, gravity: f32, accel: Vec3D) {
+    pub(super) fn projectile_advance(
+        &mut self,
+        w: &mut World,
+        drag: f32,
+        gravity: f32,
+        accel: Vec3D,
+    ) {
         self.pos.x += self.motion.x;
         self.pos.y += self.motion.y;
         self.pos.z += self.motion.z;
@@ -238,6 +244,24 @@ impl Entity {
         }
         self.pitch = self.prev_pitch + (self.pitch - self.prev_pitch) * 0.2;
         self.yaw = self.prev_yaw + (self.yaw - self.prev_yaw) * 0.2;
+        if self.in_water {
+            for _ in 0..4 {
+                let t = 0.25f32 as f64;
+                let nan = matches!(self.kind, EntityKind::Fireball(..)) && self.dead;
+                let p = if nan {
+                    Vec3D::new(f64::NAN, f64::NAN, f64::NAN)
+                } else {
+                    self.pos
+                        .add(-self.motion.x * t, -self.motion.y * t, -self.motion.z * t)
+                };
+                let v = if nan {
+                    Vec3D::new(f64::NAN, f64::NAN, f64::NAN)
+                } else {
+                    self.motion
+                };
+                w.spawn_particle("bubble", p, v);
+            }
+        }
         // Arrows do not add zero acceleration: signed zero is observable.
         if matches!(self.kind, EntityKind::Fireball(..)) {
             self.motion.x += accel.x;
@@ -302,7 +326,8 @@ impl Entity {
                             false
                         };
                         if success {
-                            self.rand.next_float();
+                            let pitch = 1.2 / (self.rand.next_float() * 0.2 + 0.9);
+                            w.play_sound_at_entity(self, "random.drr", 1.0, pitch);
                             self.dead = true;
                         } else {
                             self.motion.x *= -0.1f32 as f64;
@@ -326,13 +351,15 @@ impl Entity {
                         self.pos.x -= self.motion.x / n * 0.05f32 as f64;
                         self.pos.y -= self.motion.y / n * 0.05f32 as f64;
                         self.pos.z -= self.motion.z / n * 0.05f32 as f64;
-                        self.rand.next_float();
+                        let pitch = 1.2 / (self.rand.next_float() * 0.2 + 0.9);
+                        w.play_sound_at_entity(self, "random.drr", 1.0, pitch);
                         s.in_ground = true;
                         s.shake = 7;
                     }
                 }
             }
             self.projectile_advance(
+                w,
                 if self.in_water { 0.8 } else { 0.99 },
                 0.03,
                 Vec3D::default(),
@@ -368,7 +395,8 @@ impl Entity {
         } else {
             s.arrow.ticks_air += 1;
         }
-        if let Some(hit) = self.projectile_intersection(w, &s.arrow, true) {
+        let impact = self.projectile_intersection(w, &s.arrow, true);
+        if let Some(hit) = impact {
             if let Hit::Entity { id, .. } = hit {
                 if let Some(mut e) = w.entities.remove(&id) {
                     e.attack(w, s.arrow.owner, 0);
@@ -378,7 +406,18 @@ impl Entity {
             w.new_explosion(None, self.pos, 1.0, true);
             self.dead = true;
         }
-        self.projectile_advance(if self.in_water { 0.8 } else { 0.95 }, 0.0, s.acceleration);
+        self.projectile_advance(
+            w,
+            if self.in_water { 0.8 } else { 0.95 },
+            0.0,
+            s.acceleration,
+        );
+        let smoke = if impact.is_some() {
+            Vec3D::new(f64::NAN, f64::NAN, f64::NAN)
+        } else {
+            self.pos.add(0.0, 0.5, 0.0)
+        };
+        w.spawn_particle("smoke", smoke, Vec3D::default());
         self.kind = EntityKind::Fireball(s);
     }
 }

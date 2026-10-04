@@ -135,14 +135,34 @@ impl World {
                 }
             }
         }
-        self.rand.next_float();
-        self.rand.next_float();
+        let pitch = (1.0 + (self.rand.next_float() - self.rand.next_float()) * 0.2) * 0.7;
+        self.play_sound("random.explode", pos, 4.0, pitch);
         for &(x, y, z) in destroyed_blocks.iter().rev() {
             let id = self.get_block_id(x, y, z);
-            // Particle coordinates and speed are evaluated even for air.
-            for _ in 0..5 {
-                self.rand.next_float();
-            }
+            let p = Vec3D::new(
+                (x as f32 + self.rand.next_float()) as f64,
+                (y as f32 + self.rand.next_float()) as f64,
+                (z as f32 + self.rand.next_float()) as f64,
+            );
+            let d = p.add(-pos.x, -pos.y, -pos.z);
+            let length = d.length() as f32 as f64;
+            let mut speed = 0.5 / (length / size as f64 + 0.1);
+            speed *= (self.rand.next_float() * self.rand.next_float() + 0.3) as f64;
+            let v = Vec3D::new(
+                d.x / length * speed,
+                d.y / length * speed,
+                d.z / length * speed,
+            );
+            self.spawn_particle(
+                "explode",
+                Vec3D::new(
+                    (p.x + pos.x * 1.0) / 2.0,
+                    (p.y + pos.y * 1.0) / 2.0,
+                    (p.z + pos.z * 1.0) / 2.0,
+                ),
+                v,
+            );
+            self.spawn_particle("smoke", p, v);
             if id > 0 {
                 let meta = self.get_block_metadata(x, y, z);
                 behavior::drop_block_with_chance(self, id, x, y, z, meta, 0.3);

@@ -72,8 +72,14 @@ impl Entity {
                 }
                 self.living.is_jumping = true;
                 if *size > 1 {
-                    self.rand.next_float();
-                    self.rand.next_float();
+                    let pitch =
+                        ((self.rand.next_float() - self.rand.next_float()) * 0.2 + 1.0) * 0.8;
+                    w.play_sound(
+                        "mob.slime",
+                        self.pos.add(0.0, -(self.y_offset as f64), 0.0),
+                        0.6,
+                        pitch,
+                    );
                 }
                 *squish = 1.0;
                 self.living.move_strafing = 1.0 - self.rand.next_float() * 2.0;
@@ -153,16 +159,33 @@ impl Entity {
             }
         }
     }
-    pub(super) fn slime_after_update(&mut self, previous_ground: bool) {
+    pub(super) fn slime_after_update(&mut self, w: &mut World, previous_ground: bool) {
         if let EntityKind::Slime { size, squish, .. } = &mut self.kind {
             if self.on_ground && !previous_ground {
                 for _ in 0..*size * 8 {
-                    self.rand.next_float();
-                    self.rand.next_float();
+                    let angle = self.rand.next_float() * PI * 2.0;
+                    let radius = self.rand.next_float() * 0.5 + 0.5;
+                    let dx = math::sin(angle) * *size as f32 * 0.5 * radius;
+                    let dz = math::cos(angle) * *size as f32 * 0.5 * radius;
+                    w.spawn_particle(
+                        "slime",
+                        super::Vec3D::new(
+                            self.pos.x + dx as f64,
+                            self.bounding_box.min_y,
+                            self.pos.z + dz as f64,
+                        ),
+                        super::Vec3D::default(),
+                    );
                 }
                 if *size > 2 {
-                    self.rand.next_float();
-                    self.rand.next_float();
+                    let pitch =
+                        ((self.rand.next_float() - self.rand.next_float()) * 0.2 + 1.0) / 0.8;
+                    w.play_sound(
+                        "mob.slime",
+                        self.pos.add(0.0, -(self.y_offset as f64), 0.0),
+                        0.6,
+                        pitch,
+                    );
                 }
                 *squish = -0.5;
             }
