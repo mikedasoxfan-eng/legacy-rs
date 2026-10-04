@@ -20,7 +20,6 @@ pub enum ToWorker {
         y: f64,
         z: f64,
     },
-    AddTime(i64),
     Settings(VideoSettings),
     /// `isGamePaused`: a screen that pauses the game is open (no ticks, no catch-up).
     Pause(bool),
@@ -50,6 +49,8 @@ pub struct InputFrame {
     pub right_pressed: bool,
     pub right_held: bool,
     pub drop_pressed: bool,
+    /// `clickMiddleMouseButton`
+    pub middle_pressed: bool,
     pub hotbar_slot: Option<u8>,
     pub scroll: i32,
     /// Numbers the frames, so the window can tell which look deltas a tick has used.
@@ -72,6 +73,7 @@ impl InputFrame {
         self.right_pressed |= n.right_pressed;
         self.right_held = n.right_held;
         self.drop_pressed |= n.drop_pressed;
+        self.middle_pressed |= n.middle_pressed;
         if n.hotbar_slot.is_some() {
             self.hotbar_slot = n.hotbar_slot;
         }
@@ -106,6 +108,7 @@ impl InputFrame {
         self.left_pressed = false;
         self.right_pressed = false;
         self.drop_pressed = false;
+        self.middle_pressed = false;
         self.hotbar_slot = None;
         self.scroll = 0;
         t
@@ -337,7 +340,6 @@ fn run(opts: WorldOptions, col: Colorizers, mut video: VideoSettings, rx: Receiv
         loop {
             match rx.try_recv() {
                 Ok(ToWorker::Camera { x, y, z }) => cam = (x, y, z),
-                Ok(ToWorker::AddTime(t)) => world.world_time += t,
                 Ok(ToWorker::Settings(next)) => {
                     if next.remesh(video) {
                         meshed.clear();
@@ -408,6 +410,17 @@ fn run(opts: WorldOptions, col: Colorizers, mut video: VideoSettings, rx: Receiv
                 // Minecraft.runTick with thePlayer: input/controller, joinEntityInSurroundings
                 // every 30 ticks, updateEntities, World.tick, randomDisplayUpdates.
                 join_player_counter += 1;
+                // Mouse events come before keyboard events in runTick: every wheel event
+                // is its own changeCurrentItem, and the middle button picks a block.
+                if input.middle_pressed {
+                    pick_block(&mut world, id);
+                }
+                if let Some(s) = world.entities.get_mut(&id).and_then(|e| e.player_state_mut()) {
+                    for _ in 0..input.scroll.abs() {
+                        s.inventory.change_current_item(input.scroll.signum());
+                    }
+                }
+                input.scroll = 0;
                 world.player_tick(id, input.take_tick_input(), join_player_counter);
                 if let Some(e) = world.entities.get(&id) {
                     cam = (e.pos.x, e.pos.y, e.pos.z);
@@ -732,4 +745,31 @@ pub fn weather_snapshot(world: &mut World, cam: (f64, f64, f64)) -> crate::rende
         }
     }
     Snapshot { columns }
+}
+
+/// `Minecraft.clickMiddleMouseButton`: select the hotbar slot holding the block looked at.
+/// An entity hit reads the block at 0,0,0 (its block fields are zero), as in vanilla.
+fn pick_block(world: &mut World, id: i32) {
+    use worldgen::entity::geometry::MovingObjectPosition;
+    let Some(e) = world.entities.get(&id).cloned() else { return };
+    let Some(hit) = e.mouse_over(world, 1.0) else { return };
+    let (x, y, z) = match hit {
+        MovingObjectPosition::Block { x, y, z, .. } => (x, y, z),
+        _ => (0, 0, 0),
+    };
+    let mut block = world.get_block_id(x, y, z) as i32;
+    block = match block {
+        2 => 3,  // grass -> dirt
+        43 => 44, // double slab -> slab
+        7 => 1,  // bedrock -> stone
+        b => b,
+    };
+    if let Some(s) = world.entities.get_mut(&id).and_then(|e| e.player_state_mut()) {
+        // InventoryPlayer.setCurrentItem: getInventorySlotContainItem, hotbar only.
+        if let Some(slot) = s.inventory.main.iter().position(|st| st.is_some_and(|st| st.id == block)) {
+            if slot < 9 {
+                s.inventory.current_item = slot as i32;
+            }
+        }
+    }
 }

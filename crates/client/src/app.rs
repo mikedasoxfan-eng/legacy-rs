@@ -24,6 +24,18 @@ struct PlayerView {
     entity: worldgen::entity::Entity,
 }
 
+/// `MouseFilter.func_22386_a` (smooth camera).
+fn mouse_filter(f: &mut [f32; 3], v: f32, k: f32) -> f32 {
+    f[0] += v;
+    let mut v = (f[0] - f[1]) * k;
+    f[2] += (v - f[2]) * 0.5;
+    if v > 0.0 && v > f[2] || v < 0.0 && v < f[2] {
+        v = f[2];
+    }
+    f[1] += v;
+    v
+}
+
 /// `Entity.setAngles` on (yaw, pitch, prevYaw, prevPitch).
 fn set_angles(look: &mut [f32; 4], yaw: f32, pitch: f32) {
     let (old_yaw, old_pitch) = (look[0], look[1]);
@@ -234,6 +246,11 @@ pub struct App {
     /// `MouseHelper` counts this frame (y up, as LWJGL reports).
     mouse_delta: (f64, f64),
     mouse_held: [bool; 2],
+    /// `MovementInputFromOptions.movementKeyStates`: set by key events, cleared when a screen
+    /// takes the focus (`resetPlayerKeyState`).
+    move_keys: [bool; 6],
+    /// `EntityRenderer.mouseFilterXAxis/YAxis` for the smooth camera (F8).
+    mouse_filter: [[f32; 3]; 2],
     input_seq: u64,
     /// Look deltas the world thread may not have applied yet when its last message left.
     pending_look: Vec<(u64, f32, f32)>,
@@ -242,6 +259,8 @@ pub struct App {
     /// Respawns asked for; older player messages are ignored.
     life: u32,
     script: Option<crate::playscript::Script>,
+    /// 20 Hz steps since the world became ready, paused or not (the script's clock).
+    script_ticks: i64,
 }
 
 impl App {
@@ -291,11 +310,14 @@ impl App {
             input: Default::default(),
             mouse_delta: (0.0, 0.0),
             mouse_held: [false; 2],
+            move_keys: [false; 6],
+            mouse_filter: [[0.0; 3]; 2],
             input_seq: 0,
             pending_look: Vec::new(),
             look: [0.0; 4],
             life: 0,
             script: None,
+            script_ticks: 0,
             fps_frames: 0,
             fps_time: Instant::now(),
             fps: 0,
@@ -487,7 +509,11 @@ impl App {
                         self.set_grab(true);
                     }
                 }
-                gui::system::GameAction::IngameUnfocus => self.set_grab(false),
+                gui::system::GameAction::IngameUnfocus => {
+                    // setIngameNotInFocus -> thePlayer.resetPlayerKeyState()
+                    self.move_keys = [false; 6];
+                    self.set_grab(false);
+                }
                 gui::system::GameAction::Respawn => {
                     // Minecraft.respawn: a new player object replaces the dead one.
                     self.life += 1;
@@ -712,20 +738,39 @@ impl App {
         } else if pressed && self.ready && !self.grabbed {
             // Clicking into the game window takes the mouse (setIngameFocus).
             self.set_grab(true);
-        } else if self.ready && self.grabbed && b < 2 {
-            self.mouse_held[b as usize] = pressed;
+        } else if self.ready && self.grabbed {
             if pressed && b == 0 {
                 self.input.left_pressed = true;
             }
             if pressed && b == 1 {
                 self.input.right_pressed = true;
             }
+            if pressed && b == 2 {
+                self.input.middle_pressed = true;
+            }
+        }
+        if b < 2 {
+            self.mouse_held[b as usize] = pressed;
         }
     }
 
     /// A key going down or up (`c` is the typed character for screens).
     fn key_input(&mut self, el: &ActiveEventLoop, code: KeyCode, c: char, pressed: bool, repeat: bool) {
         let screen_open = self.gui.as_ref().is_some_and(|g| g.screen.is_some());
+        // LWJGL delivers no repeats to the game (screens with text fields enable them).
+        let in_game_key = !screen_open && self.ready && self.loading.is_none() && !repeat;
+        if in_game_key && self.player.is_some() {
+            // thePlayer.handleKeyPress -> MovementInputFromOptions.checkKeyForMovementInput
+            if let Some(g) = &self.gui {
+                let key = lwjgl_key(code);
+                let names = ["key.forward", "key.back", "key.left", "key.right", "key.jump", "key.sneak"];
+                for (i, name) in names.iter().enumerate() {
+                    if g.ui.settings.key_bindings.iter().any(|b| b.description == *name && b.code == key) {
+                        self.move_keys[i] = pressed;
+                    }
+                }
+            }
+        }
         if pressed {
             if let Some(g) = &mut self.gui {
                 g.ui.shift_down = self.keys.contains(&KeyCode::ShiftLeft) || self.keys.contains(&KeyCode::ShiftRight);
@@ -736,7 +781,29 @@ impl App {
                     g.key_event(c, key);
                 }
                 self.apply_gui_actions(el);
-            } else if self.ready && self.loading.is_none() {
+            } else if in_game_key {
+                let key = lwjgl_key(code);
+                let bound = |name: &str| {
+                    self.gui.as_ref().is_some_and(|g| {
+                        g.ui.settings.key_bindings.iter().any(|b| b.description == name && b.code == key)
+                    })
+                };
+                if bound("key.drop") {
+                    self.input.drop_pressed = true;
+                }
+                if bound("key.fog") {
+                    // setOptionValue(RENDER_DISTANCE, shift ? -1 : 1)
+                    let shift = self.keys.contains(&KeyCode::ShiftLeft) || self.keys.contains(&KeyCode::ShiftRight);
+                    if let Some(g) = &mut self.gui {
+                        g.ui.settings.set_option_value(
+                            gui::settings::EnumOptions::RenderDistance,
+                            if shift { -1 } else { 1 },
+                        );
+                        g.ui.actions.push(gui::Action::SettingsChanged);
+                    }
+                    self.apply_gui_actions(el);
+                }
+                // key.inventory opens GuiInventory once the container screens are in.
                 match code {
                     KeyCode::Escape => {
                         self.display_ingame_menu();
@@ -752,6 +819,16 @@ impl App {
                             g.ui.settings.show_debug_info = !g.ui.settings.show_debug_info;
                         }
                     }
+                    KeyCode::F5 => {
+                        if let Some(g) = &mut self.gui {
+                            g.ui.settings.third_person_view = !g.ui.settings.third_person_view;
+                        }
+                    }
+                    KeyCode::F8 => {
+                        if let Some(g) = &mut self.gui {
+                            g.ui.settings.smooth_camera = !g.ui.settings.smooth_camera;
+                        }
+                    }
                     KeyCode::Digit1
                     | KeyCode::Digit2
                     | KeyCode::Digit3
@@ -763,20 +840,6 @@ impl App {
                     | KeyCode::Digit9 => {
                         // Keys 2..10 (LWJGL) select the hotbar slot.
                         self.input.hotbar_slot = Some((lwjgl_key(code) - 2) as u8);
-                    }
-                    _ if self.gui.as_ref().is_some_and(|g| {
-                        g.ui.settings
-                            .key_bindings
-                            .iter()
-                            .any(|b| b.description == "key.drop" && b.code == lwjgl_key(code))
-                    }) =>
-                    {
-                        self.input.drop_pressed = true;
-                    }
-                    KeyCode::KeyT if !repeat => {
-                        if let Some(tx) = &self.tx {
-                            let _ = tx.send(ToWorker::AddTime(1000));
-                        }
                     }
                     _ => {}
                 }
@@ -810,7 +873,7 @@ impl App {
         let script = self.script.as_mut()?;
         let dir = script.dir.clone();
         let mut shot = None;
-        for c in script.due(self.ticks_ready) {
+        for c in script.due(self.script_ticks) {
             use crate::playscript::Command;
             match c {
                 Command::Key(k, down) => self.key_input(el, k, '\0', down, false),
@@ -863,6 +926,9 @@ impl App {
         }
         if gui_ticks == 20 {
             self.gui_ticks = now;
+        }
+        if self.ready && self.player.is_some() {
+            self.script_ticks += gui_ticks as i64;
         }
         if let Some(g) = &mut self.gui {
             g.ui.millis =
@@ -1053,26 +1119,21 @@ impl App {
                     let k = s.mouse_sensitivity * 0.6 + 0.2;
                     let k = k * k * k * 8.0;
                     let invert = if s.invert_mouse { -1.0 } else { 1.0 };
-                    f.yaw_delta = dx as i32 as f32 * k;
-                    f.pitch_delta = dy as i32 as f32 * k * invert;
-                    let held = |name: &str| {
-                        s.key_bindings
-                            .iter()
-                            .find(|b| b.description == name)
-                            .is_some_and(|b| self.keys.iter().any(|&c| lwjgl_key(c) == b.code))
-                    };
-                    f.forward = held("key.forward");
-                    f.back = held("key.back");
-                    f.left = held("key.left");
-                    f.right = held("key.right");
-                    f.jump = held("key.jump");
-                    f.sneak = held("key.sneak");
+                    let mut x = dx as i32 as f32 * k;
+                    let mut y = dy as i32 as f32 * k;
+                    if s.smooth_camera {
+                        x = mouse_filter(&mut self.mouse_filter[0], x, 0.05 * k);
+                        y = mouse_filter(&mut self.mouse_filter[1], y, 0.05 * k);
+                    }
+                    f.yaw_delta = x;
+                    f.pitch_delta = y * invert;
                 }
+                // Mouse.isButtonDown with the screen gone and the game focused.
                 f.left_held = self.mouse_held[0];
                 f.right_held = self.mouse_held[1];
-            } else {
-                self.mouse_held = [false; 2];
             }
+            let m = self.move_keys;
+            (f.forward, f.back, f.left, f.right, f.jump, f.sneak) = (m[0], m[1], m[2], m[3], m[4], m[5]);
             self.input_seq += 1;
             f.seq = self.input_seq;
             if f.yaw_delta != 0.0 || f.pitch_delta != 0.0 {

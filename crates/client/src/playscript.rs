@@ -1,5 +1,6 @@
 //! `--play-script <file>`: drive the player from a text file, for testing the game without
-//! anyone at the keyboard. One command per line, run once the world has ticked that often:
+//! anyone at the keyboard. One command per line, run that many 20 Hz steps after the player
+//! appears (the clock keeps running while the game is paused):
 //!
 //! ```text
 //! 20 key W down        # keys by winit name: W, Space, ShiftLeft, Digit1, Q, Escape...
