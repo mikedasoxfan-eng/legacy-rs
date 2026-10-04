@@ -9,6 +9,7 @@ name = "beta"
 path = "src/main.rs"
 
 [dependencies]
+chrono = { version = "0.4", default-features = false, features = ["clock"] }
 bytemuck = { version = "1.25.2", features = ["derive"] }
 glam = "0.34.0"
 png = "0.18.1"

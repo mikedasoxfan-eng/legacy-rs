@@ -11,6 +11,7 @@
 //!          --world-rand <n>  --at x,y,z,yaw,pitch  --shot <file.png>
 
 mod assets;
+mod gui;
 mod render;
 mod worker;
 
@@ -536,6 +537,24 @@ fn main() {
     if args.get(1).map(String::as_str) == Some("--modelcheck") {
         let ok = render::entity::check::model_check(args.get(2).expect("--modelcheck oracle-models.bin"));
         println!("{}", if ok { "MODELS EXACT" } else { "MODELS DIFFER" });
+        std::process::exit(if ok { 0 } else { 1 });
+    }
+    if args.get(1).map(String::as_str) == Some("--guishot") {
+        let script = args.get(2).expect("--guishot script.txt outdir");
+        let out = std::path::Path::new(args.get(3).map(String::as_str).unwrap_or("shots/gui"));
+        if let Err(e) = gui::shot::run(script, out) {
+            eprintln!("{e}");
+            std::process::exit(1);
+        }
+        return;
+    }
+    if args.get(1).map(String::as_str) == Some("--guidiff") {
+        let ok = gui::shot::diff(
+            std::path::Path::new(&args[2]),
+            std::path::Path::new(&args[3]),
+            args.get(4).map(std::path::Path::new),
+        );
+        println!("{}", if ok { "GUI EXACT" } else { "GUI DIFFERS" });
         std::process::exit(if ok { 0 } else { 1 });
     }
     if args.get(1).map(String::as_str) == Some("--skycolor") {

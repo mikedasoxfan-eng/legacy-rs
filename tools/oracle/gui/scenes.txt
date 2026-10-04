@@ -1,0 +1,48 @@
+# GUI scenes captured from both the original client and the port (tools/oracle/guishot.sh).
+saves ../out/guisaves
+millis 250
+mojang
+shot mojang
+splash Ported to Rust!
+open title
+mouse -1 -1
+shot title
+mouse 213 124
+shot title_hover_singleplayer
+mouse 160 184
+shot title_hover_options
+open options
+mouse 300 200
+shot options
+open video
+shot video
+open controls
+mouse 190 40
+shot controls
+open select
+mouse -1 -1
+shot select
+mouse 200 52
+down
+shot select_pressed
+up
+shot select_clicked
+mouse 213 225
+shot select_hover_rename
+open create
+update 3
+shot create
+key 30 97
+key 14 8
+key 31 115
+shot create_typed
+open rename World1
+update 7
+shot rename
+open texturepacks
+mouse 100 50
+shot texturepacks
+loading 42 Generating level|Building terrain
+shot loading
+loading -1 Loading level|
+shot loading_nobar

@@ -1,0 +1,241 @@
+//! `GuiOptions`, `GuiVideoSettings`, `GuiControls`
+
+use crate::gui::keynames::KEY_NAMES;
+use crate::gui::settings::EnumOptions;
+use crate::gui::widgets::{ButtonKind, GuiButton};
+use crate::gui::{set_world_and_resolution, Action, Screen, ScreenBase, Ui};
+
+/// Small buttons and sliders for a list of options, two per row (`initGui` loop).
+fn option_buttons(ui: &Ui, base: &mut ScreenBase, opts: &[EnumOptions]) {
+    let (w, h) = (base.width, base.height);
+    for (i, &o) in opts.iter().enumerate() {
+        let i = i as i32;
+        let (x, y) = (w / 2 - 155 + i % 2 * 160, h / 6 + 24 * (i >> 1));
+        let label = ui.settings.get_key_binding(&ui.lang, o);
+        base.buttons.push(if o.is_float() {
+            GuiButton::slider(o.ordinal(), x, y, o, label, ui.settings.get_option_float_value(o))
+        } else {
+            GuiButton::option(o.ordinal(), x, y, o, label)
+        });
+    }
+}
+
+/// `if (id < 100 && button instanceof GuiSmallButton)`: cycle the option, relabel.
+fn toggle_option(ui: &mut Ui, base: &mut ScreenBase, id: i32) {
+    let Some(b) = base.buttons.iter_mut().find(|b| b.id == id) else { return };
+    if id < 100 {
+        if let ButtonKind::Small(o) = b.kind {
+            if let Some(o) = o {
+                ui.settings.set_option_value(o, 1);
+                ui.actions.push(Action::SettingsChanged);
+            }
+            if let Some(o) = EnumOptions::from_ordinal(id) {
+                b.text = ui.settings.get_key_binding(&ui.lang, o);
+            }
+        }
+    }
+}
+
+pub struct GuiOptions {
+    base: ScreenBase,
+    parent: Option<Box<dyn Screen>>,
+    title: String,
+}
+
+impl GuiOptions {
+    pub fn new(parent: Box<dyn Screen>) -> GuiOptions {
+        GuiOptions { base: ScreenBase::default(), parent: Some(parent), title: "Options".into() }
+    }
+}
+
+impl Screen for GuiOptions {
+    fn base(&mut self) -> &mut ScreenBase {
+        &mut self.base
+    }
+
+    fn init_gui(&mut self, ui: &mut Ui) {
+        self.title = ui.translate("options.title");
+        option_buttons(
+            ui,
+            &mut self.base,
+            &[EnumOptions::Music, EnumOptions::Sound, EnumOptions::InvertMouse, EnumOptions::Sensitivity, EnumOptions::Difficulty],
+        );
+        let (w, h) = (self.base.width, self.base.height);
+        self.base.buttons.push(GuiButton::new(101, w / 2 - 100, h / 6 + 96 + 12, ui.translate("options.video")));
+        self.base.buttons.push(GuiButton::new(100, w / 2 - 100, h / 6 + 120 + 12, ui.translate("options.controls")));
+        self.base.buttons.push(GuiButton::new(200, w / 2 - 100, h / 6 + 168, ui.translate("gui.done")));
+    }
+
+    fn action_performed(&mut self, ui: &mut Ui, id: i32) {
+        if !self.base.buttons.iter().any(|b| b.id == id && b.enabled) {
+            return;
+        }
+        toggle_option(ui, &mut self.base, id);
+        match id {
+            101 => {
+                ui.settings.save();
+                ui.display_child(|me| Box::new(GuiVideoSettings::new(me)));
+            }
+            100 => {
+                ui.settings.save();
+                ui.display_child(|me| Box::new(GuiControls::new(me)));
+            }
+            200 => {
+                ui.settings.save();
+                ui.display(self.parent.take());
+            }
+            _ => {}
+        }
+    }
+
+    fn draw_screen(&mut self, ui: &mut Ui, mx: i32, my: i32, _partial: f32) {
+        let (w, h) = (self.base.width, self.base.height);
+        ui.draw_world_background(w, h, 0);
+        let t = self.title.clone();
+        ui.draw_centered_string(&t, w / 2, 20, 16777215);
+        self.draw_buttons(ui, mx, my);
+    }
+}
+
+pub struct GuiVideoSettings {
+    base: ScreenBase,
+    parent: Option<Box<dyn Screen>>,
+    title: String,
+}
+
+impl GuiVideoSettings {
+    pub fn new(parent: Box<dyn Screen>) -> GuiVideoSettings {
+        GuiVideoSettings { base: ScreenBase::default(), parent: Some(parent), title: "Video Settings".into() }
+    }
+}
+
+impl Screen for GuiVideoSettings {
+    fn base(&mut self) -> &mut ScreenBase {
+        &mut self.base
+    }
+
+    fn init_gui(&mut self, ui: &mut Ui) {
+        self.title = ui.translate("options.videoTitle");
+        option_buttons(
+            ui,
+            &mut self.base,
+            &[
+                EnumOptions::Graphics,
+                EnumOptions::RenderDistance,
+                EnumOptions::AmbientOcclusion,
+                EnumOptions::FramerateLimit,
+                EnumOptions::Anaglyph,
+                EnumOptions::ViewBobbing,
+                EnumOptions::GuiScale,
+                EnumOptions::AdvancedOpengl,
+            ],
+        );
+        let (w, h) = (self.base.width, self.base.height);
+        self.base.buttons.push(GuiButton::new(200, w / 2 - 100, h / 6 + 168, ui.translate("gui.done")));
+    }
+
+    fn action_performed(&mut self, ui: &mut Ui, id: i32) {
+        if !self.base.buttons.iter().any(|b| b.id == id && b.enabled) {
+            return;
+        }
+        toggle_option(ui, &mut self.base, id);
+        if id == 200 {
+            ui.settings.save();
+            ui.display(self.parent.take());
+        }
+        // Re-layout at the (possibly new) GUI scale, even when leaving.
+        let sr = ui.scaled();
+        set_world_and_resolution(self, ui, sr.width, sr.height);
+    }
+
+    fn draw_screen(&mut self, ui: &mut Ui, mx: i32, my: i32, _partial: f32) {
+        let (w, h) = (self.base.width, self.base.height);
+        ui.draw_world_background(w, h, 0);
+        let t = self.title.clone();
+        ui.draw_centered_string(&t, w / 2, 20, 16777215);
+        self.draw_buttons(ui, mx, my);
+    }
+}
+
+pub struct GuiControls {
+    base: ScreenBase,
+    parent: Option<Box<dyn Screen>>,
+    title: String,
+    button_id: i32,
+}
+
+impl GuiControls {
+    pub fn new(parent: Box<dyn Screen>) -> GuiControls {
+        GuiControls { base: ScreenBase::default(), parent: Some(parent), title: "Controls".into(), button_id: -1 }
+    }
+
+    fn left(&self) -> i32 {
+        self.base.width / 2 - 155
+    }
+}
+
+/// `GameSettings.getOptionDisplayString`: LWJGL's key name.
+fn key_name(ui: &Ui, i: usize) -> String {
+    let code = ui.settings.key_bindings[i].code;
+    KEY_NAMES.get(code as usize).copied().flatten().unwrap_or("").to_string()
+}
+
+impl Screen for GuiControls {
+    fn base(&mut self) -> &mut ScreenBase {
+        &mut self.base
+    }
+
+    fn init_gui(&mut self, ui: &mut Ui) {
+        let x = self.left();
+        let h = self.base.height;
+        for i in 0..ui.settings.key_bindings.len() {
+            let n = i as i32;
+            let name = key_name(ui, i);
+            self.base.buttons.push(GuiButton {
+                kind: ButtonKind::Small(None),
+                ..GuiButton::sized(n, x + n % 2 * 160, h / 6 + 24 * (n >> 1), 70, 20, name)
+            });
+        }
+        let w = self.base.width;
+        self.base.buttons.push(GuiButton::new(200, w / 2 - 100, h / 6 + 168, ui.translate("gui.done")));
+        self.title = ui.translate("controls.title");
+    }
+
+    fn action_performed(&mut self, ui: &mut Ui, id: i32) {
+        for i in 0..ui.settings.key_bindings.len() {
+            self.base.buttons[i].text = key_name(ui, i);
+        }
+        if id == 200 {
+            ui.display(self.parent.take());
+        } else {
+            self.button_id = id;
+            let n = key_name(ui, id as usize);
+            self.base.button(id).text = format!("> {n} <");
+        }
+    }
+
+    fn key_typed(&mut self, ui: &mut Ui, _c: char, key: i32) {
+        if self.button_id >= 0 {
+            let i = self.button_id as usize;
+            ui.settings.set_key_binding(i, key);
+            self.base.buttons[i].text = key_name(ui, i);
+            self.button_id = -1;
+        } else if key == crate::gui::widgets::KEY_ESCAPE {
+            ui.display(None);
+        }
+    }
+
+    fn draw_screen(&mut self, ui: &mut Ui, mx: i32, my: i32, _partial: f32) {
+        let (w, h) = (self.base.width, self.base.height);
+        ui.draw_world_background(w, h, 0);
+        let t = self.title.clone();
+        ui.draw_centered_string(&t, w / 2, 20, 16777215);
+        let x = self.left();
+        for i in 0..ui.settings.key_bindings.len() {
+            let n = i as i32;
+            let d = ui.settings.key_binding_description(&ui.lang, i);
+            ui.draw_string(&d, x + n % 2 * 160 + 70 + 6, h / 6 + 24 * (n >> 1) + 7, -1);
+        }
+        self.draw_buttons(ui, mx, my);
+    }
+}

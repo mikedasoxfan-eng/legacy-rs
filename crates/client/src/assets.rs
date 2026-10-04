@@ -23,6 +23,10 @@ pub fn jar_path() -> PathBuf {
     PathBuf::from(appdata).join(".minecraft").join("versions").join("b1.7.3").join("b1.7.3.jar")
 }
 
+pub fn decode_png_pub(bytes: &[u8]) -> Image {
+    decode_png(bytes)
+}
+
 fn decode_png(bytes: &[u8]) -> Image {
     let mut dec = png::Decoder::new(std::io::Cursor::new(bytes));
     dec.set_transformations(png::Transformations::EXPAND | png::Transformations::STRIP_16);
@@ -67,6 +71,36 @@ pub fn load() -> Result<Assets, String> {
         mobs.insert(name.to_owned(), read(name)?);
     }
     Ok(Assets { terrain, sun, moon, clouds, grass_color: colormap(&grass), foliage_color: colormap(&foliage), mobs })
+}
+
+/// The b1.7.3 client jar, for reading resources by path.
+pub struct Jar {
+    zip: zip::ZipArchive<std::fs::File>,
+}
+
+impl Jar {
+    pub fn open() -> Result<Jar, String> {
+        let path = jar_path();
+        let file = std::fs::File::open(&path)
+            .map_err(|e| format!("can't open {} ({e}). Install b1.7.3 in the launcher first.", path.display()))?;
+        Ok(Jar { zip: zip::ZipArchive::new(file).map_err(|e| format!("bad jar: {e}"))? })
+    }
+
+    pub fn bytes(&mut self, name: &str) -> Result<Vec<u8>, String> {
+        let mut f = self.zip.by_name(name).map_err(|e| format!("{name} missing from jar: {e}"))?;
+        let mut v = Vec::new();
+        f.read_to_end(&mut v).map_err(|e| e.to_string())?;
+        Ok(v)
+    }
+
+    /// UTF-8 text (as `InputStreamReader(..., "UTF-8")`).
+    pub fn text(&mut self, name: &str) -> Result<String, String> {
+        Ok(String::from_utf8_lossy(&self.bytes(name)?).into_owned())
+    }
+
+    pub fn image(&mut self, name: &str) -> Result<Image, String> {
+        Ok(decode_png(&self.bytes(name)?))
+    }
 }
 
 pub fn save_png(img: &Image, path: &std::path::Path) -> std::io::Result<()> {
