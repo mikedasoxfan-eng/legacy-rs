@@ -49,6 +49,8 @@ struct DrawSlot {
 }
 
 pub struct Gpu {
+    /// Entity simulation can fill these render states before each frame.
+    pub entities: super::entity::pipeline::EntityPipeline,
     pub window: Arc<Window>,
     surface: wgpu::Surface<'static>,
     device: wgpu::Device,
@@ -92,7 +94,10 @@ fn tri_list(verts: &[[f32; 3]], color: [u8; 4]) -> Vec<Vertex> {
 }
 
 impl Gpu {
-    pub fn new(window: Arc<Window>, terrain: &Image, sun: &Image, moon: &Image, clouds: &Image) -> Gpu {
+    pub fn new(
+        window: Arc<Window>, terrain: &Image, sun: &Image, moon: &Image, clouds: &Image,
+        mobs: &HashMap<String, Image>,
+    ) -> Gpu {
         let size = window.inner_size();
         let instance = wgpu::Instance::new(wgpu::InstanceDescriptor::new_without_display_handle());
         let surface = instance.create_surface(window.clone()).expect("create surface");
@@ -361,6 +366,10 @@ impl Gpu {
         });
 
         let mut gpu = Gpu {
+            entities: super::entity::pipeline::EntityPipeline::new(
+                &device, &queue, config.format,
+                mobs.iter().map(|(n, i)| (n.as_str(), i)).chain(std::iter::once(("terrain.png", terrain))),
+            ),
             window,
             surface,
             depth,
@@ -512,6 +521,7 @@ impl Gpu {
         let rot = Mat4::from_rotation_x(p.pitch.to_radians()) * Mat4::from_rotation_y((p.yaw + 180.0).to_radians());
         let proj = perspective(p.fov_y_deg.to_radians(), w as f32 / h as f32, 0.05, p.far * 2.0);
         let view_proj = proj * rot;
+        self.entities.prepare(&self.device, &self.queue, view_proj, p.cam_pos, p.fog_color, p.far);
         let ident = Mat4::IDENTITY.to_cols_array_2d();
         let fog4 = [p.fog_color[0], p.fog_color[1], p.fog_color[2], 1.0];
 
@@ -708,6 +718,9 @@ impl Gpu {
                     rp.draw_indexed(0..*n, 0, i as u32..i as u32 + 1);
                 }
             }
+            self.entities.draw(&mut rp);
+            // Entity textures occupy group 1; restore the terrain origins binding.
+            rp.set_bind_group(1, &self.origins_bind, &[]);
             // Pass 1 (water, ice), Fancy: depth-only first, then color with LEQUAL.
             for pipe in [&self.p_water_depth, &self.p_water_color] {
                 rp.set_pipeline(pipe);
@@ -810,7 +823,7 @@ fn aabb_visible(vp: &DMat4, min: DVec3, max: DVec3) -> bool {
 }
 
 /// Right-handed perspective with a 0..1 depth range (gluPerspective's frustum).
-fn perspective(fov_y: f32, aspect: f32, near: f32, far: f32) -> Mat4 {
+pub(crate) fn perspective(fov_y: f32, aspect: f32, near: f32, far: f32) -> Mat4 {
     let f = 1.0 / (fov_y / 2.0).tan();
     Mat4::from_cols(
         Vec4::new(f / aspect, 0.0, 0.0, 0.0),

@@ -148,6 +148,11 @@ if [ "$quick" != quick ]; then
   run_extra "ticks: forest fire, seed 6" "$fires" ticks 6 1 777 5 4000 clear 0 0 -- ticks 6 1 777 5 4000 clear 0 0
 fi
 
+# ---- mob geometry, UVs, successive poses and packed normals
+echo "== mob models: boxes, UVs, successive poses and wolf living animations"
+if "$oracle" models models_case.bin && "$beta" --modelcheck "$out/models_case.bin"; then :; else fail=1; fi
+rm -f "$out/models_case.bin"
+
 # ---- sky, fog and cloud colors, sun angle, night darkness
 echo "== sky colors"
 for args in "3257840388504953787 -39 65 6000 0.0" "0 1000 -2000 13000 0.5" "123 -500 77 23500 0.25" "42 99999 -12345 18000 0.9" "1 0 0 12500 0.75"; do

@@ -345,7 +345,7 @@ impl ApplicationHandler for App {
             .with_title("Minecraft Beta 1.7.3 (Rust)")
             .with_inner_size(winit::dpi::LogicalSize::new(854.0, 480.0));
         let window = Arc::new(el.create_window(attrs).expect("create window"));
-        self.gpu = Some(Gpu::new(window, &assets.terrain, &assets.sun, &assets.moon, &assets.clouds));
+        self.gpu = Some(Gpu::new(window, &assets.terrain, &assets.sun, &assets.moon, &assets.clouds, &assets.mobs));
         let col = Colorizers { grass: assets.grass_color, foliage: assets.foliage_color };
         let (tx, rx, h) = worker::spawn(self.opts.world.clone(), col);
         self.tx = Some(tx);
@@ -521,6 +521,23 @@ fn mesh_check(a: &[String]) -> bool {
 
 fn main() {
     let args: Vec<String> = std::env::args().collect();
+    if args.get(1).map(String::as_str) == Some("--modelshot") {
+        let path = std::path::Path::new(args.get(2).expect("--modelshot file.png [--variants]"));
+        let scene = args
+            .iter()
+            .position(|a| a == "--dump-scene")
+            .map(|i| std::path::Path::new(args.get(i + 1).expect("--dump-scene file.txt")));
+        if let Err(e) = render::entity::shot::model_shot(path, args.iter().any(|a| a == "--variants"), scene) {
+            eprintln!("{e}");
+            std::process::exit(1);
+        }
+        return;
+    }
+    if args.get(1).map(String::as_str) == Some("--modelcheck") {
+        let ok = render::entity::check::model_check(args.get(2).expect("--modelcheck oracle-models.bin"));
+        println!("{}", if ok { "MODELS EXACT" } else { "MODELS DIFFER" });
+        std::process::exit(if ok { 0 } else { 1 });
+    }
     if args.get(1).map(String::as_str) == Some("--skycolor") {
         sky_check(&args);
         return;
