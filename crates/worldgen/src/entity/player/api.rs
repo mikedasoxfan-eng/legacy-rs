@@ -218,7 +218,11 @@ impl World {
         self.entities
             .get_mut(&id)
             .and_then(Entity::player_state_mut)
-            .map_or_else(Vec::new, |s| std::mem::take(&mut s.events))
+            .map_or_else(Vec::new, |s| {
+                // The oracle's per-snapshot addStat log is not kept while playing.
+                s.stat_log.clear();
+                std::mem::take(&mut s.events)
+            })
     }
     pub fn player_hud(&mut self, id: i32, partial: f32) -> Option<PlayerHud> {
         self.entities.get(&id)?.clone().player_hud(self, partial)

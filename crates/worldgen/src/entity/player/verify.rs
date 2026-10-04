@@ -96,6 +96,11 @@ pub fn state_bytes(s: &super::PlayerState, e: &crate::entity::Entity, out: &mut 
     for s in s.inventory.main.iter().chain(&s.inventory.armor) {
         write(out, *s);
     }
+    out.extend_from_slice(&(s.stat_log.len() as i32).to_le_bytes());
+    for &(id, n) in &s.stat_log {
+        out.extend_from_slice(&id.to_le_bytes());
+        out.extend_from_slice(&n.to_le_bytes());
+    }
 }
 pub fn player_bytes(scenario: &str, ticks: i32) -> Vec<u8> {
     use crate::{

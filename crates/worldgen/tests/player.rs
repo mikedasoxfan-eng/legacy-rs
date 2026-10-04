@@ -74,8 +74,13 @@ fn public_tick_moves_player_and_exposes_hud_and_container_requests() {
         },
         41,
     );
+    let events: Vec<_> = w
+        .take_player_events(id)
+        .into_iter()
+        .filter(|e| !matches!(e, PlayerEvent::Stat { .. }))
+        .collect();
     assert!(matches!(
-        w.take_player_events(id).as_slice(),
+        events.as_slice(),
         [PlayerEvent::OpenContainer {
             block: 58,
             position: (8, 64, 8)

@@ -1,4 +1,4 @@
-"""Turn tools/oracle/statlist.txt (from `oracle.sh statlist`) into crates/client/src/gui/stats_table.rs."""
+"""Turn tools/oracle/statlist.txt (from `oracle.sh statlist`) into crates/worldgen/src/stats_table.rs."""
 import json
 import os
 
@@ -47,5 +47,5 @@ out.append('/// The stat a table maps `index` to, if the original registered one
 out.append('pub fn lookup(table: &[(i32, i32)], index: i32) -> Option<i32> {')
 out.append('    table.iter().find(|(i, _)| *i == index).map(|(_, s)| *s)')
 out.append('}')
-open(os.path.join(root, 'crates/client/src/gui/stats_table.rs'), 'w', encoding='utf-8', newline='\n').write('\n'.join(out) + '\n')
+open(os.path.join(root, 'crates/worldgen/src/stats_table.rs'), 'w', encoding='utf-8', newline='\n').write('\n'.join(out) + '\n')
 print('wrote', len(out), 'lines')

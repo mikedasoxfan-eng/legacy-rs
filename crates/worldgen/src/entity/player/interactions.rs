@@ -13,13 +13,22 @@ impl Entity {
             // Vanilla passes the live player object to attackEntityFrom.
             w.entities.insert(self.entity_id, self.clone());
             target.attack(w, Some(self.entity_id), damage);
-            w.entities.remove(&self.entity_id);
+            if let Some(stand_in) = w.entities.remove(&self.entity_id) {
+                if let (Some(s), Some(t)) = (self.player_state_mut(), stand_in.player_state()) {
+                    s.score = t.score;
+                    s.stat_log.extend_from_slice(&t.stat_log[s.stat_log.len().min(t.stat_log.len())..]);
+                    let new: Vec<_> = t.events[s.events.len().min(t.events.len())..].to_vec();
+                    s.events.extend(new);
+                }
+            }
             if target.kind.is_living() {
                 if let Some(s) = self.held_item() {
                     if matches!(s.id, 267 | 268 | 272 | 276 | 283) {
                         self.damage_held(1);
+                        self.add_stat(stat::used(s.id), 1);
                     } else if matches!(s.id,256..=258|269..=271|273..=275|277..=279|284..=286) {
                         self.damage_held(2);
+                        self.add_stat(stat::used(s.id), 1);
                     } else if s.id == 329 {
                         self.saddle(&mut target);
                     }
@@ -27,6 +36,7 @@ impl Entity {
                 if target.living.health > 0 && !target.dead {
                     self.alert_wolves(w, &target, true);
                 }
+                self.add_stat(stat::DAMAGE_DEALT, damage);
             }
         }
         w.entities.insert(id, target);

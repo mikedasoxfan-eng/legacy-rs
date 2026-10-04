@@ -525,6 +525,11 @@ pub fn snapshot(w: &mut World, out: &mut Vec<u8>) {
         d(out, prev);
     }
     crate::world::events::write_events(&w.drain_events(), out);
+    for e in w.entities.values_mut() {
+        if let Some(s) = e.player_state_mut() {
+            s.stat_log.clear();
+        }
+    }
 }
 pub fn object_bytes(scenario: &str, ticks: i32) -> Vec<u8> {
     let mut w = World::with_dimension(

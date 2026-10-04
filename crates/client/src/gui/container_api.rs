@@ -21,6 +21,21 @@ pub fn activation_request(event: &PlayerEvent) -> Option<ContainerCommand> {
     }
 }
 impl GuiSystem {
+    /// `EntityPlayerSP.addStat`: an achievement needs its parent and pops up the first time;
+    /// any other stat just counts.
+    pub fn add_stat(&mut self, id: i32, amount: i32) {
+        let list = &crate::gui::stats::ACHIEVEMENTS;
+        if let Some(i) = list.iter().position(|a| a.id == id) {
+            if self.ui.stats.can_unlock(i) {
+                if !self.ui.stats.unlocked(i) {
+                    self.toast.queue_taken(&self.ui, i);
+                }
+                self.ui.stats.add(id, amount);
+            }
+        } else {
+            self.ui.stats.add(id, amount);
+        }
+    }
     /// Called with the authoritative answer to an Open request, on the UI thread.
     pub fn open_container(&mut self, snapshot: ContainerSnapshot) -> Vec<GameAction> {
         let screen = Box::new(GuiContainer::new(&snapshot));

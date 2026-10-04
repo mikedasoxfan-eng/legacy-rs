@@ -286,6 +286,10 @@ impl Entity {
         self.collided = self.collided_horizontally || self.collided_vertically;
         if self.on_ground {
             if self.fall_distance > 0.0 {
+                if self.player_state().is_some() && self.fall_distance >= 2.0 {
+                    let n = crate::entity::player::java_round_d(self.fall_distance as f64 * 100.0);
+                    self.add_stat(crate::entity::player::stat::FALL, n);
+                }
                 if self.kind.is_living()
                     && !matches!(
                         self.kind,
@@ -303,6 +307,11 @@ impl Entity {
                         if id > 0 {
                             self.play_step_sound(w, id, 0.5, 12.0 / 16.0);
                         }
+                    }
+                }
+                if matches!(self.kind, EntityKind::Pig { .. }) && self.fall_distance > 5.0 {
+                    if let Some(rider) = self.ridden_by.and_then(|id| w.entities.get_mut(&id)) {
+                        rider.add_stat(crate::entity::player::stat::FLY_PIG, 1);
                     }
                 }
                 self.fall_distance = 0.0;

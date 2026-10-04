@@ -126,6 +126,10 @@ impl PlayerControllerSP {
                 0
             };
             p.damage_held(cost);
+            // ItemStack.onDestroyBlock: ItemTool and ItemSword report a use.
+            if matches!(s.id, 267 | 268 | 272 | 276 | 283 | 256..=258 | 269..=271 | 273..=275 | 277..=279 | 284..=286) {
+                p.add_stat(super::stat::used(s.id), 1);
+            }
         }
         if removed && can {
             p.harvest_block(w, id, x, y, z, meta);
@@ -159,11 +163,17 @@ impl Entity {
     }
     pub fn damage_held(&mut self, amount: i32) {
         let inv = &mut self.player_state_mut().unwrap().inventory;
+        let mut broke = None;
         if let Some(s) = inv.main[inv.current_item as usize].as_mut() {
-            s.damage_item(amount);
+            if s.damage_item(amount) {
+                broke = Some(s.id);
+            }
             if s.count == 0 {
                 inv.main[inv.current_item as usize] = None;
             }
+        }
+        if let Some(id) = broke {
+            self.add_stat(super::stat::broken(id), 1);
         }
     }
     pub fn block_clicked(&mut self, w: &mut World, id: u8, x: i32, y: i32, z: i32) {
@@ -181,10 +191,15 @@ impl Entity {
         }
     }
     pub fn harvest_block(&mut self, w: &mut World, id: u8, x: i32, y: i32, z: i32, meta: i32) {
+        // Block.harvestBlock counts the block first; BlockSnow counts it after dropping.
+        if id != 78 {
+            self.add_stat(super::stat::mine(id as i32), 1);
+        }
         if id == 18 && self.held_item().is_some_and(|s| s.id == 359) {
             super::block_hooks::drop_stack(w, x, y, z, ItemStack::new(18, 1, meta & 3));
         } else if id == 78 {
             super::block_hooks::drop_stack(w, x, y, z, ItemStack::new(332, 1, 0));
+            self.add_stat(super::stat::mine(78), 1);
         } else {
             crate::world::behavior::drop_block_as_item(w, id, x, y, z, meta);
         }

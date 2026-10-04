@@ -19,13 +19,16 @@ public final class PlayerOracle {
     }
     static final class HeadlessPlayer extends EntityPlayerSP {
         HeadlessPlayer(Minecraft mc,World w) {super(mc,w,new Session("Player",""),0);}
-        public void addStat(StatBase stat,int count) {}
+        public void addStat(StatBase stat,int count) {stat(this,stat,count);}
         public void onItemPickup(Entity e,int count) {}
         public void displayGUIChest(IInventory i) {}
         public void displayWorkbenchGUI(int x,int y,int z) {}
         public void displayGUIFurnace(TileEntityFurnace t) {}
         public void displayGUIDispenser(TileEntityDispenser t) {}
     }
+    /** Every addStat call since the last snapshot: stat id (-1 for a null stat), amount. */
+    static final java.util.WeakHashMap<EntityPlayer,ArrayList<int[]>> stats=new java.util.WeakHashMap<>();
+    static void stat(EntityPlayer p,StatBase stat,int count) {if(System.getenv("STATLOG")!=null)System.err.println("addStat "+(stat==null?-1:stat.statId)+" "+count+" at tick "+p.ticksExisted);stats.computeIfAbsent(p,k->new ArrayList<int[]>()).add(new int[]{stat==null?-1:stat.statId,count});}
     static HeadlessPlayer player(World w)throws Exception {
         Minecraft mc=(Minecraft)Oracle.allocate(HeadlessMinecraft.class);
         mc.theWorld=w;WorldEventOracle.attach(w); WorldEventOracle.Sounds sounds=(WorldEventOracle.Sounds)Oracle.allocate(WorldEventOracle.Sounds.class);sounds.world=w;mc.sndManager=sounds;
@@ -39,6 +42,7 @@ public final class PlayerOracle {
         o.writeBoolean(p.isSwinging);o.writeBoolean(p.isPlayerSleeping());o.writeBoolean(p.isSneaking());
         for(double v:new double[]{p.field_20066_r,p.field_20065_s,p.field_20064_t,p.field_20063_u,p.field_20062_v,p.field_20061_w})EntityOracle.d(o,v);
         for(ItemStack s:p.inventory.mainInventory)stack(o,s);for(ItemStack s:p.inventory.armorInventory)stack(o,s);
+        ArrayList<int[]> log=stats.remove(p);i(o,log==null?0:log.size());if(log!=null)for(int[] v:log){i(o,v[0]);i(o,v[1]);}
     }
     static void picking(HeadlessPlayer p,DataOutputStream o)throws Exception {
         p.mc.renderViewEntity=p;p.mc.playerController=new PlayerControllerSP(p.mc);

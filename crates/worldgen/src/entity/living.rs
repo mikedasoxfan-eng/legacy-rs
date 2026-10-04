@@ -447,6 +447,7 @@ impl Entity {
                 self.motion.y += 0.04f32 as f64;
             } else if self.on_ground {
                 self.motion.y = 0.42f32 as f64;
+                self.add_stat(crate::entity::player::stat::JUMP, 1);
             }
         }
         self.living.move_strafing *= 0.98;
@@ -536,6 +537,16 @@ impl Entity {
         }
     }
     pub fn move_entity_with_heading(&mut self, w: &mut World, strafe: f32, forward: f32) {
+        if self.player_state().is_some() {
+            let before = self.pos;
+            self.living_move_entity_with_heading(w, strafe, forward);
+            let d = (self.pos.x - before.x, self.pos.y - before.y, self.pos.z - before.z);
+            self.add_movement_stat(w, d.0, d.1, d.2);
+        } else {
+            self.living_move_entity_with_heading(w, strafe, forward);
+        }
+    }
+    fn living_move_entity_with_heading(&mut self, w: &mut World, strafe: f32, forward: f32) {
         if matches!(self.kind, EntityKind::Ghast(..)) {
             self.flying_heading(w, strafe, forward);
             return;
@@ -704,6 +715,23 @@ impl Entity {
         }
         if self.living.health <= 0 {
             self.living.dying = true;
+            if let Some(mut a) = attacker.filter(|&id| id >= 0).and_then(|id| w.entities.remove(&id)) {
+                if let Some(s) = a.player_state_mut() {
+                    // addToPlayerScore (scoreValue is 0 for every mob in Beta)
+                    s.score += 0;
+                    let kills = if self.player_state().is_some() {
+                        crate::entity::player::stat::PLAYER_KILLS
+                    } else {
+                        crate::entity::player::stat::MOB_KILLS
+                    };
+                    a.add_stat(kills, 1);
+                    // onKillEntity
+                    if self.kind.is_mob() {
+                        a.add_stat(crate::entity::player::stat::KILL_ENEMY, 1);
+                    }
+                }
+                w.entities.insert(a.entity_id, a);
+            }
             self.drop_few_items(w);
             if matches!(self.kind, EntityKind::Player(..)) {
                 self.player_death(w, attacker);

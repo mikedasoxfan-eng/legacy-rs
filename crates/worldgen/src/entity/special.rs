@@ -167,6 +167,7 @@ impl Entity {
         }
     }
     pub(super) fn update_ridden(&mut self, w: &mut World) {
+        let before = self.pos;
         let Some(parent) = self.riding.and_then(|id| w.entities.get(&id)).cloned() else {
             self.riding = None;
             return;
@@ -218,6 +219,8 @@ impl Entity {
         if let Some(s) = self.player_state_mut() {
             s.prev_camera_yaw = s.camera_yaw;
             s.camera_yaw = 0.0;
+            let d = (self.pos.x - before.x, self.pos.y - before.y, self.pos.z - before.z);
+            self.add_mounted_movement_stat(w, d.0, d.1, d.2);
         }
     }
     pub(super) fn wolf_attack_target(&mut self, w: &mut World, target: Target, distance: f32) {

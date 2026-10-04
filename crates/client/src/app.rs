@@ -1045,6 +1045,10 @@ impl App {
                     Ok(FromWorker::Entities(list)) => self.entities = list,
                     Ok(FromWorker::ContainerOpened(s)) => {
                         if let Some(g) = &mut self.gui {
+                            // new GuiInventory(player): the "Taking Inventory" achievement.
+                            if s.kind == worldgen::container::ContainerKind::Player {
+                                g.add_stat(worldgen::entity::player::stat::OPEN_INVENTORY, 1);
+                            }
                             for a in g.open_container(s) {
                                 match a {
                                     // setIngameNotInFocus -> resetPlayerKeyState
@@ -1118,6 +1122,11 @@ impl App {
                                 worldgen::entity::player::PlayerEvent::Pickup { source, .. } => self.particles.pickup(source, entity.entity_id),
                                 // The world thread switches dimension itself (usePortal).
                                 worldgen::entity::player::PlayerEvent::ChangeDimension => {}
+                                worldgen::entity::player::PlayerEvent::Stat { id, amount } => {
+                                    if let Some(g) = &mut self.gui {
+                                        g.add_stat(id, amount);
+                                    }
+                                }
                                 worldgen::entity::player::PlayerEvent::Container(c) => {
                                     use worldgen::container::ContainerEvent;
                                     match c {
@@ -1126,17 +1135,20 @@ impl App {
                                                 g.container_closed(window);
                                             }
                                         }
-                                        // EntityPlayerSP.addStat for an achievement: needs its parent.
                                         ContainerEvent::Achievement(key) => {
                                             if let Some(g) = &mut self.gui {
                                                 let list = &gui::stats::ACHIEVEMENTS;
-                                                if let Some(i) = list.iter().position(|a| a.key == key) {
-                                                    if g.ui.stats.can_unlock(i) {
-                                                        if !g.ui.stats.unlocked(i) {
-                                                            g.toast.queue_taken(&g.ui, i);
-                                                        }
-                                                        g.ui.stats.add(list[i].id, 1);
-                                                    }
+                                                if let Some(a) = list.iter().find(|a| a.key == key) {
+                                                    g.add_stat(a.id, 1);
+                                                }
+                                            }
+                                        }
+                                        // ItemStack.onCrafting
+                                        ContainerEvent::Crafted { item, count } => {
+                                            if let Some(g) = &mut self.gui {
+                                                let id = worldgen::entity::player::stat::crafted(item);
+                                                if id >= 0 {
+                                                    g.add_stat(id, count);
                                                 }
                                             }
                                         }

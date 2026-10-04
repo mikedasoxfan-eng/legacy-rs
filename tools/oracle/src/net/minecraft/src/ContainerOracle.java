@@ -14,6 +14,7 @@ public class ContainerOracle {
         final List<StatHook> hooks=new ArrayList<StatHook>();
         StatsPlayer(net.minecraft.client.Minecraft mc,World w){super(mc,w,new Session("Player",""),0);}
         public void addStat(StatBase stat,int count) {
+            PlayerOracle.stat(this,stat,count);
             if(hooks==null)return;
             if(stat==null||stat instanceof StatCrafting)hooks.add(new StatHook(null,count));
             else if(stat instanceof Achievement) {

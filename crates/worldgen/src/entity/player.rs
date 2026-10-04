@@ -46,6 +46,8 @@ impl PlayerInput {
 }
 #[derive(Clone, Debug)]
 pub enum PlayerEvent {
+    /// `EntityPlayer.addStat` (the client's StatFileWriter and achievement pop-up).
+    Stat { id: i32, amount: i32 },
     Container(crate::container::ContainerEvent),
     Pickup {
         entity: i32,
@@ -107,6 +109,10 @@ pub struct PlayerState {
     pub damage_remainder: i32,
     pub events: Vec<PlayerEvent>,
     pub player_index: Option<usize>,
+    /// `addStat` calls since the last snapshot (stat id, or -1 for a null stat; amount).
+    pub stat_log: Vec<(i32, i32)>,
+    /// `startMinecartRidingCoordinate`
+    pub minecart_start: Option<(i32, i32, i32)>,
 }
 impl Default for PlayerState {
     fn default() -> Self {
@@ -138,6 +144,8 @@ impl Default for PlayerState {
             prev_time_in_portal: 0.0,
             damage_remainder: 0,
             events: Vec::new(),
+            stat_log: Vec::new(),
+            minecart_start: None,
             player_index: None,
         }
     }
@@ -152,6 +160,75 @@ impl Entity {
         let (x, y, z) = w.spawn;
         e.set_location_and_angles(x as f64 + 0.5, (y + 1) as f64, z as f64 + 0.5, 0.0, 0.0);
         e
+    }
+    /// `EntityPlayer.addMovementStat`
+    pub(super) fn add_movement_stat(&mut self, w: &mut World, dx: f64, dy: f64, dz: f64) {
+        if self.riding.is_some() {
+            return;
+        }
+        if self.is_inside_material(w, crate::block::MAT_WATER) {
+            let n = java_round_f(((dx * dx + dy * dy + dz * dz).sqrt() as f32) * 100.0);
+            if n > 0 {
+                self.add_stat(stat::DIVE, n);
+            }
+        } else if self.in_water {
+            let n = java_round_f(((dx * dx + dz * dz).sqrt() as f32) * 100.0);
+            if n > 0 {
+                self.add_stat(stat::SWIM, n);
+            }
+        } else if self.is_on_ladder(w) {
+            if dy > 0.0 {
+                self.add_stat(stat::CLIMB, java_round_d(dy * 100.0));
+            }
+        } else if self.on_ground {
+            let n = java_round_f(((dx * dx + dz * dz).sqrt() as f32) * 100.0);
+            if n > 0 {
+                self.add_stat(stat::WALK, n);
+            }
+        } else {
+            let n = java_round_f(((dx * dx + dz * dz).sqrt() as f32) * 100.0);
+            if n > 25 {
+                self.add_stat(stat::FLY, n);
+            }
+        }
+    }
+    /// `EntityPlayer.addMountedMovementStat`
+    pub(super) fn add_mounted_movement_stat(&mut self, w: &mut World, dx: f64, dy: f64, dz: f64) {
+        let Some(vehicle) = self.riding.and_then(|id| w.entities.get(&id)).map(|e| stat::vehicle(&e.kind)) else {
+            return;
+        };
+        let n = java_round_f(((dx * dx + dy * dy + dz * dz).sqrt() as f32) * 100.0);
+        if n <= 0 {
+            return;
+        }
+        match vehicle {
+            Some(stat::MINECART) => {
+                self.add_stat(stat::MINECART, n);
+                let here = (floor(self.pos.x), floor(self.pos.y), floor(self.pos.z));
+                let s = self.player_state_mut().unwrap();
+                match s.minecart_start {
+                    None => s.minecart_start = Some(here),
+                    Some((x, y, z)) => {
+                        // ChunkCoordinates.getSqDistanceTo returns a float.
+                        let (a, b, c) = (x - here.0, y - here.1, z - here.2);
+                        if (a.wrapping_mul(a).wrapping_add(b.wrapping_mul(b)).wrapping_add(c.wrapping_mul(c))) as f32 >= 1000.0 {
+                            self.add_stat(stat::ON_A_RAIL, 1);
+                        }
+                    }
+                }
+            }
+            Some(id) => self.add_stat(id, n),
+            None => {}
+        }
+    }
+    /// `EntityPlayer.addStat`: recorded for the client (and the oracle); a no-op for others.
+    pub fn add_stat(&mut self, id: i32, amount: i32) {
+        if let Some(s) = self.player_state_mut() {
+            s.stat_log.push((id, amount));
+            if id >= 0 {
+                s.events.push(PlayerEvent::Stat { id, amount });
+            }
+        }
     }
     pub fn player_state(&self) -> Option<&PlayerState> {
         if let EntityKind::Player(s) = &self.kind {
@@ -364,6 +441,12 @@ impl Entity {
                 let mut stack = (*item).into();
                 if self.player_state_mut().unwrap().inventory.add(&mut stack) {
                     pickup = Some(original);
+                    if stack.id == 17 {
+                        self.add_stat(stat::MINE_WOOD, 1);
+                    }
+                    if stack.id == 334 {
+                        self.add_stat(stat::KILL_COW, 1);
+                    }
                 }
                 *item = stack.into();
                 if pickup.is_some() && item.count == 0 {
@@ -440,6 +523,10 @@ impl Entity {
         s.cloak.x += delta.x * 0.25;
         s.cloak.z += delta.z * 0.25;
         s.cloak.y += delta.y * 0.25;
+        self.add_stat(stat::MINUTES_PLAYED, 1);
+        if self.riding.is_none() {
+            self.player_state_mut().unwrap().minecart_start = None;
+        }
     }
     pub(super) fn player_damage(
         &mut self,
@@ -476,15 +563,19 @@ impl Entity {
                     self.alert_wolves(w, &source, false);
                 }
             }
+            self.add_stat(stat::DAMAGE_TAKEN, *damage);
         }
         *damage != 0
     }
     pub(super) fn damage_living(&mut self, mut amount: i32) {
         if let Some(s) = self.player_state_mut() {
             let damage = amount * (25 - s.inventory.armor_value()) + s.damage_remainder;
-            s.inventory.damage_armor(amount);
+            let broken = s.inventory.damage_armor(amount);
             amount = damage / 25;
             s.damage_remainder = damage % 25;
+            for id in broken {
+                self.add_stat(stat::broken(id), 1);
+            }
         }
         self.living.health -= amount;
     }
@@ -515,6 +606,7 @@ impl Entity {
             self.motion.z = 0.0;
         }
         self.y_offset = 0.1;
+        self.add_stat(stat::DEATHS, 1);
     }
     pub fn drop_player_item(&mut self, w: &mut World, stack: ItemStack, random: bool) {
         let mut e = Entity::item(
@@ -546,6 +638,7 @@ impl Entity {
             e.motion.z += crate::jmath::java_sin(angle as f64) * speed as f64;
         }
         w.entity_joined_world(e);
+        self.add_stat(stat::DROP, 1);
     }
     pub fn set_in_portal(&mut self) {
         if let Some(s) = self.player_state_mut() {
@@ -650,5 +743,74 @@ impl Entity {
             }
         }
         None
+    }
+}
+
+/// `Math.round(float)` (Java 8).
+pub fn java_round_f(x: f32) -> i32 {
+    if x == 0.49999997f32 {
+        0
+    } else {
+        (x + 0.5).floor() as i32
+    }
+}
+/// `(int)Math.round(double)` (Java 8).
+pub fn java_round_d(x: f64) -> i32 {
+    if x == 0.49999999999999994 {
+        0
+    } else {
+        (x + 0.5).floor() as i64 as i32
+    }
+}
+
+/// `StatList`'s general stats and `AchievementList` (stat id 5242880 + index).
+pub mod stat {
+    use crate::stats_table as t;
+    /// The distance stat for riding this entity (`addMountedMovementStat`), if any.
+    pub fn vehicle(kind: &super::EntityKind) -> Option<i32> {
+        match kind {
+            super::EntityKind::Pig { .. } => Some(PIG),
+            _ => None,
+        }
+    }
+    pub const MINUTES_PLAYED: i32 = 1100;
+    pub const WALK: i32 = 2000;
+    pub const SWIM: i32 = 2001;
+    pub const FALL: i32 = 2002;
+    pub const CLIMB: i32 = 2003;
+    pub const FLY: i32 = 2004;
+    pub const DIVE: i32 = 2005;
+    pub const MINECART: i32 = 2006;
+    pub const BOAT: i32 = 2007;
+    pub const PIG: i32 = 2008;
+    pub const JUMP: i32 = 2010;
+    pub const DROP: i32 = 2011;
+    pub const DAMAGE_DEALT: i32 = 2020;
+    pub const DAMAGE_TAKEN: i32 = 2021;
+    pub const DEATHS: i32 = 2022;
+    pub const MOB_KILLS: i32 = 2023;
+    pub const PLAYER_KILLS: i32 = 2024;
+    pub const FISH_CAUGHT: i32 = 2025;
+    pub const OPEN_INVENTORY: i32 = 5242880;
+    pub const MINE_WOOD: i32 = 5242881;
+    pub const ON_A_RAIL: i32 = 5242891;
+    pub const KILL_ENEMY: i32 = 5242893;
+    pub const KILL_COW: i32 = 5242894;
+    pub const FLY_PIG: i32 = 5242895;
+    /// `mineBlockStatArray[id]` (-1 where the original's entry is null).
+    pub fn mine(id: i32) -> i32 {
+        t::lookup(&t::MINE, id).unwrap_or(-1)
+    }
+    /// `field_25172_A[id]`: items used.
+    pub fn used(id: i32) -> i32 {
+        t::lookup(&t::USE, id).unwrap_or(-1)
+    }
+    /// `field_25170_B[id]`: tools broken.
+    pub fn broken(id: i32) -> i32 {
+        t::lookup(&t::BREAK, id).unwrap_or(-1)
+    }
+    /// `field_25158_z[id]`: items crafted.
+    pub fn crafted(id: i32) -> i32 {
+        t::lookup(&t::CRAFT, id).unwrap_or(-1)
     }
 }

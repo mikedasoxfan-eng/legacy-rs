@@ -8,6 +8,7 @@ impl Entity {
         let Some(mut stack) = self.held_item() else {
             return false;
         };
+        let original_id = stack.id;
         let used = match stack.id {
             2256 | 2257 => {
                 let used = w.insert_record(x, y, z, stack.id);
@@ -56,7 +57,9 @@ impl Entity {
                     );
                     w.set_block_with_notify(x, y, z, 51);
                 }
-                stack.damage_item(1);
+                if stack.damage_item(1) {
+                    self.add_stat(stat::broken(stack.id), 1);
+                }
                 true
             }
             290..=294 => {
@@ -76,7 +79,9 @@ impl Entity {
                         pitch * 0.8,
                     );
                     w.set_block_with_notify(x, y, z, 60);
-                    stack.damage_item(1);
+                    if stack.damage_item(1) {
+                        self.add_stat(stat::broken(stack.id), 1);
+                    }
                     true
                 }
             }
@@ -131,6 +136,10 @@ impl Entity {
             }
             _ => false,
         };
+        // ItemStack.useItem: a successful onItemUse counts a use.
+        if used {
+            self.add_stat(stat::used(original_id), 1);
+        }
         let inv = &mut self.player_state_mut().unwrap().inventory;
         inv.main[inv.current_item as usize] = if stack.count <= 0 { None } else { Some(stack) };
         used

@@ -23,6 +23,7 @@ pub mod overworld;
 pub mod populate;
 pub mod random;
 pub mod scenario;
+pub mod stats_table;
 pub mod storage;
 pub mod world;
 

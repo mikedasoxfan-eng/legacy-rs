@@ -30,14 +30,17 @@ impl ItemStack {
     pub fn stackable(&self) -> bool {
         self.max_stack() > 1 && !self.is_damaged()
     }
-    pub fn damage_item(&mut self, amount: i32) {
+    /// `damageItem`; true when the item broke (the caller adds the "broken" stat).
+    pub fn damage_item(&mut self, amount: i32) -> bool {
         if self.max_damage() > 0 {
             self.damage = self.damage.wrapping_add(amount);
             if self.damage > self.max_damage() {
                 self.count = (self.count - 1).max(0);
                 self.damage = 0;
+                return true;
             }
         }
+        false
     }
     pub fn split(&mut self, count: i32) -> Self {
         self.count -= count;
@@ -194,17 +197,22 @@ impl InventoryPlayer {
             (protection - 1) * remaining / total + 1
         }
     }
-    pub fn damage_armor(&mut self, amount: i32) {
+    /// `damageArmor`: returns the ids of pieces that broke, in slot order.
+    pub fn damage_armor(&mut self, amount: i32) -> Vec<i32> {
+        let mut broken = Vec::new();
         for slot in &mut self.armor {
             if let Some(s) = slot {
                 if registry::item(s.id).is_some_and(|i| i.armor > 0) {
-                    s.damage_item(amount);
+                    if s.damage_item(amount) {
+                        broken.push(s.id);
+                    }
                     if s.count == 0 {
                         *slot = None;
                     }
                 }
             }
         }
+        broken
     }
     pub fn to_nbt(&self) -> Tag {
         let mut tags = Vec::new();
