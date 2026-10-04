@@ -8,11 +8,11 @@
 [![Rust](https://img.shields.io/badge/built_with-Rust-b7410e?style=flat&logo=rust&logoColor=white&labelColor=3b3b3b)](#)
 [![wgpu](https://img.shields.io/badge/graphics-wgpu-4b6ec2?style=flat&labelColor=3b3b3b)](#)
 [![oracle](https://img.shields.io/badge/oracle-ALL_CASES_EXACT-2ea44f?style=flat&logo=openjdk&logoColor=white&labelColor=3b3b3b)](#how-exact-is-exact)
-[![GUI](https://img.shields.io/badge/GUI_pixel_diff-23_exact,_3_within_1_shade-2ea44f?style=flat&labelColor=3b3b3b)](#the-gui-pixel-diff)
+[![GUI](https://img.shields.io/badge/GUI_pixel_diff-58_exact,_3_within_1_shade-2ea44f?style=flat&labelColor=3b3b3b)](#the-gui-pixel-diff)
 
-[![progress](https://img.shields.io/badge/goal_progress-76%25-8fbc3a?style=flat&labelColor=3b3b3b)](#progress)
-[![verified sections](https://img.shields.io/badge/verified_sections-128-2ea44f?style=flat&labelColor=3b3b3b)](#what-is-checked)
-[![Rust lines](https://img.shields.io/badge/Rust-45k_lines-b7410e?style=flat&labelColor=3b3b3b)](#layout)
+[![progress](https://img.shields.io/badge/goal_progress-92%25-8fbc3a?style=flat&labelColor=3b3b3b)](#progress)
+[![verified sections](https://img.shields.io/badge/verified_sections-137-2ea44f?style=flat&labelColor=3b3b3b)](#what-is-checked)
+[![Rust lines](https://img.shields.io/badge/Rust-56k_lines-b7410e?style=flat&labelColor=3b3b3b)](#layout)
 [![Mojang assets](https://img.shields.io/badge/Mojang_assets_bundled-0_bytes-2ea44f?style=flat&labelColor=3b3b3b)](#you-need-your-own-copy)
 [![multiplayer](https://img.shields.io/badge/multiplayer-not_planned-9e9e9e?style=flat&labelColor=3b3b3b)](#scope)
 [![Herobrine](https://img.shields.io/badge/Herobrine-not_found-a33?style=flat&labelColor=3b3b3b)](#)
@@ -24,7 +24,7 @@
 ## Progress
 
 ```
-Overall  ██████████████████████████████▍░░░░░░░░░  76 %
+Overall  ████████████████████████████████████▊░░░  92 %
 ```
 
 Weighted by how much of the game each part is. Only merged work counts; parts other agents
@@ -36,17 +36,17 @@ against the original game code, not just "looks right".
 | World generation (Overworld + Nether: terrain, caves, ores, lakes, dungeons, trees, plants, snow) | 12 | 100 % | ✅ verified |
 | Lighting, chunk loading/unloading, saving (McRegion, level.dat) | 8 | 100 % | ✅ verified |
 | World ticking (block ticks, random ticks, fire, liquids, growth, weather, lightning) | 8 | 95 % | ✅ verified |
-| Mobs and other entities (physics, AI, spawning, items, arrows, TNT, NBT) | 12 | 90 % | ✅ verified (minecarts and boats missing) |
+| Mobs and other entities (physics, AI, spawning, items, arrows, TNT, NBT) | 12 | 90 % | ✅ verified (minecarts and boats can be placed but not ridden yet) |
 | The player (movement, health, mining, placing, items, beds, portals, respawn) | 10 | 95 % | ✅ verified |
 | Block rendering (all 18 render types, smooth lighting, Fancy/Fast) | 8 | 100 % | ✅ verified |
 | Mob/item/effect rendering, sky, clouds, rain, snow, fog | 8 | 95 % | ✅ verified |
-| Menus, HUD, achievements, death screen | 7 | 90 % | ✅ pixel-exact (statistics screen missing) |
-| Redstone (wire, torches, repeaters, levers, buttons, plates, doors, rails) | 6 | 70 % | ✅ verified (pistons, note blocks missing) |
-| Inventory, crafting, chests, furnaces, dispensers | 7 | 15 % | 🟡 inventory simulation done; screens and crafting in progress |
-| First-person view (hand, held item, block outline, cracks, bobbing, third person) | 5 | 0 % | 🟡 in progress |
-| Particles and world sounds | 5 | 10 % | 🟡 in progress (music, rain and menu sounds work) |
-| Tile entities that tick (mob spawners ✅, furnaces 🟡, pistons) | 2 | 40 % | 🟡 spawners verified; pistons next |
-| Vehicles, signs, paintings, maps, fishing, records, statistics | 2 | 0 % | 🔴 not started |
+| Menus, HUD, achievements, death screen, statistics screen | 7 | 90 % | ✅ pixel-exact (statistics screen ported; its pixel check and stat counting are next) |
+| Redstone (wire, torches, repeaters, levers, buttons, plates, doors, rails, note blocks) | 6 | 75 % | ✅ verified (pistons in progress) |
+| Inventory, crafting, chests, furnaces, dispensers | 7 | 95 % | ✅ verified (65,706 clicks, 151 recipes, 35 screens pixel-exact) |
+| First-person view (hand, held item, block outline, cracks, bobbing, third person) | 5 | 100 % | ✅ verified (8.1 million values, 0 differences) |
+| Particles and world sounds | 5 | 90 % | ✅ verified (every particle type; sounds in the original order) |
+| Tile entities that tick (mob spawners ✅, furnaces ✅, dispensers ✅, pistons) | 2 | 60 % | 🟡 pistons in progress |
+| Vehicles, signs, paintings, maps, fishing, records, statistics | 2 | 10 % | 🟡 records play; the rest is next |
 
 ---
 
@@ -109,6 +109,9 @@ Details that turned out to matter:
 | Entities | 20 frame-by-frame replays: mobs, items, arrows, TNT, falling sand, spawning |
 | Player | 23 replays: walking, swimming, damage, death, digging, placing, items, beds, portals |
 | Inventory | 10,000 original-bytecode inventory operations |
+| Containers | 65,706 recorded clicks in every screen (crafting, chests, furnace, dispenser), all 151 recipes, a 1,000-tick furnace/dispenser world |
+| First person | 18,396 cases: hand, held items and maps, block outline, mining cracks on every block, bobbing, FOV, third person, armour |
+| Particles and sounds | Every particle class over 202 frames (465,408 vertices), block break/hit effects, item pickups, the ordered sound/particle stream in every replay |
 | Collision | Every block's collision and selection box in every state (10,000 cases) |
 | Portals | Teleporter find/build (incl. the ocean platform), the whole `usePortal` sequence |
 | Respawn | At spawn, at a bed, with the bed gone |
@@ -122,10 +125,11 @@ Details that turned out to matter:
 ### The GUI pixel diff
 
 `tools/verify_gui.sh` opens the **real** b1.7.3 client for a few seconds, drives it through
-26 scenes (title screen, options, video settings, controls, world list, create and rename
-world, texture packs, loading screens, in-game HUD states, achievements, death screen), and
-takes screenshots. Then it renders the same scenes with the port and diffs them pixel for pixel.
-23 are identical; 3 (achievement icons) differ by one colour level on fewer than 100 pixels,
+61 scenes (title screen, options, video settings, controls, world list, create and rename
+world, texture packs, loading screens, in-game HUD states, achievements, death screen, and 35
+inventory, crafting, chest, furnace and dispenser screens with items, tooltips and a held
+cursor stack), and takes screenshots. Then it renders the same scenes with the port and diffs
+them pixel for pixel. 58 are identical; 3 (achievement icons) differ by one colour level on fewer than 100 pixels,
 which is GPU rounding in item lighting.
 
 Getting there needed a few fixes:
@@ -172,10 +176,11 @@ Same as the original's defaults, and rebindable in Options → Controls:
 | Left / right click | Mine / place or use |
 | Middle click | Pick block |
 | 1–9, mouse wheel | Hotbar slot |
+| E | Inventory |
 | Q | Drop item |
 | F | Cycle render distance (Shift: backwards) |
 | F1 / F2 / F3 | Hide HUD / screenshot / debug info |
-| F5 / F8 | Third person (view not drawn yet) / smooth camera |
+| F5 / F8 | Third person / smooth camera |
 | Esc | Game menu (pauses and saves) |
 
 ### Command line
@@ -213,9 +218,12 @@ crates/
     app.rs            Minecraft's main loop: screens, input, camera, HUD wiring
     worker.rs         the world thread: ticks, meshing, entity snapshots, saving
     render/           blocks.rs + blocks_special.rs (RenderBlocks), sky, weather,
-                      video settings, entity/ (models, renderers, item icons)
+                      video settings, entity/ (models, renderers, item icons),
+                      first_person.rs, camera.rs, targeting.rs (hand, view, cracks)
+    world_effects.rs  EffectRenderer: particles, pickups, world sounds
     gui/              a fixed-function GL emulation so screens port line by line;
-                      screens/ (title, options, worlds, game menu, achievements, game over),
+                      screens/ (title, options, worlds, game menu, achievements, game over,
+                      inventory and containers, statistics),
                       ingame.rs (HUD), font, language files, settings
     sound.rs          SoundManager / SoundPool semantics over cpal
 tools/
@@ -271,8 +279,9 @@ Being exact means keeping these too:
 
 ## Not yet
 
-Minecarts and boats (placing them works; riding and physics don't), pistons and note blocks,
-signs, paintings, maps, fishing, records, the statistics screen, and the 3D anaglyph mode.
+Minecarts and boats (placing them works; riding and physics don't), pistons (being ported),
+signs, paintings, maps, fishing, counting statistics while you play (the screen exists, the
+counters don't move yet), and the 3D anaglyph mode.
 
 ---
 
