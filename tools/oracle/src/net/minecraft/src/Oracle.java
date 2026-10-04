@@ -73,6 +73,14 @@ public class Oracle {
                 Integer.parseInt(a[4]), Integer.parseInt(a[5]), a[6]);
         } else if (mode.equals("sin")) {
             sin(a[1]);
+        } else if (mode.equals("entities")) {
+            EntityOracle.objects(a[1],Integer.parseInt(a[2]),a[3]);
+        } else if (mode.equals("entityblocks")) {
+            EntityOracle.blockPhysics(a[1]);
+        } else if (mode.equals("entitygeometry")) {
+            EntityOracle.geometry(a[1]);
+        } else if (mode.equals("collisiontable")) {
+            EntityOracle.blockGeometry(a[1]);
         } else if (mode.equals("blocktable")) {
             blockTable(a[1]);
         } else if (mode.equals("grid")) {
@@ -676,10 +684,9 @@ public class Oracle {
 
     @SuppressWarnings("unchecked")
     static void dumpWorld(World w, String out, int sx, int sy, int sz) throws Exception {
-        Field cmF = ChunkProvider.class.getDeclaredField("chunkMap");
-        cmF.setAccessible(true);
-        Map<Integer, Chunk> map = (Map<Integer, Chunk>) cmF.get(w.chunkProvider);
-        List<Chunk> chunks = new ArrayList<>(map.values());
+        List<Chunk> chunks;
+        if(w.chunkProvider instanceof EntityOracle.FlatProvider)chunks=new ArrayList<>(((EntityOracle.FlatProvider)w.chunkProvider).chunks.values());
+        else {Field cmF = ChunkProvider.class.getDeclaredField("chunkMap");cmF.setAccessible(true);Map<Integer,Chunk> map=(Map<Integer,Chunk>)cmF.get(w.chunkProvider);chunks=new ArrayList<>(map.values());}
         chunks.sort((p, q) -> p.xPosition != q.xPosition ? Integer.compare(p.xPosition, q.xPosition)
                                                          : Integer.compare(p.zPosition, q.zPosition));
         DataOut o = new DataOut();

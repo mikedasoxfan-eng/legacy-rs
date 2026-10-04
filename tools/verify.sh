@@ -36,6 +36,15 @@ run_extra() { # like run, but the oracle takes an argument after the output file
 echo "== MathHelper sine table"
 "$oracle" sin sin.bin && "$cmp" sin "$out/sin.bin" || fail=1
 
+echo "== entity geometry (10000 original-bytecode cases)"
+"$oracle" entitygeometry entity_geometry.bin && "$cmp" entitygeometry "$out/entity_geometry.bin" || fail=1
+echo "== all Beta block collision/selection states (10000 cases)"
+"$oracle" entityblocks entity_blocks.bin && "$cmp" entityblocks "$out/entity_blocks.bin" || fail=1
+for entity_case in "items 6005" "sand 300" "tnt 300" "arrows 1300" "passive 13000" "aquatic 3000" "hostile 3000" "special 3000" "spawning 3000" "spawner 3000" "client 3000" "nbt 1000" "nbtall 1000" "slimes 3000" "hooks 1000" "combat 3000" "stormclient 3000" "lightning 1000" "rider 3000" "nether 3000"; do
+  read -r kind ticks <<<"$entity_case"
+  run "entities: $kind, every frame for $ticks ticks" entities "$kind" "$ticks" -- entities "$kind" "$ticks"
+done
+
 # ---- base terrain (order-independent): seed x0 z0 x1 z1
 raw_cases=(
   "0                    -8 -8 7 7          origin"

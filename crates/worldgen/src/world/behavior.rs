@@ -4,8 +4,8 @@
 //! Hooks for blocks generation never places panic, so a missing port shows up
 //! loudly instead of silently diverging.
 
-use super::tile::{ItemStack, TileEntity};
 use super::ticks_blocks as tb;
+use super::tile::{ItemStack, TileEntity};
 use super::{DroppedItem, RandSel, World};
 use crate::block::{self, mat, material_of, opaque_cube_lookup, MAT_LAVA, MAT_WATER};
 
@@ -50,7 +50,16 @@ pub fn on_block_added(w: &mut World, id: u8, x: i32, y: i32, z: i32) {
         block::WATER_STILL | block::LAVA_STILL => check_for_harden(w, id, x, y, z),
         block::SAND | block::GRAVEL => w.schedule_block_update(x, y, z, id, tick_rate(id)),
         block::FIRE => tb::fire_added(w, x, y, z),
-        block::CHEST | block::MOB_SPAWNER => w.set_block_tile_entity(x, y, z, TileEntity::for_block(id)),
+        46 => {
+            if w.is_block_indirectly_getting_powered(x, y, z) {
+                w.ignite_tnt(x, y, z);
+                w.set_block_with_notify(x, y, z, 0);
+            }
+        }
+        70 | 72 => {} // Pressure plate onBlockAdded is empty.
+        block::CHEST | block::MOB_SPAWNER => {
+            w.set_block_tile_entity(x, y, z, TileEntity::for_block(id))
+        }
         _ => assert_plain(id, "onBlockAdded"),
     }
 }
@@ -87,9 +96,15 @@ pub fn on_block_removal(w: &mut World, id: u8, x: i32, y: i32, z: i32) {
                 }
             }
         }
-        // BlockChest scatters its contents with its own private Random (entities only),
-        // then BlockContainer drops the tile entity.
-        block::CHEST | block::MOB_SPAWNER => w.remove_block_tile_entity(x, y, z),
+        46 => {} // BlockTNT inherits Block.onBlockRemoval.
+        70 | 72 => {
+            if w.get_block_metadata(x, y, z) > 0 {
+                w.notify_blocks_of_neighbor_change(x, y, z, id);
+                w.notify_blocks_of_neighbor_change(x, y - 1, z, id);
+            }
+        }
+        block::CHEST => w.scatter_chest_contents(x, y, z),
+        block::MOB_SPAWNER => w.remove_block_tile_entity(x, y, z),
         _ => assert_plain(id, "onBlockRemoval"),
     }
 }
@@ -138,23 +153,44 @@ pub fn on_neighbor_block_change(w: &mut World, id: u8, x: i32, y: i32, z: i32, _
             }
         }
         block::FIRE => tb::fire_neighbor(w, x, y, z),
+        46 => {
+            if _changed > 0
+                && crate::entity::block_hooks::provides_power(_changed)
+                && w.is_block_indirectly_getting_powered(x, y, z)
+            {
+                w.ignite_tnt(x, y, z);
+                w.set_block_with_notify(x, y, z, 0);
+            }
+        }
+        70 | 72 => {
+            if !w.is_block_normal_cube(x, y - 1, z) {
+                let m = w.get_block_metadata(x, y, z);
+                drop_block_as_item(w, id, x, y, z, m);
+                w.set_block_with_notify(x, y, z, 0);
+            }
+        }
+        60 => {
+            if mat(w.get_block_material(x, y + 1, z)).is_solid {
+                w.set_block_with_notify(x, y, z, block::DIRT);
+            }
+        }
         block::PORTAL => tb::portal_neighbor(w, x, y, z),
         _ => assert_plain(id, "onNeighborBlockChange"),
     }
 }
 
 /// How many `updateTick` calls each block id received (for test coverage reports).
-pub static TICK_COUNTS: [std::sync::atomic::AtomicU32; 256] = [const { std::sync::atomic::AtomicU32::new(0) }; 256];
+pub static TICK_COUNTS: [std::sync::atomic::AtomicU32; 256] =
+    [const { std::sync::atomic::AtomicU32::new(0) }; 256];
 
 pub fn update_tick(w: &mut World, id: u8, x: i32, y: i32, z: i32, rs: RandSel) {
     TICK_COUNTS[id as usize].fetch_add(1, std::sync::atomic::Ordering::Relaxed);
     match id {
         block::WATER_MOVING | block::LAVA_MOVING => flowing_update_tick(w, id, x, y, z, rs),
         block::SAND | block::GRAVEL => try_to_fall(w, id, x, y, z),
-        block::PLANT_YELLOW
-        | block::PLANT_RED
-        | block::TALL_GRASS
-        | block::DEAD_BUSH => check_flower(w, id, x, y, z),
+        block::PLANT_YELLOW | block::PLANT_RED | block::TALL_GRASS | block::DEAD_BUSH => {
+            check_flower(w, id, x, y, z)
+        }
         block::GRASS => tb::grass(w, x, y, z, rs),
         block::LEAVES => tb::leaves(w, x, y, z),
         block::LAVA_STILL => tb::still_lava(w, x, y, z, rs),
@@ -166,6 +202,12 @@ pub fn update_tick(w: &mut World, id: u8, x: i32, y: i32, z: i32, rs: RandSel) {
         tb::ORE_REDSTONE_GLOWING => {
             w.set_block_with_notify(x, y, z, block::ORE_REDSTONE);
         }
+        70 | 72 => {
+            if w.get_block_metadata(x, y, z) != 0 {
+                w.update_pressure_plate(id, x, y, z);
+            }
+        }
+        60 => w.farmland_tick(x, y, z, rs),
         block::WATER_STILL | block::PUMPKIN | 91 => {}
         _ => warn_once(id, "updateTick"),
     }
@@ -183,7 +225,10 @@ fn warn_once(id: u8, hook: &str) {
     let mut seen = SEEN.lock().unwrap();
     if !seen.contains(&(id, hook)) {
         seen.push((id, hook));
-        eprintln!("warning: {hook} for block {id} ({}) not ported; skipped", block::props(id).name);
+        eprintln!(
+            "warning: {hook} for block {id} ({}) not ported; skipped",
+            block::props(id).name
+        );
     }
 }
 
@@ -192,6 +237,11 @@ fn assert_plain(id: u8, hook: &str) {
     let plain = matches!(
         id,
         block::STONE
+            | block::FENCE
+            | block::STAIRS_WOOD
+            | block::STAIRS_COBBLESTONE
+            | 5 // Planks: the modelBlock behind wooden stairs has no hooks.
+            | block::TILLED_FIELD // Empty onAdded and onRemoval; neighbor override is dispatched above.
             | block::GRASS
             | block::DIRT
             | block::COBBLESTONE
@@ -235,7 +285,11 @@ fn assert_plain(id: u8, hook: &str) {
             | tb::SNOW_BLOCK
             | tb::ORE_REDSTONE_GLOWING
     );
-    assert!(plain, "{hook} for block {id} ({}) not ported", block::props(id).name);
+    assert!(
+        plain,
+        "{hook} for block {id} ({}) not ported",
+        block::props(id).name
+    );
 }
 
 // ---------------------------------------------------------------- fluids
@@ -265,6 +319,9 @@ fn check_for_harden(w: &mut World, id: u8, x: i32, y: i32, z: i32) {
 fn trigger_lava_mix_effects(w: &mut World) {
     let _ = w.rand.next_float();
     let _ = w.rand.next_float();
+    for _ in 0..16 {
+        w.math_random.next_double();
+    }
 }
 
 fn get_flow_decay(w: &mut World, fluid_mat: u8, x: i32, y: i32, z: i32) -> i32 {
@@ -305,7 +362,10 @@ fn smallest_flow_decay(w: &mut World, id: u8, x: i32, y: i32, z: i32, cur: i32) 
 /// `BlockFlowing.blockBlocksFlow`
 fn block_blocks_flow(w: &mut World, x: i32, y: i32, z: i32) -> bool {
     let id = w.get_block_id(x, y, z);
-    if matches!(id, block::DOOR_WOOD | block::DOOR_STEEL | block::SIGN_POST | block::LADDER | block::REED) {
+    if matches!(
+        id,
+        block::DOOR_WOOD | block::DOOR_STEEL | block::SIGN_POST | block::LADDER | block::REED
+    ) {
         return true;
     }
     if id == block::AIR {
@@ -328,7 +388,11 @@ fn liquid_can_displace(w: &mut World, id: u8, x: i32, y: i32, z: i32) -> bool {
 fn flowing_update_tick(w: &mut World, id: u8, x: i32, y: i32, z: i32, rs: RandSel) {
     let fm = fluid_material(id);
     let mut decay = get_flow_decay(w, fm, x, y, z);
-    let step = if fm == MAT_LAVA && !w.dimension.is_hell_world() { 2 } else { 1 };
+    let step = if fm == MAT_LAVA && !w.dimension.is_hell_world() {
+        2
+    } else {
+        1
+    };
     let mut keep_flowing = true;
     if decay > 0 {
         w.flow[flow_slot(id)].num_adjacent_sources = 0;
@@ -347,7 +411,8 @@ fn flowing_update_tick(w: &mut World, id: u8, x: i32, y: i32, z: i32, rs: RandSe
         if w.flow[flow_slot(id)].num_adjacent_sources >= 2 && fm == MAT_WATER {
             if w.material_is_solid(x, y - 1, z) {
                 next = 0;
-            } else if w.get_block_material(x, y - 1, z) == fm && w.get_block_metadata(x, y, z) == 0 {
+            } else if w.get_block_material(x, y - 1, z) == fm && w.get_block_metadata(x, y, z) == 0
+            {
                 next = 0;
             }
         }
@@ -434,11 +499,23 @@ fn neighbor(dir: usize, x: i32, z: i32) -> (i32, i32) {
 }
 
 /// `BlockFlowing.calculateFlowCost`
-fn calculate_flow_cost(w: &mut World, id: u8, x: i32, y: i32, z: i32, depth: i32, from: usize) -> i32 {
+fn calculate_flow_cost(
+    w: &mut World,
+    id: u8,
+    x: i32,
+    y: i32,
+    z: i32,
+    depth: i32,
+    from: usize,
+) -> i32 {
     let fm = fluid_material(id);
     let mut best = 1000;
     for dir in 0..4usize {
-        if (dir == 0 && from == 1) || (dir == 1 && from == 0) || (dir == 2 && from == 3) || (dir == 3 && from == 2) {
+        if (dir == 0 && from == 1)
+            || (dir == 1 && from == 0)
+            || (dir == 2 && from == 3)
+            || (dir == 3 && from == 2)
+        {
             continue;
         }
         let (nx, nz) = neighbor(dir, x, z);
@@ -486,7 +563,7 @@ fn optimal_flow_directions(w: &mut World, id: u8, x: i32, y: i32, z: i32) {
 
 // ---------------------------------------------------------------- sand
 
-fn can_fall_below(w: &mut World, x: i32, y: i32, z: i32) -> bool {
+pub(crate) fn can_fall_below(w: &mut World, x: i32, y: i32, z: i32) -> bool {
     let id = w.get_block_id(x, y, z);
     if id == block::AIR || id == block::FIRE {
         return true;
@@ -499,10 +576,19 @@ fn can_fall_below(w: &mut World, x: i32, y: i32, z: i32) -> bool {
 fn try_to_fall(w: &mut World, id: u8, x: i32, mut y: i32, z: i32) {
     if can_fall_below(w, x, y - 1, z) && y >= 0 {
         let r = 32;
-        if !w.sand_fall_instantly && w.check_chunks_exist(x - r, y - r, z - r, x + r, y + r, z + r) {
+        if !w.sand_fall_instantly && w.check_chunks_exist(x - r, y - r, z - r, x + r, y + r, z + r)
+        {
             // Spawns EntityFallingSand; the block stays until the entity ticks.
             if w.chunk_exists(x >> 4, z >> 4) {
                 w.falling_sand.push((x, y, z, id));
+                let entity = crate::entity::Entity::falling_sand(
+                    w,
+                    (x as f32 + 0.5) as f64,
+                    (y as f32 + 0.5) as f64,
+                    (z as f32 + 0.5) as f64,
+                    id,
+                );
+                w.entity_joined_world(entity);
             }
         } else {
             w.set_block_with_notify(x, y, z, block::AIR);
@@ -534,7 +620,8 @@ pub fn flower_can_stay(w: &mut World, id: u8, x: i32, y: i32, z: i32) -> bool {
             if !(0..128).contains(&y) {
                 return false;
             }
-            w.get_full_block_light_value(x, y, z) < 13 && plant_grows_on(id, w.get_block_id(x, y - 1, z))
+            w.get_full_block_light_value(x, y, z) < 13
+                && plant_grows_on(id, w.get_block_id(x, y - 1, z))
         }
         _ => {
             (w.get_full_block_light_value(x, y, z) >= 8 || w.can_block_see_the_sky(x, y, z))
@@ -607,10 +694,11 @@ fn quantity_dropped(w: &mut World, id: u8) -> i32 {
                 0
             }
         }
-        block::SNOW | block::ICE | block::FIRE | block::PORTAL => 0,
+        block::SNOW | block::ICE | block::FIRE | block::PORTAL | 8 | 9 | 10 | 11 | 20 | 46 => 0,
         tb::SNOW_BLOCK => 4,
         block::ORE_LAPIS => 4 + w.rand.next_int(5),
         block::ORE_REDSTONE | super::ticks_blocks::ORE_REDSTONE_GLOWING => 4 + w.rand.next_int(2),
+        block::GLOWSTONE => 2 + w.rand.next_int(3),
         block::CLAY => 4,
         _ => 1,
     }
@@ -633,10 +721,14 @@ fn id_dropped(w: &mut World, id: u8) -> i32 {
                 block::GRAVEL as i32
             }
         }
+        block::TILLED_FIELD => block::DIRT as i32,
+        block::STAIRS_WOOD => 5,
+        block::STAIRS_COBBLESTONE => 4,
         block::STONE => block::COBBLESTONE as i32,
         block::GRASS => block::DIRT as i32,
         block::LEAVES => block::SAPLING as i32,
         block::REED => ITEM_REED,
+        block::GLOWSTONE => 348,
         block::ORE_COAL => ITEM_COAL,
         block::ORE_DIAMOND => ITEM_DIAMOND,
         block::ORE_LAPIS => ITEM_DYE,
@@ -650,13 +742,25 @@ fn id_dropped(w: &mut World, id: u8) -> i32 {
 /// `Block.dropBlockAsItem` → `dropBlockAsItemWithChance(..., 1.0)`. Only the
 /// World.rand draws matter for terrain; the entity is recorded for inspection.
 pub fn drop_block_as_item(w: &mut World, id: u8, x: i32, y: i32, z: i32, meta: i32) {
+    drop_block_with_chance(w, id, x, y, z, meta, 1.0);
+}
+pub fn drop_block_with_chance(
+    w: &mut World,
+    id: u8,
+    x: i32,
+    y: i32,
+    z: i32,
+    meta: i32,
+    chance: f32,
+) {
     let n = quantity_dropped(w, id);
     for _ in 0..n {
-        if w.rand.next_float() <= 1.0 {
+        if w.rand.next_float() <= chance {
             let item = id_dropped(w, id);
             if item > 0 {
                 let damage = match id {
                     block::LOG => meta,
+                    block::ORE_LAPIS => 4,
                     block::LEAVES => meta & 3,
                     _ => 0,
                 };
@@ -665,8 +769,27 @@ pub fn drop_block_as_item(w: &mut World, id: u8, x: i32, y: i32, z: i32, meta: i
                 let oy = (w.rand.next_float() * s) as f64 + (1.0 - s) as f64 * 0.5;
                 let oz = (w.rand.next_float() * s) as f64 + (1.0 - s) as f64 * 0.5;
                 let (px, pz) = (x as f64 + ox, z as f64 + oz);
-                if w.chunk_exists(crate::math::floor_double(px / 16.0), crate::math::floor_double(pz / 16.0)) {
-                    w.dropped_items.push(DroppedItem { x: px, y: y as f64 + oy, z: pz, item: ItemStack::new(item, 1, damage) });
+                let mut entity = crate::entity::Entity::item(
+                    w,
+                    px,
+                    y as f64 + oy,
+                    pz,
+                    ItemStack::new(item, 1, damage),
+                );
+                if let crate::entity::EntityKind::Item { pickup_delay, .. } = &mut entity.kind {
+                    *pickup_delay = 10;
+                }
+                w.entity_joined_world(entity);
+                if w.chunk_exists(
+                    crate::math::floor_double(px / 16.0),
+                    crate::math::floor_double(pz / 16.0),
+                ) {
+                    w.dropped_items.push(DroppedItem {
+                        x: px,
+                        y: y as f64 + oy,
+                        z: pz,
+                        item: ItemStack::new(item, 1, damage),
+                    });
                 }
             }
         }
