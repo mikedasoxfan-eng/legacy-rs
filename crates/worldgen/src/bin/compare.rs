@@ -20,6 +20,12 @@ fn main() -> ExitCode {
     let a: Vec<String> = std::env::args().collect();
     let p = |i: usize| a[i].parse::<i64>().expect("number");
     match a.get(1).map(String::as_str) {
+        Some("playerinventory") => {
+            let java=std::fs::read(&a[2]).expect("inventory dump");
+            let rust=worldgen::entity::player::verify::inventory_bytes();
+            if java==rust {println!("EXACT MATCH: 10000 player inventory operations");ExitCode::SUCCESS}
+            else {eprintln!("inventory differs at byte {:?}; lengths {}/{}",java.iter().zip(&rust).position(|(a,b)|a!=b),java.len(),rust.len()); std::fs::write("target/inventory-rust.bin",rust).unwrap();ExitCode::FAILURE}
+        }
         Some("entities") => {
             let java = std::fs::read(&a[4]).expect("entity dump");
             let rust = worldgen::entity::verify::object_bytes(&a[2], p(3) as i32);

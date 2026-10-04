@@ -12,6 +12,7 @@ pub mod living;
 pub mod nbt;
 pub mod objects;
 pub mod path;
+pub mod player;
 pub mod physics;
 pub mod projectile;
 pub mod spawning;

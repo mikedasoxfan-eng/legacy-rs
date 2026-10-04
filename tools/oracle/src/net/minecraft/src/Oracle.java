@@ -73,6 +73,10 @@ public class Oracle {
                 Integer.parseInt(a[4]), Integer.parseInt(a[5]), a[6]);
         } else if (mode.equals("sin")) {
             sin(a[1]);
+        } else if (mode.equals("playerregistry")) {
+            PlayerOracle.registry(a[1]);
+        } else if (mode.equals("playerinventory")) {
+            PlayerOracle.inventory(a[1]);
         } else if (mode.equals("entities")) {
             EntityOracle.objects(a[1],Integer.parseInt(a[2]),a[3]);
         } else if (mode.equals("entityblocks")) {

@@ -36,6 +36,9 @@ run_extra() { # like run, but the oracle takes an argument after the output file
 echo "== MathHelper sine table"
 "$oracle" sin sin.bin && "$cmp" sin "$out/sin.bin" || fail=1
 
+echo "== player inventory (10000 original-bytecode operations)"
+"$oracle" playerinventory player_inventory.bin && "$cmp" playerinventory "$out/player_inventory.bin" || fail=1
+
 echo "== entity geometry (10000 original-bytecode cases)"
 "$oracle" entitygeometry entity_geometry.bin && "$cmp" entitygeometry "$out/entity_geometry.bin" || fail=1
 echo "== all Beta block collision/selection states (10000 cases)"
