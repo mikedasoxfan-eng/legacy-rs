@@ -17,7 +17,6 @@ fn plain(id: u8) -> bool {
         id,
         20 | 21
             | 22
-            | 25
             | 26
             | 30
             | 35
@@ -352,12 +351,6 @@ pub fn repeater_input(w: &mut World, x: i32, y: i32, z: i32, m: i32) -> bool {
         || (w.get_block_id(x + dx, y, z + dz) == 55 && w.get_block_metadata(x + dx, y, z + dz) > 0)
 }
 pub fn ensure_container(w: &mut World, id: u8, x: i32, y: i32, z: i32) {
-    if w.chunk(x >> 4, z >> 4)
-        .tile_entities
-        .contains_key(&(x & 15, y, z & 15))
-    {
-        return;
-    }
     w.set_block_tile_entity(x, y, z, crate::world::tile::TileEntity::for_block(id));
     if id == 23 {
         w.dispenser_random.insert(

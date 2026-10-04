@@ -261,30 +261,21 @@ impl World {
         total
     }
     pub(super) fn tick_entity_tiles(&mut self) {
-        let order = self.loaded_tile_entities.clone();
-        for (x, y, z) in order {
-            if !self.chunk_exists(x >> 4, z >> 4) {
-                continue;
+        self.scan_tile_entities(|w,id|w.tick_tile_entity(id));
+    }
+    /// Update one Java tile object; detached objects can still be valid.
+    pub fn tick_tile_entity(&mut self,id:u64) {
+        let (x,y,z)=self.tile_objects[&id].position;
+        if let Some(mut te)=self.tile_object(id).cloned() {
+            if let crate::world::tile::TileEntity::MobSpawner {mob,delay}=&mut te {self.tick_mob_spawner(x,y,z,mob,delay);}
+            let mut transition=None;
+            if let crate::world::tile::TileEntity::Furnace(f)=&mut te {
+                let (lit,dirty)=f.tick(false);transition=lit;
+                if dirty {self.mark_container_dirty(x,z);}
             }
-            let key = (x & 15, y, z & 15);
-            let te = self.chunk_mut(x >> 4, z >> 4).tile_entities.remove(&key);
-            if let Some(mut te) = te {
-                if let crate::world::tile::TileEntity::MobSpawner { mob, delay } = &mut te {
-                    self.tick_mob_spawner(x, y, z, mob, delay);
-                }
-                if let crate::world::tile::TileEntity::Furnace(furnace) = &mut te {
-                    let (transition, dirty) = furnace.tick(false);
-                    if let Some(lit) = transition {
-                        self.swap_furnace_block(lit, x, y, z);
-                    }
-                    if dirty {
-                        self.mark_container_dirty(x, z);
-                    }
-                }
-                if crate::block::props(self.get_block_id(x, y, z)).container {
-                    self.chunk_mut(x >> 4, z >> 4).tile_entities.insert(key, te);
-                }
-            }
+            if let crate::world::tile::TileEntity::Piston(p)=te {self.tick_piston(id,p);}
+            else {self.update_tile_object(id,te);}
+            if let Some(lit)=transition {self.swap_furnace_block(lit,x,y,z);}
         }
     }
     fn tick_mob_spawner(&mut self, x: i32, y: i32, z: i32, mob: &str, delay: &mut i32) {

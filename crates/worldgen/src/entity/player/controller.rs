@@ -152,6 +152,7 @@ impl Entity {
         }
     }
     pub fn block_clicked(&mut self, w: &mut World, id: u8, x: i32, y: i32, z: i32) {
+        if id==25 { w.trigger_note(x,y,z); }
         if matches!(id, 64 | 71 | 69 | 77 | 96) {
             self.activate_block(w, x, y, z);
         }

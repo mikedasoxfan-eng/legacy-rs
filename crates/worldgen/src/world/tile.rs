@@ -17,8 +17,10 @@ impl ItemStack {
     }
 }
 
-#[derive(Clone, Debug, PartialEq, Eq)]
+#[derive(Clone, Debug, PartialEq)]
 pub enum TileEntity {
+    Note(super::notes::Note),
+    Piston(super::pistons::Piston),
     Chest(Box<[Option<ItemStack>; 27]>),
     MobSpawner { mob: String, delay: i32 },
     Furnace(crate::container::tiles::Furnace),
@@ -29,6 +31,7 @@ impl TileEntity {
     /// `BlockContainer.getBlockEntity()` for the given container block.
     pub fn for_block(id: u8) -> TileEntity {
         match id {
+            25 => TileEntity::Note(Default::default()),
             crate::block::CHEST => TileEntity::Chest(Box::new([None; 27])),
             crate::block::MOB_SPAWNER => TileEntity::MobSpawner {
                 mob: "Pig".into(),

@@ -1,0 +1,199 @@
+//! World/Chunk tile ownership. IDs represent Java object identity, independently of
+//! the chunk's position map. Replaced objects may still be in the update list.
+use super::{tile::TileEntity, World};
+use crate::block::props;
+
+pub type TileId = u64;
+pub struct TileObject {
+    pub position: (i32, i32, i32),
+    pub invalid: bool,
+    // Attached objects live in Chunk.tile_entities for the inventory APIs. An
+    // overwritten, deferred or unloaded object retains its own payload here.
+    pub detached: Option<TileEntity>,
+}
+
+impl World {
+    pub(crate) fn new_tile_object(&mut self, position: (i32, i32, i32), te: TileEntity) -> TileId {
+        let id = self.next_tile_id;
+        self.next_tile_id += 1;
+        self.tile_objects.insert(
+            id,
+            TileObject {
+                position,
+                invalid: false,
+                detached: Some(te),
+            },
+        );
+        id
+    }
+    pub fn tile_object(&self, id: TileId) -> Option<&TileEntity> {
+        let o = self.tile_objects.get(&id)?;
+        if let Some(te) = &o.detached {
+            return Some(te);
+        }
+        let (x, y, z) = o.position;
+        self.chunks
+            .get(&(x >> 4, z >> 4))?
+            .tile_entities
+            .get(&(x & 15, y, z & 15))
+    }
+    pub(crate) fn update_tile_object(&mut self, id: TileId, te: TileEntity) {
+        let o = self.tile_objects.get_mut(&id).unwrap();
+        if o.detached.is_some() {
+            o.detached = Some(te);
+        } else {
+            let (x, y, z) = o.position;
+            self.chunks
+                .get_mut(&(x >> 4, z >> 4))
+                .unwrap()
+                .tile_entities
+                .insert((x & 15, y, z & 15), te);
+        }
+    }
+    pub(crate) fn detach_chunk_tile(&mut self, x: i32, y: i32, z: i32) -> Option<TileId> {
+        let c = self.chunks.get_mut(&(x >> 4, z >> 4))?;
+        let key = (x & 15, y, z & 15);
+        let id = c.tile_entity_ids.remove(&key)?;
+        self.tile_objects.get_mut(&id).unwrap().detached = c.tile_entities.remove(&key);
+        c.tile_entity_order.retain(|p| *p != key);
+        Some(id)
+    }
+    pub(crate) fn insert_chunk_tile(&mut self, id: TileId) {
+        let (x, y, z) = self.tile_objects[&id].position;
+        if !self.access_chunk(x >> 4, z >> 4) {
+            return;
+        }
+        let block = self.chunk(x >> 4, z >> 4).block(x & 15, y, z & 15);
+        if block == 0 || !props(block).container {
+            return;
+        }
+        let key = (x & 15, y, z & 15);
+        if self.chunk(x >> 4, z >> 4).tile_entity_ids.get(&key) == Some(&id) {
+            self.tile_objects.get_mut(&id).unwrap().invalid = false;
+            return;
+        }
+        let order = self.chunk(x >> 4, z >> 4).tile_entity_order.clone();
+        let replaced = self.detach_chunk_tile(x, y, z).is_some();
+        let o = self.tile_objects.get_mut(&id).unwrap();
+        o.invalid = false; // TileEntity.validate
+        let te = o.detached.take().unwrap();
+        let c = self.chunk_mut(x >> 4, z >> 4);
+        c.tile_entity_ids.insert(key, id);
+        if replaced {
+            c.tile_entity_order = order;
+        } else {
+            c.tile_entity_order.push(key);
+        }
+        c.tile_entities.insert(key, te);
+    }
+    pub(crate) fn set_tile_object(&mut self, id: TileId) {
+        if self.tile_objects[&id].invalid {
+            return;
+        }
+        if self.scanning_tiles {
+            self.pending_tile_entities.push(id);
+        } else {
+            self.loaded_tile_entities.push(id);
+            self.insert_chunk_tile(id);
+        }
+    }
+    /// Chunk.getChunkBlockTileEntity: lazy creation happens before invalid removal.
+    pub fn get_block_tile_entity(&mut self, x: i32, y: i32, z: i32) -> Option<&mut TileEntity> {
+        if !self.access_chunk(x >> 4, z >> 4) {
+            return None;
+        }
+        let key = (x & 15, y, z & 15);
+        if !self.chunk(x >> 4, z >> 4).tile_entities.contains_key(&key) {
+            let block = self.chunk(x >> 4, z >> 4).block(x & 15, y, z & 15);
+            if !props(block).container {
+                return None;
+            }
+            super::behavior::on_block_added(self, block, x, y, z);
+        }
+        if let Some(&id) = self.chunk(x >> 4, z >> 4).tile_entity_ids.get(&key) {
+            if self.tile_objects[&id].invalid {
+                self.detach_chunk_tile(x, y, z);
+                return None;
+            }
+        }
+        self.chunk_mut(x >> 4, z >> 4).tile_entities.get_mut(&key)
+    }
+    pub fn set_block_tile_entity(&mut self, x: i32, y: i32, z: i32, te: TileEntity) {
+        let id = self.new_tile_object((x, y, z), te);
+        self.set_tile_object(id);
+    }
+    pub(crate) fn remove_chunk_tile(&mut self, x: i32, y: i32, z: i32) {
+        if self.access_chunk(x >> 4, z >> 4) && self.chunk(x >> 4, z >> 4).loaded {
+            if let Some(id) = self.detach_chunk_tile(x, y, z) {
+                self.tile_objects.get_mut(&id).unwrap().invalid = true;
+            }
+            self.chunk_mut(x >> 4, z >> 4)
+                .raw_tile_entities
+                .retain(|n| n.int("x") != x || n.int("y") != y || n.int("z") != z);
+            self.dispenser_random.remove(&(x, y, z));
+            self.spawner_animations.remove(&(x, y, z));
+        }
+    }
+    pub fn remove_block_tile_entity(&mut self, x: i32, y: i32, z: i32) {
+        if !self.access_chunk(x >> 4, z >> 4) {
+            return;
+        }
+        self.get_block_tile_entity(x, y, z);
+        let id = self
+            .chunk(x >> 4, z >> 4)
+            .tile_entity_ids
+            .get(&(x & 15, y, z & 15))
+            .copied();
+        if let Some(id) = id {
+            if self.scanning_tiles {
+                self.tile_objects.get_mut(&id).unwrap().invalid = true;
+                return;
+            }
+            if let Some(i) = self.loaded_tile_entities.iter().position(|p| *p == id) {
+                self.loaded_tile_entities.remove(i);
+            }
+        }
+        self.remove_chunk_tile(x, y, z);
+    }
+    /// World.updateEntities tile pass. The callback permits oracle probes to run
+    /// real block hooks from inside updateEntity without adding a synthetic tile.
+    pub fn scan_tile_entities(&mut self, mut update: impl FnMut(&mut World, TileId)) {
+        self.scanning_tiles = true;
+        let mut i = 0;
+        while i < self.loaded_tile_entities.len() {
+            let id = self.loaded_tile_entities[i];
+            if !self.tile_objects[&id].invalid {
+                update(self, id);
+            }
+            if self.tile_objects[&id].invalid {
+                self.loaded_tile_entities.remove(i);
+                let (x, y, z) = self.tile_objects[&id].position;
+                self.remove_chunk_tile(x, y, z);
+            } else {
+                i += 1;
+            }
+        }
+        self.finish_tile_scan();
+    }
+    pub(crate) fn finish_tile_scan(&mut self) {
+        self.scanning_tiles = false;
+        let pending = std::mem::take(&mut self.pending_tile_entities);
+        for id in pending {
+            if !self.tile_objects[&id].invalid {
+                if !self.loaded_tile_entities.contains(&id) {
+                    self.loaded_tile_entities.push(id);
+                }
+                self.insert_chunk_tile(id);
+                let (x, _, z) = self.tile_objects[&id].position;
+                self.touch(x >> 4, z >> 4);
+            }
+        }
+        // Only collect objects with no remaining Java owner.
+        let mut owners: std::collections::HashSet<_> =
+            self.loaded_tile_entities.iter().copied().collect();
+        for c in self.chunks.values() {
+            owners.extend(c.tile_entity_ids.values().copied());
+        }
+        self.tile_objects.retain(|id, _| owners.contains(id));
+    }
+}

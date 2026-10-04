@@ -1031,6 +1031,14 @@ pub fn append_world(w: &World, out: &mut Vec<u8>) {
                 i(out, v);
             }
             match &c.tile_entities[&(x, y, z)] {
+                crate::world::tile::TileEntity::Note(n)=> {
+                    out.push(5); out.push(n.note as u8); out.push(n.powered as u8);
+                }
+                crate::world::tile::TileEntity::Piston(p)=> {
+                    out.push(6);
+                    for v in [p.block_id as i32,p.block_data,p.facing,p.progress.to_bits() as i32,p.last_progress.to_bits() as i32] { i(out,v); }
+                    out.push(p.extending as u8);out.push(p.render_head as u8);
+                }
                 crate::world::tile::TileEntity::Chest(slots) => {
                     out.push(1);
                     for slot in slots.iter() {
