@@ -76,7 +76,13 @@ impl ScaledResolution {
         }
         let wd = display_w as f64 / scale as f64;
         let hd = display_h as f64 / scale as f64;
-        ScaledResolution { width: wd.ceil() as i32, height: hd.ceil() as i32, width_d: wd, height_d: hd, scale_factor: scale }
+        ScaledResolution {
+            width: wd.ceil() as i32,
+            height: hd.ceil() as i32,
+            width_d: wd,
+            height_d: hd,
+            scale_factor: scale,
+        }
     }
 }
 
@@ -96,6 +102,8 @@ pub enum Action {
     Shutdown,
     /// Settings changed (render distance, graphics...): the game should re-read them.
     SettingsChanged,
+    /// `thePlayer.respawnPlayer()`
+    Respawn,
 }
 
 /// The parts of `Minecraft` the GUI code reaches into.
@@ -131,6 +139,10 @@ pub struct Ui {
     pub save_requests: Vec<i32>,
     /// `StatFileWriter`
     pub stats: stats::Stats,
+    /// `thePlayer.health <= 0`: no screen means `GuiGameOver`.
+    pub player_dead: bool,
+    /// `thePlayer.getScore()`
+    pub player_score: i32,
     /// `sndManager.playSoundFX(name, volume, pitch)` calls, played by the app.
     pub sounds: Vec<(&'static str, f32, f32)>,
 }
@@ -265,10 +277,34 @@ impl Ui {
         let s = 0.00390625f32;
         let gl = &mut self.gl;
         gl.start_drawing_quads();
-        gl.add_vertex_with_uv((x + 0) as f64, (y + h) as f64, z as f64, ((u + 0) as f32 * s) as f64, ((v + h) as f32 * s) as f64);
-        gl.add_vertex_with_uv((x + w) as f64, (y + h) as f64, z as f64, ((u + w) as f32 * s) as f64, ((v + h) as f32 * s) as f64);
-        gl.add_vertex_with_uv((x + w) as f64, (y + 0) as f64, z as f64, ((u + w) as f32 * s) as f64, ((v + 0) as f32 * s) as f64);
-        gl.add_vertex_with_uv((x + 0) as f64, (y + 0) as f64, z as f64, ((u + 0) as f32 * s) as f64, ((v + 0) as f32 * s) as f64);
+        gl.add_vertex_with_uv(
+            (x + 0) as f64,
+            (y + h) as f64,
+            z as f64,
+            ((u + 0) as f32 * s) as f64,
+            ((v + h) as f32 * s) as f64,
+        );
+        gl.add_vertex_with_uv(
+            (x + w) as f64,
+            (y + h) as f64,
+            z as f64,
+            ((u + w) as f32 * s) as f64,
+            ((v + h) as f32 * s) as f64,
+        );
+        gl.add_vertex_with_uv(
+            (x + w) as f64,
+            (y + 0) as f64,
+            z as f64,
+            ((u + w) as f32 * s) as f64,
+            ((v + 0) as f32 * s) as f64,
+        );
+        gl.add_vertex_with_uv(
+            (x + 0) as f64,
+            (y + 0) as f64,
+            z as f64,
+            ((u + 0) as f32 * s) as f64,
+            ((v + 0) as f32 * s) as f64,
+        );
         gl.draw();
     }
 
@@ -297,7 +333,13 @@ impl Ui {
         gl.start_drawing_quads();
         gl.set_color_opaque_i(4210752);
         gl.add_vertex_with_uv(0.0, height as f64, 0.0, 0.0, (height as f32 / s + offset as f32) as f64);
-        gl.add_vertex_with_uv(width as f64, height as f64, 0.0, (width as f32 / s) as f64, (height as f32 / s + offset as f32) as f64);
+        gl.add_vertex_with_uv(
+            width as f64,
+            height as f64,
+            0.0,
+            (width as f32 / s) as f64,
+            (height as f32 / s + offset as f32) as f64,
+        );
         gl.add_vertex_with_uv(width as f64, 0.0, 0.0, (width as f32 / s) as f64, (0 + offset) as f64);
         gl.add_vertex_with_uv(0.0, 0.0, 0.0, 0.0, (0 + offset) as f64);
         gl.draw();
@@ -391,20 +433,20 @@ pub trait Screen {
 
 /// `GuiScreen.mouseClicked` (callable from overrides that call `super`).
 pub fn default_mouse_clicked<S: Screen + ?Sized>(s: &mut S, ui: &mut Ui, x: i32, y: i32, button: i32) {
-        if button == 0 {
-            let mut i = 0;
-            while i < s.base().buttons.len() {
-                if !s.base().buttons[i].press(ui, x, y) {
-                    i += 1;
-                    continue;
-                }
-                s.set_selected(Some(i));
-                ui.sounds.push(("random.click", 1.0, 1.0));
-                let id = s.base().buttons[i].id;
-                s.action_performed(ui, id);
+    if button == 0 {
+        let mut i = 0;
+        while i < s.base().buttons.len() {
+            if !s.base().buttons[i].press(ui, x, y) {
                 i += 1;
+                continue;
             }
+            s.set_selected(Some(i));
+            ui.sounds.push(("random.click", 1.0, 1.0));
+            let id = s.base().buttons[i].id;
+            s.action_performed(ui, id);
+            i += 1;
         }
+    }
 }
 
 /// `GuiScreen.setWorldAndResolution`
@@ -419,7 +461,9 @@ pub fn set_world_and_resolution(s: &mut dyn Screen, ui: &mut Ui, w: i32, h: i32)
 }
 
 /// Load the GUI's textures and text resources from the jar.
-pub fn load_resources(jar: &mut crate::assets::Jar) -> Result<(HashMap<String, Image>, String, lang::Lang, Vec<String>), String> {
+pub fn load_resources(
+    jar: &mut crate::assets::Jar,
+) -> Result<(HashMap<String, Image>, String, lang::Lang, Vec<String>), String> {
     let mut imgs = HashMap::new();
     for &t in TEXTURES {
         imgs.insert(t.to_string(), jar.image(texture_options(t).0)?);
@@ -428,11 +472,7 @@ pub fn load_resources(jar: &mut crate::assets::Jar) -> Result<(HashMap<String, I
     let mut lang = lang::Lang::default();
     lang.load(&jar.bytes("lang/en_US.lang")?);
     lang.load(&jar.bytes("lang/stats_US.lang")?);
-    let splashes = jar
-        .text("title/splashes.txt")?
-        .lines()
-        .map(|l| l.trim().to_string())
-        .filter(|l| !l.is_empty())
-        .collect();
+    let splashes =
+        jar.text("title/splashes.txt")?.lines().map(|l| l.trim().to_string()).filter(|l| !l.is_empty()).collect();
     Ok((imgs, font_txt, lang, splashes))
 }

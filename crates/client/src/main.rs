@@ -15,6 +15,7 @@
 mod app;
 mod assets;
 mod gui;
+mod playscript;
 mod render;
 mod sound;
 mod worker;
@@ -44,6 +45,8 @@ pub struct Options {
     pub video_flowtest: Option<std::path::PathBuf>,
     /// `--shot-ticks N`: with --shot, let the world run N ticks first.
     pub shot_ticks: i64,
+    /// `--play-script <file>`: scripted keys and mouse for the player (see playscript.rs).
+    pub play_script: Option<std::path::PathBuf>,
 }
 
 fn parse_args() -> Options {
@@ -106,6 +109,7 @@ fn parse_args() -> Options {
         options_dir: get("--options-dir").map(Into::into),
         video_flowtest: get("--video-flowtest").map(Into::into),
         shot_ticks: get("--shot-ticks").and_then(|s| s.parse().ok()).unwrap_or(0),
+        play_script: get("--play-script").map(Into::into),
         direct: ["--world", "--world-dir", "--seed", "--no-save", "--shot", "--at", "--server"]
             .iter()
             .any(|f| args.iter().any(|a| a == f || a.starts_with(&format!("{f}=")))),

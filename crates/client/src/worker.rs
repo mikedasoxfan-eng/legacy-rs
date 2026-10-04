@@ -26,7 +26,90 @@ pub enum ToWorker {
     Pause(bool),
     /// `World.func_650_a(n)`: the pause menu saves a few chunks every frame.
     QuickSave(i32),
+    /// The player's keys and mouse since the last message (merged until the next tick).
+    Input(InputFrame),
+    /// `GuiGameOver` "Respawn".
+    Respawn,
     Quit,
+}
+
+/// Player input gathered by the window thread. Movement keys and held buttons are states;
+/// look deltas and scroll add up; presses latch until a tick consumes them.
+#[derive(Clone, Copy, Debug, Default)]
+pub struct InputFrame {
+    pub forward: bool,
+    pub back: bool,
+    pub left: bool,
+    pub right: bool,
+    pub jump: bool,
+    pub sneak: bool,
+    pub yaw_delta: f32,
+    pub pitch_delta: f32,
+    pub left_pressed: bool,
+    pub left_held: bool,
+    pub right_pressed: bool,
+    pub right_held: bool,
+    pub drop_pressed: bool,
+    pub hotbar_slot: Option<u8>,
+    pub scroll: i32,
+    /// Numbers the frames, so the window can tell which look deltas a tick has used.
+    pub seq: u64,
+}
+
+impl InputFrame {
+    /// Fold a newer frame into this pending one.
+    pub fn merge(&mut self, n: InputFrame) {
+        self.forward = n.forward;
+        self.back = n.back;
+        self.left = n.left;
+        self.right = n.right;
+        self.jump = n.jump;
+        self.sneak = n.sneak;
+        self.yaw_delta += n.yaw_delta;
+        self.pitch_delta += n.pitch_delta;
+        self.left_pressed |= n.left_pressed;
+        self.left_held = n.left_held;
+        self.right_pressed |= n.right_pressed;
+        self.right_held = n.right_held;
+        self.drop_pressed |= n.drop_pressed;
+        if n.hotbar_slot.is_some() {
+            self.hotbar_slot = n.hotbar_slot;
+        }
+        self.scroll += n.scroll;
+        self.seq = self.seq.max(n.seq);
+    }
+
+    fn take_tick_input(&mut self) -> worldgen::entity::player::PlayerTickInput {
+        use worldgen::entity::player::{PlayerInput, PlayerTickInput};
+        let t = PlayerTickInput {
+            movement: PlayerInput {
+                forward: self.forward,
+                back: self.back,
+                left: self.left,
+                right: self.right,
+                jump: self.jump,
+                sneak: self.sneak,
+                yaw_delta: self.yaw_delta,
+                pitch_delta: self.pitch_delta,
+            },
+            left_pressed: self.left_pressed,
+            left_held: self.left_held,
+            right_pressed: self.right_pressed,
+            right_held: self.right_held,
+            drop_pressed: self.drop_pressed,
+            hotbar_slot: self.hotbar_slot,
+            scroll: self.scroll,
+            ..Default::default()
+        };
+        self.yaw_delta = 0.0;
+        self.pitch_delta = 0.0;
+        self.left_pressed = false;
+        self.right_pressed = false;
+        self.drop_pressed = false;
+        self.hotbar_slot = None;
+        self.scroll = 0;
+        t
+    }
 }
 
 /// `LoadingScreenRenderer` calls made by the world thread.
@@ -70,6 +153,20 @@ pub enum FromWorker {
     QuickSaved(bool),
     /// Entities near the camera after a tick, with `getEntityBrightness`.
     Entities(Vec<crate::render::entity::effects::Snapshot>),
+    /// The player after a tick: entity (positions, rotation), HUD state, events.
+    Player {
+        entity: Box<worldgen::entity::Entity>,
+        hud: Box<worldgen::entity::player::PlayerHud>,
+        events: Vec<worldgen::entity::player::PlayerEvent>,
+        /// `isInsideOfMaterial(Material.water)` (the air bubbles).
+        in_water: bool,
+        /// The last input frame this tick consumed.
+        input_seq: u64,
+        /// `getScore()` for the game over screen.
+        score: i32,
+        /// Counts respawns, so messages about the previous (dead) player can be told apart.
+        life: u32,
+    },
     Saved,
     Error(String),
 }
@@ -203,6 +300,14 @@ fn run(opts: WorldOptions, col: Colorizers, mut video: VideoSettings, rx: Receiv
         t.elapsed(),
         if opts.server { " (server chunk handling)" } else { "" }
     );
+    // Singleplayer: the real player (Minecraft.changeWorld creates thePlayer).
+    let mut player = if opts.server { None } else { Some(world.spawn_player("Player")) };
+    let mut input = InputFrame::default();
+    let mut life = 0u32;
+    let start = match player.and_then(|id| world.entities.get(&id)) {
+        Some(e) => (e.pos.x, e.pos.y, e.pos.z),
+        None => start,
+    };
     let _ = tx.send(FromWorker::Ready { spawn: start, seed: world.seed, name: world.info.name.clone() });
 
     let mut players = if opts.server {
@@ -243,6 +348,25 @@ fn run(opts: WorldOptions, col: Colorizers, mut video: VideoSettings, rx: Receiv
                     world.leaves_opaque = !next.fancy;
                     video = next;
                 }
+                Ok(ToWorker::Input(f)) => {
+                    // EntityRenderer.updateCameraAndRender turns the player every frame,
+                    // between ticks (Entity.setAngles).
+                    if let Some(e) = player.and_then(|id| world.entities.get_mut(&id)) {
+                        e.set_angles(f.yaw_delta, f.pitch_delta);
+                    }
+                    input.merge(InputFrame { yaw_delta: 0.0, pitch_delta: 0.0, ..f });
+                }
+                Ok(ToWorker::Respawn) => {
+                    // Simplified Minecraft.respawn (TODO: bed spawn, entity id reuse, the
+                    // "Respawning" preload): the old player is set dead, a new one spawns.
+                    if let Some(old) = player.take() {
+                        if let Some(e) = world.entities.get_mut(&old) {
+                            e.dead = true;
+                        }
+                    }
+                    player = Some(world.spawn_player("Player"));
+                    life += 1;
+                }
                 Ok(ToWorker::Pause(p)) => {
                     if paused && !p {
                         // The Timer kept running while paused; those ticks are not caught up.
@@ -280,14 +404,22 @@ fn run(opts: WorldOptions, col: Colorizers, mut video: VideoSettings, rx: Receiv
             next_tick = Instant::now() + Duration::from_millis(50);
         }
         while !paused && Instant::now() >= next_tick && ticks < 20 {
-            world.players.clear();
-            world.players.push(cam);
-            if players.is_none() {
-                // Minecraft.runTick: joinEntityInSurroundings every 30 ticks, updateEntities,
-                // World.tick (with mob spawning), randomDisplayUpdates.
+            if let Some(id) = player {
+                // Minecraft.runTick with thePlayer: input/controller, joinEntityInSurroundings
+                // every 30 ticks, updateEntities, World.tick, randomDisplayUpdates.
+                join_player_counter += 1;
+                world.player_tick(id, input.take_tick_input(), join_player_counter);
+                if let Some(e) = world.entities.get(&id) {
+                    cam = (e.pos.x, e.pos.y, e.pos.z);
+                }
+            } else if players.is_none() {
+                world.players.clear();
+                world.players.push(cam);
                 join_player_counter += 1;
                 world.client_tick(0, join_player_counter);
             } else {
+                world.players.clear();
+                world.players.push(cam);
                 // MinecraftServer.doTick: world tick, lighting, then entities.
                 world.tick();
                 world.drain_lighting();
@@ -333,6 +465,8 @@ fn run(opts: WorldOptions, col: Colorizers, mut video: VideoSettings, rx: Receiv
                 .loaded_entity_list
                 .iter()
                 .copied()
+                // RenderGlobal skips the view entity in first person.
+                .filter(|id| Some(*id) != player)
                 .filter(|id| {
                     world.entities.get(id).is_some_and(|e| {
                         let (dx, dy, dz) = (e.pos.x - cam.0, e.pos.y - cam.1, e.pos.z - cam.2);
@@ -388,6 +522,22 @@ fn run(opts: WorldOptions, col: Colorizers, mut video: VideoSettings, rx: Receiv
                 surfaces: Vec::new(),
             }));
             let _ = tx.send(FromWorker::Entities(snapshot));
+            if let Some(id) = player {
+                let events = world.take_player_events(id);
+                if let (Some(e), Some(hud)) = (world.entities.get(&id).cloned(), world.player_hud(id, 1.0)) {
+                    let in_water = e.is_inside_material(&mut world, worldgen::block::table::MAT_WATER);
+                    let score = e.player_state().map_or(0, |s| s.score);
+                    let _ = tx.send(FromWorker::Player {
+                        entity: Box::new(e),
+                        hud: Box::new(hud),
+                        events,
+                        in_water,
+                        input_seq: input.seq,
+                        score,
+                        life,
+                    });
+                }
+            }
             let chunks = world.chunks.len();
             let _ = tx.send(FromWorker::Time {
                 time: world.world_time,

@@ -19,6 +19,20 @@ use winit::keyboard::{KeyCode, PhysicalKey};
 use winit::window::{CursorGrabMode, Window, WindowId};
 use worldgen::BiomeSource;
 
+/// `thePlayer` as of the last world tick.
+struct PlayerView {
+    entity: worldgen::entity::Entity,
+}
+
+/// `Entity.setAngles` on (yaw, pitch, prevYaw, prevPitch).
+fn set_angles(look: &mut [f32; 4], yaw: f32, pitch: f32) {
+    let (old_yaw, old_pitch) = (look[0], look[1]);
+    look[0] = (look[0] as f64 + yaw as f64 * 0.15) as f32;
+    look[1] = ((look[1] as f64 - pitch as f64 * 0.15) as f32).clamp(-90.0, 90.0);
+    look[3] += look[1] - old_pitch;
+    look[2] += look[0] - old_yaw;
+}
+
 struct Camera {
     pos: DVec3,
     yaw: f32,
@@ -213,6 +227,21 @@ pub struct App {
     rain_sound_counter: i32,
     fog_fade: [f32; 2],
     particles: render::weather::Particles,
+    /// Singleplayer: the player the world thread simulates.
+    player: Option<PlayerView>,
+    /// Button and key presses since the last input frame went to the world thread.
+    input: worker::InputFrame,
+    /// `MouseHelper` counts this frame (y up, as LWJGL reports).
+    mouse_delta: (f64, f64),
+    mouse_held: [bool; 2],
+    input_seq: u64,
+    /// Look deltas the world thread may not have applied yet when its last message left.
+    pending_look: Vec<(u64, f32, f32)>,
+    /// The player's rotation as this frame sees it: yaw, pitch, prevYaw, prevPitch.
+    look: [f32; 4],
+    /// Respawns asked for; older player messages are ignored.
+    life: u32,
+    script: Option<crate::playscript::Script>,
 }
 
 impl App {
@@ -258,6 +287,15 @@ impl App {
             temps: BiomeSource::new(seed),
             seed,
             world_name: String::new(),
+            player: None,
+            input: Default::default(),
+            mouse_delta: (0.0, 0.0),
+            mouse_held: [false; 2],
+            input_seq: 0,
+            pending_look: Vec::new(),
+            look: [0.0; 4],
+            life: 0,
+            script: None,
             fps_frames: 0,
             fps_time: Instant::now(),
             fps: 0,
@@ -317,6 +355,13 @@ impl App {
         self.seed = seed;
         self.fx = render::fx::TextureFx::terrain_set();
         self.cloud_ticks = 0;
+        self.player = None;
+        self.pending_look.clear();
+        self.life = 0;
+        self.hud = gui::ingame::HudPlayer::default();
+        if let Some(g) = &mut self.gui {
+            g.ui.player_dead = false;
+        }
         self.weather = Default::default();
         self.weather_terrain = Default::default();
         self.weather_rng = render::weather::ClientRandom::new(seed);
@@ -443,6 +488,14 @@ impl App {
                     }
                 }
                 gui::system::GameAction::IngameUnfocus => self.set_grab(false),
+                gui::system::GameAction::Respawn => {
+                    // Minecraft.respawn: a new player object replaces the dead one.
+                    self.life += 1;
+                    self.pending_look.clear();
+                    if let Some(tx) = &self.tx {
+                        let _ = tx.send(ToWorker::Respawn);
+                    }
+                }
             }
         }
     }
@@ -643,6 +696,144 @@ impl App {
         None
     }
 
+    /// A mouse button: to the screen if one is open, else to the player.
+    fn mouse_button(&mut self, el: &ActiveEventLoop, b: i32, pressed: bool) {
+        let screen_open = self.gui.as_ref().is_some_and(|g| g.screen.is_some());
+        if screen_open && self.loading.is_none() {
+            let cursor = self.cursor;
+            if let Some(g) = &mut self.gui {
+                if b == 0 {
+                    g.ui.mouse_down = pressed;
+                }
+                let (x, y) = g.gui_mouse(cursor.0, cursor.1);
+                g.mouse_event(x, y, b, pressed);
+            }
+            self.apply_gui_actions(el);
+        } else if pressed && self.ready && !self.grabbed {
+            // Clicking into the game window takes the mouse (setIngameFocus).
+            self.set_grab(true);
+        } else if self.ready && self.grabbed && b < 2 {
+            self.mouse_held[b as usize] = pressed;
+            if pressed && b == 0 {
+                self.input.left_pressed = true;
+            }
+            if pressed && b == 1 {
+                self.input.right_pressed = true;
+            }
+        }
+    }
+
+    /// A key going down or up (`c` is the typed character for screens).
+    fn key_input(&mut self, el: &ActiveEventLoop, code: KeyCode, c: char, pressed: bool, repeat: bool) {
+        let screen_open = self.gui.as_ref().is_some_and(|g| g.screen.is_some());
+        if pressed {
+            if let Some(g) = &mut self.gui {
+                g.ui.shift_down = self.keys.contains(&KeyCode::ShiftLeft) || self.keys.contains(&KeyCode::ShiftRight);
+            }
+            if screen_open && self.loading.is_none() {
+                let key = lwjgl_key(code);
+                if let Some(g) = &mut self.gui {
+                    g.key_event(c, key);
+                }
+                self.apply_gui_actions(el);
+            } else if self.ready && self.loading.is_none() {
+                match code {
+                    KeyCode::Escape => {
+                        self.display_ingame_menu();
+                        self.apply_gui_actions(el);
+                    }
+                    KeyCode::F1 => {
+                        if let Some(g) = &mut self.gui {
+                            g.ui.settings.hide_gui = !g.ui.settings.hide_gui;
+                        }
+                    }
+                    KeyCode::F3 => {
+                        if let Some(g) = &mut self.gui {
+                            g.ui.settings.show_debug_info = !g.ui.settings.show_debug_info;
+                        }
+                    }
+                    KeyCode::Digit1
+                    | KeyCode::Digit2
+                    | KeyCode::Digit3
+                    | KeyCode::Digit4
+                    | KeyCode::Digit5
+                    | KeyCode::Digit6
+                    | KeyCode::Digit7
+                    | KeyCode::Digit8
+                    | KeyCode::Digit9 => {
+                        // Keys 2..10 (LWJGL) select the hotbar slot.
+                        self.input.hotbar_slot = Some((lwjgl_key(code) - 2) as u8);
+                    }
+                    _ if self.gui.as_ref().is_some_and(|g| {
+                        g.ui.settings
+                            .key_bindings
+                            .iter()
+                            .any(|b| b.description == "key.drop" && b.code == lwjgl_key(code))
+                    }) =>
+                    {
+                        self.input.drop_pressed = true;
+                    }
+                    KeyCode::KeyT if !repeat => {
+                        if let Some(tx) = &self.tx {
+                            let _ = tx.send(ToWorker::AddTime(1000));
+                        }
+                    }
+                    _ => {}
+                }
+            }
+            self.keys.insert(code);
+        } else {
+            if code != KeyCode::F2 {
+                self.keys.remove(&code);
+            }
+        }
+    }
+
+    /// Run the `--play-script` commands that are due; a screenshot request comes back.
+    fn script_step(&mut self, el: &ActiveEventLoop) -> Option<(std::path::PathBuf, String)> {
+        if self.script.is_none() {
+            if let Some(path) = self.opts.play_script.clone() {
+                match crate::playscript::Script::load(&path) {
+                    Ok(s) => self.script = Some(s),
+                    Err(e) => {
+                        eprintln!("{e}");
+                        self.opts.play_script = None;
+                    }
+                }
+            }
+        }
+        if !self.ready || self.loading.is_some() || self.player.is_none() {
+            return None;
+        }
+        // The script plays the role of the focused window.
+        self.grabbed = self.gui.as_ref().is_some_and(|g| g.screen.is_none());
+        let script = self.script.as_mut()?;
+        let dir = script.dir.clone();
+        let mut shot = None;
+        for c in script.due(self.ticks_ready) {
+            use crate::playscript::Command;
+            match c {
+                Command::Key(k, down) => self.key_input(el, k, '\0', down, false),
+                Command::Mouse(b, down) => self.mouse_button(el, b, down),
+                Command::Look(x, y) => {
+                    self.mouse_delta.0 += x;
+                    self.mouse_delta.1 -= y;
+                }
+                Command::Scroll(n) => self.input.scroll += n,
+                Command::Shot(name) => shot = Some((dir.clone(), name)),
+                Command::Button(id) => {
+                    self.click_button(id);
+                    self.apply_gui_actions(el);
+                }
+                Command::Quit => {
+                    self.shutdown(el);
+                    return None;
+                }
+            }
+        }
+        shot
+    }
+
     /// `Minecraft.displayInGameMenu`
     fn display_ingame_menu(&mut self) {
         if let Some(gui) = &mut self.gui {
@@ -654,7 +845,8 @@ impl App {
 
     fn frame(&mut self, el: &ActiveEventLoop) {
         self.flow_step(el);
-        let flow_shot = self.flow_capture();
+        let script_shot = self.script_step(el);
+        let flow_shot = self.flow_capture().or(script_shot);
         let now = Instant::now();
         let dt = (now - self.last_frame).as_secs_f64().min(0.25);
         self.last_frame = now;
@@ -720,6 +912,53 @@ impl App {
                         }
                     }
                     Ok(FromWorker::Entities(list)) => self.entities = list,
+                    Ok(FromWorker::Player { entity, hud, events, in_water, input_seq, score, life }) => {
+                        if life < self.life {
+                            continue;
+                        }
+                        // The world thread's rotation plus the frames it hasn't seen yet.
+                        self.pending_look.retain(|&(s, ..)| s > input_seq);
+                        let mut look = [entity.yaw, entity.pitch, entity.prev_yaw, entity.prev_pitch];
+                        for &(_, y, p) in &self.pending_look {
+                            set_angles(&mut look, y, p);
+                        }
+                        self.look = look;
+                        let h = &mut self.hud;
+                        h.health = hud.health;
+                        h.prev_health = hud.prev_health;
+                        h.hearts_life = hud.hearts_life;
+                        h.armor = hud.armor;
+                        h.current_item = hud.inventory.current_item;
+                        h.air = hud.air;
+                        h.head_in_water = in_water;
+                        h.brightness = hud.brightness;
+                        h.prev_time_in_portal = hud.prev_time_in_portal;
+                        h.time_in_portal = hud.time_in_portal;
+                        h.sleep_timer = hud.sleep_timer;
+                        for i in 0..9 {
+                            h.hotbar[i] = hud.inventory.main[i].map(|s| (s.into(), s.animations));
+                        }
+                        for ev in events {
+                            match ev {
+                                worldgen::entity::player::PlayerEvent::ChangeDimension => {
+                                    eprintln!("nether portal: changing dimension is not wired up yet")
+                                }
+                                worldgen::entity::player::PlayerEvent::OpenContainer { block, position } => {
+                                    eprintln!("container {block} at {position:?}: screens not wired up yet")
+                                }
+                                _ => {}
+                            }
+                        }
+                        if let Some(g) = &mut self.gui {
+                            g.ui.player_dead = hud.health <= 0;
+                            g.ui.player_score = score;
+                            // Minecraft.runTick: no screen and a dead player shows GuiGameOver.
+                            if g.ui.player_dead && g.screen.is_none() {
+                                g.ui.display(None);
+                            }
+                        }
+                        self.player = Some(PlayerView { entity: *entity });
+                    }
                     Ok(FromWorker::QuickSaved(done)) => {
                         if let Some(gui) = &mut self.gui {
                             gui.ui.world_saved = done;
@@ -737,7 +976,9 @@ impl App {
                         if self.ready {
                             self.ticks_ready += 1;
                         }
-                        self.hud.brightness = brightness;
+                        if self.player.is_none() {
+                            self.hud.brightness = brightness;
+                        }
                         self.chunks_loaded = chunks;
                         self.cloud_ticks += 1;
                         self.fog_fade[0] = self.fog_fade[1];
@@ -801,8 +1042,50 @@ impl App {
         }
         let in_game = self.ready && self.gui.as_ref().is_some_and(|g| g.screen.is_none());
 
-        // Fly camera (yaw 0 faces +Z, like the original).
-        if in_game {
+        // The player's controls, one frame at a time (Minecraft.runTick reads the queued
+        // events; EntityRenderer turns the player every frame).
+        if self.player.is_some() {
+            let mut f = std::mem::take(&mut self.input);
+            let (dx, dy) = std::mem::take(&mut self.mouse_delta);
+            if in_game && self.grabbed {
+                if let Some(g) = &self.gui {
+                    let s = &g.ui.settings;
+                    let k = s.mouse_sensitivity * 0.6 + 0.2;
+                    let k = k * k * k * 8.0;
+                    let invert = if s.invert_mouse { -1.0 } else { 1.0 };
+                    f.yaw_delta = dx as i32 as f32 * k;
+                    f.pitch_delta = dy as i32 as f32 * k * invert;
+                    let held = |name: &str| {
+                        s.key_bindings
+                            .iter()
+                            .find(|b| b.description == name)
+                            .is_some_and(|b| self.keys.iter().any(|&c| lwjgl_key(c) == b.code))
+                    };
+                    f.forward = held("key.forward");
+                    f.back = held("key.back");
+                    f.left = held("key.left");
+                    f.right = held("key.right");
+                    f.jump = held("key.jump");
+                    f.sneak = held("key.sneak");
+                }
+                f.left_held = self.mouse_held[0];
+                f.right_held = self.mouse_held[1];
+            } else {
+                self.mouse_held = [false; 2];
+            }
+            self.input_seq += 1;
+            f.seq = self.input_seq;
+            if f.yaw_delta != 0.0 || f.pitch_delta != 0.0 {
+                set_angles(&mut self.look, f.yaw_delta, f.pitch_delta);
+                self.pending_look.push((f.seq, f.yaw_delta, f.pitch_delta));
+            }
+            if let Some(tx) = &self.tx {
+                let _ = tx.send(ToWorker::Input(f));
+            }
+        }
+
+        // Fly camera (yaw 0 faces +Z, like the original) when there is no player.
+        if in_game && self.player.is_none() {
             let mut speed = 10.0;
             if self.keys.contains(&KeyCode::ControlLeft) {
                 speed = 40.0;
@@ -853,6 +1136,19 @@ impl App {
             }
         }
         let partial = if self.paused { 0.0 } else { ((now - self.last_tick).as_secs_f32() * 20.0).min(1.0) };
+        // EntityRenderer.orientCamera: the player's eyes between the last two ticks.
+        if let Some(p) = &self.player {
+            let e = &p.entity;
+            let t = partial as f64;
+            self.cam.pos = DVec3::new(
+                e.prev_pos.x + (e.pos.x - e.prev_pos.x) * t,
+                e.prev_pos.y + (e.pos.y - e.prev_pos.y) * t,
+                e.prev_pos.z + (e.pos.z - e.prev_pos.z) * t,
+            );
+            let l = self.look;
+            self.cam.yaw = l[2] + (l[0] - l[2]) * partial;
+            self.cam.pitch = l[3] + (l[1] - l[3]) * partial;
+        }
         let gui_partial = ((now + Duration::from_millis(50)).saturating_duration_since(self.gui_ticks).as_secs_f32()
             * 20.0)
             .clamp(0.0, 1.0);
@@ -1135,25 +1431,21 @@ impl ApplicationHandler for App {
                     MouseButton::Middle => 2,
                     _ => return,
                 };
-                let pressed = state == ElementState::Pressed;
+                self.mouse_button(el, b, state == ElementState::Pressed);
+            }
+            WindowEvent::MouseWheel { delta, .. } => {
+                // Mouse.getEventDWheel: up is positive; changeCurrentItem uses the sign.
+                let y = match delta {
+                    winit::event::MouseScrollDelta::LineDelta(_, y) => y as f64,
+                    winit::event::MouseScrollDelta::PixelDelta(p) => p.y,
+                };
                 let screen_open = self.gui.as_ref().is_some_and(|g| g.screen.is_some());
-                if screen_open && self.loading.is_none() {
-                    let cursor = self.cursor;
-                    if let Some(g) = &mut self.gui {
-                        if b == 0 {
-                            g.ui.mouse_down = pressed;
-                        }
-                        let (x, y) = g.gui_mouse(cursor.0, cursor.1);
-                        g.mouse_event(x, y, b, pressed);
-                    }
-                    self.apply_gui_actions(el);
-                } else if pressed && self.ready && !self.grabbed {
-                    // Clicking into the game window takes the mouse (setIngameFocus).
-                    self.set_grab(true);
+                if self.ready && !screen_open && y != 0.0 {
+                    self.input.scroll += y.signum() as i32;
                 }
             }
             WindowEvent::Focused(false) => {
-                if self.ready && self.loading.is_none() {
+                if self.ready && self.loading.is_none() && self.script.is_none() {
                     // EntityRenderer: losing focus opens the pause menu.
                     self.display_ingame_menu();
                     self.apply_gui_actions(el);
@@ -1164,52 +1456,8 @@ impl ApplicationHandler for App {
                 let PhysicalKey::Code(code) = event.physical_key else {
                     return;
                 };
-                let screen_open = self.gui.as_ref().is_some_and(|g| g.screen.is_some());
-                match event.state {
-                    ElementState::Pressed => {
-                        if let Some(g) = &mut self.gui {
-                            g.ui.shift_down =
-                                self.keys.contains(&KeyCode::ShiftLeft) || self.keys.contains(&KeyCode::ShiftRight);
-                        }
-                        if screen_open && self.loading.is_none() {
-                            let c = event.text.as_ref().and_then(|t| t.chars().next()).unwrap_or('\0');
-                            let key = lwjgl_key(code);
-                            if let Some(g) = &mut self.gui {
-                                g.key_event(c, key);
-                            }
-                            self.apply_gui_actions(el);
-                        } else if self.ready && self.loading.is_none() {
-                            match code {
-                                KeyCode::Escape => {
-                                    self.display_ingame_menu();
-                                    self.apply_gui_actions(el);
-                                }
-                                KeyCode::F1 => {
-                                    if let Some(g) = &mut self.gui {
-                                        g.ui.settings.hide_gui = !g.ui.settings.hide_gui;
-                                    }
-                                }
-                                KeyCode::F3 => {
-                                    if let Some(g) = &mut self.gui {
-                                        g.ui.settings.show_debug_info = !g.ui.settings.show_debug_info;
-                                    }
-                                }
-                                KeyCode::KeyT if !event.repeat => {
-                                    if let Some(tx) = &self.tx {
-                                        let _ = tx.send(ToWorker::AddTime(1000));
-                                    }
-                                }
-                                _ => {}
-                            }
-                        }
-                        self.keys.insert(code);
-                    }
-                    ElementState::Released => {
-                        if code != KeyCode::F2 {
-                            self.keys.remove(&code);
-                        }
-                    }
-                }
+                let c = event.text.as_ref().and_then(|t| t.chars().next()).unwrap_or('\0');
+                self.key_input(el, code, c, event.state == ElementState::Pressed, event.repeat);
             }
             WindowEvent::RedrawRequested => {
                 let started = Instant::now();
@@ -1236,7 +1484,11 @@ impl ApplicationHandler for App {
 
     fn device_event(&mut self, _el: &ActiveEventLoop, _id: winit::event::DeviceId, event: DeviceEvent) {
         if let DeviceEvent::MouseMotion { delta } = event {
-            if self.grabbed {
+            if self.grabbed && self.player.is_some() {
+                // LWJGL counts y upward.
+                self.mouse_delta.0 += delta.0;
+                self.mouse_delta.1 -= delta.1;
+            } else if self.grabbed {
                 // Default sensitivity: 0.15 degrees per mouse count, as in EntityPlayerSP.setAngles.
                 self.cam.yaw += delta.0 as f32 * 0.15;
                 self.cam.pitch = (self.cam.pitch + delta.1 as f32 * 0.15).clamp(-90.0, 90.0);

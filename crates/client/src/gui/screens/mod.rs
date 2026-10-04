@@ -1,6 +1,7 @@
 //! The ported `GuiScreen` subclasses.
 
 pub mod achievements;
+pub mod game_over;
 pub mod ingame_menu;
 pub mod main_menu;
 pub mod options;

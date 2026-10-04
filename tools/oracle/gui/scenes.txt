@@ -70,3 +70,9 @@ mouse 240 140
 shot achievements_hover_locked
 mouse 201 115
 shot achievements_hover_open
+# The death screen (score 0) over the world.
+open gameover
+mouse -1 -1
+shot gameover
+mouse 213 140
+shot gameover_hover_respawn

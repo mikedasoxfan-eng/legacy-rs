@@ -11,10 +11,16 @@ use std::collections::HashMap;
 
 /// What the game itself has to act on.
 pub enum GameAction {
-    StartWorld { folder: String, name: String, seed: Option<i64> },
+    StartWorld {
+        folder: String,
+        name: String,
+        seed: Option<i64>,
+    },
     QuitWorld,
     Shutdown,
     SettingsChanged,
+    /// `GuiGameOver` "Respawn".
+    Respawn,
     /// No screen any more: give the mouse back to the game.
     IngameFocus,
     /// A screen opened over the game: release the mouse.
@@ -77,6 +83,8 @@ impl GuiSystem {
             clipboard: None,
             mouse_down: false,
             world_saved: true,
+            player_dead: false,
+            player_score: 0,
             save_requests: Vec::new(),
             sounds: Vec::new(),
             stats: Default::default(),
@@ -96,6 +104,8 @@ impl GuiSystem {
         let mut s = s;
         if s.is_none() && !self.ui.world_open {
             s = Some(self.main_menu());
+        } else if s.is_none() && self.ui.player_dead {
+            s = Some(Box::new(crate::gui::screens::game_over::GuiGameOver::new()));
         }
         if s.as_ref().is_some_and(|s| s.is_main_menu()) {
             self.ui.settings.show_debug_info = false;
@@ -132,10 +142,13 @@ impl GuiSystem {
                             self.display_gui_screen(Some(child), &mut out);
                         }
                     }
-                    Action::StartWorld { folder, name, seed } => out.push(GameAction::StartWorld { folder, name, seed }),
+                    Action::StartWorld { folder, name, seed } => {
+                        out.push(GameAction::StartWorld { folder, name, seed })
+                    }
                     Action::QuitWorld => out.push(GameAction::QuitWorld),
                     Action::Shutdown => out.push(GameAction::Shutdown),
                     Action::SettingsChanged => out.push(GameAction::SettingsChanged),
+                    Action::Respawn => out.push(GameAction::Respawn),
                 }
             }
         }

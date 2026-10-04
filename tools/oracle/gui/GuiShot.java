@@ -155,6 +155,7 @@ public class GuiShot {
                     else if (which.equals("rename")) s = new GuiRenameWorld(title, a[1]);
                     else if (which.equals("texturepacks")) s = new GuiTexturePacks(title);
                     else if (which.equals("achievements")) s = new GuiAchievements(mc.statFileWriter);
+                    else if (which.equals("gameover")) s = new GuiGameOver();
                     else throw new IllegalArgumentException("unknown screen " + which);
                     mc.displayGuiScreen(s);
                 } else if (cmd.equals("world")) {

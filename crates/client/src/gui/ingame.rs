@@ -28,6 +28,8 @@ pub struct HudPlayer {
     pub yaw: f32,
     /// `playerController.shouldDrawHUD()` (survival)
     pub survival: bool,
+    /// `inventory.mainInventory[0..9]` with each stack's `animationsToGo`.
+    pub hotbar: [Option<(worldgen::world::tile::ItemStack, i32)>; 9],
 }
 
 impl Default for HudPlayer {
@@ -48,6 +50,7 @@ impl Default for HudPlayer {
             pos: [0.0; 3],
             yaw: 0.0,
             survival: true,
+            hotbar: [None; 9],
         }
     }
 }
@@ -155,7 +158,14 @@ impl GuiIngame {
     }
 
     #[allow(clippy::too_many_arguments)]
-    pub fn render_game_overlay(&mut self, ui: &mut Ui, partial: f32, chat_open: bool, p: &HudPlayer, debug: &DebugInfo) {
+    pub fn render_game_overlay(
+        &mut self,
+        ui: &mut Ui,
+        partial: f32,
+        chat_open: bool,
+        p: &HudPlayer,
+        debug: &DebugInfo,
+    ) {
         let sr = ui.scaled();
         let (w, h) = (sr.width, sr.height);
         ui.setup_overlay_rendering();
@@ -235,7 +245,15 @@ impl GuiIngame {
             }
         }
         ui.gl.blend = false;
-        // The hotbar items (RenderItem) go here once the player has an inventory.
+        // GL_RESCALE_NORMAL on, the item light rotated 120 degrees about X.
+        crate::render::entity::gui_item::set_gui_light_rotation(120.0);
+        crate::render::entity::gui_item::set_gui_rescale_normal(true);
+        for i in 0..9 {
+            let x = w / 2 - 90 + i * 20 + 2;
+            let y = h - 16 - 3;
+            render_inventory_slot(ui, p.hotbar[i as usize].as_ref(), x, y, partial);
+        }
+        crate::render::entity::gui_item::set_gui_rescale_normal(false);
 
         if p.sleep_timer > 0 {
             ui.gl.depth_test = false;
@@ -331,7 +349,8 @@ impl GuiIngame {
     /// frame, so it depends on the frame rate, as in the original).
     fn render_vignette(&mut self, ui: &mut Ui, brightness: f32, w: i32, h: i32) {
         let b = (1.0 - brightness).clamp(0.0, 1.0);
-        self.prev_vignette_brightness = (self.prev_vignette_brightness as f64 + (b - self.prev_vignette_brightness) as f64 * 0.01) as f32;
+        self.prev_vignette_brightness =
+            (self.prev_vignette_brightness as f64 + (b - self.prev_vignette_brightness) as f64 * 0.01) as f32;
         let t = ui.texture("%blur%/misc/vignette.png");
         let v = self.prev_vignette_brightness;
         let gl = &mut ui.gl;
@@ -403,4 +422,31 @@ pub fn java_double(d: f64) -> String {
         let m = if m.contains('.') { m.to_string() } else { format!("{m}.0") };
         format!("{m}E{e}")
     }
+}
+
+/// `GuiIngame.renderInventorySlot`: a stack just picked up bobs for `animationsToGo` ticks.
+fn render_inventory_slot(
+    ui: &mut Ui,
+    slot: Option<&(worldgen::world::tile::ItemStack, i32)>,
+    x: i32,
+    y: i32,
+    partial: f32,
+) {
+    use crate::render::entity::gui_item;
+    let Some((item, animations)) = slot else {
+        return;
+    };
+    let t = *animations as f32 - partial;
+    if t > 0.0 {
+        ui.gl.push_matrix();
+        let s = 1.0 + t / 5.0;
+        ui.gl.translatef((x + 8) as f32, (y + 12) as f32, 0.0);
+        ui.gl.scalef(1.0 / s, (s + 1.0) / 2.0, 1.0);
+        ui.gl.translatef(-(x + 8) as f32, -(y + 12) as f32, 0.0);
+    }
+    gui_item::render_item_into_gui(ui, Some(item), x, y);
+    if t > 0.0 {
+        ui.gl.pop_matrix();
+    }
+    gui_item::render_item_overlay_into_gui(ui, Some(item), x, y);
 }

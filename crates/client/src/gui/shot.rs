@@ -110,6 +110,7 @@ pub fn run(script: &str, out_dir: &std::path::Path) -> Result<(), String> {
                         sys.ui.world_open = true;
                         Box::new(screens::achievements::GuiAchievements::new())
                     }
+                    "gameover" => Box::new(screens::game_over::GuiGameOver::new()),
                     other => return Err(format!("unknown screen {other}")),
                 };
                 let mut acts = Vec::new();
@@ -205,7 +206,12 @@ fn read_back(device: &wgpu::Device, queue: &wgpu::Queue, tex: &wgpu::Texture) ->
     });
     let mut enc = device.create_command_encoder(&Default::default());
     enc.copy_texture_to_buffer(
-        wgpu::TexelCopyTextureInfo { texture: tex, mip_level: 0, origin: wgpu::Origin3d::ZERO, aspect: wgpu::TextureAspect::All },
+        wgpu::TexelCopyTextureInfo {
+            texture: tex,
+            mip_level: 0,
+            origin: wgpu::Origin3d::ZERO,
+            aspect: wgpu::TextureAspect::All,
+        },
         wgpu::TexelCopyBufferInfo {
             buffer: &buf,
             layout: wgpu::TexelCopyBufferLayout { offset: 0, bytes_per_row: Some(row), rows_per_image: Some(h) },
@@ -243,7 +249,12 @@ fn read_back(device: &wgpu::Device, queue: &wgpu::Queue, tex: &wgpu::Texture) ->
 pub fn diff(java_dir: &std::path::Path, rust_dir: &std::path::Path, diff_dir: Option<&std::path::Path>) -> bool {
     let list = |d: &std::path::Path| -> Vec<String> {
         std::fs::read_dir(d)
-            .map(|rd| rd.filter_map(|e| e.ok()).map(|e| e.file_name().to_string_lossy().into_owned()).filter(|n| n.ends_with(".png")).collect())
+            .map(|rd| {
+                rd.filter_map(|e| e.ok())
+                    .map(|e| e.file_name().to_string_lossy().into_owned())
+                    .filter(|n| n.ends_with(".png"))
+                    .collect()
+            })
             .unwrap_or_default()
     };
     let mut names = list(java_dir);
