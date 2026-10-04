@@ -156,6 +156,8 @@ pub enum FromWorker {
     QuickSaved(bool),
     /// Entities near the camera after a tick, with `getEntityBrightness`.
     Entities(Vec<crate::render::entity::effects::Snapshot>),
+    /// `addChatMessageTranslate(key)` (e.g. "tile.bed.notValid" on respawn).
+    Chat(String),
     /// The player after a tick: entity (positions, rotation), HUD state, events.
     Player {
         entity: Box<worldgen::entity::Entity>,
@@ -304,7 +306,7 @@ fn run(opts: WorldOptions, col: Colorizers, mut video: VideoSettings, rx: Receiv
         if opts.server { " (server chunk handling)" } else { "" }
     );
     // Singleplayer: the real player (Minecraft.changeWorld creates thePlayer).
-    let mut player = if opts.server { None } else { Some(world.spawn_player("Player")) };
+    let player = if opts.server { None } else { Some(world.spawn_player("Player")) };
     let mut input = InputFrame::default();
     let mut life = 0u32;
     let start = match player.and_then(|id| world.entities.get(&id)) {
@@ -321,7 +323,7 @@ fn run(opts: WorldOptions, col: Colorizers, mut video: VideoSettings, rx: Receiv
         None
     };
 
-    let biomes = RefCell::new(BiomeSource::new(opts.seed));
+    let biomes = RefCell::new(biome_source(&world));
     let mut cam = start;
     let mut sort_pos = (f64::MAX, f64::MAX, f64::MAX);
     let mut window: Vec<(i32, i32)> = Vec::new();
@@ -332,6 +334,18 @@ fn run(opts: WorldOptions, col: Colorizers, mut video: VideoSettings, rx: Receiv
     let mut weather_tail = 0;
     let mut next_tick = Instant::now();
     let mut idle_reported = false;
+    // After a dimension change: RenderGlobal.changeWorld (every renderer rebuilt).
+    macro_rules! switched_world {
+        () => {
+            world.leaves_opaque = !video.fancy;
+            *biomes.borrow_mut() = biome_source(&world);
+            sky_sub = world.skylight_subtracted;
+            meshed.clear();
+            sort_pos = (f64::MAX, f64::MAX, f64::MAX);
+            idle_reported = false;
+            let _ = tx.send(FromWorker::ResetMeshes);
+        };
+    }
 
     let mut paused = false;
 
@@ -359,15 +373,24 @@ fn run(opts: WorldOptions, col: Colorizers, mut video: VideoSettings, rx: Receiv
                     input.merge(InputFrame { yaw_delta: 0.0, pitch_delta: 0.0, ..f });
                 }
                 Ok(ToWorker::Respawn) => {
-                    // Simplified Minecraft.respawn (TODO: bed spawn, entity id reuse, the
-                    // "Respawning" preload): the old player is set dead, a new one spawns.
-                    if let Some(old) = player.take() {
-                        if let Some(e) = world.entities.get_mut(&old) {
-                            e.dead = true;
+                    // Minecraft.respawn(false, 0): out of the Nether first (it can't be
+                    // respawned in), then a new player at the bed or the spawn point.
+                    if let Some(old) = player {
+                        if world.dimension.is_hell_world() {
+                            if let Some(next) = world.use_portal(old, fresh_seed(), fresh_seed(), &mut progress) {
+                                world = next;
+                                switched_world!();
+                            }
                         }
+                        if let Some(key) = world.respawn_player(old, &mut progress) {
+                            let _ = tx.send(FromWorker::Chat(key.to_string()));
+                        }
+                        life += 1;
+                        if let Some(e) = world.entities.get(&old) {
+                            cam = (e.pos.x, e.pos.y, e.pos.z);
+                        }
+                        let _ = tx.send(FromWorker::Ready { spawn: cam, seed: world.seed, name: world.info.name.clone() });
                     }
-                    player = Some(world.spawn_player("Player"));
-                    life += 1;
                 }
                 Ok(ToWorker::Pause(p)) => {
                     if paused && !p {
@@ -491,7 +514,7 @@ fn run(opts: WorldOptions, col: Colorizers, mut video: VideoSettings, rx: Receiv
             for id in near {
                 let e = world.entities[&id].clone();
                 let b = living_brightness(&mut world, &e);
-                let biomes = RefCell::new(BiomeSource::new(opts.seed));
+                let biomes = RefCell::new(biome_source(&world));
                 let access = Access::new(&world, e.chunk_x, e.chunk_z, world.skylight_subtracted, &biomes);
                 let fl = worldgen::math::floor_double;
                 let (x, y, z) = (fl(e.pos.x), fl(e.pos.y), fl(e.pos.z));
@@ -537,6 +560,17 @@ fn run(opts: WorldOptions, col: Colorizers, mut video: VideoSettings, rx: Receiv
             let _ = tx.send(FromWorker::Entities(snapshot));
             if let Some(id) = player {
                 let events = world.take_player_events(id);
+                if events.iter().any(|e| matches!(e, worldgen::entity::player::PlayerEvent::ChangeDimension)) {
+                    // Minecraft.usePortal: save, switch worlds, find or build the portal.
+                    if let Some(next) = world.use_portal(id, fresh_seed(), fresh_seed(), &mut progress) {
+                        world = next;
+                        switched_world!();
+                        if let Some(e) = world.entities.get(&id) {
+                            cam = (e.pos.x, e.pos.y, e.pos.z);
+                        }
+                        let _ = tx.send(FromWorker::Ready { spawn: cam, seed: world.seed, name: world.info.name.clone() });
+                    }
+                }
                 if let (Some(e), Some(hud)) = (world.entities.get(&id).cloned(), world.player_hud(id, 1.0)) {
                     let in_water = e.is_inside_material(&mut world, worldgen::block::table::MAT_WATER);
                     let score = e.player_state().map_or(0, |s| s.score);
@@ -772,4 +806,19 @@ fn pick_block(world: &mut World, id: i32) {
             }
         }
     }
+}
+
+/// The biome source the mesher colors with: the Nether's is a single hell biome.
+fn biome_source(world: &World) -> BiomeSource {
+    if world.dimension.is_hell_world() {
+        BiomeSource::hell()
+    } else {
+        BiomeSource::new(world.seed)
+    }
+}
+
+/// Stands in for an unseeded `new Random()`.
+fn fresh_seed() -> i64 {
+    let nanos = std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).map_or(0, |d| d.as_nanos() as i64);
+    worldgen::JavaRandom::new(nanos ^ 0x5DEECE66D).next_long()
 }

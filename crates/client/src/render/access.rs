@@ -1,7 +1,7 @@
 //! `ChunkCache`: the read-only world view `RenderBlocks` uses for one chunk,
 //! covering it and its 8 neighbours.
 
-use super::{brightness_table, rprops};
+use super::rprops;
 use std::cell::RefCell;
 use worldgen::block::{self, material_of};
 use worldgen::world::chunk::Chunk;
@@ -34,7 +34,8 @@ impl<'a> Access<'a> {
             cz0: cz - 1,
             chunks,
             sky_sub,
-            table: brightness_table(),
+            // WorldProvider.lightBrightnessTable (the Nether's is brighter at the bottom).
+            table: world.light_brightness_table,
             biomes,
             clim: RefCell::new(Vec::new()),
         }

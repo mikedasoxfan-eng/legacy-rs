@@ -121,11 +121,20 @@ impl World {
         };
         let existing = storage.as_ref().and_then(|s| s.load_level());
         let seed = existing.as_ref().map_or(seed, |i| i.seed);
-        let mut w = World::new(seed, world_rand_seed);
+        // World's constructor: a player saved in the Nether reopens it (WorldInfo.getDimension).
+        let dimension = if existing.as_ref().is_some_and(|i| i.dimension() == -1) {
+            crate::world::Dimension::Nether
+        } else {
+            crate::world::Dimension::Overworld
+        };
+        let mut w = World::with_dimension(seed, world_rand_seed, dimension);
         if server {
             w.server = Some(Default::default());
         }
-        w.storage = storage;
+        w.storage = match storage {
+            Some(s) if dimension.is_hell_world() => Some(s.for_dimension(dimension)?),
+            s => s,
+        };
         let is_new = existing.is_none();
         let title = if is_new { "Generating level" } else { "Loading level" };
         progress(LoadStep::Title(title));

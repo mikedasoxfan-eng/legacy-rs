@@ -96,7 +96,8 @@ public class Oracle {
             // optional 5th arg "fancy": leaves render translucent (RenderGlobal already ran)
             Block.leaves.setGraphicsLevel(a.length > 4 && a[4].equals("fancy"));
             preload(Long.parseLong(a[1]), Long.parseLong(a[2]), a[3]);
-        } else if (mode.equals("rendermesh")) {
+        } else if (mode.equals("rendermesh") || mode.equals("rendermeshnether")) {
+            meshNether = mode.equals("rendermeshnether");
             // chunk list, or "auto R": every chunk within R of the spawn chunk
             int meshEnd=a.length;
             boolean ao=true,fancy=true;
@@ -114,8 +115,8 @@ public class Oracle {
             savePreload(Long.parseLong(a[1]), Long.parseLong(a[2]), a[3], a[4]);
         } else if (mode.equals("readsave")) {
             readSave(a[1], a[2]);
-        } else if (mode.equals("skycolor")) {
-            World w = newWorld(Long.parseLong(a[1]));
+        } else if (mode.equals("skycolor") || mode.equals("skycolornether")) {
+            World w = mode.equals("skycolornether") ? newNetherWorld(Long.parseLong(a[1])) : newWorld(Long.parseLong(a[1]));
             w.setWorldTime(Long.parseLong(a[4]));
             EntityItem e = new EntityItem(w, Double.parseDouble(a[2]), 64.0, Double.parseDouble(a[3]), new ItemStack(1, 1, 0));
             float partial = Float.parseFloat(a[5]);
@@ -160,6 +161,17 @@ public class Oracle {
             videoWindow(a);
         } else if (mode.equals("rendertable")) {
             renderTable(a[1]);
+        } else if (mode.equals("useportal")) {
+            TeleportOracle.usePortal(Long.parseLong(a[1]), Long.parseLong(a[2]), Double.parseDouble(a[3]),
+                Double.parseDouble(a[4]), Double.parseDouble(a[5]), Long.parseLong(a[6]), Long.parseLong(a[7]), a[8]);
+        } else if (mode.equals("respawn")) {
+            TeleportOracle.respawn(Long.parseLong(a[1]), Long.parseLong(a[2]), a[3], a[4]);
+        } else if (mode.equals("rendershowcase")) {
+            // layout out [fancy|fast] [on|off]
+            ShowcaseOracle.run(a[1], a[2], a.length <= 3 || !a[3].equals("fast"), a.length <= 4 || !a[4].equals("off"));
+        } else if (mode.equals("teleport")) {
+            TeleportOracle.run(Long.parseLong(a[1]), Long.parseLong(a[2]), Integer.parseInt(a[3]),
+                Double.parseDouble(a[4]), Double.parseDouble(a[5]), Double.parseDouble(a[6]), Long.parseLong(a[7]), a[8]);
         } else if (mode.equals("ticks")) {
             ticks(Long.parseLong(a[1]), Long.parseLong(a[2]), Integer.parseInt(a[3]), Integer.parseInt(a[4]),
                   Integer.parseInt(a[5]), a[6], Double.parseDouble(a[7]), Double.parseDouble(a[8]), a[9],
@@ -467,23 +479,14 @@ public class Oracle {
      * The Tessellator's raw buffer is
      * read back instead of drawn; quads were stored as triangles (v0 v1 v2 v0 v2 v3).
      */
-    static void renderMesh(long seed, long wrand, String out, int[] cs, boolean fancy, boolean ao) throws Exception {
-        // Minecraft.isAmbientOcclusionEnabled() reads a Minecraft instance: make a bare one.
-        Field uf = sun.misc.Unsafe.class.getDeclaredField("theUnsafe");
-        uf.setAccessible(true);
-        sun.misc.Unsafe unsafe = (sun.misc.Unsafe) uf.get(null);
-        net.minecraft.client.Minecraft mc = (net.minecraft.client.Minecraft) unsafe.allocateInstance(MinecraftImpl.class);
-        mc.gameSettings = new GameSettings();
-        mc.gameSettings.ambientOcclusion = ao;
-        mc.gameSettings.fancyGraphics = fancy;
-        Field tm = net.minecraft.client.Minecraft.class.getDeclaredField("theMinecraft");
-        tm.setAccessible(true);
-        tm.set(null, mc);
+    static boolean meshNether;
 
+    static void renderMesh(long seed, long wrand, String out, int[] cs, boolean fancy, boolean ao) throws Exception {
+        meshSetup(fancy, ao);
         // Generate first (leaves opaque, as for the first world of a session), then switch
         // to Fancy the way RenderGlobal does before building chunk renderers.
         Block.leaves.setGraphicsLevel(false);
-        World w = newWorld(seed);
+        World w = meshNether ? newNetherWorld(seed) : newWorld(seed);
         w.rand.setSeed(wrand);
         w.getInitialSpawnLocation();
         ChunkCoordinates sp = w.getSpawnPoint();
@@ -505,6 +508,27 @@ public class Oracle {
         // The client loads the biome color maps at startup (RenderEngine -> Colorizer*).
         ColorizerGrass.func_28181_a(jarImage("misc/grasscolor.png"));
         ColorizerFoliage.func_28152_a(jarImage("misc/foliagecolor.png"));
+        dumpMeshes(w, cs, out);
+    }
+
+    /** A bare Minecraft with the graphics settings RenderBlocks reads. */
+    static void meshSetup(boolean fancy, boolean ao) throws Exception {
+        // Minecraft.isAmbientOcclusionEnabled() reads a Minecraft instance: make a bare one.
+        Field uf = sun.misc.Unsafe.class.getDeclaredField("theUnsafe");
+        uf.setAccessible(true);
+        sun.misc.Unsafe unsafe = (sun.misc.Unsafe) uf.get(null);
+        net.minecraft.client.Minecraft mc = (net.minecraft.client.Minecraft) unsafe.allocateInstance(MinecraftImpl.class);
+        mc.gameSettings = new GameSettings();
+        mc.gameSettings.ambientOcclusion = ao;
+        mc.gameSettings.fancyGraphics = fancy;
+        Field tm = net.minecraft.client.Minecraft.class.getDeclaredField("theMinecraft");
+        tm.setAccessible(true);
+        tm.set(null, mc);
+
+    }
+
+    /** Mesh chunks with the original RenderBlocks, section by section like WorldRenderer. */
+    static void dumpMeshes(World w, int[] cs, String out) throws Exception {
         Tessellator t = Tessellator.instance;
         Field fRaw = Tessellator.class.getDeclaredField("rawBuffer");
         Field fIdx = Tessellator.class.getDeclaredField("rawBufferIndex");

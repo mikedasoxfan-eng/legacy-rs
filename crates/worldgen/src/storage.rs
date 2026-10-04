@@ -32,6 +32,13 @@ pub struct LevelInfo {
 }
 
 impl LevelInfo {
+    /// `WorldInfo.getDimension`: the saved player's `Dimension` (0 without a player).
+    pub fn dimension(&self) -> i32 {
+        self.player.as_ref().map_or(0, |p| p.int("Dimension"))
+    }
+}
+
+impl LevelInfo {
     /// `new WorldInfo(seed, name)`
     pub fn new(seed: i64, name: &str) -> Self {
         LevelInfo {
@@ -283,6 +290,9 @@ impl RegionFile {
 /// A world save directory (`SaveHandler` + `McRegionChunkLoader` + `RegionFileCache`).
 pub struct Storage {
     pub dir: PathBuf,
+    /// Where `region/` lives: the save directory, or `DIM-1` for the Nether
+    /// (`SaveOldDir.getChunkLoader`).
+    chunk_dir: PathBuf,
     regions: HashMap<(i32, i32), RegionFile>,
     session: i64,
 }
@@ -300,9 +310,18 @@ impl Storage {
         std::fs::write(dir.join("session.lock"), session.to_be_bytes())?;
         Ok(Storage {
             dir: dir.to_path_buf(),
+            chunk_dir: dir.to_path_buf(),
             regions: HashMap::new(),
             session,
         })
+    }
+
+    /// The same save (and session lock) with the chunk loader for `dimension`: the Nether
+    /// keeps its regions in `DIM-1`.
+    pub fn for_dimension(&self, dimension: crate::world::Dimension) -> io::Result<Storage> {
+        let chunk_dir = if dimension.is_hell_world() { self.dir.join("DIM-1") } else { self.dir.clone() };
+        std::fs::create_dir_all(chunk_dir.join("region"))?;
+        Ok(Storage { dir: self.dir.clone(), chunk_dir, regions: HashMap::new(), session: self.session })
     }
 
     /// `checkSessionLock`: someone else opened this world since we did.
@@ -349,7 +368,7 @@ impl Storage {
                 self.regions.clear();
             }
             let path = self
-                .dir
+                .chunk_dir
                 .join("region")
                 .join(format!("r.{}.{}.mcr", key.0, key.1));
             self.regions.insert(key, RegionFile::open(&path)?);

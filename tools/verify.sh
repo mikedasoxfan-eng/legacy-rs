@@ -169,6 +169,28 @@ if [ "$quick" != quick ]; then
   run_extra "ticks: forest fire, seed 6" "$fires" ticks 6 1 777 5 4000 clear 0 0 -- ticks 6 1 777 5 4000 clear 0 0
 fi
 
+# ---- dimension travel: Teleporter (find, build, platform over the ocean) and the whole
+# Minecraft.usePortal sequence. seed wrand dim x y z teleporter-rand / seed wrand x y z fresh trand
+teleport_cases=(
+  "3 1 0 100.5 70 -40.5 7"
+  "3 1 -1 12.5 64 -5.5 9"
+  "3 1 0 1000.5 70 1000.5 1"
+  "5 2 -1 200.5 100 -33.5 5"
+)
+[ "$quick" = quick ] && teleport_cases=("3 1 -1 12.5 64 -5.5 9")
+for c in "${teleport_cases[@]}"; do
+  run "teleporter: $c" teleport $c -- teleport $c
+done
+if [ "$quick" != quick ]; then
+  for c in "3 1 100.5 70 -40.5 11 7" "404 5 -17.5 66 0.5 12 8"; do
+    run "use portal: $c" useportal $c -- useportal $c
+  done
+  # Minecraft.respawn: at spawn, at a bed, bed gone ("tile.bed.notValid")
+  for c in "3 1 plain" "3 1 bed" "404 5 nobed"; do
+    run "respawn: $c" respawn $c -- respawn $c
+  done
+fi
+
 # ---- mob geometry, UVs, successive poses and packed normals
 echo "== mob models: boxes, UVs, successive poses and wolf living animations"
 if "$oracle" models models_case.bin && "$beta" --modelcheck "$out/models_case.bin"; then :; else fail=1; fi
@@ -209,6 +231,20 @@ for args in "3257840388504953787 -39 65 6000 0.0" "0 1000 -2000 13000 0.5" "123 
     done
     j=$("$oracle" skycolor "${skyargs[@]}" "$distance"); r=$("$beta" --skycolor "${skyargs[@]}" "$distance")
   [ "$j" = "$r" ] || { echo "sky differs for $args"; echo " java $j"; echo " rust $r"; fail=1; }
+  done
+done
+# The Nether: WorldProviderHell's fog color, celestial angle 0.5, fog from the eye.
+for args in "5 10 -20 6000 0.5" "5 300 40 18000 0.25 1 0 0 1 0" "9 -7 7 100 0.75 0.4 0.6 0 0.4 0.6 0.3 0.8"; do
+  for distance in 0 2 3; do
+    read -r -a skyargs <<<"$args"
+    defaults=(0 0 0 0 0 1 1)
+    for ((i=${#skyargs[@]}; i<12; i++)); do
+      if [ "$i" = 8 ]; then skyargs+=("${skyargs[5]}")
+      elif [ "$i" = 9 ]; then skyargs+=("${skyargs[6]}")
+      else skyargs+=("${defaults[i-5]}"); fi
+    done
+    j=$("$oracle" skycolornether "${skyargs[@]}" "$distance"); r=$("$beta" --skycolor-nether "${skyargs[@]}" "$distance")
+  [ "$j" = "$r" ] || { echo "nether sky differs for $args"; echo " java $j"; echo " rust $r"; fail=1; }
   done
 done
 [ $fail -eq 0 ] && echo "sky colors exact"

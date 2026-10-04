@@ -10,6 +10,8 @@ pub mod chunk;
 pub mod java_hash;
 pub mod light;
 pub mod server;
+pub mod teleporter;
+pub mod dimension;
 pub mod tick;
 pub mod ticks_blocks;
 pub mod tile;

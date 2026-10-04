@@ -47,6 +47,8 @@ pub struct FrameParams {
     pub precipitation: [Vec<super::weather::WeatherVertex>; 2],
     pub lightning: Vec<super::weather::WeatherVertex>,
     pub particles: Vec<super::weather::WeatherVertex>,
+    /// `worldProvider.isNether`: no sky or clouds, fog from the eye on.
+    pub nether: bool,
 }
 
 struct DrawSlot {
@@ -803,7 +805,9 @@ impl Gpu {
         if !origins.is_empty() {
             self.queue.write_buffer(&self.origins_buf, 0, bytemuck::cast_slice(&origins));
         }
-        let terrain_fog = [p.far * 0.25, p.far, 1.0, 0.1];
+        // setupFog: GL_FOG_START far/4, or 0 in the Nether.
+        let fog_start = if p.nether { 0.0 } else { p.far * 0.25 };
+        let terrain_fog = [fog_start, p.far, 1.0, 0.1];
         let tu = Uniforms {
             view_proj: view_proj.to_cols_array_2d(),
             model: ident,
@@ -832,7 +836,7 @@ impl Gpu {
             },
             color: [1.0; 4],
             fog_color: fog4,
-            fog: [p.far * 0.25, p.far, 1.0, 0.1],
+            fog: [fog_start, p.far, 1.0, 0.1],
         };
         self.write_uniforms(&self.cloud_slot, &cu);
 
@@ -849,7 +853,7 @@ impl Gpu {
                 color: [1.0; 4],
                 fog_color: fog4,
                 fog: [
-                    p.far * 0.25,
+                    fog_start,
                     p.far,
                     if i == 3 { 0.0 } else { 1.0 },
                     if i < 2 {
@@ -909,7 +913,8 @@ impl Gpu {
                 multiview_mask: None,
             });
 
-            if p.video.sky() {
+            // RenderGlobal.renderSky draws nothing in the Nether.
+            if p.video.sky() && !p.nether {
                 // Sky plane, sunrise glow, sun, moon, stars, void.
                 rp.set_pipeline(&self.p_sky);
                 rp.set_bind_group(0, &self.slots[0].bind, &[]);
@@ -989,7 +994,8 @@ impl Gpu {
                 rp.draw_indexed(0..weather_n[i] / 4 * 6, 0, 0..1);
             }
             for (pass, pipe) in [&self.p_cloud_depth, &self.p_cloud_color].into_iter().enumerate() {
-                if !p.video.fancy && pass == 0 {
+                // renderClouds: none in the Nether.
+                if p.nether || !p.video.fancy && pass == 0 {
                     continue;
                 }
                 rp.set_pipeline(pipe);

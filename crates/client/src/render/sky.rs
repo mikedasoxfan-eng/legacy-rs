@@ -136,6 +136,29 @@ pub fn fog_color(
     f
 }
 
+/// `EntityRenderer.updateFogColor` in the Nether: `WorldProviderHell`'s constant fog color
+/// (0.2, 0.03, 0.03) pulled toward the sky color by render distance, then rain and thunder
+/// darkening (their strengths carry over from the Overworld's level info).
+pub fn nether_fog_color(sky: [f32; 3], render_distance: i32, rain: f32, thunder: f32) -> [f32; 3] {
+    let mut k = 1.0f32 / (4 - render_distance) as f32;
+    k = 1.0f32 - (k as f64).powf(0.25) as f32;
+    let mut f = [0.2f32, 0.03f32, 0.03f32];
+    for i in 0..3 {
+        f[i] += (sky[i] - f[i]) * k;
+    }
+    if rain > 0.0 {
+        f[0] *= 1.0f32 - rain * 0.5f32;
+        f[1] *= 1.0f32 - rain * 0.5f32;
+        f[2] *= 1.0f32 - rain * 0.4f32;
+    }
+    if thunder > 0.0 {
+        for c in &mut f {
+            *c *= 1.0f32 - thunder * 0.5f32;
+        }
+    }
+    f
+}
+
 /// `WorldProvider.calcSunriseSunsetColors`
 pub fn sunrise_colors(angle: f32) -> Option<[f32; 4]> {
     let span = 0.4f32;

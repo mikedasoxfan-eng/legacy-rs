@@ -132,8 +132,12 @@ fn sky_check(a: &[String]) {
     let (x, z): (f64, f64) = (a[3].parse().unwrap(), a[4].parse().unwrap());
     let time: i64 = a[5].parse().unwrap();
     let partial: f32 = a[6].parse().unwrap();
-    let angle = sky::celestial_angle(time, partial);
-    let temp = BiomeSource::new(seed).raw_temperature(x.floor() as i32, z.floor() as i32) as f32;
+    // WorldProviderHell: celestial angle 0.5, one hell biome at temperature 1.
+    let nether = a[1] == "--skycolor-nether";
+    let celestial = |time: i64, partial: f32| if nether { 0.5 } else { sky::celestial_angle(time, partial) };
+    let angle = celestial(time, partial);
+    let biomes = if nether { BiomeSource::hell() } else { BiomeSource::new(seed) };
+    let temp = biomes.raw_temperature(x.floor() as i32, z.floor() as i32) as f32;
     let value = |i: usize| a.get(i).map_or(0.0, |v| v.parse::<f32>().unwrap());
     let weather = render::weather::Weather {
         rain: value(7),
@@ -145,19 +149,24 @@ fn sky_check(a: &[String]) {
     let rain = weather.rain_at(partial);
     let thunder = weather.thunder_at(partial);
     let s = sky::sky_color(angle, temp, rain, thunder, weather.flash, partial);
-    let f = sky::fog_color_base(angle);
+    let f = if nether { [0.2f32, 0.03, 0.03] } else { sky::fog_color_base(angle) };
     let c = sky::cloud_color(angle, rain, thunder);
     let fog_prev = a.get(12).map_or(1.0f32, |v| v.parse().unwrap());
     let fog_current = a.get(13).map_or(1.0f32, |v| v.parse().unwrap());
     let distance = a.get(14).map_or(0i32, |v| v.parse().unwrap());
     let far = (256 >> distance) as f32;
-    let fog = sky::fog_color(angle, temp, distance, rain, thunder, weather.flash, partial)
-        .map(|c| c * (fog_prev + (fog_current - fog_prev) * partial));
+    let fog = if nether {
+        sky::nether_fog_color(s, distance, rain, thunder)
+    } else {
+        sky::fog_color(angle, temp, distance, rain, thunder, weather.flash, partial)
+    }
+    .map(|c| c * (fog_prev + (fog_current - fog_prev) * partial));
+    let fog_start = if nether { 0.0 } else { far * 0.25f32 };
     let b = |v: f32| v.to_bits() as i32;
     println!(
         "angle {} sub {} sky {} {} {} fog {} {} {} cloud {} {} {} stars {} renderfog {} {} {} renderstars {} sunalpha {} fogrange {} {}",
         b(angle),
-        sky::skylight_subtracted(sky::celestial_angle(time, 1.0), weather.rain_at(1.0), weather.thunder_at(1.0)),
+        sky::skylight_subtracted(celestial(time, 1.0), weather.rain_at(1.0), weather.thunder_at(1.0)),
         b(s[0]),
         b(s[1]),
         b(s[2]),
@@ -167,11 +176,57 @@ fn sky_check(a: &[String]) {
         b(c[0]),
         b(c[1]),
         b(c[2]),
-        b(sky::star_brightness(angle)), b(fog[0]), b(fog[1]), b(fog[2]), b(sky::star_brightness(angle) * (1.0f32 - rain)), b(1.0f32 - rain), b(far * 0.25f32), b(far)
+        b(sky::star_brightness(angle)), b(fog[0]), b(fog[1]), b(fog[2]), b(sky::star_brightness(angle) * (1.0f32 - rain)), b(1.0f32 - rain), b(fog_start), b(far)
     );
 }
 
-/// `--meshcheck seed wrand oracle-mesh.bin [fancy|fast] [on|off]`: mesh the same chunks after the vanilla
+/// The block showcase (tools/oracle/make_showcase.py): flat stone at y 63, the listed
+/// blocks placed raw, a fixed light pattern; built exactly like the oracle's.
+fn showcase_world(path: &str) -> worldgen::World {
+    use worldgen::world::chunk::{idx, Chunk};
+    let text = std::fs::read_to_string(path).expect("read showcase layout");
+    let mut lines = text.lines().filter(|l| !l.trim().is_empty());
+    let head: Vec<i32> = lines.next().unwrap().split(' ').skip(1).map(|v| v.parse().unwrap()).collect();
+    let (x0, z0, x1, z1) = (head[0], head[1], head[2], head[3]);
+    let mut w = worldgen::World::new(0, 0);
+    for cx in x0 - 1..=x1 + 1 {
+        for cz in z0 - 1..=z1 + 1 {
+            let mut c = Chunk::new(cx, cz, vec![0; 32768].into_boxed_slice().try_into().unwrap());
+            for x in 0..16 {
+                for z in 0..16 {
+                    c.blocks[idx(x, 63, z)] = 1;
+                }
+            }
+            c.loaded = true;
+            c.populated = true;
+            w.chunks.insert((cx, cz), Box::new(c));
+            w.chunk_list.push((cx, cz));
+        }
+    }
+    for l in lines {
+        let v: Vec<i32> = l.split(' ').map(|v| v.parse().unwrap()).collect();
+        let c = w.chunk_mut(v[0] >> 4, v[2] >> 4);
+        c.blocks[idx(v[0] & 15, v[1], v[2] & 15)] = v[3] as u8;
+        c.data.set(v[0] & 15, v[1], v[2] & 15, v[4]);
+    }
+    for cx in x0 - 1..=x1 + 1 {
+        for cz in z0 - 1..=z1 + 1 {
+            let c = w.chunk_mut(cx, cz);
+            for x in 0..16 {
+                for y in 0..128 {
+                    for z in 0..16 {
+                        let (wx, wz) = (cx * 16 + x, cz * 16 + z);
+                        c.sky_light.set(x, y, z, (wx * 7 + y * 3 + wz * 5) & 15);
+                        c.block_light.set(x, y, z, (wx * 3 + y * 11 + wz) & 15);
+                    }
+                }
+            }
+        }
+    }
+    w
+}
+
+/// `--meshcheck seed wrand oracle-mesh.bin [fancy|fast] [on|off] [nether|showcase=FILE]`: mesh the same chunks after the vanilla
 /// preload and compare every vertex with the original RenderBlocks output.
 fn mesh_check(a: &[String]) -> bool {
     let seed: i64 = a[2].parse().unwrap();
@@ -188,9 +243,21 @@ fn mesh_check(a: &[String]) -> bool {
     let mut video = render::video::VideoSettings::default();
     video.fancy = a.get(5).map(String::as_str) != Some("fast");
     video.ao = a.get(6).map(String::as_str) != Some("off");
-    let mut world = worldgen::World::new_vanilla(seed, wrand);
+    // `nether` after the graphics and AO words: the same preload in the Nether.
+    let nether = a.get(7).map(String::as_str) == Some("nether");
+    let showcase = a.get(7).and_then(|s| s.strip_prefix("showcase="));
+    let mut world = if let Some(path) = showcase {
+        showcase_world(path)
+    } else if nether {
+        let mut w = worldgen::World::with_dimension(seed, wrand, worldgen::world::Dimension::Nether);
+        w.find_initial_spawn();
+        w.preload_spawn_area();
+        w
+    } else {
+        worldgen::World::new_vanilla(seed, wrand)
+    };
     world.leaves_opaque = !video.fancy;
-    let biomes = std::cell::RefCell::new(BiomeSource::new(seed));
+    let biomes = std::cell::RefCell::new(if nether { BiomeSource::hell() } else { BiomeSource::new(seed) });
     let magic = i32_();
     let _ = i32_();
     assert_eq!(magic, i32::from_le_bytes(*b"B173"), "not a mesh dump");
@@ -334,7 +401,7 @@ fn main() {
     if args.get(1).map(String::as_str) == Some("--soundcheck") {
         std::process::exit(if sound::check() { 0 } else { 1 });
     }
-    if args.get(1).map(String::as_str) == Some("--skycolor") {
+    if matches!(args.get(1).map(String::as_str), Some("--skycolor") | Some("--skycolor-nether")) {
         sky_check(&args);
         return;
     }

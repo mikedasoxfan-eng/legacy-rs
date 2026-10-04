@@ -7,6 +7,9 @@
 //!   compare grid <seed> <wrand> <x0> <z0> <x1> <z1> <each|end|none> <oracle.bin>
 //!   compare preload <seed> <wrand> <oracle.bin> [fancy]
 //!   compare ticks <seed> <wrand> <lcg> <sound> <n> <clear|rain|thunder> <dx> <dz> <oracle.bin> [fires]
+//!   compare teleport <seed> <wrand> <0|-1> <x> <y> <z> <teleporter rand> <oracle.bin>
+//!   compare useportal <seed> <wrand> <x> <y> <z> <new-world rand> <teleporter rand> <oracle.bin>
+//!   compare respawn <seed> <wrand> <plain|bed|nobed> <oracle.bin>
 
 use std::collections::BTreeMap;
 use std::process::ExitCode;
@@ -191,6 +194,155 @@ fn main() -> ExitCode {
             }
             WORLD_ONLY.store(true, std::sync::atomic::Ordering::Relaxed);
             world(&w, &a[3])
+        }
+        Some("useportal") => {
+            // seed wrand x y z new-world-rand teleporter-rand: the vanilla new-world flow, a
+            // player at x y z, then Minecraft.usePortal into the Nether.
+            let mut w = World::new(p(2), p(3));
+            w.find_initial_spawn();
+            w.preload_spawn_area();
+            w.set_entity_determinism(100, 200, 1000);
+            let f = |i: usize| a[i].parse::<f64>().expect("coordinate");
+            let mut e = worldgen::entity::Entity::player(&mut w, "Player");
+            e.set_location_and_angles(f(4), f(5), f(6), 30.0, 10.0);
+            let id = e.entity_id;
+            w.entity_joined_world(e);
+            let t = std::time::Instant::now();
+            let mut n = w.use_portal(id, p(7), p(8), &mut |_| {}).expect("player");
+            let e = n.entities[&id].clone();
+            eprintln!("rust: arrived at {:?} in {:.2?}", (e.pos.x, e.pos.y, e.pos.z), t.elapsed());
+            let b = |v: f64| v.to_bits() as i64;
+            let fb = |v: f32| v.to_bits() as i32;
+            let state = format!(
+                "pos {} {} {}
+prev {} {} {}
+look {} {} {} {}
+dimension {} entities {} players {}
+rand {}
+",
+                b(e.pos.x),
+                b(e.pos.y),
+                b(e.pos.z),
+                b(e.last_tick_pos.x),
+                b(e.last_tick_pos.y),
+                b(e.last_tick_pos.z),
+                fb(e.yaw),
+                fb(e.pitch),
+                fb(e.prev_yaw),
+                fb(e.prev_pitch),
+                e.player_state().map_or(0, |s| s.dimension),
+                n.loaded_entity_list.len(),
+                n.player_entities.len(),
+                n.rand.next_long()
+            );
+            let java = std::fs::read_to_string(format!("{}.txt", a[9])).expect("read state").replace("\r", "");
+            if java != state {
+                eprintln!("use portal differs:
+--- java
+{java}--- rust
+{state}");
+                let _ = world(&n, &a[9]);
+                return ExitCode::FAILURE;
+            }
+            world(&n, &a[9])
+        }
+        Some("respawn") => {
+            // seed wrand plain|bed|nobed: Minecraft.respawn(false, 0) after a death.
+            let mut w = World::new(p(2), p(3));
+            w.find_initial_spawn();
+            w.preload_spawn_area();
+            // Ids continue past entities made while generating (Entity.nextEntityID is global).
+            w.set_entity_determinism(100, 200, 1000);
+            let sp = w.spawn;
+            let mut e = worldgen::entity::Entity::player(&mut w, "Player");
+            e.set_location_and_angles(sp.0 as f64 + 20.5, 90.0, sp.2 as f64 - 7.5, 45.0, 5.0);
+            let id = e.entity_id;
+            w.entity_joined_world(e);
+            let (bx, bz) = (sp.0 + 4, sp.2);
+            let mut by = 127;
+            while by > 0 && w.get_block_id(bx, by - 1, bz) == 0 {
+                by -= 1;
+            }
+            let scenario = a[4].as_str();
+            if scenario == "bed" {
+                for (z, meta) in [(bz, 0), (bz + 1, 8)] {
+                    let c = w.chunk_mut(bx >> 4, z >> 4);
+                    c.blocks[worldgen::world::chunk::idx(bx & 15, by, z & 15)] = 26;
+                    c.data.set(bx & 15, by, z & 15, meta);
+                }
+            }
+            if let Some(s) = w.entities.get_mut(&id).and_then(|e| e.player_state_mut()) {
+                if scenario != "plain" {
+                    s.spawn = Some((bx, by, bz));
+                }
+            }
+            w.entities.get_mut(&id).unwrap().living.health = 0;
+            let chat = w.respawn_player(id, &mut |_| {});
+            let e = w.entities[&id].clone();
+            let s = e.player_state().unwrap();
+            let state = format!(
+                "pos {} {} {}
+look {} {}
+id {} health {} chat {} home {}
+entities {} players {}
+rand {}
+",
+                e.pos.x.to_bits() as i64,
+                e.pos.y.to_bits() as i64,
+                e.pos.z.to_bits() as i64,
+                e.yaw.to_bits() as i32,
+                e.pitch.to_bits() as i32,
+                e.entity_id,
+                e.living.health,
+                chat.is_some(),
+                s.spawn.map_or("none".to_string(), |(x, y, z)| format!("{x},{y},{z}")),
+                w.loaded_entity_list.iter().filter(|i| w.entities.get(i).is_some_and(|e| !e.dead)).count(),
+                w.player_entities.len(),
+                w.rand.next_long()
+            );
+            let java = std::fs::read_to_string(format!("{}.txt", a[5])).expect("read state").replace('\r', "");
+            if java != state {
+                eprintln!("respawn differs:
+--- java
+{java}--- rust
+{state}");
+                let _ = world(&w, &a[5]);
+                return ExitCode::FAILURE;
+            }
+            world(&w, &a[5])
+        }
+        Some("teleport") => {
+            // seed wrand dimension x y z teleporter-rand: Minecraft.usePortal's preload, then
+            // Teleporter.func_4107_a for an entity at x y z.
+            let dimension = if p(4) == -1 { worldgen::world::Dimension::Nether } else { worldgen::world::Dimension::Overworld };
+            let mut w = World::with_dimension(p(2), p(3), dimension);
+            let f = |i: usize| a[i].parse::<f64>().expect("coordinate");
+            let pos = (f(5), f(6), f(7));
+            w.spawn = (pos.0 as i32, 64, pos.2 as i32);
+            w.preload_spawn_area();
+            let mut rand = worldgen::JavaRandom::new(p(8));
+            let t = std::time::Instant::now();
+            let end = w.teleport_position(pos, &mut rand).unwrap_or(pos);
+            eprintln!("rust: placed at {end:?} in {:.2?}", t.elapsed());
+            let state = format!(
+                "pos {} {} {}
+rand {}
+",
+                end.0.to_bits() as i64,
+                end.1.to_bits() as i64,
+                end.2.to_bits() as i64,
+                w.rand.next_long()
+            );
+            let java = std::fs::read_to_string(format!("{}.txt", a[9])).expect("read state").replace('\r', "");
+            if java != state {
+                eprintln!("teleport differs:
+--- java
+{java}--- rust
+{state}");
+                let _ = world(&w, &a[9]);
+                return ExitCode::FAILURE;
+            }
+            world(&w, &a[9])
         }
         Some("ticks") => {
             let mut w = World::new(p(2), p(3));

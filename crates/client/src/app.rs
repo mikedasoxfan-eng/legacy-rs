@@ -261,6 +261,8 @@ pub struct App {
     script: Option<crate::playscript::Script>,
     /// 20 Hz steps since the world became ready, paused or not (the script's clock).
     script_ticks: i64,
+    /// The player is in the Nether (`worldProvider.isNether`).
+    nether: bool,
 }
 
 impl App {
@@ -318,6 +320,7 @@ impl App {
             life: 0,
             script: None,
             script_ticks: 0,
+            nether: false,
             fps_frames: 0,
             fps_time: Instant::now(),
             fps: 0,
@@ -883,7 +886,15 @@ impl App {
                     self.mouse_delta.1 -= y;
                 }
                 Command::Scroll(n) => self.input.scroll += n,
-                Command::Shot(name) => shot = Some((dir.clone(), name)),
+                Command::Shot(name) => {
+                    if let Some(p) = &self.player {
+                        eprintln!(
+                            "script {name}: pos {:.2} {:.2} {:.2} portal {} prev {} nether {}",
+                            p.entity.pos.x, p.entity.pos.y, p.entity.pos.z, self.hud.time_in_portal, self.hud.prev_time_in_portal, self.nether
+                        );
+                    }
+                    shot = Some((dir.clone(), name))
+                }
                 Command::Button(id) => {
                     self.click_button(id);
                     self.apply_gui_actions(el);
@@ -945,6 +956,8 @@ impl App {
             while uploads < 64 {
                 match rx.try_recv() {
                     Ok(FromWorker::Ready { spawn, seed, name }) => {
+                        // changeWorld / respawn: thePlayer.movementInput = new MovementInputFromOptions
+                        self.move_keys = [false; 6];
                         self.ready = true;
                         self.seed = seed;
                         self.temps = BiomeSource::new(seed);
@@ -978,6 +991,12 @@ impl App {
                         }
                     }
                     Ok(FromWorker::Entities(list)) => self.entities = list,
+                    Ok(FromWorker::Chat(key)) => {
+                        if let Some(g) = &self.gui {
+                            let text = g.ui.lang.translate_key(&key);
+                            self.ingame.add_chat_message(&g.ui, text);
+                        }
+                    }
                     Ok(FromWorker::Player { entity, hud, events, in_water, input_seq, score, life }) => {
                         if life < self.life {
                             continue;
@@ -1006,9 +1025,8 @@ impl App {
                         }
                         for ev in events {
                             match ev {
-                                worldgen::entity::player::PlayerEvent::ChangeDimension => {
-                                    eprintln!("nether portal: changing dimension is not wired up yet")
-                                }
+                                // The world thread switches dimension itself (usePortal).
+                                worldgen::entity::player::PlayerEvent::ChangeDimension => {}
                                 worldgen::entity::player::PlayerEvent::OpenContainer { block, position } => {
                                     eprintln!("container {block} at {position:?}: screens not wired up yet")
                                 }
@@ -1022,6 +1040,11 @@ impl App {
                             if g.ui.player_dead && g.screen.is_none() {
                                 g.ui.display(None);
                             }
+                        }
+                        let nether = entity.player_state().is_some_and(|s| s.dimension == -1);
+                        if nether != self.nether {
+                            self.nether = nether;
+                            self.temps = if nether { BiomeSource::hell() } else { BiomeSource::new(self.seed) };
                         }
                         self.player = Some(PlayerView { entity: *entity });
                     }
@@ -1241,7 +1264,8 @@ impl App {
         if let Some(snd) = &mut self.sound {
             snd.set_listener(self.cam.pos.to_array(), self.cam.yaw);
         }
-        let angle = sky::celestial_angle(self.world_time, partial);
+        // WorldProviderHell.calculateCelestialAngle is always 0.5.
+        let angle = if self.nether { 0.5 } else { sky::celestial_angle(self.world_time, partial) };
         let temp = self.temps.raw_temperature(self.cam.pos.x.floor() as i32, self.cam.pos.z.floor() as i32) as f32;
         let rain = self.weather.rain_at(partial);
         let thunder = self.weather.thunder_at(partial);
@@ -1275,8 +1299,13 @@ impl App {
             fov_y_deg: 70.0,
             celestial: angle,
             sky_color: sky::sky_color(angle, temp, rain, thunder, self.weather.flash, partial),
-            fog_color: sky::fog_color(angle, temp, video.distance, rain, thunder, self.weather.flash, partial)
-                .map(|c| c * (self.fog_fade[0] + (self.fog_fade[1] - self.fog_fade[0]) * partial)),
+            fog_color: if self.nether {
+                let sky = sky::sky_color(angle, temp, rain, thunder, self.weather.flash, partial);
+                sky::nether_fog_color(sky, video.distance, rain, thunder)
+            } else {
+                sky::fog_color(angle, temp, video.distance, rain, thunder, self.weather.flash, partial)
+            }
+            .map(|c| c * (self.fog_fade[0] + (self.fog_fade[1] - self.fog_fade[0]) * partial)),
             far: video.far(),
             video,
             cloud_offset: self.cloud_ticks as f32 + partial,
@@ -1285,6 +1314,7 @@ impl App {
             precipitation,
             lightning,
             particles,
+            nether: self.nether,
         };
 
         if let Some(gpu) = &mut self.gpu {

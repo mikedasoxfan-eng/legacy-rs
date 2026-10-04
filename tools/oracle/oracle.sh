@@ -9,7 +9,7 @@ libs=$(find "$here/../retromcp/libraries" -name '*.jar' ! -name '*sources*' ! -n
 [ -f "$jar" ] || { echo "missing $jar - run RetroMCP setup+decompile for b1.7.3 first" >&2; exit 1; }
 mkdir -p "$here/build" "$here/out"
 if [ ! -f "$here/build/net/minecraft/src/Oracle.class" ] || find "$here/src" "$here/headless" -name '*.java' -newer "$here/build/net/minecraft/src/Oracle.class" | grep -q .; then
-  javac -nowarn -cp "$jar$libs" -d "$here/build" "$here/src/net/minecraft/src/Oracle.java" "$here/src/net/minecraft/src/RendererOracle.java" "$here/src/net/minecraft/src/EntityOracle.java" "$here/src/net/minecraft/src/PlayerOracle.java" "$here/src/net/minecraft/src/OracleHooks.java" "$here"/headless/org/lwjgl/opengl/*.java
+  javac -nowarn -cp "$jar$libs" -d "$here/build" "$here/src/net/minecraft/src/Oracle.java" "$here/src/net/minecraft/src/RendererOracle.java" "$here/src/net/minecraft/src/EntityOracle.java" "$here/src/net/minecraft/src/PlayerOracle.java" "$here/src/net/minecraft/src/OracleHooks.java" "$here/src/net/minecraft/src/TeleportOracle.java" "$here/src/net/minecraft/src/ShowcaseOracle.java" "$here"/headless/org/lwjgl/opengl/*.java
 fi
 if [ ! -f "$here/build/net/minecraft/src/Explosion.class" ] || [ ! -f "$here/build/net/minecraft/src/Entity.class" ] || [ "$here/build_entity.py" -nt "$here/build/net/minecraft/src/Entity.class" ] || [ "$here/src/net/minecraft/src/OracleHooks.java" -nt "$here/build/net/minecraft/src/Entity.class" ]; then
   python "$here/build_entity.py"
