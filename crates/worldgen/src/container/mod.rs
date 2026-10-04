@@ -2,6 +2,8 @@
 //! the client only receives snapshots and sends window-tagged commands.
 pub mod recipes;
 pub mod tiles;
+pub mod session;
+pub mod verify;
 pub use crate::entity::player::{InventoryPlayer, ItemStack};
 use crate::entity::player::registry;
 use recipes::CraftingManager;
@@ -38,6 +40,7 @@ pub enum ContainerEvent {
     Crafted { item: i32, count: i32 },
     Achievement(&'static str),
     MapCreated { id: i32 },
+    Closed { window: i32 },
 }
 #[derive(Clone, Debug)]
 pub struct Container {

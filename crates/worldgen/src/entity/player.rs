@@ -46,6 +46,7 @@ impl PlayerInput {
 }
 #[derive(Clone, Debug)]
 pub enum PlayerEvent {
+    Container(crate::container::ContainerEvent),
     Pickup {
         entity: i32,
         count: i32,
@@ -389,7 +390,8 @@ impl Entity {
         }
         let previous_pitch = self.player_state().unwrap().camera_pitch;
         self.player_state_mut().unwrap().prev_camera_pitch = previous_pitch;
-        self.update_living(w);
+          self.update_living(w);
+          w.validate_container_entity(self);
         let pos = self.pos;
         let s = self.player_state_mut().unwrap();
         s.prev_cloak = s.cloak;

@@ -5,6 +5,13 @@ use crate::{
     World,
 };
 impl Entity {
+    pub fn throwable_at(w: &mut World, x: f64, y: f64, z: f64, egg: bool) -> Self {
+        let mut e = Self::base(w, if egg { EntityKind::Egg(Default::default()) } else { EntityKind::Snowball(Default::default()) });
+        e.width = 0.25; e.height = 0.25;
+        e.set_position(x,y,z);
+        e.y_offset = 0.0;
+        e
+    }
     pub fn throwable(w: &mut World, owner: &Entity, egg: bool) -> Self {
         let state = ArrowState {
             owner: Some(owner.entity_id),

@@ -191,6 +191,12 @@ pub struct World {
     pub unloaded_entity_list: Vec<i32>,
     pub spawn_eligible_chunks: java_hash::JavaHashSet<(i32, i32)>,
     pub loaded_tile_entities: Vec<(i32, i32, i32)>,
+    pub dispenser_random: HashMap<(i32, i32, i32), JavaRandom>,
+    pub container_drop_random: [JavaRandom; 3], // idle furnace, active furnace, dispenser
+    pub keep_furnace_inventory: bool,
+    pub container_sessions: HashMap<i32, crate::container::session::ContainerSession>,
+    pub map_id: i32,
+    pub container_effects: Vec<(i32, (i32,i32,i32), i32)>,
     pub spawner_animations: std::collections::HashMap<(i32, i32, i32), (f64, f64)>,
     pub weather_effects: Vec<crate::entity::Entity>,
     pub explosion_seed_source: crate::entity::EntitySeedSource,
@@ -271,6 +277,12 @@ impl World {
             weather_effects: Vec::new(),
             spawn_eligible_chunks: Default::default(),
             loaded_tile_entities: Vec::new(),
+            dispenser_random: HashMap::new(),
+            container_drop_random: std::array::from_fn(|_| JavaRandom::new(crate::entity::EntitySeedSource::Time.next_seed())),
+            keep_furnace_inventory: false,
+            container_sessions: HashMap::new(),
+            map_id: -1,
+            container_effects: Vec::new(),
             spawner_animations: Default::default(),
             explosion_seed_source: crate::entity::EntitySeedSource::Time,
             entity_seed_source: crate::entity::EntitySeedSource::Time,
@@ -988,18 +1000,6 @@ impl World {
             return None;
         }
         let key = (x & 15, y, z & 15);
-        let id = self.chunk(cx, cz).block(x & 15, y, z & 15);
-        if matches!(id, 23 | 61 | 62) {
-            if !self
-                .chunk(cx, cz)
-                .raw_tile_entities
-                .iter()
-                .any(|n| n.int("x") == x && n.int("y") == y && n.int("z") == z)
-            {
-                crate::entity::player::block_hooks::added(self, id, x, y, z);
-            }
-            return None;
-        }
         if !self.chunk(cx, cz).tile_entities.contains_key(&key) {
             let id = self.chunk(cx, cz).block(x & 15, y, z & 15);
             if !props(id).container {
@@ -1032,6 +1032,7 @@ impl World {
 
     /// `removeBlockTileEntity`
     pub fn remove_block_tile_entity(&mut self, x: i32, y: i32, z: i32) {
+        self.dispenser_random.remove(&(x, y, z));
         self.loaded_tile_entities.retain(|p| *p != (x, y, z));
         self.spawner_animations.remove(&(x, y, z));
         let _ = self.get_block_tile_entity(x, y, z);

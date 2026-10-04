@@ -17,6 +17,8 @@ impl ItemStack {
 pub enum TileEntity {
     Chest(Box<[Option<ItemStack>; 27]>),
     MobSpawner { mob: String, delay: i32 },
+    Furnace(crate::container::tiles::Furnace),
+    Dispenser(Box<[Option<crate::entity::player::ItemStack>; 9]>),
 }
 
 impl TileEntity {
@@ -25,6 +27,8 @@ impl TileEntity {
         match id {
             crate::block::CHEST => TileEntity::Chest(Box::new([None; 27])),
             crate::block::MOB_SPAWNER => TileEntity::MobSpawner { mob: "Pig".into(), delay: 20 },
+            61 | 62 => TileEntity::Furnace(Default::default()),
+            23 => TileEntity::Dispenser(Box::new([None; 9])),
             _ => panic!("tile entity for block {id} not ported"),
         }
     }

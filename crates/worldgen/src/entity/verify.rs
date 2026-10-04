@@ -1045,6 +1045,15 @@ pub fn append_world(w: &World, out: &mut Vec<u8>) {
                     out.push(mob.len() as u8);
                     out.extend_from_slice(mob.as_bytes());
                 }
+                crate::world::tile::TileEntity::Furnace(f) => {
+                    out.push(3);
+                    for s in f.items { let s: ItemStack = s.unwrap_or(crate::entity::player::ItemStack::new(-1,0,0)).into(); out.extend_from_slice(&s.id.to_le_bytes()); out.push(s.count); out.extend_from_slice(&s.damage.to_le_bytes()); }
+                    out.extend_from_slice(&(f.burn as i16).to_le_bytes()); out.extend_from_slice(&(f.cook as i16).to_le_bytes());
+                }
+                crate::world::tile::TileEntity::Dispenser(items) => {
+                    out.push(4);
+                    for s in items.iter() { let s: ItemStack = s.unwrap_or(crate::entity::player::ItemStack::new(-1,0,0)).into(); out.extend_from_slice(&s.id.to_le_bytes()); out.push(s.count); out.extend_from_slice(&s.damage.to_le_bytes()); }
+                }
             }
         }
     }
