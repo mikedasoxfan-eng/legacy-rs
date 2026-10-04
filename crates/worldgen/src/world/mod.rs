@@ -988,9 +988,16 @@ impl World {
             return None;
         }
         let key = (x & 15, y, z & 15);
-        let id=self.chunk(cx,cz).block(x&15,y,z&15);
-        if matches!(id,23|61|62) {
-            if !self.chunk(cx,cz).raw_tile_entities.iter().any(|n|n.int("x")==x&&n.int("y")==y&&n.int("z")==z) {crate::entity::player::block_hooks::added(self,id,x,y,z);}
+        let id = self.chunk(cx, cz).block(x & 15, y, z & 15);
+        if matches!(id, 23 | 61 | 62) {
+            if !self
+                .chunk(cx, cz)
+                .raw_tile_entities
+                .iter()
+                .any(|n| n.int("x") == x && n.int("y") == y && n.int("z") == z)
+            {
+                crate::entity::player::block_hooks::added(self, id, x, y, z);
+            }
             return None;
         }
         if !self.chunk(cx, cz).tile_entities.contains_key(&key) {
@@ -1034,7 +1041,8 @@ impl World {
         }
         let c = self.chunk_mut(cx, cz);
         if c.loaded {
-            c.raw_tile_entities.retain(|n|n.int("x")!=x||n.int("y")!=y||n.int("z")!=z);
+            c.raw_tile_entities
+                .retain(|n| n.int("x") != x || n.int("y") != y || n.int("z") != z);
             c.tile_entities.remove(&(x & 15, y, z & 15));
             c.tile_entity_order.retain(|p| *p != (x & 15, y, z & 15));
         }
@@ -1109,7 +1117,14 @@ impl World {
 
     /// `World.saveLevel`: level.dat (refusing if another program took the session lock).
     pub fn save_level(&mut self) {
-        if let Some(n)=self.player_entities.iter().flatten().find_map(|id|self.entities.get(id).and_then(|e|e.player_nbt())) {self.info.player=Some(n);}
+        if let Some(n) = self
+            .player_entities
+            .iter()
+            .flatten()
+            .find_map(|id| self.entities.get(id).and_then(|e| e.player_nbt()))
+        {
+            self.info.player = Some(n);
+        }
         let info = self.level_info();
         if let Some(s) = &self.storage {
             if !s.session_ok() {

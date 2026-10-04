@@ -211,8 +211,9 @@ impl Entity {
         Some(e)
     }
     pub fn eye_height(&self) -> f32 {
-        if matches!(self.kind, EntityKind::Player(..)) {0.12}
-        else if matches!(self.kind, EntityKind::Wolf(..)) {
+        if matches!(self.kind, EntityKind::Player(..)) {
+            0.12
+        } else if matches!(self.kind, EntityKind::Wolf(..)) {
             self.height * 0.8
         } else if self.kind.is_living() {
             self.height * 0.85
@@ -235,7 +236,9 @@ impl Entity {
         eye < ((y + 1) as f32 - air) as f64
     }
     fn inside_opaque_block(&self, w: &mut World) -> bool {
-        if self.player_state().is_some_and(|s|s.sleeping) {return false;}
+        if self.player_state().is_some_and(|s| s.sleeping) {
+            return false;
+        }
         for i in 0..8 {
             let x = ((i % 2) as f32 - 0.5) * self.width * 0.9;
             let y = (((i / 2) % 2) as f32 - 0.5) * 0.1;
@@ -257,8 +260,10 @@ impl Entity {
         self.living.living_sound_time += 1;
         if self.rand.next_int(1000) < sound {
             self.living.living_sound_time = if self.kind.is_mob()
-                || matches!(self.kind, EntityKind::Slime { .. } | EntityKind::Ghast(..) | EntityKind::Player(..))
-            {
+                || matches!(
+                    self.kind,
+                    EntityKind::Slime { .. } | EntityKind::Ghast(..) | EntityKind::Player(..)
+                ) {
                 -80
             } else {
                 -120
@@ -404,9 +409,11 @@ impl Entity {
         self.slime_after_update(was_on_ground);
     }
     fn living_update(&mut self, w: &mut World) {
-        if matches!(self.kind,EntityKind::Player(..)) {self.player_before_living(w);}
+        if matches!(self.kind, EntityKind::Player(..)) {
+            self.player_before_living(w);
+        }
         self.mob_before_living(w);
-        if self.living.health <= 0 || self.player_state().is_some_and(|s|s.sleeping) {
+        if self.living.health <= 0 || self.player_state().is_some_and(|s| s.sleeping) {
             self.living.is_jumping = false;
             self.living.move_strafing = 0.0;
             self.living.move_forward = 0.0;
@@ -451,7 +458,9 @@ impl Entity {
             self.squid_living_update(w);
         }
         self.wolf_living(w);
-        if matches!(self.kind,EntityKind::Player(..)) {self.player_after_living(w);}
+        if matches!(self.kind, EntityKind::Player(..)) {
+            self.player_after_living(w);
+        }
         if let EntityKind::Chicken {
             flap,
             prev_flap,
@@ -677,7 +686,9 @@ impl Entity {
         if self.living.health <= 0 {
             self.living.dying = true;
             self.drop_few_items(w);
-            if matches!(self.kind,EntityKind::Player(..)) {self.player_death(w,attacker);}
+            if matches!(self.kind, EntityKind::Player(..)) {
+                self.player_death(w, attacker);
+            }
             if matches!(self.kind, EntityKind::Creeper { .. })
                 && attacker
                     .and_then(|id| w.entities.get(&id))

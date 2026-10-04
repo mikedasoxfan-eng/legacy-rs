@@ -36,7 +36,7 @@ struct Finder<'a> {
     heap: Vec<usize>,
     size: [i32; 3],
     cache: [i32; 4],
-    direct:bool,
+    direct: bool,
 }
 fn hash([x, y, z]: [i32; 3]) -> i32 {
     (y & 255)
@@ -146,7 +146,17 @@ impl Finder<'_> {
                     {
                         continue;
                     }
-                    let (id,meta)=if self.direct {(self.world.get_block_id(x,y,z),self.world.get_block_metadata(x,y,z))}else {let Some(c)=self.world.chunks.get(&(x>>4,z>>4)) else{continue;};(c.block(x&15,y,z&15),c.data.get(x&15,y,z&15))};
+                    let (id, meta) = if self.direct {
+                        (
+                            self.world.get_block_id(x, y, z),
+                            self.world.get_block_metadata(x, y, z),
+                        )
+                    } else {
+                        let Some(c) = self.world.chunks.get(&(x >> 4, z >> 4)) else {
+                            continue;
+                        };
+                        (c.block(x & 15, y, z & 15), c.data.get(x & 15, y, z & 15))
+                    };
                     if id == 0 {
                         continue;
                     }
@@ -272,10 +282,36 @@ impl Finder<'_> {
 }
 impl World {
     /// Pathfinder(World), used by sleep spawning without a ChunkCache.
-    pub(crate) fn entity_path_world(&mut self,e:&Entity,target:&Entity,range:f32)->Option<PathEntity> {
-        let mut f=Finder{world:self,points:Vec::new(),map:HashMap::new(),heap:Vec::new(),size:[floor_float(e.width+1.0),floor_float(e.height+1.0),floor_float(e.width+1.0)],cache:[i32::MIN,i32::MAX,i32::MIN,i32::MAX],direct:true};
-        let start=f.open([floor(e.bounding_box.min_x),floor(e.bounding_box.min_y),floor(e.bounding_box.min_z)]);
-        let end=f.open([floor(target.pos.x-(e.width/2.0) as f64),floor(target.bounding_box.min_y),floor(target.pos.z-(e.width/2.0) as f64)]);f.find(start,end,range)
+    pub(crate) fn entity_path_world(
+        &mut self,
+        e: &Entity,
+        target: &Entity,
+        range: f32,
+    ) -> Option<PathEntity> {
+        let mut f = Finder {
+            world: self,
+            points: Vec::new(),
+            map: HashMap::new(),
+            heap: Vec::new(),
+            size: [
+                floor_float(e.width + 1.0),
+                floor_float(e.height + 1.0),
+                floor_float(e.width + 1.0),
+            ],
+            cache: [i32::MIN, i32::MAX, i32::MIN, i32::MAX],
+            direct: true,
+        };
+        let start = f.open([
+            floor(e.bounding_box.min_x),
+            floor(e.bounding_box.min_y),
+            floor(e.bounding_box.min_z),
+        ]);
+        let end = f.open([
+            floor(target.pos.x - (e.width / 2.0) as f64),
+            floor(target.bounding_box.min_y),
+            floor(target.pos.z - (e.width / 2.0) as f64),
+        ]);
+        f.find(start, end, range)
     }
     pub fn entity_path_to_xyz(
         &mut self,
@@ -323,7 +359,7 @@ impl World {
                 floor_float(e.width + 1.0),
             ],
             cache,
-            direct:false,
+            direct: false,
         };
         let start = finder.open([
             floor(e.bounding_box.min_x),

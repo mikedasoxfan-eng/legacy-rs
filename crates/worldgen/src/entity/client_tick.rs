@@ -10,7 +10,7 @@ impl World {
             }
             self.update_entities();
             self.tick();
-            let (x,y,z)=self.players[player];
+            let (x, y, z) = self.players[player];
             self.random_display_updates(floor(x), floor(y), floor(z));
         }
     }

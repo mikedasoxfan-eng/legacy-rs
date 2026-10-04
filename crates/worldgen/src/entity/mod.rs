@@ -12,8 +12,8 @@ pub mod living;
 pub mod nbt;
 pub mod objects;
 pub mod path;
-pub mod player;
 pub mod physics;
+pub mod player;
 pub mod projectile;
 pub mod spawning;
 pub mod special;
@@ -404,7 +404,11 @@ impl Entity {
         self.pitch = pitch;
     }
     pub fn attack(&mut self, w: &mut World, attacker: Option<i32>, mut damage: i32) -> bool {
-        if matches!(self.kind,EntityKind::Player(..)) && !self.player_damage(w,attacker,&mut damage) {return false;}
+        if matches!(self.kind, EntityKind::Player(..))
+            && !self.player_damage(w, attacker, &mut damage)
+        {
+            return false;
+        }
         self.prepare_special_attack(w, attacker, &mut damage);
         if self.kind.is_living() {
             let hit = self.living_attack(w, attacker, damage);

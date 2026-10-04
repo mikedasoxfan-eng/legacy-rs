@@ -9,7 +9,9 @@ use crate::{
 };
 impl Entity {
     pub fn to_nbt(&self) -> Option<Compound> {
-        if matches!(self.kind,EntityKind::Player(..)) {return None;}
+        if matches!(self.kind, EntityKind::Player(..)) {
+            return None;
+        }
         self.write_entity_nbt()
     }
     pub(super) fn write_entity_nbt(&self) -> Option<Compound> {
@@ -133,7 +135,7 @@ impl Entity {
         }
         let name = n.string("id");
         let mut e = match name.as_str() {
-            "Player" => Self::player(w,"Player"),
+            "Player" => Self::player(w, "Player"),
             "Item" => {
                 let mut e = Self::base(
                     w,
@@ -177,8 +179,17 @@ impl Entity {
                 e
             }
             "Snowball" | "ThrownEgg" => {
-                let mut e = Self::base(w, if name == "Snowball" {EntityKind::Snowball(Default::default())} else {EntityKind::Egg(Default::default())});
-                e.width=0.25;e.height=0.25;e
+                let mut e = Self::base(
+                    w,
+                    if name == "Snowball" {
+                        EntityKind::Snowball(Default::default())
+                    } else {
+                        EntityKind::Egg(Default::default())
+                    },
+                );
+                e.width = 0.25;
+                e.height = 0.25;
+                e
             }
             _ => Self::living(w, &name)?,
         };
@@ -270,7 +281,9 @@ impl Entity {
         if matches!(e.kind, EntityKind::Slime { .. }) {
             e.set_slime_size(n.int("Size") + 1);
         }
-        if matches!(e.kind,EntityKind::Player(..)) {e.read_player_tags(w,n);}
+        if matches!(e.kind, EntityKind::Player(..)) {
+            e.read_player_tags(w, n);
+        }
         Some(e)
     }
 }

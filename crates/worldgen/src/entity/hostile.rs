@@ -190,7 +190,12 @@ impl Entity {
         if self.kind.is_mob() && self.living.attack_time <= 0 && distance < 2.0 {
             if let Some((p, _, _)) = self.target_position(w, target) {
                 let (min, max) = match target {
-                    Target::Player(_) => w.target_entity_id(target).and_then(|id|w.entities.get(&id)).map_or((p.y,p.y+1.8f32 as f64),|e|(e.bounding_box.min_y,e.bounding_box.max_y)),
+                    Target::Player(_) => w
+                        .target_entity_id(target)
+                        .and_then(|id| w.entities.get(&id))
+                        .map_or((p.y, p.y + 1.8f32 as f64), |e| {
+                            (e.bounding_box.min_y, e.bounding_box.max_y)
+                        }),
                     Target::Entity(id) => w
                         .entities
                         .get(&id)

@@ -11,9 +11,17 @@ impl Entity {
     pub fn target_position(&self, w: &World, target: Target) -> Option<(Vec3D, f32, bool)> {
         match target {
             Target::Player(i) => {
-                if let Some(e)=w.target_entity_id(target).and_then(|id|w.entities.get(&id)) {Some((e.pos,e.eye_height(),!e.dead&&e.living.health>0))}
-                else {w.players.get(i).map(|&(x,y,z)|(Vec3D::new(x,y,z),0.12,true))}
-            },
+                if let Some(e) = w
+                    .target_entity_id(target)
+                    .and_then(|id| w.entities.get(&id))
+                {
+                    Some((e.pos, e.eye_height(), !e.dead && e.living.health > 0))
+                } else {
+                    w.players
+                        .get(i)
+                        .map(|&(x, y, z)| (Vec3D::new(x, y, z), 0.12, true))
+                }
+            }
             Target::Entity(id) => w.entities.get(&id).map(|e| {
                 (
                     e.pos,
@@ -150,8 +158,16 @@ impl Entity {
             matches!(&self.kind,EntityKind::Wolf(s) if s.flags&1!=0||s.shake_active);
         if self.living.target.is_none() {
             self.living.target = self.find_attack_target(w);
-            if let Some((mut p, _, _)) = self.living.target.and_then(|t| self.target_position(w, t)) {
-                if let Some(e)=self.living.target.and_then(|t|w.target_entity_id(t)).and_then(|id|w.entities.get(&id)) {p.y=e.bounding_box.min_y;}
+            if let Some((mut p, _, _)) = self.living.target.and_then(|t| self.target_position(w, t))
+            {
+                if let Some(e) = self
+                    .living
+                    .target
+                    .and_then(|t| w.target_entity_id(t))
+                    .and_then(|id| w.entities.get(&id))
+                {
+                    p.y = e.bounding_box.min_y;
+                }
                 self.living.path = w.entity_path(self, p, 16.0, 16.0);
             }
         } else if let Some(target) = self.living.target {
@@ -177,9 +193,17 @@ impl Entity {
             {
                 self.wander(w);
             }
-        } else if let Some((mut p, _, _)) = self.living.target.and_then(|t| self.target_position(w, t))
+        } else if let Some((mut p, _, _)) =
+            self.living.target.and_then(|t| self.target_position(w, t))
         {
-            if let Some(e)=self.living.target.and_then(|t|w.target_entity_id(t)).and_then(|id|w.entities.get(&id)) {p.y=e.bounding_box.min_y;}
+            if let Some(e) = self
+                .living
+                .target
+                .and_then(|t| w.target_entity_id(t))
+                .and_then(|id| w.entities.get(&id))
+            {
+                p.y = e.bounding_box.min_y;
+            }
             self.living.path = w.entity_path(self, p, 16.0, 16.0);
         }
         let y = floor(self.bounding_box.min_y + 0.5);

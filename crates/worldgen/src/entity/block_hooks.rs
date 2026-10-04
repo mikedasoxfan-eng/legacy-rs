@@ -4,7 +4,13 @@ pub fn provides_power(id: u8) -> bool {
     matches!(id, 55 | 69 | 70 | 72 | 75 | 76 | 77)
 }
 impl World {
-    pub(crate) fn indirectly_provides_power(&mut self,x:i32,y:i32,z:i32,side:i32)->bool {if self.is_block_normal_cube(x,y,z) {self.is_block_getting_powered(x,y,z)}else{self.block_power(x,y,z,side,false)}}
+    pub(crate) fn indirectly_provides_power(&mut self, x: i32, y: i32, z: i32, side: i32) -> bool {
+        if self.is_block_normal_cube(x, y, z) {
+            self.is_block_getting_powered(x, y, z)
+        } else {
+            self.block_power(x, y, z, side, false)
+        }
+    }
     pub(crate) fn scatter_chest_contents(&mut self, x: i32, y: i32, z: i32) {
         let slots = match self.get_block_tile_entity(x, y, z) {
             Some(crate::world::tile::TileEntity::Chest(slots)) => slots.clone(),
