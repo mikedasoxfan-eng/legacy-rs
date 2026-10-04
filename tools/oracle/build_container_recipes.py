@@ -5,7 +5,11 @@ import subprocess
 
 root = Path(__file__).resolve().parents[2]
 bash = 'C:/Program Files/Git/usr/bin/bash.exe' if os.name == 'nt' else 'bash'
-subprocess.run([bash, str(root / 'tools/oracle/oracle.sh'), 'containerrecipes', 'container_recipes.bin'], check=True)
+env = dict(os.environ)
+env['JAVA_TOOL_OPTIONS'] = env.get('JAVA_TOOL_OPTIONS', '') + ' -Xmx512m'
+subprocess.run([bash, str(root / 'tools/oracle/oracle.sh'), 'containerrecipes', 'container_recipes.bin'], check=True, env=env)
 data = (root / 'tools/oracle/out/container_recipes.bin').read_bytes()
 assert int.from_bytes(data[:4], 'big') == 151
 (root / 'crates/worldgen/src/container/recipes.bin').write_bytes(data)
+(root / 'crates/client/src/gui/screens/item_names.tsv').write_bytes((root / 'tools/oracle/out/container_recipes.bin.names').read_bytes())
+(root / 'crates/client/src/gui/screens/item_render.bin').write_bytes((root / 'tools/oracle/out/container_recipes.bin.render').read_bytes())

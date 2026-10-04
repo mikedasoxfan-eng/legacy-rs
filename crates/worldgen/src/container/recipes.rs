@@ -31,9 +31,16 @@ impl CraftingManager {
                 let output = r.stack().unwrap();
                 let n = r.int();
                 let ingredients = (0..n).map(|_| r.stack()).collect();
-                recipes.push(Recipe { shaped, width, height, output, ingredients });
+                recipes.push(Recipe {
+                    shaped,
+                    width,
+                    height,
+                    output,
+                    ingredients,
+                });
             }
-            let (mut smelting, mut container_items, mut armor_types, mut wood) = (Vec::new(), Vec::new(), Vec::new(), Vec::new());
+            let (mut smelting, mut container_items, mut armor_types, mut wood) =
+                (Vec::new(), Vec::new(), Vec::new(), Vec::new());
             for _ in 0..2258 {
                 smelting.push(r.stack());
                 container_items.push(r.int());
@@ -41,25 +48,52 @@ impl CraftingManager {
                 wood.push(r.byte());
             }
             assert!(r.0.is_empty());
-            Self { recipes, smelting, container_items, armor_types, wood }
+            Self {
+                recipes,
+                smelting,
+                container_items,
+                armor_types,
+                wood,
+            }
         })
     }
-    pub fn find_matching_recipe(&self, grid: &[Option<ItemStack>], width: usize) -> Option<ItemStack> {
-        self.recipes.iter().find(|r| r.matches(grid, width)).map(|r| r.output)
+    pub fn find_matching_recipe(
+        &self,
+        grid: &[Option<ItemStack>],
+        width: usize,
+    ) -> Option<ItemStack> {
+        self.recipes
+            .iter()
+            .find(|r| r.matches(grid, width))
+            .map(|r| r.output)
     }
     pub fn smelting_result(&self, id: i32) -> Option<ItemStack> {
         self.smelting.get(id as usize).copied().flatten()
     }
     pub fn fuel(&self, stack: Option<ItemStack>) -> i32 {
         let Some(s) = stack else { return 0 };
-        if self.wood.get(s.id as usize) == Some(&true) { 300 }
-        else { match s.id { 280 | 6 => 100, 263 => 1600, 327 => 20000, _ => 0 } }
+        if self.wood.get(s.id as usize) == Some(&true) {
+            300
+        } else {
+            match s.id {
+                280 | 6 => 100,
+                263 => 1600,
+                327 => 20000,
+                _ => 0,
+            }
+        }
     }
 }
 impl Recipe {
     pub fn matches(&self, grid: &[Option<ItemStack>], width: usize) -> bool {
         // InventoryCrafting.func_21103_b checks X and total index, not Y.
-        let at = |x: usize, y: usize| if x < width { grid.get(x + y * width).copied().flatten() } else { None };
+        let at = |x: usize, y: usize| {
+            if x < width {
+                grid.get(x + y * width).copied().flatten()
+            } else {
+                None
+            }
+        };
         if self.shaped {
             for ox in 0..=3 - self.width {
                 for oy in 0..=3 - self.height {
@@ -67,18 +101,32 @@ impl Recipe {
                         let mut matches = true;
                         for x in 0..3 {
                             for y in 0..3 {
-                                let expected = if x >= ox && y >= oy && x - ox < self.width && y - oy < self.height {
-                                    let rx = if mirror { self.width - (x - ox) - 1 } else { x - ox };
+                                let expected = if x >= ox
+                                    && y >= oy
+                                    && x - ox < self.width
+                                    && y - oy < self.height
+                                {
+                                    let rx = if mirror {
+                                        self.width - (x - ox) - 1
+                                    } else {
+                                        x - ox
+                                    };
                                     self.ingredients[rx + (y - oy) * self.width]
-                                } else { None };
+                                } else {
+                                    None
+                                };
                                 matches &= match (expected, at(x, y)) {
                                     (None, None) => true,
-                                    (Some(a), Some(b)) => a.id == b.id && (a.damage == -1 || a.damage == b.damage),
+                                    (Some(a), Some(b)) => {
+                                        a.id == b.id && (a.damage == -1 || a.damage == b.damage)
+                                    }
                                     _ => false,
                                 };
                             }
                         }
-                        if matches { return true }
+                        if matches {
+                            return true;
+                        }
                     }
                 }
             }
@@ -88,7 +136,13 @@ impl Recipe {
             for y in 0..3 {
                 for x in 0..3 {
                     if let Some(s) = at(x, y) {
-                        let Some(i) = remaining.iter().position(|a| a.is_some_and(|a| a.id == s.id && (a.damage == -1 || a.damage == s.damage))) else { return false };
+                        let Some(i) = remaining.iter().position(|a| {
+                            a.is_some_and(|a| {
+                                a.id == s.id && (a.damage == -1 || a.damage == s.damage)
+                            })
+                        }) else {
+                            return false;
+                        };
                         remaining.remove(i);
                     }
                 }
@@ -99,7 +153,21 @@ impl Recipe {
 }
 struct Reader<'a>(&'a [u8]);
 impl Reader<'_> {
-    fn byte(&mut self) -> bool { let b = self.0[0]; self.0 = &self.0[1..]; b != 0 }
-    fn int(&mut self) -> i32 { let v = i32::from_be_bytes(self.0[..4].try_into().unwrap()); self.0 = &self.0[4..]; v }
-    fn stack(&mut self) -> Option<ItemStack> { if self.byte() { Some(ItemStack::new(self.int(), self.int(), self.int())) } else { None } }
+    fn byte(&mut self) -> bool {
+        let b = self.0[0];
+        self.0 = &self.0[1..];
+        b != 0
+    }
+    fn int(&mut self) -> i32 {
+        let v = i32::from_be_bytes(self.0[..4].try_into().unwrap());
+        self.0 = &self.0[4..];
+        v
+    }
+    fn stack(&mut self) -> Option<ItemStack> {
+        if self.byte() {
+            Some(ItemStack::new(self.int(), self.int(), self.int()))
+        } else {
+            None
+        }
+    }
 }

@@ -23,7 +23,7 @@ fn vs(@location(0) pos: vec3<f32>, @location(1) uv: vec2<f32>, @location(2) colo
     var o: VO;
     var c = u.proj * vec4<f32>(pos, 1.0);
     // OpenGL depth range [-1, 1] -> [0, 1].
-    c.z = (c.z + c.w) * 0.5;
+    c.z = c.z * 0.5 + c.w * 0.5;
     o.pos = c;
     o.uv = uv;
     o.color = color;
@@ -50,6 +50,7 @@ struct PipeKey {
     blend: Option<(Factor, Factor)>,
     depth_test: bool,
     depth_gequal: bool,
+    depth_equal: bool,
     depth_write: bool,
 }
 
@@ -98,7 +99,12 @@ fn factor(f: Factor) -> wgpu::BlendFactor {
 }
 
 impl GuiRenderer {
-    pub fn new(device: &wgpu::Device, queue: &wgpu::Queue, format: wgpu::TextureFormat, samples: u32) -> GuiRenderer {
+    pub fn new(
+        device: &wgpu::Device,
+        queue: &wgpu::Queue,
+        format: wgpu::TextureFormat,
+        samples: u32,
+    ) -> GuiRenderer {
         let shader = device.create_shader_module(wgpu::ShaderModuleDescriptor {
             label: Some("gui"),
             source: wgpu::ShaderSource::Wgsl(SHADER.into()),
@@ -173,8 +179,16 @@ impl GuiRenderer {
             ..Default::default()
         });
         let mk = |linear: bool, clamp: bool| {
-            let f = if linear { wgpu::FilterMode::Linear } else { wgpu::FilterMode::Nearest };
-            let a = if clamp { wgpu::AddressMode::ClampToEdge } else { wgpu::AddressMode::Repeat };
+            let f = if linear {
+                wgpu::FilterMode::Linear
+            } else {
+                wgpu::FilterMode::Nearest
+            };
+            let a = if clamp {
+                wgpu::AddressMode::ClampToEdge
+            } else {
+                wgpu::AddressMode::Repeat
+            };
             device.create_sampler(&wgpu::SamplerDescriptor {
                 label: Some("gui sampler"),
                 address_mode_u: a,
@@ -184,8 +198,21 @@ impl GuiRenderer {
                 ..Default::default()
             })
         };
-        let samplers = [[mk(false, false), mk(false, true)], [mk(true, false), mk(true, true)]];
-        let white = make_texture(device, queue, &tex_layout, &sampler, &Image { width: 1, height: 1, rgba: vec![255; 4] });
+        let samplers = [
+            [mk(false, false), mk(false, true)],
+            [mk(true, false), mk(true, true)],
+        ];
+        let white = make_texture(
+            device,
+            queue,
+            &tex_layout,
+            &sampler,
+            &Image {
+                width: 1,
+                height: 1,
+                rgba: vec![255; 4],
+            },
+        );
         GuiRenderer {
             format,
             samples,
@@ -209,12 +236,24 @@ impl GuiRenderer {
     }
 
     /// Register a texture (like `RenderEngine.getTexture`); returns its id.
-    pub fn add_texture(&mut self, device: &wgpu::Device, queue: &wgpu::Queue, img: &Image) -> TexId {
+    pub fn add_texture(
+        &mut self,
+        device: &wgpu::Device,
+        queue: &wgpu::Queue,
+        img: &Image,
+    ) -> TexId {
         self.add_texture_with(device, queue, img, false, false)
     }
 
     /// With `RenderEngine`'s name prefixes: `%blur%` = linear filtering, `%clamp%` = clamped.
-    pub fn add_texture_with(&mut self, device: &wgpu::Device, queue: &wgpu::Queue, img: &Image, blur: bool, clamp: bool) -> TexId {
+    pub fn add_texture_with(
+        &mut self,
+        device: &wgpu::Device,
+        queue: &wgpu::Queue,
+        img: &Image,
+        blur: bool,
+        clamp: bool,
+    ) -> TexId {
         let s = &self.samplers[blur as usize][clamp as usize];
         let t = make_texture(device, queue, &self.tex_layout, s, img);
         self.textures.push(t);
@@ -227,7 +266,8 @@ impl GuiRenderer {
     }
 
     fn pipeline(&mut self, device: &wgpu::Device, key: PipeKey) -> &wgpu::RenderPipeline {
-        let (format, shader, layout, samples) = (self.format, &self.shader, &self.layout, self.samples);
+        let (format, shader, layout, samples) =
+            (self.format, &self.shader, &self.layout, self.samples);
         self.pipes.entry(key).or_insert_with(|| {
             let blend = key.blend.map(|(s, d)| {
                 let c = wgpu::BlendComponent { src_factor: factor(s), dst_factor: factor(d), operation: wgpu::BlendOperation::Add };
@@ -254,12 +294,13 @@ impl GuiRenderer {
                 }),
                 primitive: wgpu::PrimitiveState { cull_mode: None, ..Default::default() },
                 depth_stencil: Some(wgpu::DepthStencilState {
-                    format: wgpu::TextureFormat::Depth32Float,
+                    format: wgpu::TextureFormat::Depth24PlusStencil8,
                     depth_write_enabled: Some(key.depth_write && key.depth_test),
-                    depth_compare: Some(match (key.depth_test, key.depth_gequal) {
-                        (false, _) => wgpu::CompareFunction::Always,
-                        (true, false) => wgpu::CompareFunction::LessEqual,
-                        (true, true) => wgpu::CompareFunction::GreaterEqual,
+                    depth_compare: Some(match (key.depth_test, key.depth_equal,key.depth_gequal) {
+                        (false, _,_) => wgpu::CompareFunction::Always,
+                        (true, true,_)=>wgpu::CompareFunction::Equal,
+                        (true, false,false) => wgpu::CompareFunction::LessEqual,
+                        (true, false,true) => wgpu::CompareFunction::GreaterEqual,
                     }),
                     stencil: Default::default(),
                     bias: Default::default(),
@@ -284,11 +325,15 @@ impl GuiRenderer {
         if self.depth.as_ref().is_none_or(|d| (d.2, d.3) != size) {
             let t = device.create_texture(&wgpu::TextureDescriptor {
                 label: Some("gui depth"),
-                size: wgpu::Extent3d { width: size.0, height: size.1, depth_or_array_layers: 1 },
+                size: wgpu::Extent3d {
+                    width: size.0,
+                    height: size.1,
+                    depth_or_array_layers: 1,
+                },
                 mip_level_count: 1,
                 sample_count: self.samples,
                 dimension: wgpu::TextureDimension::D2,
-                format: wgpu::TextureFormat::Depth32Float,
+                format: wgpu::TextureFormat::Depth24PlusStencil8,
                 usage: wgpu::TextureUsages::RENDER_ATTACHMENT,
                 view_formats: &[],
             });
@@ -297,7 +342,11 @@ impl GuiRenderer {
             self.msaa = (self.samples > 1).then(|| {
                 let t = device.create_texture(&wgpu::TextureDescriptor {
                     label: Some("gui msaa"),
-                    size: wgpu::Extent3d { width: size.0, height: size.1, depth_or_array_layers: 1 },
+                    size: wgpu::Extent3d {
+                        width: size.0,
+                        height: size.1,
+                        depth_or_array_layers: 1,
+                    },
                     mip_level_count: 1,
                     sample_count: self.samples,
                     dimension: wgpu::TextureDimension::D2,
@@ -310,7 +359,12 @@ impl GuiRenderer {
             });
         }
         let bytes: &[u8] = bytemuck::cast_slice(&gl.verts);
-        if !bytes.is_empty() && self.vbuf.as_ref().is_none_or(|(_, cap)| *cap < bytes.len() as u64) {
+        if !bytes.is_empty()
+            && self
+                .vbuf
+                .as_ref()
+                .is_none_or(|(_, cap)| *cap < bytes.len() as u64)
+        {
             let cap = (bytes.len() as u64).next_power_of_two().max(1 << 16);
             let b = device.create_buffer(&wgpu::BufferDescriptor {
                 label: Some("gui vertices"),
@@ -323,22 +377,31 @@ impl GuiRenderer {
         if !bytes.is_empty() {
             queue.write_buffer(&self.vbuf.as_ref().unwrap().0, 0, bytes);
         }
-        // One projection slot per distinct projection.
-        let mut projs: Vec<glam::Mat4> = Vec::new();
+        // Keep display-list models in object space through the combined MVP,
+        // as GL does. This preserves 24-bit depth ties between armor faces.
+        let mut projs: Vec<(glam::Mat4, glam::Mat4)> = Vec::new();
         let mut slot_of = Vec::with_capacity(gl.draws.len());
         for d in &gl.draws {
-            let i = match projs.iter().position(|p| *p == d.proj) {
+            let i = match projs.iter().position(|p| *p == (d.proj, d.modelview)) {
                 Some(i) => i,
                 None => {
-                    projs.push(d.proj);
+                    projs.push((d.proj, d.modelview));
                     projs.len() - 1
                 }
             };
             slot_of.push(i.min(self.uniform_slots as usize - 1));
         }
-        for (i, p) in projs.iter().enumerate().take(self.uniform_slots as usize) {
-            let p = if self.gl_orientation { glam::Mat4::from_scale(glam::Vec3::new(1.0, -1.0, 1.0)) * *p } else { *p };
-            queue.write_buffer(&self.uniforms, i as u64 * self.uniform_stride, bytemuck::cast_slice(&p.to_cols_array()));
+        for (i, (p, m)) in projs.iter().enumerate().take(self.uniform_slots as usize) {
+            let p = if self.gl_orientation {
+                glam::Mat4::from_scale(glam::Vec3::new(1.0, -1.0, 1.0)) * *p
+            } else {
+                *p
+            };
+            queue.write_buffer(
+                &self.uniforms,
+                i as u64 * self.uniform_stride,
+                bytemuck::cast_slice(&(p * *m).to_cols_array()),
+            );
         }
         let keys: Vec<PipeKey> = gl.draws.iter().map(|d| key_of(&d.state)).collect();
         for k in &keys {
@@ -355,7 +418,12 @@ impl GuiRenderer {
                     resolve_target: self.msaa.as_ref().map(|_| target),
                     ops: wgpu::Operations {
                         load: match clear {
-                            Some(c) => wgpu::LoadOp::Clear(wgpu::Color { r: c[0], g: c[1], b: c[2], a: c[3] }),
+                            Some(c) => wgpu::LoadOp::Clear(wgpu::Color {
+                                r: c[0],
+                                g: c[1],
+                                b: c[2],
+                                a: c[3],
+                            }),
                             None => wgpu::LoadOp::Load,
                         },
                         store: wgpu::StoreOp::Store,
@@ -364,7 +432,10 @@ impl GuiRenderer {
                 // EntityRenderer clears the depth buffer before drawing a screen.
                 depth_stencil_attachment: Some(wgpu::RenderPassDepthStencilAttachment {
                     view: depth_view,
-                    depth_ops: Some(wgpu::Operations { load: wgpu::LoadOp::Clear(1.0), store: wgpu::StoreOp::Discard }),
+                    depth_ops: Some(wgpu::Operations {
+                        load: wgpu::LoadOp::Clear(1.0),
+                        store: wgpu::StoreOp::Discard,
+                    }),
                     stencil_ops: None,
                 }),
                 timestamp_writes: None,
@@ -376,7 +447,11 @@ impl GuiRenderer {
             }
             for (i, d) in gl.draws.iter().enumerate() {
                 rp.set_pipeline(&self.pipes[&keys[i]]);
-                rp.set_bind_group(0, &self.uniform_bind, &[(slot_of[i] as u64 * self.uniform_stride) as u32]);
+                rp.set_bind_group(
+                    0,
+                    &self.uniform_bind,
+                    &[(slot_of[i] as u64 * self.uniform_stride) as u32],
+                );
                 let tb = match d.state.texture {
                     Some(t) => &self.textures[t as usize].bind,
                     None => &self.white.bind,
@@ -390,7 +465,13 @@ impl GuiRenderer {
 }
 
 fn key_of(s: &DrawState) -> PipeKey {
-    PipeKey { blend: s.blend, depth_test: s.depth_test, depth_write: s.depth_write, depth_gequal: s.depth_gequal }
+    PipeKey {
+        blend: s.blend,
+        depth_test: s.depth_test,
+        depth_write: s.depth_write,
+        depth_gequal: s.depth_gequal,
+        depth_equal: s.depth_equal,
+    }
 }
 
 fn make_texture(
@@ -402,7 +483,11 @@ fn make_texture(
 ) -> GuiTexture {
     let texture = device.create_texture(&wgpu::TextureDescriptor {
         label: Some("gui texture"),
-        size: wgpu::Extent3d { width: img.width, height: img.height, depth_or_array_layers: 1 },
+        size: wgpu::Extent3d {
+            width: img.width,
+            height: img.height,
+            depth_or_array_layers: 1,
+        },
         mip_level_count: 1,
         sample_count: 1,
         dimension: wgpu::TextureDimension::D2,
@@ -416,8 +501,14 @@ fn make_texture(
         label: Some("gui texture"),
         layout,
         entries: &[
-            wgpu::BindGroupEntry { binding: 0, resource: wgpu::BindingResource::TextureView(&view) },
-            wgpu::BindGroupEntry { binding: 1, resource: wgpu::BindingResource::Sampler(sampler) },
+            wgpu::BindGroupEntry {
+                binding: 0,
+                resource: wgpu::BindingResource::TextureView(&view),
+            },
+            wgpu::BindGroupEntry {
+                binding: 1,
+                resource: wgpu::BindingResource::Sampler(sampler),
+            },
         ],
     });
     GuiTexture { texture, bind }
@@ -425,9 +516,22 @@ fn make_texture(
 
 fn write(queue: &wgpu::Queue, tex: &wgpu::Texture, img: &Image) {
     queue.write_texture(
-        wgpu::TexelCopyTextureInfo { texture: tex, mip_level: 0, origin: wgpu::Origin3d::ZERO, aspect: wgpu::TextureAspect::All },
+        wgpu::TexelCopyTextureInfo {
+            texture: tex,
+            mip_level: 0,
+            origin: wgpu::Origin3d::ZERO,
+            aspect: wgpu::TextureAspect::All,
+        },
         &img.rgba,
-        wgpu::TexelCopyBufferLayout { offset: 0, bytes_per_row: Some(img.width * 4), rows_per_image: None },
-        wgpu::Extent3d { width: img.width, height: img.height, depth_or_array_layers: 1 },
+        wgpu::TexelCopyBufferLayout {
+            offset: 0,
+            bytes_per_row: Some(img.width * 4),
+            rows_per_image: None,
+        },
+        wgpu::Extent3d {
+            width: img.width,
+            height: img.height,
+            depth_or_array_layers: 1,
+        },
     );
 }

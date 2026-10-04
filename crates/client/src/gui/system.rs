@@ -5,13 +5,17 @@ use super::font::FontRenderer;
 use super::gl::Gl;
 use super::render::GuiRenderer;
 use super::screens::main_menu::GuiMainMenu;
-use super::{set_world_and_resolution, Action, Screen, Ui};
+use super::{Action, Screen, Ui, set_world_and_resolution};
 use crate::render::gpu::Image;
 use std::collections::HashMap;
 
 /// What the game itself has to act on.
 pub enum GameAction {
-    StartWorld { folder: String, name: String, seed: Option<i64> },
+    StartWorld {
+        folder: String,
+        name: String,
+        seed: Option<i64>,
+    },
     QuitWorld,
     Shutdown,
     SettingsChanged,
@@ -80,8 +84,16 @@ impl GuiSystem {
             save_requests: Vec::new(),
             sounds: Vec::new(),
             stats: Default::default(),
+            container_snapshot: None,
+            container_commands: Vec::new(),
+            inventory_armor_state: Default::default(),
         };
-        GuiSystem { ui, renderer, screen: None, splash_rand: worldgen::JavaRandom::new(splash_seed) }
+        GuiSystem {
+            ui,
+            renderer,
+            screen: None,
+            splash_rand: worldgen::JavaRandom::new(splash_seed),
+        }
     }
 
     pub fn main_menu(&mut self) -> Box<dyn Screen> {
@@ -132,7 +144,9 @@ impl GuiSystem {
                             self.display_gui_screen(Some(child), &mut out);
                         }
                     }
-                    Action::StartWorld { folder, name, seed } => out.push(GameAction::StartWorld { folder, name, seed }),
+                    Action::StartWorld { folder, name, seed } => {
+                        out.push(GameAction::StartWorld { folder, name, seed })
+                    }
                     Action::QuitWorld => out.push(GameAction::QuitWorld),
                     Action::Shutdown => out.push(GameAction::Shutdown),
                     Action::SettingsChanged => out.push(GameAction::SettingsChanged),

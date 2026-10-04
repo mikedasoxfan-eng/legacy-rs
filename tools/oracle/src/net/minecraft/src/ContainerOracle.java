@@ -6,6 +6,23 @@ import java.util.*;
 
 /** Container/recipe ground truth: invokes original classes, never recompiles them. */
 public class ContainerOracle {
+    static final class StatHook {
+        final String achievement;final int count;
+        StatHook(String name,int n){achievement=name;count=n;}
+    }
+    static final class StatsPlayer extends EntityPlayerSP {
+        final List<StatHook> hooks=new ArrayList<StatHook>();
+        StatsPlayer(net.minecraft.client.Minecraft mc,World w){super(mc,w,new Session("Player",""),0);}
+        public void addStat(StatBase stat,int count) {
+            if(hooks==null)return;
+            if(stat==null||stat instanceof StatCrafting)hooks.add(new StatHook(null,count));
+            else if(stat instanceof Achievement) {
+                try{for(Field f:AchievementList.class.getFields())if(f.getType()==Achievement.class&&f.get(null)==stat){hooks.add(new StatHook(f.getName(),count));break;}}
+                catch(IllegalAccessException e){throw new RuntimeException(e);}
+            }
+        }
+        public void onItemPickup(Entity e,int count){}
+    }
     static void seed(Object o, Class type, String name, long seed) throws Exception {
         Field f = type.getDeclaredField(name); f.setAccessible(true); ((Random)f.get(o)).setSeed(seed);
     }
@@ -72,7 +89,7 @@ public class ContainerOracle {
     }
     public static void replay(String input, String path) throws Exception {
         World w = Oracle.newWorld(0); w.chunkProvider = new EntityOracle.FlatProvider(w);
-        EntityPlayer p = PlayerOracle.player(w);
+        StatsPlayer p = new StatsPlayer(PlayerOracle.player(w).mc,w);
         Container c = make(p, 0);
         DataOutputStream out = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(path)));
         BufferedReader in = new BufferedReader(new FileReader(input));
@@ -86,6 +103,10 @@ public class ContainerOracle {
             else if (a[0].equals("cursor")) p.inventory.setItemStack(readStack(a, 1));
             else if (a[0].equals("click")) result = c.func_27280_a(Integer.parseInt(a[1]), Integer.parseInt(a[2]), a[3].equals("1"), p);
             else if (a[0].equals("close")) c.onCraftGuiClosed(p);
+            else if (a[0].equals("expect")) {
+                ItemStack actual=((Slot)c.slots.get(0)).getStack(), expected=readStack(a,1);
+                if(actual==null||expected==null||actual.itemID!=expected.itemID||actual.stackSize!=expected.stackSize||actual.getItemDamage()!=expected.getItemDamage())throw new AssertionError("Uncrafted recipe: "+line);
+            }
             else throw new IllegalArgumentException(line);
             stack(out, result);
             out.writeInt(c.slots.size());
@@ -93,6 +114,9 @@ public class ContainerOracle {
             stack(out, p.inventory.getItemStack());
             for (ItemStack s : p.inventory.armorInventory) stack(out, s);
             for (ItemStack s : p.inventory.mainInventory) stack(out, s);
+            out.writeInt(p.hooks.size());
+            for(StatHook h:p.hooks) {out.writeBoolean(h.achievement!=null);if(h.achievement!=null)out.writeUTF(h.achievement);out.writeInt(h.count);}
+            p.hooks.clear();
         }
         in.close(); out.close();
     }
@@ -133,5 +157,13 @@ public class ContainerOracle {
             }
         }
         names.close();
+        DataOutputStream render=new DataOutputStream(new FileOutputStream(path+".render"));
+        for(int id=0;id<2258;id++) {
+            Item i=Item.itemsList[id];
+            render.writeBoolean(i!=null&&i.isFull3D());
+            render.writeBoolean(i!=null&&i.shouldRotateAroundWhenRendering());
+            render.writeInt(i instanceof ItemArmor?((ItemArmor)i).renderIndex:-1);
+        }
+        render.close();
     }
 }

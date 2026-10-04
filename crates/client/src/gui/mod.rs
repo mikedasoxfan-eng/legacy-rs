@@ -2,6 +2,7 @@
 //! `ScaledResolution` and the screens, drawing through a small fixed-function GL emulation
 //! (`gl`) so the original drawing code can be followed line by line.
 
+pub mod container_api;
 pub mod font;
 pub mod gl;
 pub mod ingame;
@@ -37,6 +38,22 @@ pub const TEXTURES: &[&str] = &[
     "terrain.png",
     "%blur%/misc/vignette.png",
     "achievement/bg.png",
+    "gui/inventory.png",
+    "gui/crafting.png",
+    "gui/container.png",
+    "gui/furnace.png",
+    "gui/trap.png",
+    "mob/char.png",
+    "armor/cloth_1.png",
+    "armor/cloth_2.png",
+    "armor/chain_1.png",
+    "armor/chain_2.png",
+    "armor/iron_1.png",
+    "armor/iron_2.png",
+    "armor/diamond_1.png",
+    "armor/diamond_2.png",
+    "armor/gold_1.png",
+    "armor/gold_2.png",
 ];
 
 /// A texture name without `RenderEngine`'s `%blur%` / `%clamp%` prefixes, and the flags.
@@ -76,7 +93,13 @@ impl ScaledResolution {
         }
         let wd = display_w as f64 / scale as f64;
         let hd = display_h as f64 / scale as f64;
-        ScaledResolution { width: wd.ceil() as i32, height: hd.ceil() as i32, width_d: wd, height_d: hd, scale_factor: scale }
+        ScaledResolution {
+            width: wd.ceil() as i32,
+            height: hd.ceil() as i32,
+            width_d: wd,
+            height_d: hd,
+            scale_factor: scale,
+        }
     }
 }
 
@@ -89,7 +112,11 @@ pub enum Action {
     /// its parent to return to.
     DisplayChild(Box<dyn FnOnce(Box<dyn Screen>) -> Box<dyn Screen>>),
     /// Open or create a world from the world-selection screens.
-    StartWorld { folder: String, name: String, seed: Option<i64> },
+    StartWorld {
+        folder: String,
+        name: String,
+        seed: Option<i64>,
+    },
     /// `GuiIngameMenu` "Save and quit to title".
     QuitWorld,
     /// `mc.shutdown()`
@@ -133,12 +160,22 @@ pub struct Ui {
     pub stats: stats::Stats,
     /// `sndManager.playSoundFX(name, volume, pitch)` calls, played by the app.
     pub sounds: Vec<(&'static str, f32, f32)>,
+    pub container_snapshot: Option<worldgen::container::ContainerSnapshot>,
+    pub container_commands: Vec<worldgen::container::ContainerCommand>,
+    pub inventory_armor_state: screens::inventory_model::ArmorPassState,
 }
 
 impl Ui {
     pub fn texture(&self, name: &str) -> TexId {
-        let key = if name.starts_with('%') { name } else { name.trim_start_matches('/') };
-        *self.textures.get(key).unwrap_or_else(|| panic!("GUI texture {name} not loaded"))
+        let key = if name.starts_with('%') {
+            name
+        } else {
+            name.trim_start_matches('/')
+        };
+        *self
+            .textures
+            .get(key)
+            .unwrap_or_else(|| panic!("GUI texture {name} not loaded"))
     }
 
     pub fn translate(&self, key: &str) -> String {
@@ -146,7 +183,11 @@ impl Ui {
     }
 
     pub fn scaled(&self) -> ScaledResolution {
-        ScaledResolution::new(self.settings.gui_scale, self.display_width, self.display_height)
+        ScaledResolution::new(
+            self.settings.gui_scale,
+            self.display_width,
+            self.display_height,
+        )
     }
 
     pub fn display(&mut self, s: Option<Box<dyn Screen>>) {
@@ -174,7 +215,8 @@ impl Ui {
     /// `EntityRenderer.func_905_b` (setupOverlayRendering).
     pub fn setup_overlay_rendering(&mut self) {
         let sr = self.scaled();
-        self.gl.ortho(0.0, sr.width_d, sr.height_d, 0.0, 1000.0, 3000.0);
+        self.gl
+            .ortho(0.0, sr.width_d, sr.height_d, 0.0, 1000.0, 3000.0);
         self.gl.load_identity();
         self.gl.translatef(0.0, 0.0, -2000.0);
     }
@@ -249,11 +291,13 @@ impl Ui {
 
     pub fn draw_centered_string(&mut self, s: &str, x: i32, y: i32, color: i32) {
         let w = self.font.get_string_width(s);
-        self.font.draw_string_with_shadow(&mut self.gl, s, x - w / 2, y, color);
+        self.font
+            .draw_string_with_shadow(&mut self.gl, s, x - w / 2, y, color);
     }
 
     pub fn draw_string(&mut self, s: &str, x: i32, y: i32, color: i32) {
-        self.font.draw_string_with_shadow(&mut self.gl, s, x, y, color);
+        self.font
+            .draw_string_with_shadow(&mut self.gl, s, x, y, color);
     }
 
     pub fn string_width(&self, s: &str) -> i32 {
@@ -261,14 +305,47 @@ impl Ui {
     }
 
     /// `Gui.drawTexturedModalRect` at `zLevel`.
-    pub fn draw_textured_modal_rect_z(&mut self, x: i32, y: i32, u: i32, v: i32, w: i32, h: i32, z: f32) {
+    pub fn draw_textured_modal_rect_z(
+        &mut self,
+        x: i32,
+        y: i32,
+        u: i32,
+        v: i32,
+        w: i32,
+        h: i32,
+        z: f32,
+    ) {
         let s = 0.00390625f32;
         let gl = &mut self.gl;
         gl.start_drawing_quads();
-        gl.add_vertex_with_uv((x + 0) as f64, (y + h) as f64, z as f64, ((u + 0) as f32 * s) as f64, ((v + h) as f32 * s) as f64);
-        gl.add_vertex_with_uv((x + w) as f64, (y + h) as f64, z as f64, ((u + w) as f32 * s) as f64, ((v + h) as f32 * s) as f64);
-        gl.add_vertex_with_uv((x + w) as f64, (y + 0) as f64, z as f64, ((u + w) as f32 * s) as f64, ((v + 0) as f32 * s) as f64);
-        gl.add_vertex_with_uv((x + 0) as f64, (y + 0) as f64, z as f64, ((u + 0) as f32 * s) as f64, ((v + 0) as f32 * s) as f64);
+        gl.add_vertex_with_uv(
+            (x + 0) as f64,
+            (y + h) as f64,
+            z as f64,
+            ((u + 0) as f32 * s) as f64,
+            ((v + h) as f32 * s) as f64,
+        );
+        gl.add_vertex_with_uv(
+            (x + w) as f64,
+            (y + h) as f64,
+            z as f64,
+            ((u + w) as f32 * s) as f64,
+            ((v + h) as f32 * s) as f64,
+        );
+        gl.add_vertex_with_uv(
+            (x + w) as f64,
+            (y + 0) as f64,
+            z as f64,
+            ((u + w) as f32 * s) as f64,
+            ((v + 0) as f32 * s) as f64,
+        );
+        gl.add_vertex_with_uv(
+            (x + 0) as f64,
+            (y + 0) as f64,
+            z as f64,
+            ((u + 0) as f32 * s) as f64,
+            ((v + 0) as f32 * s) as f64,
+        );
         gl.draw();
     }
 
@@ -296,9 +373,27 @@ impl Ui {
         let s = 32.0f32;
         gl.start_drawing_quads();
         gl.set_color_opaque_i(4210752);
-        gl.add_vertex_with_uv(0.0, height as f64, 0.0, 0.0, (height as f32 / s + offset as f32) as f64);
-        gl.add_vertex_with_uv(width as f64, height as f64, 0.0, (width as f32 / s) as f64, (height as f32 / s + offset as f32) as f64);
-        gl.add_vertex_with_uv(width as f64, 0.0, 0.0, (width as f32 / s) as f64, (0 + offset) as f64);
+        gl.add_vertex_with_uv(
+            0.0,
+            height as f64,
+            0.0,
+            0.0,
+            (height as f32 / s + offset as f32) as f64,
+        );
+        gl.add_vertex_with_uv(
+            width as f64,
+            height as f64,
+            0.0,
+            (width as f32 / s) as f64,
+            (height as f32 / s + offset as f32) as f64,
+        );
+        gl.add_vertex_with_uv(
+            width as f64,
+            0.0,
+            0.0,
+            (width as f32 / s) as f64,
+            (0 + offset) as f64,
+        );
         gl.add_vertex_with_uv(0.0, 0.0, 0.0, 0.0, (0 + offset) as f64);
         gl.draw();
     }
@@ -315,7 +410,10 @@ pub struct ScreenBase {
 
 impl ScreenBase {
     pub fn button(&mut self, id: i32) -> &mut GuiButton {
-        self.buttons.iter_mut().find(|b| b.id == id).expect("button id")
+        self.buttons
+            .iter_mut()
+            .find(|b| b.id == id)
+            .expect("button id")
     }
 }
 
@@ -387,24 +485,33 @@ pub trait Screen {
     fn is_ingame_menu(&self) -> bool {
         false
     }
+    fn is_container(&self) -> bool {
+        false
+    }
 }
 
 /// `GuiScreen.mouseClicked` (callable from overrides that call `super`).
-pub fn default_mouse_clicked<S: Screen + ?Sized>(s: &mut S, ui: &mut Ui, x: i32, y: i32, button: i32) {
-        if button == 0 {
-            let mut i = 0;
-            while i < s.base().buttons.len() {
-                if !s.base().buttons[i].press(ui, x, y) {
-                    i += 1;
-                    continue;
-                }
-                s.set_selected(Some(i));
-                ui.sounds.push(("random.click", 1.0, 1.0));
-                let id = s.base().buttons[i].id;
-                s.action_performed(ui, id);
+pub fn default_mouse_clicked<S: Screen + ?Sized>(
+    s: &mut S,
+    ui: &mut Ui,
+    x: i32,
+    y: i32,
+    button: i32,
+) {
+    if button == 0 {
+        let mut i = 0;
+        while i < s.base().buttons.len() {
+            if !s.base().buttons[i].press(ui, x, y) {
                 i += 1;
+                continue;
             }
+            s.set_selected(Some(i));
+            ui.sounds.push(("random.click", 1.0, 1.0));
+            let id = s.base().buttons[i].id;
+            s.action_performed(ui, id);
+            i += 1;
         }
+    }
 }
 
 /// `GuiScreen.setWorldAndResolution`
@@ -419,7 +526,9 @@ pub fn set_world_and_resolution(s: &mut dyn Screen, ui: &mut Ui, w: i32, h: i32)
 }
 
 /// Load the GUI's textures and text resources from the jar.
-pub fn load_resources(jar: &mut crate::assets::Jar) -> Result<(HashMap<String, Image>, String, lang::Lang, Vec<String>), String> {
+pub fn load_resources(
+    jar: &mut crate::assets::Jar,
+) -> Result<(HashMap<String, Image>, String, lang::Lang, Vec<String>), String> {
     let mut imgs = HashMap::new();
     for &t in TEXTURES {
         imgs.insert(t.to_string(), jar.image(texture_options(t).0)?);

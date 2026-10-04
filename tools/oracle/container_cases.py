@@ -32,6 +32,7 @@ for ri in range(n):
                 if not shaped and mirror: x, y = 2-x, 2-y
                 # Three batches exercise the shift recursion/replenishment bug.
                 put(1 + x + ox + (y+oy)*3, (s[0], 3, 2 if s[2] == -1 else s[2]))
+            emit('expect', *result)
             emit('click', 0, 0, 0)
             emit('cursor', -1, 0, 0)
             emit('click', 0, 1, 1)

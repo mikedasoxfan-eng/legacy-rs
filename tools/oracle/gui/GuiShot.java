@@ -8,6 +8,9 @@ import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
+import java.io.DataOutputStream;
+import java.io.BufferedOutputStream;
+import java.io.FileOutputStream;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.nio.ByteBuffer;
@@ -83,6 +86,7 @@ public class GuiShot {
         String mode = "screen";
         String loadingTitle = "", loadingText = "";
         int loadingProgress = -1;
+        TileEntityFurnace furnace;
 
         public void handleInput() {
             while (Mouse.next()) {
@@ -155,6 +159,19 @@ public class GuiShot {
                     else if (which.equals("rename")) s = new GuiRenameWorld(title, a[1]);
                     else if (which.equals("texturepacks")) s = new GuiTexturePacks(title);
                     else if (which.equals("achievements")) s = new GuiAchievements(mc.statFileWriter);
+                    else if (which.equals("inventory") || which.equals("crafting") || which.equals("chest") || which.equals("largechest") || which.equals("furnace") || which.equals("dispenser")) {
+                        EntityPlayerSP p = mc.thePlayer;
+                        p.inventory = new InventoryPlayer(p); p.inventorySlots = new ContainerPlayer(p.inventory);
+                        p.ticksExisted=0;p.field_703_S=p.field_704_R=p.field_705_Q=0;p.swingProgress=p.prevSwingProgress=0;
+                        p.deathTime=p.hurtTime=0;p.movementInput.sneak=false;
+                        RenderManager.instance.cacheActiveRenderInfo(mc.theWorld,mc.renderEngine,mc.fontRenderer,p,mc.gameSettings,1.0F);
+                        if(which.equals("inventory"))s=new GuiInventory(p);
+                        else if(which.equals("crafting"))s=new GuiCrafting(p.inventory,mc.theWorld,0,64,0);
+                        else if(which.equals("chest"))s=new GuiChest(p.inventory,new TileEntityChest());
+                        else if(which.equals("largechest"))s=new GuiChest(p.inventory,new InventoryLargeChest("Large chest",new TileEntityChest(),new TileEntityChest()));
+                        else if(which.equals("furnace")){furnace=new TileEntityFurnace();s=new GuiFurnace(p.inventory,furnace);}
+                        else s=new GuiDispenser(p.inventory,new TileEntityDispenser());
+                    }
                     else throw new IllegalArgumentException("unknown screen " + which);
                     mc.displayGuiScreen(s);
                 } else if (cmd.equals("world")) {
@@ -163,6 +180,12 @@ public class GuiShot {
                     mc.startWorld("guishot_world", "guishot", Long.parseLong(a[0]));
                     mc.currentScreen = this;
                     inner = null;
+                } else if (cmd.equals("pose")) {
+                    EntityPlayerSP p=mc.thePlayer;p.ticksExisted=(int)Float.parseFloat(a[0])-1;
+                    p.field_703_S=Float.parseFloat(a[1]);p.field_704_R=p.field_705_Q=Float.parseFloat(a[2]);
+                    p.swingProgress=p.prevSwingProgress=Float.parseFloat(a[3]);
+                    p.ridingEntity=a[4].equals("on")?new EntityPig(mc.theWorld):null;p.movementInput.sneak=a[5].equals("on");
+                    p.hurtTime=a.length>6?Integer.parseInt(a[6]):0;
                 } else if (cmd.equals("hud")) {
                     mode = "hud";
                     EntityPlayerSP p = mc.thePlayer;
@@ -179,8 +202,21 @@ public class GuiShot {
                         }
                     }
                     System.out.println("java: player brightness " + p.getEntityBrightness(0.0F));
+                } else if(cmd.equals("stack")) {
+                    int id=Integer.parseInt(a[1]);
+                    ((GuiContainer)inner).inventorySlots.putStackInSlot(Integer.parseInt(a[0]),id<0?null:new ItemStack(id,Integer.parseInt(a[2]),Integer.parseInt(a[3])));
+                } else if(cmd.equals("cursor")) {
+                    int id=Integer.parseInt(a[0]);mc.thePlayer.inventory.setItemStack(id<0?null:new ItemStack(id,Integer.parseInt(a[1]),Integer.parseInt(a[2])));
+                } else if(cmd.equals("furnace")) {
+                    furnace.furnaceCookTime=Integer.parseInt(a[0]);furnace.furnaceBurnTime=Integer.parseInt(a[1]);furnace.currentItemBurnTime=Integer.parseInt(a[2]);
                 } else if (cmd.equals("clear")) {
                     clear = Integer.parseInt(a[0]) / 255.0F;
+                } else if (cmd.equals("normalprobe")) {
+                    mode="normalprobe";
+                } else if (cmd.equals("white")) {
+                    GL11.glBindTexture(GL11.GL_TEXTURE_2D,mc.renderEngine.getTexture("/"+a[0]));
+                    ByteBuffer pixels=BufferUtils.createByteBuffer(256*256*4);while(pixels.hasRemaining())pixels.put((byte)255);pixels.flip();
+                    GL11.glTexImage2D(GL11.GL_TEXTURE_2D,0,GL11.GL_RGBA,256,256,0,GL11.GL_RGBA,GL11.GL_UNSIGNED_BYTE,pixels);
                 } else if (cmd.equals("counter")) {
                     Field f = GuiIngame.class.getDeclaredField("updateCounter");
                     f.setAccessible(true);
@@ -193,7 +229,10 @@ public class GuiShot {
                 } else if (cmd.equals("up")) {
                     down = false;
                 } else if (cmd.equals("click")) {
-                    call(inner, "mouseClicked", mx, my, 0);
+                    call(inner, "mouseClicked", mx, my, a.length==0?0:Integer.parseInt(a[0]));
+                } else if (cmd.equals("shift")) {
+                    Field keys=Keyboard.class.getDeclaredField("keyDownBuffer");keys.setAccessible(true);
+                    ((ByteBuffer)keys.get(null)).put(42,(byte)(rest.equals("on")?1:0));
                 } else if (cmd.equals("release")) {
                     call(inner, "mouseMovedOrUp", mx, my, 0);
                 } else if (cmd.equals("key")) {
@@ -237,11 +276,12 @@ public class GuiShot {
                 org.lwjgl.opengl.EXTFramebufferObject.glBindFramebufferEXT(org.lwjgl.opengl.EXTFramebufferObject.GL_FRAMEBUFFER_EXT, fbo);
                 int color = org.lwjgl.opengl.EXTFramebufferObject.glGenRenderbuffersEXT();
                 org.lwjgl.opengl.EXTFramebufferObject.glBindRenderbufferEXT(org.lwjgl.opengl.EXTFramebufferObject.GL_RENDERBUFFER_EXT, color);
-                org.lwjgl.opengl.EXTFramebufferObject.glRenderbufferStorageEXT(org.lwjgl.opengl.EXTFramebufferObject.GL_RENDERBUFFER_EXT, GL11.GL_RGBA8, w, h);
+                org.lwjgl.opengl.EXTFramebufferObject.glRenderbufferStorageEXT(org.lwjgl.opengl.EXTFramebufferObject.GL_RENDERBUFFER_EXT, System.getenv("GUI_FLOAT")==null?GL11.GL_RGBA8:34836, w, h);
                 org.lwjgl.opengl.EXTFramebufferObject.glFramebufferRenderbufferEXT(org.lwjgl.opengl.EXTFramebufferObject.GL_FRAMEBUFFER_EXT, org.lwjgl.opengl.EXTFramebufferObject.GL_COLOR_ATTACHMENT0_EXT, org.lwjgl.opengl.EXTFramebufferObject.GL_RENDERBUFFER_EXT, color);
                 int depth = org.lwjgl.opengl.EXTFramebufferObject.glGenRenderbuffersEXT();
                 org.lwjgl.opengl.EXTFramebufferObject.glBindRenderbufferEXT(org.lwjgl.opengl.EXTFramebufferObject.GL_RENDERBUFFER_EXT, depth);
                 org.lwjgl.opengl.EXTFramebufferObject.glRenderbufferStorageEXT(org.lwjgl.opengl.EXTFramebufferObject.GL_RENDERBUFFER_EXT, GL11.GL_DEPTH_COMPONENT, w, h);
+                System.out.println("java: depth bits "+org.lwjgl.opengl.EXTFramebufferObject.glGetRenderbufferParameterEXT(org.lwjgl.opengl.EXTFramebufferObject.GL_RENDERBUFFER_EXT,org.lwjgl.opengl.EXTFramebufferObject.GL_RENDERBUFFER_DEPTH_SIZE_EXT));
                 org.lwjgl.opengl.EXTFramebufferObject.glFramebufferRenderbufferEXT(org.lwjgl.opengl.EXTFramebufferObject.GL_FRAMEBUFFER_EXT, org.lwjgl.opengl.EXTFramebufferObject.GL_DEPTH_ATTACHMENT_EXT, org.lwjgl.opengl.EXTFramebufferObject.GL_RENDERBUFFER_EXT, depth);
                 int st = org.lwjgl.opengl.EXTFramebufferObject.glCheckFramebufferStatusEXT(org.lwjgl.opengl.EXTFramebufferObject.GL_FRAMEBUFFER_EXT);
                 System.out.println("java: capture framebuffer status 0x" + Integer.toHexString(st) + ", samples "
@@ -288,6 +328,31 @@ public class GuiShot {
                     l.setLoadingProgress(loadingProgress);
                 }
                 save(name, org.lwjgl.opengl.EXTFramebufferObject.GL_COLOR_ATTACHMENT0_EXT);
+            } else if(mode.equals("normalprobe")) {
+                GL11.glDisable(GL11.GL_TEXTURE_2D);GL11.glDisable(GL11.GL_DEPTH_TEST);
+                GL11.glEnable(org.lwjgl.opengl.GL12.GL_RESCALE_NORMAL);GL11.glDisable(GL11.GL_NORMALIZE);
+                GL11.glColor4f(1,1,1,1);RenderHelper.enableStandardItemLighting();
+                int[] values={-128,-127,-64,-1,0,1,64,127};
+                for(int axis=0;axis<3;axis++)for(int j=0;j<values.length;j++) {
+                    int n=values[j];GL11.glNormal3b((byte)(axis==0?n:0),(byte)(axis==1?n:0),(byte)(axis==2?n:0));
+                    GL11.glBegin(GL11.GL_QUADS);int x=10+j*25,y=10+axis*30;
+                    GL11.glVertex3f(x,y,0);GL11.glVertex3f(x,y+20,0);GL11.glVertex3f(x+20,y+20,0);GL11.glVertex3f(x+20,y,0);GL11.glEnd();
+                    java.nio.FloatBuffer vertices=BufferUtils.createFloatBuffer(12);vertices.put(new float[]{x,y+110,0,x,y+130,0,x+20,y+130,0,x+20,y+110,0}).flip();
+                    ByteBuffer normals=BufferUtils.createByteBuffer(12);for(int k=0;k<4;k++){normals.put((byte)(axis==0?n:0));normals.put((byte)(axis==1?n:0));normals.put((byte)(axis==2?n:0));}normals.flip();
+                    GL11.glVertexPointer(3,0,vertices);GL11.glNormalPointer(0,normals);GL11.glEnableClientState(GL11.GL_VERTEX_ARRAY);GL11.glEnableClientState(GL11.GL_NORMAL_ARRAY);GL11.glDrawArrays(GL11.GL_QUADS,0,4);GL11.glDisableClientState(GL11.GL_VERTEX_ARRAY);GL11.glDisableClientState(GL11.GL_NORMAL_ARRAY);
+                }
+                for(int mode=0;mode<3;mode++)for(int j=0;j<values.length;j++) {
+                    int n=values[j];float b=mode==2?1f/255f:0f;float v=mode==0?n/127f:mode==1?n/128f:(2f*n+1f)/255f;
+                    GL11.glNormal3f(v,b,b);GL11.glBegin(GL11.GL_QUADS);int x=220+j*25,y=10+mode*30;
+                    GL11.glVertex3f(x,y,0);GL11.glVertex3f(x,y+20,0);GL11.glVertex3f(x+20,y+20,0);GL11.glVertex3f(x+20,y,0);GL11.glEnd();
+                }
+                RenderHelper.disableStandardItemLighting();GL11.glEnable(GL11.GL_TEXTURE_2D);
+                GL11.glReadBuffer(org.lwjgl.opengl.EXTFramebufferObject.GL_COLOR_ATTACHMENT0_EXT);
+                for(int row=0;row<3;row++)for(int j=0;j<values.length;j++) {
+                    java.nio.FloatBuffer f=BufferUtils.createFloatBuffer(4);GL11.glReadPixels(2*(20+j*25),mc.displayHeight-2*(130+row*30),1,1,GL11.GL_RGBA,GL11.GL_FLOAT,f);
+                    System.out.println("normal "+row+" "+values[j]+" "+f.get(0));
+                }
+                save(name,org.lwjgl.opengl.EXTFramebufferObject.GL_COLOR_ATTACHMENT0_EXT);
             } else {
                 setMouseDown(down);
                 inner.drawScreen(mx, my, 0.0F);
@@ -297,6 +362,11 @@ public class GuiShot {
 
         void save(String name, int buffer) throws Exception {
             int w = mc.displayWidth, h = mc.displayHeight;
+            if(System.getenv("GUI_FLOAT")!=null) {
+                java.nio.FloatBuffer f=BufferUtils.createFloatBuffer(w*h*4);GL11.glReadBuffer(buffer);GL11.glReadPixels(0,0,w,h,GL11.GL_RGBA,GL11.GL_FLOAT,f);
+                DataOutputStream floats=new DataOutputStream(new BufferedOutputStream(new FileOutputStream(new File(out,name+".float"))));
+                while(f.hasRemaining())floats.writeFloat(f.get());floats.close();
+            }
             ByteBuffer px = BufferUtils.createByteBuffer(w * h * 4);
             GL11.glReadBuffer(buffer);
             GL11.glReadPixels(0, 0, w, h, GL11.GL_RGBA, GL11.GL_UNSIGNED_BYTE, px);
