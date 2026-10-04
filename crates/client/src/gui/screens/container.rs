@@ -91,7 +91,7 @@ impl GuiContainer {
         }
     }
 }
-fn item_name(s: ItemStack) -> &'static str {
+pub(crate) fn item_name(s: ItemStack) -> &'static str {
     use std::{collections::HashMap, sync::OnceLock};
     static NAMES: OnceLock<HashMap<(i32, i32), &'static str>> = OnceLock::new();
     let names = NAMES.get_or_init(|| {

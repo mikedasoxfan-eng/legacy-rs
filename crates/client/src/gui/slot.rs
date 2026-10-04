@@ -14,6 +14,12 @@ pub trait SlotList {
     }
     fn draw_background(&mut self, ui: &mut Ui);
     fn draw_slot(&mut self, ui: &mut Ui, index: i32, x: i32, y: i32, h: i32);
+    /// `func_27260_a`: draw the header row (when the slot has one).
+    fn draw_header(&mut self, _ui: &mut Ui, _x: i32, _y: i32) {}
+    /// `func_27255_a`: a click in the header, relative to the list's left edge and top.
+    fn header_clicked(&mut self, _ui: &mut Ui, _x: i32, _y: i32) {}
+    /// `func_27257_b`: drawn last, over everything (tooltips).
+    fn draw_overlay(&mut self, _ui: &mut Ui, _slot: &GuiSlot, _mx: i32, _my: i32) {}
 }
 
 pub struct GuiSlot {
@@ -56,6 +62,30 @@ impl GuiSlot {
             show_selection: true,
             has_header: false,
             header_height: 0,
+        }
+    }
+
+    /// `func_27258_a`: draw the selection box around selected entries.
+    pub fn set_show_selection(&mut self, on: bool) {
+        self.show_selection = on;
+    }
+
+    /// `func_27259_a`: a header row of `height` above the entries.
+    pub fn set_header(&mut self, on: bool, height: i32) {
+        self.has_header = on;
+        self.header_height = if on { height } else { 0 };
+    }
+
+    /// `func_27256_c`: the entry under the mouse, or -1.
+    pub fn slot_at(&self, l: &dyn SlotList, mx: i32, my: i32) -> i32 {
+        let x0 = self.width / 2 - 110;
+        let x1 = self.width / 2 + 110;
+        let rel = my - self.top - self.header_height + self.amount_scrolled as i32 - 4;
+        let idx = rel / self.slot_height;
+        if mx >= x0 && mx <= x1 && idx >= 0 && rel >= 0 && idx < l.size() {
+            idx
+        } else {
+            -1
         }
     }
 
@@ -115,6 +145,7 @@ impl GuiSlot {
                         self.selected_element = idx;
                         self.last_clicked = ui.millis;
                     } else if mx >= x0 && mx <= x1 && rel < 0 {
+                        l.header_clicked(ui, mx - x0, my - self.top + self.amount_scrolled as i32 - 4);
                         drag = false;
                     }
                     if mx >= bar0 && mx <= bar1 {
@@ -160,6 +191,9 @@ impl GuiSlot {
         }
         let x = self.width / 2 - 92 - 16;
         let y0 = self.top + 4 - scrolled;
+        if self.has_header {
+            l.draw_header(ui, x, y0);
+        }
         for i in 0..size {
             let y = y0 + i * self.slot_height + self.header_height;
             let h = self.slot_height - 4;
@@ -244,6 +278,8 @@ impl GuiSlot {
             gl.add_vertex_with_uv(bar0 as f64, ty as f64, 0.0, 0.0, 0.0);
             gl.draw();
         }
+        l.draw_overlay(ui, self, mx, my);
+        let gl = &mut ui.gl;
         gl.texture_2d = true;
         gl.shade = Shade::Flat;
         gl.alpha_test = true;

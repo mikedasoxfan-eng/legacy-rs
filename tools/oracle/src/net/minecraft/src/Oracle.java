@@ -172,6 +172,8 @@ public class Oracle {
                 Double.parseDouble(a[4]), Double.parseDouble(a[5]), Long.parseLong(a[6]), Long.parseLong(a[7]), a[8]);
         } else if (mode.equals("respawn")) {
             TeleportOracle.respawn(Long.parseLong(a[1]), Long.parseLong(a[2]), a[3], a[4]);
+        } else if (mode.equals("statlist")) {
+            StatsOracle.run(a[1]);
         } else if (mode.equals("redstone")) {
             RedstoneOracle.run(a[1], a[2]);
         } else if (mode.equals("rendershowcase")) {

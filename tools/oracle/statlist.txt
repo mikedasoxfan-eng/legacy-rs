@@ -1,0 +1,648 @@
+general	1000	simple	Times played
+general	1001	simple	Worlds played
+general	1002	simple	Saves loaded
+general	1003	simple	Multiplayer joins
+general	1004	simple	Games quit
+general	1100	time	Minutes Played
+general	2000	distance	Distance Walked
+general	2001	distance	Distance Swum
+general	2002	distance	Distance Fallen
+general	2003	distance	Distance Climbed
+general	2004	distance	Distance Flown
+general	2005	distance	Distance Dove
+general	2006	distance	Distance by Minecart
+general	2007	distance	Distance by Boat
+general	2008	distance	Distance by Pig
+general	2010	simple	Jumps
+general	2011	simple	Items Dropped
+general	2020	simple	Damage Dealt
+general	2021	simple	Damage Taken
+general	2022	simple	Number of Deaths
+general	2023	simple	Mob Kills
+general	2024	simple	Player Kills
+general	2025	simple	Fish Caught
+block	16777217	1	Stone Mined
+block	16777219	3	Dirt Mined
+block	16777220	4	Cobblestone Mined
+block	16777221	5	Wooden Planks Mined
+block	16777222	6	Sapling Mined
+block	16777228	12	Sand Mined
+block	16777229	13	Gravel Mined
+block	16777230	14	Gold Ore Mined
+block	16777231	15	Iron Ore Mined
+block	16777232	16	Coal Ore Mined
+block	16777233	17	Wood Mined
+block	16777235	19	Sponge Mined
+block	16777236	20	Glass Mined
+block	16777237	21	Lapis Lazuli Ore Mined
+block	16777238	22	Lapis Lazuli Block Mined
+block	16777239	23	Dispenser Mined
+block	16777240	24	Sandstone Mined
+block	16777241	25	Note Block Mined
+block	16777243	27	Powered Rail Mined
+block	16777244	28	Detector Rail Mined
+block	16777245	29	Sticky Piston Mined
+block	16777246	30	Cobweb Mined
+block	16777247	31	tile.tallgrass.name Mined
+block	16777248	32	tile.deadbush.name Mined
+block	16777249	33	Piston Mined
+block	16777250	34	null.name Mined
+block	16777251	35	Wool Mined
+block	16777252	36	null.name Mined
+block	16777253	37	Flower Mined
+block	16777254	38	Rose Mined
+block	16777255	39	Mushroom Mined
+block	16777257	41	Block of Gold Mined
+block	16777258	42	Block of Iron Mined
+block	16777260	44	tile.stoneSlab.name Mined
+block	16777261	45	Bricks Mined
+block	16777262	46	TNT Mined
+block	16777263	47	Bookshelf Mined
+block	16777264	48	Moss Stone Mined
+block	16777265	49	Obsidian Mined
+block	16777266	50	Torch Mined
+block	16777269	53	Wooden Stairs Mined
+block	16777270	54	Chest Mined
+block	16777272	56	Diamond Ore Mined
+block	16777273	57	Block of Diamond Mined
+block	16777274	58	Crafting Table Mined
+block	16777277	61	Furnace Mined
+block	16777281	65	Ladder Mined
+block	16777282	66	Rail Mined
+block	16777283	67	Stone Stairs Mined
+block	16777285	69	Lever Mined
+block	16777286	70	Pressure Plate Mined
+block	16777288	72	Pressure Plate Mined
+block	16777289	73	Redstone Ore Mined
+block	16777291	75	Redstone Torch Mined
+block	16777293	77	Button Mined
+block	16777294	78	Snow Mined
+block	16777295	79	Ice Mined
+block	16777296	80	Snow Mined
+block	16777297	81	Cactus Mined
+block	16777298	82	Clay Mined
+block	16777300	84	Jukebox Mined
+block	16777301	85	Fence Mined
+block	16777302	86	Pumpkin Mined
+block	16777303	87	Netherrack Mined
+block	16777304	88	Soul Sand Mined
+block	16777305	89	Glowstone Mined
+block	16777306	90	Portal Mined
+block	16777311	95	Locked chest Mined
+item	16908544	256	Iron Shovel Used
+item	16908545	257	Iron Pickaxe Used
+item	16908546	258	Iron Axe Used
+item	16908547	259	Flint and Steel Used
+item	16908548	260	Apple Used
+item	16908549	261	Bow Used
+item	16908550	262	Arrow Used
+item	16908551	263	Coal Used
+item	16908552	264	Diamond Used
+item	16908553	265	Iron Ingot Used
+item	16908554	266	Gold Ingot Used
+item	16908555	267	Iron Sword Used
+item	16908556	268	Wooden Sword Used
+item	16908557	269	Wooden Shovel Used
+item	16908558	270	Wooden Pickaxe Used
+item	16908559	271	Wooden Axe Used
+item	16908560	272	Stone Sword Used
+item	16908561	273	Stone Shovel Used
+item	16908562	274	Stone Pickaxe Used
+item	16908563	275	Stone Axe Used
+item	16908564	276	Diamond Sword Used
+item	16908565	277	Diamond Shovel Used
+item	16908566	278	Diamond Pickaxe Used
+item	16908567	279	Diamond Axe Used
+item	16908568	280	Stick Used
+item	16908569	281	Bowl Used
+item	16908570	282	Mushroom Stew Used
+item	16908571	283	Golden Sword Used
+item	16908572	284	Golden Shovel Used
+item	16908573	285	Golden Pickaxe Used
+item	16908574	286	Golden Axe Used
+item	16908575	287	String Used
+item	16908576	288	Feather Used
+item	16908577	289	Gunpowder Used
+item	16908578	290	Wooden Hoe Used
+item	16908579	291	Stone Hoe Used
+item	16908580	292	Iron Hoe Used
+item	16908581	293	Diamond Hoe Used
+item	16908582	294	Golden Hoe Used
+item	16908583	295	Seeds Used
+item	16908584	296	Wheat Used
+item	16908585	297	Bread Used
+item	16908586	298	Leather Cap Used
+item	16908587	299	Leather Tunic Used
+item	16908588	300	Leather Pants Used
+item	16908589	301	Leather Boots Used
+item	16908590	302	Chain Helmet Used
+item	16908591	303	Chain Chestplate Used
+item	16908592	304	Chain Leggings Used
+item	16908593	305	Chain Boots Used
+item	16908594	306	Iron Helmet Used
+item	16908595	307	Iron Chestplate Used
+item	16908596	308	Iron Leggings Used
+item	16908597	309	Iron Boots Used
+item	16908598	310	Diamond Helmet Used
+item	16908599	311	Diamond Chestplate Used
+item	16908600	312	Diamond Leggings Used
+item	16908601	313	Diamond Boots Used
+item	16908602	314	Golden Helmet Used
+item	16908603	315	Golden Chestplate Used
+item	16908604	316	Golden Leggings Used
+item	16908605	317	Golden boots Used
+item	16908606	318	Flint Used
+item	16908607	319	Raw Porkchop Used
+item	16908608	320	Cooked Porkchop Used
+item	16908609	321	Painting Used
+item	16908610	322	Golden Apple Used
+item	16908611	323	Sign Used
+item	16908612	324	Wooden Door Used
+item	16908613	325	Bucket Used
+item	16908614	326	Water Bucket Used
+item	16908615	327	Lava bucket Used
+item	16908616	328	Minecart Used
+item	16908617	329	Saddle Used
+item	16908618	330	Iron Door Used
+item	16908619	331	Redstone Used
+item	16908620	332	Snowball Used
+item	16908621	333	Boat Used
+item	16908622	334	Leather Used
+item	16908623	335	Milk Used
+item	16908624	336	Brick Used
+item	16908625	337	Clay Used
+item	16908626	338	Sugar Canes Used
+item	16908627	339	Paper Used
+item	16908628	340	Book Used
+item	16908629	341	Slimeball Used
+item	16908630	342	Minecart with Chest Used
+item	16908631	343	Minecart with Furnace Used
+item	16908632	344	Egg Used
+item	16908633	345	Compass Used
+item	16908634	346	Fishing Rod Used
+item	16908635	347	Clock Used
+item	16908636	348	Glowstone Dust Used
+item	16908637	349	Raw Fish Used
+item	16908638	350	Cooked Fish Used
+item	16908639	351	item.dyePowder.name Used
+item	16908640	352	Bone Used
+item	16908641	353	Sugar Used
+item	16908642	354	Cake Used
+item	16908643	355	Bed Used
+item	16908644	356	Redstone Repeater Used
+item	16908645	357	Cookie Used
+item	16908646	358	Map Used
+item	16908647	359	Shears Used
+item	16910544	2256	Music Disc Used
+item	16910545	2257	Music Disc Used
+mine	1	16777217
+mine	2	16777219
+mine	3	16777219
+mine	4	16777220
+mine	5	16777221
+mine	6	16777222
+mine	12	16777228
+mine	13	16777229
+mine	14	16777230
+mine	15	16777231
+mine	16	16777232
+mine	17	16777233
+mine	19	16777235
+mine	20	16777236
+mine	21	16777237
+mine	22	16777238
+mine	23	16777239
+mine	24	16777240
+mine	25	16777241
+mine	27	16777243
+mine	28	16777244
+mine	29	16777245
+mine	30	16777246
+mine	31	16777247
+mine	32	16777248
+mine	33	16777249
+mine	34	16777250
+mine	35	16777251
+mine	36	16777252
+mine	37	16777253
+mine	38	16777254
+mine	39	16777255
+mine	40	16777255
+mine	41	16777257
+mine	42	16777258
+mine	43	16777260
+mine	44	16777260
+mine	45	16777261
+mine	46	16777262
+mine	47	16777263
+mine	48	16777264
+mine	49	16777265
+mine	50	16777266
+mine	53	16777269
+mine	54	16777270
+mine	56	16777272
+mine	57	16777273
+mine	58	16777274
+mine	60	16777219
+mine	61	16777277
+mine	62	16777277
+mine	65	16777281
+mine	66	16777282
+mine	67	16777283
+mine	69	16777285
+mine	70	16777286
+mine	72	16777288
+mine	73	16777289
+mine	74	16777289
+mine	75	16777291
+mine	76	16777291
+mine	77	16777293
+mine	78	16777294
+mine	79	16777295
+mine	80	16777296
+mine	81	16777297
+mine	82	16777298
+mine	84	16777300
+mine	85	16777301
+mine	86	16777302
+mine	87	16777303
+mine	88	16777304
+mine	89	16777305
+mine	90	16777306
+mine	91	16777302
+mine	95	16777311
+craft	1	16842753
+craft	5	16842757
+craft	20	16842772
+craft	22	16842774
+craft	23	16842775
+craft	24	16842776
+craft	25	16842777
+craft	27	16842779
+craft	28	16842780
+craft	29	16842781
+craft	33	16842785
+craft	35	16842787
+craft	41	16842793
+craft	42	16842794
+craft	43	16842796
+craft	44	16842796
+craft	45	16842797
+craft	46	16842798
+craft	47	16842799
+craft	50	16842802
+craft	53	16842805
+craft	54	16842806
+craft	57	16842809
+craft	58	16842810
+craft	61	16842813
+craft	62	16842813
+craft	65	16842817
+craft	66	16842818
+craft	67	16842819
+craft	69	16842821
+craft	70	16842822
+craft	72	16842824
+craft	75	16842828
+craft	76	16842828
+craft	77	16842829
+craft	80	16842832
+craft	82	16842834
+craft	84	16842836
+craft	85	16842837
+craft	86	16842843
+craft	89	16842841
+craft	91	16842843
+craft	96	16842848
+craft	256	16843008
+craft	257	16843009
+craft	258	16843010
+craft	259	16843011
+craft	261	16843013
+craft	262	16843014
+craft	263	16843015
+craft	264	16843016
+craft	265	16843017
+craft	266	16843018
+craft	267	16843019
+craft	268	16843020
+craft	269	16843021
+craft	270	16843022
+craft	271	16843023
+craft	272	16843024
+craft	273	16843025
+craft	274	16843026
+craft	275	16843027
+craft	276	16843028
+craft	277	16843029
+craft	278	16843030
+craft	279	16843031
+craft	280	16843032
+craft	281	16843033
+craft	282	16843034
+craft	283	16843035
+craft	284	16843036
+craft	285	16843037
+craft	286	16843038
+craft	290	16843042
+craft	291	16843043
+craft	292	16843044
+craft	293	16843045
+craft	294	16843046
+craft	297	16843049
+craft	298	16843050
+craft	299	16843051
+craft	300	16843052
+craft	301	16843053
+craft	302	16843054
+craft	303	16843055
+craft	304	16843056
+craft	305	16843057
+craft	306	16843058
+craft	307	16843059
+craft	308	16843060
+craft	309	16843061
+craft	310	16843062
+craft	311	16843063
+craft	312	16843064
+craft	313	16843065
+craft	314	16843066
+craft	315	16843067
+craft	316	16843068
+craft	317	16843069
+craft	320	16843072
+craft	321	16843073
+craft	322	16843074
+craft	323	16843075
+craft	324	16843076
+craft	325	16843077
+craft	328	16843080
+craft	330	16843082
+craft	333	16843085
+craft	336	16843088
+craft	339	16843091
+craft	340	16843092
+craft	342	16843094
+craft	343	16843095
+craft	345	16843097
+craft	346	16843098
+craft	347	16843099
+craft	350	16843102
+craft	351	16843103
+craft	353	16843105
+craft	354	16843106
+craft	355	16843107
+craft	356	16843108
+craft	357	16843109
+craft	358	16843110
+craft	359	16843111
+use	1	16908289
+use	2	16908291
+use	3	16908291
+use	4	16908292
+use	5	16908293
+use	6	16908294
+use	7	16908295
+use	8	16908296
+use	9	16908296
+use	10	16908298
+use	11	16908299
+use	12	16908300
+use	13	16908301
+use	14	16908302
+use	15	16908303
+use	16	16908304
+use	17	16908305
+use	18	16908306
+use	19	16908307
+use	20	16908308
+use	21	16908309
+use	22	16908310
+use	23	16908311
+use	24	16908312
+use	25	16908313
+use	26	16908314
+use	27	16908315
+use	28	16908316
+use	29	16908317
+use	30	16908318
+use	31	16908319
+use	32	16908320
+use	33	16908321
+use	34	16908322
+use	35	16908323
+use	36	16908324
+use	37	16908325
+use	38	16908326
+use	39	16908327
+use	40	16908327
+use	41	16908329
+use	42	16908330
+use	43	16908332
+use	44	16908332
+use	45	16908333
+use	46	16908334
+use	47	16908335
+use	48	16908336
+use	49	16908337
+use	50	16908338
+use	51	16908339
+use	52	16908340
+use	53	16908341
+use	54	16908342
+use	55	16908343
+use	56	16908344
+use	57	16908345
+use	58	16908346
+use	59	16908347
+use	60	16908291
+use	61	16908349
+use	62	16908349
+use	63	16908351
+use	64	16908352
+use	65	16908353
+use	66	16908354
+use	67	16908355
+use	68	16908356
+use	69	16908357
+use	70	16908358
+use	71	16908359
+use	72	16908360
+use	73	16908361
+use	74	16908361
+use	75	16908363
+use	76	16908363
+use	77	16908365
+use	78	16908366
+use	79	16908367
+use	80	16908368
+use	81	16908369
+use	82	16908370
+use	83	16908371
+use	84	16908372
+use	85	16908373
+use	86	16908374
+use	87	16908375
+use	88	16908376
+use	89	16908377
+use	90	16908378
+use	91	16908374
+use	92	16908380
+use	93	16908381
+use	94	16908381
+use	95	16908383
+use	96	16908384
+use	256	16908544
+use	257	16908545
+use	258	16908546
+use	259	16908547
+use	260	16908548
+use	261	16908549
+use	262	16908550
+use	263	16908551
+use	264	16908552
+use	265	16908553
+use	266	16908554
+use	267	16908555
+use	268	16908556
+use	269	16908557
+use	270	16908558
+use	271	16908559
+use	272	16908560
+use	273	16908561
+use	274	16908562
+use	275	16908563
+use	276	16908564
+use	277	16908565
+use	278	16908566
+use	279	16908567
+use	280	16908568
+use	281	16908569
+use	282	16908570
+use	283	16908571
+use	284	16908572
+use	285	16908573
+use	286	16908574
+use	287	16908575
+use	288	16908576
+use	289	16908577
+use	290	16908578
+use	291	16908579
+use	292	16908580
+use	293	16908581
+use	294	16908582
+use	295	16908583
+use	296	16908584
+use	297	16908585
+use	298	16908586
+use	299	16908587
+use	300	16908588
+use	301	16908589
+use	302	16908590
+use	303	16908591
+use	304	16908592
+use	305	16908593
+use	306	16908594
+use	307	16908595
+use	308	16908596
+use	309	16908597
+use	310	16908598
+use	311	16908599
+use	312	16908600
+use	313	16908601
+use	314	16908602
+use	315	16908603
+use	316	16908604
+use	317	16908605
+use	318	16908606
+use	319	16908607
+use	320	16908608
+use	321	16908609
+use	322	16908610
+use	323	16908611
+use	324	16908612
+use	325	16908613
+use	326	16908614
+use	327	16908615
+use	328	16908616
+use	329	16908617
+use	330	16908618
+use	331	16908619
+use	332	16908620
+use	333	16908621
+use	334	16908622
+use	335	16908623
+use	336	16908624
+use	337	16908625
+use	338	16908626
+use	339	16908627
+use	340	16908628
+use	341	16908629
+use	342	16908630
+use	343	16908631
+use	344	16908632
+use	345	16908633
+use	346	16908634
+use	347	16908635
+use	348	16908636
+use	349	16908637
+use	350	16908638
+use	351	16908639
+use	352	16908640
+use	353	16908641
+use	354	16908642
+use	355	16908643
+use	356	16908644
+use	357	16908645
+use	358	16908646
+use	359	16908647
+use	2256	16910544
+use	2257	16910545
+break	256	16974080
+break	257	16974081
+break	258	16974082
+break	259	16974083
+break	267	16974091
+break	268	16974092
+break	269	16974093
+break	270	16974094
+break	271	16974095
+break	272	16974096
+break	273	16974097
+break	274	16974098
+break	275	16974099
+break	276	16974100
+break	277	16974101
+break	278	16974102
+break	279	16974103
+break	283	16974107
+break	284	16974108
+break	285	16974109
+break	286	16974110
+break	290	16974114
+break	291	16974115
+break	292	16974116
+break	293	16974117
+break	294	16974118
+break	298	16974122
+break	299	16974123
+break	300	16974124
+break	301	16974125
+break	302	16974126
+break	303	16974127
+break	304	16974128
+break	305	16974129
+break	306	16974130
+break	307	16974131
+break	308	16974132
+break	309	16974133
+break	310	16974134
+break	311	16974135
+break	312	16974136
+break	313	16974137
+break	314	16974138
+break	315	16974139
+break	316	16974140
+break	317	16974141
+break	346	16974170
+break	359	16974183
