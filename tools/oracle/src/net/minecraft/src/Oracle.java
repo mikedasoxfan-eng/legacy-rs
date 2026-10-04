@@ -176,6 +176,8 @@ public class Oracle {
             RendererOracle.mobs(a[1]);
         } else if (mode.equals("rendereffects")) {
             RendererOracle.effects(a[1]);
+        } else if (mode.equals("firstperson")) {
+            FirstPersonOracle.run(a[1]);
         } else if (mode.equals("renderers")) {
             RendererOracle.run(a[1]);
         } else if (mode.equals("itemtable")) {

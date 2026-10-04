@@ -5,7 +5,9 @@ import net.minecraft.src.RendererOracle;
 /** No GL context: record the original Tessellator immediately before draw resets it. */
 public final class GL11 {
     public static final int GL_DST_ALPHA=772, GL_NORMALIZE=2977, GL_EQUAL=514, GL_LEQUAL=515, GL_COMPILE=4864, GL_QUADS=7;
+    public static final int GL_LIGHT0=16384, GL_LIGHT1=16385, GL_FRONT_AND_BACK=1032, GL_AMBIENT_AND_DIFFUSE=5634, GL_POSITION=4611, GL_DIFFUSE=4609, GL_SPECULAR=4610, GL_LIGHT_MODEL_AMBIENT=2899, GL_POLYGON_OFFSET_FILL=32823, GL_DST_COLOR=774, GL_SRC_COLOR=768;
     public static final int GL_GREATER = 516;
+    public static final int GL_TEXTURE_MIN_FILTER=10241,GL_TEXTURE_MAG_FILTER=10240,GL_TEXTURE_WRAP_S=10242,GL_TEXTURE_WRAP_T=10243,GL_NEAREST=9728,GL_NEAREST_MIPMAP_LINEAR=9986,GL_CLAMP=10496,GL_REPEAT=10497,GL_RGBA=6408;
     public static final int GL_DEPTH_BUFFER_BIT = 256;
     public static final int GL_COLOR_BUFFER_BIT = 16384;
     public static final int GL_POINTS = 0;
@@ -41,26 +43,45 @@ public final class GL11 {
     public static final int GL_NORMAL_ARRAY = 32885;
     public static final int GL_COLOR_ARRAY = 32886;
     public static final int GL_TEXTURE_COORD_ARRAY = 32888;
+    public static int matrixMode=5888;
     public static float[] color = {1,1,1,1};
     public static int texture;
-    public static float fogStart, fogEnd;
+    public static float fogStart, fogEnd, fogDensity;
+    public static int fogMode;
+    public static float[] clearColor={0,0,0,0};
+    public static byte[] uploaded;
+    public static void glCallLists(IntBuffer list){for(int i=list.position();i<list.limit();i++)RendererOracle.callList(list.get(i));}
+    public static void glColor3f(float r,float g,float b){RendererOracle.color3(r,g,b);}
+    public static void glTexParameteri(int target,int pname,int value){}
+    public static void glTexSubImage2D(int target,int level,int x,int y,int width,int height,int format,int type,ByteBuffer bytes){uploaded=new byte[bytes.remaining()];bytes.duplicate().get(uploaded);}
     public static int glGenLists(int n){return RendererOracle.genLists(n);}
     public static void glNewList(int id,int mode){RendererOracle.newList(id);}
     public static void glEndList(){RendererOracle.endList();}
     public static void glCallList(int id){RendererOracle.callList(id);}
     public static void glPushMatrix() { RendererOracle.push(); }
     public static void glPopMatrix() { RendererOracle.pop(); }
-    public static void glTranslatef(float x,float y,float z) { RendererOracle.op(0,x,y,z,0); }
-    public static void glScalef(float x,float y,float z) { RendererOracle.op(1,x,y,z,0); }
-    public static void glRotatef(float a,float x,float y,float z) { RendererOracle.op(2,a,x,y,z); }
+    public static void glTranslatef(float x,float y,float z) { FirstPersonOp(0,x,y,z,0); }
+    public static void glScalef(float x,float y,float z) { FirstPersonOp(1,x,y,z,0); }
+    public static void glRotatef(float a,float x,float y,float z) { FirstPersonOp(2,a,x,y,z); }
+    private static void FirstPersonOp(int c,float a,float b,float d,float e) { if(matrixMode==5889)net.minecraft.src.FirstPersonOracle.projectionOp(c,a,b,d,e);else RendererOracle.op(c,a,b,d,e); }
+    public static void glMatrixMode(int mode){matrixMode=mode;}
+    public static void glLoadIdentity(){if(matrixMode==5889)net.minecraft.src.FirstPersonOracle.projectionReset();else RendererOracle.identity();}
+    public static void glMultMatrix(FloatBuffer matrix){net.minecraft.src.FirstPersonOracle.perspective(matrix);}
+    public static void glScaled(double x,double y,double z){FirstPersonOp(1,(float)x,(float)y,(float)z,0);}
+    public static void glLight(int light,int pname,FloatBuffer values){}
+    public static void glLightModel(int pname,FloatBuffer values){}
+    public static void glShadeModel(int mode){}
+    public static void glLineWidth(float width){}
+    public static void glPolygonOffset(float factor,float units){}
     public static void glDepthMask(boolean b) { if(b)RendererOracle.flags|=32;else RendererOracle.flags&=~32; }
     public static void glDepthFunc(int f) { RendererOracle.depth=f; }
     public static void glFog(int name, FloatBuffer values) {}
     public static void glFogf(int name, float value) {
         if(name==GL_FOG_START) fogStart=value;
         if(name==GL_FOG_END) fogEnd=value;
+        if(name==GL_FOG_DENSITY) fogDensity=value;
     }
-    public static void glFogi(int name,int value) {}
+    public static void glFogi(int name,int value) {if(name==GL_FOG_MODE)fogMode=value;}
     public static void glColorMaterial(int face,int mode) {}
     public static void glDisable(int x) { RendererOracle.enable(x,false); }
     public static void glEnable(int x) { RendererOracle.enable(x,true); }
@@ -70,7 +91,7 @@ public final class GL11 {
     public static void glNormal3f(float x,float y,float z) { RendererOracle.normal=new float[]{x,y,z}; }
     public static void glBindTexture(int x,int y) { texture=y; }
     public static void glColor4f(float r,float g,float b,float a) { color=new float[]{r,g,b,a}; }
-    public static void glClearColor(float r,float g,float b,float a) {}
+    public static void glClearColor(float r,float g,float b,float a) {clearColor=new float[]{r,g,b,a};}
     public static void glTexCoordPointer(int a,int b,FloatBuffer c) {}
     public static void glTexCoordPointer(int a,int b,int c,long d) { throw new AssertionError("VBO"); }
     public static void glColorPointer(int a,boolean b,int c,ByteBuffer d) {}
@@ -81,5 +102,5 @@ public final class GL11 {
     public static void glVertexPointer(int a,int b,int c,long d) { throw new AssertionError("VBO"); }
     public static void glEnableClientState(int x) {}
     public static void glDisableClientState(int x) {}
-    public static void glDrawArrays(int mode,int first,int count) { if(RendererOracle.active) RendererOracle.record(mode,count); else Oracle.recordWeatherDraw(mode,count,color,texture); }
+    public static void glDrawArrays(int mode,int first,int count) { if(RendererOracle.active||RendererOracle.isCompiling()) RendererOracle.record(mode,count); else Oracle.recordWeatherDraw(mode,count,color,texture); }
 }
