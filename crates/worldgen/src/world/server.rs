@@ -7,7 +7,10 @@ use std::collections::HashSet;
 
 /// `ChunkCoordIntPair.chunkXZ2Int`
 pub fn chunk_xz_to_int(x: i32, z: i32) -> i32 {
-    (if x < 0 { i32::MIN } else { 0 }) | (x & 0x7fff) << 16 | (if z < 0 { 0x8000 } else { 0 }) | z & 0x7fff
+    (if x < 0 { i32::MIN } else { 0 })
+        | (x & 0x7fff) << 16
+        | (if z < 0 { 0x8000 } else { 0 })
+        | z & 0x7fff
 }
 
 /// `java.util.HashSet<Integer>` with Java 8's iteration order (bucket index, then insertion
@@ -139,6 +142,7 @@ impl World {
             s.dropped.remove(key);
             if self.chunk_exists(pos.0, pos.1) {
                 self.save_chunk(pos.0, pos.1);
+                self.unload_chunk_entities(pos.0, pos.1);
                 self.chunks.remove(&pos);
                 if let Some(i) = self.chunk_list.iter().position(|&p| p == pos) {
                     self.chunk_list.remove(i);
@@ -164,7 +168,11 @@ impl PlayerManager {
     /// `new PlayerManager(server, dim, viewRadius)`; the radius must be 3..=15.
     pub fn new(radius: i32) -> Self {
         assert!((3..=15).contains(&radius), "view radius must be 3..15");
-        PlayerManager { radius, instances: HashSet::new(), managed: (0.0, 0.0) }
+        PlayerManager {
+            radius,
+            instances: HashSet::new(),
+            managed: (0.0, 0.0),
+        }
     }
 
     /// `getPlayerInstance(x, z, true).addPlayer(player)`: creating the instance loads the chunk.

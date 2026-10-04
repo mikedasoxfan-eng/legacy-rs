@@ -59,9 +59,20 @@ pub fn leaves(w: &mut World, x: i32, y: i32, z: i32) {
     let size = 32i32;
     let sq = size * size;
     let half = size / 2;
-    let mut a = w.leaf_scratch.take().unwrap_or_else(|| vec![0; (size * size * size) as usize]);
-    let at = |dx: i32, dy: i32, dz: i32| ((dx + half) * sq + (dy + half) * size + dz + half) as usize;
-    if w.check_chunks_exist(x - r - 1, y - r - 1, z - r - 1, x + r + 1, y + r + 1, z + r + 1) {
+    let mut a = w
+        .leaf_scratch
+        .take()
+        .unwrap_or_else(|| vec![0; (size * size * size) as usize]);
+    let at =
+        |dx: i32, dy: i32, dz: i32| ((dx + half) * sq + (dy + half) * size + dz + half) as usize;
+    if w.check_chunks_exist(
+        x - r - 1,
+        y - r - 1,
+        z - r - 1,
+        x + r + 1,
+        y + r + 1,
+        z + r + 1,
+    ) {
         for dx in -r..=r {
             for dy in -r..=r {
                 for dz in -r..=r {
@@ -81,7 +92,14 @@ pub fn leaves(w: &mut World, x: i32, y: i32, z: i32) {
                 for dy in -r..=r {
                     for dz in -r..=r {
                         if a[at(dx, dy, dz)] == dist - 1 {
-                            for (ox, oy, oz) in [(-1, 0, 0), (1, 0, 0), (0, -1, 0), (0, 1, 0), (0, 0, -1), (0, 0, 1)] {
+                            for (ox, oy, oz) in [
+                                (-1, 0, 0),
+                                (1, 0, 0),
+                                (0, -1, 0),
+                                (0, 1, 0),
+                                (0, 0, -1),
+                                (0, 0, 1),
+                            ] {
                                 let i = at(dx + ox, dy + oy, dz + oz);
                                 if a[i] == -2 {
                                     a[i] = dist;
@@ -113,7 +131,8 @@ pub fn still_lava(w: &mut World, mut x: i32, mut y: i32, mut z: i32, rs: RandSel
         z += w.rng(rs).next_int(3) - 1;
         let id = w.get_block_id(x, y, z);
         if id == block::AIR {
-            let burns = |w: &mut World, x: i32, y: i32, z: i32| mat(w.get_block_material(x, y, z)).burns;
+            let burns =
+                |w: &mut World, x: i32, y: i32, z: i32| mat(w.get_block_material(x, y, z)).burns;
             if burns(w, x - 1, y, z)
                 || burns(w, x + 1, y, z)
                 || burns(w, x, y, z - 1)
@@ -145,7 +164,7 @@ fn fire_has_fuel(w: &mut World, x: i32, y: i32, z: i32) -> bool {
 }
 
 /// `BlockFire.canPlaceBlockAt`
-fn fire_can_place(w: &mut World, x: i32, y: i32, z: i32) -> bool {
+pub(crate) fn fire_can_place(w: &mut World, x: i32, y: i32, z: i32) -> bool {
     w.is_block_normal_cube(x, y - 1, z) || fire_has_fuel(w, x, y, z)
 }
 
@@ -194,7 +213,11 @@ pub fn fire(w: &mut World, x: i32, y: i32, z: i32, rs: RandSel) {
         if !w.is_block_normal_cube(x, y - 1, z) || age > 3 {
             w.set_block_with_notify(x, y, z, block::AIR);
         }
-    } else if !on_netherrack && !can_catch_fire(w, x, y - 1, z) && age == 15 && w.rng(rs).next_int(4) == 0 {
+    } else if !on_netherrack
+        && !can_catch_fire(w, x, y - 1, z)
+        && age == 15
+        && w.rng(rs).next_int(4) == 0
+    {
         w.set_block_with_notify(x, y, z, block::AIR);
     } else {
         try_to_catch_fire(w, x + 1, y, z, 300, rs, age);
@@ -253,7 +276,7 @@ fn try_to_catch_fire(w: &mut World, x: i32, y: i32, z: i32, chance: i32, rs: Ran
             w.set_block_with_notify(x, y, z, block::AIR);
         }
         if is_tnt {
-            // TODO: BlockTNT.onBlockDestroyedByPlayer spawns EntityTNTPrimed (entities).
+            w.ignite_tnt(x, y, z);
         }
     }
 }
@@ -264,7 +287,14 @@ fn neighbors_encourage_fire(w: &mut World, x: i32, y: i32, z: i32) -> i32 {
         return 0;
     }
     let mut c = 0;
-    for (dx, dy, dz) in [(1, 0, 0), (-1, 0, 0), (0, -1, 0), (0, 1, 0), (0, 0, -1), (0, 0, 1)] {
+    for (dx, dy, dz) in [
+        (1, 0, 0),
+        (-1, 0, 0),
+        (0, -1, 0),
+        (0, 1, 0),
+        (0, 0, -1),
+        (0, 0, 1),
+    ] {
         let v = fire_rates(w.get_block_id(x + dx, y + dy, z + dz)).0;
         if v > c {
             c = v;
@@ -277,10 +307,14 @@ fn neighbors_encourage_fire(w: &mut World, x: i32, y: i32, z: i32) -> i32 {
 pub fn try_to_create_portal(w: &mut World, x: i32, y: i32, z: i32) -> bool {
     let mut ox = 0;
     let mut oz = 0;
-    if w.get_block_id(x - 1, y, z) == block::OBSIDIAN || w.get_block_id(x + 1, y, z) == block::OBSIDIAN {
+    if w.get_block_id(x - 1, y, z) == block::OBSIDIAN
+        || w.get_block_id(x + 1, y, z) == block::OBSIDIAN
+    {
         ox = 1;
     }
-    if w.get_block_id(x, y, z - 1) == block::OBSIDIAN || w.get_block_id(x, y, z + 1) == block::OBSIDIAN {
+    if w.get_block_id(x, y, z - 1) == block::OBSIDIAN
+        || w.get_block_id(x, y, z + 1) == block::OBSIDIAN
+    {
         oz = 1;
     }
     if ox == oz {
@@ -336,12 +370,16 @@ pub fn portal_neighbor(w: &mut World, x: i32, y: i32, z: i32) {
         h += 1;
     }
     if h == 3 && w.get_block_id(x, by + h, z) == block::OBSIDIAN {
-        let along_x = w.get_block_id(x - 1, y, z) == PORTAL || w.get_block_id(x + 1, y, z) == PORTAL;
-        let along_z = w.get_block_id(x, y, z - 1) == PORTAL || w.get_block_id(x, y, z + 1) == PORTAL;
+        let along_x =
+            w.get_block_id(x - 1, y, z) == PORTAL || w.get_block_id(x + 1, y, z) == PORTAL;
+        let along_z =
+            w.get_block_id(x, y, z - 1) == PORTAL || w.get_block_id(x, y, z + 1) == PORTAL;
         if along_x && along_z {
             w.set_block_with_notify(x, y, z, block::AIR);
-        } else if (w.get_block_id(x + ox, y, z + oz) != block::OBSIDIAN || w.get_block_id(x - ox, y, z - oz) != PORTAL)
-            && (w.get_block_id(x - ox, y, z - oz) != block::OBSIDIAN || w.get_block_id(x + ox, y, z + oz) != PORTAL)
+        } else if (w.get_block_id(x + ox, y, z + oz) != block::OBSIDIAN
+            || w.get_block_id(x - ox, y, z - oz) != PORTAL)
+            && (w.get_block_id(x - ox, y, z - oz) != block::OBSIDIAN
+                || w.get_block_id(x + ox, y, z + oz) != PORTAL)
         {
             w.set_block_with_notify(x, y, z, block::AIR);
         }

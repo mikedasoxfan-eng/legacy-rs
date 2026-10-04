@@ -16,7 +16,11 @@ fn biome_snows(b: Biome) -> bool {
 
 /// `BiomeGenBase.canSpawnLightningBolt`: rain falls (not snow).
 fn biome_rains(b: Biome) -> bool {
-    !biome_snows(b) && !matches!(b, Biome::Desert | Biome::IceDesert | Biome::Hell | Biome::Sky)
+    !biome_snows(b)
+        && !matches!(
+            b,
+            Biome::Desert | Biome::IceDesert | Biome::Hell | Biome::Sky
+        )
 }
 
 /// `WorldProvider.calculateCelestialAngle`
@@ -42,7 +46,8 @@ impl World {
 
     /// `func_27166_f`
     pub fn thunder_strength(&self, partial: f32) -> f32 {
-        (self.prev_thundering_strength + (self.thundering_strength - self.prev_thundering_strength) * partial)
+        (self.prev_thundering_strength
+            + (self.thundering_strength - self.prev_thundering_strength) * partial)
             * self.rain_strength(partial)
     }
 
@@ -59,8 +64,13 @@ impl World {
     /// `calculateSkylightSubtracted`
     pub fn calculate_skylight_subtracted(&self, partial: f32) -> i32 {
         // WorldProviderHell.calculateCelestialAngle is a constant 0.5.
-        let angle = if self.dimension.is_hell_world() { 0.5 } else { celestial_angle(self.world_time, partial) };
-        let mut v = 1.0f32 - (math::cos(angle * std::f64::consts::PI as f32 * 2.0f32) * 2.0f32 + 0.5f32);
+        let angle = if self.dimension.is_hell_world() {
+            0.5
+        } else {
+            celestial_angle(self.world_time, partial)
+        };
+        let mut v =
+            1.0f32 - (math::cos(angle * std::f64::consts::PI as f32 * 2.0f32) * 2.0f32 + 0.5f32);
         v = v.clamp(0.0, 1.0);
         v = 1.0f32 - v;
         v = (v as f64 * (1.0 - (self.rain_strength(partial) * 5.0f32) as f64 / 16.0)) as f32;
@@ -115,7 +125,8 @@ impl World {
             return 0; // EmptyChunk
         }
         let sub = self.skylight_subtracted;
-        self.chunk(x >> 4, z >> 4).block_light_value(x & 15, y, z & 15, sub)
+        self.chunk(x >> 4, z >> 4)
+            .block_light_value(x & 15, y, z & 15, sub)
     }
 
     /// `canBlockBeRainedOn`
@@ -185,6 +196,7 @@ impl World {
     /// `World.tick` (no sleeping players or mob spawning yet).
     pub fn tick(&mut self) {
         self.update_weather();
+        self.perform_spawning(self.spawn_hostile_mobs, self.spawn_peaceful_mobs);
         self.unload_oldest_chunks();
         let s = self.calculate_skylight_subtracted(1.0);
         if s != self.skylight_subtracted {
@@ -211,7 +223,14 @@ impl World {
             self.tick_order.remove(&(time, id, key));
             self.pending_ticks.remove(&key);
             let r = 8;
-            if self.check_chunks_exist(key.x - r, key.y - r, key.z - r, key.x + r, key.y + r, key.z + r) {
+            if self.check_chunks_exist(
+                key.x - r,
+                key.y - r,
+                key.z - r,
+                key.x + r,
+                key.y + r,
+                key.z + r,
+            ) {
                 let cur = self.get_block_id(key.x, key.y, key.z);
                 if cur as i32 == key.block && cur > 0 {
                     behavior::update_tick(self, cur, key.x, key.y, key.z, RandSel::World);
@@ -245,7 +264,13 @@ impl World {
             let (x0, z0) = (cx * 16, cz * 16);
             // getChunkFromChunkCoords: singleplayer loads (and generates) it here.
             let real = self.access_chunk_pub(cx, cz);
-            let block_at = |w: &World, x: i32, y: i32, z: i32| if real { w.chunk(cx, cz).block(x, y, z) } else { 0 };
+            let block_at = |w: &World, x: i32, y: i32, z: i32| {
+                if real {
+                    w.chunk(cx, cz).block(x, y, z)
+                } else {
+                    0
+                }
+            };
 
             if self.sound_counter == 0 {
                 self.update_lcg = self.update_lcg.wrapping_mul(3).wrapping_add(1013904223);
@@ -274,6 +299,8 @@ impl World {
                 let (x, z) = (x0 + (v & 15), z0 + (v >> 8 & 15));
                 let y = self.find_top_solid_block(x, z);
                 if self.can_block_be_rained_on(x, y, z) {
+                    let bolt = crate::entity::Entity::lightning(self, x as f64, y as f64, z as f64);
+                    self.weather_effects.push(bolt);
                     self.lightning_strikes.push((x, y, z));
                     self.lightning_flash = 2;
                 }
@@ -286,7 +313,11 @@ impl World {
                 let y = self.find_top_solid_block(x + x0, z + z0);
                 let biome = self.terrain.biome_source.biome_at(x + x0, z + z0);
                 if biome_snows(biome) && y >= 0 && y < 128 {
-                    let block_light = if real { self.chunk(cx, cz).saved_light(LightKind::Block, x, y, z) } else { 0 };
+                    let block_light = if real {
+                        self.chunk(cx, cz).saved_light(LightKind::Block, x, y, z)
+                    } else {
+                        0
+                    };
                     if block_light < 10 {
                         let below = block_at(self, x, y - 1, z);
                         let cur = block_at(self, x, y, z);
@@ -299,7 +330,11 @@ impl World {
                         {
                             self.set_block_with_notify(x + x0, y, z + z0, block::SNOW);
                         }
-                        let below_meta = if real { self.chunk(cx, cz).data.get(x, y - 1, z) } else { 0 };
+                        let below_meta = if real {
+                            self.chunk(cx, cz).data.get(x, y - 1, z)
+                        } else {
+                            0
+                        };
                         if below == block::WATER_STILL && below_meta == 0 {
                             self.set_block_with_notify(x + x0, y - 1, z + z0, block::ICE);
                         }

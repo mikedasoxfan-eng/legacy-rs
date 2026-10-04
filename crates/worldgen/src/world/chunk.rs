@@ -12,7 +12,12 @@ pub struct Nibbles(pub Box<[u8; CHUNK_VOLUME / 2]>);
 
 impl Default for Nibbles {
     fn default() -> Self {
-        Nibbles(vec![0u8; CHUNK_VOLUME / 2].into_boxed_slice().try_into().unwrap())
+        Nibbles(
+            vec![0u8; CHUNK_VOLUME / 2]
+                .into_boxed_slice()
+                .try_into()
+                .unwrap(),
+        )
     }
 }
 
@@ -66,6 +71,8 @@ pub struct Chunk {
     pub loaded: bool,
     /// Keyed by chunk-local (x, y, z).
     pub tile_entities: HashMap<(i32, i32, i32), TileEntity>,
+    /// Insertion order before Java's chunk tile-map bucket iteration.
+    pub tile_entity_order: Vec<(i32, i32, i32)>,
     /// `World::mod_count` at this chunk's last block/metadata/light change (for renderers).
     pub version: u64,
     /// `isModified`: needs writing to disk.
@@ -74,8 +81,9 @@ pub struct Chunk {
     pub last_save_time: i64,
     /// `hasEntities`
     pub has_entities: bool,
-    /// Entities from a save (not simulated yet); written back unchanged.
+    /// Unsupported entities from a save; written back unchanged.
     pub raw_entities: Vec<crate::nbt::Tag>,
+    pub entity_lists: [Vec<i32>; 8],
     /// Tile entities of kinds not modelled yet (furnaces, signs...); written back unchanged.
     pub raw_tile_entities: Vec<crate::nbt::Compound>,
 }
@@ -99,10 +107,12 @@ impl Chunk {
             populated: false,
             loaded: false,
             tile_entities: HashMap::new(),
+            tile_entity_order: Vec::new(),
             version: 0,
             modified: false,
             last_save_time: 0,
             has_entities: false,
+            entity_lists: Default::default(),
             raw_entities: Vec::new(),
             raw_tile_entities: Vec::new(),
         }

@@ -22,6 +22,216 @@ fn with_hi_lo(hi: i32, lo: u32) -> f64 {
 }
 
 const S1: f64 = -1.66666666666666324348e-01;
+/// fdlibm s_atan.c and e_atan2.c, used by Java 8 Math.atan2.
+fn fdlibm_atan(mut x: f64) -> f64 {
+    const HI: [f64; 4] = [
+        4.63647609000806116214e-1,
+        7.85398163397448278999e-1,
+        9.82793723247329054082e-1,
+        1.57079632679489655800,
+    ];
+    const LO: [f64; 4] = [
+        2.26987774529616870924e-17,
+        3.06161699786838301793e-17,
+        1.39033110312309984516e-17,
+        6.12323399573676603587e-17,
+    ];
+    const A: [f64; 11] = [
+        3.33333333333329318027e-1,
+        -1.99999999998764832476e-1,
+        1.42857142725034663711e-1,
+        -1.11111104054623557880e-1,
+        9.09088713343650656196e-2,
+        -7.69187620504482999495e-2,
+        6.66107313738753120669e-2,
+        -5.83357013379057348645e-2,
+        4.97687799461593236017e-2,
+        -3.65315727442169155270e-2,
+        1.62858201153657823623e-2,
+    ];
+    let hx = hi_word(x);
+    let ix = hx & 0x7fffffff;
+    if ix >= 0x44100000 {
+        if x.is_nan() {
+            return x + x;
+        }
+        return if hx > 0 {
+            HI[3] + LO[3]
+        } else {
+            -HI[3] - LO[3]
+        };
+    }
+    let id;
+    if ix < 0x3fdc0000 {
+        if ix < 0x3e200000 {
+            return x;
+        }
+        id = -1;
+    } else {
+        x = x.abs();
+        if ix < 0x3ff30000 {
+            if ix < 0x3fe60000 {
+                id = 0;
+                x = (2.0 * x - 1.0) / (2.0 + x);
+            } else {
+                id = 1;
+                x = (x - 1.0) / (x + 1.0);
+            }
+        } else if ix < 0x40038000 {
+            id = 2;
+            x = (x - 1.5) / (1.0 + 1.5 * x);
+        } else {
+            id = 3;
+            x = -1.0 / x;
+        }
+    }
+    let z = x * x;
+    let w = z * z;
+    let s1 = z * (A[0] + w * (A[2] + w * (A[4] + w * (A[6] + w * (A[8] + w * A[10])))));
+    let s2 = w * (A[1] + w * (A[3] + w * (A[5] + w * (A[7] + w * A[9]))));
+    if id < 0 {
+        x - x * (s1 + s2)
+    } else {
+        let id = id as usize;
+        let z = HI[id] - ((x * (s1 + s2) - LO[id]) - x);
+        if hx < 0 {
+            -z
+        } else {
+            z
+        }
+    }
+}
+pub fn java_atan2(y: f64, x: f64) -> f64 {
+    const PI: f64 = 3.1415926535897931160;
+    const PI_LO: f64 = 1.2246467991473531772e-16;
+    const PI_2: f64 = 1.5707963267948965580;
+    const PI_4: f64 = 7.8539816339744827900e-1;
+    const TINY: f64 = 1e-300;
+    if x.is_nan() || y.is_nan() {
+        return x + y;
+    }
+    if x.to_bits() == 1.0f64.to_bits() {
+        return fdlibm_atan(y);
+    }
+    let hx = hi_word(x);
+    let hy = hi_word(y);
+    let ix = hx & 0x7fffffff;
+    let iy = hy & 0x7fffffff;
+    let m = ((hy as u32 >> 31) & 1) | ((hx as u32 >> 30) & 2);
+    if y == 0.0 {
+        return match m {
+            0 | 1 => y,
+            2 => PI + TINY,
+            _ => -PI - TINY,
+        };
+    }
+    if x == 0.0 {
+        return if hy < 0 { -PI_2 - TINY } else { PI_2 + TINY };
+    }
+    if x.is_infinite() {
+        if y.is_infinite() {
+            return match m {
+                0 => PI_4 + TINY,
+                1 => -PI_4 - TINY,
+                2 => 3.0 * PI_4 + TINY,
+                _ => -3.0 * PI_4 - TINY,
+            };
+        }
+        return match m {
+            0 => 0.0,
+            1 => -0.0,
+            2 => PI + TINY,
+            _ => -PI - TINY,
+        };
+    }
+    if y.is_infinite() {
+        return if hy < 0 { -PI_2 - TINY } else { PI_2 + TINY };
+    }
+    let k = (iy - ix) >> 20;
+    let z = if k > 60 {
+        PI_2 + 0.5 * PI_LO
+    } else if hx < 0 && k < -60 {
+        0.0
+    } else {
+        fdlibm_atan((y / x).abs())
+    };
+    match m {
+        0 => z,
+        1 => -z,
+        2 => PI - (z - PI_LO),
+        _ => (z - PI_LO) - PI,
+    }
+}
+/// fdlibm e_log.c, used by StrictMath.log in Random.nextGaussian.
+pub fn fdlibm_log(mut x: f64) -> f64 {
+    const LN2_HI: f64 = 6.93147180369123816490e-01;
+    const LN2_LO: f64 = 1.90821492927058770002e-10;
+    const LG: [f64; 7] = [
+        6.666666666666735130e-01,
+        3.999999999940941908e-01,
+        2.857142874366239149e-01,
+        2.222219843214978396e-01,
+        1.818357216161805012e-01,
+        1.531383769920937332e-01,
+        1.479819860511658591e-01,
+    ];
+    let mut hx = hi_word(x);
+    let lx = x.to_bits() as u32;
+    let mut k = 0i32;
+    if hx < 0x00100000 {
+        if (hx & 0x7fffffff) == 0 && lx == 0 {
+            return f64::NEG_INFINITY;
+        }
+        if hx < 0 {
+            return f64::NAN;
+        }
+        k -= 54;
+        x *= 18014398509481984.0;
+        hx = hi_word(x);
+    }
+    if hx >= 0x7ff00000 {
+        return x + x;
+    }
+    k += (hx >> 20) - 1023;
+    hx &= 0x000fffff;
+    let i = (hx + 0x95f64) & 0x100000;
+    x = with_hi_lo(hx | (i ^ 0x3ff00000), x.to_bits() as u32);
+    k += i >> 20;
+    let f = x - 1.0;
+    if (0x000fffff & (2 + hx)) < 3 {
+        if f == 0.0 {
+            return if k == 0 {
+                0.0
+            } else {
+                k as f64 * LN2_HI + k as f64 * LN2_LO
+            };
+        }
+        let r = f * f * (0.5 - 0.33333333333333333 * f);
+        if k == 0 {
+            return f - r;
+        }
+        return k as f64 * LN2_HI - ((r - k as f64 * LN2_LO) - f);
+    }
+    let s = f / (2.0 + f);
+    let dk = k as f64;
+    let z = s * s;
+    let w = z * z;
+    let t1 = w * (LG[1] + w * (LG[3] + w * LG[5]));
+    let t2 = z * (LG[0] + w * (LG[2] + w * (LG[4] + w * LG[6])));
+    let r = t2 + t1;
+    if (hx - 0x6147a) | (0x6b851 - hx) > 0 {
+        let hfsq = 0.5 * f * f;
+        if k == 0 {
+            f - (hfsq - s * (hfsq + r))
+        } else {
+            dk * LN2_HI - ((hfsq - (s * (hfsq + r) + dk * LN2_LO)) - f)
+        }
+    } else if k == 0 {
+        f - s * (f - r)
+    } else {
+        dk * LN2_HI - ((s * (f - r) - dk * LN2_LO) - f)
+    }
+}
 const S2: f64 = 8.33333333332248946124e-03;
 const S3: f64 = -1.98412698298579493134e-04;
 const S4: f64 = 2.75573137070700676789e-06;
@@ -60,7 +270,11 @@ fn kernel_cos(x: f64, y: f64) -> f64 {
     if ix < 0x3FD33333 {
         1.0 - (0.5 * z - (z * r - x * y))
     } else {
-        let qx = if ix > 0x3fe90000 { 0.28125 } else { with_hi_lo(ix - 0x00200000, 0) };
+        let qx = if ix > 0x3fe90000 {
+            0.28125
+        } else {
+            with_hi_lo(ix - 0x00200000, 0)
+        };
         let hz = 0.5 * z - qx;
         let a = 1.0 - qx;
         a - (hz - (z * r - x * y))
@@ -76,10 +290,10 @@ const PIO2_3: f64 = 2.02226624871116645580e-21;
 const PIO2_3T: f64 = 8.47842766036889956997e-32;
 
 const NPIO2_HW: [i32; 32] = [
-    0x3FF921FB, 0x400921FB, 0x4012D97C, 0x401921FB, 0x401F6A7A, 0x4022D97C, 0x4025FDBB, 0x402921FB, 0x402C463A,
-    0x402F6A7A, 0x4031475C, 0x4032D97C, 0x40346B9C, 0x4035FDBB, 0x40378FDB, 0x403921FB, 0x403AB41B, 0x403C463A,
-    0x403DD85A, 0x403F6A7A, 0x40407E4C, 0x4041475C, 0x4042106C, 0x4042D97C, 0x4043A28C, 0x40446B9C, 0x404534AC,
-    0x4045FDBB, 0x4046C6CB, 0x40478FDB, 0x404858EB, 0x404921FB,
+    0x3FF921FB, 0x400921FB, 0x4012D97C, 0x401921FB, 0x401F6A7A, 0x4022D97C, 0x4025FDBB, 0x402921FB,
+    0x402C463A, 0x402F6A7A, 0x4031475C, 0x4032D97C, 0x40346B9C, 0x4035FDBB, 0x40378FDB, 0x403921FB,
+    0x403AB41B, 0x403C463A, 0x403DD85A, 0x403F6A7A, 0x40407E4C, 0x4041475C, 0x4042106C, 0x4042D97C,
+    0x4043A28C, 0x40446B9C, 0x404534AC, 0x4045FDBB, 0x4046C6CB, 0x40478FDB, 0x404858EB, 0x404921FB,
 ];
 
 /// `__ieee754_rem_pio2` for |x| <= 2^19 * pi/2 (the large-argument path is not needed).
@@ -202,13 +416,19 @@ fn two_sum(a: f64, b: f64) -> DD {
 #[inline]
 fn quick_two_sum(a: f64, b: f64) -> DD {
     let s = a + b;
-    DD { hi: s, lo: b - (s - a) }
+    DD {
+        hi: s,
+        lo: b - (s - a),
+    }
 }
 
 #[inline]
 fn two_prod(a: f64, b: f64) -> DD {
     let p = a * b;
-    DD { hi: p, lo: a.mul_add(b, -p) }
+    DD {
+        hi: p,
+        lo: a.mul_add(b, -p),
+    }
 }
 
 impl DD {
@@ -232,7 +452,10 @@ impl DD {
         quick_two_sum(q1, q2)
     }
     fn neg(self) -> DD {
-        DD { hi: -self.hi, lo: -self.lo }
+        DD {
+            hi: -self.hi,
+            lo: -self.lo,
+        }
     }
 }
 
@@ -240,7 +463,11 @@ impl DD {
 fn dd_sin_cos(x: f64, want_sin: bool) -> DD {
     let xx = DD::from(x);
     let x2 = xx.mul(xx);
-    let (mut term, mut sum, mut k) = if want_sin { (xx, xx, 1.0) } else { (DD::from(1.0), DD::from(1.0), 0.0) };
+    let (mut term, mut sum, mut k) = if want_sin {
+        (xx, xx, 1.0)
+    } else {
+        (DD::from(1.0), DD::from(1.0), 0.0)
+    };
     for _ in 0..30 {
         term = term.mul(x2).neg().div_f((k + 1.0) * (k + 2.0));
         k += 2.0;
@@ -263,7 +490,7 @@ fn x87_round(v: DD) -> f64 {
     let bits = hi.to_bits();
     let exp = ((bits >> 52) & 0x7ff) as i32;
     let ulp = f64::from_bits(((exp - 52) as u64) << 52); // ulp of hi (normal numbers)
-    // Low part on the extended grid: multiples of ulp/2048, ties to even.
+                                                         // Low part on the extended grid: multiples of ulp/2048, ties to even.
     let q = (lo / (ulp / 2048.0)).round_ties_even() * (ulp / 2048.0);
     let half = ulp / 2.0;
     if q.abs() < half {
@@ -273,7 +500,11 @@ fn x87_round(v: DD) -> f64 {
         hi + q
     } else {
         // Exact tie on the double grid: round half to even.
-        let other = if q > 0.0 { f64::from_bits(bits + 1) } else { f64::from_bits(bits - 1) };
+        let other = if q > 0.0 {
+            f64::from_bits(bits + 1)
+        } else {
+            f64::from_bits(bits - 1)
+        };
         if bits & 1 == 0 {
             hi
         } else {

@@ -7,14 +7,14 @@
 
 pub mod behavior;
 pub mod chunk;
+pub mod java_hash;
 pub mod light;
 pub mod server;
-pub mod java_hash;
 pub mod tick;
 pub mod ticks_blocks;
 pub mod tile;
 
-use crate::block::{self, light_opacity, material_of, mat, props, MAT_AIR};
+use crate::block::{self, light_opacity, mat, material_of, props, MAT_AIR};
 use crate::overworld::OverworldGenerator;
 use crate::random::JavaRandom;
 use chunk::{idx, Chunk, LightKind};
@@ -103,7 +103,11 @@ impl Dimension {
 
     /// `WorldProvider.generateLightBrightnessTable` and the Hell override.
     pub fn light_brightness_table(self) -> [f32; 16] {
-        let ambient = if self.is_hell_world() { 0.1f32 } else { 0.05f32 };
+        let ambient = if self.is_hell_world() {
+            0.1f32
+        } else {
+            0.05f32
+        };
         let mut table = [0.0; 16];
         for i in 0..=15 {
             let darkness = 1.0f32 - i as f32 / 15.0f32;
@@ -163,6 +167,7 @@ pub struct World {
     pub thundering_strength: f32,
     pub prev_thundering_strength: f32,
     /// `field_27168_F`: sky flash after lightning.
+    pub lightning_sky_flash: i32,
     pub lightning_flash: i32,
     /// `skylightSubtracted`
     pub skylight_subtracted: i32,
@@ -179,6 +184,22 @@ pub struct World {
     pub leaf_scratch: Option<Vec<i32>>,
     /// Lightning strikes (`EntityLightningBolt`), recorded until entities exist.
     pub lightning_strikes: Vec<(i32, i32, i32)>,
+    pub entities: std::collections::BTreeMap<i32, crate::entity::Entity>,
+    pub loaded_entity_list: Vec<i32>,
+    pub unloaded_entity_list: Vec<i32>,
+    pub spawn_eligible_chunks: java_hash::JavaHashSet<(i32, i32)>,
+    pub loaded_tile_entities: Vec<(i32, i32, i32)>,
+    pub spawner_animations: std::collections::HashMap<(i32, i32, i32), (f64, f64)>,
+    pub weather_effects: Vec<crate::entity::Entity>,
+    pub explosion_seed_source: crate::entity::EntitySeedSource,
+    pub entity_seed_source: crate::entity::EntitySeedSource,
+    pub chest_random: JavaRandom,
+    pub math_random: JavaRandom,
+    pub next_entity_id: i32,
+    pub difficulty: i32,
+    pub spawn_hostile_mobs: bool,
+    pub spawn_peaceful_mobs: bool,
+    pub block_bounds: [crate::entity::AxisAlignedBB; 256],
 }
 
 impl World {
@@ -197,7 +218,11 @@ impl World {
             seed,
             dimension,
             light_brightness_table: dimension.light_brightness_table(),
-            nether: if dimension.is_hell_world() { Some(crate::nether::NetherGenerator::new(seed)) } else { None },
+            nether: if dimension.is_hell_world() {
+                Some(crate::nether::NetherGenerator::new(seed))
+            } else {
+                None
+            },
             terrain,
             chunks: ChunkMap::default(),
             rand: JavaRandom::new(world_rand_seed),
@@ -226,8 +251,9 @@ impl World {
             prev_raining_strength: 0.0,
             thundering_strength: 0.0,
             prev_thundering_strength: 0.0,
+            lightning_sky_flash: 0,
             lightning_flash: 0,
-            skylight_subtracted: 0,
+            skylight_subtracted: if dimension.is_hell_world() { 11 } else { 0 },
             renderers_dirty: false,
             update_lcg: 0,
             sound_counter: 0,
@@ -235,6 +261,27 @@ impl World {
             positions_to_update: Default::default(),
             leaf_scratch: None,
             lightning_strikes: Vec::new(),
+            entities: Default::default(),
+            loaded_entity_list: Vec::new(),
+            unloaded_entity_list: Vec::new(),
+            weather_effects: Vec::new(),
+            spawn_eligible_chunks: Default::default(),
+            loaded_tile_entities: Vec::new(),
+            spawner_animations: Default::default(),
+            explosion_seed_source: crate::entity::EntitySeedSource::Time,
+            entity_seed_source: crate::entity::EntitySeedSource::Time,
+            chest_random: JavaRandom::new(crate::entity::EntitySeedSource::Time.next_seed()),
+            math_random: JavaRandom::new(
+                std::time::SystemTime::now()
+                    .duration_since(std::time::UNIX_EPOCH)
+                    .unwrap_or_default()
+                    .as_nanos() as i64,
+            ),
+            next_entity_id: 0,
+            difficulty: 2,
+            spawn_hostile_mobs: true,
+            spawn_peaceful_mobs: true,
+            block_bounds: crate::entity::block_table::INITIAL_BOUNDS,
         }
     }
 
@@ -319,7 +366,10 @@ impl World {
     /// `ChunkProvider.prepareChunk` / `ChunkProviderServer.loadChunk` for a chunk not in
     /// the map: read it from the save, else generate it; then run the population checks.
     pub(crate) fn prepare_chunk(&mut self, cx: i32, cz: i32) {
-        let saved = self.storage.as_mut().and_then(|s| s.load_chunk_for_dimension(cx, cz, self.dimension));
+        let saved = self
+            .storage
+            .as_mut()
+            .and_then(|s| s.load_chunk_for_dimension(cx, cz, self.dimension));
         if let Some(mut c) = saved {
             c.last_save_time = self.world_time;
             c.loaded = true;
@@ -328,6 +378,7 @@ impl World {
             self.mod_count += 1;
             let v = self.mod_count;
             self.chunk_mut(cx, cz).version = v;
+            self.load_chunk_entities(cx, cz);
         } else {
             // ChunkProviderGenerate/ChunkProviderHell.provideChunk
             let raw = match &mut self.nether {
@@ -467,7 +518,9 @@ impl World {
         if !self.access_chunk(x >> 4, z >> 4) {
             return true; // EmptyChunk.setBlockMetadata does nothing
         }
-        self.chunk_mut(x >> 4, z >> 4).data.set(x & 15, y, z & 15, meta);
+        self.chunk_mut(x >> 4, z >> 4)
+            .data
+            .set(x & 15, y, z & 15, meta);
         self.touch(x >> 4, z >> 4);
         true
     }
@@ -489,7 +542,14 @@ impl World {
         }
     }
 
-    pub fn set_block_and_metadata_with_notify(&mut self, x: i32, y: i32, z: i32, id: u8, meta: i32) -> bool {
+    pub fn set_block_and_metadata_with_notify(
+        &mut self,
+        x: i32,
+        y: i32,
+        z: i32,
+        id: u8,
+        meta: i32,
+    ) -> bool {
         if self.set_block_and_metadata(x, y, z, id, meta) {
             self.notify_blocks_of_neighbor_change(x, y, z, id);
             true
@@ -553,7 +613,16 @@ impl World {
 
     /// `Chunk.setBlockIDWithMetadata`
     #[allow(clippy::too_many_arguments)]
-    fn chunk_set_block_with_metadata(&mut self, cx: i32, cz: i32, x: i32, y: i32, z: i32, id: u8, meta: i32) -> bool {
+    fn chunk_set_block_with_metadata(
+        &mut self,
+        cx: i32,
+        cz: i32,
+        x: i32,
+        y: i32,
+        z: i32,
+        id: u8,
+        meta: i32,
+    ) -> bool {
         let c = self.chunk_mut(cx, cz);
         let height = c.height(x, z);
         let old = c.blocks[idx(x, y, z)];
@@ -676,7 +745,8 @@ impl World {
         if !self.access_chunk(x >> 4, z >> 4) {
             return false;
         }
-        self.chunk(x >> 4, z >> 4).can_block_see_the_sky(x & 15, y, z & 15)
+        self.chunk(x >> 4, z >> 4)
+            .can_block_see_the_sky(x & 15, y, z & 15)
     }
 
     /// `getFullBlockLightValue` (loads the chunk).
@@ -688,7 +758,8 @@ impl World {
         if !self.access_chunk(x >> 4, z >> 4) {
             return 0;
         }
-        self.chunk(x >> 4, z >> 4).block_light_value(x & 15, y, z & 15, 0)
+        self.chunk(x >> 4, z >> 4)
+            .block_light_value(x & 15, y, z & 15, 0)
     }
 
     pub fn can_existing_block_see_the_sky(&self, x: i32, y: i32, z: i32) -> bool {
@@ -701,7 +772,8 @@ impl World {
         if !self.chunk_exists(x >> 4, z >> 4) {
             return false;
         }
-        self.chunk(x >> 4, z >> 4).can_block_see_the_sky(x & 15, y, z & 15)
+        self.chunk(x >> 4, z >> 4)
+            .can_block_see_the_sky(x & 15, y, z & 15)
     }
 
     pub fn block_exists(&self, x: i32, y: i32, z: i32) -> bool {
@@ -765,7 +837,8 @@ impl World {
             if !self.chunk_exists(x >> 4, z >> 4) {
                 return 0;
             }
-            self.chunk(x >> 4, z >> 4).saved_light(kind, x & 15, y, z & 15)
+            self.chunk(x >> 4, z >> 4)
+                .saved_light(kind, x & 15, y, z & 15)
         } else {
             kind.default_value()
         }
@@ -773,12 +846,20 @@ impl World {
 
     pub fn set_light_value(&mut self, kind: LightKind, x: i32, y: i32, z: i32, v: i32) {
         if in_xz_bounds(x, z) && (0..128).contains(&y) && self.chunk_exists(x >> 4, z >> 4) {
-            self.chunk_mut(x >> 4, z >> 4).set_light(kind, x & 15, y, z & 15, v);
+            self.chunk_mut(x >> 4, z >> 4)
+                .set_light(kind, x & 15, y, z & 15, v);
             self.touch(x >> 4, z >> 4);
         }
     }
 
-    pub fn neighbor_light_propagation_changed(&mut self, kind: LightKind, x: i32, y: i32, z: i32, mut v: i32) {
+    pub fn neighbor_light_propagation_changed(
+        &mut self,
+        kind: LightKind,
+        x: i32,
+        y: i32,
+        z: i32,
+        mut v: i32,
+    ) {
         if self.dimension.has_no_sky() && kind == LightKind::Sky {
             return;
         }
@@ -805,7 +886,16 @@ impl World {
 
     /// `scheduleLightingUpdate_do(..., true)`
     #[allow(clippy::too_many_arguments)]
-    pub fn schedule_lighting_update(&mut self, kind: LightKind, x0: i32, y0: i32, z0: i32, x1: i32, y1: i32, z1: i32) {
+    pub fn schedule_lighting_update(
+        &mut self,
+        kind: LightKind,
+        x0: i32,
+        y0: i32,
+        z0: i32,
+        x1: i32,
+        y1: i32,
+        z1: i32,
+    ) {
         if self.dimension.has_no_sky() && kind == LightKind::Sky {
             return;
         }
@@ -821,7 +911,8 @@ impl World {
                 return;
             }
         }
-        self.light_queue.push(LightUpdate::new(kind, x0, y0, z0, x1, y1, z1));
+        self.light_queue
+            .push(LightUpdate::new(kind, x0, y0, z0, x1, y1, z1));
         if self.light_queue.len() > 1_000_000 {
             self.light_queue.clear();
         }
@@ -869,7 +960,12 @@ impl World {
                 }
             }
         } else if self.check_chunks_exist(x - r, y - r, z - r, x + r, y + r, z + r) {
-            let key = TickKey { x, y, z, block: id as i32 };
+            let key = TickKey {
+                x,
+                y,
+                z,
+                block: id as i32,
+            };
             let t = delay as i64 + self.world_time;
             if let std::collections::hash_map::Entry::Vacant(e) = self.pending_ticks.entry(key) {
                 e.insert((t, entry_id));
@@ -903,15 +999,24 @@ impl World {
         if !self.access_chunk(cx, cz) {
             return;
         }
+        if !self.loaded_tile_entities.contains(&(x, y, z)) {
+            self.loaded_tile_entities.push((x, y, z));
+        }
         let c = self.chunk_mut(cx, cz);
         let id = c.block(x & 15, y, z & 15);
         if id != block::AIR && props(id).container {
-            c.tile_entities.insert((x & 15, y, z & 15), te);
+            let key = (x & 15, y, z & 15);
+            if !c.tile_entities.contains_key(&key) {
+                c.tile_entity_order.push(key);
+            }
+            c.tile_entities.insert(key, te);
         }
     }
 
     /// `removeBlockTileEntity`
     pub fn remove_block_tile_entity(&mut self, x: i32, y: i32, z: i32) {
+        self.loaded_tile_entities.retain(|p| *p != (x, y, z));
+        self.spawner_animations.remove(&(x, y, z));
         let _ = self.get_block_tile_entity(x, y, z);
         let (cx, cz) = (x >> 4, z >> 4);
         if !self.access_chunk(cx, cz) {
@@ -920,6 +1025,7 @@ impl World {
         let c = self.chunk_mut(cx, cz);
         if c.loaded {
             c.tile_entities.remove(&(x & 15, y, z & 15));
+            c.tile_entity_order.retain(|p| *p != (x & 15, y, z & 15));
         }
     }
 
@@ -937,14 +1043,24 @@ impl World {
     /// `ChunkProvider.func_28062_b`: write one chunk and clear its modified flag.
     pub(crate) fn save_chunk(&mut self, cx: i32, cz: i32) {
         let time = self.world_time;
-        let Some(storage) = self.storage.as_mut() else { return };
-        let c = self.chunks.get_mut(&(cx, cz)).expect("saving unloaded chunk");
+        if self.storage.is_none() {
+            return;
+        }
+        let tags = self.chunk_entity_nbt(cx, cz);
+        let has_entities = !tags.is_empty();
+        let storage = self.storage.as_mut().unwrap();
+        let c = self
+            .chunks
+            .get_mut(&(cx, cz))
+            .expect("saving unloaded chunk");
+        let raw = std::mem::replace(&mut c.raw_entities, tags);
         c.last_save_time = time;
         match storage.save_chunk(c, time) {
             Ok(delta) => self.info.size_on_disk += delta,
             Err(e) => eprintln!("saving chunk {cx},{cz}: {e}"),
         }
-        c.has_entities = !c.raw_entities.is_empty();
+        c.raw_entities = raw;
+        c.has_entities = has_entities;
     }
 
     /// `Chunk.needsSaving`

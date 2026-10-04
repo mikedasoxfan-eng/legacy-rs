@@ -76,7 +76,10 @@ impl LevelInfo {
         c.put("SpawnZ", Tag::Int(self.spawn.2));
         c.put("Time", Tag::Long(self.time));
         c.put("SizeOnDisk", Tag::Long(self.size_on_disk));
-        let now = std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).map(|d| d.as_millis() as i64).unwrap_or(0);
+        let now = std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .map(|d| d.as_millis() as i64)
+            .unwrap_or(0);
         c.put("LastPlayed", Tag::Long(now));
         c.put("LevelName", Tag::String(self.name.clone()));
         c.put("version", Tag::Int(self.version));
@@ -104,7 +107,12 @@ pub struct RegionFile {
 
 impl RegionFile {
     pub fn open(path: &Path) -> io::Result<RegionFile> {
-        let mut file = OpenOptions::new().read(true).write(true).create(true).truncate(false).open(path)?;
+        let mut file = OpenOptions::new()
+            .read(true)
+            .write(true)
+            .create(true)
+            .truncate(false)
+            .open(path)?;
         let mut size_delta = 0;
         let mut len = file.metadata()?.len();
         if len < 4096 {
@@ -136,9 +144,16 @@ impl RegionFile {
                     sector_free[(o >> 8) as usize + k] = false;
                 }
             }
-            timestamps[i] = i32::from_be_bytes(header[4096 + i * 4..4096 + i * 4 + 4].try_into().unwrap());
+            timestamps[i] =
+                i32::from_be_bytes(header[4096 + i * 4..4096 + i * 4 + 4].try_into().unwrap());
         }
-        Ok(RegionFile { file, offsets, timestamps, sector_free, size_delta })
+        Ok(RegionFile {
+            file,
+            offsets,
+            timestamps,
+            sector_free,
+            size_delta,
+        })
     }
 
     /// `getChunkDataInputStream`, decompressed. `None` if absent or unreadable.
@@ -165,8 +180,12 @@ impl RegionFile {
         self.file.read_exact(&mut data).ok()?;
         let mut out = Vec::new();
         match hdr[4] {
-            1 => flate2::read::GzDecoder::new(&data[..]).read_to_end(&mut out).ok()?,
-            2 => flate2::read::ZlibDecoder::new(&data[..]).read_to_end(&mut out).ok()?,
+            1 => flate2::read::GzDecoder::new(&data[..])
+                .read_to_end(&mut out)
+                .ok()?,
+            2 => flate2::read::ZlibDecoder::new(&data[..])
+                .read_to_end(&mut out)
+                .ok()?,
             _ => return None,
         };
         Some(out)
@@ -228,16 +247,21 @@ impl RegionFile {
                 self.set_offset(x, z, (sector << 8 | needed) as i32)?;
             }
         }
-        let now = std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).map(|d| d.as_secs() as i32).unwrap_or(0);
+        let now = std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .map(|d| d.as_secs() as i32)
+            .unwrap_or(0);
         self.timestamps[(x + z * 32) as usize] = now;
-        self.file.seek(SeekFrom::Start(4096 + (x + z * 32) as u64 * 4))?;
+        self.file
+            .seek(SeekFrom::Start(4096 + (x + z * 32) as u64 * 4))?;
         self.file.write_all(&now.to_be_bytes())?;
         Ok(())
     }
 
     fn write_at(&mut self, sector: usize, data: &[u8]) -> io::Result<()> {
         self.file.seek(SeekFrom::Start(sector as u64 * 4096))?;
-        self.file.write_all(&((data.len() + 1) as i32).to_be_bytes())?;
+        self.file
+            .write_all(&((data.len() + 1) as i32).to_be_bytes())?;
         self.file.write_all(&[2])?;
         self.file.write_all(data)
     }
@@ -269,14 +293,23 @@ impl Storage {
         std::fs::create_dir_all(dir.join("region"))?;
         std::fs::create_dir_all(dir.join("data"))?;
         std::fs::create_dir_all(dir.join("players"))?;
-        let session = std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).map(|d| d.as_millis() as i64).unwrap_or(0);
+        let session = std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .map(|d| d.as_millis() as i64)
+            .unwrap_or(0);
         std::fs::write(dir.join("session.lock"), session.to_be_bytes())?;
-        Ok(Storage { dir: dir.to_path_buf(), regions: HashMap::new(), session })
+        Ok(Storage {
+            dir: dir.to_path_buf(),
+            regions: HashMap::new(),
+            session,
+        })
     }
 
     /// `checkSessionLock`: someone else opened this world since we did.
     pub fn session_ok(&self) -> bool {
-        std::fs::read(self.dir.join("session.lock")).map(|b| b.len() == 8 && i64::from_be_bytes(b[..8].try_into().unwrap()) == self.session).unwrap_or(false)
+        std::fs::read(self.dir.join("session.lock"))
+            .map(|b| b.len() == 8 && i64::from_be_bytes(b[..8].try_into().unwrap()) == self.session)
+            .unwrap_or(false)
     }
 
     pub fn load_level(&self) -> Option<LevelInfo> {
@@ -297,7 +330,11 @@ impl Storage {
         let mut root = Compound::new();
         root.put("Data", Tag::Compound(info.to_nbt()));
         let bytes = nbt::write_gzip(&root)?;
-        let (new, old, cur) = (self.dir.join("level.dat_new"), self.dir.join("level.dat_old"), self.dir.join("level.dat"));
+        let (new, old, cur) = (
+            self.dir.join("level.dat_new"),
+            self.dir.join("level.dat_old"),
+            self.dir.join("level.dat"),
+        );
         std::fs::write(&new, bytes)?;
         let _ = std::fs::remove_file(&old);
         let _ = std::fs::rename(&cur, &old);
@@ -311,7 +348,10 @@ impl Storage {
             if self.regions.len() >= 256 {
                 self.regions.clear();
             }
-            let path = self.dir.join("region").join(format!("r.{}.{}.mcr", key.0, key.1));
+            let path = self
+                .dir
+                .join("region")
+                .join(format!("r.{}.{}.mcr", key.0, key.1));
             self.regions.insert(key, RegionFile::open(&path)?);
         }
         Ok(self.regions.get_mut(&key).unwrap())
@@ -323,7 +363,12 @@ impl Storage {
     }
 
     /// The chunk loader receives the world provider when repairing missing light arrays.
-    pub fn load_chunk_for_dimension(&mut self, cx: i32, cz: i32, dimension: crate::world::Dimension) -> Option<Chunk> {
+    pub fn load_chunk_for_dimension(
+        &mut self,
+        cx: i32,
+        cz: i32,
+        dimension: crate::world::Dimension,
+    ) -> Option<Chunk> {
         let raw = self.region(cx, cz).ok()?.read_chunk(cx & 31, cz & 31)?;
         let root = nbt::read_root(&mut &raw[..]).ok()?;
         let mut level = match root.compound("Level") {
@@ -440,12 +485,19 @@ pub fn chunk_from_nbt(l: &Compound) -> Option<Chunk> {
 }
 
 /// `ChunkLoader.loadChunkIntoWorldFromCompound` with the world's provider.
-pub fn chunk_from_nbt_for_dimension(l: &Compound, dimension: crate::world::Dimension) -> Option<Chunk> {
+pub fn chunk_from_nbt_for_dimension(
+    l: &Compound,
+    dimension: crate::world::Dimension,
+) -> Option<Chunk> {
     let blocks = l.bytes("Blocks")?;
     if blocks.len() != CHUNK_VOLUME {
         return None;
     }
-    let mut c = Chunk::new(l.int("xPos"), l.int("zPos"), blocks.to_vec().into_boxed_slice().try_into().ok()?);
+    let mut c = Chunk::new(
+        l.int("xPos"),
+        l.int("zPos"),
+        blocks.to_vec().into_boxed_slice().try_into().ok()?,
+    );
     c.lowest_block_height = 0;
     c.data = nibbles(l.bytes("Data")).unwrap_or_default();
     c.populated = l.boolean("TerrainPopulated");
@@ -473,12 +525,19 @@ pub fn chunk_from_nbt_for_dimension(l: &Compound, dimension: crate::world::Dimen
                     let Tag::Compound(it) = it else { continue };
                     let slot = (it.byte("Slot") as u8) as usize;
                     if slot < 27 {
-                        slots[slot] = Some(ItemStack { id: it.short("id"), count: it.byte("Count") as u8, damage: it.short("Damage") });
+                        slots[slot] = Some(ItemStack {
+                            id: it.short("id"),
+                            count: it.byte("Count") as u8,
+                            damage: it.short("Damage"),
+                        });
                     }
                 }
                 TileEntity::Chest(slots)
             }
-            "MobSpawner" => TileEntity::MobSpawner { mob: t.string("EntityId"), delay: t.short("Delay") as i32 },
+            "MobSpawner" => TileEntity::MobSpawner {
+                mob: t.string("EntityId"),
+                delay: t.short("Delay") as i32,
+            },
             _ => {
                 // Not modelled yet: keep it for the next save if it sits on a container block.
                 let (lx, lz) = (x - c.x * 16, z - c.z * 16);
@@ -496,6 +555,9 @@ pub fn chunk_from_nbt_for_dimension(l: &Compound, dimension: crate::world::Dimen
         if (0..16).contains(&lx) && (0..16).contains(&lz) && (0..128).contains(&y) {
             let id = c.block(lx, y, lz);
             if id != 0 && crate::block::props(id).container {
+                if !c.tile_entities.contains_key(&(lx, y, lz)) {
+                    c.tile_entity_order.push((lx, y, lz));
+                }
                 c.tile_entities.insert((lx, y, lz), te);
             }
         }
