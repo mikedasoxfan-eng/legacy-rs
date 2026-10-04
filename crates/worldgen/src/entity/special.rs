@@ -188,7 +188,7 @@ impl Entity {
             }
         } else if (distance as f64) < 1.5 {
             let (min, max) = match target {
-                Target::Player(_) => (p.y, p.y + 1.8f32 as f64),
+                Target::Player(_) => w.target_entity_id(target).and_then(|id|w.entities.get(&id)).map_or((p.y,p.y+1.8f32 as f64),|e|(e.bounding_box.min_y,e.bounding_box.max_y)),
                 Target::Entity(id) => {
                     let e = &w.entities[&id];
                     (e.bounding_box.min_y, e.bounding_box.max_y)
@@ -201,7 +201,7 @@ impl Entity {
                 } else {
                     2
                 };
-                if let Target::Entity(id) = target {
+                if let Some(id) = w.target_entity_id(target) {
                     if let Some(mut e) = w.entities.remove(&id) {
                         w.entities.insert(self.entity_id, self.clone());
                         e.attack(w, Some(self.entity_id), damage);

@@ -60,6 +60,7 @@ impl EntitySeedSource {
 
 #[derive(Clone, Debug)]
 pub enum EntityKind {
+    Player(Box<player::PlayerState>),
     Item {
         item: ItemStack,
         age: i32,
@@ -125,6 +126,7 @@ pub enum EntityKind {
 impl EntityKind {
     pub fn name(&self) -> &'static str {
         match self {
+            Self::Player(..) => "Player",
             Self::Ghast(..) => "Ghast",
             Self::Wolf(..) => "Wolf",
             Self::Tnt { .. } => "PrimedTnt",
@@ -396,6 +398,7 @@ impl Entity {
         self.pitch = pitch;
     }
     pub fn attack(&mut self, w: &mut World, attacker: Option<i32>, mut damage: i32) -> bool {
+        if matches!(self.kind,EntityKind::Player(..)) && !self.player_damage(w,attacker,&mut damage) {return false;}
         self.prepare_special_attack(w, attacker, &mut damage);
         if self.kind.is_living() {
             let hit = self.living_attack(w, attacker, damage);
@@ -454,6 +457,7 @@ impl Entity {
     }
     pub fn on_update(&mut self, w: &mut World) {
         match self.kind {
+            EntityKind::Player(..) => self.update_player(w),
             EntityKind::Item { .. } => self.update_item(w),
             EntityKind::FallingSand { .. } => self.update_falling_sand(w),
             EntityKind::Tnt { .. } => self.update_tnt(w),

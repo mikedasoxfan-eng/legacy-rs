@@ -449,6 +449,7 @@ pub fn snapshot(w: &World, out: &mut Vec<u8>) {
             l(out, seed);
             i(out, remaining);
         }
+        if let Some(s)=e.player_state() {super::player::verify::state_bytes(s,e,out);}
         l(out, e.rand.state());
     }
     l(out, w.rand.state());

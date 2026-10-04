@@ -97,6 +97,7 @@ impl Default for LivingState {
 impl Entity {
     pub fn living(w: &mut World, name: &str) -> Option<Self> {
         let kind = match name {
+            "Player" => EntityKind::Player(Box::default()),
             "Pig" => EntityKind::Pig { saddled: false },
             "Sheep" => EntityKind::Sheep {
                 sheared: false,
@@ -210,7 +211,8 @@ impl Entity {
         Some(e)
     }
     pub fn eye_height(&self) -> f32 {
-        if matches!(self.kind, EntityKind::Wolf(..)) {
+        if matches!(self.kind, EntityKind::Player(..)) {0.12}
+        else if matches!(self.kind, EntityKind::Wolf(..)) {
             self.height * 0.8
         } else if self.kind.is_living() {
             self.height * 0.85
@@ -254,7 +256,7 @@ impl Entity {
         self.living.living_sound_time += 1;
         if self.rand.next_int(1000) < sound {
             self.living.living_sound_time = if self.kind.is_mob()
-                || matches!(self.kind, EntityKind::Slime { .. } | EntityKind::Ghast(..))
+                || matches!(self.kind, EntityKind::Slime { .. } | EntityKind::Ghast(..) | EntityKind::Player(..))
             {
                 -80
             } else {
@@ -271,6 +273,7 @@ impl Entity {
                     | EntityKind::Slime { .. }
                     | EntityKind::Creeper { .. }
                     | EntityKind::Giant
+                    | EntityKind::Player(..)
             ) {
                 self.rand.next_float();
                 self.rand.next_float();
@@ -400,14 +403,16 @@ impl Entity {
         self.slime_after_update(was_on_ground);
     }
     fn living_update(&mut self, w: &mut World) {
+        if matches!(self.kind,EntityKind::Player(..)) {self.player_before_living(w);}
         self.mob_before_living(w);
-        if self.living.health <= 0 {
+        if self.living.health <= 0 || self.player_state().is_some_and(|s|s.sleeping) {
             self.living.is_jumping = false;
             self.living.move_strafing = 0.0;
             self.living.move_forward = 0.0;
             self.living.random_yaw_velocity = 0.0;
         } else {
             match self.kind {
+                EntityKind::Player(..) => self.player_action(),
                 EntityKind::Ghast(..) => self.ghast_action(w),
                 EntityKind::Squid(..) => self.squid_action_state(w),
                 EntityKind::Slime { .. } => self.slime_action_state(w),
@@ -445,6 +450,7 @@ impl Entity {
             self.squid_living_update(w);
         }
         self.wolf_living();
+        if matches!(self.kind,EntityKind::Player(..)) {self.player_after_living(w);}
         if let EntityKind::Chicken {
             flap,
             prev_flap,
@@ -619,14 +625,14 @@ impl Entity {
             if damage <= self.living.last_damage {
                 return false;
             }
-            self.living.health -= damage - self.living.last_damage;
+            self.damage_living(damage - self.living.last_damage);
             self.living.last_damage = damage;
             fresh = false;
         } else {
             self.living.last_damage = damage;
             self.living.prev_health = self.living.health;
             self.living.hearts_life = self.living.hearts_halves_life;
-            self.living.health -= damage;
+            self.damage_living(damage);
             self.living.hurt_time = 10;
             self.living.max_hurt_time = 10;
             fresh = true;
@@ -670,6 +676,7 @@ impl Entity {
         if self.living.health <= 0 {
             self.living.dying = true;
             self.drop_few_items(w);
+            if matches!(self.kind,EntityKind::Player(..)) {self.player_death(w,attacker);}
             if matches!(self.kind, EntityKind::Creeper { .. })
                 && attacker
                     .and_then(|id| w.entities.get(&id))

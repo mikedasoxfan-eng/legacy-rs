@@ -23,6 +23,7 @@ fn with_hi_lo(hi: i32, lo: u32) -> f64 {
 
 const S1: f64 = -1.66666666666666324348e-01;
 /// fdlibm s_atan.c and e_atan2.c, used by Java 8 Math.atan2.
+pub fn java_atan(x: f64) -> f64 { fdlibm_atan(x) }
 fn fdlibm_atan(mut x: f64) -> f64 {
     const HI: [f64; 4] = [
         4.63647609000806116214e-1,

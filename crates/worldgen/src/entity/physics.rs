@@ -360,6 +360,7 @@ impl Entity {
     }
     fn on_entity_collided_with_block(&mut self, w: &mut World, id: u8, x: i32, y: i32, z: i32) {
         match id {
+            PORTAL => self.set_in_portal(),
             CACTUS => {
                 self.attack(w, None, 1);
             }

@@ -38,6 +38,10 @@ echo "== MathHelper sine table"
 
 echo "== player inventory (10000 original-bytecode operations)"
 "$oracle" playerinventory player_inventory.bin && "$cmp" playerinventory "$out/player_inventory.bin" || fail=1
+for player_case in "movement 1000" "damage 1000" "pickup 1000"; do
+  read -r kind ticks <<<"$player_case"
+  run "player: $kind, every frame and final world" player "$kind" "$ticks" -- player "$kind" "$ticks"
+done
 
 echo "== entity geometry (10000 original-bytecode cases)"
 "$oracle" entitygeometry entity_geometry.bin && "$cmp" entitygeometry "$out/entity_geometry.bin" || fail=1

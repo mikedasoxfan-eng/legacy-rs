@@ -179,6 +179,8 @@ pub struct World {
     pub sound_counter: i32,
     /// Positions of the players (`playerEntities`); drive random ticks.
     pub players: Vec<(f64, f64, f64)>,
+    /// Entity IDs for simulated players; legacy camera entries have no ID.
+    pub player_entities: Vec<Option<i32>>,
     positions_to_update: tick::JavaHashSet<(i32, i32)>,
     /// `BlockLeaves.adjacentTreeBlocks`: scratch kept between decay checks, as in the original.
     pub leaf_scratch: Option<Vec<i32>>,
@@ -258,6 +260,7 @@ impl World {
             update_lcg: 0,
             sound_counter: 0,
             players: Vec::new(),
+            player_entities: Vec::new(),
             positions_to_update: Default::default(),
             leaf_scratch: None,
             lightning_strikes: Vec::new(),
