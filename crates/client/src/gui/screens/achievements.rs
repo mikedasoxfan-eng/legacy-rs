@@ -149,8 +149,10 @@ impl GuiAchievements {
             ui.draw_vertical_line(x1, y0, y1, c);
         }
 
-        // glRotatef(180, 1, 0, 0); RenderHelper.enableStandardItemLighting()
+        // glRotatef(180, 1, 0, 0); RenderHelper.enableStandardItemLighting();
+        // glEnable(GL_RESCALE_NORMAL)
         gui_item::set_gui_light_rotation(180.0);
+        gui_item::set_gui_rescale_normal(true);
         let mut hovered = None;
         for (i, a) in ACHIEVEMENTS.iter().enumerate() {
             let rx = a.column * 24 - sx;
@@ -189,7 +191,8 @@ impl GuiAchievements {
             }
         }
 
-        gui_item::set_gui_light_rotation(120.0);
+        gui_item::set_gui_light_rotation(0.0);
+        gui_item::set_gui_rescale_normal(false);
         ui.gl.depth_test = false;
         ui.gl.blend = true;
         ui.gl.color4f(1.0, 1.0, 1.0, 1.0);

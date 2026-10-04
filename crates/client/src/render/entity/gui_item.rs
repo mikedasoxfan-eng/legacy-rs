@@ -12,8 +12,8 @@ pub fn geometry(item: &ItemStack, x: i32, y: i32, tint: bool) -> Fixed {
 pub fn geometry_with(item: &ItemStack, x: i32, y: i32, tint: bool, base: Option<[f32; 4]>) -> Fixed {
     let mut g = Fixed::new(1.0);
     g.light_rotation = gui_light_rotation();
-    // GuiIngame / GuiContainer / GuiAchievements enable GL_RESCALE_NORMAL around items.
-    g.enable(2, true);
+    // The calling screen's GL_RESCALE_NORMAL (GuiIngame/GuiContainer/GuiAchievements enable it).
+    g.enable(2, gui_rescale_normal());
     if let Some(m) = base {
         g.material = m;
     }
@@ -72,12 +72,22 @@ pub fn geometry_with(item: &ItemStack, x: i32, y: i32, tint: bool, base: Option<
     g
 }
 thread_local! {
-    static LIGHT_ROTATION: std::cell::Cell<f32> = const { std::cell::Cell::new(120.0) };
+    static LIGHT_ROTATION: std::cell::Cell<f32> = const { std::cell::Cell::new(0.0) };
+    static RESCALE_NORMAL: std::cell::Cell<bool> = const { std::cell::Cell::new(false) };
 }
 
-/// The rotation the calling screen applied before `enableStandardItemLighting`.
+/// The GL state the calling screen set up for item icons: the rotation applied before
+/// `enableStandardItemLighting` and whether `GL_RESCALE_NORMAL` is on.
 pub fn set_gui_light_rotation(degrees: f32) {
     LIGHT_ROTATION.with(|c| c.set(degrees));
+}
+
+pub fn set_gui_rescale_normal(on: bool) {
+    RESCALE_NORMAL.with(|c| c.set(on));
+}
+
+fn gui_rescale_normal() -> bool {
+    RESCALE_NORMAL.with(|c| c.get())
 }
 
 fn gui_light_rotation() -> f32 {
