@@ -33,6 +33,8 @@ pub struct GuiSystem {
     pub screen: Option<Box<dyn Screen>>,
     /// `GuiMainMenu`'s static `Random`.
     pub splash_rand: worldgen::JavaRandom,
+    /// `Minecraft.guiAchievement`
+    pub toast: super::achievement_toast::AchievementToast,
 }
 
 pub struct Resources {
@@ -97,6 +99,7 @@ impl GuiSystem {
             renderer,
             screen: None,
             splash_rand: worldgen::JavaRandom::new(splash_seed),
+            toast: Default::default(),
         }
     }
 

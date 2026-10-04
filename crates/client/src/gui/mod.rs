@@ -2,6 +2,7 @@
 //! `ScaledResolution` and the screens, drawing through a small fixed-function GL emulation
 //! (`gl`) so the original drawing code can be followed line by line.
 
+pub mod achievement_toast;
 pub mod container_api;
 pub mod font;
 pub mod gl;

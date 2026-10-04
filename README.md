@@ -45,7 +45,7 @@ against the original game code, not just "looks right".
 | Inventory, crafting, chests, furnaces, dispensers | 7 | 15 % | 🟡 inventory simulation done; screens and crafting in progress |
 | First-person view (hand, held item, block outline, cracks, bobbing, third person) | 5 | 0 % | 🟡 in progress |
 | Particles and world sounds | 5 | 10 % | 🟡 in progress (music, rain and menu sounds work) |
-| Tile entities that tick (mob spawners, pistons, furnace smelting) | 2 | 10 % | 🔴 next |
+| Tile entities that tick (mob spawners ✅, furnaces 🟡, pistons) | 2 | 40 % | 🟡 spawners verified; pistons next |
 | Vehicles, signs, paintings, maps, fishing, records, statistics | 2 | 0 % | 🔴 not started |
 
 ---
@@ -272,8 +272,7 @@ Being exact means keeping these too:
 ## Not yet
 
 Minecarts and boats (placing them works; riding and physics don't), pistons and note blocks,
-mob spawners spawning, furnace smelting, signs, paintings, maps, fishing, records, the
-statistics screen, and the 3D anaglyph mode.
+signs, paintings, maps, fishing, records, the statistics screen, and the 3D anaglyph mode.
 
 ---
 

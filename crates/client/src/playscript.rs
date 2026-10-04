@@ -7,6 +7,7 @@
 //! 60 key W up
 //! 61 mouse left down   # left / right / middle, down / up
 //! 62 look 300 -50      # raw mouse counts (x right, y down), like a mouse move
+//! 64 move 282 374      # put the cursor at window pixel (x, y) (for screens)
 //! 63 scroll -1         # wheel notches, up is positive
 //! 70 shot walked       # screenshot <dir>/walked.png (dir = the script's name without .txt)
 //! 80 button 1          # press the open screen's button with this id
@@ -20,6 +21,7 @@ pub enum Command {
     Key(KeyCode, bool),
     Mouse(i32, bool),
     Look(f64, f64),
+    Move(f64, f64),
     Scroll(i32),
     Shot(String),
     Button(i32),
@@ -64,6 +66,7 @@ impl Script {
                 }
                 "look" => Command::Look(arg(2)?.parse().map_err(|_| bad())?, arg(3)?.parse().map_err(|_| bad())?),
                 "scroll" => Command::Scroll(arg(2)?.parse().map_err(|_| bad())?),
+                "move" => Command::Move(arg(2)?.parse().map_err(|_| bad())?, arg(3)?.parse().map_err(|_| bad())?),
                 "shot" => Command::Shot(arg(2)?.to_string()),
                 "button" => Command::Button(arg(2)?.parse().map_err(|_| bad())?),
                 "quit" => Command::Quit,

@@ -481,6 +481,13 @@ impl App {
             gui.ui.sounds.clear();
         }
         let acts = gui.process_actions();
+        // Container clicks and closes go to the world thread, in order.
+        let commands = gui.take_container_commands();
+        if let Some(tx) = &self.tx {
+            for c in commands {
+                let _ = tx.send(ToWorker::Container(c));
+            }
+        }
         for a in acts {
             match a {
                 gui::system::GameAction::StartWorld { folder, name, seed } => {
@@ -774,10 +781,18 @@ impl App {
                 }
             }
         }
-        if pressed {
-            if let Some(g) = &mut self.gui {
-                g.ui.shift_down = self.keys.contains(&KeyCode::ShiftLeft) || self.keys.contains(&KeyCode::ShiftRight);
+        // Keyboard.isKeyDown(LSHIFT/RSHIFT) as screens see it, including this event.
+        if matches!(code, KeyCode::ShiftLeft | KeyCode::ShiftRight) {
+            if pressed {
+                self.keys.insert(code);
+            } else {
+                self.keys.remove(&code);
             }
+        }
+        if let Some(g) = &mut self.gui {
+            g.ui.shift_down = self.keys.contains(&KeyCode::ShiftLeft) || self.keys.contains(&KeyCode::ShiftRight);
+        }
+        if pressed {
             if screen_open && self.loading.is_none() {
                 let key = lwjgl_key(code);
                 if let Some(g) = &mut self.gui {
@@ -791,6 +806,12 @@ impl App {
                         g.ui.settings.key_bindings.iter().any(|b| b.description == name && b.code == key)
                     })
                 };
+                if bound("key.inventory") {
+                    // displayGuiScreen(new GuiInventory(thePlayer)): the world thread owns it.
+                    if let Some(tx) = &self.tx {
+                        let _ = tx.send(ToWorker::Container(gui::container_api::inventory_key_request()));
+                    }
+                }
                 if bound("key.drop") {
                     self.input.drop_pressed = true;
                 }
@@ -886,6 +907,15 @@ impl App {
                     self.mouse_delta.1 -= y;
                 }
                 Command::Scroll(n) => self.input.scroll += n,
+                Command::Move(x, y) => {
+                    self.cursor = (x, y);
+                    if let Some(g) = &mut self.gui {
+                        if g.screen.is_some() {
+                            let (gx, gy) = g.gui_mouse(x, y);
+                            g.mouse_event(gx, gy, -1, false);
+                        }
+                    }
+                }
                 Command::Shot(name) => {
                     if let Some(p) = &self.player {
                         eprintln!(
@@ -952,6 +982,7 @@ impl App {
         let mut uploads = 0;
         let mut new_ticks = 0;
         let mut closed = false;
+        let mut ungrab = false;
         if let (Some(rx), Some(gpu)) = (&self.rx, &mut self.gpu) {
             while uploads < 64 {
                 match rx.try_recv() {
@@ -991,6 +1022,24 @@ impl App {
                         }
                     }
                     Ok(FromWorker::Entities(list)) => self.entities = list,
+                    Ok(FromWorker::ContainerOpened(s)) => {
+                        if let Some(g) = &mut self.gui {
+                            for a in g.open_container(s) {
+                                match a {
+                                    // setIngameNotInFocus -> resetPlayerKeyState
+                                    gui::system::GameAction::IngameUnfocus => self.move_keys = [false; 6],
+                                    gui::system::GameAction::IngameFocus => {}
+                                    _ => {}
+                                }
+                            }
+                        }
+                        ungrab = true;
+                    }
+                    Ok(FromWorker::ContainerUpdate(s)) => {
+                        if let Some(g) = &mut self.gui {
+                            g.update_container(s);
+                        }
+                    }
                     Ok(FromWorker::Chat(key)) => {
                         if let Some(g) = &self.gui {
                             let text = g.ui.lang.translate_key(&key);
@@ -1027,8 +1076,30 @@ impl App {
                             match ev {
                                 // The world thread switches dimension itself (usePortal).
                                 worldgen::entity::player::PlayerEvent::ChangeDimension => {}
-                                worldgen::entity::player::PlayerEvent::OpenContainer { block, position } => {
-                                    eprintln!("container {block} at {position:?}: screens not wired up yet")
+                                worldgen::entity::player::PlayerEvent::Container(c) => {
+                                    use worldgen::container::ContainerEvent;
+                                    match c {
+                                        ContainerEvent::Closed { window } => {
+                                            if let Some(g) = &mut self.gui {
+                                                g.container_closed(window);
+                                            }
+                                        }
+                                        // EntityPlayerSP.addStat for an achievement: needs its parent.
+                                        ContainerEvent::Achievement(key) => {
+                                            if let Some(g) = &mut self.gui {
+                                                let list = &gui::stats::ACHIEVEMENTS;
+                                                if let Some(i) = list.iter().position(|a| a.key == key) {
+                                                    if g.ui.stats.can_unlock(i) {
+                                                        if !g.ui.stats.unlocked(i) {
+                                                            g.toast.queue_taken(&g.ui, i);
+                                                        }
+                                                        g.ui.stats.add(list[i].id, 1);
+                                                    }
+                                                }
+                                            }
+                                        }
+                                        _ => {}
+                                    }
                                 }
                                 _ => {}
                             }
@@ -1109,6 +1180,9 @@ impl App {
                     Err(_) => break,
                 }
             }
+        }
+        if ungrab {
+            self.set_grab(false);
         }
         if closed {
             self.world_closed(el);
@@ -1252,6 +1326,7 @@ impl App {
                     let (mx, my) = gui.gui_mouse(cursor.0, cursor.1);
                     gui.draw_screen(mx, my, gui_partial);
                 }
+                gui.toast.draw(&mut gui.ui);
                 gui.renderer.render(device, queue, view, size, &gui.ui.gl, Some([0.0, 0.0, 0.0, 0.0]));
             });
             if let (Some(img), Some((dir, name))) = (img, &flow_shot) {
@@ -1364,6 +1439,10 @@ impl App {
                 gui.draw_screen(mx, my, gui_partial);
                 gui.renderer.render(device, queue, view, size, &gui.ui.gl, None);
             }
+            // Minecraft.run: guiAchievement.updateAchievementWindow() after the frame.
+            gui.ui.gl.begin_frame();
+            gui.toast.draw(&mut gui.ui);
+            gui.renderer.render(device, queue, view, size, &gui.ui.gl, None);
         });
         if let (Some(img), Some((dir, name))) = (&shot, &flow_shot) {
             let _ = assets::save_png(img, &dir.join(format!("{name}.png")));

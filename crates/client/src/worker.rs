@@ -29,6 +29,8 @@ pub enum ToWorker {
     Input(InputFrame),
     /// `GuiGameOver` "Respawn".
     Respawn,
+    /// A container screen request: open the inventory, click, close (see gui/CONTAINERS.md).
+    Container(worldgen::container::ContainerCommand),
     Quit,
 }
 
@@ -158,6 +160,10 @@ pub enum FromWorker {
     Entities(Vec<crate::render::entity::effects::Snapshot>),
     /// `addChatMessageTranslate(key)` (e.g. "tile.bed.notValid" on respawn).
     Chat(String),
+    /// A container window opened (inventory key or a block activation).
+    ContainerOpened(worldgen::container::ContainerSnapshot),
+    /// The open container's contents after a click or a tick.
+    ContainerUpdate(worldgen::container::ContainerSnapshot),
     /// The player after a tick: entity (positions, rotation), HUD state, events.
     Player {
         entity: Box<worldgen::entity::Entity>,
@@ -372,6 +378,22 @@ fn run(opts: WorldOptions, col: Colorizers, mut video: VideoSettings, rx: Receiv
                     }
                     input.merge(InputFrame { yaw_delta: 0.0, pitch_delta: 0.0, ..f });
                 }
+                Ok(ToWorker::Container(command)) => {
+                    if let Some(id) = player {
+                        let opens = matches!(
+                            command,
+                            worldgen::container::ContainerCommand::OpenInventory
+                                | worldgen::container::ContainerCommand::OpenBlock { .. }
+                        );
+                        if let Some(s) = world.container_command(id, command) {
+                            let _ = tx.send(if opens {
+                                FromWorker::ContainerOpened(s)
+                            } else {
+                                FromWorker::ContainerUpdate(s)
+                            });
+                        }
+                    }
+                }
                 Ok(ToWorker::Respawn) => {
                     // Minecraft.respawn(false, 0): out of the Nether first (it can't be
                     // respawned in), then a new player at the bed or the spawn point.
@@ -560,6 +582,20 @@ fn run(opts: WorldOptions, col: Colorizers, mut video: VideoSettings, rx: Receiv
             let _ = tx.send(FromWorker::Entities(snapshot));
             if let Some(id) = player {
                 let events = world.take_player_events(id);
+                // Block activations open their container right here on the world thread.
+                for e in &events {
+                    if let Some(c) = crate::gui::container_api::activation_request(e) {
+                        if let Some(s) = world.container_command(id, c) {
+                            let _ = tx.send(FromWorker::ContainerOpened(s));
+                        }
+                    }
+                }
+                // The open container's tiles change on their own (furnaces): one snapshot a tick.
+                if let Some(s) = world.container_snapshot(id) {
+                    let _ = tx.send(FromWorker::ContainerUpdate(s));
+                }
+                // Dispenser sounds and smoke are drawn by the effects code once it is in.
+                world.container_effects.clear();
                 if events.iter().any(|e| matches!(e, worldgen::entity::player::PlayerEvent::ChangeDimension)) {
                     // Minecraft.usePortal: save, switch worlds, find or build the portal.
                     if let Some(next) = world.use_portal(id, fresh_seed(), fresh_seed(), &mut progress) {
