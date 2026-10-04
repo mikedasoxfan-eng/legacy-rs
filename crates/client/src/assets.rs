@@ -12,6 +12,7 @@ pub struct Assets {
     pub rain: Image,
     pub snow: Image,
     pub particles: Image,
+    pub footprint: Image,
     pub grass_color: Vec<u32>,
     pub foliage_color: Vec<u32>,
     pub mobs: std::collections::HashMap<String, Image>,
@@ -74,6 +75,7 @@ pub fn load() -> Result<Assets, String> {
     let rain = read("environment/rain.png")?;
     let snow = read("environment/snow.png")?;
     let particles = read("particles.png")?;
+    let footprint=read("misc/footprint.png")?;
     let grass = read("misc/grasscolor.png")?;
     let foliage = read("misc/foliagecolor.png")?;
     let mut mobs = std::collections::HashMap::new();
@@ -100,6 +102,7 @@ pub fn load() -> Result<Assets, String> {
         rain,
         snow,
         particles,
+        footprint,
         grass_color: colormap(&grass),
         foliage_color: colormap(&foliage),
         mobs,

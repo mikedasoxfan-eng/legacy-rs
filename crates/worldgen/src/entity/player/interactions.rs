@@ -97,12 +97,19 @@ impl Entity {
                         target.living.health = 20;
                     }
                     for _ in 0..7 {
-                        for _ in 0..3 {
-                            target.rand.next_gaussian();
-                        }
-                        for _ in 0..3 {
-                            target.rand.next_float();
-                        }
+                        let v = Vec3D::new(
+                            target.rand.next_gaussian() * 0.02,
+                            target.rand.next_gaussian() * 0.02,
+                            target.rand.next_gaussian() * 0.02,
+                        );
+                        let p = Vec3D::new(
+                            target.pos.x + (target.rand.next_float() * target.width * 2.0) as f64
+                                - target.width as f64,
+                            target.pos.y + 0.5 + (target.rand.next_float() * target.height) as f64,
+                            target.pos.z + (target.rand.next_float() * target.width * 2.0) as f64
+                                - target.width as f64,
+                        );
+                        w.spawn_particle(if tamed { "heart" } else { "smoke" }, p, v);
                     }
                     handled = true;
                 }

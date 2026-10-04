@@ -4,6 +4,18 @@ impl Entity {
         let id = w.get_block_id(x, y, z);
         let meta = w.get_block_metadata(x, y, z);
         match id {
+            25 => {
+                w.trigger_note(x, y, z, true);
+                true
+            }
+            84 => {
+                if meta == 0 {
+                    false
+                } else {
+                    w.eject_record(x, y, z);
+                    true
+                }
+            }
             71 => true,
             64 => {
                 if meta & 8 != 0 {
@@ -15,15 +27,23 @@ impl Entity {
                         w.set_block_metadata_with_notify(x, y + 1, z, (meta ^ 4) + 8);
                     }
                     w.set_block_metadata_with_notify(x, y, z, meta ^ 4);
+                    w.auxiliary_effect(1003, (x, y, z), 0);
                 }
                 true
             }
             96 => {
                 w.set_block_metadata_with_notify(x, y, z, meta ^ 4);
+                w.auxiliary_effect(1003, (x, y, z), 0);
                 true
             }
             69 => {
                 w.set_block_metadata_with_notify(x, y, z, (meta & 7) + (8 - (meta & 8)));
+                w.play_sound(
+                    "random.click",
+                    Vec3D::new(x as f64 + 0.5, y as f64 + 0.5, z as f64 + 0.5),
+                    0.3,
+                    if meta & 8 == 0 { 0.6 } else { 0.5 },
+                );
                 notify_power(w, id, x, y, z, meta & 7);
                 true
             }
@@ -32,6 +52,12 @@ impl Entity {
                     return true;
                 }
                 w.set_block_metadata_with_notify(x, y, z, (meta & 7) + 8);
+                w.play_sound(
+                    "random.click",
+                    Vec3D::new(x as f64 + 0.5, y as f64 + 0.5, z as f64 + 0.5),
+                    0.3,
+                    0.6,
+                );
                 notify_power(w, id, x, y, z, meta & 7);
                 w.schedule_block_update(x, y, z, id, 20);
                 true

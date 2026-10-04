@@ -82,7 +82,7 @@ pub fn tile_bytes(ticks: i32) -> Vec<u8> {
             }
             w.update_entities();
         }
-        crate::entity::verify::snapshot(&w, &mut out);
+        crate::entity::verify::snapshot(&mut w, &mut out);
         for i in 0..inputs.len() {
             let f: Option<Furnace> = match w.get_block_tile_entity(-12 + i as i32 * 2, 64, 8) {
                 Some(TileEntity::Furnace(f)) => Some(f.clone()),

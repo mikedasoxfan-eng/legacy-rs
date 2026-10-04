@@ -20,6 +20,7 @@ mod playscript;
 mod render;
 mod sound;
 mod worker;
+mod world_effects;
 
 use render::blocks::Colorizers;
 use render::sky;
@@ -403,12 +404,20 @@ fn main() {
         println!("{}", if ok { "GUI MATCHES" } else { "GUI DIFFERS" });
         std::process::exit(if ok { 0 } else { 1 });
     }
+    if args.get(1).map(String::as_str)==Some("--particlefxcheck") {let ok=render::particle_check::effects_check(args.get(2).expect("--particlefxcheck oracle.bin"));println!("{}",if ok {"EFFECT RENDERER EXACT"}else{"EFFECT RENDERER DIFFER"});std::process::exit(if ok {0}else{1});}
+    if args.get(1).map(String::as_str) == Some("--particlecheck") {
+        let ok=render::particle_check::check(args.get(2).expect("--particlecheck oracle.bin"));
+        println!("{}",if ok {"PARTICLES EXACT"}else{"PARTICLES DIFFER"});std::process::exit(if ok {0}else{1});
+    }
     if args.get(1).map(String::as_str) == Some("--weathercheck") {
         render::weather_check::check(&args);
         return;
     }
     if args.get(1).map(String::as_str) == Some("--soundcheck") {
         std::process::exit(if sound::check() { 0 } else { 1 });
+    }
+    if args.get(1).map(String::as_str) == Some("--muscheck") {
+        std::process::exit(if sound::check_mus(args.get(2).expect("--muscheck oracle.bin")) { 0 } else { 1 });
     }
     if matches!(args.get(1).map(String::as_str), Some("--skycolor") | Some("--skycolor-nether")) {
         sky_check(&args);

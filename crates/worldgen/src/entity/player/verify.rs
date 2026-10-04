@@ -204,7 +204,7 @@ pub fn player_bytes(scenario: &str, ticks: i32) -> Vec<u8> {
     let mut result = 0;
     let mut controller = super::controller::PlayerControllerSP::default();
     let mut out = Vec::new();
-    snapshot(&w, &mut out);
+    snapshot(&mut w, &mut out);
     if matches!(scenario, "look" | "pickentities") {
         picking_bytes(&mut w, id, &mut out);
     }
@@ -306,6 +306,20 @@ pub fn player_bytes(scenario: &str, ticks: i32) -> Vec<u8> {
                     raw(&mut w, 0, 64, 0, 26, 0);
                     raw(&mut w, 0, 64, 1, 26, 8);
                     p.sleep_in_bed(&mut w, 0, 64, 1);
+                }
+                if scenario == "slimecontact" {
+                    p.set_player_input(Default::default());
+                    p.set_location_and_angles(0.5, 64.0, 0.5, 0.0, 0.0);
+                    p.motion = Default::default();
+                    if t % 30 == 0 {
+                        p.living.health = 20;
+                        p.living.hearts_life = 0;
+                        w.difficulty = t / 90 % 4;
+                        let mut mob = Entity::living(&mut w, "Slime").unwrap();
+                        mob.set_slime_size(1 << (t / 30 % 3));
+                        mob.set_location_and_angles(0.5, 64.0, 0.6, 0.0, 0.0);
+                        w.entity_joined_world(mob);
+                    }
                 }
                 if scenario == "combat" {
                     p.set_player_input(Default::default());
@@ -654,7 +668,7 @@ pub fn player_bytes(scenario: &str, ticks: i32) -> Vec<u8> {
         } else {
             w.update_entities();
         }
-        snapshot(&w, &mut out);
+        snapshot(&mut w, &mut out);
         if matches!(scenario, "look" | "pickentities") {
             picking_bytes(&mut w, id, &mut out);
         }

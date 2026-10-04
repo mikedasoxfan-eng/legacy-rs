@@ -235,7 +235,7 @@ pub struct App {
     weather_rng: render::weather::ClientRandom,
     rain_sound_counter: i32,
     fog_fade: [f32; 2],
-    particles: render::weather::Particles,
+    particles: crate::world_effects::Effects,
     /// Singleplayer: the player the world thread simulates.
     player: Option<PlayerView>,
     /// Button and key presses since the last input frame went to the world thread.
@@ -329,7 +329,7 @@ impl App {
             weather_rng: render::weather::ClientRandom::new(seed),
             rain_sound_counter: 0,
             fog_fade: [0.0; 2],
-            particles: render::weather::Particles::new(seed),
+            particles: crate::world_effects::Effects::new(seed),
         }
     }
 
@@ -389,7 +389,7 @@ impl App {
         self.weather_rng = render::weather::ClientRandom::new(seed);
         self.rain_sound_counter = 0;
         self.fog_fade = [0.0; 2];
-        self.particles = render::weather::Particles::new(seed);
+        self.particles.change_world(seed);
         self.paused = false;
         if let Some((x, y, z, yaw, pitch)) = self.opts.at {
             self.cam = Camera { pos: DVec3::new(x, y, z), yaw, pitch };
@@ -1043,6 +1043,17 @@ impl App {
                             self.ingame.add_chat_message(&g.ui, text);
                         }
                     }
+                    // Presentation callbacks stay on the audio/render thread.
+                    Ok(FromWorker::Effects { events, terrain }) => {
+                        for event in &events {
+                            if let Some(name) = crate::world_effects::Effects::record_name(event) {
+                                self.ingame.set_record_playing(&format!("C418 - {name}"));
+                            }
+                        }
+                        self.particles.fancy = self.gui.as_ref().is_none_or(|gui| gui.ui.settings.fancy_graphics);
+                        self.particles.colors = self.col.clone();
+                        self.particles.receive(events, terrain, self.cam.pos.to_array(), self.sound.as_mut());
+                    }
                     Ok(FromWorker::Player {
                         entity,
                         hud,
@@ -1080,6 +1091,7 @@ impl App {
                         }
                         for ev in events {
                             match ev {
+                                worldgen::entity::player::PlayerEvent::Pickup { source, .. } => self.particles.pickup(source, entity.entity_id),
                                 // The world thread switches dimension itself (usePortal).
                                 worldgen::entity::player::PlayerEvent::ChangeDimension => {}
                                 worldgen::entity::player::PlayerEvent::Container(c) => {
@@ -1118,6 +1130,7 @@ impl App {
                                 g.ui.display(None);
                             }
                         }
+                        self.particles.collector = Some((*entity).clone());
                         let nether = entity.player_state().is_some_and(|s| s.dimension == -1);
                         if nether != self.nether {
                             self.nether = nether;
@@ -1175,7 +1188,7 @@ impl App {
                             play_world_sound(snd, self.cam.pos, "ambient.weather.rain", r.pos, r.volume, r.pitch);
                         }
                         self.particles.spawn(splashes);
-                        self.particles.tick(&self.weather_terrain);
+                        self.particles.tick(self.cam.pos.to_array());
                     }
                     Ok(FromWorker::Idle) => self.idle = true,
                     Ok(FromWorker::Saved) => {
@@ -1370,8 +1383,10 @@ impl App {
             .chain(self.opts.bolt)
             .flat_map(|b| render::weather::lightning(b, self.cam.pos.to_array()))
             .collect();
+        let lit_effect_batches = self.particles.lit_batches(
+            self.cam.pos.to_array(), [self.cam.yaw, self.cam.pitch], partial, video.fancy,
+        );
         let particles = self.particles.vertices(
-            &self.weather_terrain,
             self.cam.pos.to_array(),
             self.cam.yaw,
             self.cam.pitch,
@@ -1430,6 +1445,7 @@ impl App {
         };
 
         if let Some(gpu) = &mut self.gpu {
+            gpu.lit_effect_batches = lit_effect_batches;
             gpu.entities.snapshots = self.entities.clone();
             gpu.entities.partial = partial;
             gpu.entities.fancy = self.gui.as_ref().is_none_or(|gui| gui.ui.settings.fancy_graphics);
@@ -1550,7 +1566,7 @@ impl ApplicationHandler for App {
             &assets.sun,
             &assets.moon,
             &assets.clouds,
-            [&assets.snow, &assets.rain, &assets.particles],
+            [&assets.snow, &assets.rain, &assets.particles, &assets.mobs["gui/items.png"], &assets.footprint],
             &assets.mobs,
         );
         let (images, font_txt, lang, splashes) = match assets::Jar::open().and_then(|mut j| gui::load_resources(&mut j))
@@ -1744,7 +1760,7 @@ fn memory_info() -> gui::ingame::DebugInfo {
 
 /// `World.playSoundEffect` -> `RenderGlobal.playSound`: only within 16 blocks (16 x volume
 /// when louder than 1) of the view entity.
-fn play_world_sound(
+pub(crate) fn play_world_sound(
     snd: &mut crate::sound::SoundManager,
     view: DVec3,
     name: &str,

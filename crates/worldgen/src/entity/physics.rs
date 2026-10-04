@@ -34,19 +34,44 @@ impl Entity {
         self.prev_pitch = self.pitch;
         if self.handle_water_movement(w) {
             if !self.in_water && !self.first_update {
-                self.rand.next_float();
-                self.rand.next_float();
+                let volume = ((self.motion.x * self.motion.x * 0.2f32 as f64
+                    + self.motion.y * self.motion.y
+                    + self.motion.z * self.motion.z * 0.2f32 as f64)
+                    .sqrt() as f32
+                    * 0.2)
+                    .min(1.0);
+                let pitch = 1.0 + (self.rand.next_float() - self.rand.next_float()) * 0.4;
+                w.play_sound_at_entity(self, "random.splash", volume, pitch);
+                let y = floor(self.bounding_box.min_y) as f32;
                 let mut i = 0;
                 while (i as f32) < 1.0 + self.width * 20.0 {
-                    self.rand.next_float();
-                    self.rand.next_float();
-                    self.rand.next_float();
+                    let x = (self.rand.next_float() * 2.0 - 1.0) * self.width;
+                    let z = (self.rand.next_float() * 2.0 - 1.0) * self.width;
+                    let vy = self.motion.y - (self.rand.next_float() * 0.2) as f64;
+                    w.spawn_particle(
+                        "bubble",
+                        super::Vec3D::new(
+                            self.pos.x + x as f64,
+                            (y + 1.0) as f64,
+                            self.pos.z + z as f64,
+                        ),
+                        super::Vec3D::new(self.motion.x, vy, self.motion.z),
+                    );
                     i += 1;
                 }
                 let mut i = 0;
                 while (i as f32) < 1.0 + self.width * 20.0 {
-                    self.rand.next_float();
-                    self.rand.next_float();
+                    let x = (self.rand.next_float() * 2.0 - 1.0) * self.width;
+                    let z = (self.rand.next_float() * 2.0 - 1.0) * self.width;
+                    w.spawn_particle(
+                        "splash",
+                        super::Vec3D::new(
+                            self.pos.x + x as f64,
+                            (y + 1.0) as f64,
+                            self.pos.z + z as f64,
+                        ),
+                        self.motion,
+                    );
                     i += 1;
                 }
             }
@@ -270,6 +295,14 @@ impl Entity {
                     let damage = (self.fall_distance - 3.0).ceil() as i32;
                     if damage > 0 {
                         self.attack(w, None, damage);
+                        let id = w.get_block_id(
+                            floor(self.pos.x),
+                            floor(self.pos.y - 0.2f32 as f64 - self.y_offset as f64),
+                            floor(self.pos.z),
+                        );
+                        if id > 0 {
+                            self.play_step_sound(w, id, 0.5, 12.0 / 16.0);
+                        }
                     }
                 }
                 self.fall_distance = 0.0;
@@ -302,6 +335,11 @@ impl Entity {
             }
             if self.distance_walked > self.next_step_distance as f32 && id > 0 {
                 self.next_step_distance += 1;
+                if w.get_block_id(x, y + 1, z) == SNOW {
+                    self.play_step_sound(w, SNOW, 0.15, 1.0);
+                } else if !mat(material_of(id)).is_liquid {
+                    self.play_step_sound(w, id, 0.15, 1.0);
+                }
                 self.on_entity_walking(w, id, x, y, z);
             }
         }
@@ -339,8 +377,8 @@ impl Entity {
             self.fire = -self.fire_resistance;
         }
         if wet && self.fire > 0 {
-            self.rand.next_float();
-            self.rand.next_float();
+            let pitch = 1.6 + (self.rand.next_float() - self.rand.next_float()) * 0.4;
+            w.play_sound_at_entity(self, "random.fizz", 0.7, pitch);
             self.fire = -self.fire_resistance;
         }
     }

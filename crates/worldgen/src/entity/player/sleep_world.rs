@@ -115,9 +115,11 @@ impl World {
                     self.entities.insert(id, p);
                 }
                 if name != "Spider" {
-                    if let Some(e) = self.entities.get_mut(&mob) {
-                        e.rand.next_float();
-                        e.rand.next_float();
+                    if let Some(mut e) = self.entities.remove(&mob) {
+                        let name = e.living_sound().unwrap();
+                        let pitch = (e.rand.next_float() - e.rand.next_float()) * 0.2 + 1.0;
+                        self.play_sound_at_entity(&e, name, e.sound_volume(), pitch);
+                        self.entities.insert(mob, e);
                     }
                 }
                 spawned = true;

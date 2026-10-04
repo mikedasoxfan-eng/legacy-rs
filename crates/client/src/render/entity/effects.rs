@@ -27,6 +27,10 @@ pub fn radius(e: &Entity) -> f32 {
     }
 }
 pub fn shadow(e: &Entity, surfaces: &[Surface], partial: f32, camera: [f64; 3]) -> Fixed {
+    let p=super::bridge::position(e,partial);let relative=std::array::from_fn(|i|p[i]-camera[i]);
+    shadow_at(e,surfaces,partial,camera,relative)
+}
+pub fn shadow_at(e:&Entity,surfaces:&[Surface],partial:f32,camera:[f64;3],rel:[f64;3])->Fixed {
     let mut g = Fixed::new(1.0);
     let size = radius(e);
     if size <= 0.0 {
@@ -40,7 +44,6 @@ pub fn shadow(e: &Entity, surfaces: &[Surface], partial: f32, camera: [f64; 3]) 
         return g;
     }
     let p = super::bridge::position(e, partial);
-    let rel = std::array::from_fn::<_, 3, _>(|i| p[i] - camera[i]);
     let offset = e.height / 2.0;
     let y = p[1] + offset as f64;
     let fl = worldgen::math::floor_double;
@@ -87,14 +90,17 @@ pub fn shadow(e: &Entity, surfaces: &[Surface], partial: f32, camera: [f64; 3]) 
     g
 }
 pub fn fire(e: &Entity, partial: f32, camera: [f64; 3], view_y: f32) -> Fixed {
+    let p=super::bridge::position(e,partial);let relative=std::array::from_fn(|i|p[i]-camera[i]);
+    fire_at(e,relative,view_y)
+}
+pub fn fire_at(e:&Entity,relative:[f64;3],view_y:f32)->Fixed {
     let mut g = Fixed::new(1.0);
     if e.fire <= 0 {
         return g;
     }
     g.enable(1, false);
     g.push();
-    let p = super::bridge::position(e, partial);
-    g.translate((p[0] - camera[0]) as f32, (p[1] - camera[1]) as f32, (p[2] - camera[2]) as f32);
+    g.translate(relative[0] as f32,relative[1] as f32,relative[2] as f32);
     let scale = e.width * 1.4;
     g.scale(scale, scale, scale);
     g.texture = 1;

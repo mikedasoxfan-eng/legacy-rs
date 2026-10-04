@@ -383,7 +383,7 @@ impl EntityPipeline {
             } else if let Some(s) =
                 super::bridge::object_state(e, self.partial, snapshot.brightness, snapshot.falling_light)
             {
-                let mut g = super::objects::render(&s, camera.to_array(), self.view);
+                let mut g = crate::world_effects::Effects::object_draws(&s, camera.to_array(), self.view, self.fancy);
                 for d in &mut g.draws {
                     if self.normalize {
                         d.flags |= 4;

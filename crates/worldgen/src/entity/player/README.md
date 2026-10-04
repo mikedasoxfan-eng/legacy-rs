@@ -86,7 +86,7 @@ only suppresses stats and renderer/GUI callbacks; portal switching is recorded
 as a request. API cases also invoke the original private `Minecraft.clickMouse`
 and held-dig methods, and picking invokes the original `EntityRenderer`.
 Original bytecode is retained apart from the existing deterministic Entity and
-Explosion Random initializer hooks. Tests require Mojang Java 8u51.
+Explosion Random initializer hooks, plus the display-call Random hook. Tests require Mojang Java 8u51.
 
 The suite compares every recorded frame and the final world dump, including
 float/double bits, inventory/armor, shared living state, camera/cloak/swing,
@@ -111,14 +111,14 @@ failed replay. The compare command writes `player-rust.bin` only on failure.
 ## Boundaries
 
 Exactness is established for the replay inputs, not every possible state.
-Existing unsupported block machinery remains: full redstone/piston circuits.
+Existing unsupported block machinery remains: pistons (see `world/redstone.rs` for circuits).
 Furnace smelting, filled dispenser operation, lit/unlit swaps, machine inventory
 scattering and typed machine NBT are implemented in `crate::container` and
 verified against original bytecode. Container sessions process window-tagged
 open/click/close messages and synchronize real player and tile inventories.
 See `crates/client/src/gui/CONTAINERS.md` for the UI/world-thread contract.
-Sapling random growth, maps, fishing rods, signs/paintings/records and redstone
-dust item use are not implemented. The requested foods, buckets, flint/steel,
+Maps, fishing rods and signs/paintings
+are not implemented. The requested foods, buckets, flint/steel,
 bow, snowballs/eggs, hoe/seeds, shears and dyes are implemented. Boats and carts
 use explicit spawn requests, as permitted by the task.
 
@@ -126,3 +126,7 @@ Finished stages are stored in `target/player-stages` and can be committed with
 `bash target/commit-player.sh` when Git metadata is writable. The script stages
 only captured paths, preserves unrelated staged work, refuses newer uncaptured
 edits, records completed commit IDs, and restores the finished files on failure.
+
+World sound/particle callbacks are now ordered events; notes and records are supported.
+See [the effects coverage report](../../../../../EFFECTS.md) for original-bytecode checks
+and remaining presentation boundaries.

@@ -5,7 +5,7 @@ const MULTIPLIER: i64 = 0x5DEECE66D;
 const ADDEND: i64 = 0xB;
 const MASK: i64 = (1 << 48) - 1;
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct JavaRandom {
     seed: i64,
     gaussian: Option<f64>,

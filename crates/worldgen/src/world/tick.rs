@@ -287,7 +287,13 @@ impl World {
                     if let Some(d) = self.closest_player_dist_sq(sx, sy, sz, 8.0) {
                         if d > 4.0 {
                             // playSoundEffect("ambient.cave.cave", 0.7, 0.8 + rand.nextFloat() * 0.2)
-                            let _ = self.rand.next_float();
+                            let pitch = 0.8 + self.rand.next_float() * 0.2;
+                            self.play_sound(
+                                "ambient.cave.cave",
+                                crate::entity::Vec3D::new(sx, sy, sz),
+                                0.7,
+                                pitch,
+                            );
                             self.sound_counter = self.rand.next_int(12000) + 6000;
                         }
                     }

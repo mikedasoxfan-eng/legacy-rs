@@ -41,8 +41,14 @@ impl Entity {
             if *sound_delay > 0 {
                 *sound_delay -= 1;
                 if *sound_delay == 0 {
-                    self.rand.next_float();
-                    self.rand.next_float();
+                    let pitch =
+                        ((self.rand.next_float() - self.rand.next_float()) * 0.2 + 1.0) * 1.8;
+                    w.play_sound(
+                        "mob.zombiepig.zpigangry",
+                        self.pos.add(0.0, -(self.y_offset as f64), 0.0),
+                        2.0,
+                        pitch,
+                    );
                 }
             }
         }
@@ -113,6 +119,14 @@ impl Entity {
         } = &mut self.kind
         {
             if visible && ((*state <= 0 && distance < 3.0) || (*state > 0 && distance < 7.0)) {
+                if *ignition == 0 {
+                    w.play_sound(
+                        "random.fuse",
+                        self.pos.add(0.0, -(self.y_offset as f64), 0.0),
+                        1.0,
+                        0.5,
+                    );
+                }
                 *state = 1;
                 *ignition += 1;
                 let explode = *ignition >= 30;
@@ -147,7 +161,8 @@ impl Entity {
                         arrow.pos.y += 1.4f32 as f64;
                         let dy = p.y + eye as f64 - 0.2f32 as f64 - arrow.pos.y;
                         let arc = ((dx * dx + dz * dz).sqrt() as f32 * 0.2) as f64;
-                        self.rand.next_float();
+                        let pitch = 1.0 / (self.rand.next_float() * 0.4 + 0.8);
+                        w.play_sound_at_entity(self, "random.bow", 1.0, pitch);
                         let id = arrow.entity_id;
                         w.entity_joined_world(arrow);
                         if let Some(mut arrow) = w.entities.remove(&id) {

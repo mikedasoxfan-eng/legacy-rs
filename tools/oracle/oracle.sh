@@ -9,10 +9,10 @@ libs=$(find "$here/../retromcp/libraries" -name '*.jar' ! -name '*sources*' ! -n
 [ -f "$jar" ] || { echo "missing $jar - run RetroMCP setup+decompile for b1.7.3 first" >&2; exit 1; }
 mkdir -p "$here/build" "$here/out"
 if [ ! -f "$here/build/net/minecraft/src/Oracle.class" ] || find "$here/src" "$here/headless" -name '*.java' -newer "$here/build/net/minecraft/src/Oracle.class" | grep -q .; then
-  javac -nowarn -cp "$jar$libs" -d "$here/build" "$here/src/net/minecraft/src/Oracle.java" "$here/src/net/minecraft/src/RendererOracle.java" "$here/src/net/minecraft/src/EntityOracle.java" "$here/src/net/minecraft/src/PlayerOracle.java" "$here/src/net/minecraft/src/ContainerOracle.java" "$here/src/net/minecraft/src/OracleHooks.java" "$here/src/net/minecraft/src/TeleportOracle.java" "$here/src/net/minecraft/src/ShowcaseOracle.java" "$here/src/net/minecraft/src/RedstoneOracle.java" "$here/src/net/minecraft/src/StatsOracle.java" "$here/src/net/minecraft/src/FirstPersonOracle.java" "$here"/headless/org/lwjgl/opengl/*.java
+  javac -nowarn -cp "$jar$libs" -d "$here/build" "$here/src/net/minecraft/src/Oracle.java" "$here/src/net/minecraft/src/RendererOracle.java" "$here/src/net/minecraft/src/EntityOracle.java" "$here/src/net/minecraft/src/PlayerOracle.java" "$here/src/net/minecraft/src/ContainerOracle.java" "$here/src/net/minecraft/src/OracleHooks.java" "$here/src/net/minecraft/src/TeleportOracle.java" "$here/src/net/minecraft/src/ShowcaseOracle.java" "$here/src/net/minecraft/src/RedstoneOracle.java" "$here/src/net/minecraft/src/StatsOracle.java" "$here/src/net/minecraft/src/FirstPersonOracle.java" "$here/src/net/minecraft/src/WorldEventOracle.java" "$here/src/net/minecraft/src/ParticleOracle.java" "$here/src/net/minecraft/src/SoundOracle.java" "$here"/headless/org/lwjgl/opengl/*.java
 fi
 if [ ! -f "$here/build/net/minecraft/src/Explosion.class" ] || [ ! -f "$here/build/net/minecraft/src/Entity.class" ] || [ "$here/build_entity.py" -nt "$here/build/net/minecraft/src/Entity.class" ] || [ "$here/src/net/minecraft/src/OracleHooks.java" -nt "$here/build/net/minecraft/src/Entity.class" ]; then
-  python "$here/build_entity.py"
+  python "$here/build_entity.py" >&2
 fi
 # Prefer the JRE Mojang's launcher runs b1.7.3 on (8u51): Math.sin & co. differ
 # between Java builds, and that is the one vanilla actually uses.

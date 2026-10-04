@@ -15,6 +15,7 @@ pub mod path;
 pub mod physics;
 pub mod player;
 pub mod projectile;
+mod sounds;
 pub mod spawning;
 pub mod special;
 pub mod verify;

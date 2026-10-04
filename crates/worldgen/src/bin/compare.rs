@@ -24,6 +24,44 @@ fn main() -> ExitCode {
     let a: Vec<String> = std::env::args().collect();
     let p = |i: usize| a[i].parse::<i64>().expect("number");
     match a.get(1).map(String::as_str) {
+        Some("musicevents") => {
+            let java = std::fs::read(&a[2]).unwrap();
+            let rust = worldgen::entity::verify::music_event_bytes();
+            if rust == java {
+                println!(
+                    "EXACT MATCH: notes, jukebox records/drops, all 96 step/break sound properties"
+                );
+                ExitCode::SUCCESS
+            } else {
+                eprintln!(
+                    "music events differ at {:?}: {}/{} bytes",
+                    java.iter().zip(&rust).position(|(a, b)| a != b),
+                    java.len(),
+                    rust.len()
+                );
+                std::fs::write("target/music-rust.bin", rust).unwrap();
+                ExitCode::FAILURE
+            }
+        }
+        Some("displayevents") => {
+            let java = std::fs::read(&a[2]).unwrap();
+            let rust = worldgen::entity::verify::display_event_bytes();
+            if java == rust {
+                println!(
+                    "EXACT MATCH: 89600 ambient block callbacks, ordered events and RNG states"
+                );
+                ExitCode::SUCCESS
+            } else {
+                eprintln!(
+                    "display events differ at {:?}: {}/{} bytes",
+                    java.iter().zip(&rust).position(|(a, b)| a != b),
+                    java.len(),
+                    rust.len()
+                );
+                std::fs::write("target/display-rust.bin", rust).unwrap();
+                ExitCode::FAILURE
+            }
+        }
         Some("player") => {
             let java = std::fs::read(&a[4]).expect("player dump");
             let rust = worldgen::entity::player::verify::player_bytes(&a[2], p(3) as i32);
@@ -494,9 +532,25 @@ rand {}
             }
             w.drain_lighting();
             let t = std::time::Instant::now();
+            w.set_entity_determinism(100, 200, 0);
+            w.drain_events();
+            let mut events = Vec::new();
             for _ in 0..p(6) {
                 w.tick();
                 w.drain_lighting();
+                worldgen::world::events::write_events(&w.drain_events(), &mut events);
+            }
+            let java_events =
+                std::fs::read(format!("{}.events", a[10])).expect("read world events");
+            let events_ok = events == java_events;
+            if !events_ok {
+                eprintln!(
+                    "world events differ: lengths {}/{} first byte {:?}",
+                    events.len(),
+                    java_events.len(),
+                    events.iter().zip(&java_events).position(|(a, b)| a != b)
+                );
+                std::fs::write("target/world-events-rust.bin", &events).unwrap();
             }
             eprintln!(
                 "rust: {} ticks, {} chunks in {:.2?}",
@@ -543,7 +597,7 @@ rand {}
                 eprintln!("tick state differs:\n--- java\n{java}--- rust\n{state}");
             }
             let r = world(&w, &a[10]);
-            if state_ok {
+            if state_ok && events_ok {
                 r
             } else {
                 ExitCode::FAILURE

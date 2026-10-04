@@ -7,6 +7,8 @@ pub mod entity;
 pub mod first_person;
 pub mod first_person_check;
 pub mod fx;
+pub mod particles;
+pub mod particle_check;
 pub mod gpu;
 pub mod map;
 pub mod player_view;

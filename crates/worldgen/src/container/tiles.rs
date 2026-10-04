@@ -127,11 +127,14 @@ impl World {
             };
             self.entity_joined_world(e);
             self.container_effects.push((effect, (x, y, z), 0));
+            self.auxiliary_effect(effect, (x, y, z), 0);
             self.container_effects
                 .push((2000, (x, y, z), dx + 1 + (dz + 1) * 3));
+            self.auxiliary_effect(2000, (x, y, z), dx + 1 + (dz + 1) * 3);
             self.mark_container_dirty(x, z);
         } else {
             self.container_effects.push((1001, (x, y, z), 0));
+            self.auxiliary_effect(1001, (x, y, z), 0);
         }
     }
     pub fn scatter_machine_contents(&mut self, block: u8, x: i32, y: i32, z: i32) {

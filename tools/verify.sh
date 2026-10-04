@@ -20,7 +20,7 @@ run() { # label, oracle args..., then "--", compare args (oracle output file app
   local f="case_$(echo "${oargs[*]}" | tr ' ' '_').bin"
   echo "== $label"
   if "$oracle" "${oargs[@]:0:1}" "${oargs[@]:1}" "$f" >/dev/null && "$cmp" "${cargs[@]}" "$out/$f"; then :; else fail=1; fi
-  rm -f "$out/$f" "$out/$f.txt"
+  rm -f "$out/$f" "$out/$f.txt" "$out/$f.events"
 }
 run_extra() { # like run, but the oracle takes an argument after the output file
   local label="$1" extra="$2"; shift 2
@@ -30,7 +30,7 @@ run_extra() { # like run, but the oracle takes an argument after the output file
   local f="case_$(echo "${oargs[*]}_$extra" | tr ' :,' '_xc' | cut -c1-80).bin"
   echo "== $label"
   if "$oracle" "${oargs[@]}" "$f" "$extra" >/dev/null && "$cmp" "${cargs[@]}" "$out/$f" "$extra"; then :; else fail=1; fi
-  rm -f "$out/$f" "$out/$f.txt"
+  rm -f "$out/$f" "$out/$f.txt" "$out/$f.events"
 }
 
 echo "== MathHelper sine table"
@@ -40,7 +40,7 @@ echo "== player inventory (10000 original-bytecode operations)"
 "$oracle" playerinventory player_inventory.bin && "$cmp" playerinventory "$out/player_inventory.bin" || fail=1
 echo "== container clicks, recipes, furnace and dispenser world replay"
 bash "$root/tools/verify_containers.sh" || fail=1
-for player_case in "movement 1000" "damage 1000" "pickup 1000" "sleep 300" "portal 300" "nbt 300" "look 1000" "dig 1000" "place 360" "use 300" "shoot 300" "interact 210" "fertilize 50" "activate 100" "api 200" "pipeline 100" "night 150" "sleepworld 150" "survival 800" "bucket 100" "combat 400" "pickentities 200" "digextras 1600"; do
+for player_case in "movement 1000" "damage 1000" "pickup 1000" "sleep 300" "portal 300" "nbt 300" "look 1000" "dig 1000" "place 360" "use 300" "shoot 300" "interact 210" "fertilize 50" "activate 100" "api 200" "pipeline 100" "night 150" "sleepworld 150" "survival 800" "bucket 100" "combat 400" "pickentities 200" "digextras 1600" "slimecontact 360"; do
   read -r kind ticks <<<"$player_case"
   run "player: $kind, every frame and final world" player "$kind" "$ticks" -- player "$kind" "$ticks"
 done
@@ -286,6 +286,27 @@ for args in "5 10 -20 6000 0.5" "5 300 40 18000 0.25 1 0 0 1 0" "9 -7 7 100 0.75
   done
 done
 [ $fail -eq 0 ] && echo "sky colors exact"
+
+echo "== original MusInputStream encrypted audio bytes"
+if "$oracle" musaudio mus_case.bin && "$beta" --muscheck "$out/mus_case.bin"; then :; else fail=1; fi
+rm -f "$out/mus_case.bin"
+
+echo "== EntityPickupFX item and arrow renderer draws"
+if "$oracle" pickuprenderers pickup_draws.bin && "$beta" --renderercheck "$out/pickup_draws.bin"; then :; else fail=1; fi
+if "$oracle" pickuprenderersfast pickup_draws_fast.bin && "$beta" --renderercheck "$out/pickup_draws_fast.bin"; then :; else fail=1; fi
+rm -f "$out/pickup_draws.bin" "$out/pickup_draws_fast.bin"
+echo "== note instruments, jukebox insertion/ejection and every step/break sound"
+if "$oracle" musicevents music_case.bin && "$cmp" musicevents "$out/music_case.bin"; then :; else fail=1; fi
+rm -f "$out/music_case.bin"
+echo "== all ambient block callbacks, metadata and adjacent faces"
+if "$oracle" displayevents display_case.bin && "$cmp" displayevents "$out/display_case.bin"; then :; else fail=1; fi
+rm -f "$out/display_case.bin"
+echo "== original EntityFX motion and vertex bits"
+if "$oracle" particles particles_case.bin && "$beta" --particlecheck "$out/particles_case.bin"; then :; else fail=1; fi
+rm -f "$out/particles_case.bin"
+echo "== EffectRenderer destruction, hits, tint, eviction and vertex bits"
+if "$oracle" particleeffects particlefx_case.bin && "$beta" --particlefxcheck "$out/particlefx_case.bin"; then :; else fail=1; fi
+rm -f "$out/particlefx_case.bin"
 
 # ---- original EntityRenderer precipitation quads and particle spawn RNG,
 # RenderLightningBolt strips. Inputs: seed camera-x y z renderer-tick partial rain.

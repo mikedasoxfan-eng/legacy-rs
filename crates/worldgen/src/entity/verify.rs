@@ -176,7 +176,7 @@ pub fn block_bytes() -> Vec<u8> {
     out
 }
 
-pub fn snapshot(w: &World, out: &mut Vec<u8>) {
+pub fn snapshot(w: &mut World, out: &mut Vec<u8>) {
     fn i(o: &mut Vec<u8>, v: i32) {
         o.extend_from_slice(&v.to_le_bytes());
     }
@@ -524,6 +524,7 @@ pub fn snapshot(w: &World, out: &mut Vec<u8>) {
         d(out, yaw);
         d(out, prev);
     }
+    crate::world::events::write_events(&w.drain_events(), out);
 }
 pub fn object_bytes(scenario: &str, ticks: i32) -> Vec<u8> {
     let mut w = World::with_dimension(
@@ -895,7 +896,7 @@ pub fn object_bytes(scenario: &str, ticks: i32) -> Vec<u8> {
         w.world_time = 18000;
     }
     let mut out = Vec::new();
-    snapshot(&w, &mut out);
+    snapshot(&mut w, &mut out);
     for t in 0..ticks {
         if scenario == "combat" && (t == 50 || t == 100) {
             w.damage_entity(
@@ -947,7 +948,7 @@ pub fn object_bytes(scenario: &str, ticks: i32) -> Vec<u8> {
                 w.entity_joined_world(e);
             }
         }
-        snapshot(&w, &mut out);
+        snapshot(&mut w, &mut out);
     }
     append_world(&w, &mut out);
     out
@@ -1080,4 +1081,197 @@ pub fn append_world(w: &World, out: &mut Vec<u8>) {
         out.extend_from_slice(&time.to_le_bytes());
     }
     i(out, w.light_queue.len() as i32);
+}
+
+/// Every ambient Block.randomDisplayTick override, all metadata and neighbouring faces.
+pub fn display_event_bytes() -> Vec<u8> {
+    let mut w = World::new(0, 300);
+    for cx in -3..=3 {
+        for cz in -3..=3 {
+            let mut c = Chunk::new(
+                cx,
+                cz,
+                vec![0; 32768].into_boxed_slice().try_into().unwrap(),
+            );
+            for x in 0..16 {
+                for z in 0..16 {
+                    c.blocks[idx(x, 63, z)] = 1;
+                }
+            }
+            c.loaded = true;
+            c.populated = true;
+            w.chunks.insert((cx, cz), Box::new(c));
+        }
+    }
+    fn raw(w: &mut World, x: i32, y: i32, z: i32, id: u8, meta: i32) {
+        let c = w.chunk_mut(x >> 4, z >> 4);
+        c.blocks[idx(x & 15, y, z & 15)] = id;
+        c.data.set(x & 15, y, z & 15, meta);
+    }
+    let mut o = Vec::new();
+    for id in [8, 9, 10, 11, 50, 51, 55, 62, 74, 75, 76, 90, 93, 94] {
+        for meta in 0..16 {
+            for scene in 0..4 {
+                let x = if scene == 3 { -16 } else { 8 };
+                let y = if scene == 1 { 65 } else { 64 };
+                let z = if scene == 3 { -16 } else { 8 };
+                for [dx, dy, dz] in [
+                    [0, -1, 0],
+                    [0, 1, 0],
+                    [-1, 0, 0],
+                    [1, 0, 0],
+                    [0, 0, -1],
+                    [0, 0, 1],
+                ] {
+                    raw(
+                        &mut w,
+                        x + dx,
+                        y + dy,
+                        z + dz,
+                        if scene == 2 {
+                            17
+                        } else if scene == 0 && dy < 0 {
+                            1
+                        } else {
+                            0
+                        },
+                        0,
+                    );
+                }
+                if id == 90 && scene == 2 {
+                    raw(&mut w, x - 1, y, z, 90, 0);
+                }
+                raw(&mut w, x, y, z, id, meta);
+                let mut r = JavaRandom::new(1000 + meta as i64);
+                w.rand.set_seed(2000 + id as i64);
+                for _ in 0..100 {
+                    w.block_display_tick(id, x, y, z, &mut r);
+                    crate::world::events::write_events(&w.drain_events(), &mut o);
+                    o.extend(w.rand.state().to_le_bytes());
+                    o.extend(r.state().to_le_bytes());
+                }
+            }
+        }
+    }
+    o
+}
+
+pub fn music_event_bytes() -> Vec<u8> {
+    let mut w = World::new(0, 300);
+    w.set_entity_determinism(100, 200, 0);
+    for cx in -3..=3 {
+        for cz in -3..=3 {
+            let mut c = Chunk::new(
+                cx,
+                cz,
+                vec![0; 32768].into_boxed_slice().try_into().unwrap(),
+            );
+            for x in 0..16 {
+                for z in 0..16 {
+                    c.blocks[idx(x, 63, z)] = 1;
+                }
+            }
+            c.loaded = true;
+            c.populated = true;
+            w.chunks.insert((cx, cz), Box::new(c));
+        }
+    }
+    fn raw(w: &mut World, x: i32, y: i32, z: i32, id: u8) {
+        w.chunk_mut(x >> 4, z >> 4).blocks[idx(x & 15, y, z & 15)] = id;
+        w.chunk_mut(x >> 4, z >> 4).data.set(x & 15, y, z & 15, 0);
+    }
+    fn emit(w: &mut World, o: &mut Vec<u8>) {
+        crate::world::events::write_events(&w.drain_events(), o);
+    }
+    let mut o = Vec::new();
+    for below in [0, 1, 12, 20, 5] {
+        w.remove_block_tile_entity(8, 64, 8);
+        raw(&mut w, 8, 64, 8, 25);
+        raw(&mut w, 8, 63, 8, below);
+        for action in 0..30 {
+            raw(&mut w, 8, 65, 8, if action == 27 { 1 } else { 0 });
+            w.trigger_note(8, 64, 8, action != 26);
+            emit(&mut w, &mut o);
+            let note = w
+                .chunk(0, 0)
+                .raw_tile_entities
+                .iter()
+                .find(|n| n.int("x") == 8 && n.int("y") == 64 && n.int("z") == 8)
+                .unwrap()
+                .byte("note");
+            o.extend((note as i32).to_le_bytes());
+        }
+    }
+    w.remove_block_tile_entity(8, 64, 8);
+    raw(&mut w, 8, 64, 8, 84);
+    for record in [2256, 2257] {
+        w.insert_record(8, 64, 8, record);
+        emit(&mut w, &mut o);
+        o.extend(w.get_block_metadata(8, 64, 8).to_le_bytes());
+        o.extend(record.to_le_bytes());
+        w.eject_record(8, 64, 8);
+        emit(&mut w, &mut o);
+        o.extend(w.get_block_metadata(8, 64, 8).to_le_bytes());
+        o.extend(0i32.to_le_bytes());
+        o.extend(w.rand.state().to_le_bytes());
+        let e = &w.entities[w.loaded_entity_list.last().unwrap()];
+        for v in [
+            e.pos.x, e.pos.y, e.pos.z, e.motion.x, e.motion.y, e.motion.z,
+        ] {
+            o.extend(v.to_bits().to_le_bytes());
+        }
+        o.extend(e.rand.state().to_le_bytes());
+        if let EntityKind::Item {
+            item,
+            pickup_delay,
+            hover_start,
+            ..
+        } = &e.kind
+        {
+            o.extend(hover_start.to_bits().to_le_bytes());
+            o.extend(pickup_delay.to_le_bytes());
+            o.extend((item.id as i32).to_le_bytes());
+            o.extend((item.count as i32).to_le_bytes());
+        }
+    }
+    w.remove_block_tile_entity(8, 64, 8);
+    raw(&mut w, 8, 64, 8, 25);
+    raw(&mut w, 8, 63, 8, 1);
+    for action in 0..16 {
+        raw(&mut w, 8, 65, 8, if action >= 12 { 1 } else { 0 });
+        raw(&mut w, 8, 64, 7, 77);
+        w.chunk_mut(0, 0)
+            .data
+            .set(8, 64, 7, if action % 4 < 2 { 13 } else { 5 });
+        crate::entity::player::block_hooks::neighbor(
+            &mut w,
+            25,
+            8,
+            64,
+            8,
+            if action == 5 { 0 } else { 77 },
+        );
+        emit(&mut w, &mut o);
+        w.get_block_tile_entity(8, 64, 8);
+        let note = w
+            .chunk(0, 0)
+            .raw_tile_entities
+            .iter()
+            .find(|n| n.int("x") == 8 && n.int("y") == 64 && n.int("z") == 8)
+            .unwrap()
+            .byte("note");
+        o.extend((note as i32).to_le_bytes());
+        o.push(w.note_power.get(&(8, 64, 8)).copied().unwrap_or(false) as u8);
+    }
+    for id in 1..=96 {
+        let (a, v, p) = crate::world::events::step_sound(id);
+        let (b, _, _) = crate::world::events::break_sound(id);
+        for text in [a, b] {
+            o.extend((text.len() as i32).to_le_bytes());
+            o.extend(text.as_bytes());
+        }
+        o.extend(v.to_bits().to_le_bytes());
+        o.extend(p.to_bits().to_le_bytes());
+    }
+    o
 }

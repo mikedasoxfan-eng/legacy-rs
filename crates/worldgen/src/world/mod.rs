@@ -7,8 +7,10 @@
 
 pub mod behavior;
 pub mod chunk;
+pub mod events;
 pub mod java_hash;
 pub mod light;
+pub mod music;
 pub mod server;
 pub mod teleporter;
 pub mod redstone;
@@ -122,6 +124,11 @@ impl Dimension {
 }
 
 pub struct World {
+    /// Ordered IWorldAccess callbacks since the last client tick.
+    pub events: Vec<events::WorldEvent>,
+    pub note_power: HashMap<(i32, i32, i32), bool>,
+    /// Call-local Random used by World.randomDisplayUpdates.
+    pub display_seed_source: crate::entity::EntitySeedSource,
     pub seed: i64,
     pub terrain: OverworldGenerator,
     pub dimension: Dimension,
@@ -234,6 +241,9 @@ impl World {
             terrain.biome_source = crate::biome::BiomeSource::hell();
         }
         World {
+            events: Vec::new(),
+            note_power: HashMap::new(),
+            display_seed_source: crate::entity::EntitySeedSource::Time,
             seed,
             dimension,
             light_brightness_table: dimension.light_brightness_table(),
@@ -1015,6 +1025,18 @@ impl World {
             return None;
         }
         let key = (x & 15, y, z & 15);
+        let id = self.chunk(cx, cz).block(x & 15, y, z & 15);
+        if matches!(id, 25 | 84) {
+            if !self
+                .chunk(cx, cz)
+                .raw_tile_entities
+                .iter()
+                .any(|n| n.int("x") == x && n.int("y") == y && n.int("z") == z)
+            {
+                crate::entity::player::block_hooks::added(self, id, x, y, z);
+            }
+            return None;
+        }
         if !self.chunk(cx, cz).tile_entities.contains_key(&key) {
             let id = self.chunk(cx, cz).block(x & 15, y, z & 15);
             if !props(id).container {
@@ -1050,6 +1072,7 @@ impl World {
         self.dispenser_random.remove(&(x, y, z));
         self.loaded_tile_entities.retain(|p| *p != (x, y, z));
         self.spawner_animations.remove(&(x, y, z));
+        self.note_power.remove(&(x, y, z));
         let _ = self.get_block_tile_entity(x, y, z);
         let (cx, cz) = (x >> 4, z >> 4);
         if !self.access_chunk(cx, cz) {

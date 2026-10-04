@@ -133,9 +133,13 @@ impl Entity {
                     w.entity_joined_world(e);
                 }
             }
+            for _ in 0..8 {
+                w.spawn_particle("snowballpoof", self.pos, Vec3D::default());
+            }
             self.dead = true;
         }
         self.projectile_advance(
+            w,
             if self.in_water { 0.8 } else { 0.99 },
             0.03,
             Vec3D::default(),

@@ -15,7 +15,7 @@ public final class PlayerOracle {
     }
     static final class HeadlessEffects extends EffectRenderer {
         HeadlessEffects(World w){super(w,null);}
-        public void addBlockHitEffects(int x,int y,int z,int side) {}
+        public void addBlockHitEffects(int x,int y,int z,int side) {WorldEventOracle.hit(worldObj,x,y,z,side);}
     }
     static final class HeadlessPlayer extends EntityPlayerSP {
         HeadlessPlayer(Minecraft mc,World w) {super(mc,w,new Session("Player",""),0);}
@@ -28,7 +28,7 @@ public final class PlayerOracle {
     }
     static HeadlessPlayer player(World w)throws Exception {
         Minecraft mc=(Minecraft)Oracle.allocate(HeadlessMinecraft.class);
-        mc.theWorld=w;mc.sndManager=(SoundManager)Oracle.allocate(SoundManager.class);
+        mc.theWorld=w;WorldEventOracle.attach(w); WorldEventOracle.Sounds sounds=(WorldEventOracle.Sounds)Oracle.allocate(WorldEventOracle.Sounds.class);sounds.world=w;mc.sndManager=sounds;
         StatFileWriter stats=(StatFileWriter)Oracle.allocate(StatFileWriter.class);
         Field map=StatFileWriter.class.getDeclaredField("field_25102_a");map.setAccessible(true);Map values=new HashMap();values.put(AchievementList.openInventory,1);map.set(stats,values);mc.statFileWriter=stats;
         HeadlessPlayer p=new HeadlessPlayer(mc,w);mc.thePlayer=p;p.movementInput=new MovementInput();return p;
@@ -84,6 +84,11 @@ public final class PlayerOracle {
                     if(p.movementInput.sneak){p.movementInput.moveForward=(float)((double)p.movementInput.moveForward*0.3);p.movementInput.moveStrafe=(float)((double)p.movementInput.moveStrafe*0.3);}
                     if(t%13==0)p.swingItem();
                     if(scenario.equals("nbt")&&t%100==60){w.skylightSubtracted=11;w.worldInfo.setWorldTime(18000);p.setLocationAndAngles(0.5,64,0.5,0,0);EntityOracle.rawBlock(w,0,64,0,26,0);EntityOracle.rawBlock(w,0,64,1,26,8);p.sleepInBedAt(0,64,1);}
+                    if(scenario.equals("slimecontact")) {
+                        p.movementInput.moveForward=p.movementInput.moveStrafe=0;p.movementInput.jump=p.movementInput.sneak=false;
+                        p.setLocationAndAngles(0.5,64,0.5,0,0);p.motionX=p.motionY=p.motionZ=0;
+                        if(t%30==0){p.health=20;p.heartsLife=0;w.difficultySetting=t/90%4;EntitySlime mob=new EntitySlime(w);mob.setSlimeSize(1<<(t/30%3));mob.setLocationAndAngles(0.5,64,0.6,0,0);w.entityJoinedWorld(mob);}
+                    }
                     if(scenario.equals("combat")) {
                         p.movementInput.moveForward=p.movementInput.moveStrafe=0;p.movementInput.jump=p.movementInput.sneak=false;
                         if(t%100==0){p.health=20;p.heartsLife=0;w.difficultySetting=t/100%4;EntityLiving mob=t%200==0?new EntityWolf(w):new EntityPigZombie(w);mob.setLocationAndAngles(0.5,64,1.5,0,0);w.entityJoinedWorld(mob);p.inventory.mainInventory[0]=null;p.attackTargetEntityWithCurrentItem(mob);}

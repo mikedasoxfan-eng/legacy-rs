@@ -68,7 +68,14 @@ public class Oracle {
 
     public static void main(String[] a) throws Exception {
         String mode = a.length > 0 ? a[0] : "";
-        if (mode.equals("raw")) {
+        if (mode.equals("pickuprenderersfast")) { ParticleOracle.pickupDraws(a[1],false);
+        } else if (mode.equals("musaudio")) { SoundOracle.run(a[1]);
+        } else if (mode.equals("pickuprenderers")) { ParticleOracle.pickupDraws(a[1]);
+        } else if (mode.equals("musicevents")) { ParticleOracle.music(a[1]);
+        } else if (mode.equals("particleeffects")) { ParticleOracle.effects(a[1]);
+        } else if (mode.equals("displayevents")) { ParticleOracle.display(a[1]);
+        } else if (mode.equals("particles")) { ParticleOracle.run(a[1]);
+        } else if (mode.equals("raw")) {
             raw(Long.parseLong(a[1]), Integer.parseInt(a[2]), Integer.parseInt(a[3]),
                 Integer.parseInt(a[4]), Integer.parseInt(a[5]), a[6]);
         } else if (mode.equals("sin")) {
@@ -737,9 +744,11 @@ public class Oracle {
             }
         }
         drainLighting(w);
-        for (int t = 0; t < n; t++) {
-            w.tick();
-            drainLighting(w);
+        OracleHooks.reset(100);EntityOracle.mathRandom().setSeed(200);WorldEventOracle.attach(w);
+        try(DataOutputStream events=new DataOutputStream(new BufferedOutputStream(new FileOutputStream(out+".events")))) {
+            for (int t = 0; t < n; t++) {
+                w.tick();drainLighting(w);WorldEventOracle.snapshot(w,events);
+            }
         }
         dumpWorld(w, out, sp.x, sp.y, sp.z);
         try (PrintWriter pw = new PrintWriter(out + ".txt")) {

@@ -31,6 +31,7 @@ public class ContainerOracle {
     }
     public static void tiles(int ticks, String path) throws Exception {
         World w = Oracle.newWorld(0); w.chunkProvider = new EntityOracle.FlatProvider(w);
+        WorldEventOracle.attach(w);
         Field ids = Entity.class.getDeclaredField("nextEntityID"); ids.setAccessible(true); ids.setInt(null,0);
         OracleHooks.reset(100); EntityOracle.mathRandom().setSeed(200); w.rand.setSeed(300); Item.itemRand.setSeed(600); w.field_9437_g=0;
         Field sound = World.class.getDeclaredField("soundCounter"); sound.setAccessible(true); sound.setInt(w,0);

@@ -18,8 +18,11 @@ pub struct Clip {
 }
 
 fn decode_ogg(path: &Path) -> Option<Clip> {
-    let f = std::fs::File::open(path).ok()?;
-    let mut r = lewton::inside_ogg::OggStreamReader::new(std::io::BufReader::new(f)).ok()?;
+    let mut bytes = std::fs::read(path).ok()?;
+    if path.extension().is_some_and(|e| e.eq_ignore_ascii_case("mus")) {
+        decrypt_mus(&mut bytes, &path.file_name()?.to_string_lossy());
+    }
+    let mut r = lewton::inside_ogg::OggStreamReader::new(std::io::Cursor::new(bytes)).ok()?;
     let channels = r.ident_hdr.audio_channels as usize;
     let rate = r.ident_hdr.audio_sample_rate as f32;
     let mut samples = Vec::new();
@@ -27,6 +30,48 @@ fn decode_ogg(path: &Path) -> Option<Clip> {
         samples.extend(p.iter().map(|&s| s as f32 / 32768.0));
     }
     Some(Clip { samples, channels: channels.max(1), rate })
+}
+
+/// Original MusInputStream: File.toURI().toURL().getPath() basename hash, signed
+/// decoded bytes and wrapping Java int arithmetic. Ogg decoding then stays unchanged.
+fn decrypt_mus(bytes: &mut [u8], filename: &str) {
+    let mut url_name = String::new();
+    for c in filename.chars() {
+        if c <= ' ' || c == '\u{7f}' || "[]<>\"#%?\\^`{|}".contains(c) {
+            for b in c.to_string().as_bytes() { url_name.push_str(&format!("%{b:02X}")); }
+        } else { url_name.push(c); }
+    }
+    let mut hash = url_name.encode_utf16().fold(0i32, |h, c| h.wrapping_mul(31).wrapping_add(c as i32));
+    for b in bytes {
+        *b ^= (hash >> 8) as u8;
+        hash = hash.wrapping_mul(498729871).wrapping_add(85731i32.wrapping_mul(*b as i8 as i32));
+    }
+}
+
+/// Original-bytecode encrypted stream cases, including URI escaping and signed bytes.
+pub fn check_mus(path: &str) -> bool {
+    use std::io::{Cursor, Read};
+    let mut input = Cursor::new(std::fs::read(path).expect("MUS oracle file"));
+    fn number(input: &mut Cursor<Vec<u8>>) -> usize {
+        let mut b = [0; 4]; input.read_exact(&mut b).unwrap(); u32::from_le_bytes(b) as usize
+    }
+    fn bytes(input: &mut Cursor<Vec<u8>>) -> Vec<u8> {
+        let mut b = vec![0; number(input)]; input.read_exact(&mut b).unwrap(); b
+    }
+    let mut magic = [0; 8]; input.read_exact(&mut magic).unwrap(); assert_eq!(&magic, b"B173MUS1");
+    let count = number(&mut input);
+    let mut total = 0;
+    for _ in 0..count {
+        let name = String::from_utf8(bytes(&mut input)).unwrap();
+        let mut encrypted = bytes(&mut input);
+        let expected = bytes(&mut input);
+        decrypt_mus(&mut encrypted, &name);
+        if encrypted != expected { println!("MUS differs for {name}"); return false; }
+        total += encrypted.len();
+    }
+    assert_eq!(input.position(), input.get_ref().len() as u64);
+    println!("MUS EXACT: {count} names, {total} decoded bytes");
+    true
 }
 
 #[derive(Clone)]
@@ -330,6 +375,23 @@ impl SoundManager {
         self.start(id, clip, pitch, g);
     }
 
+    /// SoundManager.playStreaming: records use the fixed streaming source.
+    pub fn play_streaming(&mut self, name: Option<&str>, pos: [f32; 3], volume: f32, _pitch: f32) {
+        if self.sound_volume == 0.0 { return; }
+        self.stop("streaming");
+        let Some(name) = name else { return };
+        let Some(e) = self.streaming.random_for(name) else { return };
+        if volume <= 0.0 { return; }
+        self.stop("BgMusic");
+        if let Some(clip) = self.clip(&e.path) {
+            let volume = 0.5 * self.sound_volume;
+            let mut gain = if clip.channels == 1 { self.spatial(pos, 64.0) } else { [1.0; 2] };
+            gain[0] *= volume;
+            gain[1] *= volume;
+            self.start("streaming".into(), clip, 1.0, gain);
+        }
+    }
+
     /// `playRandomMusicIfReady` (called every game tick by the player controller).
     pub fn play_random_music_if_ready(&mut self) {
         if self.music_volume == 0.0 || self.playing("BgMusic") || self.playing("streaming") {
@@ -414,6 +476,21 @@ pub fn check() -> bool {
                 ok = false;
             }
         }
+    }
+    for name in ["13", "cat"] {
+        let variants = m.streaming.by_name.get(name).cloned().unwrap_or_default();
+        if variants.is_empty() { println!("  record {name}: MISSING"); ok = false; }
+        for entry in variants {
+            match m.clip(&entry.path) {
+                Some(c) => println!("  record {}: {:.2}s {}ch {}Hz", entry.path.file_name().unwrap().to_string_lossy(),
+                    c.samples.len() as f32 / c.channels as f32 / c.rate, c.channels, c.rate),
+                None => { println!("  record {}: DECODE FAILED", entry.path.display()); ok = false; }
+            }
+        }
+        m.play_streaming(Some(name), [0.0; 3], 1.0, 0.5);
+        ok &= m.playing("streaming");
+        m.play_streaming(None, [0.0; 3], 0.0, 0.0);
+        ok &= !m.playing("streaming");
     }
     ok
 }

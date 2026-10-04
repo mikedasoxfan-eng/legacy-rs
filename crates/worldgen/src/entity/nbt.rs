@@ -411,5 +411,7 @@ impl World {
             .retain(|&(x, _, z)| x >> 4 != cx || z >> 4 != cz);
         self.spawner_animations
             .retain(|&(x, _, z), _| x >> 4 != cx || z >> 4 != cz);
+        self.note_power
+            .retain(|&(x, _, z), _| x >> 4 != cx || z >> 4 != cz);
     }
 }
