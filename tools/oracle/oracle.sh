@@ -8,8 +8,8 @@ jar="$here/../retromcp/minecraft/jars/deobfuscated.jar"
 libs=$(find "$here/../retromcp/libraries" -name '*.jar' ! -name '*sources*' ! -name '*natives*' 2>/dev/null | while read -r f; do printf ';%s' "$(cygpath -w "$f")"; done)
 [ -f "$jar" ] || { echo "missing $jar - run RetroMCP setup+decompile for b1.7.3 first" >&2; exit 1; }
 mkdir -p "$here/build" "$here/out"
-if [ ! -f "$here/build/net/minecraft/src/Oracle.class" ] || [ "$here/src/net/minecraft/src/Oracle.java" -nt "$here/build/net/minecraft/src/Oracle.class" ]; then
-  javac -nowarn -cp "$jar" -d "$here/build" "$here/src/net/minecraft/src/Oracle.java"
+if [ ! -f "$here/build/net/minecraft/src/Oracle.class" ] || [ "$here/src/net/minecraft/src/Oracle.java" -nt "$here/build/net/minecraft/src/Oracle.class" ] || [ "$here/headless/org/lwjgl/opengl/GL11.java" -nt "$here/build/org/lwjgl/opengl/GL11.class" ] || [ "$here/headless/org/lwjgl/opengl/GLContext.java" -nt "$here/build/org/lwjgl/opengl/GLContext.class" ] || [ "$here/headless/org/lwjgl/opengl/ContextCapabilities.java" -nt "$here/build/org/lwjgl/opengl/ContextCapabilities.class" ]; then
+  javac -nowarn -cp "$jar$libs" -d "$here/build" "$here/src/net/minecraft/src/Oracle.java" "$here"/headless/org/lwjgl/opengl/*.java
 fi
 # Prefer the JRE Mojang's launcher runs b1.7.3 on (8u51): Math.sin & co. differ
 # between Java builds, and that is the one vanilla actually uses.

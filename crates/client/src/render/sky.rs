@@ -25,11 +25,13 @@ fn daylight(angle: f32) -> f32 {
     (math::cos(angle * PI_F * 2.0f32) * 2.0f32 + 0.5f32).clamp(0.0, 1.0)
 }
 
-/// `World.calculateSkylightSubtracted` (no rain or thunder yet).
-pub fn skylight_subtracted(angle: f32) -> i32 {
+/// `World.calculateSkylightSubtracted` (interpolated rain and effective thunder).
+pub fn skylight_subtracted(angle: f32, rain: f32, thunder: f32) -> i32 {
     let mut v = 1.0f32 - (math::cos(angle * PI_F * 2.0f32) * 2.0f32 + 0.5f32);
     v = v.clamp(0.0, 1.0);
     v = 1.0f32 - v;
+    v = (v as f64 * (1.0 - (rain * 5.0f32) as f64 / 16.0)) as f32;
+    v = (v as f64 * (1.0 - (thunder * 5.0f32) as f64 / 16.0)) as f32;
     v = 1.0f32 - v;
     (v * 11.0f32) as i32
 }
@@ -69,14 +71,29 @@ pub fn sky_color_by_temp(temp: f32) -> u32 {
 }
 
 /// `World.func_4079_a`: sky color at the camera. `temp` is `WorldChunkManager.getTemperature`.
-pub fn sky_color(angle: f32, temp: f32) -> [f32; 3] {
+pub fn sky_color(angle: f32, temp: f32, rain: f32, thunder: f32, flash: i32, partial: f32) -> [f32; 3] {
     let d = daylight(angle);
     let c = sky_color_by_temp(temp);
-    [
-        (c >> 16 & 255) as f32 / 255.0 * d,
-        (c >> 8 & 255) as f32 / 255.0 * d,
-        (c & 255) as f32 / 255.0 * d,
-    ]
+    let mut rgb = [(c >> 16 & 255) as f32 / 255.0 * d, (c >> 8 & 255) as f32 / 255.0 * d, (c & 255) as f32 / 255.0 * d];
+    desaturate(&mut rgb, rain, 0.6, 12.0f32 / 16.0f32);
+    desaturate(&mut rgb, thunder, 0.2, 12.0f32 / 16.0f32);
+    if flash > 0 {
+        let a = (flash as f32 - partial).min(1.0) * 0.45f32;
+        for (c, target) in rgb.iter_mut().zip([0.8f32, 0.8, 1.0]) {
+            *c = *c * (1.0f32 - a) + target * a;
+        }
+    }
+    rgb
+}
+
+fn desaturate(rgb: &mut [f32; 3], strength: f32, gray_scale: f32, amount: f32) {
+    if strength > 0.0 {
+        let gray = (rgb[0] * 0.3f32 + rgb[1] * 0.59f32 + rgb[2] * 0.11f32) * gray_scale;
+        let k = 1.0f32 - strength * amount;
+        for c in rgb {
+            *c = *c * k + gray * (1.0f32 - k);
+        }
+    }
 }
 
 /// `WorldProvider.func_4096_a`
@@ -89,14 +106,32 @@ pub fn fog_color_base(angle: f32) -> [f32; 3] {
     ]
 }
 
-/// `EntityRenderer.updateFogColor` for render distance Far, clear weather, out of water.
-pub fn fog_color(angle: f32, temp: f32, render_distance: i32) -> [f32; 3] {
+/// `EntityRenderer.updateFogColor` for render distance Far, out of water.
+pub fn fog_color(
+    angle: f32,
+    temp: f32,
+    render_distance: i32,
+    rain: f32,
+    thunder: f32,
+    flash: i32,
+    partial: f32,
+) -> [f32; 3] {
     let mut k = 1.0f32 / (4 - render_distance) as f32;
     k = 1.0f32 - (k as f64).powf(0.25) as f32;
-    let sky = sky_color(angle, temp);
+    let sky = sky_color(angle, temp, rain, thunder, flash, partial);
     let mut f = fog_color_base(angle);
     for i in 0..3 {
         f[i] += (sky[i] - f[i]) * k;
+    }
+    if rain > 0.0 {
+        f[0] *= 1.0f32 - rain * 0.5f32;
+        f[1] *= 1.0f32 - rain * 0.5f32;
+        f[2] *= 1.0f32 - rain * 0.4f32;
+    }
+    if thunder > 0.0 {
+        for c in &mut f {
+            *c *= 1.0f32 - thunder * 0.5f32;
+        }
     }
     f
 }
@@ -187,10 +222,16 @@ pub fn stars() -> Vec<[f32; 3]> {
     out
 }
 
-/// `World.func_628_d`: cloud color (white clouds, no rain).
-pub fn cloud_color(angle: f32) -> [f32; 3] {
+/// `World.func_628_d`: cloud color, including rain and thunder.
+pub fn cloud_color(angle: f32, rain: f32, thunder: f32) -> [f32; 3] {
     let d = daylight(angle);
-    [1.0f32 * (d * 0.9f32 + 0.1f32), 1.0f32 * (d * 0.9f32 + 0.1f32), 1.0f32 * (d * 0.85f32 + 0.15f32)]
+    let mut rgb = [1.0f32; 3];
+    desaturate(&mut rgb, rain, 0.6, 0.95);
+    rgb[0] *= d * 0.9f32 + 0.1f32;
+    rgb[1] *= d * 0.9f32 + 0.1f32;
+    rgb[2] *= d * 0.85f32 + 0.15f32;
+    desaturate(&mut rgb, thunder, 0.2, 0.95);
+    rgb
 }
 
 /// `RenderGlobal.renderCloudsFancy` geometry, in cloud space (draw with scale 12,1,12)

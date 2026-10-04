@@ -1,0 +1,71 @@
+package org.lwjgl.opengl;
+import java.nio.*;
+import net.minecraft.src.Oracle;
+/** No GL context: record the original Tessellator immediately before draw resets it. */
+public final class GL11 {
+    public static final int GL_GREATER = 516;
+    public static final int GL_DEPTH_BUFFER_BIT = 256;
+    public static final int GL_COLOR_BUFFER_BIT = 16384;
+    public static final int GL_POINTS = 0;
+    public static final int GL_TRIANGLES = 4;
+    public static final int GL_ONE = 1;
+    public static final int GL_SRC_ALPHA = 770;
+    public static final int GL_ONE_MINUS_SRC_ALPHA = 771;
+    public static final int GL_BYTE = 5120;
+    public static final int GL_UNSIGNED_BYTE = 5121;
+    public static final int GL_FLOAT = 5126;
+    public static final int GL_FRONT = 1028;
+    public static final int GL_EXP = 2048;
+    public static final int GL_CULL_FACE = 2884;
+    public static final int GL_LIGHTING = 2896;
+    public static final int GL_COLOR_MATERIAL = 2903;
+    public static final int GL_FOG = 2912;
+    public static final int GL_FOG_DENSITY = 2914;
+    public static final int GL_FOG_START = 2915;
+    public static final int GL_FOG_END = 2916;
+    public static final int GL_FOG_MODE = 2917;
+    public static final int GL_FOG_COLOR = 2918;
+    public static final int GL_DEPTH_TEST = 2929;
+    public static final int GL_ALPHA_TEST = 3008;
+    public static final int GL_BLEND = 3042;
+    public static final int GL_TEXTURE_2D = 3553;
+    public static final int GL_AMBIENT = 4608;
+    public static final int GL_MODELVIEW = 5888;
+    public static final int GL_PROJECTION = 5889;
+    public static final int GL_FLAT = 7424;
+    public static final int GL_SMOOTH = 7425;
+    public static final int GL_LINEAR = 9729;
+    public static final int GL_VERTEX_ARRAY = 32884;
+    public static final int GL_NORMAL_ARRAY = 32885;
+    public static final int GL_COLOR_ARRAY = 32886;
+    public static final int GL_TEXTURE_COORD_ARRAY = 32888;
+    public static float[] color = {1,1,1,1};
+    public static int texture;
+    public static float fogStart, fogEnd;
+    public static void glFog(int name, FloatBuffer values) {}
+    public static void glFogf(int name, float value) {
+        if(name==GL_FOG_START) fogStart=value;
+        if(name==GL_FOG_END) fogEnd=value;
+    }
+    public static void glFogi(int name,int value) {}
+    public static void glColorMaterial(int face,int mode) {}
+    public static void glDisable(int x) {}
+    public static void glEnable(int x) {}
+    public static void glBlendFunc(int x,int y) {}
+    public static void glAlphaFunc(int x,float y) {}
+    public static void glNormal3f(float x,float y,float z) {}
+    public static void glBindTexture(int x,int y) { texture=y; }
+    public static void glColor4f(float r,float g,float b,float a) { color=new float[]{r,g,b,a}; }
+    public static void glClearColor(float r,float g,float b,float a) {}
+    public static void glTexCoordPointer(int a,int b,FloatBuffer c) {}
+    public static void glTexCoordPointer(int a,int b,int c,long d) { throw new AssertionError("VBO"); }
+    public static void glColorPointer(int a,boolean b,int c,ByteBuffer d) {}
+    public static void glColorPointer(int a,int b,int c,long d) { throw new AssertionError("VBO"); }
+    public static void glNormalPointer(int a,ByteBuffer b) {}
+    public static void glNormalPointer(int a,int b,long c) { throw new AssertionError("VBO"); }
+    public static void glVertexPointer(int a,int b,FloatBuffer c) {}
+    public static void glVertexPointer(int a,int b,int c,long d) { throw new AssertionError("VBO"); }
+    public static void glEnableClientState(int x) {}
+    public static void glDisableClientState(int x) {}
+    public static void glDrawArrays(int mode,int first,int count) { Oracle.recordWeatherDraw(mode,count,color,texture); }
+}

@@ -9,6 +9,9 @@ pub struct Assets {
     pub sun: Image,
     pub moon: Image,
     pub clouds: Image,
+    pub rain: Image,
+    pub snow: Image,
+    pub particles: Image,
     pub grass_color: Vec<u32>,
     pub foliage_color: Vec<u32>,
     pub mobs: std::collections::HashMap<String, Image>,
@@ -60,13 +63,27 @@ pub fn load() -> Result<Assets, String> {
     let sun = read("terrain/sun.png")?;
     let moon = read("terrain/moon.png")?;
     let clouds = read("environment/clouds.png")?;
+    let rain = read("environment/rain.png")?;
+    let snow = read("environment/snow.png")?;
+    let particles = read("particles.png")?;
     let grass = read("misc/grasscolor.png")?;
     let foliage = read("misc/foliagecolor.png")?;
     let mut mobs = std::collections::HashMap::new();
     for &name in crate::render::entity::living::TEXTURES {
         mobs.insert(name.to_owned(), read(name)?);
     }
-    Ok(Assets { terrain, sun, moon, clouds, grass_color: colormap(&grass), foliage_color: colormap(&foliage), mobs })
+    Ok(Assets {
+        terrain,
+        sun,
+        moon,
+        clouds,
+        rain,
+        snow,
+        particles,
+        grass_color: colormap(&grass),
+        foliage_color: colormap(&foliage),
+        mobs,
+    })
 }
 
 pub fn save_png(img: &Image, path: &std::path::Path) -> std::io::Result<()> {
