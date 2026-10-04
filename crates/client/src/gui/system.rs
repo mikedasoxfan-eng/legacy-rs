@@ -78,6 +78,7 @@ impl GuiSystem {
             mouse_down: false,
             world_saved: true,
             save_requests: Vec::new(),
+            sounds: Vec::new(),
         };
         GuiSystem { ui, renderer, screen: None, splash_rand: worldgen::JavaRandom::new(splash_seed) }
     }

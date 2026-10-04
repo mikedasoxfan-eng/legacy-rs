@@ -126,6 +126,8 @@ pub struct Ui {
     pub world_saved: bool,
     /// Incremental save requests made while drawing (the pause menu saves every frame).
     pub save_requests: Vec<i32>,
+    /// `sndManager.playSoundFX(name, volume, pitch)` calls, played by the app.
+    pub sounds: Vec<(&'static str, f32, f32)>,
 }
 
 impl Ui {
@@ -392,7 +394,7 @@ pub fn default_mouse_clicked<S: Screen + ?Sized>(s: &mut S, ui: &mut Ui, x: i32,
                     continue;
                 }
                 s.set_selected(Some(i));
-                // mc.sndManager.playSoundFX("random.click", 1.0F, 1.0F) — no sound system yet.
+                ui.sounds.push(("random.click", 1.0, 1.0));
                 let id = s.base().buttons[i].id;
                 s.action_performed(ui, id);
                 i += 1;

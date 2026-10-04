@@ -171,6 +171,7 @@ pub struct App {
     chunks_loaded: usize,
     /// World ticks seen since the world became ready.
     ticks_ready: i64,
+    sound: Option<crate::sound::SoundManager>,
     /// Entities near the camera from the last tick, with their brightness.
     entities: Vec<(worldgen::entity::Entity, f32)>,
     /// Chunk meshes uploaded this second (`WorldRenderer.chunksUpdated`) and the last count.
@@ -228,6 +229,7 @@ impl App {
             chunks_loaded: 0,
             ticks_ready: 0,
             entities: Vec::new(),
+            sound: None,
             chunk_updates: 0,
             debug_line: String::new(),
             started: Instant::now(),
@@ -325,6 +327,9 @@ impl App {
         self.ready = false;
         self.loading = None;
         self.entities.clear();
+        if let Some(snd) = &mut self.sound {
+            snd.stop_streaming();
+        }
         if let Some(g) = &mut self.gpu {
             g.clear_chunks();
             g.entities.states.clear();
@@ -362,6 +367,17 @@ impl App {
 
     fn apply_gui_actions(&mut self, el: &ActiveEventLoop) {
         let Some(gui) = &mut self.gui else { return };
+        if let Some(snd) = &mut self.sound {
+            for (name, v, p) in gui.ui.sounds.drain(..) {
+                snd.play_sound_fx(name, v, p);
+            }
+            let (s, m) = (gui.ui.settings.sound_volume, gui.ui.settings.music_volume);
+            if s != snd.sound_volume || m != snd.music_volume {
+                snd.options_changed(s, m);
+            }
+        } else {
+            gui.ui.sounds.clear();
+        }
         let acts = gui.process_actions();
         for a in acts {
             match a {
@@ -594,7 +610,11 @@ impl App {
                         }
                         self.bolts.retain(|(_, life)| *life > 0);
                         self.bolts.extend(bolts.into_iter().map(|b| (b, 3)));
-                        let (splashes, _) = render::weather::add_rain_particles(
+                        if let Some(snd) = &mut self.sound {
+                            // PlayerControllerSP.updateController, every unpaused tick.
+                            snd.play_random_music_if_ready();
+                        }
+                        let (splashes, rain_sound) = render::weather::add_rain_particles(
                             &self.weather_terrain,
                             self.cam.pos.to_array(),
                             self.cloud_ticks as i32,
@@ -602,6 +622,9 @@ impl App {
                             &mut self.weather_rng,
                             &mut self.rain_sound_counter,
                         );
+                        if let (Some(snd), Some(r)) = (&mut self.sound, rain_sound) {
+                            play_world_sound(snd, self.cam.pos, "ambient.weather.rain", r.pos, r.volume, r.pitch);
+                        }
                         self.particles.spawn(splashes);
                         self.particles.tick(&self.weather_terrain);
                     }
@@ -714,6 +737,9 @@ impl App {
             return;
         }
 
+        if let Some(snd) = &mut self.sound {
+            snd.set_listener(self.cam.pos.to_array(), self.cam.yaw);
+        }
         let angle = sky::celestial_angle(self.world_time, partial);
         let temp = self.temps.raw_temperature(self.cam.pos.x.floor() as i32, self.cam.pos.z.floor() as i32) as f32;
         let rain = self.weather.rain_at(partial);
@@ -915,6 +941,9 @@ impl ApplicationHandler for App {
             gui.renderer.render(device, queue, view, size, &gui.ui.gl, Some([0.0, 0.0, 0.0, 0.0]));
         });
         self.col = Some(Colorizers { grass: assets.grass_color, foliage: assets.foliage_color });
+        let mut snd = crate::sound::SoundManager::new(&crate::sound::resources_dir(), splash_seed ^ 0x534f554e44);
+        snd.options_changed(gui.ui.settings.sound_volume, gui.ui.settings.music_volume);
+        self.sound = Some(snd);
         self.gpu = Some(gpu);
         if self.opts.direct {
             // A world named on the command line: straight in, like the old viewer.
@@ -1069,4 +1098,17 @@ fn memory_info() -> gui::ingame::DebugInfo {
     let total = pmc.PagefileUsage as i64;
     let used = pmc.WorkingSetSize as i64;
     gui::ingame::DebugInfo { max_memory: (ms.ullTotalPhys / 4) as i64, total_memory: total.max(used), free_memory: (total - used).max(0), ..Default::default() }
+}
+
+/// `World.playSoundEffect` -> `RenderGlobal.playSound`: only within 16 blocks (16 x volume
+/// when louder than 1) of the view entity.
+fn play_world_sound(snd: &mut crate::sound::SoundManager, view: DVec3, name: &str, pos: [f64; 3], volume: f32, pitch: f32) {
+    let mut range = 16.0f32;
+    if volume > 1.0 {
+        range *= volume;
+    }
+    let d = DVec3::from_array(pos) - view;
+    if d.length_squared() < (range * range) as f64 {
+        snd.play_sound(name, [pos[0] as f32, pos[1] as f32, pos[2] as f32], volume, pitch);
+    }
 }

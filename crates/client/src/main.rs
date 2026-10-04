@@ -16,6 +16,7 @@ mod app;
 mod assets;
 mod gui;
 mod render;
+mod sound;
 mod worker;
 
 use render::blocks::Colorizers;
@@ -279,6 +280,9 @@ fn main() {
     if args.get(1).map(String::as_str) == Some("--weathercheck") {
         render::weather_check::check(&args);
         return;
+    }
+    if args.get(1).map(String::as_str) == Some("--soundcheck") {
+        std::process::exit(if sound::check() { 0 } else { 1 });
     }
     if args.get(1).map(String::as_str) == Some("--skycolor") {
         sky_check(&args);
