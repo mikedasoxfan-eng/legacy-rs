@@ -8,10 +8,10 @@
 [![Rust](https://img.shields.io/badge/built_with-Rust-b7410e?style=flat&logo=rust&logoColor=white&labelColor=3b3b3b)](#)
 [![wgpu](https://img.shields.io/badge/graphics-wgpu-4b6ec2?style=flat&labelColor=3b3b3b)](#)
 [![oracle](https://img.shields.io/badge/oracle-ALL_CASES_EXACT-2ea44f?style=flat&logo=openjdk&logoColor=white&labelColor=3b3b3b)](#how-exact-is-exact)
-[![GUI](https://img.shields.io/badge/GUI_pixel_diff-58_exact,_3_within_1_shade-2ea44f?style=flat&labelColor=3b3b3b)](#the-gui-pixel-diff)
+[![GUI](https://img.shields.io/badge/GUI_pixel_diff-67_exact,_8_within_1_shade-2ea44f?style=flat&labelColor=3b3b3b)](#the-gui-pixel-diff)
 
 [![progress](https://img.shields.io/badge/goal_progress-92%25-8fbc3a?style=flat&labelColor=3b3b3b)](#progress)
-[![verified sections](https://img.shields.io/badge/verified_sections-137-2ea44f?style=flat&labelColor=3b3b3b)](#what-is-checked)
+[![verified sections](https://img.shields.io/badge/verified_sections-138-2ea44f?style=flat&labelColor=3b3b3b)](#what-is-checked)
 [![Rust lines](https://img.shields.io/badge/Rust-56k_lines-b7410e?style=flat&labelColor=3b3b3b)](#layout)
 [![Mojang assets](https://img.shields.io/badge/Mojang_assets_bundled-0_bytes-2ea44f?style=flat&labelColor=3b3b3b)](#you-need-your-own-copy)
 [![multiplayer](https://img.shields.io/badge/multiplayer-not_planned-9e9e9e?style=flat&labelColor=3b3b3b)](#scope)
@@ -40,7 +40,7 @@ against the original game code, not just "looks right".
 | The player (movement, health, mining, placing, items, beds, portals, respawn) | 10 | 95 % | ✅ verified |
 | Block rendering (all 18 render types, smooth lighting, Fancy/Fast) | 8 | 100 % | ✅ verified |
 | Mob/item/effect rendering, sky, clouds, rain, snow, fog | 8 | 95 % | ✅ verified |
-| Menus, HUD, achievements, death screen, statistics screen | 7 | 90 % | ✅ pixel-exact (statistics screen ported; its pixel check and stat counting are next) |
+| Menus, HUD, achievements, death screen, statistics screen | 7 | 97 % | ✅ pixel-exact; stats file exact (counting stats while playing is next) |
 | Redstone (wire, torches, repeaters, levers, buttons, plates, doors, rails, note blocks) | 6 | 75 % | ✅ verified (pistons in progress) |
 | Inventory, crafting, chests, furnaces, dispensers | 7 | 95 % | ✅ verified (65,706 clicks, 151 recipes, 35 screens pixel-exact) |
 | First-person view (hand, held item, block outline, cracks, bobbing, third person) | 5 | 100 % | ✅ verified (8.1 million values, 0 differences) |
@@ -115,6 +115,7 @@ Details that turned out to matter:
 | Collision | Every block's collision and selection box in every state (10,000 cases) |
 | Portals | Teleporter find/build (incl. the ocean platform), the whole `usePortal` sequence |
 | Respawn | At spawn, at a bed, with the bed gone |
+| Statistics file | The port's stats file read by the original and back, checksum rejection, unknown stat ids |
 | Redstone | Scripted circuits and rail layouts, every tick of the circuit |
 | Chunk meshes | Every vertex position, UV and colour of real terrain, Fancy/Fast, smooth lighting on/off |
 | Block showcase | Every block id × all 16 metadata values plus neighbour arrangements, all four graphics modes |
@@ -125,11 +126,13 @@ Details that turned out to matter:
 ### The GUI pixel diff
 
 `tools/verify_gui.sh` opens the **real** b1.7.3 client for a few seconds, drives it through
-61 scenes (title screen, options, video settings, controls, world list, create and rename
-world, texture packs, loading screens, in-game HUD states, achievements, death screen, and 35
+75 scenes (title screen, options, video settings, controls, world list, create and rename
+world, texture packs, loading screens, in-game HUD states, achievements, death screen, the
+statistics screen with sorting, tooltips and scrolling, and 35
 inventory, crafting, chest, furnace and dispenser screens with items, tooltips and a held
 cursor stack), and takes screenshots. Then it renders the same scenes with the port and diffs
-them pixel for pixel. 58 are identical; 3 (achievement icons) differ by one colour level on fewer than 100 pixels,
+them pixel for pixel. 67 are identical; 8 (3D block icons under the achievement and
+statistics screens' lighting) differ by one colour level on at most a few hundred pixels,
 which is GPU rounding in item lighting.
 
 Getting there needed a few fixes:
