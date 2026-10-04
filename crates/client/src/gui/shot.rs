@@ -504,8 +504,9 @@ pub fn diff(
         }
         if bad == 0 {
             println!("{n}: EXACT");
-        } else if max <= 1 && bad <= 200 {
-            // GPU lighting arithmetic on lit 3D item icons can round a few pixels by one level.
+        } else if max <= 1 && bad <= 500 {
+            // GPU lighting arithmetic on lit 3D item icons can round a few pixels by one level
+            // (about 66 pixels per block icon at a 180 degree light rotation). Reported apart.
             near.push(n.clone());
             println!("{n}: within one level ({bad} pixels)");
         } else {
