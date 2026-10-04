@@ -235,6 +235,7 @@ impl Entity {
         eye < ((y + 1) as f32 - air) as f64
     }
     fn inside_opaque_block(&self, w: &mut World) -> bool {
+        if self.player_state().is_some_and(|s|s.sleeping) {return false;}
         for i in 0..8 {
             let x = ((i % 2) as f32 - 0.5) * self.width * 0.9;
             let y = (((i / 2) % 2) as f32 - 0.5) * 0.1;

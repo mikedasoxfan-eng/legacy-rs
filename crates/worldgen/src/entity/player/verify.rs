@@ -37,23 +37,37 @@ pub fn player_bytes(scenario:&str,ticks:i32)->Vec<u8> {
         c.loaded=true;c.populated=true;w.chunks.insert((cx,cz),Box::new(c));w.chunk_list.push((cx,cz));
     }}
     fn raw(w:&mut World,x:i32,y:i32,z:i32,id:u8,meta:i32) {let c=w.chunk_mut(x>>4,z>>4);c.blocks[idx(x&15,y,z&15)]=id;c.data.set(x&15,y,z&15,meta);}
-    let mut p=Entity::player(&mut w,"Player");p.set_location_and_angles(0.5,64.0,0.5,0.0,0.0);let id=p.entity_id;w.entity_joined_world(p);
+    let mut p=Entity::player(&mut w,"Player");p.set_location_and_angles(0.5,64.0,0.5,0.0,0.0);let mut id=p.entity_id;w.entity_joined_world(p);
     for z in 3..=5 {for x in -2..=2 {raw(&mut w,x,64,z,1,0);}}
     for x in 4..=8 {for z in -2..=2 {raw(&mut w,x,64,z,53,0);}}
     for x in 10..=15 {for y in 64..=67 {for z in -2..=2 {raw(&mut w,x,y,z,9,0);}}}
     for x in -15..=-10 {for y in 64..=67 {for z in -2..=2 {raw(&mut w,x,y,z,11,0);}}}
     raw(&mut w,1,64,-5,30,0);for y in 64..=71 {raw(&mut w,0,y,-8,65,3);raw(&mut w,0,y,-9,1,0);}
-    let mut out=Vec::new();snapshot(&w,&mut out);
+    let mut out=Vec::new();snapshot(&w,&mut out);if scenario=="look" {picking_bytes(&mut w,id,&mut out);}
     for t in 0..ticks {
         if let Some(mut p)=w.entities.remove(&id) {
             if t%120==0 {let phase=t/120%8;p.motion=Default::default();let x=match phase {2=>4.5,3=>11.5,4=>-12.5,_=>0.5};let z=match phase {6=>-7.5,7=>-4.5,_=>0.5};let y=match phase {5=>76.0,3|4=>66.0,_=>64.0};p.set_location_and_angles(x,y,z,if phase==2 {-90.0}else if phase>=6 {180.0}else{0.0},0.0);if scenario=="movement" {p.living.health=20;p.living.hearts_life=0;}}
+            if scenario=="look"&&t%120==0 {p.living.health=20;p.living.hearts_life=0;}
             if scenario=="damage"&&t==1 {for a in 0..4 {p.player_state_mut().unwrap().inventory.armor[a]=Some(ItemStack::new(310+a as i32,1,a as i32*40));}p.attack(&mut w,None,3);}
             if scenario=="damage"&&t==30 {let mut mob=Entity::living(&mut w,"Zombie").unwrap();mob.set_location_and_angles(0.5,64.0,1.5,0.0,0.0);let source=mob.entity_id;w.entity_joined_world(mob);p.attack(&mut w,Some(source),5);}
             if scenario=="pickup"&&t%20==0 {let e=Entity::item(&mut w,p.pos.x,p.pos.y-1.3,p.pos.z,crate::world::tile::ItemStack::new(if t%40==0{35}else{263},40,t%3));w.entity_joined_world(e);}
             p.set_player_input(super::PlayerInput {forward:t%120<80,left:t%120>=80,jump:t%31<8,sneak:t%120>=90,..Default::default()});
-            if t%13==0 {p.swing_item();}w.entities.insert(id,p);
+            if t%13==0 {p.swing_item();}
+            if scenario=="sleep" {if t==0 {w.skylight_subtracted=11;w.world_time=18000;p.set_location_and_angles(0.5,64.0,0.5,0.0,0.0);raw(&mut w,0,64,0,26,0);raw(&mut w,0,64,1,26,8);p.sleep_in_bed(&mut w,0,64,1);}if t==120 {p.wake_up(&mut w,false,true);}}
+            if scenario=="portal" {let s=p.player_state_mut().unwrap();s.input.forward=false;s.input.left=false;s.input.jump=false;if t<110||(150..160).contains(&t) {p.set_in_portal();}}
+            if scenario=="look" {p.living.health=20;p.living.hearts_life=0;p.set_angles((t%7-3) as f32*33.7,(t%11-5) as f32*9.8);}
+            if scenario=="nbt"&&t%100==99 {let n=p.player_nbt().unwrap();w.loaded_entity_list.retain(|&v|v!=id);for c in w.chunks.values_mut(){for list in &mut c.entity_lists {list.retain(|&v|v!=id);}}w.players.clear();w.player_entities.clear();p=Entity::player_from_nbt(&mut w,&n,"Player").unwrap();id=p.entity_id;w.entity_joined_world(p);}else{w.entities.insert(id,p);}
         }
-        w.update_entities();snapshot(&w,&mut out);
+        w.update_entities();snapshot(&w,&mut out);if scenario=="look" {picking_bytes(&mut w,id,&mut out);}
     }
     append_world(&w,&mut out);out
+}
+fn picking_bytes(w:&mut crate::World,id:i32,out:&mut Vec<u8>) {
+    use crate::entity::MovingObjectPosition;
+    let Some(p)=w.entities.get(&id).cloned() else {return;};
+    for partial in [0.0,0.5,1.0] {
+        let look=p.look(partial);for v in [look.x,look.y,look.z] {out.extend_from_slice(&v.to_bits().to_le_bytes());}
+        let hit=p.mouse_over(w,partial);let kind:i32=match hit {None=>-1,Some(MovingObjectPosition::Entity{..})=>1,_=>0};out.extend_from_slice(&kind.to_le_bytes());
+        match hit {Some(MovingObjectPosition::Entity{id,..})=>out.extend_from_slice(&id.to_le_bytes()),Some(MovingObjectPosition::Block{x,y,z,side,hit})=>{for v in [x,y,z,side]{out.extend_from_slice(&v.to_le_bytes());}for v in [hit.x,hit.y,hit.z]{out.extend_from_slice(&v.to_bits().to_le_bytes());}},_=>{}}
+    }
 }

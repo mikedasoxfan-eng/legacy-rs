@@ -1101,6 +1101,7 @@ impl World {
 
     /// `World.saveLevel`: level.dat (refusing if another program took the session lock).
     pub fn save_level(&mut self) {
+        if let Some(n)=self.player_entities.iter().flatten().find_map(|id|self.entities.get(id).and_then(|e|e.player_nbt())) {self.info.player=Some(n);}
         let info = self.level_info();
         if let Some(s) = &self.storage {
             if !s.session_ok() {

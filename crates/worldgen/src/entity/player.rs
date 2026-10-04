@@ -2,6 +2,8 @@
 pub mod inventory;
 pub mod registry;
 pub mod verify;
+pub mod persistence;
+pub mod picking;
 pub use inventory::{InventoryPlayer, ItemStack};
 use super::{Entity, EntityKind, Vec3D};
 use crate::{math::{self, floor_double as floor}, World};
@@ -21,6 +23,8 @@ impl PlayerInput {
 }
 #[derive(Clone, Debug)]
 pub enum PlayerEvent { Pickup { entity: i32, count: i32 }, ChangeDimension, OpenContainer { block: u8, position: (i32,i32,i32) } }
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum SleepStatus { Ok, OtherProblem, NotPossibleHere, NotPossibleNow, TooFarAway }
 #[derive(Clone, Debug)]
 pub struct PlayerState {
     pub inventory: InventoryPlayer, pub input: PlayerInput, pub username: String,
@@ -46,7 +50,7 @@ impl Entity {
     pub fn player_state_mut(&mut self)->Option<&mut PlayerState> {if let EntityKind::Player(s)=&mut self.kind {Some(s)} else {None}}
     pub fn set_player_input(&mut self,input:PlayerInput) {
         self.set_angles(input.yaw_delta,input.pitch_delta);
-        if let Some(s)=self.player_state_mut(){s.input=input;}
+        if let Some(s)=self.player_state_mut(){s.input=input;let sleeping=s.sleeping;self.sneaking=input.sneak&&!sleeping;}
     }
     /// Entity.setAngles: mouse deltas are scaled in double precision before narrowing.
     pub fn set_angles(&mut self,yaw:f32,pitch:f32) {
@@ -177,8 +181,30 @@ impl Entity {
     pub fn wake_up(&mut self,w:&mut World,reset_timer:bool,set_spawn:bool) {
         self.width=0.6;self.height=1.8;self.y_offset=1.62;
         if let Some((x,y,z))=self.player_state().unwrap().bed {
-            if w.get_block_id(x,y,z)==26 {let meta=w.get_block_metadata(x,y,z);w.set_block_metadata_with_notify(x,y,z,meta&!4);self.set_position((x as f32+0.5) as f64,(y as f32+1.0+self.y_offset+0.1) as f64,(z as f32+0.5) as f64);}
+            if w.get_block_id(x,y,z)==26 {
+                let meta=w.get_block_metadata(x,y,z);w.set_block_metadata_with_notify(x,y,z,meta&!4);
+                let (x,y,z)=Self::bed_exit(w,x,y,z,0).unwrap_or((x,y+1,z));
+                self.set_position((x as f32+0.5) as f64,(y as f32+self.y_offset+0.1) as f64,(z as f32+0.5) as f64);
+            }
         }
         let s=self.player_state_mut().unwrap();s.sleeping=false;s.sleep_timer=if reset_timer {0}else{100};if set_spawn {s.spawn=s.bed;}
+    }
+    pub fn sleep_in_bed(&mut self,w:&mut World,x:i32,y:i32,z:i32)->SleepStatus {
+        if self.player_state().unwrap().sleeping || self.living.health<=0 || self.dead {return SleepStatus::OtherProblem;}
+        if w.dimension.is_hell_world() {return SleepStatus::NotPossibleHere;}
+        if w.skylight_subtracted<4 {return SleepStatus::NotPossibleNow;}
+        if (self.pos.x-x as f64).abs()>3.0 || (self.pos.y-y as f64).abs()>2.0 || (self.pos.z-z as f64).abs()>3.0 {return SleepStatus::TooFarAway;}
+        self.width=0.2;self.height=0.2;self.y_offset=0.2;
+        let direction=w.get_block_metadata(x,y,z)&3;
+        let (ox,oz)=match direction {0=>(0.5f32,0.9f32),1=>(0.1,0.5),2=>(0.5,0.1),_=>(0.9,0.5)};
+        self.set_position((x as f32+ox) as f64,(y as f32+15.0/16.0) as f64,(z as f32+oz) as f64);
+        let s=self.player_state_mut().unwrap();s.bed_offset=match direction {0=>Vec3D::new(0.0,0.0,-1.8f32 as f64),1=>Vec3D::new(1.8f32 as f64,0.0,0.0),2=>Vec3D::new(0.0,0.0,1.8f32 as f64),_=>Vec3D::new(-1.8f32 as f64,0.0,0.0)};
+        s.sleeping=true;s.sleep_timer=0;s.bed=Some((x,y,z));self.motion=Vec3D::default();SleepStatus::Ok
+    }
+    pub fn bed_exit(w:&mut World,x:i32,y:i32,z:i32,mut skip:i32)->Option<(i32,i32,i32)> {
+        let (dx,dz)=[(0,1),(-1,0),(0,-1),(1,0)][(w.get_block_metadata(x,y,z)&3) as usize];
+        for half in 0..=1 {for bx in x-dx*half-1..=x-dx*half+1 {for bz in z-dz*half-1..=z-dz*half+1 {
+            if w.is_block_normal_cube(bx,y-1,bz)&&w.get_block_id(bx,y,bz)==0&&w.get_block_id(bx,y+1,bz)==0 {if skip<=0 {return Some((bx,y,bz));}skip-=1;}
+        }}}None
     }
 }

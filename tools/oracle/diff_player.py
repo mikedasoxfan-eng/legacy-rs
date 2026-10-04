@@ -31,6 +31,11 @@ class Reader:
         self.many('world.','rng mathrng entityseed explosionseed time','<q')
         self.many('world.','lcg sound sky flash skyflash raintime thundertime','<i');self.many('world.','rain thunder','<?');self.many('world.','rainstrength prevrain thunderstrength prevthunder','<f')
         assert self.read('spawners','<i')==0
+        if len(sys.argv)>4 and sys.argv[4]=='look':
+            for partial in range(3):
+                p=f'pick{partial}.';self.many(p,'x y z','<d');kind=self.read(p+'kind','<i')
+                if kind==1:self.read(p+'entity','<i')
+                elif kind==0:self.many(p,'bx by bz side','<i');self.many(p,'hitx hity hitz','<d')
         return self.fields
 a,b=Reader(sys.argv[1]),Reader(sys.argv[2])
 for frame in range(int(sys.argv[3])+1):

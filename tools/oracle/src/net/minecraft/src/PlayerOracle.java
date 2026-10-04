@@ -32,6 +32,16 @@ public final class PlayerOracle {
         for(double v:new double[]{p.field_20066_r,p.field_20065_s,p.field_20064_t,p.field_20063_u,p.field_20062_v,p.field_20061_w})EntityOracle.d(o,v);
         for(ItemStack s:p.inventory.mainInventory)stack(o,s);for(ItemStack s:p.inventory.armorInventory)stack(o,s);
     }
+    static void picking(HeadlessPlayer p,DataOutputStream o)throws Exception {
+        p.mc.renderViewEntity=p;p.mc.playerController=new PlayerControllerSP(p.mc);
+        EntityRenderer renderer=(EntityRenderer)Oracle.allocate(EntityRenderer.class);Field mc=EntityRenderer.class.getDeclaredField("mc");mc.setAccessible(true);mc.set(renderer,p.mc);
+        for(float partial:new float[]{0,0.5F,1}) {
+            Vec3D look=p.getLook(partial);for(double v:new double[]{look.xCoord,look.yCoord,look.zCoord})EntityOracle.d(o,v);
+            renderer.getMouseOver(partial);MovingObjectPosition hit=p.mc.objectMouseOver;
+            i(o,hit==null?-1:hit.typeOfHit==EnumMovingObjectType.ENTITY?1:0);
+            if(hit!=null) {if(hit.typeOfHit==EnumMovingObjectType.ENTITY)i(o,hit.entityHit.entityId);else {i(o,hit.blockX);i(o,hit.blockY);i(o,hit.blockZ);i(o,hit.sideHit);for(double v:new double[]{hit.hitVec.xCoord,hit.hitVec.yCoord,hit.hitVec.zCoord})EntityOracle.d(o,v);}}
+        }
+    }
     static void simulation(String scenario,int ticks,String path)throws Exception {
         World w=Oracle.newWorld(0);w.chunkProvider=new EntityOracle.FlatProvider(w);w.difficultySetting=2;w.setAllowedMobSpawns(false,false);
         Field ids=Entity.class.getDeclaredField("nextEntityID");ids.setAccessible(true);ids.setInt(null,0);
@@ -44,7 +54,7 @@ public final class PlayerOracle {
         for(int x=-15;x<=-10;x++)for(int y=64;y<=67;y++)for(int z=-2;z<=2;z++)EntityOracle.rawBlock(w,x,y,z,11,0);
         EntityOracle.rawBlock(w,1,64,-5,30,0);for(int y=64;y<=71;y++){EntityOracle.rawBlock(w,0,y,-8,65,3);EntityOracle.rawBlock(w,0,y,-9,1,0);}
         try(DataOutputStream o=new DataOutputStream(new BufferedOutputStream(new FileOutputStream(path)))) {
-            EntityOracle.snapshot(w,o);
+            EntityOracle.snapshot(w,o);if(scenario.equals("look"))picking(p,o);
             for(int t=0;t<ticks;t++) {
                 if(!p.isDead) {
                     if(t%120==0) {
@@ -53,7 +63,7 @@ public final class PlayerOracle {
                         double z=phase==6?-7.5:phase==7?-4.5:0.5;
                         double y=phase==5?76:phase==3||phase==4?66:64;
                         p.setLocationAndAngles(x,y,z,phase==2?-90:phase>=6?180:0,0);
-                        if(scenario.equals("movement")){p.health=20;p.heartsLife=0;}
+                        if(scenario.equals("movement")||scenario.equals("look")){p.health=20;p.heartsLife=0;}
                     }
                     if(scenario.equals("damage")&&t==1) {for(int a=0;a<4;a++)p.inventory.armorInventory[a]=new ItemStack(310+a,1,a*40);p.attackEntityFrom(null,3);}
                     if(scenario.equals("damage")&&t==30) {EntityZombie mob=new EntityZombie(w);mob.setLocationAndAngles(0.5,64,1.5,0,0);w.entityJoinedWorld(mob);p.attackEntityFrom(mob,5);}
@@ -61,8 +71,18 @@ public final class PlayerOracle {
                     p.movementInput.moveForward=t%120<80?1:0;p.movementInput.moveStrafe=t%120>=80?1:0;p.movementInput.jump=t%31<8;p.movementInput.sneak=t%120>=90;
                     if(p.movementInput.sneak){p.movementInput.moveForward=(float)((double)p.movementInput.moveForward*0.3);p.movementInput.moveStrafe=(float)((double)p.movementInput.moveStrafe*0.3);}
                     if(t%13==0)p.swingItem();
+                    if(scenario.equals("sleep")) {
+                        if(t==0){w.skylightSubtracted=11;w.worldInfo.setWorldTime(18000);p.setLocationAndAngles(0.5,64,0.5,0,0);EntityOracle.rawBlock(w,0,64,0,26,0);EntityOracle.rawBlock(w,0,64,1,26,8);p.sleepInBedAt(0,64,1);}
+                        if(t==120)p.wakeUpPlayer(false,true,true);
+                    }
+                    if(scenario.equals("portal")){p.movementInput.moveForward=p.movementInput.moveStrafe=0;p.movementInput.jump=false;if(t<110||t>=150&&t<160)p.setInPortal();}
+                    if(scenario.equals("look")){p.health=20;p.heartsLife=0;p.func_346_d((t%7-3)*33.7F,(t%11-5)*9.8F);}
+                    if(scenario.equals("nbt")&&t%100==99) {
+                        NBTTagCompound n=new NBTTagCompound();p.writeToNBT(n);w.loadedEntityList.remove(p);w.playerEntities.remove(p);for(Chunk c:((EntityOracle.FlatProvider)w.chunkProvider).chunks.values())for(List list:c.entities)list.remove(p);
+                        p=player(w);p.readFromNBT(n);w.entityJoinedWorld(p);
+                    }
                 }
-                AxisAlignedBB.clearBoundingBoxPool();Vec3D.initialize();w.updateEntities();EntityOracle.snapshot(w,o);
+                AxisAlignedBB.clearBoundingBoxPool();Vec3D.initialize();w.updateEntities();EntityOracle.snapshot(w,o);if(scenario.equals("look"))picking(p,o);
             }
         }
         Oracle.dumpWorld(w,path+".world",0,0,0);

@@ -110,6 +110,12 @@ pub fn on_block_removal(w: &mut World, id: u8, x: i32, y: i32, z: i32) {
 }
 
 pub fn on_neighbor_block_change(w: &mut World, id: u8, x: i32, y: i32, z: i32, _changed: u8) {
+    if id==26 {
+        let meta=w.get_block_metadata(x,y,z);let (dx,dz)=[(0,1),(-1,0),(0,-1),(1,0)][(meta&3) as usize];
+        let valid=if meta&8!=0 {w.get_block_id(x-dx,y,z-dz)==26}else{w.get_block_id(x+dx,y,z+dz)==26};
+        if !valid {w.set_block_with_notify(x,y,z,0);if meta&8==0 {drop_block_as_item(w,id,x,y,z,meta);}}
+        return;
+    }
     match id {
         block::WATER_MOVING | block::LAVA_MOVING => check_for_harden(w, id, x, y, z),
         block::WATER_STILL | block::LAVA_STILL => {
