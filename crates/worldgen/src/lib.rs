@@ -11,6 +11,7 @@
 pub mod biome;
 pub mod block;
 pub mod caves;
+pub mod container;
 pub mod entity;
 pub mod features;
 pub mod jmath;
