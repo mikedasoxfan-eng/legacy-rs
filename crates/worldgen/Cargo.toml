@@ -5,3 +5,4 @@ edition = "2021"
 description = "Bit-exact port of Minecraft Beta 1.7.3 overworld generation"
 
 [dependencies]
+flate2 = "1.1.10"

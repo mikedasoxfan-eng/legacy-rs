@@ -68,6 +68,16 @@ pub struct Chunk {
     pub tile_entities: HashMap<(i32, i32, i32), TileEntity>,
     /// `World::mod_count` at this chunk's last block/metadata/light change (for renderers).
     pub version: u64,
+    /// `isModified`: needs writing to disk.
+    pub modified: bool,
+    /// `lastSaveTime`
+    pub last_save_time: i64,
+    /// `hasEntities`
+    pub has_entities: bool,
+    /// Entities from a save (not simulated yet); written back unchanged.
+    pub raw_entities: Vec<crate::nbt::Tag>,
+    /// Tile entities of kinds not modelled yet (furnaces, signs...); written back unchanged.
+    pub raw_tile_entities: Vec<crate::nbt::Compound>,
 }
 
 #[inline]
@@ -90,6 +100,11 @@ impl Chunk {
             loaded: false,
             tile_entities: HashMap::new(),
             version: 0,
+            modified: false,
+            last_save_time: 0,
+            has_entities: false,
+            raw_entities: Vec::new(),
+            raw_tile_entities: Vec::new(),
         }
     }
 

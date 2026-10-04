@@ -8,6 +8,7 @@
 pub mod behavior;
 pub mod chunk;
 pub mod light;
+pub mod server;
 pub mod tile;
 
 use crate::block::{self, light_opacity, material_of, mat, props, MAT_AIR};
@@ -106,6 +107,18 @@ pub struct World {
     pub falling_sand: Vec<(i32, i32, i32, u8)>,
     /// Bumped on every chunk modification; chunks record it in `Chunk::version`.
     pub mod_count: u64,
+    /// Save directory; `None` keeps everything in memory.
+    pub storage: Option<crate::storage::Storage>,
+    /// `WorldInfo` fields the world doesn't otherwise track (name, weather, saved player).
+    pub info: crate::storage::LevelInfo,
+    /// `ChunkProvider.chunkList`: loaded chunks in load order (`saveChunks` walks it).
+    pub chunk_list: Vec<(i32, i32)>,
+    /// Multiplayer-server chunk handling; `None` is singleplayer (chunks never unload).
+    pub server: Option<server::ServerChunks>,
+    /// `WorldServer.levelSaving`
+    pub level_saving: bool,
+    /// Chunks unloaded since the renderer last looked (drained by the client).
+    pub unloaded: Vec<(i32, i32)>,
 }
 
 impl World {
@@ -129,17 +142,43 @@ impl World {
             dropped_items: Vec::new(),
             falling_sand: Vec::new(),
             mod_count: 0,
+            storage: None,
+            info: crate::storage::LevelInfo::new(seed, "world"),
+            chunk_list: Vec::new(),
+            server: None,
+            level_saving: false,
+            unloaded: Vec::new(),
         }
     }
 
-    /// Mark a chunk as changed for renderers. No effect on generation.
+    /// Mark a chunk as changed: `isModified` for saving, and a new version for renderers.
     #[inline]
     fn touch(&mut self, cx: i32, cz: i32) {
         self.mod_count += 1;
         let v = self.mod_count;
         if let Some(c) = self.chunks.get_mut(&(cx, cz)) {
             c.version = v;
+            c.modified = true;
         }
+    }
+
+    /// `provideChunk` as the world sees it: true if a real chunk is there (loading or
+    /// generating it if allowed). On a server, chunks nobody loaded come back as the
+    /// shared `EmptyChunk` instead (all air, writes ignored): we return false.
+    #[inline]
+    fn access_chunk(&mut self, cx: i32, cz: i32) -> bool {
+        if self.chunk_exists(cx, cz) {
+            return true;
+        }
+        if let Some(s) = &self.server {
+            if !s.world_override && !s.load_override {
+                return false;
+            }
+            self.server_load_chunk(cx, cz);
+            return true;
+        }
+        self.prepare_chunk(cx, cz);
+        true
     }
 
     #[inline]
@@ -181,23 +220,36 @@ impl World {
         }
     }
 
-    /// `ChunkProvider.prepareChunk` for a chunk not in the map.
-    fn prepare_chunk(&mut self, cx: i32, cz: i32) {
-        // ChunkProviderGenerate.provideChunk
-        let raw = self.terrain.generate(cx, cz);
-        let mut c = Box::new(Chunk::new(cx, cz, raw.blocks));
-        c.init_height_and_sky();
-        // func_1024_c's neighbour pass runs before the chunk is in the map, so
-        // its own columns read as height 0 through the world.
-        for x in 0..16 {
-            for z in 0..16 {
-                let h = c.height(x, z);
-                self.update_neighbor_heights(cx * 16 + x, cz * 16 + z, h);
+    /// `ChunkProvider.prepareChunk` / `ChunkProviderServer.loadChunk` for a chunk not in
+    /// the map: read it from the save, else generate it; then run the population checks.
+    pub(crate) fn prepare_chunk(&mut self, cx: i32, cz: i32) {
+        let saved = self.storage.as_mut().and_then(|s| s.load_chunk(cx, cz));
+        if let Some(mut c) = saved {
+            c.last_save_time = self.world_time;
+            c.loaded = true;
+            self.chunks.insert((cx, cz), Box::new(c));
+            self.chunk_list.push((cx, cz));
+            self.mod_count += 1;
+            let v = self.mod_count;
+            self.chunk_mut(cx, cz).version = v;
+        } else {
+            // ChunkProviderGenerate.provideChunk
+            let raw = self.terrain.generate(cx, cz);
+            let mut c = Box::new(Chunk::new(cx, cz, raw.blocks));
+            c.init_height_and_sky();
+            // func_1024_c's neighbour pass runs before the chunk is in the map, so
+            // its own columns read as height 0 through the world.
+            for x in 0..16 {
+                for z in 0..16 {
+                    let h = c.height(x, z);
+                    self.update_neighbor_heights(cx * 16 + x, cz * 16 + z, h);
+                }
             }
+            c.loaded = true;
+            self.chunks.insert((cx, cz), c);
+            self.chunk_list.push((cx, cz));
+            self.touch(cx, cz);
         }
-        c.loaded = true;
-        self.chunks.insert((cx, cz), c);
-        self.touch(cx, cz);
 
         if !self.chunk(cx, cz).populated
             && self.chunk_exists(cx + 1, cz + 1)
@@ -207,7 +259,7 @@ impl World {
             self.populate_chunk(cx, cz);
         }
         if self.chunk_exists(cx - 1, cz)
-            && !self.provided(cx - 1, cz).populated
+            && !self.chunk(cx - 1, cz).populated
             && self.chunk_exists(cx - 1, cz + 1)
             && self.chunk_exists(cx, cz + 1)
             && self.chunk_exists(cx - 1, cz)
@@ -215,7 +267,7 @@ impl World {
             self.populate_chunk(cx - 1, cz);
         }
         if self.chunk_exists(cx, cz - 1)
-            && !self.provided(cx, cz - 1).populated
+            && !self.chunk(cx, cz - 1).populated
             && self.chunk_exists(cx + 1, cz - 1)
             && self.chunk_exists(cx, cz - 1)
             && self.chunk_exists(cx + 1, cz)
@@ -223,7 +275,7 @@ impl World {
             self.populate_chunk(cx, cz - 1);
         }
         if self.chunk_exists(cx - 1, cz - 1)
-            && !self.provided(cx - 1, cz - 1).populated
+            && !self.chunk(cx - 1, cz - 1).populated
             && self.chunk_exists(cx - 1, cz - 1)
             && self.chunk_exists(cx, cz - 1)
             && self.chunk_exists(cx - 1, cz)
@@ -232,23 +284,19 @@ impl World {
         }
     }
 
-    fn provided(&mut self, cx: i32, cz: i32) -> &Chunk {
-        self.provide_chunk(cx, cz);
-        self.chunk(cx, cz)
-    }
-
-    /// `ChunkProvider.populate`
+    /// `ChunkProvider.populate` (only ever called for loaded chunks).
     pub fn populate_chunk(&mut self, cx: i32, cz: i32) {
         self.provide_chunk(cx, cz);
         if !self.chunk(cx, cz).populated {
             self.chunk_mut(cx, cz).populated = true;
             crate::populate::populate(self, cx, cz);
+            self.touch(cx, cz); // setChunkModified
         }
     }
 
-    /// `getChunkFromChunkCoords` (loads the chunk).
-    pub fn load_chunk(&mut self, cx: i32, cz: i32) -> &Chunk {
-        self.provided(cx, cz)
+    /// `getChunkFromChunkCoords` for the client's renderers (singleplayer: loads the chunk).
+    pub fn load_chunk(&mut self, cx: i32, cz: i32) {
+        self.provide_chunk(cx, cz);
     }
 
     // ------------------------------------------------------------ block access
@@ -258,7 +306,10 @@ impl World {
         if !in_xz_bounds(x, z) || !(0..128).contains(&y) {
             return block::AIR;
         }
-        self.provided(x >> 4, z >> 4).block(x & 15, y, z & 15)
+        if !self.access_chunk(x >> 4, z >> 4) {
+            return block::AIR;
+        }
+        self.chunk(x >> 4, z >> 4).block(x & 15, y, z & 15)
     }
 
     #[inline]
@@ -276,14 +327,19 @@ impl World {
         if !in_xz_bounds(x, z) || !(0..128).contains(&y) {
             return 0;
         }
-        self.provided(x >> 4, z >> 4).data.get(x & 15, y, z & 15)
+        if !self.access_chunk(x >> 4, z >> 4) {
+            return 0;
+        }
+        self.chunk(x >> 4, z >> 4).data.get(x & 15, y, z & 15)
     }
 
     pub fn set_block_and_metadata(&mut self, x: i32, y: i32, z: i32, id: u8, meta: i32) -> bool {
         if !in_xz_bounds(x, z) || !(0..128).contains(&y) {
             return false;
         }
-        self.provide_chunk(x >> 4, z >> 4);
+        if !self.access_chunk(x >> 4, z >> 4) {
+            return true; // EmptyChunk.setBlockIDWithMetadata
+        }
         self.chunk_set_block_with_metadata(x >> 4, z >> 4, x & 15, y, z & 15, id, meta)
     }
 
@@ -291,7 +347,9 @@ impl World {
         if !in_xz_bounds(x, z) || !(0..128).contains(&y) {
             return false;
         }
-        self.provide_chunk(x >> 4, z >> 4);
+        if !self.access_chunk(x >> 4, z >> 4) {
+            return true; // EmptyChunk.setBlockID
+        }
         self.chunk_set_block(x >> 4, z >> 4, x & 15, y, z & 15, id)
     }
 
@@ -299,7 +357,9 @@ impl World {
         if !in_xz_bounds(x, z) || !(0..128).contains(&y) {
             return false;
         }
-        self.provide_chunk(x >> 4, z >> 4);
+        if !self.access_chunk(x >> 4, z >> 4) {
+            return true; // EmptyChunk.setBlockMetadata does nothing
+        }
         self.chunk_mut(x >> 4, z >> 4).data.set(x & 15, y, z & 15, meta);
         self.touch(x >> 4, z >> 4);
         true
@@ -504,7 +564,10 @@ impl World {
 
     /// `canBlockSeeTheSky` (loads the chunk).
     pub fn can_block_see_the_sky(&mut self, x: i32, y: i32, z: i32) -> bool {
-        self.provided(x >> 4, z >> 4).can_block_see_the_sky(x & 15, y, z & 15)
+        if !self.access_chunk(x >> 4, z >> 4) {
+            return false;
+        }
+        self.chunk(x >> 4, z >> 4).can_block_see_the_sky(x & 15, y, z & 15)
     }
 
     /// `getFullBlockLightValue` (loads the chunk).
@@ -513,7 +576,10 @@ impl World {
             return 0;
         }
         let y = y.min(127);
-        self.provided(x >> 4, z >> 4).block_light_value(x & 15, y, z & 15, 0)
+        if !self.access_chunk(x >> 4, z >> 4) {
+            return 0;
+        }
+        self.chunk(x >> 4, z >> 4).block_light_value(x & 15, y, z & 15, 0)
     }
 
     pub fn can_existing_block_see_the_sky(&self, x: i32, y: i32, z: i32) -> bool {
@@ -550,7 +616,10 @@ impl World {
 
     /// `findTopSolidBlock`
     pub fn find_top_solid_block(&mut self, x: i32, z: i32) -> i32 {
-        let c = self.provided(x >> 4, z >> 4);
+        if !self.access_chunk(x >> 4, z >> 4) {
+            return -1;
+        }
+        let c = self.chunk(x >> 4, z >> 4);
         let (lx, lz) = (x & 15, z & 15);
         let mut y = 127;
         while y > 0 {
@@ -693,7 +762,9 @@ impl World {
     /// `getBlockTileEntity` (creates one for an orphaned container block, like the original).
     pub fn get_block_tile_entity(&mut self, x: i32, y: i32, z: i32) -> Option<&mut TileEntity> {
         let (cx, cz) = (x >> 4, z >> 4);
-        self.provide_chunk(cx, cz);
+        if !self.access_chunk(cx, cz) {
+            return None;
+        }
         let key = (x & 15, y, z & 15);
         if !self.chunk(cx, cz).tile_entities.contains_key(&key) {
             let id = self.chunk(cx, cz).block(x & 15, y, z & 15);
@@ -708,7 +779,9 @@ impl World {
     /// `setBlockTileEntity` → `Chunk.setChunkBlockTileEntity`
     pub fn set_block_tile_entity(&mut self, x: i32, y: i32, z: i32, te: TileEntity) {
         let (cx, cz) = (x >> 4, z >> 4);
-        self.provide_chunk(cx, cz);
+        if !self.access_chunk(cx, cz) {
+            return;
+        }
         let c = self.chunk_mut(cx, cz);
         let id = c.block(x & 15, y, z & 15);
         if id != block::AIR && props(id).container {
@@ -720,10 +793,103 @@ impl World {
     pub fn remove_block_tile_entity(&mut self, x: i32, y: i32, z: i32) {
         let _ = self.get_block_tile_entity(x, y, z);
         let (cx, cz) = (x >> 4, z >> 4);
+        if !self.access_chunk(cx, cz) {
+            return;
+        }
         let c = self.chunk_mut(cx, cz);
         if c.loaded {
             c.tile_entities.remove(&(x & 15, y, z & 15));
         }
+    }
+
+    // ------------------------------------------------------------ saving and ticking
+
+    /// The `WorldInfo` to write to level.dat.
+    pub fn level_info(&self) -> crate::storage::LevelInfo {
+        let mut i = self.info.clone();
+        i.seed = self.seed;
+        i.spawn = self.spawn;
+        i.time = self.world_time;
+        i
+    }
+
+    /// `ChunkProvider.func_28062_b`: write one chunk and clear its modified flag.
+    pub(crate) fn save_chunk(&mut self, cx: i32, cz: i32) {
+        let time = self.world_time;
+        let Some(storage) = self.storage.as_mut() else { return };
+        let c = self.chunks.get_mut(&(cx, cz)).expect("saving unloaded chunk");
+        c.last_save_time = time;
+        match storage.save_chunk(c, time) {
+            Ok(delta) => self.info.size_on_disk += delta,
+            Err(e) => eprintln!("saving chunk {cx},{cz}: {e}"),
+        }
+        c.has_entities = !c.raw_entities.is_empty();
+    }
+
+    /// `Chunk.needsSaving`
+    fn needs_saving(&self, cx: i32, cz: i32, all: bool) -> bool {
+        let c = self.chunk(cx, cz);
+        if all {
+            if c.has_entities && self.world_time != c.last_save_time {
+                return true;
+            }
+        } else if c.has_entities && self.world_time >= c.last_save_time + 600 {
+            return true;
+        }
+        c.modified
+    }
+
+    /// `ChunkProvider.saveChunks`: all modified chunks, or at most 24 when `all` is false.
+    pub fn save_chunks(&mut self, all: bool) -> bool {
+        if self.storage.is_none() {
+            return true;
+        }
+        let mut saved = 0;
+        for i in 0..self.chunk_list.len() {
+            let (cx, cz) = self.chunk_list[i];
+            if self.needs_saving(cx, cz, all) {
+                self.save_chunk(cx, cz);
+                self.chunk_mut(cx, cz).modified = false;
+                saved += 1;
+                if saved == 24 && !all {
+                    return false;
+                }
+            }
+        }
+        true
+    }
+
+    /// `World.saveLevel`: level.dat (refusing if another program took the session lock).
+    pub fn save_level(&mut self) {
+        let info = self.level_info();
+        if let Some(s) = &self.storage {
+            if !s.session_ok() {
+                eprintln!("Failed to check session lock, aborting save");
+                return;
+            }
+            if let Err(e) = s.save_level(&info) {
+                eprintln!("saving level.dat: {e}");
+            }
+        }
+    }
+
+    /// `World.saveWorld(all, progress)`
+    pub fn save_world(&mut self, all: bool) {
+        if self.storage.is_some() {
+            self.save_level();
+            self.save_chunks(all);
+        }
+    }
+
+    /// The parts of `World.tick` this port runs: chunk unloading (server only), the
+    /// 40-tick autosave and the clock. Block ticks and mob spawning are not simulated yet.
+    pub fn tick(&mut self) {
+        self.unload_oldest_chunks();
+        let t = self.world_time + 1;
+        if t % 40 == 0 {
+            self.save_world(false);
+        }
+        self.world_time = t;
     }
 
     // ------------------------------------------------------------ helpers for features

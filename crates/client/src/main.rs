@@ -3,8 +3,12 @@
 //! Controls: click to capture the mouse, WASD to fly, Space/Shift up/down, Ctrl faster,
 //! T skips 1000 ticks of time, F2 saves a screenshot, Esc releases the mouse.
 //!
-//! Options: --seed <number or text>  --world-rand <n>  --time <ticks>
-//!          --at x,y,z,yaw,pitch  --shot <file.png> (render once everything is loaded, then exit)
+//! Worlds are saved in the b1.7.3 format under `saves/<name>` (copy a folder into
+//! `.minecraft/saves` to open it in the real game, or point --world-dir at a real save).
+//!
+//! Options: --world <name>   --world-dir <path>   --no-save   --seed <number or text>
+//!          --server [--view-distance 3..15]   (multiplayer-server chunk loading/unloading)
+//!          --world-rand <n>  --at x,y,z,yaw,pitch  --shot <file.png>
 
 mod assets;
 mod render;
@@ -22,7 +26,7 @@ use winit::event::{DeviceEvent, ElementState, MouseButton, WindowEvent};
 use winit::event_loop::{ActiveEventLoop, ControlFlow, EventLoop};
 use winit::keyboard::{KeyCode, PhysicalKey};
 use winit::window::{CursorGrabMode, Window, WindowId};
-use worker::{FromWorker, ToWorker};
+use worker::{FromWorker, ToWorker, WorldOptions};
 use worldgen::BiomeSource;
 
 /// Java's `String.hashCode`, which the world-creation screen uses for non-numeric seeds.
@@ -31,9 +35,7 @@ fn java_string_hash(s: &str) -> i32 {
 }
 
 struct Options {
-    seed: i64,
-    world_rand: i64,
-    time: i64,
+    world: WorldOptions,
     at: Option<(f64, f64, f64, f32, f32)>,
     shot: Option<std::path::PathBuf>,
 }
@@ -41,22 +43,39 @@ struct Options {
 fn parse_args() -> Options {
     let args: Vec<String> = std::env::args().collect();
     let get = |name: &str| args.iter().position(|a| a == name).and_then(|i| args.get(i + 1)).cloned();
-    let seed = match get("--seed") {
-        Some(s) => s.parse::<i64>().unwrap_or_else(|_| java_string_hash(&s) as i64),
+    let has = |name: &str| args.iter().any(|a| a == name);
+    let seed_arg = get("--seed");
+    let seed = match &seed_arg {
+        Some(s) => s.parse::<i64>().unwrap_or_else(|_| java_string_hash(s) as i64),
         None => {
             // GuiCreateWorld with an empty seed: new Random().nextLong()
             let nanos = std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_nanos() as i64;
             worldgen::JavaRandom::new(nanos).next_long()
         }
     };
+    let dir = if has("--no-save") {
+        None
+    } else if let Some(d) = get("--world-dir") {
+        Some(std::path::PathBuf::from(d))
+    } else {
+        let name = get("--world").unwrap_or_else(|| match &seed_arg {
+            Some(s) => format!("Seed {s}"),
+            None => "World1".to_string(),
+        });
+        Some(std::path::Path::new("saves").join(name))
+    };
     let at = get("--at").map(|s| {
         let v: Vec<f64> = s.split(',').map(|p| p.trim().parse().expect("--at x,y,z,yaw,pitch")).collect();
         (v[0], v[1], v[2], v[3] as f32, v[4] as f32)
     });
     Options {
-        seed,
-        world_rand: get("--world-rand").and_then(|s| s.parse().ok()).unwrap_or(seed ^ 0x5DEECE66D),
-        time: get("--time").and_then(|s| s.parse().ok()).unwrap_or(0),
+        world: WorldOptions {
+            dir,
+            seed,
+            world_rand: get("--world-rand").and_then(|s| s.parse().ok()).unwrap_or(seed ^ 0x5DEECE66D),
+            server: has("--server"),
+            view_distance: get("--view-distance").and_then(|s| s.parse().ok()).unwrap_or(10),
+        },
         at,
         shot: get("--shot").map(Into::into),
     }
@@ -73,20 +92,23 @@ struct App {
     gpu: Option<Gpu>,
     tx: Option<std::sync::mpsc::Sender<ToWorker>>,
     rx: Option<std::sync::mpsc::Receiver<FromWorker>>,
+    worker: Option<std::thread::JoinHandle<()>>,
     cam: Camera,
     ready: bool,
     idle: bool,
     keys: HashSet<KeyCode>,
     grabbed: bool,
     world_time: i64,
-    tick_accum: f64,
+    /// When the last tick arrived from the world thread (for partial ticks).
+    last_tick: Instant,
     last_frame: Instant,
-    last_sent: (i32, i32, i32),
+    last_cam_sent: DVec3,
     temps: BiomeSource,
+    seed: i64,
+    world_name: String,
     fps_frames: u32,
     fps_time: Instant,
     fps: u32,
-    loaded: usize,
     fx: Vec<render::fx::TextureFx>,
     fx_rng: render::fx::Rng,
     cloud_ticks: i64,
@@ -94,27 +116,28 @@ struct App {
 
 impl App {
     fn new(opts: Options) -> App {
-        let seed = opts.seed;
-        let time = opts.time;
+        let seed = opts.world.seed;
         App {
             opts,
             gpu: None,
             tx: None,
             rx: None,
+            worker: None,
             cam: Camera { pos: DVec3::new(0.5, 80.0, 0.5), yaw: 0.0, pitch: 0.0 },
             ready: false,
             idle: false,
             keys: HashSet::new(),
             grabbed: false,
-            world_time: time,
-            tick_accum: 0.0,
+            world_time: 0,
+            last_tick: Instant::now(),
             last_frame: Instant::now(),
-            last_sent: (i32::MIN, 0, -1),
+            last_cam_sent: DVec3::splat(f64::MAX),
             temps: BiomeSource::new(seed),
+            seed,
+            world_name: String::new(),
             fps_frames: 0,
             fps_time: Instant::now(),
             fps: 0,
-            loaded: 0,
             fx: render::fx::TextureFx::terrain_set(),
             fx_rng: render::fx::Rng::new(0x9E3779B97F4A7C15),
             cloud_ticks: 0,
@@ -137,6 +160,20 @@ impl App {
         }
     }
 
+    /// Ask the world thread to save and stop, and wait for it (the game saves on quit too).
+    fn shutdown(&mut self, el: &ActiveEventLoop) {
+        if let Some(g) = &self.gpu {
+            g.window.set_title("Minecraft Beta 1.7.3 (Rust) — saving world...");
+        }
+        if let Some(tx) = self.tx.take() {
+            let _ = tx.send(ToWorker::Quit);
+        }
+        if let Some(h) = self.worker.take() {
+            let _ = h.join();
+        }
+        el.exit();
+    }
+
     fn frame(&mut self, el: &ActiveEventLoop) {
         let now = Instant::now();
         let dt = (now - self.last_frame).as_secs_f64().min(0.25);
@@ -144,11 +181,15 @@ impl App {
 
         // World messages: upload a bounded number of meshes per frame.
         let mut uploads = 0;
+        let mut new_ticks = 0;
         if let (Some(rx), Some(gpu)) = (&self.rx, &mut self.gpu) {
             while uploads < 64 {
                 match rx.try_recv() {
-                    Ok(FromWorker::Ready { spawn }) => {
+                    Ok(FromWorker::Ready { spawn, seed, name }) => {
                         self.ready = true;
+                        self.seed = seed;
+                        self.temps = BiomeSource::new(seed);
+                        self.world_name = name;
                         if self.opts.at.is_none() {
                             self.cam.pos = DVec3::new(spawn.0, spawn.1, spawn.2);
                         }
@@ -158,9 +199,20 @@ impl App {
                         uploads += 1;
                         self.idle = false;
                     }
-                    Ok(FromWorker::Idle { loaded }) => {
-                        self.idle = true;
-                        self.loaded = loaded;
+                    Ok(FromWorker::Drop { cx, cz }) => gpu.remove_chunk(cx, cz),
+                    Ok(FromWorker::Time(t)) => {
+                        if t > self.world_time {
+                            new_ticks += (t - self.world_time).min(20);
+                        }
+                        self.world_time = t;
+                        self.last_tick = now;
+                    }
+                    Ok(FromWorker::Idle) => self.idle = true,
+                    Ok(FromWorker::Saved) => {}
+                    Ok(FromWorker::Error(e)) => {
+                        eprintln!("{e}");
+                        el.exit();
+                        return;
                     }
                     Err(_) => break,
                 }
@@ -197,36 +249,28 @@ impl App {
         if mv.length_squared() > 0.0 {
             self.cam.pos += mv.normalize() * speed * dt;
         }
+        if self.ready && self.cam.pos.distance_squared(self.last_cam_sent) > 1e-4 {
+            self.last_cam_sent = self.cam.pos;
+            if let Some(tx) = &self.tx {
+                let p = self.cam.pos;
+                let _ = tx.send(ToWorker::Camera { x: p.x, y: p.y, z: p.z });
+            }
+        }
 
-        // 20 ticks per second.
-        self.tick_accum += dt * 20.0;
-        let whole = self.tick_accum.floor();
-        self.world_time += whole as i64;
-        self.tick_accum -= whole;
-        // Per tick: animated textures and cloud drift (capped so a stall doesn't spin).
-        for _ in 0..(whole as i64).min(20) {
+        // Per tick: animated textures and cloud drift.
+        for _ in 0..new_ticks {
             for f in &mut self.fx {
                 f.tick(&mut self.fx_rng);
             }
         }
-        self.cloud_ticks += whole as i64;
-        if whole > 0.0 {
+        self.cloud_ticks += new_ticks;
+        if new_ticks > 0 {
             if let Some(g) = &self.gpu {
                 g.update_fx(&self.fx);
             }
         }
-        let partial = self.tick_accum as f32;
+        let partial = ((now - self.last_tick).as_secs_f32() * 20.0).min(1.0);
         let angle = sky::celestial_angle(self.world_time, partial);
-        let sky_sub = sky::skylight_subtracted(sky::celestial_angle(self.world_time, 1.0));
-
-        let ccx = (self.cam.pos.x.floor() as i32) >> 4;
-        let ccz = (self.cam.pos.z.floor() as i32) >> 4;
-        if self.ready && (ccx, ccz, sky_sub) != self.last_sent {
-            self.last_sent = (ccx, ccz, sky_sub);
-            if let Some(tx) = &self.tx {
-                let _ = tx.send(ToWorker::Camera { cx: ccx, cz: ccz, sky_sub });
-            }
-        }
 
         let temp = self.temps.raw_temperature(self.cam.pos.x.floor() as i32, self.cam.pos.z.floor() as i32) as f32;
         let params = FrameParams {
@@ -254,7 +298,8 @@ impl App {
                 Err(e) => eprintln!("screenshot failed: {e}"),
             }
             if want_shot {
-                el.exit();
+                self.shutdown(el);
+                return;
             }
         }
 
@@ -268,13 +313,15 @@ impl App {
             self.fps_time = Instant::now();
             let p = self.cam.pos;
             gpu.window.set_title(&format!(
-                "Minecraft Beta 1.7.3 (Rust) — seed {} — {} fps — x {:.1} y {:.1} z {:.1} — {} chunks{}",
-                self.opts.seed,
+                "Minecraft Beta 1.7.3 (Rust) — {} (seed {}) — {} fps — x {:.1} y {:.1} z {:.1} — {} chunks{}{}",
+                self.world_name,
+                self.seed,
                 self.fps,
                 p.x,
                 p.y,
                 p.z,
                 gpu.chunk_count(),
+                if self.opts.world.server { " — server mode" } else { "" },
                 if self.ready { "" } else { " — building terrain..." }
             ));
         }
@@ -300,18 +347,18 @@ impl ApplicationHandler for App {
         let window = Arc::new(el.create_window(attrs).expect("create window"));
         self.gpu = Some(Gpu::new(window, &assets.terrain, &assets.sun, &assets.moon, &assets.clouds));
         let col = Colorizers { grass: assets.grass_color, foliage: assets.foliage_color };
-        let (tx, rx) = worker::spawn(self.opts.seed, self.opts.world_rand, col);
+        let (tx, rx, h) = worker::spawn(self.opts.world.clone(), col);
         self.tx = Some(tx);
         self.rx = Some(rx);
+        self.worker = Some(h);
         if let Some((x, y, z, yaw, pitch)) = self.opts.at {
             self.cam = Camera { pos: DVec3::new(x, y, z), yaw, pitch };
         }
-        eprintln!("seed {}", self.opts.seed);
     }
 
     fn window_event(&mut self, el: &ActiveEventLoop, _id: WindowId, event: WindowEvent) {
         match event {
-            WindowEvent::CloseRequested => el.exit(),
+            WindowEvent::CloseRequested => self.shutdown(el),
             WindowEvent::Resized(s) => {
                 if let Some(g) = &mut self.gpu {
                     g.resize(s.width, s.height);
@@ -329,7 +376,11 @@ impl ApplicationHandler for App {
                         ElementState::Pressed => {
                             match code {
                                 KeyCode::Escape => self.set_grab(false),
-                                KeyCode::KeyT if !event.repeat => self.world_time += 1000,
+                                KeyCode::KeyT if !event.repeat => {
+                                    if let Some(tx) = &self.tx {
+                                        let _ = tx.send(ToWorker::AddTime(1000));
+                                    }
+                                }
                                 _ => {}
                             }
                             self.keys.insert(code);

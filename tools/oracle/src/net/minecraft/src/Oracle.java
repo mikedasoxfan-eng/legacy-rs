@@ -21,6 +21,9 @@ import java.util.*;
  *   rendertable <out.rs>                     per-block render data (textures by meta/side, render type...)
  *   rendermesh <seed> <wrand> <out> cx cz [cx cz ...]
  *                                            after the vanilla preload, RenderBlocks output for chunks
+ *   savepreload <seed> <wrand> <dir> <out>   preload with a real save directory, saveWorld(true), dump
+ *   readsave <dir> <out>                     open a save made elsewhere, load every chunk stored in
+ *                                            its region files with the game's own loader, dump
  *   mathcheck <out>                          Math.sin/cos/pow results BigTree can observe
  *
  * <wrand> seeds World.rand, which vanilla leaves unseeded (it drives spawn search,
@@ -81,6 +84,10 @@ public class Oracle {
                 for (int i = 4; i < a.length; i++) cs[i - 4] = Integer.parseInt(a[i]);
             }
             renderMesh(Long.parseLong(a[1]), Long.parseLong(a[2]), a[3], cs);
+        } else if (mode.equals("savepreload")) {
+            savePreload(Long.parseLong(a[1]), Long.parseLong(a[2]), a[3], a[4]);
+        } else if (mode.equals("readsave")) {
+            readSave(a[1], a[2]);
         } else if (mode.equals("skycolor")) {
             World w = newWorld(Long.parseLong(a[1]));
             w.setWorldTime(Long.parseLong(a[4]));
@@ -350,6 +357,55 @@ public class Oracle {
             int w = img.getWidth(), h = img.getHeight();
             return img.getRGB(0, 0, w, h, null, 0, w);
         }
+    }
+
+    /** SaveHandler for an arbitrary world directory. */
+    static SaveHandler saveHandler(String dir) {
+        File d = new File(dir).getAbsoluteFile();
+        return new SaveOldDir(d.getParentFile(), d.getName(), false);
+    }
+
+    /** McRegion save handler that reports a preset WorldInfo, so no unseeded spawn search runs. */
+    static SaveHandler presetSaveHandler(String dir, final long seed) {
+        File d = new File(dir).getAbsoluteFile();
+        final String name = d.getName();
+        return new SaveOldDir(d.getParentFile(), name, false) {
+            public WorldInfo loadWorldInfo() { return new WorldInfo(seed, name); }
+        };
+    }
+
+    static void savePreload(long seed, long wrand, String dir, String out) throws Exception {
+        World w = new World(presetSaveHandler(dir, seed), new File(dir).getName(), seed);
+        w.rand.setSeed(wrand);
+        w.getInitialSpawnLocation();
+        ChunkCoordinates sp = w.getSpawnPoint();
+        for (int dx = -128; dx <= 128; dx += 16) {
+            for (int dz = -128; dz <= 128; dz += 16) {
+                w.getBlockId(sp.x + dx, 64, sp.z + dz);
+                drainLighting(w);
+            }
+        }
+        w.saveWorld(true, null);
+        dumpWorld(w, out, sp.x, sp.y, sp.z);
+    }
+
+    static void readSave(String dir, String out) throws Exception {
+        World w = new World(saveHandler(dir), new File(dir).getName(), 0L);
+        File region = new File(dir, "region");
+        java.util.List<int[]> chunks = new java.util.ArrayList<>();
+        for (File f : region.listFiles()) {
+            String[] parts = f.getName().split("\\.");
+            if (parts.length != 4 || !parts[3].equals("mcr")) continue;
+            int rx = Integer.parseInt(parts[1]), rz = Integer.parseInt(parts[2]);
+            try (java.io.RandomAccessFile raf = new java.io.RandomAccessFile(f, "r")) {
+                for (int i = 0; i < 1024; i++)
+                    if (raf.readInt() != 0) chunks.add(new int[] {rx * 32 + (i & 31), rz * 32 + (i >> 5)});
+            }
+        }
+        chunks.sort((p, q) -> p[0] != q[0] ? Integer.compare(p[0], q[0]) : Integer.compare(p[1], q[1]));
+        for (int[] c : chunks) w.getChunkFromChunkCoords(c[0], c[1]);
+        ChunkCoordinates sp = w.getSpawnPoint();
+        dumpWorld(w, out, sp.x, sp.y, sp.z);
     }
 
     // ---------------------------------------------------------------- world scenarios

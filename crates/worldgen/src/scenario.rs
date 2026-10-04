@@ -5,8 +5,12 @@ use crate::block;
 use crate::world::World;
 
 impl World {
-    /// `World.getInitialSpawnLocation`: random walk until the top block is sand.
+    /// `World.getInitialSpawnLocation` (`generateSpawnPoint` on the server, which allows
+    /// chunk loading while it searches): random walk until the top block is sand.
     pub fn find_initial_spawn(&mut self) {
+        if let Some(s) = &mut self.server {
+            s.world_override = true;
+        }
         let mut x = 0;
         let mut z = 0;
         while !self.can_coordinate_be_spawn(x, z) {
@@ -14,6 +18,9 @@ impl World {
             z += self.rand.next_int(64) - self.rand.next_int(64);
         }
         self.spawn = (x, 64, z);
+        if let Some(s) = &mut self.server {
+            s.world_override = false;
+        }
     }
 
     /// `WorldProvider.canCoordinateBeSpawn`
@@ -53,6 +60,66 @@ impl World {
         w.find_initial_spawn();
         w.preload_spawn_area();
         w
+    }
+
+    /// `MinecraftServer.initWorld`: load a 25x25 chunk start region around spawn,
+    /// draining lighting after each chunk.
+    pub fn prepare_server_spawn_area(&mut self) {
+        let (sx, _, sz) = self.spawn;
+        let r = 196;
+        let mut dx = -r;
+        while dx <= r {
+            let mut dz = -r;
+            while dz <= r {
+                self.server_load_chunk((sx + dx) >> 4, (sz + dz) >> 4);
+                self.drain_lighting();
+                dz += 16;
+            }
+            dx += 16;
+        }
+    }
+
+    /// Open a world: from `dir` if it has a level.dat (`seed` is then ignored), otherwise
+    /// a new one created with the singleplayer or server flow. `world_rand_seed` stands in
+    /// for the unseeded `World.rand`.
+    pub fn open(
+        dir: Option<&std::path::Path>,
+        seed: i64,
+        world_rand_seed: i64,
+        server: bool,
+    ) -> std::io::Result<(World, bool)> {
+        let storage = match dir {
+            Some(d) => Some(crate::storage::Storage::open(d)?),
+            None => None,
+        };
+        let existing = storage.as_ref().and_then(|s| s.load_level());
+        let seed = existing.as_ref().map_or(seed, |i| i.seed);
+        let mut w = World::new(seed, world_rand_seed);
+        if server {
+            w.server = Some(Default::default());
+        }
+        w.storage = storage;
+        let is_new = existing.is_none();
+        if let Some(info) = existing {
+            w.spawn = info.spawn;
+            w.world_time = info.time;
+            w.info = info;
+        } else {
+            if let Some(d) = dir {
+                w.info.name = d.file_name().map(|n| n.to_string_lossy().into_owned()).unwrap_or_else(|| "world".into());
+            }
+            w.find_initial_spawn();
+        }
+        if server {
+            w.prepare_server_spawn_area();
+        } else {
+            w.preload_spawn_area();
+        }
+        if is_new {
+            // Minecraft.changeWorld saves a freshly generated world straight away.
+            w.save_world(true);
+        }
+        Ok((w, is_new))
     }
 }
 

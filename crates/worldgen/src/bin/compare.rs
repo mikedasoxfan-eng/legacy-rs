@@ -32,6 +32,36 @@ fn main() -> ExitCode {
             eprintln!("rust: {} chunks in {:.2?}", w.chunks.len(), t.elapsed());
             world(&w, &a[9])
         }
+        Some("makesave") => {
+            // Create a world in a save directory the way the viewer does (preload, then save).
+            let (w, new) = World::open(Some(std::path::Path::new(&a[4])), p(2), p(3), false).expect("open");
+            println!("{} world, {} chunks, spawn {:?}", if new { "new" } else { "existing" }, w.chunks.len(), w.spawn);
+            ExitCode::SUCCESS
+        }
+        Some("preload-worldonly") => {
+            let mut w = World::new(p(2), p(3));
+            w.find_initial_spawn();
+            w.preload_spawn_area();
+            WORLD_ONLY.store(true, std::sync::atomic::Ordering::Relaxed);
+            world(&w, &a[4])
+        }
+        Some("savecheck") => {
+            // Load every chunk listed in the dump from a save directory, compare (saves keep
+            // no scheduled ticks or pending light updates, so those are skipped).
+            let dir = std::path::Path::new(&a[2]);
+            let storage = worldgen::storage::Storage::open(dir).expect("open save");
+            let info = storage.load_level().expect("level.dat");
+            let mut w = World::new(info.seed, 0);
+            w.spawn = info.spawn;
+            w.world_time = info.time;
+            w.storage = Some(storage);
+            let data = std::fs::read(&a[3]).expect("read dump");
+            for (cx, cz) in dump_chunk_list(&data) {
+                w.load_chunk(cx, cz);
+            }
+            WORLD_ONLY.store(true, std::sync::atomic::Ordering::Relaxed);
+            world(&w, &a[3])
+        }
         Some("preload") => {
             let t = std::time::Instant::now();
             let mut w = World::new(p(2), p(3));
@@ -187,6 +217,33 @@ impl Tally {
     }
 }
 
+static WORLD_ONLY: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(false);
+
+/// Chunk coordinates in a world dump, in order.
+fn dump_chunk_list(data: &[u8]) -> Vec<(i32, i32)> {
+    let mut r = Reader { b: data, o: 20 };
+    let n = r.i32() as usize;
+    let mut out = Vec::new();
+    for _ in 0..n {
+        out.push((r.i32(), r.i32()));
+        r.take(1 + 32768 + 16384 * 3 + 256);
+        let nte = r.i32();
+        for _ in 0..nte {
+            r.take(12);
+            match r.u8() {
+                1 => {
+                    r.take(27 * 5);
+                }
+                _ => {
+                    let len = r.u8() as usize;
+                    r.take(len);
+                }
+            }
+        }
+    }
+    out
+}
+
 const BLOCK_NAMES: fn(u8) -> &'static str = |id| worldgen::block::props(id).name;
 
 fn world(w: &World, path: &str) -> ExitCode {
@@ -302,13 +359,14 @@ fn world(w: &World, path: &str) -> ExitCode {
     }
     let mut rust_ticks: Vec<_> = w.pending_ticks.iter().map(|(k, &t)| (k.x, k.y, k.z, k.block, t)).collect();
     rust_ticks.sort();
-    if java_ticks != rust_ticks {
+    let world_only = WORLD_ONLY.load(std::sync::atomic::Ordering::Relaxed);
+    if java_ticks != rust_ticks && !world_only {
         cats.entry("pending ticks").or_default().hit("pending ticks", || {
             format!("java {} entries, rust {}", java_ticks.len(), rust_ticks.len())
         });
     }
     let java_lq = r.i32() as usize;
-    if java_lq != w.light_queue.len() {
+    if java_lq != w.light_queue.len() && !world_only {
         cats.entry("light queue").or_default().hit("light queue", || {
             format!("java {java_lq} rust {}", w.light_queue.len())
         });

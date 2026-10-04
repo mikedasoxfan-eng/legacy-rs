@@ -1,104 +1,230 @@
-//! The world thread: owns the `World`, generates chunks around the camera
-//! (nearest first, after the vanilla spawn preload) and builds their meshes.
+//! The world thread: owns the `World`, runs it at 20 ticks per second, loads chunks the
+//! way singleplayer or the multiplayer server does, and builds meshes for the renderer
+//! window (`RenderGlobal`).
 
 use crate::render::access::Access;
 use crate::render::blocks::{Colorizers, RenderBlocks};
 use crate::render::{rprops, Tessellator, Vertex};
 use std::cell::RefCell;
-use std::collections::HashMap;
-use std::sync::mpsc::{self, Receiver, RecvTimeoutError, Sender};
+use std::collections::{HashMap, HashSet};
+use std::path::PathBuf;
+use std::sync::mpsc::{self, Receiver, Sender};
 use std::time::{Duration, Instant};
+use worldgen::world::server::PlayerManager;
 use worldgen::{BiomeSource, World};
 
 pub enum ToWorker {
-    Camera { cx: i32, cz: i32, sky_sub: i32 },
+    Camera { x: f64, y: f64, z: f64 },
+    AddTime(i64),
+    Quit,
 }
 
 pub enum FromWorker {
-    Ready { spawn: (f64, f64, f64) },
+    Ready { spawn: (f64, f64, f64), seed: i64, name: String },
     Mesh { cx: i32, cz: i32, opaque: Vec<Vertex>, translucent: Vec<Vertex> },
-    /// Everything within the render radius is generated and meshed.
-    Idle { loaded: usize },
+    Drop { cx: i32, cz: i32 },
+    Time(i64),
+    /// Everything in the renderer window is loaded and meshed.
+    Idle,
+    Saved,
+    Error(String),
 }
 
-/// Chunk radius of the mesh area: "Far" render distance is 256 blocks.
-pub const RENDER_RADIUS: i32 = 16;
+#[derive(Clone)]
+pub struct WorldOptions {
+    pub dir: Option<PathBuf>,
+    pub seed: i64,
+    pub world_rand: i64,
+    /// Multiplayer-server chunk loading/unloading instead of singleplayer's.
+    pub server: bool,
+    pub view_distance: i32,
+}
 
-pub fn spawn(seed: i64, world_rand: i64, col: Colorizers) -> (Sender<ToWorker>, Receiver<FromWorker>) {
+/// `RenderGlobal`: 26 renderers across on Far (render distance capped at 400 blocks).
+pub const RENDER_CHUNKS_WIDE: i32 = 26;
+
+pub fn spawn(opts: WorldOptions, col: Colorizers) -> (Sender<ToWorker>, Receiver<FromWorker>, std::thread::JoinHandle<()>) {
     let (to_tx, to_rx) = mpsc::channel();
     let (from_tx, from_rx) = mpsc::channel();
-    std::thread::Builder::new()
+    let h = std::thread::Builder::new()
         .name("world".into())
-        .spawn(move || run(seed, world_rand, col, to_rx, from_tx))
+        .spawn(move || run(opts, col, to_rx, from_tx))
         .expect("spawn world thread");
-    (to_tx, from_rx)
+    (to_tx, from_rx, h)
 }
 
-fn run(seed: i64, world_rand: i64, col: Colorizers, rx: Receiver<ToWorker>, tx: Sender<FromWorker>) {
-    let t = Instant::now();
-    let mut world = World::new_vanilla(seed, world_rand);
-    let (sx, _, sz) = world.spawn;
-    let mut top = 127;
-    while top > 0 && world.get_block_id(sx, top, sz) == 0 {
-        top -= 1;
-    }
-    eprintln!("world: spawn {:?}, {} chunks preloaded in {:.2?}", world.spawn, world.chunks.len(), t.elapsed());
-    let _ = tx.send(FromWorker::Ready { spawn: (sx as f64 + 0.5, top as f64 + 1.0 + 1.62, sz as f64 + 0.5) });
+/// `RenderGlobal.markRenderersForNewPosition` along one axis: the chunk coordinates the
+/// renderer window covers around block position `p`.
+fn window_axis(p: i32) -> Vec<i32> {
+    let p = p - 8;
+    let w = RENDER_CHUNKS_WIDE * 16;
+    let half = w / 2;
+    (0..RENDER_CHUNKS_WIDE)
+        .map(|i| {
+            let mut x = i * 16;
+            let mut k = x + half - p;
+            if k < 0 {
+                k -= w - 1;
+            }
+            k /= w;
+            x -= k * w;
+            x >> 4
+        })
+        .collect()
+}
 
-    let biomes = RefCell::new(BiomeSource::new(seed));
-    let mut offsets: Vec<(i32, i32)> = Vec::new();
-    for dx in -RENDER_RADIUS..=RENDER_RADIUS {
-        for dz in -RENDER_RADIUS..=RENDER_RADIUS {
-            offsets.push((dx, dz));
+fn run(opts: WorldOptions, col: Colorizers, rx: Receiver<ToWorker>, tx: Sender<FromWorker>) {
+    let t = Instant::now();
+    let (mut world, is_new) = match World::open(opts.dir.as_deref(), opts.seed, opts.world_rand, opts.server) {
+        Ok(w) => w,
+        Err(e) => {
+            let _ = tx.send(FromWorker::Error(format!("could not open world: {e}")));
+            return;
+        }
+    };
+    let (sx, _, sz) = world.spawn;
+    // The saved player, if the real game left one; otherwise stand on the spawn column.
+    let mut start = None;
+    if let Some(p) = &world.info.player {
+        if let [worldgen::nbt::Tag::Double(x), worldgen::nbt::Tag::Double(y), worldgen::nbt::Tag::Double(z)] = p.list("Pos") {
+            start = Some((*x, *y + 1.62, *z));
         }
     }
-    offsets.sort_by_key(|&(dx, dz)| dx * dx + dz * dz);
+    let start = start.unwrap_or_else(|| {
+        let mut top = 127;
+        while top > 0 && world.get_block_id(sx, top, sz) == 0 {
+            top -= 1;
+        }
+        (sx as f64 + 0.5, top as f64 + 1.0 + 1.62, sz as f64 + 0.5)
+    });
+    eprintln!(
+        "world: {} '{}', seed {}, spawn {:?}, {} chunks ready in {:.2?}{}",
+        if is_new { "created" } else { "loaded" },
+        world.info.name,
+        world.seed,
+        world.spawn,
+        world.chunks.len(),
+        t.elapsed(),
+        if opts.server { " (server chunk handling)" } else { "" }
+    );
+    let _ = tx.send(FromWorker::Ready { spawn: start, seed: world.seed, name: world.info.name.clone() });
 
-    let mut cam = (sx >> 4, sz >> 4);
-    let mut sky_sub = 0;
+    let mut players = if opts.server {
+        let mut pm = PlayerManager::new(opts.view_distance.clamp(3, 15));
+        pm.add_player(&mut world, start.0, start.2);
+        Some(pm)
+    } else {
+        None
+    };
+
+    let biomes = RefCell::new(BiomeSource::new(world.seed));
+    let mut cam = start;
+    let mut sort_pos = (f64::MAX, f64::MAX, f64::MAX);
+    let mut window: Vec<(i32, i32)> = Vec::new();
+    let mut window_set: HashSet<(i32, i32)>;
     let mut meshed: HashMap<(i32, i32), u64> = HashMap::new();
+    let mut sky_sub = crate::render::sky::skylight_subtracted(crate::render::sky::celestial_angle(world.world_time, 1.0));
+    let mut next_tick = Instant::now();
     let mut idle_reported = false;
+
     loop {
-        // Take the newest camera state.
+        // Messages.
         loop {
             match rx.try_recv() {
-                Ok(ToWorker::Camera { cx, cz, sky_sub: s }) => {
-                    if (cx, cz) != cam {
-                        idle_reported = false;
+                Ok(ToWorker::Camera { x, y, z }) => cam = (x, y, z),
+                Ok(ToWorker::AddTime(t)) => world.world_time += t,
+                Ok(ToWorker::Quit) | Err(mpsc::TryRecvError::Disconnected) => {
+                    // Minecraft quitting to the title screen / server shutdown: save everything.
+                    if let Some(pm) = &mut players {
+                        pm.remove_player(&mut world);
                     }
-                    cam = (cx, cz);
-                    if s != sky_sub {
-                        sky_sub = s;
-                        meshed.clear(); // vanilla re-renders everything when the sky darkens
-                        idle_reported = false;
-                    }
+                    world.save_world(true);
+                    let _ = tx.send(FromWorker::Saved);
+                    return;
                 }
                 Err(mpsc::TryRecvError::Empty) => break,
-                Err(mpsc::TryRecvError::Disconnected) => return,
             }
         }
 
-        let budget = Instant::now();
+        // Ticks (at most a second's worth of catch-up).
+        let mut ticks = 0;
+        while Instant::now() >= next_tick && ticks < 20 {
+            world.tick();
+            if let Some(pm) = &mut players {
+                // MinecraftServer.doTick: world tick, lighting, then player movement packets.
+                world.drain_lighting();
+                pm.update_player(&mut world, cam.0, cam.2);
+            }
+            let s = crate::render::sky::skylight_subtracted(crate::render::sky::celestial_angle(world.world_time, 1.0));
+            if s != sky_sub {
+                sky_sub = s;
+                meshed.clear(); // updateAllRenderers
+                idle_reported = false;
+            }
+            let _ = tx.send(FromWorker::Time(world.world_time));
+            next_tick += Duration::from_millis(50);
+            ticks += 1;
+        }
+        if ticks == 20 {
+            next_tick = Instant::now();
+        }
+
+        // Unloaded chunks lose their meshes.
+        for (cx, cz) in std::mem::take(&mut world.unloaded) {
+            if meshed.remove(&(cx, cz)).is_some() {
+                let _ = tx.send(FromWorker::Drop { cx, cz });
+            }
+            idle_reported = false;
+        }
+
+        // Renderer window: re-centred after moving more than 4 blocks.
+        let (dx, dy, dz) = (cam.0 - sort_pos.0, cam.1 - sort_pos.1, cam.2 - sort_pos.2);
+        if dx * dx + dy * dy + dz * dz > 16.0 {
+            sort_pos = cam;
+            let xs = window_axis(cam.0.floor() as i32);
+            let zs = window_axis(cam.2.floor() as i32);
+            window.clear();
+            for &x in &xs {
+                for &z in &zs {
+                    window.push((x, z));
+                }
+            }
+            window_set = window.iter().copied().collect();
+            let gone: Vec<(i32, i32)> = meshed.keys().filter(|k| !window_set.contains(k)).copied().collect();
+            for (cx, cz) in gone {
+                meshed.remove(&(cx, cz));
+                let _ = tx.send(FromWorker::Drop { cx, cz });
+            }
+            idle_reported = false;
+        }
+        let (ccx, ccz) = ((cam.0.floor() as i32) >> 4, (cam.2.floor() as i32) >> 4);
+        window.sort_by_key(|&(x, z)| (x - ccx) * (x - ccx) + (z - ccz) * (z - ccz));
+
+        // Load (singleplayer) and mesh, nearest first, until the next tick is due.
         let mut did_work = false;
-        for &(dx, dz) in &offsets {
-            if budget.elapsed() > Duration::from_millis(25) {
+        for i in 0..window.len() {
+            if Instant::now() >= next_tick {
                 did_work = true;
                 break;
             }
-            let (cx, cz) = (cam.0 + dx, cam.1 + dz);
-            // Meshing needs the 3x3 neighbourhood, which also guarantees population is done.
-            let mut loaded_any = false;
+            let (cx, cz) = window[i];
+            let mut complete = true;
             for nx in cx - 1..=cx + 1 {
                 for nz in cz - 1..=cz + 1 {
                     if !world.chunk_exists(nx, nz) {
-                        world.load_chunk(nx, nz);
-                        world.drain_lighting();
-                        loaded_any = true;
+                        if players.is_none() {
+                            // Singleplayer renderers pull chunks in through ChunkCache.
+                            world.load_chunk(nx, nz);
+                            world.drain_lighting();
+                            did_work = true;
+                        } else {
+                            complete = false;
+                        }
                     }
                 }
             }
-            if loaded_any {
-                did_work = true;
+            if !complete {
+                continue;
             }
             let mut version = 0;
             for nx in cx - 1..=cx + 1 {
@@ -119,22 +245,10 @@ fn run(seed: i64, world_rand: i64, col: Colorizers, rx: Receiver<ToWorker>, tx: 
         if !did_work {
             if !idle_reported {
                 idle_reported = true;
-                let _ = tx.send(FromWorker::Idle { loaded: world.chunks.len() });
+                let _ = tx.send(FromWorker::Idle);
             }
-            match rx.recv_timeout(Duration::from_millis(50)) {
-                Ok(ToWorker::Camera { cx, cz, sky_sub: s }) => {
-                    if (cx, cz) != cam || s != sky_sub {
-                        idle_reported = false;
-                    }
-                    cam = (cx, cz);
-                    if s != sky_sub {
-                        sky_sub = s;
-                        meshed.clear();
-                    }
-                }
-                Err(RecvTimeoutError::Timeout) => {}
-                Err(RecvTimeoutError::Disconnected) => return,
-            }
+            let wait = next_tick.saturating_duration_since(Instant::now()).min(Duration::from_millis(50));
+            std::thread::sleep(wait);
         }
     }
 }

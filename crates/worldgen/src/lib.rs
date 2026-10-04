@@ -13,11 +13,13 @@ pub mod caves;
 pub mod features;
 pub mod jmath;
 pub mod math;
+pub mod nbt;
 pub mod noise;
 pub mod overworld;
 pub mod populate;
 pub mod random;
 pub mod scenario;
+pub mod storage;
 pub mod world;
 
 pub use biome::{Biome, BiomeSource};

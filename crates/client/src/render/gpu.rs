@@ -483,6 +483,10 @@ impl Gpu {
         self.chunks.insert((cx, cz), c);
     }
 
+    pub fn remove_chunk(&mut self, cx: i32, cz: i32) {
+        self.chunks.remove(&(cx, cz));
+    }
+
     pub fn chunk_count(&self) -> usize {
         self.chunks.len()
     }
