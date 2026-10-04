@@ -116,6 +116,73 @@ pub fn view_proj() -> Mat4 {
 }
 
 pub fn model_shot(path: &std::path::Path, variants: bool, scene_path: Option<&std::path::Path>) -> Result<(), String> {
+    let states = states(variants);
+    if let Some(path) = scene_path {
+        let mut lines = format!("{}\n", variants as u8);
+        for s in &states {
+            lines.push_str(&format!("{} {} {}\n", s.position[0], s.position[1], s.position[2]));
+        }
+        std::fs::write(path, lines).map_err(|e| e.to_string())?;
+    }
+    save_batches(path, batches(&states, DVec3::from_array(CAMERA)), view_proj())
+}
+
+pub fn renderer_shot(path: &std::path::Path) -> Result<(), String> {
+    use super::objects::{ObjectKind, ObjectState};
+    let camera = DVec3::new(0.0, 13.0, 34.0);
+    let mut all = batches(&[], camera);
+    let kinds = [
+        ObjectKind::Item { item: worldgen::world::tile::ItemStack::new(1, 21, 0), age: 77, hover: 0.4 },
+        ObjectKind::Item { item: worldgen::world::tile::ItemStack::new(18, 6, 1), age: 22, hover: 1.2 },
+        ObjectKind::Item { item: worldgen::world::tile::ItemStack::new(264, 21, 0), age: 11, hover: 2.0 },
+        ObjectKind::Falling { block: 12, light: [0.8; 7] },
+        ObjectKind::Tnt { fuse: 9 },
+        ObjectKind::Arrow { yaw: 35.0, pitch: -25.0, shake: 3, visible: true },
+        ObjectKind::Sprite { icon: 14, scale: 2.0 },
+    ];
+    for (i, kind) in kinds.into_iter().enumerate() {
+        let s = ObjectState { kind, position: [-18.0 + i as f64 * 2.5, 0.8, 0.0], partial: 0.5, brightness: 1.0 };
+        all.extend(super::objects::render(&s, camera.to_array(), [0.0, PITCH]).draws.iter().map(|d| d.batch()));
+    }
+    let mut world = worldgen::World::new(0, 1);
+    for (i, kind) in [MobKind::Ghast, MobKind::PigZombie, MobKind::Giant].into_iter().enumerate() {
+        let mut s = RenderState::new(kind);
+        s.position = [3.0 + i as f64 * 6.0, 0.0, 0.0];
+        s.age = 4.5;
+        s.partial = 0.5;
+        s.body_yaw = -25.0;
+        s.yaw = -25.0;
+        s.ghast_attack = 15.0;
+        s.ghast_attacking = true;
+        let min = living::render_living(&s, DVec3::ZERO)
+            .iter()
+            .flat_map(|b| &b.vertices)
+            .map(|v| v.pos[1])
+            .fold(f32::INFINITY, f32::min);
+        s.position[1] = -min as f64 + 0.015625;
+        all.extend(living::render_living(&s, camera));
+        let mut e = worldgen::entity::Entity::item(
+            &mut world,
+            s.position[0],
+            s.position[1],
+            0.0,
+            worldgen::world::tile::ItemStack::new(1, 1, 0),
+        );
+        e.last_tick_pos = e.pos;
+        e.fire = 10;
+        e.width = if kind == MobKind::Giant { 3.6 } else { 0.6 };
+        e.height = if kind == MobKind::Giant { 10.8 } else { 1.8 };
+        e.bounding_box.min_y = e.pos.y;
+        if kind == MobKind::PigZombie {
+            all.extend(super::effects::fire(&e, 0.5, camera.to_array(), 0.0).draws.iter().map(|d| d.batch()));
+        }
+    }
+    let view = crate::render::gpu::perspective(FOV.to_radians(), WIDTH as f32 / HEIGHT as f32, 0.05, FAR * 2.0)
+        * Mat4::from_rotation_x(PITCH.to_radians());
+    save_batches(path, all, view)
+}
+
+fn save_batches(path: &std::path::Path, batches: Vec<Batch>, view_proj: Mat4) -> Result<(), String> {
     let a = assets::load()?;
     let instance = wgpu::Instance::new(wgpu::InstanceDescriptor::new_without_display_handle());
     let adapter = pollster::block_on(instance.request_adapter(&wgpu::RequestAdapterOptions {
@@ -133,15 +200,15 @@ pub fn model_shot(path: &std::path::Path, variants: bool, scene_path: Option<&st
         wgpu::TextureFormat::Rgba8Unorm,
         a.mobs.iter().map(|(n, i)| (n.as_str(), i)).chain(std::iter::once(("terrain.png", &a.terrain))),
     );
-    let states = states(variants);
-    if let Some(path) = scene_path {
-        let mut lines = format!("{}\n", variants as u8);
-        for s in &states {
-            lines.push_str(&format!("{} {} {}\n", s.position[0], s.position[1], s.position[2]));
+    let mut fx = crate::render::fx::TextureFx::terrain_set();
+    let mut rng = crate::render::fx::Rng::new(187);
+    for _ in 0..64 {
+        for f in &mut fx {
+            f.tick(&mut rng);
         }
-        std::fs::write(path, lines).map_err(|e| e.to_string())?;
     }
-    renderer.upload(&device, &queue, batches(&states, DVec3::from_array(CAMERA)), view_proj(), FOG, FAR);
+    renderer.update_fx(&queue, &fx);
+    renderer.upload(&device, &queue, batches, view_proj, FOG, FAR);
     let texture = device.create_texture(&wgpu::TextureDescriptor {
         label: Some("modelshot"),
         size: wgpu::Extent3d { width: WIDTH, height: HEIGHT, depth_or_array_layers: 1 },

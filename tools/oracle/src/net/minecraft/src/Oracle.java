@@ -154,6 +154,14 @@ public class Oracle {
         } else if (mode.equals("gridnether")) {
             gridNether(Long.parseLong(a[1]), Long.parseLong(a[2]), Integer.parseInt(a[3]), Integer.parseInt(a[4]),
                 Integer.parseInt(a[5]), Integer.parseInt(a[6]), a[7], a[8]);
+        } else if (mode.equals("livingrenderers")) {
+            RendererOracle.mobs(a[1]);
+        } else if (mode.equals("rendereffects")) {
+            RendererOracle.effects(a[1]);
+        } else if (mode.equals("renderers")) {
+            RendererOracle.run(a[1]);
+        } else if (mode.equals("itemtable")) {
+            RendererOracle.itemTable(a[1]);
         } else if (mode.equals("models")) {
             models(a[1]);
         } else {
@@ -199,10 +207,10 @@ public class Oracle {
     /** Instantiate the original bytecode and exercise successive poses on each instance.
      * No render()/display-list methods are called, so this runs without GL or natives. */
     static void models(String out) throws Exception {
-        int[] kinds = {0,0,0,1,2,3,3,4,4,5,6,7,8,9,10,10,10,11,12,13,14};
-        float[] inflate = {0,.35F,-.25F,0,0,0,.6F,0,.5F,0,0,0,0,0,0,2,-.1F,0,0,0,0};
-        float[] offsets = {0,1.25F,-2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
-        int[] legs = {12,12,12,12,12,12,6,12,12,12,12,12,12,12,12,12,12,12,12,12,12};
+        int[] kinds = {0,0,0,1,2,3,3,4,4,5,6,7,8,9,10,10,10,11,12,13,14,15};
+        float[] inflate = {0,.35F,-.25F,0,0,0,.6F,0,.5F,0,0,0,0,0,0,2,-.1F,0,0,0,0,0};
+        float[] offsets = {0,1.25F,-2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+        int[] legs = {12,12,12,12,12,12,6,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12};
         float[][] poses = {
             {0,0,0,0,0,.0625F}, {1.25F,.7F,4.5F,35,-20,.0625F},
             {-3.75F,1,17.25F,-179,89,.125F}, {12.345F,.13F,-2.5F,270,-67,.03125F},
@@ -233,6 +241,7 @@ public class Oracle {
                 case 12: m = new ModelSlime(16); break;
                 case 13: m = new ModelSquid(); break;
                 case 14: m = new ModelWolf(); break;
+                case 15: m = new ModelGhast(); break;
                 default: throw new AssertionError();
             }
             EntityWolf wolf = kinds[group] == 14 ? new EntityWolf(null) : null;

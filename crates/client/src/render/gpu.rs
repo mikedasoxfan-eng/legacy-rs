@@ -508,6 +508,7 @@ impl Gpu {
 
     /// RenderEngine.updateDynamicTextures: copy animated tiles into terrain.png.
     pub fn update_fx(&self, fx: &[super::fx::TextureFx]) {
+        self.entities.update_fx(&self.queue, fx);
         for f in fx {
             for i in 0..f.tile_size {
                 for j in 0..f.tile_size {
@@ -921,7 +922,6 @@ impl Gpu {
                     rp.draw_indexed(0..*n, 0, i as u32..i as u32 + 1);
                 }
             }
-            self.entities.draw(&mut rp);
             // Weather effects belong to renderEntities, before particles and water.
             if weather_n[3] > 0 {
                 rp.set_pipeline(&self.p_lightning);
@@ -929,6 +929,7 @@ impl Gpu {
                 rp.set_vertex_buffer(0, self.weather_bufs[3].slice(..));
                 rp.draw(0..weather_n[3], 0..1);
             }
+            self.entities.draw(&mut rp);
             if weather_n[2] > 0 {
                 rp.set_pipeline(&self.p_weather);
                 rp.set_bind_group(0, &self.weather_slots[2].bind, &[]);

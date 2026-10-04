@@ -242,6 +242,15 @@ fn mesh_check(a: &[String]) -> bool {
 
 fn main() {
     let args: Vec<String> = std::env::args().collect();
+    if args.get(1).map(String::as_str) == Some("--renderershot") {
+        if let Err(e) =
+            render::entity::shot::renderer_shot(std::path::Path::new(args.get(2).expect("--renderershot file.png")))
+        {
+            eprintln!("{e}");
+            std::process::exit(1);
+        }
+        return;
+    }
     if args.get(1).map(String::as_str) == Some("--modelshot") {
         let path = std::path::Path::new(args.get(2).expect("--modelshot file.png [--variants]"));
         let scene = args
@@ -253,6 +262,22 @@ fn main() {
             std::process::exit(1);
         }
         return;
+    }
+    if args.get(1).map(String::as_str) == Some("--livingrenderercheck") {
+        let ok =
+            render::entity::object_check::living_check(args.get(2).expect("--livingrenderercheck oracle-living.bin"));
+        println!("{}", if ok { "LIVING RENDERERS EXACT" } else { "LIVING RENDERERS DIFFER" });
+        std::process::exit(if ok { 0 } else { 1 });
+    }
+    if args.get(1).map(String::as_str) == Some("--effectcheck") {
+        let ok = render::entity::object_check::effects_check(args.get(2).expect("--effectcheck oracle-effects.bin"));
+        println!("{}", if ok { "EFFECTS EXACT" } else { "EFFECTS DIFFER" });
+        std::process::exit(if ok { 0 } else { 1 });
+    }
+    if args.get(1).map(String::as_str) == Some("--renderercheck") {
+        let ok = render::entity::object_check::check(args.get(2).expect("--renderercheck oracle-renderers.bin"));
+        println!("{}", if ok { "RENDERERS EXACT" } else { "RENDERERS DIFFER" });
+        std::process::exit(if ok { 0 } else { 1 });
     }
     if args.get(1).map(String::as_str) == Some("--modelcheck") {
         let ok = render::entity::check::model_check(args.get(2).expect("--modelcheck oracle-models.bin"));

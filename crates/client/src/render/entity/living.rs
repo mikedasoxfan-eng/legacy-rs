@@ -20,6 +20,9 @@ pub enum MobKind {
     Slime,
     Squid,
     Wolf,
+    Ghast,
+    PigZombie,
+    Giant,
 }
 
 /// Interpolated `EntityLiving` inputs. The simulation can fill this at partialTicks:
@@ -28,6 +31,8 @@ pub enum MobKind {
 /// limbSwing = S-R*(1-partial), age = ticksExisted+partial, attack = getSwingProgress.
 #[derive(Clone, Debug)]
 pub struct RenderState {
+    pub ghast_attack: f32,
+    pub ghast_attacking: bool,
     pub held_item: Option<super::equipped::HeldSprite>,
     pub kind: MobKind,
     pub position: [f64; 3],
@@ -73,7 +78,15 @@ pub struct RenderState {
 impl RenderState {
     pub fn new(kind: MobKind) -> Self {
         Self {
-            held_item: if kind == MobKind::Skeleton { Some(super::equipped::HeldSprite::BOW) } else { None },
+            ghast_attack: 0.0,
+            ghast_attacking: false,
+            held_item: if kind == MobKind::Skeleton {
+                Some(super::equipped::HeldSprite::BOW)
+            } else if kind == MobKind::PigZombie {
+                Some(super::equipped::HeldSprite { icon: 68, full_3d: true, terrain: false })
+            } else {
+                None
+            },
             kind,
             position: [0.0; 3],
             yaw: 0.0,
@@ -148,6 +161,8 @@ pub enum Pass {
     Eyes,
     Additive,
     Overlay,
+    TntFlash,
+    Shadow,
 }
 
 pub struct Batch {
@@ -160,6 +175,12 @@ pub struct Batch {
 /// All jar resources used by the models, including the powered creeper pass.
 pub const TEXTURES: &[&str] = &[
     "gui/items.png",
+    "terrain.png",
+    "item/arrows.png",
+    "misc/shadow.png",
+    "mob/ghast.png",
+    "mob/ghast_fire.png",
+    "mob/pigzombie.png",
     "mob/char.png",
     "mob/zombie.png",
     "mob/skeleton.png",
@@ -194,13 +215,24 @@ pub fn model_kind(kind: MobKind) -> ModelKind {
         MobKind::Slime => ModelKind::SlimeInner,
         MobKind::Squid => ModelKind::Squid,
         MobKind::Wolf => ModelKind::Wolf,
+        MobKind::Ghast => ModelKind::Ghast,
+        MobKind::PigZombie => ModelKind::Zombie,
+        MobKind::Giant => ModelKind::Zombie,
     }
 }
 
 fn texture(s: &RenderState) -> &'static str {
     match s.kind {
         MobKind::Biped => "mob/char.png",
-        MobKind::Zombie => "mob/zombie.png",
+        MobKind::Zombie | MobKind::Giant => "mob/zombie.png",
+        MobKind::PigZombie => "mob/pigzombie.png",
+        MobKind::Ghast => {
+            if s.ghast_attacking {
+                "mob/ghast_fire.png"
+            } else {
+                "mob/ghast.png"
+            }
+        }
         MobKind::Skeleton => "mob/skeleton.png",
         MobKind::Pig => "mob/pig.png",
         MobKind::Cow => "mob/cow.png",
@@ -263,7 +295,15 @@ pub fn model_transform(s: &RenderState, camera: DVec3) -> Mat4 {
         }
     }
     m *= Mat4::from_scale(Vec3::new(-1.0, -1.0, 1.0));
-    if s.kind == MobKind::Creeper {
+    if s.kind == MobKind::Ghast {
+        let mut f = (s.ghast_attack / 20.0).max(0.0);
+        f = 1.0 / (f * f * f * f * f * 2.0 + 1.0);
+        let y = (8.0 + f) / 2.0;
+        let xz = (8.0 + 1.0 / f) / 2.0;
+        m *= Mat4::from_scale(Vec3::new(xz, y, xz));
+    } else if s.kind == MobKind::Giant {
+        m *= Mat4::from_scale(Vec3::splat(6.0));
+    } else if s.kind == MobKind::Creeper {
         let mut f = s.creeper_flash;
         let wobble = 1.0 + math::sin(f * 100.0) * f * 0.01;
         if f < 0.0 {
@@ -395,6 +435,9 @@ pub fn render_living(s: &RenderState, camera: DVec3) -> Vec<Batch> {
 }
 
 fn render_with_lighting(s: &RenderState, camera: DVec3, normalize: bool) -> Vec<Batch> {
+    if matches!(s.kind, MobKind::Ghast | MobKind::PigZombie | MobKind::Giant) {
+        return super::special::render(s, camera.to_array(), normalize).draws.iter().map(|d| d.batch()).collect();
+    }
     let transform = model_transform(s, camera);
     let mut main = Model::new(model_kind(s.kind));
     main.on_ground = s.attack;
@@ -414,7 +457,7 @@ fn render_with_lighting(s: &RenderState, camera: DVec3, normalize: bool) -> Vec<
         let shake = s.wolf.shake[0] + (s.wolf.shake[1] - s.wolf.shake[0]) * s.partial;
         brightness *= 12.0 / 16.0 + shake / 2.0 * 0.25;
     }
-    let color = [brightness, brightness, brightness, 1.0];
+    let color = if s.kind == MobKind::Ghast { [1.0; 4] } else { [brightness, brightness, brightness, 1.0] };
     let mut result = vec![batch(&main, transform, Some(texture(s)), Pass::Opaque, color, true, normalize, 0.0)];
     let mut pass_model = None;
     let mut pass_color = color;
@@ -465,7 +508,7 @@ fn render_with_lighting(s: &RenderState, camera: DVec3, normalize: bool) -> Vec<
             offset,
         ));
     }
-    if matches!(s.kind, MobKind::Biped | MobKind::Zombie | MobKind::Skeleton) {
+    if matches!(s.kind, MobKind::Biped | MobKind::Zombie | MobKind::Skeleton | MobKind::PigZombie) {
         if let Some(item) = s.held_item {
             result.push(super::equipped::render_item(&main, transform, item, color, normalize));
         }

@@ -173,7 +173,7 @@ pub struct App {
     ticks_ready: i64,
     sound: Option<crate::sound::SoundManager>,
     /// Entities near the camera from the last tick, with their brightness.
-    entities: Vec<(worldgen::entity::Entity, f32)>,
+    entities: Vec<render::entity::effects::Snapshot>,
     /// Chunk meshes uploaded this second (`WorldRenderer.chunksUpdated`) and the last count.
     chunk_updates: u32,
     debug_line: String,
@@ -199,7 +199,6 @@ pub struct App {
     rain_sound_counter: i32,
     fog_fade: [f32; 2],
     particles: render::weather::Particles,
-    bolts: Vec<(render::weather::Lightning, i32)>,
 }
 
 impl App {
@@ -253,7 +252,6 @@ impl App {
             rain_sound_counter: 0,
             fog_fade: [0.0; 2],
             particles: render::weather::Particles::new(seed),
-            bolts: Vec::new(),
         }
     }
 
@@ -291,7 +289,6 @@ impl App {
         self.rain_sound_counter = 0;
         self.fog_fade = [0.0; 2];
         self.particles = render::weather::Particles::new(seed);
-        self.bolts.clear();
         self.paused = false;
         if let Some((x, y, z, yaw, pitch)) = self.opts.at {
             self.cam = Camera { pos: DVec3::new(x, y, z), yaw, pitch };
@@ -417,7 +414,9 @@ impl App {
     fn click_button(&mut self, id: i32) {
         let Some(g) = &mut self.gui else { return };
         let Some(s) = &mut g.screen else { return };
-        let Some(b) = s.base().buttons.iter().find(|b| b.id == id).cloned() else { return };
+        let Some(b) = s.base().buttons.iter().find(|b| b.id == id).cloned() else {
+            return;
+        };
         let (x, y) = (b.x + b.width / 2, b.y + b.height / 2);
         let sr = g.ui.scaled();
         self.cursor = (
@@ -477,7 +476,9 @@ impl App {
                 self.click_button(1);
                 self.flow_next("")
             }
-            11 if frames > 10 && !self.ready && self.loading.is_none() && self.has_button(1) => self.flow_next("7_title_again"),
+            11 if frames > 10 && !self.ready && self.loading.is_none() && self.has_button(1) => {
+                self.flow_next("7_title_again")
+            }
             12 if frames > 2 => {
                 self.click_button(1);
                 self.flow_next("")
@@ -590,7 +591,7 @@ impl App {
                         self.idle = false;
                     }
                     Ok(FromWorker::Drop { cx, cz }) => gpu.remove_chunk(cx, cz),
-                    Ok(FromWorker::Time { time, brightness, chunks, weather, terrain, bolts }) => {
+                    Ok(FromWorker::Time { time, brightness, chunks, weather, terrain }) => {
                         new_ticks += 1;
                         if self.ready {
                             self.ticks_ready += 1;
@@ -605,11 +606,6 @@ impl App {
                         self.weather = weather;
                         self.weather_terrain = terrain;
                         self.last_tick = now;
-                        for (_, life) in &mut self.bolts {
-                            *life -= 1;
-                        }
-                        self.bolts.retain(|(_, life)| *life > 0);
-                        self.bolts.extend(bolts.into_iter().map(|b| (b, 3)));
                         if let Some(snd) = &mut self.sound {
                             // PlayerControllerSP.updateController, every unpaused tick.
                             snd.play_random_music_if_ready();
@@ -717,7 +713,9 @@ impl App {
 
         // Menus or the loading screen, no world drawn.
         if !self.ready || self.loading.is_some() {
-            let (Some(gpu), Some(gui)) = (&mut self.gpu, &mut self.gui) else { return };
+            let (Some(gpu), Some(gui)) = (&mut self.gpu, &mut self.gui) else {
+                return;
+            };
             let loading = self.loading.clone();
             let cursor = self.cursor;
             let img = gpu.render_overlay_only(flow_shot.is_some(), &mut |device, queue, view, size| {
@@ -753,9 +751,9 @@ impl App {
             &mut self.weather_rng,
         );
         let lightning = self
-            .bolts
+            .entities
             .iter()
-            .map(|(b, _)| *b)
+            .filter_map(|s| render::entity::bridge::lightning(&s.entity))
             .chain(self.opts.bolt)
             .flat_map(|b| render::weather::lightning(b, self.cam.pos.to_array()))
             .collect();
@@ -785,11 +783,10 @@ impl App {
         };
 
         if let Some(gpu) = &mut self.gpu {
-            gpu.entities.states = self
-                .entities
-                .iter()
-                .filter_map(|(e, b)| render::entity::bridge::render_state(e, partial, *b))
-                .collect();
+            gpu.entities.snapshots = self.entities.clone();
+            gpu.entities.partial = partial;
+            gpu.entities.fancy = self.gui.as_ref().is_none_or(|gui| gui.ui.settings.fancy_graphics);
+            gpu.entities.view = [self.cam.yaw, self.cam.pitch];
         }
         let want_shot =
             self.opts.shot.is_some()
@@ -798,7 +795,9 @@ impl App {
                 // Ticking keeps changing blocks somewhere, so a timed shot doesn't wait for idle.
                 && if self.opts.shot_ticks > 0 { self.ticks_ready >= self.opts.shot_ticks } else { self.idle };
         let capture = want_shot || self.keys.remove(&KeyCode::F2) || flow_shot.is_some();
-        let (Some(gpu), Some(gui)) = (&mut self.gpu, &mut self.gui) else { return };
+        let (Some(gpu), Some(gui)) = (&mut self.gpu, &mut self.gui) else {
+            return;
+        };
         let cursor = self.cursor;
         let ingame = &mut self.ingame;
         let mut hud = self.hud.clone();
@@ -1012,7 +1011,9 @@ impl ApplicationHandler for App {
                 self.set_grab(false);
             }
             WindowEvent::KeyboardInput { event, .. } => {
-                let PhysicalKey::Code(code) = event.physical_key else { return };
+                let PhysicalKey::Code(code) = event.physical_key else {
+                    return;
+                };
                 let screen_open = self.gui.as_ref().is_some_and(|g| g.screen.is_some());
                 match event.state {
                     ElementState::Pressed => {

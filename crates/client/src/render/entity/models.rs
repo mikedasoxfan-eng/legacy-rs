@@ -23,6 +23,7 @@ pub enum ModelKind {
     SlimeInner,
     Squid,
     Wolf,
+    Ghast,
 }
 
 #[derive(Clone, Debug)]
@@ -82,6 +83,7 @@ impl Model {
             ModelKind::SlimeInner => m.init_slime(16),
             ModelKind::Squid => m.init_squid(),
             ModelKind::Wolf => m.init_wolf(),
+            ModelKind::Ghast => m.init_ghast(),
         }
         m
     }
@@ -109,8 +111,30 @@ impl Model {
                 }
             }
             ModelKind::Wolf => self.pose_wolf(p),
+            ModelKind::Ghast => {
+                for i in 0..9 {
+                    self.parts.get_mut(&format!("tentacles[{i}]")).unwrap().rotate_angle_x =
+                        0.2 * math::sin(p[2] * 0.3 + i as f32) + 0.4;
+                }
+            }
         }
     }
+    fn init_ghast(&mut self) {
+        let mut body = ModelRenderer::new(0, 0);
+        body.add_box(-8.0, -8.0, -8.0, 16, 16, 16, 0.0);
+        body.rotation_point_y += 8.0;
+        self.parts.insert("body".into(), body);
+        let mut random = worldgen::JavaRandom::new(1660);
+        for i in 0..9 {
+            let mut t = ModelRenderer::new(0, 0);
+            let x = ((i % 3) as f32 - (i / 3 % 2) as f32 * 0.5 + 0.25) / 2.0 * 2.0 - 1.0;
+            let z = (i / 3) as f32 / 2.0 * 2.0 - 1.0;
+            t.add_box(-1.0, 0.0, -1.0, 2, random.next_int(7) + 8, 2, 0.0);
+            t.set_rotation_point(x * 5.0, 15.0, z * 5.0);
+            self.parts.insert(format!("tentacles[{i}]"), t);
+        }
+    }
+
     /// `ModelBiped` constructor.
     #[allow(unused_mut)]
     fn init_biped(&mut self, var1: f32, var2: f32) {
@@ -767,7 +791,7 @@ impl Model {
                 ("wolfTail", true),
                 ("wolfMane", false),
             ],
-            ModelKind::Squid => &[],
+            ModelKind::Squid | ModelKind::Ghast => &[],
         };
         let mut parts: Vec<_> = names.iter().filter_map(|(n, r)| self.parts.get(*n).map(|p| (p, *r))).collect();
         if self.kind == ModelKind::Cow {
@@ -780,6 +804,10 @@ impl Model {
             for i in 0..8 {
                 parts.push((&self.parts[&format!("squidTentacles[{i}]")], false));
             }
+        }
+        if self.kind == ModelKind::Ghast {
+            parts.push((&self["body"], false));
+            for i in 0..9 { parts.push((&self.parts[&format!("tentacles[{i}]")], false)); }
         }
         parts
     }

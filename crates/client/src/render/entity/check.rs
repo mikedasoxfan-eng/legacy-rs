@@ -52,7 +52,7 @@ pub fn model_check(path: &str) -> bool {
     use ModelKind::*;
     let kinds = [
         Biped, Zombie, Skeleton, Quadruped, Pig, Cow, SheepFur, Sheep, Chicken, Spider, Creeper, SlimeOuter,
-        SlimeInner, Squid, Wolf,
+        SlimeInner, Squid, Wolf, Ghast,
     ];
     let mut d = Dump { data: std::fs::read(path).expect("read models dump"), at: 0, checks: 0, bad: 0 };
     assert_eq!(d.u32(), u32::from_le_bytes(*b"M173"), "not a model dump");
@@ -61,7 +61,7 @@ pub fn model_check(path: &str) -> bool {
     assert!(n > 0, "empty model dump");
     let mut current = u32::MAX;
     let mut model = Model::new(Biped);
-    let mut seen = [0usize; 15];
+    let mut seen = [0usize; 16];
     let mut parts = 0;
     for case in 0..n {
         let group = d.u32();
