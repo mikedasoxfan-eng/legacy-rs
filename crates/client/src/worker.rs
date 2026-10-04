@@ -53,7 +53,6 @@ pub enum FromWorker {
         chunks: usize,
         weather: crate::render::weather::Weather,
         terrain: crate::render::weather::Snapshot,
-        bolts: Vec<crate::render::weather::Lightning>,
     },
     /// Everything in the renderer window is loaded and meshed.
     Idle,
@@ -206,11 +205,10 @@ fn run(opts: WorldOptions, col: Colorizers, rx: Receiver<ToWorker>, tx: Sender<F
     let mut meshed: HashMap<(i32, i32), u64> = HashMap::new();
     let mut sky_sub = world.skylight_subtracted;
     let mut join_player_counter = 0;
+    let mut weather_tail = 0;
     let mut next_tick = Instant::now();
     let mut idle_reported = false;
-    let mut strike_cursor = 0;
-    let mut weather_tail = 0;
-    let mut bolt_rng = worldgen::JavaRandom::new(opts.world_rand ^ 0x4c494748544e);
+
     let mut paused = false;
 
     loop {
@@ -299,16 +297,6 @@ fn run(opts: WorldOptions, col: Colorizers, rx: Receiver<ToWorker>, tx: Sender<F
             } else {
                 crate::render::weather::Snapshot::default()
             };
-            // The simulation currently supplies positions only. Entity integration will
-            // provide its own boltVertex; never borrow World.rand to invent a visual seed.
-            let bolts = world.lightning_strikes[strike_cursor..]
-                .iter()
-                .map(|&(x, y, z)| crate::render::weather::Lightning {
-                    pos: [x as f64, y as f64, z as f64],
-                    bolt_vertex: bolt_rng.next_long(),
-                })
-                .collect();
-            strike_cursor = world.lightning_strikes.len();
             let brightness = entity_brightness(&mut world, cam);
             // Entities near the camera, with their brightness, for the renderer.
             let near: Vec<i32> = world
@@ -330,7 +318,7 @@ fn run(opts: WorldOptions, col: Colorizers, rx: Receiver<ToWorker>, tx: Sender<F
             }
             let _ = tx.send(FromWorker::Entities(snapshot));
             let chunks = world.chunks.len();
-            let _ = tx.send(FromWorker::Time { time: world.world_time, brightness, chunks, weather, terrain, bolts });
+            let _ = tx.send(FromWorker::Time { time: world.world_time, brightness, chunks, weather, terrain });
             next_tick += Duration::from_millis(50);
             ticks += 1;
         }

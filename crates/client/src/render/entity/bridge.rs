@@ -9,10 +9,12 @@ fn lerp(a: f32, b: f32, t: f32) -> f32 {
     a + (b - a) * t
 }
 
-/// `None` for entities this renderer has no model for yet (items, falling blocks, TNT,
-/// arrows, fireballs, lightning, ghasts, pig zombies, giants).
+/// Living model state; object renderers use their own bridge.
 pub fn render_state(e: &Entity, partial: f32, brightness: f32) -> Option<RenderState> {
     let kind = match &e.kind {
+        EntityKind::Ghast(_) => MobKind::Ghast,
+        EntityKind::PigZombie { .. } => MobKind::PigZombie,
+        EntityKind::Giant => MobKind::Giant,
         EntityKind::Zombie => MobKind::Zombie,
         EntityKind::Skeleton => MobKind::Skeleton,
         EntityKind::Spider => MobKind::Spider,
@@ -50,6 +52,10 @@ pub fn render_state(e: &Entity, partial: f32, brightness: f32) -> Option<RenderS
     s.riding = e.riding.is_some();
     s.sneak = e.sneaking;
     match &e.kind {
+        EntityKind::Ghast(g) => {
+            s.ghast_attack = g.prev_attack_counter as f32 + (g.attack_counter - g.prev_attack_counter) as f32 * partial;
+            s.ghast_attacking = g.attacking;
+        }
         EntityKind::Pig { saddled } => s.saddled = *saddled,
         EntityKind::Sheep { sheared, fleece_color } => {
             s.sheared = *sheared;
@@ -87,4 +93,14 @@ pub fn render_state(e: &Entity, partial: f32, brightness: f32) -> Option<RenderS
         _ => {}
     }
     Some(s)
+}
+
+/// Weather effects use EntityLightningBolt.boltVertex, including seed changes on restrikes.
+pub fn lightning(e: &Entity) -> Option<crate::render::weather::Lightning> {
+    match e.kind {
+        EntityKind::Lightning { state, seed, .. } if state >= 0 => Some(crate::render::weather::Lightning {
+            pos: [e.pos.x, e.pos.y, e.pos.z], bolt_vertex: seed,
+        }),
+        _ => None,
+    }
 }

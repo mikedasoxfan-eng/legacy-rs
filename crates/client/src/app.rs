@@ -198,7 +198,6 @@ pub struct App {
     rain_sound_counter: i32,
     fog_fade: [f32; 2],
     particles: render::weather::Particles,
-    bolts: Vec<(render::weather::Lightning, i32)>,
 }
 
 impl App {
@@ -251,7 +250,6 @@ impl App {
             rain_sound_counter: 0,
             fog_fade: [0.0; 2],
             particles: render::weather::Particles::new(seed),
-            bolts: Vec::new(),
         }
     }
 
@@ -289,7 +287,6 @@ impl App {
         self.rain_sound_counter = 0;
         self.fog_fade = [0.0; 2];
         self.particles = render::weather::Particles::new(seed);
-        self.bolts.clear();
         self.paused = false;
         if let Some((x, y, z, yaw, pitch)) = self.opts.at {
             self.cam = Camera { pos: DVec3::new(x, y, z), yaw, pitch };
@@ -574,7 +571,7 @@ impl App {
                         self.idle = false;
                     }
                     Ok(FromWorker::Drop { cx, cz }) => gpu.remove_chunk(cx, cz),
-                    Ok(FromWorker::Time { time, brightness, chunks, weather, terrain, bolts }) => {
+                    Ok(FromWorker::Time { time, brightness, chunks, weather, terrain }) => {
                         new_ticks += 1;
                         if self.ready {
                             self.ticks_ready += 1;
@@ -589,11 +586,7 @@ impl App {
                         self.weather = weather;
                         self.weather_terrain = terrain;
                         self.last_tick = now;
-                        for (_, life) in &mut self.bolts {
-                            *life -= 1;
-                        }
-                        self.bolts.retain(|(_, life)| *life > 0);
-                        self.bolts.extend(bolts.into_iter().map(|b| (b, 3)));
+
                         let (splashes, _) = render::weather::add_rain_particles(
                             &self.weather_terrain,
                             self.cam.pos.to_array(),
@@ -726,10 +719,8 @@ impl App {
             rain,
             &mut self.weather_rng,
         );
-        let lightning = self
-            .bolts
-            .iter()
-            .map(|(b, _)| *b)
+        let lightning = self.entities.iter()
+            .filter_map(|(e, _)| render::entity::bridge::lightning(e))
             .chain(self.opts.bolt)
             .flat_map(|b| render::weather::lightning(b, self.cam.pos.to_array()))
             .collect();
