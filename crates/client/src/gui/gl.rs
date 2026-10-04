@@ -281,6 +281,18 @@ impl Gl {
         self.tess.clear();
     }
 
+    /// A pre-lit item mesh at the current GUI modelview and projection.
+    pub fn triangles(&mut self, vertices:&[crate::render::entity::living::EntityVertex]) {
+        if vertices.is_empty() {return;}
+        let first=self.verts.len() as u32;
+        let mv=*self.modelview.last().unwrap();
+        let flags=[if self.texture_2d {1.0}else{0.0},if self.alpha_test {self.alpha_ref}else{-1.0}];
+        self.verts.extend(vertices.iter().map(|v|GuiVertex{pos:mv.transform_point3(Vec3::from_array(v.pos)).to_array(),uv:v.uv,color:v.color,flags}));
+        let state=DrawState{texture:if self.texture_2d {self.bound}else{None},blend:if self.blend {Some(self.blend_func)}else{None},depth_test:self.depth_test,depth_write:self.depth_mask};
+        self.draws.push(Draw{first,count:vertices.len() as u32,state,proj:self.proj});
+        if let Some(v)=vertices.last(){self.color=v.color;self.current_uv=v.uv;}
+    }
+
     fn submit_quads(&mut self, q: &[TessVertex]) {
         if q.len() < 4 {
             return;

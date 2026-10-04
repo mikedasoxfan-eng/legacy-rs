@@ -172,7 +172,7 @@ pub struct App {
     /// World ticks seen since the world became ready.
     ticks_ready: i64,
     /// Entities near the camera from the last tick, with their brightness.
-    entities: Vec<(worldgen::entity::Entity, f32)>,
+    entities: Vec<render::entity::effects::Snapshot>,
     /// Chunk meshes uploaded this second (`WorldRenderer.chunksUpdated`) and the last count.
     chunk_updates: u32,
     debug_line: String,
@@ -720,7 +720,7 @@ impl App {
             &mut self.weather_rng,
         );
         let lightning = self.entities.iter()
-            .filter_map(|(e, _)| render::entity::bridge::lightning(e))
+            .filter_map(|s| render::entity::bridge::lightning(&s.entity))
             .chain(self.opts.bolt)
             .flat_map(|b| render::weather::lightning(b, self.cam.pos.to_array()))
             .collect();
@@ -750,11 +750,10 @@ impl App {
         };
 
         if let Some(gpu) = &mut self.gpu {
-            gpu.entities.states = self
-                .entities
-                .iter()
-                .filter_map(|(e, b)| render::entity::bridge::render_state(e, partial, *b))
-                .collect();
+            gpu.entities.snapshots = self.entities.clone();
+            gpu.entities.partial = partial;
+            gpu.entities.fancy = self.gui.as_ref().is_none_or(|gui| gui.ui.settings.fancy_graphics);
+            gpu.entities.view = [self.cam.yaw,self.cam.pitch];
         }
         let want_shot =
             self.opts.shot.is_some()

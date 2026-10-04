@@ -104,3 +104,21 @@ pub fn lightning(e: &Entity) -> Option<crate::render::weather::Lightning> {
         _ => None,
     }
 }
+
+/// Object render inputs; the worker supplies neighbourhood brightness for falling blocks.
+pub fn object_state(e:&Entity,partial:f32,brightness:f32,light:[f32;7])->Option<super::objects::ObjectState> {
+    use super::objects::{ObjectKind,ObjectState};
+    let kind=match &e.kind {
+        EntityKind::Item{item,age,hover_start,..}=>ObjectKind::Item{item:item.clone(),age:*age,hover:*hover_start},
+        EntityKind::FallingSand{block,..}=>ObjectKind::Falling{block:*block,light},
+        EntityKind::Tnt{fuse}=>ObjectKind::Tnt{fuse:*fuse},
+        EntityKind::Arrow(a)=>ObjectKind::Arrow{yaw:lerp(e.prev_yaw,e.yaw,partial),pitch:lerp(e.prev_pitch,e.pitch,partial),shake:a.shake,visible:e.prev_yaw!=0.0||e.prev_pitch!=0.0},
+        EntityKind::Fireball(_)=>ObjectKind::Sprite{icon:14,scale:2.0},
+        _=>return None,
+    };
+    Some(ObjectState{kind,position:position(e,partial),partial,brightness})
+}
+pub fn position(e:&Entity,partial:f32)->[f64;3] {
+    let p=partial as f64;
+    [e.last_tick_pos.x+(e.pos.x-e.last_tick_pos.x)*p,e.last_tick_pos.y+(e.pos.y-e.last_tick_pos.y)*p,e.last_tick_pos.z+(e.pos.z-e.last_tick_pos.z)*p]
+}

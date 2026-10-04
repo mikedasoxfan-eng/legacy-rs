@@ -29,6 +29,7 @@ pub const TEXTURES: &[&str] = &[
     "gui/gui.png",
     "gui/background.png",
     "gui/icons.png",
+    "gui/items.png",
     "title/mclogo.png",
     "title/mojang.png",
     "pack.png",

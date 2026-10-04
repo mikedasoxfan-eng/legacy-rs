@@ -155,6 +155,8 @@ pub enum Pass {
     Eyes,
     Additive,
     Overlay,
+    TntFlash,
+    Shadow,
 }
 
 pub struct Batch {
@@ -168,6 +170,8 @@ pub struct Batch {
 pub const TEXTURES: &[&str] = &[
     "gui/items.png",
     "terrain.png",
+    "item/arrows.png",
+    "misc/shadow.png",
     "mob/ghast.png",
     "mob/ghast_fire.png",
     "mob/pigzombie.png",

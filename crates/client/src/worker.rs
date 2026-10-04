@@ -60,7 +60,7 @@ pub enum FromWorker {
     /// Answer to `QuickSave`: true once nothing was left to save.
     QuickSaved(bool),
     /// Entities near the camera after a tick, with `getEntityBrightness`.
-    Entities(Vec<(worldgen::entity::Entity, f32)>),
+    Entities(Vec<crate::render::entity::effects::Snapshot>),
     Saved,
     Error(String),
 }
@@ -197,7 +197,7 @@ fn run(opts: WorldOptions, col: Colorizers, rx: Receiver<ToWorker>, tx: Sender<F
         None
     };
 
-    let biomes = RefCell::new(BiomeSource::new(world.seed));
+    let biomes = RefCell::new(BiomeSource::new(opts.seed));
     let mut cam = start;
     let mut sort_pos = (f64::MAX, f64::MAX, f64::MAX);
     let mut window: Vec<(i32, i32)> = Vec::new();
@@ -314,7 +314,26 @@ fn run(opts: WorldOptions, col: Colorizers, rx: Receiver<ToWorker>, tx: Sender<F
             for id in near {
                 let e = world.entities[&id].clone();
                 let b = living_brightness(&mut world, &e);
-                snapshot.push((e, b));
+                let biomes=RefCell::new(BiomeSource::new(opts.seed));
+                let access=Access::new(&world, e.chunk_x, e.chunk_z, world.skylight_subtracted, &biomes);
+                let fl=worldgen::math::floor_double;
+                let (x,y,z)=(fl(e.pos.x),fl(e.pos.y),fl(e.pos.z));
+                let ds=[[0,0,0],[0,-1,0],[0,1,0],[0,0,-1],[0,0,1],[-1,0,0],[1,0,0]];
+                let falling_light=ds.map(|[dx,dy,dz]|access.light_brightness(x+dx,y+dy,z+dz));
+                let size=crate::render::entity::effects::radius(&e) as f64;
+                let mut surfaces=Vec::new();
+                // Cover both endpoints of the partial-tick interval, queried from loaded chunks only.
+                for xx in fl(e.pos.x.min(e.last_tick_pos.x)-size)..=fl(e.pos.x.max(e.last_tick_pos.x)+size) {
+                    for yy in fl(e.pos.y.min(e.last_tick_pos.y)+e.height as f64/2.0-size)..=fl(e.pos.y.max(e.last_tick_pos.y)+e.height as f64/2.0) {
+                        for zz in fl(e.pos.z.min(e.last_tick_pos.z)-size)..=fl(e.pos.z.max(e.last_tick_pos.z)+size) {
+                            let block=access.block(xx,yy-1,zz);
+                            if block>0 && access.light_value(xx,yy,zz)>3 {
+                                surfaces.push(crate::render::entity::effects::Surface{xyz:[xx,yy,zz],block,brightness:access.light_brightness(xx,yy,zz)});
+                            }
+                        }
+                    }
+                }
+                snapshot.push(crate::render::entity::effects::Snapshot{entity:e,brightness:b,falling_light,surfaces});
             }
             let _ = tx.send(FromWorker::Entities(snapshot));
             let chunks = world.chunks.len();

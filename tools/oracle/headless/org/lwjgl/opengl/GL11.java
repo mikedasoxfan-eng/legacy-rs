@@ -1,8 +1,10 @@
 package org.lwjgl.opengl;
 import java.nio.*;
 import net.minecraft.src.Oracle;
+import net.minecraft.src.RendererOracle;
 /** No GL context: record the original Tessellator immediately before draw resets it. */
 public final class GL11 {
+    public static final int GL_DST_ALPHA=772, GL_NORMALIZE=2977, GL_EQUAL=514, GL_LEQUAL=515, GL_COMPILE=4864, GL_QUADS=7;
     public static final int GL_GREATER = 516;
     public static final int GL_DEPTH_BUFFER_BIT = 256;
     public static final int GL_COLOR_BUFFER_BIT = 16384;
@@ -42,6 +44,13 @@ public final class GL11 {
     public static float[] color = {1,1,1,1};
     public static int texture;
     public static float fogStart, fogEnd;
+    public static void glPushMatrix() { RendererOracle.push(); }
+    public static void glPopMatrix() { RendererOracle.pop(); }
+    public static void glTranslatef(float x,float y,float z) { RendererOracle.op(0,x,y,z,0); }
+    public static void glScalef(float x,float y,float z) { RendererOracle.op(1,x,y,z,0); }
+    public static void glRotatef(float a,float x,float y,float z) { RendererOracle.op(2,a,x,y,z); }
+    public static void glDepthMask(boolean b) { if(b)RendererOracle.flags|=32;else RendererOracle.flags&=~32; }
+    public static void glDepthFunc(int f) { RendererOracle.depth=f; }
     public static void glFog(int name, FloatBuffer values) {}
     public static void glFogf(int name, float value) {
         if(name==GL_FOG_START) fogStart=value;
@@ -49,11 +58,11 @@ public final class GL11 {
     }
     public static void glFogi(int name,int value) {}
     public static void glColorMaterial(int face,int mode) {}
-    public static void glDisable(int x) {}
-    public static void glEnable(int x) {}
-    public static void glBlendFunc(int x,int y) {}
+    public static void glDisable(int x) { RendererOracle.enable(x,false); }
+    public static void glEnable(int x) { RendererOracle.enable(x,true); }
+    public static void glBlendFunc(int x,int y) { RendererOracle.src=x;RendererOracle.dst=y; }
     public static void glAlphaFunc(int x,float y) {}
-    public static void glNormal3f(float x,float y,float z) {}
+    public static void glNormal3f(float x,float y,float z) { RendererOracle.normal=new float[]{x,y,z}; }
     public static void glBindTexture(int x,int y) { texture=y; }
     public static void glColor4f(float r,float g,float b,float a) { color=new float[]{r,g,b,a}; }
     public static void glClearColor(float r,float g,float b,float a) {}
@@ -67,5 +76,5 @@ public final class GL11 {
     public static void glVertexPointer(int a,int b,int c,long d) { throw new AssertionError("VBO"); }
     public static void glEnableClientState(int x) {}
     public static void glDisableClientState(int x) {}
-    public static void glDrawArrays(int mode,int first,int count) { Oracle.recordWeatherDraw(mode,count,color,texture); }
+    public static void glDrawArrays(int mode,int first,int count) { if(RendererOracle.active) RendererOracle.record(mode,count); else Oracle.recordWeatherDraw(mode,count,color,texture); }
 }

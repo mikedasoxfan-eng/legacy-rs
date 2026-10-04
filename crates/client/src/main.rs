@@ -253,6 +253,15 @@ fn main() {
         }
         return;
     }
+    if args.get(1).map(String::as_str) == Some("--effectcheck") {
+        let ok=render::entity::object_check::effects_check(args.get(2).expect("--effectcheck oracle-effects.bin"));
+        println!("{}",if ok {"EFFECTS EXACT"}else{"EFFECTS DIFFER"});std::process::exit(if ok {0}else{1});
+    }
+    if args.get(1).map(String::as_str) == Some("--renderercheck") {
+        let ok=render::entity::object_check::check(args.get(2).expect("--renderercheck oracle-renderers.bin"));
+        println!("{}",if ok {"RENDERERS EXACT"} else {"RENDERERS DIFFER"});
+        std::process::exit(if ok {0}else{1});
+    }
     if args.get(1).map(String::as_str) == Some("--modelcheck") {
         let ok = render::entity::check::model_check(args.get(2).expect("--modelcheck oracle-models.bin"));
         println!("{}", if ok { "MODELS EXACT" } else { "MODELS DIFFER" });

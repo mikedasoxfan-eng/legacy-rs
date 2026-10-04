@@ -162,6 +162,14 @@ echo "== mob models: boxes, UVs, successive poses and wolf living animations"
 if "$oracle" models models_case.bin && "$beta" --modelcheck "$out/models_case.bin"; then :; else fail=1; fi
 rm -f "$out/models_case.bin"
 
+# ---- dropped/GUI items, falling blocks, TNT, arrows and projectile sprites
+# Compare original Tessellator bits and per-draw GL transforms/state, before GPU math.
+echo "== remaining entity renderers and GUI item geometry"
+if "$oracle" renderers renderers_case.bin && "$beta" --renderercheck "$out/renderers_case.bin"; then :; else fail=1; fi
+echo "== entity shadows and fire"
+if "$oracle" rendereffects effects_case.bin && "$beta" --effectcheck "$out/effects_case.bin"; then :; else fail=1; fi
+rm -f "$out/renderers_case.bin" "$out/effects_case.bin"
+
 # ---- sky, fog and cloud colors, sun angle, night darkness
 echo "== sky colors"
 for args in "3257840388504953787 -39 65 6000 0.0" "0 1000 -2000 13000 0.5" "123 -500 77 23500 0.25" "42 99999 -12345 18000 0.9" "1 0 0 12500 0.75" \
