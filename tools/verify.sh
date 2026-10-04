@@ -51,6 +51,27 @@ for c in "${raw_cases[@]}"; do
   run "raw terrain: $label" raw "$seed" "$x0" "$z0" "$x1" "$z1" -- raw "$seed"
 done
 
+# ---- Nether raw terrain (including lava-avoiding caves and Far Lands)
+nether_raw_cases=(
+  "0                    -8 -8 7 7          origin"
+  "-4172144997902289642 -4 -4 3 3          negative seed"
+  "123456789            100 -300 107 -293  mid-range"
+  "42                   784420 0 784431 3  far lands x"
+  "42                   -3 -784431 0 -784420  far lands -z"
+  "9223372036854775807  -2 -2 2 2          max long seed"
+)
+for c in "${nether_raw_cases[@]}"; do
+  read -r seed x0 z0 x1 z1 label <<<"$c"
+  run "raw Nether: $label" rawnether "$seed" "$x0" "$z0" "$x1" "$z1" -- rawnether "$seed"
+done
+
+# Every lighting schedule is exercised, including shared RNG reseeds from nested loads.
+for light in each end none; do
+  run "Nether grid 8x8, light $light" gridnether 0 1 -4 -4 3 3 "$light" -- gridnether 0 1 -4 -4 3 3 "$light"
+  run "Nether grid, negative seed, light $light" gridnether -4172144997902289642 99 -8 4 -1 11 "$light" -- gridnether -4172144997902289642 99 -8 4 -1 11 "$light"
+  run "Nether grid, far coordinates, light $light" gridnether 42 7 784424 -3 784427 0 "$light" -- gridnether 42 7 784424 -3 784427 0 "$light"
+done
+
 # ---- populated worlds: vanilla new-world flow (spawn search + preload), seed wrand
 pre_cases=(
   "0 1"
@@ -101,7 +122,7 @@ if "$oracle" readsave ../../../saves/_verify_rust v_read.bin 2>/dev/null | grep 
 
 # ---- server chunk handling: original server classes walking a player out and back
 if [ "$quick" != quick ]; then
-  echo "== server mode: 900-tick walk, unload/reload through region files"
+  echo "== server mode: 900-tick walk (real World.tick), unload/reload through region files"
   rm -rf "$root/saves/_verify_srv_java" "$root/saves/_verify_srv_rust"
   "$root/tools/oracle/server_oracle.sh" serverwalk 0 1 10 ../../../saves/_verify_srv_java 900 v_srv.bin >/dev/null 2>&1
   "$cmp" serverwalk 0 1 10 "$root/saves/_verify_srv_rust" 900 "$out/v_srv.bin" | tail -1 | grep -q "EXACT MATCH" && echo "in memory: EXACT MATCH" || { echo "in memory: DIFFERS"; fail=1; }

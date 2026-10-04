@@ -26,7 +26,7 @@ use tile::TileEntity;
 /// Which `java.util.Random` a block tick draws from.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum RandSel {
-    /// `ChunkProviderGenerate.rand`, shared by chunk creation and population.
+    /// The chunk generator RNG, shared by chunk creation and population.
     Populate,
     /// `World.rand` (unseeded in vanilla).
     World,
@@ -84,9 +84,41 @@ fn in_xz_bounds(x: i32, z: i32) -> bool {
     x >= -32000000 && z >= -32000000 && x < 32000000 && z <= 32000000
 }
 
+/// The `WorldProvider` selected when the world is constructed.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum Dimension {
+    Overworld,
+    Nether,
+}
+
+impl Dimension {
+    /// `WorldProvider.hasNoSky`
+    pub fn has_no_sky(self) -> bool {
+        self == Self::Nether
+    }
+    /// `WorldProvider.isHellWorld`
+    pub fn is_hell_world(self) -> bool {
+        self == Self::Nether
+    }
+
+    /// `WorldProvider.generateLightBrightnessTable` and the Hell override.
+    pub fn light_brightness_table(self) -> [f32; 16] {
+        let ambient = if self.is_hell_world() { 0.1f32 } else { 0.05f32 };
+        let mut table = [0.0; 16];
+        for i in 0..=15 {
+            let darkness = 1.0f32 - i as f32 / 15.0f32;
+            table[i] = (1.0 - darkness) / (darkness * 3.0 + 1.0) * (1.0 - ambient) + ambient;
+        }
+        table
+    }
+}
+
 pub struct World {
     pub seed: i64,
     pub terrain: OverworldGenerator,
+    pub dimension: Dimension,
+    pub light_brightness_table: [f32; 16],
+    nether: Option<crate::nether::NetherGenerator>,
     pub chunks: ChunkMap,
     /// `World.rand`
     pub rand: JavaRandom,
@@ -152,9 +184,21 @@ pub struct World {
 impl World {
     /// A world with a preset spawn (no spawn search), like loading `level.dat`.
     pub fn new(seed: i64, world_rand_seed: i64) -> Self {
+        Self::with_dimension(seed, world_rand_seed, Dimension::Overworld)
+    }
+
+    /// Construct with `WorldProvider`/`WorldProviderHell`, before any chunks are loaded.
+    pub fn with_dimension(seed: i64, world_rand_seed: i64, dimension: Dimension) -> Self {
+        let mut terrain = OverworldGenerator::new(seed);
+        if dimension.is_hell_world() {
+            terrain.biome_source = crate::biome::BiomeSource::hell();
+        }
         World {
             seed,
-            terrain: OverworldGenerator::new(seed),
+            dimension,
+            light_brightness_table: dimension.light_brightness_table(),
+            nether: if dimension.is_hell_world() { Some(crate::nether::NetherGenerator::new(seed)) } else { None },
+            terrain,
             chunks: ChunkMap::default(),
             rand: JavaRandom::new(world_rand_seed),
             light_queue: Vec::new(),
@@ -233,15 +277,18 @@ impl World {
     #[inline]
     pub fn rng(&mut self, sel: RandSel) -> &mut JavaRandom {
         match sel {
-            RandSel::Populate => self.terrain.rand_mut(),
+            RandSel::Populate => self.prand(),
             RandSel::World => &mut self.rand,
         }
     }
 
-    /// The population RNG (`ChunkProviderGenerate.rand`).
+    /// The population RNG (`ChunkProviderGenerate.rand` / `ChunkProviderHell.hellRNG`).
     #[inline]
     pub fn prand(&mut self) -> &mut JavaRandom {
-        self.terrain.rand_mut()
+        match &mut self.nether {
+            Some(gen) => gen.rand_mut(),
+            None => self.terrain.rand_mut(),
+        }
     }
 
     // ------------------------------------------------------------ chunk provider
@@ -272,7 +319,7 @@ impl World {
     /// `ChunkProvider.prepareChunk` / `ChunkProviderServer.loadChunk` for a chunk not in
     /// the map: read it from the save, else generate it; then run the population checks.
     pub(crate) fn prepare_chunk(&mut self, cx: i32, cz: i32) {
-        let saved = self.storage.as_mut().and_then(|s| s.load_chunk(cx, cz));
+        let saved = self.storage.as_mut().and_then(|s| s.load_chunk_for_dimension(cx, cz, self.dimension));
         if let Some(mut c) = saved {
             c.last_save_time = self.world_time;
             c.loaded = true;
@@ -282,16 +329,23 @@ impl World {
             let v = self.mod_count;
             self.chunk_mut(cx, cz).version = v;
         } else {
-            // ChunkProviderGenerate.provideChunk
-            let raw = self.terrain.generate(cx, cz);
+            // ChunkProviderGenerate/ChunkProviderHell.provideChunk
+            let raw = match &mut self.nether {
+                Some(gen) => gen.generate(cx, cz),
+                None => self.terrain.generate(cx, cz),
+            };
             let mut c = Box::new(Chunk::new(cx, cz, raw.blocks));
-            c.init_height_and_sky();
-            // func_1024_c's neighbour pass runs before the chunk is in the map, so
-            // its own columns read as height 0 through the world.
-            for x in 0..16 {
-                for z in 0..16 {
-                    let h = c.height(x, z);
-                    self.update_neighbor_heights(cx * 16 + x, cz * 16 + z, h);
+            // ChunkProviderHell returns a new Chunk without func_1024_c. Its
+            // height/skylight arrays remain zero until individual block writes.
+            if !self.dimension.is_hell_world() {
+                c.init_height_and_sky();
+                // func_1024_c's neighbour pass runs before the chunk is in the map, so
+                // its own columns read as height 0 through the world.
+                for x in 0..16 {
+                    for z in 0..16 {
+                        let h = c.height(x, z);
+                        self.update_neighbor_heights(cx * 16 + x, cz * 16 + z, h);
+                    }
                 }
             }
             c.loaded = true;
@@ -338,7 +392,11 @@ impl World {
         self.provide_chunk(cx, cz);
         if !self.chunk(cx, cz).populated {
             self.chunk_mut(cx, cz).populated = true;
-            crate::populate::populate(self, cx, cz);
+            if self.dimension.is_hell_world() {
+                crate::nether::populate::populate(self, cx, cz);
+            } else {
+                crate::populate::populate(self, cx, cz);
+            }
             self.touch(cx, cz); // setChunkModified
         }
     }
@@ -510,14 +568,16 @@ impl World {
             behavior::on_block_removal(self, old, wx, y, wz);
         }
         self.chunk_mut(cx, cz).data.set(x, y, z, meta);
-        if light_opacity(id) != 0 {
-            if y >= height {
-                self.relight_column(cx, cz, x, y + 1, z);
+        if !self.dimension.has_no_sky() {
+            if light_opacity(id) != 0 {
+                if y >= height {
+                    self.relight_column(cx, cz, x, y + 1, z);
+                }
+            } else if y == height - 1 {
+                self.relight_column(cx, cz, x, y, z);
             }
-        } else if y == height - 1 {
-            self.relight_column(cx, cz, x, y, z);
+            self.schedule_lighting_update(LightKind::Sky, wx, y, wz, wx, y, wz);
         }
-        self.schedule_lighting_update(LightKind::Sky, wx, y, wz, wx, y, wz);
         self.schedule_lighting_update(LightKind::Block, wx, y, wz, wx, y, wz);
         let h = self.chunk(cx, cz).height(x, z);
         self.update_neighbor_heights(wx, wz, h);
@@ -719,6 +779,9 @@ impl World {
     }
 
     pub fn neighbor_light_propagation_changed(&mut self, kind: LightKind, x: i32, y: i32, z: i32, mut v: i32) {
+        if self.dimension.has_no_sky() && kind == LightKind::Sky {
+            return;
+        }
         if !self.block_exists(x, y, z) {
             return;
         }
@@ -743,6 +806,9 @@ impl World {
     /// `scheduleLightingUpdate_do(..., true)`
     #[allow(clippy::too_many_arguments)]
     pub fn schedule_lighting_update(&mut self, kind: LightKind, x0: i32, y0: i32, z0: i32, x1: i32, y1: i32, z1: i32) {
+        if self.dimension.has_no_sky() && kind == LightKind::Sky {
+            return;
+        }
         let mx = (x1 + x0) / 2;
         let mz = (z1 + z0) / 2;
         if !self.block_exists(mx, 64, mz) {

@@ -58,7 +58,8 @@ impl World {
 
     /// `calculateSkylightSubtracted`
     pub fn calculate_skylight_subtracted(&self, partial: f32) -> i32 {
-        let angle = celestial_angle(self.world_time, partial);
+        // WorldProviderHell.calculateCelestialAngle is a constant 0.5.
+        let angle = if self.dimension.is_hell_world() { 0.5 } else { celestial_angle(self.world_time, partial) };
         let mut v = 1.0f32 - (math::cos(angle * std::f64::consts::PI as f32 * 2.0f32) * 2.0f32 + 0.5f32);
         v = v.clamp(0.0, 1.0);
         v = 1.0f32 - v;
@@ -133,6 +134,9 @@ impl World {
 
     /// `updateWeather`
     fn update_weather(&mut self) {
+        if self.dimension.has_no_sky() {
+            return;
+        }
         if self.lightning_flash > 0 {
             self.lightning_flash -= 1;
         }

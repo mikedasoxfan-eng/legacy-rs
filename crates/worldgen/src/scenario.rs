@@ -25,7 +25,12 @@ impl World {
 
     /// `WorldProvider.canCoordinateBeSpawn`
     fn can_coordinate_be_spawn(&mut self, x: i32, z: i32) -> bool {
-        self.get_first_uncovered_block(x, z) == block::SAND
+        let id = self.get_first_uncovered_block(x, z);
+        if self.dimension.is_hell_world() {
+            id != block::BEDROCK && id != block::AIR && block::opaque_cube_lookup(id)
+        } else {
+            id == block::SAND
+        }
     }
 
     /// `World.getFirstUncoveredBlock`

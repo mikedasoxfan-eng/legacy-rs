@@ -110,6 +110,7 @@ impl Biome {
 /// `WorldChunkManager`. Holds the scratch arrays the Java class exposes publicly,
 /// because the terrain generator reads `temperature`/`humidity` from the last call.
 pub struct BiomeSource {
+    hell: bool,
     temp_noise: OctaveSimplex,
     humid_noise: OctaveSimplex,
     detail_noise: OctaveSimplex,
@@ -121,6 +122,7 @@ pub struct BiomeSource {
 impl BiomeSource {
     pub fn new(seed: i64) -> Self {
         BiomeSource {
+            hell: false,
             temp_noise: OctaveSimplex::new(&mut JavaRandom::new(seed.wrapping_mul(9871)), 4),
             humid_noise: OctaveSimplex::new(&mut JavaRandom::new(seed.wrapping_mul(39811)), 4),
             detail_noise: OctaveSimplex::new(&mut JavaRandom::new(seed.wrapping_mul(543321)), 2),
@@ -130,12 +132,29 @@ impl BiomeSource {
         }
     }
 
+    /// `WorldChunkManagerHell(BiomeGenBase.hell, 1.0, 0.0)`.
+    pub fn hell() -> Self {
+        let mut source = Self::new(0);
+        source.hell = true;
+        source
+    }
+
     /// `loadBlockGeneratorData`. Index order is `x * depth + z`.
     /// Note the original passes `width` for both noise dimensions; harmless for squares.
     pub fn biomes(&mut self, out: &mut Vec<Biome>, x: i32, z: i32, width: i32, depth: i32) {
         let n = (width * depth) as usize;
         if out.len() < n {
             *out = vec![Biome::Plains; n];
+        }
+        if self.hell {
+            out[..n].fill(Biome::Hell);
+            if self.temperature.len() < n {
+                self.temperature = vec![0.0; n];
+                self.humidity = vec![0.0; n];
+            }
+            self.temperature[..n].fill(1.0);
+            self.humidity[..n].fill(0.0);
+            return;
         }
         self.temp_noise.generate(&mut self.temperature, x as f64, z as f64, width, width, 0.025f32 as f64, 0.025f32 as f64, 0.25);
         self.humid_noise.generate(&mut self.humidity, x as f64, z as f64, width, width, 0.05f32 as f64, 0.05f32 as f64, 1.0 / 3.0);
@@ -173,6 +192,9 @@ impl BiomeSource {
 
     /// `getBiomeGenAt(x, z)`: a 1x1 `biomes` call (clobbers the scratch arrays like the original).
     pub fn biome_at(&mut self, x: i32, z: i32) -> Biome {
+        if self.hell {
+            return Biome::Hell;
+        }
         let mut out = Vec::new();
         self.biomes(&mut out, x, z, 1, 1);
         out[0]
@@ -181,6 +203,9 @@ impl BiomeSource {
     /// `WorldChunkManager.getTemperature(x, z)`: the raw (unnormalised) temperature noise,
     /// used for the sky color.
     pub fn raw_temperature(&self, x: i32, z: i32) -> f64 {
+        if self.hell {
+            return 1.0;
+        }
         let mut buf = Vec::new();
         self.temp_noise.generate(&mut buf, x as f64, z as f64, 1, 1, 0.025f32 as f64, 0.025f32 as f64, 0.5);
         buf[0]
@@ -191,6 +216,10 @@ impl BiomeSource {
         let n = (width * depth) as usize;
         if out.len() < n {
             *out = vec![0.0; n];
+        }
+        if self.hell {
+            out[..n].fill(1.0);
+            return;
         }
         self.temp_noise.generate(out, x as f64, z as f64, width, depth, 0.025f32 as f64, 0.025f32 as f64, 0.25);
         self.detail_noise.generate(&mut self.detail, x as f64, z as f64, width, depth, 0.25, 0.25, 0.5882352941176471);

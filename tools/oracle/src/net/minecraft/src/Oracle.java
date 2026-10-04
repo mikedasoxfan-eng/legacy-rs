@@ -12,6 +12,8 @@ import java.util.*;
  * names remapped only) and writes data the Rust port is compared against.
  * Lives in net.minecraft.src so it can call protected World methods.
  *
+ *   rawnether <seed> <x0> <z0> <x1> <z1> <out>  unpopulated Nether chunks
+ *   gridnether <seed> <wrand> <x0> <z0> <x1> <z1> <each|end|none> <out>
  *   raw <seed> <x0> <z0> <x1> <z1> <out>     unpopulated chunks (terrain+surface+caves)
  *   sin <out>                                MathHelper sine table
  *   blocktable <out.rs>                      static block/material properties as Rust source
@@ -114,6 +116,12 @@ public class Oracle {
                   a.length > 10 ? a[10] : "");
         } else if (mode.equals("mathcheck")) {
             mathCheck(a[1]);
+        } else if (mode.equals("rawnether")) {
+            rawNether(Long.parseLong(a[1]), Integer.parseInt(a[2]), Integer.parseInt(a[3]),
+                Integer.parseInt(a[4]), Integer.parseInt(a[5]), a[6]);
+        } else if (mode.equals("gridnether")) {
+            gridNether(Long.parseLong(a[1]), Long.parseLong(a[2]), Integer.parseInt(a[3]), Integer.parseInt(a[4]),
+                Integer.parseInt(a[5]), Integer.parseInt(a[6]), a[7], a[8]);
         } else {
             System.err.println("bad mode; see Oracle.java header");
             System.exit(2);
@@ -558,14 +566,10 @@ public class Oracle {
                 }
             }
         }
-        // Pending (non-immediate) block ticks, in a canonical order.
+        // Pending (non-immediate) block ticks, in processing order (time, then entry id).
         Field tts = World.class.getDeclaredField("scheduledTickTreeSet");
         tts.setAccessible(true);
         List<NextTickListEntry> ticks = new ArrayList<>((Collection<NextTickListEntry>) tts.get(w));
-        ticks.sort((p, q) -> p.xCoord != q.xCoord ? Integer.compare(p.xCoord, q.xCoord)
-                           : p.yCoord != q.yCoord ? Integer.compare(p.yCoord, q.yCoord)
-                           : p.zCoord != q.zCoord ? Integer.compare(p.zCoord, q.zCoord)
-                           : Integer.compare(p.blockID, q.blockID));
         o.i32(ticks.size());
         for (NextTickListEntry t : ticks) {
             o.i32(t.xCoord); o.i32(t.yCoord); o.i32(t.zCoord); o.i32(t.blockID); o.i64(t.scheduledTime);
@@ -586,4 +590,48 @@ public class Oracle {
         void bytes(byte[] b) { buf.write(b, 0, b.length); }
         void writeTo(OutputStream os) throws IOException { buf.writeTo(os); }
     }
+    // ---------------------------------------------------------------- Nether
+    static World newNetherWorld(long seed) {
+        return new World(new NullSaveHandler(seed), "oracle", seed, WorldProvider.getProviderForDimension(-1));
+    }
+
+    static void rawNether(long seed, int x0, int z0, int x1, int z1, String out) throws IOException {
+        World world = newNetherWorld(seed);
+        ChunkProviderHell gen = new ChunkProviderHell(world, seed);
+        WorldChunkManager wcm = world.getWorldChunkManager();
+        try (OutputStream os = new BufferedOutputStream(new FileOutputStream(out))) {
+            os.write("B173RAW1".getBytes("US-ASCII"));
+            ByteBuffer bb = ByteBuffer.allocate(8 + 32768 + 16384 + 256 + 256 * 16).order(ByteOrder.LITTLE_ENDIAN);
+            for (int cx = x0; cx <= x1; cx++) {
+                for (int cz = z0; cz <= z1; cz++) {
+                    Chunk c = gen.provideChunk(cx, cz);
+                    // WorldChunkManagerHell supplies constant biome/climate arrays.
+                    BiomeGenBase[] biomes = wcm.loadBlockGeneratorData(null, cx * 16, cz * 16, 16, 16);
+                    bb.clear();
+                    bb.putInt(cx).putInt(cz);
+                    bb.put(c.blocks);
+                    bb.put(c.data.data);
+                    for (int i = 0; i < 256; i++) bb.put((byte) biomeId(biomes[i]));
+                    for (int i = 0; i < 256; i++) bb.putDouble(wcm.temperature[i]);
+                    for (int i = 0; i < 256; i++) bb.putDouble(wcm.humidity[i]);
+                    os.write(bb.array(), 0, bb.position());
+                }
+            }
+        }
+    }
+
+    static void gridNether(long seed, long wrand, int x0, int z0, int x1, int z1, String light, String out) throws Exception {
+        World w = newNetherWorld(seed);
+        w.rand.setSeed(wrand);
+        for (int cx = x0; cx <= x1; cx++) {
+            for (int cz = z0; cz <= z1; cz++) {
+                w.getChunkFromChunkCoords(cx, cz);
+                if (light.equals("each")) drainLighting(w);
+            }
+        }
+        if (light.equals("end")) drainLighting(w);
+        ChunkCoordinates sp = w.getSpawnPoint();
+        dumpWorld(w, out, sp.x, sp.y, sp.z);
+    }
+
 }

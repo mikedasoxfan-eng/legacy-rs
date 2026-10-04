@@ -1,5 +1,7 @@
 //! Diff the Rust generator against an oracle dump.
 //!
+//!   compare rawnether <seed> <oracle.bin>
+//!   compare gridnether <seed> <wrand> <x0> <z0> <x1> <z1> <each|end|none> <oracle.bin>
 //!   compare raw <seed> <oracle.bin>
 //!   compare sin <oracle-sin.bin>
 //!   compare grid <seed> <wrand> <x0> <z0> <x1> <z1> <each|end|none> <oracle.bin>
@@ -19,15 +21,21 @@ fn main() -> ExitCode {
     let p = |i: usize| a[i].parse::<i64>().expect("number");
     match a.get(1).map(String::as_str) {
         Some("raw") => raw(p(2), &a[3]),
+        Some("rawnether") => raw_nether(p(2), &a[3]),
         Some("sin") => sin(&a[2]),
         Some("math") => java_math(&a[2]),
-        Some("grid") => {
+        Some("grid") | Some("gridnether") => {
             let light = match a[8].as_str() {
                 "each" => LightMode::Each,
                 "end" => LightMode::End,
                 _ => LightMode::None,
             };
-            let mut w = World::new(p(2), p(3));
+            let dimension = if a[1] == "gridnether" {
+                worldgen::world::Dimension::Nether
+            } else {
+                worldgen::world::Dimension::Overworld
+            };
+            let mut w = World::with_dimension(p(2), p(3), dimension);
             let t = std::time::Instant::now();
             scenario::grid(&mut w, p(4) as i32, p(5) as i32, p(6) as i32, p(7) as i32, light);
             eprintln!("rust: {} chunks in {:.2?}", w.chunks.len(), t.elapsed());
@@ -40,16 +48,20 @@ fn main() -> ExitCode {
             let mut pm = worldgen::world::server::PlayerManager::new(p(4) as i32);
             let (sx, sz) = (w.spawn.0 as f64 + 0.5, w.spawn.2 as f64 + 0.5);
             pm.add_player(&mut w, sx, sz);
+            // The oracle's player is Unsafe-allocated: posY stays 0.
+            w.players.push((sx, 0.0, sz));
+            w.update_lcg = 12345;
+            w.sound_counter = 100;
             for t in 0..p(6) as i32 {
                 w.tick();
                 w.drain_lighting();
                 let (x, z) = walk_path(sx, sz, t);
+                w.players[0] = (x, 0.0, z);
                 pm.update_player(&mut w, x, z);
             }
             pm.remove_player(&mut w);
             w.save_world(true);
             println!("rust: {} chunks loaded at the end", w.chunks.len());
-            WORLD_ONLY.store(true, std::sync::atomic::Ordering::Relaxed);
             world(&w, &a[7])
         }
         Some("makesave") => {
@@ -256,6 +268,76 @@ fn raw(seed: i64, path: &str) -> ExitCode {
     verdict(bad_chunks == 0 && bad_biomes == 0 && bad_climate == 0)
 }
 
+fn raw_nether(seed: i64, path: &str) -> ExitCode {
+    let data = std::fs::read(path).expect("read oracle dump");
+    assert_eq!(&data[..8], b"B173RAW1", "not a raw oracle dump");
+    let body = &data[8..];
+    assert_eq!(body.len() % CHUNK_RECORD, 0, "truncated dump");
+
+    let mut gen = worldgen::nether::NetherGenerator::new(seed);
+    let (mut chunks, mut bad_chunks, mut bad_blocks) = (0, 0, 0usize);
+    let (mut bad_biomes, mut bad_climate, mut bad_metadata) = (0usize, 0usize, 0usize);
+    let mut climate = worldgen::biome::BiomeSource::hell();
+    let mut biome_buffer = Vec::new();
+    for rec in body.chunks(CHUNK_RECORD) {
+        let mut r = Reader { b: rec, o: 0 };
+        let (cx, cz) = (r.i32(), r.i32());
+        let blocks = r.take(32768);
+        let metadata = r.take(16384);
+        let metadata_diff = metadata.iter().filter(|&&v| v != 0).count();
+        bad_metadata += metadata_diff;
+        if metadata_diff > 0 {
+            eprintln!("chunk ({cx},{cz}): {metadata_diff} metadata bytes differ");
+        }
+        let biomes = r.take(256);
+        let chunk = gen.generate(cx, cz);
+        chunks += 1;
+
+        // The Nether generator does not call its WorldChunkManager; the oracle
+        // explicitly queries the manager after each provideChunk.
+        climate.biomes(&mut biome_buffer, cx * 16, cz * 16, 16, 16);
+        let temps: Vec<f64> = (0..256).map(|_| r.f64()).collect();
+        let humid: Vec<f64> = (0..256).map(|_| r.f64()).collect();
+        for i in 0..256 {
+            let (t, h) = (temps[i], humid[i]);
+            if t.to_bits() != climate.temperature[i].to_bits() || h.to_bits() != climate.humidity[i].to_bits() {
+                if bad_climate == 0 {
+                    eprintln!(
+                        "climate mismatch chunk ({cx},{cz}) col {i}: java t={t:e} h={h:e}, rust t={:e} h={:e}",
+                        climate.temperature[i], climate.humidity[i]
+                    );
+                }
+                bad_climate += 1;
+            }
+            if biomes[i] != chunk.biomes[i] as u8 || biomes[i] != biome_buffer[i] as u8 {
+                bad_biomes += 1;
+            }
+        }
+
+        let mut diff = 0;
+        for (i, (&j, &r)) in blocks.iter().zip(chunk.blocks.iter()).enumerate() {
+            if j != r {
+                if diff < 5 {
+                    let (x, z, y) = (i >> 11, (i >> 7) & 15, i & 127);
+                    eprintln!("chunk ({cx},{cz}) block x={x} y={y} z={z}: java={j} rust={r}");
+                }
+                diff += 1;
+            }
+        }
+        if diff > 0 {
+            bad_chunks += 1;
+            bad_blocks += diff;
+        }
+    }
+
+    println!(
+        "seed {seed}: {chunks} chunks, {bad_chunks} differ ({bad_blocks} blocks), \
+         {bad_biomes} biome columns differ, {bad_climate} climate values differ"
+    );
+    println!("{bad_metadata} metadata bytes differ");
+    verdict(bad_chunks == 0 && bad_metadata == 0 && bad_biomes == 0 && bad_climate == 0)
+}
+
 fn verdict(ok: bool) -> ExitCode {
     if ok {
         println!("EXACT MATCH");
@@ -452,12 +534,36 @@ fn world(w: &World, path: &str) -> ExitCode {
     for _ in 0..nt {
         java_ticks.push((r.i32(), r.i32(), r.i32(), r.i32(), r.i64()));
     }
-    let mut rust_ticks: Vec<_> = w.pending_ticks.iter().map(|(k, &(t, _))| (k.x, k.y, k.z, k.block, t)).collect();
-    rust_ticks.sort();
+    // Both in processing order (scheduled time, then NextTickListEntry id).
+    let rust_ticks: Vec<_> = w.tick_order.iter().map(|&(t, _, k)| (k.x, k.y, k.z, k.block, t)).collect();
     let world_only = WORLD_ONLY.load(std::sync::atomic::Ordering::Relaxed);
     if java_ticks != rust_ticks && !world_only {
+        // Entries present with different times, or only on one side (first few).
+        let jm: std::collections::HashMap<_, _> = java_ticks.iter().enumerate().map(|(i, t)| ((t.0, t.1, t.2, t.3), (i, t.4))).collect();
+        let rm: std::collections::HashMap<_, _> = rust_ticks.iter().enumerate().map(|(i, t)| ((t.0, t.1, t.2, t.3), (i, t.4))).collect();
+        let mut shown = 0;
+        for (k, &(ji, jt)) in &jm {
+            let r = rm.get(k);
+            if r.map(|&(_, rt)| rt) != Some(jt) && shown < 8 {
+                shown += 1;
+                eprintln!("  tick {k:?}: java #{ji} t={jt}, rust {r:?}");
+            }
+        }
+        for (k, r) in &rm {
+            if !jm.contains_key(k) && shown < 12 {
+                shown += 1;
+                eprintln!("  tick {k:?}: rust only {r:?}");
+            }
+        }
+        let first = java_ticks.iter().zip(&rust_ticks).position(|(a, b)| a != b);
         cats.entry("pending ticks").or_default().hit("pending ticks", || {
-            format!("java {} entries, rust {}", java_ticks.len(), rust_ticks.len())
+            format!(
+                "java {} entries, rust {}; first difference at #{first:?}: java {:?} rust {:?}",
+                java_ticks.len(),
+                rust_ticks.len(),
+                first.map(|i| java_ticks[i]),
+                first.map(|i| rust_ticks[i])
+            )
         });
     }
     let java_lq = r.i32() as usize;

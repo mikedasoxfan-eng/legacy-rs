@@ -14,9 +14,10 @@ import net.minecraft.server.MinecraftServer;
  *
  *   serverwalk <seed> <wrand> <viewRadius> <dir> <ticks> <out>
  *
- * Per tick it runs the parts of the server loop the port implements so far: chunk
- * unloading, the 40-tick autosave and the clock (World.tick), draining lighting, then the
- * player's movement update. At the end the player leaves and the world is saved.
+ * Per tick it runs MinecraftServer.doTick's world part (World.tick with mob spawning off,
+ * draining lighting), then the player's movement update. The stand-in player is also in
+ * playerEntities, so random block ticks run around it. At the end the player leaves and
+ * the world is saved.
  */
 public class ServerOracle {
     /** Network handler that drops every packet (never constructed: allocated via Unsafe). */
@@ -85,12 +86,19 @@ public class ServerOracle {
         p.posX = sx;
         p.posZ = sz;
         pm.addPlayer(p);
+        p.inventory = new InventoryPlayer(p); // autosave writes the player into level.dat
+        w.playerEntities.add(p);
+        w.setAllowedSpawnTypes(false, false);
+        // Unseeded in vanilla: the random-tick LCG and the cave-sound countdown.
+        Field lcg = World.class.getDeclaredField("distHashCounter");
+        lcg.setAccessible(true);
+        lcg.setInt(w, 12345);
+        Field amb = World.class.getDeclaredField("ambientTickCountdown");
+        amb.setAccessible(true);
+        amb.setInt(w, 100);
 
         for (int t = 0; t < ticks; t++) {
-            w.chunkProviderServer.func_361_a();
-            long nt = w.getWorldTime() + 1L;
-            if (nt % 40L == 0L) w.saveWorld(false, null);
-            w.setWorldTime(nt);
+            w.tick();
             while (w.func_6156_d()) {
             }
             double[] pos = path(sx, sz, t);
@@ -148,8 +156,16 @@ public class ServerOracle {
                 }
             }
         }
-        // Scheduled ticks and pending light updates are not compared for server runs.
-        bb.clear(); bb.putInt(0); buf.write(bb.array(), 0, 4);
+        // Pending block ticks in processing order (time, then entry id); the light queue
+        // is drained.
+        Field tts = World.class.getDeclaredField("scheduledTickTreeSet");
+        tts.setAccessible(true);
+        Collection<NextTickListEntry> ticks = (Collection<NextTickListEntry>) tts.get(w);
+        bb.clear(); bb.putInt(ticks.size()); buf.write(bb.array(), 0, 4);
+        for (NextTickListEntry t : ticks) {
+            for (int v : new int[] {t.xCoord, t.yCoord, t.zCoord, t.blockID}) { bb.clear(); bb.putInt(v); buf.write(bb.array(), 0, 4); }
+            bb.clear(); bb.putLong(t.scheduledTime); buf.write(bb.array(), 0, 8);
+        }
         bb.clear(); bb.putInt(0); buf.write(bb.array(), 0, 4);
         try (OutputStream os = new FileOutputStream(out)) { buf.writeTo(os); }
         System.out.println("java: " + chunks.size() + " chunks loaded at the end");

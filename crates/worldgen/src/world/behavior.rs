@@ -138,7 +138,7 @@ pub fn on_neighbor_block_change(w: &mut World, id: u8, x: i32, y: i32, z: i32, _
             }
         }
         block::FIRE => tb::fire_neighbor(w, x, y, z),
-        tb::PORTAL => tb::portal_neighbor(w, x, y, z),
+        block::PORTAL => tb::portal_neighbor(w, x, y, z),
         _ => assert_plain(id, "onNeighborBlockChange"),
     }
 }
@@ -196,6 +196,11 @@ fn assert_plain(id: u8, hook: &str) {
             | block::DIRT
             | block::COBBLESTONE
             | block::BEDROCK
+            | block::NETHERRACK
+            | block::SOUL_SAND
+            | block::GLOWSTONE
+            | block::FIRE
+            | block::PORTAL
             | block::ORE_GOLD
             | block::ORE_IRON
             | block::ORE_COAL
@@ -227,8 +232,6 @@ fn assert_plain(id: u8, hook: &str) {
             | block::GRAVEL
             | block::CHEST
             | block::MOB_SPAWNER
-            | block::FIRE
-            | tb::PORTAL
             | tb::SNOW_BLOCK
             | tb::ORE_REDSTONE_GLOWING
     );
@@ -325,7 +328,7 @@ fn liquid_can_displace(w: &mut World, id: u8, x: i32, y: i32, z: i32) -> bool {
 fn flowing_update_tick(w: &mut World, id: u8, x: i32, y: i32, z: i32, rs: RandSel) {
     let fm = fluid_material(id);
     let mut decay = get_flow_decay(w, fm, x, y, z);
-    let step = if fm == MAT_LAVA { 2 } else { 1 };
+    let step = if fm == MAT_LAVA && !w.dimension.is_hell_world() { 2 } else { 1 };
     let mut keep_flowing = true;
     if decay > 0 {
         w.flow[flow_slot(id)].num_adjacent_sources = 0;
@@ -604,8 +607,8 @@ fn quantity_dropped(w: &mut World, id: u8) -> i32 {
                 0
             }
         }
-        block::SNOW | block::ICE => 0,
-        super::ticks_blocks::SNOW_BLOCK => 4,
+        block::SNOW | block::ICE | block::FIRE | block::PORTAL => 0,
+        tb::SNOW_BLOCK => 4,
         block::ORE_LAPIS => 4 + w.rand.next_int(5),
         block::ORE_REDSTONE | super::ticks_blocks::ORE_REDSTONE_GLOWING => 4 + w.rand.next_int(2),
         block::CLAY => 4,

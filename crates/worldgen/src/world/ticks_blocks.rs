@@ -6,8 +6,7 @@ use super::chunk::LightKind;
 use super::{behavior, RandSel, World};
 use crate::block::{self, mat, material_of};
 
-pub const NETHERRACK: u8 = 87;
-pub const PORTAL: u8 = 90;
+pub use crate::block::{NETHERRACK, PORTAL};
 pub const SNOW_BLOCK: u8 = 80;
 pub const ORE_REDSTONE_GLOWING: u8 = 74;
 pub const TNT: u8 = 46;
