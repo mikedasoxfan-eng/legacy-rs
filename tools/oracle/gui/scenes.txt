@@ -60,3 +60,13 @@ shot hud_low_flash
 hud health=12 prev=16 hearts_life=11 item=5 pos=0.5,120,0.5 brightness=1.0
 counter 3
 shot hud_flash
+# Achievements (fresh stats: only "Taking Inventory" can be unlocked), over the world.
+open achievements
+mouse -1 -1
+millis 250
+shot achievements
+millis 100
+mouse 240 140
+shot achievements_hover_locked
+mouse 201 115
+shot achievements_hover_open

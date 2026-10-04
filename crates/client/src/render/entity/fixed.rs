@@ -25,6 +25,7 @@ pub struct Draw {
     pub dst: u32,
     pub depth: u32,
     pub vertices: Vec<RawVertex>,
+    pub light_rotation: f32,
 }
 /// Flag bits, in order: lighting, rescale, normalize, texturing, blending,
 /// depth-write, vertex-color, vertex-normal, depth-test, vertex-UV.
@@ -43,6 +44,8 @@ pub struct Fixed {
     pub vertex_color: Option<u32>,
     pub vertex_normal: Option<u32>,
     pub textured: bool,
+    /// Degrees the GUI rotated the lights about X before enabling them (0 in the world).
+    pub light_rotation: f32,
 }
 impl Fixed {
     pub fn new(brightness: f32) -> Self {
@@ -61,6 +64,7 @@ impl Fixed {
             vertex_color: None,
             vertex_normal: None,
             textured: false,
+            light_rotation: 0.0,
         }
     }
     pub fn push(&mut self) {
@@ -134,8 +138,7 @@ impl Fixed {
             src: self.src,
             dst: self.dst,
             depth: self.depth,
-            vertices: std::mem::take(&mut self.vertices),
-        });
+            vertices: std::mem::take(&mut self.vertices), light_rotation: self.light_rotation });
     }
 }
 impl Draw {
@@ -228,7 +231,7 @@ impl Draw {
                     } else if self.flags & 2 != 0 {
                         n *= rescale;
                     }
-                    color = living::lit_color(n, color);
+                    color = living::lit_color_rotated(n, color, self.light_rotation);
                 }
                 EntityVertex { pos: m.transform_point3(Vec3::from_array(v.pos)).to_array(), uv: v.uv, color }
             })

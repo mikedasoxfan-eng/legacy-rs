@@ -4,7 +4,19 @@ use crate::gui::Ui;
 use worldgen::world::tile::ItemStack;
 
 pub fn geometry(item: &ItemStack, x: i32, y: i32, tint: bool) -> Fixed {
+    geometry_with(item, x, y, tint, None)
+}
+
+/// With `RenderItem.field_27004_a = false` the item's own color isn't applied and the
+/// caller's `glColor` stays the material (GuiAchievements darkens locked icons this way).
+pub fn geometry_with(item: &ItemStack, x: i32, y: i32, tint: bool, base: Option<[f32; 4]>) -> Fixed {
     let mut g = Fixed::new(1.0);
+    g.light_rotation = gui_light_rotation();
+    // GuiIngame / GuiContainer / GuiAchievements enable GL_RESCALE_NORMAL around items.
+    g.enable(2, true);
+    if let Some(m) = base {
+        g.material = m;
+    }
     let (icon, color, _) = item_table::properties(item.id, item.damage);
     if inventory::in_3d(item.id) {
         g.texture = 1;
@@ -59,6 +71,19 @@ pub fn geometry(item: &ItemStack, x: i32, y: i32, tint: bool) -> Fixed {
     }
     g
 }
+thread_local! {
+    static LIGHT_ROTATION: std::cell::Cell<f32> = const { std::cell::Cell::new(120.0) };
+}
+
+/// The rotation the calling screen applied before `enableStandardItemLighting`.
+pub fn set_gui_light_rotation(degrees: f32) {
+    LIGHT_ROTATION.with(|c| c.set(degrees));
+}
+
+fn gui_light_rotation() -> f32 {
+    LIGHT_ROTATION.with(|c| c.get())
+}
+
 /// Vanilla's three durability rectangles. Counts use the GUI's existing FontRenderer.
 pub fn durability(item: &ItemStack, x: i32, y: i32) -> Fixed {
     let mut g = Fixed::new(1.0);
@@ -105,6 +130,13 @@ fn submit(ui: &mut Ui, g: Fixed) {
 pub fn render_item_into_gui(ui: &mut Ui, item: Option<&ItemStack>, x: i32, y: i32) {
     if let Some(item) = item {
         submit(ui, geometry(item, x, y, true));
+    }
+}
+/// `renderItemIntoGUI` with item tinting switched off: the current color is the material.
+pub fn render_item_into_gui_untinted(ui: &mut Ui, item: Option<&ItemStack>, x: i32, y: i32) {
+    if let Some(item) = item {
+        let base = ui.gl.color;
+        submit(ui, geometry_with(item, x, y, false, Some(base)));
     }
 }
 #[allow(dead_code)]

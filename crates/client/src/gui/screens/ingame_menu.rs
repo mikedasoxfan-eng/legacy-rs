@@ -50,7 +50,8 @@ impl Screen for GuiIngameMenu {
             0 => ui.display_child(|me| Box::new(super::options::GuiOptions::new(me))),
             1 => ui.actions.push(Action::QuitWorld),
             4 => ui.display(None),
-            // GuiAchievements / GuiStats need the stats system (not ported yet).
+            5 => ui.display(Some(Box::new(super::achievements::GuiAchievements::new()))),
+            // GuiStats needs the item registry and recipes (with the player).
             _ => {}
         }
     }

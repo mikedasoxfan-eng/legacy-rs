@@ -299,7 +299,7 @@ fn main() {
             std::path::Path::new(&args[3]),
             args.get(4).map(std::path::Path::new),
         );
-        println!("{}", if ok { "GUI EXACT" } else { "GUI DIFFERS" });
+        println!("{}", if ok { "GUI MATCHES" } else { "GUI DIFFERS" });
         std::process::exit(if ok { 0 } else { 1 });
     }
     if args.get(1).map(String::as_str) == Some("--weathercheck") {

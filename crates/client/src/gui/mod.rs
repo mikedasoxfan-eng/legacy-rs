@@ -14,6 +14,7 @@ pub mod screens;
 pub mod settings;
 pub mod shot;
 pub mod slot;
+pub mod stats;
 pub mod system;
 pub mod widgets;
 
@@ -35,6 +36,7 @@ pub const TEXTURES: &[&str] = &[
     "pack.png",
     "terrain.png",
     "%blur%/misc/vignette.png",
+    "achievement/bg.png",
 ];
 
 /// A texture name without `RenderEngine`'s `%blur%` / `%clamp%` prefixes, and the flags.
@@ -127,6 +129,8 @@ pub struct Ui {
     pub world_saved: bool,
     /// Incremental save requests made while drawing (the pause menu saves every frame).
     pub save_requests: Vec<i32>,
+    /// `StatFileWriter`
+    pub stats: stats::Stats,
     /// `sndManager.playSoundFX(name, volume, pitch)` calls, played by the app.
     pub sounds: Vec<(&'static str, f32, f32)>,
 }

@@ -49,6 +49,7 @@ fn fs(i: VO) -> @location(0) vec4<f32> {
 struct PipeKey {
     blend: Option<(Factor, Factor)>,
     depth_test: bool,
+    depth_gequal: bool,
     depth_write: bool,
 }
 
@@ -255,7 +256,11 @@ impl GuiRenderer {
                 depth_stencil: Some(wgpu::DepthStencilState {
                     format: wgpu::TextureFormat::Depth32Float,
                     depth_write_enabled: Some(key.depth_write && key.depth_test),
-                    depth_compare: Some(if key.depth_test { wgpu::CompareFunction::LessEqual } else { wgpu::CompareFunction::Always }),
+                    depth_compare: Some(match (key.depth_test, key.depth_gequal) {
+                        (false, _) => wgpu::CompareFunction::Always,
+                        (true, false) => wgpu::CompareFunction::LessEqual,
+                        (true, true) => wgpu::CompareFunction::GreaterEqual,
+                    }),
                     stencil: Default::default(),
                     bias: Default::default(),
                 }),
@@ -385,7 +390,7 @@ impl GuiRenderer {
 }
 
 fn key_of(s: &DrawState) -> PipeKey {
-    PipeKey { blend: s.blend, depth_test: s.depth_test, depth_write: s.depth_write }
+    PipeKey { blend: s.blend, depth_test: s.depth_test, depth_write: s.depth_write, depth_gequal: s.depth_gequal }
 }
 
 fn make_texture(

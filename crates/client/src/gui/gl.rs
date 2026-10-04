@@ -44,6 +44,8 @@ pub struct GuiVertex {
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct DrawState {
     pub texture: Option<TexId>,
+    /// `glDepthFunc`: true = GL_GEQUAL (the achievements background), false = GL_LEQUAL.
+    pub depth_gequal: bool,
     pub blend: Option<(Factor, Factor)>,
     pub depth_test: bool,
     pub depth_write: bool,
@@ -78,6 +80,8 @@ pub struct Gl {
     pub alpha_ref: f32,
     pub depth_test: bool,
     pub depth_mask: bool,
+    /// `glDepthFunc(GL_GEQUAL)` instead of the usual GL_LEQUAL.
+    pub depth_gequal: bool,
     pub shade: Shade,
     pub bound: Option<TexId>,
     /// Current texture coordinate (`glTexCoord`), left behind by textured draws.
@@ -114,6 +118,7 @@ impl Gl {
             alpha_ref: 0.1,
             depth_test: true,
             depth_mask: true,
+            depth_gequal: false,
             shade: Shade::Smooth,
             bound: None,
             current_uv: [0.0; 2],
@@ -300,6 +305,7 @@ impl Gl {
             blend: if self.blend { Some(self.blend_func) } else { None },
             depth_test: self.depth_test,
             depth_write: self.depth_mask,
+            depth_gequal: self.depth_gequal,
         };
         self.draws.push(Draw { first, count: vertices.len() as u32, state, proj: self.proj });
         if let Some(v) = vertices.last() {
@@ -318,6 +324,7 @@ impl Gl {
             blend: if self.blend { Some(self.blend_func) } else { None },
             depth_test: self.depth_test,
             depth_write: self.depth_mask,
+            depth_gequal: self.depth_gequal,
         };
         let flags = [if self.texture_2d { 1.0 } else { 0.0 }, if self.alpha_test { self.alpha_ref } else { -1.0 }];
         let first = self.verts.len() as u32;

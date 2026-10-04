@@ -93,6 +93,20 @@ impl Lang {
         let mut n = 0;
         while let Some(c) = it.next() {
             if c == '%' {
+                // Positional `%N$s` / `%N$d`.
+                let rest: String = it.clone().take(4).collect();
+                let digits: String = rest.chars().take_while(|c| c.is_ascii_digit()).collect();
+                if !digits.is_empty() && rest[digits.len()..].starts_with('$') {
+                    let after = rest[digits.len() + 1..].chars().next();
+                    if matches!(after, Some('s') | Some('d')) {
+                        for _ in 0..digits.len() + 2 {
+                            it.next();
+                        }
+                        let k: usize = digits.parse().unwrap_or(1);
+                        out.push_str(args.get(k.saturating_sub(1)).map(String::as_str).unwrap_or(""));
+                        continue;
+                    }
+                }
                 match it.peek() {
                     Some('s') | Some('d') => {
                         it.next();

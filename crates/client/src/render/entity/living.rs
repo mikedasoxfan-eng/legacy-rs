@@ -361,7 +361,18 @@ pub fn normal_from_packed(packed: u32) -> Vec3 {
 /// two diffuse 0.6 directional lights and zero light ambient/specular. Clamp
 /// the final primary color, after multiplying material (entity brightness/tint).
 pub fn lit_color(n: Vec3, material: [f32; 4]) -> [f32; 4] {
-    let diffuse = 0.6 * n.dot(light(0.2, -0.7)).max(0.0) + 0.6 * n.dot(light(-0.2, 0.7)).max(0.0);
+    lit_color_rotated(n, material, 0.0)
+}
+
+/// `lit_color` with the lights placed under a `glRotatef(angle, 1, 0, 0)` modelview, as the
+/// GUI screens do before `RenderHelper.enableStandardItemLighting` (120 for the hotbar and
+/// containers, 180 for achievements).
+pub fn lit_color_rotated(n: Vec3, material: [f32; 4], light_rotation_x: f32) -> [f32; 4] {
+    let r = Mat4::from_axis_angle(Vec3::X, light_rotation_x.to_radians());
+    let l0 = r.transform_vector3(light(0.2, -0.7));
+    let l1 = r.transform_vector3(light(-0.2, 0.7));
+    let (d0, d1) = (n.dot(l0).max(0.0), n.dot(l1).max(0.0));
+    let diffuse = 0.6 * d0 + 0.6 * d1;
     let f = 0.4 + diffuse;
     [
         (material[0] * f).clamp(0.0, 1.0),
