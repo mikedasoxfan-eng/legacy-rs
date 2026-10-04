@@ -166,9 +166,11 @@ rm -f "$out/models_case.bin"
 # Compare original Tessellator bits and per-draw GL transforms/state, before GPU math.
 echo "== remaining entity renderers and GUI item geometry"
 if "$oracle" renderers renderers_case.bin && "$beta" --renderercheck "$out/renderers_case.bin"; then :; else fail=1; fi
+echo "== ghast, pig zombie and giant full renderer draws"
+if "$oracle" livingrenderers living_case.bin && "$beta" --livingrenderercheck "$out/living_case.bin"; then :; else fail=1; fi
 echo "== entity shadows and fire"
 if "$oracle" rendereffects effects_case.bin && "$beta" --effectcheck "$out/effects_case.bin"; then :; else fail=1; fi
-rm -f "$out/renderers_case.bin" "$out/effects_case.bin"
+rm -f "$out/renderers_case.bin" "$out/effects_case.bin" "$out/living_case.bin"
 
 # ---- sky, fog and cloud colors, sun angle, night darkness
 echo "== sky colors"

@@ -11,11 +11,14 @@ struct Bounds {
     max_z: f64,
 }
 
-
-struct Faces<'a> { b: Bounds, gl: &'a mut Fixed, offset:[f64;3] }
+struct Faces<'a> {
+    b: Bounds,
+    gl: &'a mut Fixed,
+    offset: [f64; 3],
+}
 impl Faces<'_> {
-    fn emit(&mut self,_corner:usize,x:f64,y:f64,z:f64,u:f64,v:f64) {
-        self.gl.vertex([x+self.offset[0],y+self.offset[1],z+self.offset[2]],[u,v]);
+    fn emit(&mut self, _corner: usize, x: f64, y: f64, z: f64, u: f64, v: f64) {
+        self.gl.vertex([x + self.offset[0], y + self.offset[1], z + self.offset[2]], [u, v]);
     }
     /// Texture rectangle shared by the horizontal faces (no UV rotation in natural terrain).
     fn uv_xz(&self, tex: i32) -> (f64, f64, f64, f64) {
@@ -116,49 +119,115 @@ impl Faces<'_> {
         self.emit(2, xx, y1, z0, u1, v0);
         self.emit(3, xx, y1, z1, u0, v0);
     }
-    fn face(&mut self,side:usize,tex:i32) {
-        match side {0=>self.render_bottom_face(0.0,0.0,0.0,tex),1=>self.render_top_face(0.0,0.0,0.0,tex),
-            2=>self.render_east_face(0.0,0.0,0.0,tex),3=>self.render_west_face(0.0,0.0,0.0,tex),
-            4=>self.render_north_face(0.0,0.0,0.0,tex),5=>self.render_south_face(0.0,0.0,0.0,tex),_=>unreachable!()}
+    fn face(&mut self, side: usize, tex: i32) {
+        match side {
+            0 => self.render_bottom_face(0.0, 0.0, 0.0, tex),
+            1 => self.render_top_face(0.0, 0.0, 0.0, tex),
+            2 => self.render_east_face(0.0, 0.0, 0.0, tex),
+            3 => self.render_west_face(0.0, 0.0, 0.0, tex),
+            4 => self.render_north_face(0.0, 0.0, 0.0, tex),
+            5 => self.render_south_face(0.0, 0.0, 0.0, tex),
+            _ => unreachable!(),
+        }
     }
 }
-const NORMALS:[[f32;3];6]=[[0.0,-1.0,0.0],[0.0,1.0,0.0],[0.0,0.0,-1.0],[0.0,0.0,1.0],[-1.0,0.0,0.0],[1.0,0.0,0.0]];
-fn bounds(p:[f32;6])->Bounds {Bounds{min_x:p[0] as f64,min_y:p[1] as f64,min_z:p[2] as f64,max_x:p[3] as f64,max_y:p[4] as f64,max_z:p[5] as f64}}
-pub fn in_3d(id:i16)->bool {(0..256).contains(&id) && matches!(rprops(id as u8).render_type,0|13|10|11|16)}
-pub fn block_color(id:u8,meta:i32)->u32 {
-    if id==18 {if meta&1==1 {0x619961} else if meta&2==2 {0x80a755} else {0x48b518}} else {0xffffff}
+const NORMALS: [[f32; 3]; 6] =
+    [[0.0, -1.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, -1.0], [0.0, 0.0, 1.0], [-1.0, 0.0, 0.0], [1.0, 0.0, 0.0]];
+fn bounds(p: [f32; 6]) -> Bounds {
+    Bounds {
+        min_x: p[0] as f64,
+        min_y: p[1] as f64,
+        min_z: p[2] as f64,
+        max_x: p[3] as f64,
+        max_y: p[4] as f64,
+        max_z: p[5] as f64,
+    }
 }
-pub fn inventory(gl:&mut Fixed,id:u8,meta:i32,brightness:f32,tint:bool) {
-    if tint {let c=block_color(id,meta);gl.material=[(c>>16&255) as f32/255.0*brightness,(c>>8&255) as f32/255.0*brightness,(c&255) as f32/255.0*brightness,1.0];}
-    let rt=rprops(id).render_type;
-    let meta=if rt==16 {1}else{meta};
-    let mut boxes=vec![rprops(id).bounds];
-    if rt==10 {boxes=vec![[0.0,0.0,0.0,1.0,1.0,0.5],[0.0,0.0,0.5,1.0,0.5,1.0]];}
-    if rt==11 {boxes=vec![[0.375,0.0,0.0,0.625,1.0,0.25],[0.375,0.0,0.75,0.625,1.0,1.0],
-        [0.4375,0.8125,-0.125,0.5625,0.9375,1.125],[0.4375,0.3125,-0.125,0.5625,0.4375,1.125]];}
-    if matches!(id,70|72) {boxes=vec![[0.0,0.375,0.0,1.0,0.625,1.0]];}
-    if id==77 {boxes=vec![[0.3125,0.375,0.375,0.6875,0.625,0.625]];}
-    if id==92 {boxes=vec![[0.0625,0.0,0.0625,0.9375,0.5,0.9375]];}
-    if id==96 {boxes=vec![[0.0,0.40625,0.0,1.0,0.59375,1.0]];}
-    if rt==16 { boxes=vec![[0.0,0.0,0.0,1.0,1.0,1.0]]; }
-    for b in boxes {
-        gl.translate(-0.5,-0.5,-0.5);
-        for (side,n) in NORMALS.iter().enumerate() {
-            gl.begin();gl.set_normal(n[0],n[1],n[2]);
-            let tex=rprops(id).textures[if rt==0||rt==16 {(meta&15) as usize}else{0}][side] as i32;
-            let offset=if rt==13 {match side{2=>[0.0,0.0,0.0625],3=>[0.0,0.0,-0.0625],4=>[0.0625,0.0,0.0],5=>[-0.0625,0.0,0.0],_=>[0.0;3]}}else{[0.0;3]};
-            Faces{b:bounds(b),gl,offset}.face(side,tex);gl.end();
+pub fn in_3d(id: i16) -> bool {
+    (0..256).contains(&id) && matches!(rprops(id as u8).render_type, 0 | 13 | 10 | 11 | 16)
+}
+pub fn block_color(id: u8, meta: i32) -> u32 {
+    if id == 18 {
+        if meta & 1 == 1 {
+            0x619961
+        } else if meta & 2 == 2 {
+            0x80a755
+        } else {
+            0x48b518
         }
-        gl.translate(0.5,0.5,0.5);
+    } else {
+        0xffffff
+    }
+}
+pub fn inventory(gl: &mut Fixed, id: u8, meta: i32, brightness: f32, tint: bool) {
+    if tint {
+        let c = block_color(id, meta);
+        gl.material = [
+            (c >> 16 & 255) as f32 / 255.0 * brightness,
+            (c >> 8 & 255) as f32 / 255.0 * brightness,
+            (c & 255) as f32 / 255.0 * brightness,
+            1.0,
+        ];
+    }
+    let rt = rprops(id).render_type;
+    let meta = if rt == 16 { 1 } else { meta };
+    let mut boxes = vec![rprops(id).bounds];
+    if rt == 10 {
+        boxes = vec![[0.0, 0.0, 0.0, 1.0, 1.0, 0.5], [0.0, 0.0, 0.5, 1.0, 0.5, 1.0]];
+    }
+    if rt == 11 {
+        boxes = vec![
+            [0.375, 0.0, 0.0, 0.625, 1.0, 0.25],
+            [0.375, 0.0, 0.75, 0.625, 1.0, 1.0],
+            [0.4375, 0.8125, -0.125, 0.5625, 0.9375, 1.125],
+            [0.4375, 0.3125, -0.125, 0.5625, 0.4375, 1.125],
+        ];
+    }
+    if matches!(id, 70 | 72) {
+        boxes = vec![[0.0, 0.375, 0.0, 1.0, 0.625, 1.0]];
+    }
+    if id == 77 {
+        boxes = vec![[0.3125, 0.375, 0.375, 0.6875, 0.625, 0.625]];
+    }
+    if id == 92 {
+        boxes = vec![[0.0625, 0.0, 0.0625, 0.9375, 0.5, 0.9375]];
+    }
+    if id == 96 {
+        boxes = vec![[0.0, 0.40625, 0.0, 1.0, 0.59375, 1.0]];
+    }
+    if rt == 16 {
+        boxes = vec![[0.0, 0.0, 0.0, 1.0, 1.0, 1.0]];
+    }
+    for b in boxes {
+        gl.translate(-0.5, -0.5, -0.5);
+        for (side, n) in NORMALS.iter().enumerate() {
+            gl.begin();
+            gl.set_normal(n[0], n[1], n[2]);
+            let tex = rprops(id).textures[if rt == 0 || rt == 16 { (meta & 15) as usize } else { 0 }][side] as i32;
+            let offset = if rt == 13 {
+                match side {
+                    2 => [0.0, 0.0, 0.0625],
+                    3 => [0.0, 0.0, -0.0625],
+                    4 => [0.0625, 0.0, 0.0],
+                    5 => [-0.0625, 0.0, 0.0],
+                    _ => [0.0; 3],
+                }
+            } else {
+                [0.0; 3]
+            };
+            Faces { b: bounds(b), gl, offset }.face(side, tex);
+            gl.end();
+        }
+        gl.translate(0.5, 0.5, 0.5);
     }
 }
 /// Brightness order: own, below, above, -z, +z, -x, +x.
-pub fn falling(gl:&mut Fixed,id:u8,light:[f32;7]) {
+pub fn falling(gl: &mut Fixed, id: u8, light: [f32; 7]) {
     gl.begin();
     for side in 0..6 {
-        let f=[0.5,1.0,0.8,0.8,0.6,0.6][side]*light[side+1].max(light[0]);
-        gl.color([f,f,f,1.0]);
-        Faces{b:bounds(rprops(id).bounds),gl,offset:[-0.5;3]}.face(side,rprops(id).textures[0][side] as i32);
+        let f = [0.5, 1.0, 0.8, 0.8, 0.6, 0.6][side] * light[side + 1].max(light[0]);
+        gl.color([f, f, f, 1.0]);
+        Faces { b: bounds(rprops(id).bounds), gl, offset: [-0.5; 3] }.face(side, rprops(id).textures[0][side] as i32);
     }
     gl.end();
 }

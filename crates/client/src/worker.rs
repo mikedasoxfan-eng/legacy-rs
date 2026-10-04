@@ -14,7 +14,11 @@ use worldgen::world::server::PlayerManager;
 use worldgen::{BiomeSource, World};
 
 pub enum ToWorker {
-    Camera { x: f64, y: f64, z: f64 },
+    Camera {
+        x: f64,
+        y: f64,
+        z: f64,
+    },
     AddTime(i64),
     /// `isGamePaused`: a screen that pauses the game is open (no ticks, no catch-up).
     Pause(bool),
@@ -136,8 +140,14 @@ fn run(opts: WorldOptions, col: Colorizers, rx: Receiver<ToWorker>, tx: Sender<F
         };
         let _ = tx.send(FromWorker::Loading(msg));
     };
-    let opened =
-        World::open_with(opts.dir.as_deref(), opts.seed, opts.world_rand, opts.server, opts.name.as_deref(), &mut progress);
+    let opened = World::open_with(
+        opts.dir.as_deref(),
+        opts.seed,
+        opts.world_rand,
+        opts.server,
+        opts.name.as_deref(),
+        &mut progress,
+    );
     let (mut world, is_new) = match opened {
         Ok(w) => w,
         Err(e) => {
@@ -155,6 +165,7 @@ fn run(opts: WorldOptions, col: Colorizers, rx: Receiver<ToWorker>, tx: Sender<F
         world.thundering_strength = w.thunder;
         world.prev_thundering_strength = w.prev_thunder;
         world.lightning_flash = w.flash;
+        world.lightning_sky_flash = w.flash;
     }
     if let Some(time) = opts.time {
         world.world_time = time;
@@ -286,7 +297,9 @@ fn run(opts: WorldOptions, col: Colorizers, rx: Receiver<ToWorker>, tx: Sender<F
                 prev_rain: world.prev_raining_strength,
                 thunder: world.thundering_strength,
                 prev_thunder: world.prev_thundering_strength,
-                flash: world.lightning_flash,
+                // Sky color reads field_27172_i (the bolt field), not the weather counter.
+                // Vanilla never decrements this field; retain that bug.
+                flash: world.lightning_sky_flash,
             };
             if weather.rain > 0.0 || weather.prev_rain > 0.0 {
                 weather_tail = 40;
@@ -314,27 +327,49 @@ fn run(opts: WorldOptions, col: Colorizers, rx: Receiver<ToWorker>, tx: Sender<F
             for id in near {
                 let e = world.entities[&id].clone();
                 let b = living_brightness(&mut world, &e);
-                let biomes=RefCell::new(BiomeSource::new(opts.seed));
-                let access=Access::new(&world, e.chunk_x, e.chunk_z, world.skylight_subtracted, &biomes);
-                let fl=worldgen::math::floor_double;
-                let (x,y,z)=(fl(e.pos.x),fl(e.pos.y),fl(e.pos.z));
-                let ds=[[0,0,0],[0,-1,0],[0,1,0],[0,0,-1],[0,0,1],[-1,0,0],[1,0,0]];
-                let falling_light=ds.map(|[dx,dy,dz]|access.light_brightness(x+dx,y+dy,z+dz));
-                let size=crate::render::entity::effects::radius(&e) as f64;
-                let mut surfaces=Vec::new();
+                let biomes = RefCell::new(BiomeSource::new(opts.seed));
+                let access = Access::new(&world, e.chunk_x, e.chunk_z, world.skylight_subtracted, &biomes);
+                let fl = worldgen::math::floor_double;
+                let (x, y, z) = (fl(e.pos.x), fl(e.pos.y), fl(e.pos.z));
+                let ds = [[0, 0, 0], [0, -1, 0], [0, 1, 0], [0, 0, -1], [0, 0, 1], [-1, 0, 0], [1, 0, 0]];
+                let falling_light = ds.map(|[dx, dy, dz]| {
+                    world.light_brightness_table[access.light_value(x + dx, y + dy, z + dz) as usize]
+                });
+                let size = crate::render::entity::effects::radius(&e) as f64;
+                let mut surfaces = Vec::new();
                 // Cover both endpoints of the partial-tick interval, queried from loaded chunks only.
-                for xx in fl(e.pos.x.min(e.last_tick_pos.x)-size)..=fl(e.pos.x.max(e.last_tick_pos.x)+size) {
-                    for yy in fl(e.pos.y.min(e.last_tick_pos.y)+e.height as f64/2.0-size)..=fl(e.pos.y.max(e.last_tick_pos.y)+e.height as f64/2.0) {
-                        for zz in fl(e.pos.z.min(e.last_tick_pos.z)-size)..=fl(e.pos.z.max(e.last_tick_pos.z)+size) {
-                            let block=access.block(xx,yy-1,zz);
-                            if block>0 && access.light_value(xx,yy,zz)>3 {
-                                surfaces.push(crate::render::entity::effects::Surface{xyz:[xx,yy,zz],block,brightness:access.light_brightness(xx,yy,zz)});
+                for xx in fl(e.pos.x.min(e.last_tick_pos.x) - size)..=fl(e.pos.x.max(e.last_tick_pos.x) + size) {
+                    for yy in fl(e.pos.y.min(e.last_tick_pos.y) + e.height as f64 / 2.0 - size)
+                        ..=fl(e.pos.y.max(e.last_tick_pos.y) + e.height as f64 / 2.0)
+                    {
+                        for zz in fl(e.pos.z.min(e.last_tick_pos.z) - size)..=fl(e.pos.z.max(e.last_tick_pos.z) + size)
+                        {
+                            let block = access.block(xx, yy - 1, zz);
+                            if block > 0 && access.light_value(xx, yy, zz) > 3 {
+                                surfaces.push(crate::render::entity::effects::Surface {
+                                    xyz: [xx, yy, zz],
+                                    block,
+                                    brightness: world.light_brightness_table[access.light_value(xx, yy, zz) as usize],
+                                });
                             }
                         }
                     }
                 }
-                snapshot.push(crate::render::entity::effects::Snapshot{entity:e,brightness:b,falling_light,surfaces});
+                snapshot.push(crate::render::entity::effects::Snapshot {
+                    entity: e,
+                    brightness: b,
+                    falling_light,
+                    surfaces,
+                });
             }
+            // Lightning lives in World.weatherEffects, separately from loadedEntityList.
+            // Keep even inactive bolts so their next restrike uses the updated entity seed.
+            snapshot.extend(world.weather_effects.iter().map(|e| crate::render::entity::effects::Snapshot {
+                entity: e.clone(),
+                brightness: 1.0,
+                falling_light: [1.0; 7],
+                surfaces: Vec::new(),
+            }));
             let _ = tx.send(FromWorker::Entities(snapshot));
             let chunks = world.chunks.len();
             let _ = tx.send(FromWorker::Time { time: world.world_time, brightness, chunks, weather, terrain });

@@ -1,4 +1,5 @@
 //! Generated from original Beta Item methods by oracle itemtable.
+#[rustfmt::skip]
 pub fn properties(id:i16,damage:i16)->(i32,u32,i32) {
  let d=damage as i32;
  match id {

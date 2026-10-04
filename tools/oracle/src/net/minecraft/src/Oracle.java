@@ -154,6 +154,8 @@ public class Oracle {
         } else if (mode.equals("gridnether")) {
             gridNether(Long.parseLong(a[1]), Long.parseLong(a[2]), Integer.parseInt(a[3]), Integer.parseInt(a[4]),
                 Integer.parseInt(a[5]), Integer.parseInt(a[6]), a[7], a[8]);
+        } else if (mode.equals("livingrenderers")) {
+            RendererOracle.mobs(a[1]);
         } else if (mode.equals("rendereffects")) {
             RendererOracle.effects(a[1]);
         } else if (mode.equals("renderers")) {

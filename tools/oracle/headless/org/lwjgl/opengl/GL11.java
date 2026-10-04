@@ -44,6 +44,10 @@ public final class GL11 {
     public static float[] color = {1,1,1,1};
     public static int texture;
     public static float fogStart, fogEnd;
+    public static int glGenLists(int n){return RendererOracle.genLists(n);}
+    public static void glNewList(int id,int mode){RendererOracle.newList(id);}
+    public static void glEndList(){RendererOracle.endList();}
+    public static void glCallList(int id){RendererOracle.callList(id);}
     public static void glPushMatrix() { RendererOracle.push(); }
     public static void glPopMatrix() { RendererOracle.pop(); }
     public static void glTranslatef(float x,float y,float z) { RendererOracle.op(0,x,y,z,0); }

@@ -398,7 +398,9 @@ impl App {
     fn click_button(&mut self, id: i32) {
         let Some(g) = &mut self.gui else { return };
         let Some(s) = &mut g.screen else { return };
-        let Some(b) = s.base().buttons.iter().find(|b| b.id == id).cloned() else { return };
+        let Some(b) = s.base().buttons.iter().find(|b| b.id == id).cloned() else {
+            return;
+        };
         let (x, y) = (b.x + b.width / 2, b.y + b.height / 2);
         let sr = g.ui.scaled();
         self.cursor = (
@@ -458,7 +460,9 @@ impl App {
                 self.click_button(1);
                 self.flow_next("")
             }
-            11 if frames > 10 && !self.ready && self.loading.is_none() && self.has_button(1) => self.flow_next("7_title_again"),
+            11 if frames > 10 && !self.ready && self.loading.is_none() && self.has_button(1) => {
+                self.flow_next("7_title_again")
+            }
             12 if frames > 2 => {
                 self.click_button(1);
                 self.flow_next("")
@@ -687,7 +691,9 @@ impl App {
 
         // Menus or the loading screen, no world drawn.
         if !self.ready || self.loading.is_some() {
-            let (Some(gpu), Some(gui)) = (&mut self.gpu, &mut self.gui) else { return };
+            let (Some(gpu), Some(gui)) = (&mut self.gpu, &mut self.gui) else {
+                return;
+            };
             let loading = self.loading.clone();
             let cursor = self.cursor;
             let img = gpu.render_overlay_only(flow_shot.is_some(), &mut |device, queue, view, size| {
@@ -719,7 +725,9 @@ impl App {
             rain,
             &mut self.weather_rng,
         );
-        let lightning = self.entities.iter()
+        let lightning = self
+            .entities
+            .iter()
             .filter_map(|s| render::entity::bridge::lightning(&s.entity))
             .chain(self.opts.bolt)
             .flat_map(|b| render::weather::lightning(b, self.cam.pos.to_array()))
@@ -753,7 +761,7 @@ impl App {
             gpu.entities.snapshots = self.entities.clone();
             gpu.entities.partial = partial;
             gpu.entities.fancy = self.gui.as_ref().is_none_or(|gui| gui.ui.settings.fancy_graphics);
-            gpu.entities.view = [self.cam.yaw,self.cam.pitch];
+            gpu.entities.view = [self.cam.yaw, self.cam.pitch];
         }
         let want_shot =
             self.opts.shot.is_some()
@@ -762,7 +770,9 @@ impl App {
                 // Ticking keeps changing blocks somewhere, so a timed shot doesn't wait for idle.
                 && if self.opts.shot_ticks > 0 { self.ticks_ready >= self.opts.shot_ticks } else { self.idle };
         let capture = want_shot || self.keys.remove(&KeyCode::F2) || flow_shot.is_some();
-        let (Some(gpu), Some(gui)) = (&mut self.gpu, &mut self.gui) else { return };
+        let (Some(gpu), Some(gui)) = (&mut self.gpu, &mut self.gui) else {
+            return;
+        };
         let cursor = self.cursor;
         let ingame = &mut self.ingame;
         let mut hud = self.hud.clone();
@@ -973,7 +983,9 @@ impl ApplicationHandler for App {
                 self.set_grab(false);
             }
             WindowEvent::KeyboardInput { event, .. } => {
-                let PhysicalKey::Code(code) = event.physical_key else { return };
+                let PhysicalKey::Code(code) = event.physical_key else {
+                    return;
+                };
                 let screen_open = self.gui.as_ref().is_some_and(|g| g.screen.is_some());
                 match event.state {
                     ElementState::Pressed => {

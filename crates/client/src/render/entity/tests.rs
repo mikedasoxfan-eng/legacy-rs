@@ -80,3 +80,54 @@ fn slime_preserves_normalization_state_across_frames() {
     scene_with_lighting(&[], DVec3::ZERO, &mut normalize);
     assert!(normalize);
 }
+
+#[test]
+fn simulation_bridge_covers_every_new_kind_and_uses_double_positions() {
+    use worldgen::entity::{Entity, EntityKind, Vec3D};
+    use worldgen::world::tile::ItemStack;
+    let mut world = worldgen::World::new(0, 1);
+    let mut e = Entity::item(&mut world, 1_000_000_000.25, 2.5, -1_000_000_000.5, ItemStack::new(264, 21, 0));
+    e.last_tick_pos = Vec3D::new(1_000_000_000.0, 2.0, -1_000_000_000.0);
+    e.prev_yaw = 170.0;
+    e.yaw = -170.0;
+    e.prev_pitch = 30.0;
+    e.pitch = -10.0;
+    let partial = 0.25;
+    let object = super::bridge::object_state(&e, partial, 0.5, [0.75; 7]).unwrap();
+    assert_eq!(object.position, [1_000_000_000.0625, 2.125, -1_000_000_000.125]);
+    for kind in [
+        EntityKind::FallingSand { block: 12, fall_time: 3 },
+        EntityKind::Tnt { fuse: 9 },
+        EntityKind::Arrow(Default::default()),
+        EntityKind::Fireball(Default::default()),
+    ] {
+        e.kind = kind;
+        let s = super::bridge::object_state(&e, partial, 0.5, [0.75; 7]).unwrap();
+        assert!(!super::objects::render(&s, s.position, [37.0, -20.0]).draws.is_empty());
+    }
+    for kind in
+        [EntityKind::Ghast(Default::default()), EntityKind::PigZombie { anger: 1, sound_delay: 0 }, EntityKind::Giant]
+    {
+        e.kind = kind;
+        let s = super::bridge::render_state(&e, partial, 0.5).unwrap();
+        assert_eq!(s.position, object.position);
+        assert_eq!(s.yaw, 85.0);
+        assert_eq!(s.pitch, 20.0);
+        assert!(!render_living(&s, DVec3::from_array(s.position)).is_empty());
+    }
+}
+
+#[test]
+fn lightning_uses_live_entity_seed_and_range_gate_on_every_restrike() {
+    use worldgen::entity::{Entity, EntityKind};
+    let mut world = worldgen::World::new(0, 1);
+    let mut e = Entity::lightning(&mut world, 1.25, 80.0, -3.5);
+    e.kind = EntityKind::Lightning { state: 0, seed: 187, remaining: 2 };
+    let a = super::bridge::lightning(&e).unwrap();
+    assert_eq!(a.bolt_vertex, 187);
+    assert_eq!(a.pos, [1.25, 80.0, -3.5]);
+    e.kind = EntityKind::Lightning { state: -1, seed: 187, remaining: 2 };
+    assert!(super::bridge::lightning(&e).is_none());
+    e.kind = EntityKind::Lightning { state: 1, seed: -713, remaining: 1 };
+    assert_eq!(super::bridge::lightning(&e).unwrap().bolt_vertex, -713);
+}

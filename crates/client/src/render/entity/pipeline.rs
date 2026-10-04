@@ -38,6 +38,7 @@ pub struct EntityPipeline {
     uniforms: wgpu::Buffer,
     frame_bind: wgpu::BindGroup,
     textures: HashMap<String, wgpu::BindGroup>,
+    terrain_tex: Option<wgpu::Texture>,
     vertices: wgpu::Buffer,
     capacity: usize,
     draws: Vec<Draw>,
@@ -129,7 +130,8 @@ impl EntityPipeline {
         };
         use wgpu::CompareFunction::{Equal, LessEqual};
         let opaque = make("entity opaque", None, LessEqual, "fs_test", true);
-        let alpha = make("entity translucent slime", Some(wgpu::BlendState::ALPHA_BLENDING), LessEqual, "fs_test", true);
+        let alpha =
+            make("entity translucent slime", Some(wgpu::BlendState::ALPHA_BLENDING), LessEqual, "fs_test", true);
         let eyes = make("entity spider eyes", Some(wgpu::BlendState::ALPHA_BLENDING), LessEqual, "fs_main", true);
         let additive = make(
             "entity powered creeper",
@@ -151,10 +153,24 @@ impl EntityPipeline {
         );
         let overlay = make("entity hurt/flash", Some(wgpu::BlendState::ALPHA_BLENDING), Equal, "fs_main", true);
         let shadow = make("entity shadow", Some(wgpu::BlendState::ALPHA_BLENDING), LessEqual, "fs_test", false);
-        let tnt_flash = make("TNT flash", Some(wgpu::BlendState {
-            color: wgpu::BlendComponent {src_factor:wgpu::BlendFactor::SrcAlpha,dst_factor:wgpu::BlendFactor::DstAlpha,operation:wgpu::BlendOperation::Add},
-            alpha: wgpu::BlendComponent {src_factor:wgpu::BlendFactor::SrcAlpha,dst_factor:wgpu::BlendFactor::DstAlpha,operation:wgpu::BlendOperation::Add},
-        }), LessEqual, "fs_test", true);
+        let tnt_flash = make(
+            "TNT flash",
+            Some(wgpu::BlendState {
+                color: wgpu::BlendComponent {
+                    src_factor: wgpu::BlendFactor::SrcAlpha,
+                    dst_factor: wgpu::BlendFactor::DstAlpha,
+                    operation: wgpu::BlendOperation::Add,
+                },
+                alpha: wgpu::BlendComponent {
+                    src_factor: wgpu::BlendFactor::SrcAlpha,
+                    dst_factor: wgpu::BlendFactor::DstAlpha,
+                    operation: wgpu::BlendOperation::Add,
+                },
+            }),
+            LessEqual,
+            "fs_test",
+            true,
+        );
         let uniforms = device.create_buffer(&wgpu::BufferDescriptor {
             label: Some("entity uniforms"),
             size: std::mem::size_of::<Uniforms>() as u64,
@@ -168,6 +184,14 @@ impl EntityPipeline {
         });
         let sampler = device.create_sampler(&wgpu::SamplerDescriptor {
             label: Some("entity nearest"),
+            address_mode_u: wgpu::AddressMode::Repeat,
+            address_mode_v: wgpu::AddressMode::Repeat,
+            mag_filter: wgpu::FilterMode::Nearest,
+            min_filter: wgpu::FilterMode::Nearest,
+            ..Default::default()
+        });
+        let shadow_sampler = device.create_sampler(&wgpu::SamplerDescriptor {
+            label: Some("shadow clamp"),
             address_mode_u: wgpu::AddressMode::ClampToEdge,
             address_mode_v: wgpu::AddressMode::ClampToEdge,
             mag_filter: wgpu::FilterMode::Nearest,
@@ -176,6 +200,7 @@ impl EntityPipeline {
         });
         let white = Image { width: 1, height: 1, rgba: vec![255; 4] };
         let mut textures = HashMap::new();
+        let mut terrain_tex = None;
         let mut upload = |name: &str, img: &Image| {
             let tex = device.create_texture_with_data(
                 queue,
@@ -192,6 +217,9 @@ impl EntityPipeline {
                 wgpu::util::TextureDataOrder::LayerMajor,
                 &img.rgba,
             );
+            if name == "terrain.png" {
+                terrain_tex = Some(tex.clone());
+            }
             let view = tex.create_view(&Default::default());
             textures.insert(
                 name.into(),
@@ -200,7 +228,14 @@ impl EntityPipeline {
                     layout: &texture_layout,
                     entries: &[
                         wgpu::BindGroupEntry { binding: 0, resource: wgpu::BindingResource::TextureView(&view) },
-                        wgpu::BindGroupEntry { binding: 1, resource: wgpu::BindingResource::Sampler(&sampler) },
+                        wgpu::BindGroupEntry {
+                            binding: 1,
+                            resource: wgpu::BindingResource::Sampler(if name == "misc/shadow.png" {
+                                &shadow_sampler
+                            } else {
+                                &sampler
+                            }),
+                        },
                     ],
                 }),
             );
@@ -220,7 +255,7 @@ impl EntityPipeline {
             snapshots: Vec::new(),
             partial: 0.0,
             fancy: true,
-            view: [0.0;2],
+            view: [0.0; 2],
             shadow,
             tnt_flash,
             opaque,
@@ -231,10 +266,35 @@ impl EntityPipeline {
             uniforms,
             frame_bind,
             textures,
+            terrain_tex,
             vertices,
             capacity: 0,
             draws: Vec::new(),
             normalize: false,
+        }
+    }
+
+    /// RenderEngine.updateDynamicTextures also updates the terrain atlas bound by entities.
+    pub fn update_fx(&self, queue: &wgpu::Queue, fx: &[crate::render::fx::TextureFx]) {
+        let Some(texture) = &self.terrain_tex else {
+            return;
+        };
+        for f in fx {
+            for i in 0..f.tile_size {
+                for j in 0..f.tile_size {
+                    queue.write_texture(
+                        wgpu::TexelCopyTextureInfo {
+                            texture,
+                            mip_level: 0,
+                            origin: wgpu::Origin3d { x: f.icon % 16 * 16 + i * 16, y: f.icon / 16 * 16 + j * 16, z: 0 },
+                            aspect: wgpu::TextureAspect::All,
+                        },
+                        &f.image,
+                        wgpu::TexelCopyBufferLayout { offset: 0, bytes_per_row: Some(64), rows_per_image: Some(16) },
+                        wgpu::Extent3d { width: 16, height: 16, depth_or_array_layers: 1 },
+                    );
+                }
+            }
         }
     }
 
@@ -249,20 +309,31 @@ impl EntityPipeline {
     ) {
         let mut batches = living::scene_with_lighting(&self.states, camera, &mut self.normalize);
         for snapshot in &self.snapshots {
-            let e=&snapshot.entity;
-            if let Some(s)=super::bridge::render_state(e,self.partial,snapshot.brightness) {
-                batches.extend(living::scene_with_lighting(&[s],camera,&mut self.normalize));
-            } else if let Some(s)=super::bridge::object_state(e,self.partial,snapshot.brightness,snapshot.falling_light) {
-                let mut g=super::objects::render(&s,camera.to_array(),self.view);
-                for d in &mut g.draws {if self.normalize {d.flags|=4;}}
-                batches.extend(g.draws.iter().map(|d|d.batch()));
-            }
-            if !matches!(e.kind,worldgen::entity::EntityKind::Lightning{..}) {
-                if self.fancy {
-                    let g=super::effects::shadow(e,&snapshot.surfaces,self.partial,camera.to_array());
-                    batches.extend(g.draws.iter().map(|d|d.batch()));
+            let e = &snapshot.entity;
+            if let Some(s) = super::bridge::render_state(e, self.partial, snapshot.brightness) {
+                batches.extend(living::scene_with_lighting(&[s], camera, &mut self.normalize));
+            } else if let Some(s) =
+                super::bridge::object_state(e, self.partial, snapshot.brightness, snapshot.falling_light)
+            {
+                let mut g = super::objects::render(&s, camera.to_array(), self.view);
+                for d in &mut g.draws {
+                    if self.normalize {
+                        d.flags |= 4;
+                    }
                 }
-                batches.extend(super::effects::fire(e,self.partial,camera.to_array(),self.view[0]).draws.iter().map(|d|d.batch()));
+                batches.extend(g.draws.iter().map(|d| d.batch()));
+            }
+            if !matches!(e.kind, worldgen::entity::EntityKind::Lightning { .. }) {
+                if self.fancy {
+                    let g = super::effects::shadow(e, &snapshot.surfaces, self.partial, camera.to_array());
+                    batches.extend(g.draws.iter().map(|d| d.batch()));
+                }
+                batches.extend(
+                    super::effects::fire(e, self.partial, camera.to_array(), self.view[0])
+                        .draws
+                        .iter()
+                        .map(|d| d.batch()),
+                );
             }
         }
         self.upload(device, queue, batches, view_proj, fog, far);

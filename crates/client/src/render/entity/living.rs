@@ -80,7 +80,13 @@ impl RenderState {
         Self {
             ghast_attack: 0.0,
             ghast_attacking: false,
-            held_item: if kind == MobKind::Skeleton { Some(super::equipped::HeldSprite::BOW) } else if kind == MobKind::PigZombie { Some(super::equipped::HeldSprite { icon: 64, full_3d: true, terrain: false }) } else { None },
+            held_item: if kind == MobKind::Skeleton {
+                Some(super::equipped::HeldSprite::BOW)
+            } else if kind == MobKind::PigZombie {
+                Some(super::equipped::HeldSprite { icon: 68, full_3d: true, terrain: false })
+            } else {
+                None
+            },
             kind,
             position: [0.0; 3],
             yaw: 0.0,
@@ -210,7 +216,7 @@ pub fn model_kind(kind: MobKind) -> ModelKind {
         MobKind::Squid => ModelKind::Squid,
         MobKind::Wolf => ModelKind::Wolf,
         MobKind::Ghast => ModelKind::Ghast,
-        MobKind::PigZombie => ModelKind::Biped,
+        MobKind::PigZombie => ModelKind::Zombie,
         MobKind::Giant => ModelKind::Zombie,
     }
 }
@@ -220,7 +226,13 @@ fn texture(s: &RenderState) -> &'static str {
         MobKind::Biped => "mob/char.png",
         MobKind::Zombie | MobKind::Giant => "mob/zombie.png",
         MobKind::PigZombie => "mob/pigzombie.png",
-        MobKind::Ghast => if s.ghast_attacking { "mob/ghast_fire.png" } else { "mob/ghast.png" },
+        MobKind::Ghast => {
+            if s.ghast_attacking {
+                "mob/ghast_fire.png"
+            } else {
+                "mob/ghast.png"
+            }
+        }
         MobKind::Skeleton => "mob/skeleton.png",
         MobKind::Pig => "mob/pig.png",
         MobKind::Cow => "mob/cow.png",
@@ -423,6 +435,9 @@ pub fn render_living(s: &RenderState, camera: DVec3) -> Vec<Batch> {
 }
 
 fn render_with_lighting(s: &RenderState, camera: DVec3, normalize: bool) -> Vec<Batch> {
+    if matches!(s.kind, MobKind::Ghast | MobKind::PigZombie | MobKind::Giant) {
+        return super::special::render(s, camera.to_array(), normalize).draws.iter().map(|d| d.batch()).collect();
+    }
     let transform = model_transform(s, camera);
     let mut main = Model::new(model_kind(s.kind));
     main.on_ground = s.attack;

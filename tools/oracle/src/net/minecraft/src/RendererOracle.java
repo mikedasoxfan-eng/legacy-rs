@@ -20,20 +20,32 @@ public final class RendererOracle {
         if(on)flags|=bit;else flags&=~bit;
     }
     static Field field(String n) throws Exception {Field f=Tessellator.class.getDeclaredField(n);f.setAccessible(true);return f;}
+    static class Raw {int n,mask;int[] data;Raw(int n,int mask,int[] data){this.n=n;this.mask=mask;this.data=data;}}
+    static Map<Integer,ArrayList<Raw>> lists=new HashMap<Integer,ArrayList<Raw>>();
+    static int compiling=0,nextList=1;
+    public static int genLists(int n){int id=nextList;nextList+=n;return id;}
+    public static void newList(int id){compiling=id;lists.put(id,new ArrayList<Raw>());}
+    public static void endList(){compiling=0;}
+    public static void callList(int id){if(active)for(Raw r:lists.get(id))emit(r);}
     public static void record(int mode,int n) {
-        if(!active)return;
+        if(!active && compiling==0)return;
         try {
             if(mode!=7)throw new AssertionError("expected quads, got "+mode);
             Tessellator t=Tessellator.instance;
             boolean color=field("hasColor").getBoolean(t),normalArray=field("hasNormals").getBoolean(t),uv=field("hasTexture").getBoolean(t);
-            draws.i32(GL11.texture);for(float f:GL11.color)Oracle.modelFloat(draws,f);
-            for(float f:normal)Oracle.modelFloat(draws,f);
-            draws.i32(flags|(color?64:0)|(normalArray?128:0)|(uv?512:0));draws.i32(src);draws.i32(dst);draws.i32(depth);
-            draws.i32(ops.size());for(float[] o:ops){draws.i32((int)o[0]);for(int i=1;i<5;i++)Oracle.modelFloat(draws,o[i]);}
-            draws.i32(n);int[] raw=(int[])field("rawBuffer").get(t);
-            for(int i=0;i<n;i++) {for(int j=0;j<5;j++)draws.i32(j>=3&&!uv?0:raw[i*8+j]);draws.i32(color?raw[i*8+5]:0);draws.i32(normalArray?raw[i*8+6]:0);}
-            count++;
+            int[] raw=(int[])field("rawBuffer").get(t);
+            Raw r=new Raw(n,(color?64:0)|(normalArray?128:0)|(uv?512:0),Arrays.copyOf(raw,n*8));
+            if(compiling!=0)lists.get(compiling).add(r);else emit(r);
         }catch(Exception e){throw new RuntimeException(e);}
+    }
+    static void emit(Raw r) {
+        draws.i32(GL11.texture);for(float f:GL11.color)Oracle.modelFloat(draws,f);
+        for(float f:normal)Oracle.modelFloat(draws,f);
+        draws.i32(flags|r.mask);draws.i32(src);draws.i32(dst);draws.i32(depth);
+        draws.i32(ops.size());for(float[] o:ops){draws.i32((int)o[0]);for(int i=1;i<5;i++)Oracle.modelFloat(draws,o[i]);}
+        draws.i32(r.n);
+        for(int i=0;i<r.n;i++){for(int j=0;j<5;j++)draws.i32(j>=3&&(r.mask&512)==0?0:r.data[i*8+j]);draws.i32((r.mask&64)!=0?r.data[i*8+5]:0);draws.i32((r.mask&128)!=0?r.data[i*8+6]:0);}
+        count++;
     }
     static void reset(float brightness) {
         ops.clear();stack.clear();flags=297;src=1;dst=0;depth=515;normal=new float[]{0,0,1};
@@ -46,8 +58,9 @@ public final class RendererOracle {
         m.options=(GameSettings)Oracle.allocate(GameSettings.class);m.options.fancyGraphics=true;
         m.renderEngine=(RenderEngine)Oracle.allocate(RenderEngine.class);
         HashMap<String,Integer> textures=new HashMap<String,Integer>();
+        textures.put("/mob/ghast.png",5);textures.put("/mob/ghast_fire.png",6);textures.put("/mob/zombie.png",7);textures.put("/mob/pigzombie.png",8);
         textures.put("/terrain.png",1);textures.put("/gui/items.png",2);textures.put("/item/arrows.png",3);textures.put("%clamp%/misc/shadow.png",4);
-        Oracle.setField(m.renderEngine,"textureMap",textures);Oracle.setField(m.renderEngine,"texturePack",Oracle.allocate(TexturePackList.class));
+        Oracle.setField(m.renderEngine,"urlToImageDataMap",new HashMap());Oracle.setField(m.renderEngine,"textureMap",textures);Oracle.setField(m.renderEngine,"texturePack",Oracle.allocate(TexturePackList.class));
         return m;
     }
     static void writeCase(Oracle.DataOut out,int kind,Entity e,Render renderer,RenderManager manager,int id,int number,int damage,int age,float hover,int fuse,int shake,float partial) throws Exception {
@@ -106,6 +119,30 @@ public final class RendererOracle {
         }
         Oracle.DataOut o=new Oracle.DataOut();o.i32(0x33373152);o.i32(1);o.i32(n);o.bytes(cases.buf.toByteArray());
         try(OutputStream os=new FileOutputStream(path)){o.writeTo(os);}System.out.println("renderers: "+n+" original-bytecode cases");
+    }
+    public static void mobs(String path) throws Exception {
+        World w=Oracle.newWorld(0);w.getBlockId(0,64,-16);Oracle.drainLighting(w);RenderManager manager=manager(w);
+        net.minecraft.client.Minecraft mc=(net.minecraft.client.Minecraft)Oracle.allocate(MinecraftImpl.class);mc.renderEngine=manager.renderEngine;
+        manager.itemRenderer=(ItemRenderer)Oracle.allocate(ItemRenderer.class);Oracle.setField(manager.itemRenderer,"mc",mc);
+        field("convertQuadsToTriangles").setBoolean(null,false);
+        Oracle.DataOut o=new Oracle.DataOut();o.i32(0x3337314c);o.i32(1);o.i32(48);
+        for(int kind=0;kind<3;kind++)for(int c=0;c<16;c++) {
+            EntityLiving e;Render renderer;
+            if(kind==0){e=new EntityGhast(w);renderer=new RenderGhast();((EntityGhast)e).prevAttackCounter=c-5;((EntityGhast)e).attackCounter=c+5;}
+            else if(kind==1){e=new EntityPigZombie(w);renderer=new RenderBiped(new ModelZombie(),.5F);}
+            else {e=new EntityGiantZombie(w);renderer=new RenderGiantZombie(new ModelZombie(),.5F,6);}
+            if(kind==0 && c%2!=0)e.texture="/mob/ghast_fire.png";
+            w.skylightSubtracted=c%16;
+            e.setPosition(.25,70.5,-2.75);e.prevRenderYawOffset=-33;e.renderYawOffset=17;e.prevRotationYaw=-75;e.rotationYaw=35;e.prevRotationPitch=25;e.rotationPitch=-12;
+            e.field_705_Q=.2F;e.field_704_R=.9F;e.field_703_S=3.75F;e.ticksExisted=c*127;
+            e.prevSwingProgress=.15F;e.swingProgress=.65F;
+            e.hurtTime=c%4==1?3:0;e.deathTime=c%4==2?c:0;
+            float partial=(c%5)*.25F,brightness=e.getEntityBrightness(partial);
+            o.i32(kind);o.i32(c);Oracle.modelFloat(o,partial);Oracle.modelFloat(o,brightness);
+            reset(brightness);if(c>=8)flags|=4;renderer.setRenderManager(manager);active=true;renderer.doRender(e,-.25,10.5,3.75,0,partial);active=false;
+            o.i32(count);o.bytes(draws.buf.toByteArray());
+        }
+        try(OutputStream os=new FileOutputStream(path)){o.writeTo(os);}System.out.println("living renderers: 48 original-bytecode cases");
     }
     public static void effects(String path) throws Exception {
         World w=Oracle.newWorld(0);w.setWorldTime(6000);w.skylightSubtracted=0;
