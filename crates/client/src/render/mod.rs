@@ -2,6 +2,7 @@
 
 pub mod access;
 pub mod blocks;
+pub mod entity;
 pub mod fx;
 pub mod gpu;
 pub mod sky;
