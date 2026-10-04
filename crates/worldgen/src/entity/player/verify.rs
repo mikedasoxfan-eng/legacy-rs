@@ -177,6 +177,16 @@ pub fn player_bytes(scenario: &str, ticks: i32) -> Vec<u8> {
         let tnt = Entity::tnt(&mut w, 0.5, 65.0, -2.5);
         w.entity_joined_world(tnt);
     }
+    if scenario == "nbt" {
+        let s = w.entities.get_mut(&id).unwrap().player_state_mut().unwrap();
+        s.inventory.main[35] = Some(ItemStack::new(35, 63, 14));
+        s.inventory.main[8] = Some(ItemStack::new(260, 3, 0));
+        s.inventory.armor[2] = Some(ItemStack::new(312, 1, 103));
+        s.inventory.current_item = 8;
+        s.score = 123;
+        s.dimension = -1;
+        s.spawn = Some((10, 64, -5));
+    }
     let interaction = matches!(
         scenario,
         "digextras"
@@ -288,6 +298,14 @@ pub fn player_bytes(scenario: &str, ticks: i32) -> Vec<u8> {
                 });
                 if t % 13 == 0 {
                     p.swing_item();
+                }
+                if scenario == "nbt" && t % 100 == 60 {
+                    w.skylight_subtracted = 11;
+                    w.world_time = 18000;
+                    p.set_location_and_angles(0.5, 64.0, 0.5, 0.0, 0.0);
+                    raw(&mut w, 0, 64, 0, 26, 0);
+                    raw(&mut w, 0, 64, 1, 26, 8);
+                    p.sleep_in_bed(&mut w, 0, 64, 1);
                 }
                 if scenario == "combat" {
                     p.set_player_input(Default::default());

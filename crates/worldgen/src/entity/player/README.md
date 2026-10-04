@@ -11,7 +11,7 @@ in `PlayerState`.
 use worldgen::entity::player::{PlayerInput, PlayerTickInput};
 
 // Set world.info from the loaded level.dat before this call. A saved Player
-// compound is consumed once; otherwise vanilla spawn preparation is used.
+// compound is consumed once, after vanilla spawn preparation.
 let player = world.spawn_player("Player");
 
 // Call once per unpaused 20 Hz game tick, with the client's tick number.

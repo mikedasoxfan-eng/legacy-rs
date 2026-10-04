@@ -2,8 +2,9 @@
 
 `Entity` holds shared physics and living/creature state. `EntityKind` carries the
 class-specific state for items, falling sand/gravel, primed TNT, arrows,
-fireballs, lightning, snowballs/eggs, the singleplayer player, pig, sheep, cow, chicken, squid, wolf, zombie, skeleton,
-spider, creeper, slime, ghast, pig zombie, and giant.
+fireballs, lightning, snowballs/eggs, the singleplayer player, pig, sheep, cow,
+chicken, squid, wolf, zombie, skeleton, spider, creeper, slime, ghast, pig zombie,
+and giant.
 
 ## Client integration
 

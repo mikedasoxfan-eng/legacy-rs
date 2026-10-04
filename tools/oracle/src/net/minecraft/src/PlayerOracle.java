@@ -64,6 +64,7 @@ public final class PlayerOracle {
         for(int x=-15;x<=-10;x++)for(int y=64;y<=67;y++)for(int z=-2;z<=2;z++)EntityOracle.rawBlock(w,x,y,z,11,0);
         EntityOracle.rawBlock(w,1,64,-5,30,0);for(int y=64;y<=71;y++){EntityOracle.rawBlock(w,0,y,-8,65,3);EntityOracle.rawBlock(w,0,y,-9,1,0);}
         if(scenario.equals("pickentities")){EntityPig pig=new EntityPig(w);pig.setLocationAndAngles(0.5,65,2.5,0,0);w.entityJoinedWorld(pig);EntityTNTPrimed tnt=new EntityTNTPrimed(w,0.5,65,-2.5);w.entityJoinedWorld(tnt);}
+        if(scenario.equals("nbt")){p.inventory.mainInventory[35]=new ItemStack(35,63,14);p.inventory.mainInventory[8]=new ItemStack(260,3,0);p.inventory.armorInventory[2]=new ItemStack(312,1,103);p.inventory.currentItem=8;p.score=123;p.dimension=-1;p.setPlayerSpawnCoordinate(new ChunkCoordinates(10,64,-5));}
         try(DataOutputStream o=new DataOutputStream(new BufferedOutputStream(new FileOutputStream(path)))) {
             EntityOracle.snapshot(w,o);if((scenario.equals("look")||scenario.equals("pickentities")))picking(p,o);if(interaction)controllerState(controller,result,o);if(scenario.equals("api")||scenario.equals("pipeline"))apiState(p,o);if(scenario.equals("nbt"))nbtState(p,o);
             for(int t=0;t<ticks;t++) {
@@ -82,6 +83,7 @@ public final class PlayerOracle {
                     p.movementInput.moveForward=t%120<80?1:0;p.movementInput.moveStrafe=t%120>=80?1:0;p.movementInput.jump=t%31<8;p.movementInput.sneak=t%120>=90;
                     if(p.movementInput.sneak){p.movementInput.moveForward=(float)((double)p.movementInput.moveForward*0.3);p.movementInput.moveStrafe=(float)((double)p.movementInput.moveStrafe*0.3);}
                     if(t%13==0)p.swingItem();
+                    if(scenario.equals("nbt")&&t%100==60){w.skylightSubtracted=11;w.worldInfo.setWorldTime(18000);p.setLocationAndAngles(0.5,64,0.5,0,0);EntityOracle.rawBlock(w,0,64,0,26,0);EntityOracle.rawBlock(w,0,64,1,26,8);p.sleepInBedAt(0,64,1);}
                     if(scenario.equals("combat")) {
                         p.movementInput.moveForward=p.movementInput.moveStrafe=0;p.movementInput.jump=p.movementInput.sneak=false;
                         if(t%100==0){p.health=20;p.heartsLife=0;w.difficultySetting=t/100%4;EntityLiving mob=t%200==0?new EntityWolf(w):new EntityPigZombie(w);mob.setLocationAndAngles(0.5,64,1.5,0,0);w.entityJoinedWorld(mob);p.inventory.mainInventory[0]=null;p.attackTargetEntityWithCurrentItem(mob);}

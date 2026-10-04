@@ -44,10 +44,8 @@ impl Entity {
         n: &Compound,
         username: impl Into<String>,
     ) -> Option<Self> {
-        let mut n = n.clone();
-        n.put("id", Tag::String("Player".into()));
-        let mut e = Self::from_nbt(w, &n)?;
-        e.player_state_mut()?.username = username.into();
+        let mut e = Self::player(w, username);
+        e.read_existing_nbt(w, n)?;
         Some(e)
     }
     pub(in crate::entity) fn read_player_tags(&mut self, w: &mut World, n: &Compound) {
@@ -72,15 +70,12 @@ impl World {
     pub fn spawn_player(&mut self, username: impl Into<String>) -> i32 {
         let username = username.into();
         let saved = self.info.player.take();
-        let mut e = if let Some(n) = saved {
-            Entity::player_from_nbt(self, &n, &username)
-                .unwrap_or_else(|| Entity::player(self, &username))
-        } else {
-            let mut e = Entity::player(self, &username);
-            e.prepare_player_to_spawn(self);
-            e.yaw = -180.0;
-            e
-        };
+        let mut e = Entity::player(self, &username);
+        e.prepare_player_to_spawn(self);
+        e.yaw = -180.0;
+        if let Some(n) = saved {
+            let _ = e.read_existing_nbt(self, &n);
+        }
         e.player_state_mut().unwrap().dimension = if self.dimension.is_hell_world() {
             -1
         } else {
