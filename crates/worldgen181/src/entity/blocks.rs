@@ -7,6 +7,10 @@ impl World {
         // BlockSign declares a state hook for both instances, but the standing
         // instance does nothing and retains the singleton's current bounds.
         if id == 63 {return;}
+        if id == CAKE {
+            self.block_bounds[id as usize] = crate::block::visual181::cake_bounds181(self.get_block_metadata(x,y,z));
+            return;
+        }
         if id == PISTON_MOVING {
             if let Some(crate::world::tile::TileEntity::Piston(p)) =
                 self.get_block_tile_entity(x, y, z).cloned()
@@ -125,14 +129,7 @@ impl World {
             ));
         }
         if id == CAKE {
-            return Some(BB::new(
-                (x as f32 + (1 + m * 2) as f32 / 16.0) as f64,
-                y as f64,
-                (z as f32 + 0.0625) as f64,
-                ((x + 1) as f32 - 0.0625) as f64,
-                (y as f32 + 0.5 - 0.0625) as f64,
-                ((z + 1) as f32 - 0.0625) as f64,
-            ));
+            return Some(crate::block::visual181::cake_box181(x,y,z,m as i32,false));
         }
         if id == SNOW {
             if m & 7 < 3 {

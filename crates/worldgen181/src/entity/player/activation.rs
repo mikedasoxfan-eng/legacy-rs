@@ -28,6 +28,7 @@ impl Entity {
                         w.set_block_metadata_with_notify(x, y + 1, z, (meta ^ 4) + 8);
                     }
                     w.set_block_metadata_with_notify(x, y, z, meta ^ 4);
+                    w.mark_blocks_dirty181([x,y-1,z,x,y,z]);
                     w.auxiliary_effect(1003, (x, y, z), 0);
                 }
                 true
@@ -108,57 +109,12 @@ impl Entity {
                 true
             }
             26 => {
-                let (mut bx, mut bz) = (x, z);
-                let mut m = meta;
-                if m & 8 == 0 {
-                    let (dx, dz) = [(0, 1), (-1, 0), (0, -1), (1, 0)][(meta & 3) as usize];
-                    bx += dx;
-                    bz += dz;
-                    if w.get_block_id(bx, y, bz) != 26 {
-                        return true;
-                    }
-                    m = w.get_block_metadata(bx, y, bz);
-                }
-                if w.dimension.is_hell_world() {
-                    w.set_block_with_notify(bx, y, bz, 0);
-                    let (dx, dz) = [(0, 1), (-1, 0), (0, -1), (1, 0)][(m & 3) as usize];
-                    bx += dx;
-                    bz += dz;
-                    if w.get_block_id(bx, y, bz) == 26 {
-                        w.set_block_with_notify(bx, y, bz, 0);
-                    }
-                    w.new_explosion(
-                        None,
-                        Vec3D::new(
-                            (bx as f32 + 0.5) as f64,
-                            (y as f32 + 0.5) as f64,
-                            (bz as f32 + 0.5) as f64,
-                        ),
-                        5.0,
-                        true,
-                    );
-                } else {
-                    if m & 4 != 0 {
-                        if w.entities.values().any(|e| {
-                            e.player_state()
-                                .is_some_and(|s| s.sleeping && s.bed == Some((bx, y, bz)))
-                        }) {
-                            self.player_state_mut().unwrap().events.push(PlayerEvent::Chat("tile.bed.occupied"));
-                            return true;
-                        }
-                        w.set_block_metadata_with_notify(bx, y, bz, m & !4);
-                    }
-                    match self.sleep_in_bed(w, bx, y, bz) {
-                        SleepStatus::Ok => {
-                            let m = w.get_block_metadata(bx, y, bz);
-                            w.set_block_metadata_with_notify(bx, y, bz, m | 4);
-                        }
-                        SleepStatus::NotPossibleNow => {
-                            self.player_state_mut().unwrap().events.push(PlayerEvent::Chat("tile.bed.noSleep"));
-                        }
-                        _ => {}
-                    }
-                }
+                let state=self.player_state().unwrap();
+                let actor=crate::world::beds181::BedActor181{id:self.entity_id,sleeping:state.sleeping,bed:state.bed};
+                let chat=w.activate_bed181(x,y,z,Some(actor),
+                    |w,x,y,z|self.sleep_in_bed(w,x,y,z),
+                    |w,position|{w.new_explosion(None,position,5.0,true);});
+                if let Some(key)=chat {self.player_state_mut().unwrap().events.push(PlayerEvent::Chat(key));}
                 true
             }
             92 => {
@@ -168,6 +124,7 @@ impl Entity {
                         w.set_block_with_notify(x, y, z, 0);
                     } else {
                         w.set_block_metadata_with_notify(x, y, z, meta + 1);
+                        w.mark_blocks_dirty181([x,y,z,x,y,z]);
                     }
                 }
                 true

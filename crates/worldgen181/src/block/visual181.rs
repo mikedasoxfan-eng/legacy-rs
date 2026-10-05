@@ -52,6 +52,26 @@ pub fn cactus_box181(x: i32, y: i32, z: i32, selected: bool) -> crate::entity::A
     )
 }
 pub fn cactus_texture181(side: i32) -> i32 {match side {1=>69,0=>71,_=>70}}
+pub fn door_state181(metadata:i32)->i32 {if metadata&4==0 {metadata.wrapping_sub(1)&3}else{metadata&3}}
+pub fn piston_extension_texture181(side:i32,metadata:i32,override_texture:i32)->Result<i32,()> {
+    let facing=metadata&7;
+    if side==facing {return Ok(if override_texture>=0 {override_texture}else{if metadata&8!=0 {106}else{107}});}
+    if facing>5 {return Err(());}
+    Ok(if side==(facing^1) {107}else{108})
+}
+pub fn door_rotation_bounds181(state:i32)->crate::entity::AxisAlignedBB {
+    use crate::entity::AxisAlignedBB as BB;
+    match state {0=>BB::new(0.0,0.0,0.0,1.0,1.0,0.1875),1=>BB::new(0.8125,0.0,0.0,1.0,1.0,1.0),2=>BB::new(0.0,0.0,0.8125,1.0,1.0,1.0),3=>BB::new(0.0,0.0,0.0,0.1875,1.0,1.0),_=>BB::new(0.0,0.0,0.0,1.0,2.0,1.0)}
+}
+pub fn door_texture181(id:u8,side:i32,metadata:i32)->i32 {
+    let base=if id==71 {98}else{97};
+    if side==0||side==1 {return base;}
+    let state=door_state181(metadata);
+    if (state==0||state==2)^(side<=3) {return base;}
+    let v=state/2+((side&1)^state)+(metadata&4)/4;
+    let texture=base-(metadata&8)*2;
+    if v&1!=0 {-texture}else{texture}
+}
 /// Both BlockCloth conversion methods use this same involution, including signed inputs.
 pub fn cloth_dye181(value:i32)->i32 { !value & 15 }
 pub fn cloth_texture181(metadata:i32)->i32 {
@@ -213,6 +233,21 @@ pub fn creative_stacks() -> Vec<ItemStack> {
             ItemStack::new(int(p), int(p + 4), int(p + 8))
         })
         .collect()
+}
+/// BlockCake keeps integer overflow and float additions before double promotion.
+pub fn cake_bounds181(metadata:i32)->crate::entity::AxisAlignedBB {
+    crate::entity::AxisAlignedBB::new((1i32.wrapping_add(metadata.wrapping_mul(2)) as f32/16.0) as f64,0.0,0.0625,0.9375,0.5,0.9375)
+}
+pub fn cake_box181(x:i32,y:i32,z:i32,metadata:i32,selected:bool)->crate::entity::AxisAlignedBB {
+    crate::entity::AxisAlignedBB::new(
+        (x as f32+1i32.wrapping_add(metadata.wrapping_mul(2)) as f32/16.0) as f64,
+        y as f64,(z as f32+0.0625) as f64,
+        (x.wrapping_add(1) as f32-0.0625) as f64,
+        (if selected {y as f32+0.5} else {y as f32+0.5-0.0625}) as f64,
+        (z.wrapping_add(1) as f32-0.0625) as f64)
+}
+pub fn cake_texture181(side:i32,metadata:i32)->i32 {
+    if side==1 {121} else if side==0 {124} else if metadata>0&&side==4 {123} else {122}
 }
 pub fn lookup(colors: &[u32], temperature: f64, mut rainfall: f64) -> u32 {
     rainfall *= temperature;

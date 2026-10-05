@@ -212,14 +212,15 @@ impl World {
         self.play_sound("random.fuse", position, 1.0, 1.0);
     }
     pub fn update_pressure_plate(&mut self, id: u8, x: i32, y: i32, z: i32) {
+        if self.multiplayer_world {return;}
         let old = self.get_block_metadata(x, y, z) == 1;
         let b = BB::new(
             (x as f32 + 0.125) as f64,
             y as f64,
             (z as f32 + 0.125) as f64,
-            ((x + 1) as f32 - 0.125) as f64,
+            (x.wrapping_add(1) as f32 - 0.125) as f64,
             y as f64 + 0.25,
-            ((z + 1) as f32 - 0.125) as f64,
+            (z.wrapping_add(1) as f32 - 0.125) as f64,
         );
         let pressed = self
             .entities_within_aabb(None, b)
@@ -229,6 +230,7 @@ impl World {
             self.set_block_metadata_with_notify(x, y, z, pressed as i32);
             self.notify_blocks_of_neighbor_change(x, y, z, id);
             self.notify_blocks_of_neighbor_change(x, y - 1, z, id);
+            self.mark_blocks_dirty181([x,y,z,x,y,z]);
             self.play_sound(
                 "random.click",
                 super::Vec3D::new(x as f64 + 0.5, y as f64 + 0.1, z as f64 + 0.5),
