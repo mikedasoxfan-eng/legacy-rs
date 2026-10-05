@@ -264,7 +264,7 @@ pub fn tiles(out: &mut Vec<u8>, w: &mut World, min: i32, max: i32) {
                 }
                 match w.get_block_tile_entity(x, y, z).unwrap() {
                     TileEntity::Chest(slots) => {
-                        for s in slots.iter() {
+                        for s in slots.iter().take(27) { // getSizeInventory() is 27 (the backing array may be 36)
                             out.push(s.is_some() as u8);
                             if let Some(s) = s {
                                 int(out, s.id as i32);
