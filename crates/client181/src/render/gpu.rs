@@ -847,14 +847,9 @@ impl Gpu {
                 self.hand.update_map(&self.queue, image);
             }
             self.entities.extra = v.player.draws.iter().map(|d| d.batch()).collect();
-            self.hand.upload(
-                &self.device,
-                &self.queue,
-                v.hand.draws.iter().map(|d| d.batch()).collect(),
-                proj,
-                [0.0; 3],
-                0.0,
-            );
+            let hand: Vec<_> = v.hand.draws.iter().map(|d| d.batch()).collect();
+            let lights = vec![v.hand_light; hand.len()];
+            self.hand.upload_lit(&self.device, &self.queue, hand, &lights, proj, [0.0; 3], 0.0);
             let overlays = v
                 .overlays
                 .draws

@@ -114,6 +114,9 @@ pub struct PlayerState {
     pub item_in_use: Option<ItemStack>,
     pub item_use_slot: i32,
     pub item_use_ticks: i32,
+    /// EntityPlayerSP arm sway: `[previous, current]` pitch and yaw that ease toward the view.
+    pub arm_pitch: [f32; 2],
+    pub arm_yaw: [f32; 2],
     pub fish_entity:Option<i32>,
     pub left_click_counter: i32,
     pub last_click_tick: i32,
@@ -168,6 +171,8 @@ impl Default for PlayerState {
             item_in_use: None,
             item_use_slot: 0,
             item_use_ticks: 0,
+            arm_pitch: [0.0; 2],
+            arm_yaw: [0.0; 2],
             fish_entity:None,
             left_click_counter: 0,
             last_click_tick: 0,
@@ -367,6 +372,13 @@ impl Entity {
     }
     pub(super) fn player_before_living(&mut self, w: &mut World) {
         self.update_sprint_and_flight();
+        // EntityPlayerSP.updateEntityActionState: the arm follows the view at half speed.
+        let (yaw, pitch) = (self.yaw, self.pitch);
+        let s = self.player_state_mut().unwrap();
+        s.arm_yaw[0] = s.arm_yaw[1];
+        s.arm_pitch[0] = s.arm_pitch[1];
+        s.arm_pitch[1] = (s.arm_pitch[1] as f64 + (pitch - s.arm_pitch[1]) as f64 * 0.5) as f32;
+        s.arm_yaw[1] = (s.arm_yaw[1] as f64 + (yaw - s.arm_yaw[1]) as f64 * 0.5) as f32;
         if self.player_state().unwrap().in_portal && self.riding.is_some() {
             self.mount_entity(w, None);
         }

@@ -80,6 +80,8 @@ pub struct Frame {
     pub outline: super::entity::fixed::Fixed,
     pub damage: super::entity::fixed::Fixed,
     pub map_image: Option<super::gpu::Image>,
+    /// b1.8.1: `World.func_35451_b` at the player's block, for the held item and hand.
+    pub hand_light: u32,
 }
 pub struct View {
     pub entity: Entity,
@@ -193,6 +195,12 @@ impl View {
             worldgen::math::floor_double(e.pos.z),
         );
         let brightness = self.world.light_brightness_table[light.clamp(0, 15) as usize];
+        let hand_light = self.world.packed_light181(
+            worldgen::math::floor_double(e.pos.x),
+            worldgen::math::floor_double(e.pos.y),
+            worldgen::math::floor_double(e.pos.z),
+            0,
+        ) as u32;
         let fallback = self
             .equip
             .item
@@ -252,6 +260,7 @@ impl View {
             outline,
             damage,
             map_image,
+            hand_light,
         }
     }
 }

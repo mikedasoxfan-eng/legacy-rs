@@ -71,7 +71,8 @@ pub fn item(g: &mut Fixed, item: ItemStack, brightness: f32, fishing: bool) {
     if inventory::in_3d(item.id as i16) {
         g.push();
         g.texture = 1;
-        inventory::inventory(g, item.id as u8, item.damage as i32, brightness, false);
+        // ItemRenderer's RenderBlocks keeps useInventoryTint on (b1.8.1: grass tops tinted).
+        inventory::inventory(g, item.id as u8, item.damage as i32, brightness, true);
         g.pop();
     } else {
         let icon = if fishing && item.id == 346 {
@@ -109,6 +110,10 @@ pub fn render_with_map(
     hide: bool,
     map: Option<&super::map::Data>,
 ) -> Fixed {
+    // b1.8.1 ItemRenderer: getLightBrightness is read but overwritten with 1; the light comes
+    // from the lightmap (func_35451_b at the player), and items render at brightness 1.
+    let _ = (brightness, block_brightness);
+    let (brightness, block_brightness) = (1.0f32, 1.0f32);
     let mut g = Fixed::new(brightness);
     if s.anaglyph {
         g.translate((s.eye * 2 - 1) as f32 * 0.1, 0.0, 0.0);
@@ -138,6 +143,21 @@ pub fn render_with_map(
         args: [yaw, 0.0, 1.0, 0.0],
     });
     g.light_transform = Some(camera::matrix(&light));
+    // EntityPlayerSP arm sway (field_35225_ar..field_35222_e), against the un-interpolated view.
+    if let Some(p) = e.player_state() {
+        let arm_pitch = p.arm_pitch[0] + (p.arm_pitch[1] - p.arm_pitch[0]) * t;
+        let arm_yaw = p.arm_yaw[0] + (p.arm_yaw[1] - p.arm_yaw[0]) * t;
+        g.rotate((e.pitch - arm_pitch) * 0.1, 1.0, 0.0, 0.0);
+        g.rotate((e.yaw - arm_yaw) * 0.1, 0.0, 1.0, 0.0);
+    }
+    // Item in use: (ticks left, max duration, action) as func_35205_Y / func_35866_m / func_35865_n.
+    let in_use = e.player_state().and_then(|p| {
+        let i = p.item_in_use?;
+        (p.item_use_ticks > 0).then(|| {
+            let reg = worldgen::entity::player::registry::use_action(i.id as i32);
+            (p.item_use_ticks, worldgen::entity::player::registry::use_duration(i.id as i32), reg)
+        })
+    });
     if let Some(held) = equip.item {
         let color = item_table::properties(held.id as i16, held.damage as i16).1;
         g.material = [
@@ -200,8 +220,27 @@ pub fn render_with_map(
             super::map::render(&mut g, map.unwrap_or(&default));
             g.pop();
         } else {
+            use worldgen::entity::player::registry::ItemUseAction;
             g.push();
-            g.translate(-b * 0.4, c * 0.2, -a * 0.2);
+            if let Some((ticks, max, action)) = in_use {
+                if action == ItemUseAction::Eat {
+                    let f18 = ticks as f32 - t + 1.0f32;
+                    let f10 = 1.0f32 - f18 / max as f32;
+                    let mut f12 = 1.0f32 - f10;
+                    f12 = f12 * f12 * f12;
+                    f12 = f12 * f12 * f12;
+                    f12 = f12 * f12 * f12;
+                    let f13 = 1.0f32 - f12;
+                    let bob = (math::cos(f18 / 4.0f32 * PI_F32) * 0.1f32).abs();
+                    g.translate(0.0, bob * if f10 as f64 > 0.2 { 1.0 } else { 0.0 }, 0.0);
+                    g.translate(f13 * 0.6f32, -f13 * 0.5f32, 0.0);
+                    g.rotate(f13 * 90.0f32, 0.0, 1.0, 0.0);
+                    g.rotate(f13 * 10.0f32, 1.0, 0.0, 0.0);
+                    g.rotate(f13 * 30.0f32, 0.0, 0.0, 1.0);
+                }
+            } else {
+                g.translate(-b * 0.4, c * 0.2, -a * 0.2);
+            }
             g.translate(0.7 * 0.8, -0.65 * 0.8 - (1.0 - progress) * 0.6, -0.9 * 0.8);
             g.rotate(45.0, 0.0, 1.0, 0.0);
             g.enable(2, true);
@@ -209,6 +248,36 @@ pub fn render_with_map(
             g.rotate(-b * 20.0, 0.0, 0.0, 1.0);
             g.rotate(-b * 80.0, 1.0, 0.0, 0.0);
             g.scale(0.4, 0.4, 0.4);
+            if let Some((ticks, max, action)) = in_use {
+                if action == ItemUseAction::Block {
+                    g.translate(-0.5, 0.2, 0.0);
+                    g.rotate(30.0, 0.0, 1.0, 0.0);
+                    g.rotate(-80.0, 1.0, 0.0, 0.0);
+                    g.rotate(60.0, 0.0, 1.0, 0.0);
+                } else if action == ItemUseAction::Bow {
+                    g.rotate(-18.0, 0.0, 0.0, 1.0);
+                    g.rotate(-12.0, 0.0, 1.0, 0.0);
+                    g.rotate(-8.0, 1.0, 0.0, 0.0);
+                    g.translate(-0.9, 0.2, 0.0);
+                    let f10 = max as f32 - (ticks as f32 - t + 1.0f32);
+                    let mut f11 = f10 / 20.0f32;
+                    f11 = (f11 * f11 + f11 * 2.0f32) / 3.0f32;
+                    if f11 > 1.0 {
+                        f11 = 1.0;
+                    }
+                    if f11 > 0.1 {
+                        g.translate(0.0, math::sin((f10 - 0.1f32) * 1.3f32) * 0.01f32 * (f11 - 0.1f32), 0.0);
+                    }
+                    g.translate(0.0, 0.0, f11 * 0.1f32);
+                    g.rotate(-335.0, 0.0, 0.0, 1.0);
+                    g.rotate(-50.0, 0.0, 1.0, 0.0);
+                    g.translate(0.0, 0.5, 0.0);
+                    g.scale(1.0, 1.0, 1.0f32 + f11 * 0.2f32);
+                    g.translate(0.0, -0.5, 0.0);
+                    g.rotate(50.0, 0.0, 1.0, 0.0);
+                    g.rotate(335.0, 0.0, 0.0, 1.0);
+                }
+            }
             if held.id == 346 {
                 g.rotate(180.0, 0.0, 1.0, 0.0);
             }

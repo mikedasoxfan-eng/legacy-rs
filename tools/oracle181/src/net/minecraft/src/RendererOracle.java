@@ -213,11 +213,14 @@ public final class RendererOracle {
         try(OutputStream os=new FileOutputStream(path)){o.writeTo(os);}System.out.println("effects: 48 shadow/fire cases");
     }
     public static void itemTable(String path) throws Exception {
+        Block.stone.getClass(); // b1.8.1: Block (and its stats/achievements) must initialise before Item
+        // Colours of biome-tinted items (tall grass, vines, leaves) read the loaded colour maps.
+        ColorizerGrass.func_28181_a(Oracle.jarImage("misc/grasscolor.png"));ColorizerFoliage.func_28152_a(Oracle.jarImage("misc/foliagecolor.png"));
         StringBuilder s=new StringBuilder("//! Generated from original Beta Item methods by oracle itemtable.\n");
         s.append("pub fn properties(id:i16,damage:i16)->(i32,u32,i32) {\n let d=damage as i32;\n match id {\n");
         for(int id=1;id<Item.itemsList.length;id++)if(Item.itemsList[id]!=null) {
             Item item=Item.itemsList[id];s.append(" "+id+" => { let row = [");
-            for(int d=0;d<16;d++)s.append("("+item.getIconFromDamage(d)+","+item.getColorFromDamage(d)+"u32,"+item.getMaxDamage()+"),");
+            for(int d=0;d<16;d++)s.append("("+item.getIconFromDamage(d)+","+String.format("0x%08x",item.getColorFromDamage(d))+"u32,"+item.getMaxDamage()+"),");
             s.append("][(d&15) as usize]; ");
             if(id==351)s.append("(78+d%8*16+d/8,row.1,row.2)");else s.append("row");
             s.append(" },\n");

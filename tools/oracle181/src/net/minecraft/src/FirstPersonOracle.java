@@ -69,6 +69,8 @@ public final class FirstPersonOracle {
         return p;
     }
     static RenderManager setup(PlayerOracle.HeadlessPlayer p)throws Exception {
+        // The client loads the biome colour maps at startup; b1.8.1 grass item tops read them.
+        ColorizerGrass.func_28181_a(Oracle.jarImage("misc/grasscolor.png"));ColorizerFoliage.func_28152_a(Oracle.jarImage("misc/foliagecolor.png"));
         RenderManager m=RendererOracle.manager(p.worldObj);m.livingPlayer=p;RenderManager.instance=m;
         HashMap<Class,Render> renderers=new HashMap<Class,Render>();RenderPlayer rp=new RenderPlayer();rp.setRenderManager(m);renderers.put(EntityPlayer.class,rp);Oracle.setField(m,"entityRenderMap",renderers);
         Map textures=(Map)Oracle.getField(m.renderEngine,"textureMap");textures.put("/mob/char.png",9);textures.put("/misc/water.png",10);textures.put("/misc/mapbg.png",11);
