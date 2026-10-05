@@ -1,6 +1,11 @@
 use super::Vec3D;
 use crate::{math::floor_double as floor, World};
 impl World {
+    /// BlockRedstoneOre's shared click, walk and activation callback.
+    pub fn activate_redstone_ore181(&mut self, id: u8, x: i32, y: i32, z: i32) {
+        self.redstone_display(x, y, z);
+        if id == crate::block::ORE_REDSTONE { self.set_block_with_notify(x, y, z, 74); }
+    }
     /// The singleplayer client tick, for a real player or the legacy camera stand-in.
     pub fn client_tick(&mut self, player: usize, client_ticks: i32) {
         if let Some(&(x, y, z)) = self.players.get(player) {

@@ -279,6 +279,7 @@ pub fn update_tick(w: &mut World, id: u8, x: i32, y: i32, z: i32, rs: RandSel) {
         tb::ORE_REDSTONE_GLOWING => {
             w.set_block_with_notify(x, y, z, block::ORE_REDSTONE);
         }
+        block::ORE_REDSTONE => {} // The inactive ore's updateTick is empty.
         70 | 72 => {
             if w.get_block_metadata(x, y, z) != 0 {
                 w.update_pressure_plate(id, x, y, z);

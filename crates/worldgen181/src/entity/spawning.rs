@@ -333,21 +333,14 @@ impl World {
             if let crate::world::tile::TileEntity::MobSpawner { mob, delay } = &mut te {
                 self.tick_mob_spawner(x, y, z, mob, delay);
             }
-            let mut transition = None;
-            if let crate::world::tile::TileEntity::Furnace(f) = &mut te {
-                let (lit, dirty) = f.tick(false);
-                transition = lit;
-                if dirty {
-                    self.mark_container_dirty(x, z);
-                }
+            if matches!(&te, crate::world::tile::TileEntity::Furnace(_)) {
+                self.tick_furnace181(id);
+                return;
             }
             if let crate::world::tile::TileEntity::Piston(p) = te {
                 self.tick_piston(id, p);
             } else {
                 self.update_tile_object(id, te);
-            }
-            if let Some(lit) = transition {
-                self.swap_furnace_block(lit, x, y, z);
             }
         }
     }

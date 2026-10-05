@@ -241,10 +241,7 @@ impl Entity {
             self.activate_block(w, x, y, z);
         }
         if matches!(id, 73 | 74) {
-            w.redstone_display(x, y, z);
-            if id == 73 {
-                w.set_block_with_notify(x, y, z, 74);
-            }
+            w.activate_redstone_ore181(id,x,y,z);
         }
     }
     pub fn harvest_block(&mut self, w: &mut World, id: u8, x: i32, y: i32, z: i32, meta: i32) {

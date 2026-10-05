@@ -41,7 +41,7 @@ fn plain(id: u8) -> bool {
 }
 pub fn added(w: &mut World, id: u8, x: i32, y: i32, z: i32) -> bool {
     if matches!(id, 25 | 84) {
-        ensure_container(w, id, x, y, z);
+        w.container_added181(id, x, y, z);
         return true;
     }
     if matches!(id, 93 | 94) {
@@ -94,12 +94,14 @@ pub fn added(w: &mut World, id: u8, x: i32, y: i32, z: i32) -> bool {
         if id == 23 {
             // BlockContainer.onBlockAdded installs a fresh factory tile while
             // retaining the previous object's validity and loaded-list entry.
-            w.set_block_tile_entity(x,y,z,crate::world::tile::TileEntity::for_block(id));
+            w.container_added181(id, x, y, z);
             w.dispenser_random.insert((x,y,z),crate::JavaRandom::new(crate::entity::EntitySeedSource::Time.next_seed()));
-        } else { ensure_container(w, id, x, y, z); }
+        } else {
+            w.container_added181(id, x, y, z);
+        }
         // BlockDispenser creates its tile on either side, but only the server
         // chooses the initial direction.
-        if id == 23 && w.multiplayer_world { return true; }
+        if w.multiplayer_world { return true; }
         let north = opaque_cube_lookup(w.get_block_id(x, y, z - 1));
         let south = opaque_cube_lookup(w.get_block_id(x, y, z + 1));
         let west = opaque_cube_lookup(w.get_block_id(x - 1, y, z));

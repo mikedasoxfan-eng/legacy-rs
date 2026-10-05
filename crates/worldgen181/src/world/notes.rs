@@ -54,9 +54,9 @@ impl World {
                 let id = self.get_block_id(x, y, z);
                 self.piston_play(id, x, y, z, instrument, note);
             }
-            54 => {if instrument==1 {if let Some(id)=self.chest_id181(x,y,z){self.chest_animations.entry(id).or_default().users=note;}}},
+            54 => self.container_play181(x,y,z,instrument,note),
             25 => {
-                let pitch = 2.0f64.powf((note - 12) as f64 / 12.0) as f32;
+                let pitch = 2.0f64.powf(note.wrapping_sub(12) as f64 / 12.0) as f32;
                 self.block_events.push(BlockEvent::Note {
                     position: (x, y, z),
                     instrument,
@@ -79,6 +79,7 @@ impl World {
                     crate::entity::Vec3D::new(note as f64 / 24.0, 0.0, 0.0),
                 );
             }
+            23 | 36 | 52 | 61 | 62 | 63 | 68 | 84 => self.container_play181(x,y,z,instrument,note),
             _ => {}
         }
     }
