@@ -81,6 +81,7 @@ pub struct Chunk {
     pub version: u64,
     /// `isModified`: needs writing to disk.
     pub modified: bool,
+    pub never_save: bool,
     /// `lastSaveTime`
     pub last_save_time: i64,
     /// `hasEntities`
@@ -120,6 +121,7 @@ impl Chunk {
             tile_entity_ids: HashMap::new(),
             version: 0,
             modified: false,
+            never_save: false,
             last_save_time: 0,
             has_entities: false,
             entity_lists: Default::default(),

@@ -103,6 +103,9 @@ fn main() {
     compare(actual, expected);
 }
 fn compare(actual: Vec<u8>, expected: Vec<u8>) {
+    if let Ok(path) = std::env::var("TERRAIN_COMPARE_DUMP") {
+        std::fs::write(path, &actual).expect("write diagnostic terrain dump");
+    }
     let differences = actual.iter().zip(&expected).filter(|(a, b)| a != b).count()
         + actual.len().abs_diff(expected.len());
     if differences == 0 {

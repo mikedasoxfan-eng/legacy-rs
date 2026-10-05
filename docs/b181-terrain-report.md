@@ -1,12 +1,18 @@
-# Beta 1.8.1 terrain worker report — round 2
+# Beta 1.8.1 terrain worker report - round 3
 
-The second terrain stage adds real mineshafts and villages, component helpers, Sky population/dimension support, global biome tree lifetime, and expanded original-bytecode checks. **The requested task remains incomplete:** concrete strongholds and provider/cache lifecycle changes still need work. This report supersedes the round-1 status.
+Round 3 implements the remaining concrete strongholds, the changed singleplayer provider lifecycle, the alternate direct-mapped chunk cache, and Java compound/tile-list serialization order. The normal World now registers and populates strongholds. All assigned terrain/structure classes have the scoped original-bytecode checks listed below. The complete suite finished with **SOME CASES DIFFER** in other simulation/rendering areas and the legacy server harness; no complete-suite pass is claimed.
 
 ## Verification evidence
 
-The oracle runs Mojang's original deobfuscated Beta 1.8.1 bytecode on Java 8u51. All b1.7.3 crates, oracle and verification scripts remain untouched.
+All oracle classes are harnesses over Mojang's original deobfuscated Beta 1.8.1 bytecode, run on Java 8u51. No b1.7.3 crate, oracle or verification script was edited.
 
-`tools/verify_terrain181.sh --built`: **157/157 EXACT**, resolving the old two Taiga decorator failures and dungeon metadata failure. `tools/verify_terrain2_181.sh --built`: **78/78 EXACT** in the full suite run. Each new mode runs seeds 0, 42, 3257840388504953787, -4172144997902289642, Long.MAX_VALUE and Long.MIN_VALUE. Full log: `target/terrain2-full-verify.log`.
+- H3: `tools/verify_terrain3_181.sh --built`: **96/96 EXACT** in the completed full run (`target/terrain3-full-verify.log`): 78 graph/block/provider/cache/NBT fixtures plus 18 independent-save and cross-load checks. The initial 78-case run is in `target/terrain3-round3-final.log`. Six seeds: 0, 42, 3257840388504953787, -4172144997902289642, Long.MAX_VALUE and Long.MIN_VALUE.
+- Strongholds: six modes per seed (layout, retained map, blocks, wet/liquid rejection, all direct concrete pieces in four orientations with split clips, and real grids). Each layout serializes 16 full starts. Each real grid loads 7x7 chunks around each of three candidate locations and compares every loaded chunk's blocks, metadata, sky/block light, height, population flag, surviving graph and both RNG states. This proves registration/population alongside mineshafts and villages.
+- P3: three provider modes per seed: signed-Long HashSet insertion/removal including equal-hash tree bins, automatic unload/scan, and saves. The scan fixture uses 161 chunks, 70 passes, changing spawn/player positions and height, explicit drops, load-vs-provide cancellation and all four out-of-range boundaries. Saves check partial/full behavior with and without entities, neverSave and signed world times.
+- Q3: three alternate-cache modes per seed: normal, null loader and failing loader. The oracle dumps chunk object identity, all flags and last-save time, every loader/generator callback in order, ring aliases, saved progress and RNG. The Java jar has no constructor for this unused legacy class; the harness allocates it via Unsafe and supplies its original private dependencies.
+- E3: six original NBT byte fixtures, each containing eight shuffled compounds with real save keys plus 64 colliding Java String keys, replacements and nested compounds. Every serialized byte matches, including resizing and tree-bin iteration. Empty lists now write type byte 1, as vanilla does.
+- S3: all six independently generated saves are **EXACT**, **2,103/2,103 decompressed chunk NBT payloads byte-identical**, including entities, tile order and empty lists. Both save-load directions pass for every seed (18 checks; `target/terrain3-six-saves-final.log`). Sector allocation/order and timestamps are not chunk data and need not be identical.
+- Round-1: **157/157 EXACT**; round-2: **78/78 EXACT**. Both save-load directions are exact with the corrected 27-slot chest inventory comparison (`target/terrain3-save-direction-final.log`). The complete suite finished with **SOME CASES DIFFER**. All three appended terrain suites passed (157 + 78 + 96 = **331 focused checks EXACT**). Logs: `target/terrain3-round1-final.log`, `target/terrain3-round2-final.log`, `target/terrain3-full-verify.log`. `target/terrain3-world-final.log` records the initial diagnostic run before the chest comparison and save RNG corrections; its failure summary is superseded by the later logs.
 
 | Key | Original-bytecode check |
 | --- | --- |
@@ -27,39 +33,34 @@ The oracle runs Mojang's original deobfuscated Beta 1.8.1 bytecode on Java 8u51.
 | Y2 | terrainround2 sky/skygrid: six seeds each, flat population plus real floating-island chunks and light/height/RNG data. |
 | J2 | terrainround2 dungeon: six successful dungeon fixtures, full inventories and spawner tile state. |
 | T2 | terrainround2 lifetime/colors: six seeds each; forest decoration across four successive Worlds, all biome sky-color float inputs and dimension angle bits. |
+| S3 | terrainsave181: six independently generated saves (2,103 chunks), plus both cross-load directions. |
 | H2 | terrainround2 locations: six stronghold candidate/biome relocation/RNG checks. This does not prove stronghold pieces. |
 | W2 | Focused existing populated preload/grid/save/region sections, rerun after oracle fixes; results recorded below. |
 
-The full `tools/verify181.sh` run completed with **SOME CASES DIFFER**. Earlier populated-world sections could not dump worlds because the inherited harness cast the Beta 1.8.1 chunk cache to a Map and accessed an obsolete lighting queue. Both accessors are now corrected. Renderer/player/entity failures also remain in the full suite; no complete-suite success is claimed. Current focused results are in `target/terrain2-world-checks.log`.
-
-W2 final rerun: **22 EXACT checks** — nine Nether grids (three locations × each/end/none lighting), all six standard preloads, Fast/Fancy seed-25 preloads, all three Overworld grids (24×24 each, 16×16 end, 16×16 none), Java-save/Rust-load and Rust-save/Java-load. These include generated structures and full chunk blocks/metadata/light/height, tile state, provider/world RNG and scheduled ticks where the existing format includes them. Save comparisons intentionally omit unsaved scheduled ticks.
-
-The original Alpha-to-McRegion conversion section is **EXACT**: all 289 decompressed chunk payloads identical and 307 progress steps match. An additional comparison of independently generated Java/Rust populated save bytes is **not exact** (0/289 byte-identical payloads). Diagnostic parsing finds blocks, metadata, light, height and tile contents identical; compound tag serialization order differs throughout, tile-entity list order differs in six chunks, and entity Motion/Rotation differ in six chunks. Ignoring compound order gives 278/289 identical chunks; sorting tiles proves all tile contents match. No serialization or entity approximation was introduced. Those remaining serialization/entity differences are outside this worker's new structure bodies and remain for the respective owners.
-
-Final release build `cargo build --release -p worldgen181 -p client` succeeds (`target/terrain2-release-final.log`). Client dead-code warnings remain; the terrain library adds no warnings. Bash syntax and `git diff --check` pass.
-
-After that final build, all 18 village layout/map/block comparisons were rerun and passed (`target/terrain2-final-villages.log`). The final script and source retain the generalized village size parameter; the original provider's size-zero path is the one covered by V2.
+The existing full-suite raw Overworld/Nether cases, all 22 populated-grid/preload/cross-save sections, terrain mesh comparisons, Alpha conversion (289 chunks and 307 progress steps), and lightmap checks are EXACT. Broader ticking, item-use, player/entity and selected renderer failures remain; the owner handoff lists them without treating a missing server-oracle dump as an algorithm comparison.
 
 ## Integration details
 
-- Raw Overworld generation registers mineshaft/village starts, retains Java 8 signed-Long HashMap iteration (including tree buckets), and initializes stronghold candidate coordinates. Population calls mineshafts then villages, preserves structure/provider RNG sharing across nested loads, and suppresses lake RNG draws in sizeable villages.
-- Mineshaft room entrance boxes intentionally retain vanilla's untranslated coordinates after vertical start adjustment. Structure loot keeps overwrite-on-collision and oversized-stack split behavior; no approximations introduced.
-- Village generation retains piece-weight limits, repeated selection attempts, pending-road/house order, terrain-height adjustment, path surface rules and all concrete building bodies. `tools/b181/port_village_bodies.py` performs strict translation from local original source; unsupported statements fail instead of producing placeholders.
-- `Dimension::Sky`, fixed Sky biome manager, raw generator, old Sky population sequence, spawn predicate, saved dimension selection and celestial angle are wired. Renderer fog/cloud/camera use of Sky remains integrator work.
-- Biome BigTree generators are retained globally across Worlds, matching vanilla biome singleton identity.
-- Minimal world-block dependencies: dispatch plain torch callbacks through existing literal torch methods before player hooks (needed by structures), and allow reeds on sand (new Beta 1.8.1 behavior, needed by populated terrain). No other block-worker rewrites.
-- Minimal shared oracle fixes: serialize `ChunkProvider.chunkList`, write zero for the removed lighting queue, and filter vanilla's invalid-stronghold-biome diagnostic from binary color output. New test modes are separate Java files.
+- **Version correction:** Beta 1.8.1 has no portal-room piece, no portal-room retry, and no nearest-structure/stronghold location method on MapGenStructure or IChunkProvider. Local original source and the original jar both establish this. The port retains this version's three candidate coordinates and starts; later-release APIs were not invented.
+- StructureStrongholdPieces' RightTurn branch invokes the inherited LeftTurn static factory and creates a LeftTurn. This vanilla bug is preserved. Direct RightTurn generation is independently verified as well.
+- The previously missing IntCache reset on an aligned biome-cache hit is now present. Its padded/stale tails change stronghold relocation; the new real grids exposed and proved the fix.
+- Normal ChunkProvider uses packed 64-bit chunk keys, spawn-protected drops, the 100-drop limit and rotating 10-chunk player-distance scan. onChunkUnload precedes save. Load cancels drops; provide cache hits do not. Signed-Long tree-bin removal follows the locally installed OpenJDK 8 source and original-bytecode HashSet fixtures.
+- Alternate cache code is a separate library IChunkProvider implementation with a CacheHost boundary for loader/generator/world callbacks. It is not selected for the normal World, matching vanilla.
+- NBTTagCompound writes use Java String hashing and UTF-16 comparison for tree ordering. TileEntities follow the chunk map's Java hash order instead of coordinate sorting. The old six item Motion/Rotation differences arose because the save harness did not pin Math.random or Entity.rand. A separate original-bytecode save fixture pins these and chest randomness; all six seeds now give 2,103/2,103 byte-identical decompressed chunk payloads, including entities. No entity behavior was rewritten. The six-seed save extension also verifies both load directions.
+- The existing world comparison now compares the 27 visible chest inventory slots, matching Oracle.worldBytes. It preserves the original 36-slot constructor backing array and 27-slot post-load array. This repairs a harness false mismatch.
+- Existing concrete-piece helpers and new block IDs are used directly. No new renderer, player or entity behavior was introduced. Sky renderer/camera integration remains integrator work.
+- `TERRAIN_COMPARE_DUMP=<path>` optionally writes the Rust binary fixture for diagnosing a failed terrain comparison.
 
 ## Per-class status
 
-Done means literal implementation with the listed original-bytecode coverage; incomplete providers stay Not done even when narrower fixtures match.
+Done means literal implementation with the listed original-bytecode coverage. The finite fixtures describe the scope of the proof.
 
 | Class | Status | Evidence / remaining work |
 | --- | --- | --- |
-| ChunkProviderGenerate | Not done | R + W2: raw terrain and several full populated worlds exact. Mineshaft/village registration and population wired, village lake suppression preserved. Stronghold pieces and third population call remain absent. |
+| ChunkProviderGenerate | Done | R + W2 + H3: literal density/surface/caves/ravines retained; stronghold/mineshaft/village registration and population in vanilla order. Six real grids around all three strongholds exact, including all block, metadata, light and height arrays, graph state and both RNG states. |
 | ChunkProviderSky | Done | K + Y2: original raw Sky terrain; six flat population fixtures and six real 5x5 floating-island grids with blocks, metadata, both light arrays, height maps, populated flags and both RNG states. World Dimension::Sky and saved dimension selection wired. |
 | BiomeDecorator | Done | D2: all 20 original decorator fixtures exact; Taiga dependency resolved by the merged lighting implementation. Existing literal order retained. |
-| WorldChunkManager | Done | B + C: query order, climate floats, biome search, viability, cached queries, fixed managers |
+| WorldChunkManager | Done | B + C + H3: query order, climate floats, biome search, viability, cached queries, fixed managers |
 | MapGenRavine | Done | R: all original raw terrain cases, including both Far Lands directions |
 | MapGenCaves | Done | R: all original raw terrain cases, including both Far Lands directions |
 | WorldGenBigMushroom | Done | F: original feature, four fixtures, blocks/metadata/both RNG states |
@@ -68,7 +69,7 @@ Done means literal implementation with the listed original-bytecode coverage; in
 | GenLayer | Done | L: four original layer endpoints, five signed seeds and non-square/negative/Far Lands queries |
 | WorldGenTaiga2 | Done | F: original feature, four fixtures, blocks/metadata/both RNG states |
 | GenLayerZoom | Done | L: four original layer endpoints, five signed seeds and non-square/negative/Far Lands queries |
-| ChunkProvider | Not done | Existing lifecycle retained; changed provider/cache lifecycle not audited or proven exact. |
+| ChunkProvider | Done | P3: six signed-Long collision/removal fixtures, 70-pass automatic scan/unload replays, drop cancellation vs provide hits, spawn/player-distance protection, 100-unload/10-scan limits, boundary EmptyChunk behavior and 24-save throttling/neverSave/null-loader/time fixtures; W3 save-load verification. |
 | WorldGenTaiga1 | Done | F: original feature, four fixtures, blocks/metadata/both RNG states |
 | WorldGenForest | Done | F: original feature, four fixtures, blocks/metadata/both RNG states |
 | WorldGenTrees | Done | F: original feature, four fixtures, blocks/metadata/both RNG states |
@@ -95,7 +96,7 @@ Done means literal implementation with the listed original-bytecode coverage; in
 | GenLayerVillageLandscape | Done | L: four original layer endpoints, five signed seeds and non-square/negative/Far Lands queries |
 | LayerIsland | Done | L: four original layer endpoints, five signed seeds and non-square/negative/Far Lands queries |
 | GenLayerRiverInit | Done | L: four original layer endpoints, five signed seeds and non-square/negative/Far Lands queries |
-| ChunkProviderLoadOrGenerate | Not done | Existing loader retained; changed lifecycle not audited or proven exact. |
+| ChunkProviderLoadOrGenerate | Done | Q3: six seeds each in normal/null-loader/failing-loader fixtures, original-bytecode chunk identities and every callback, direct-map aliasing/eviction, last-query shortcut outside moved windows, spawn-search bypass, population, two-save throttle, full-save progress and loader/generator ticking. Host callbacks supplied through CacheHost; normal World continues to use ChunkProvider, as vanilla does. |
 | BiomeGenSwamp | Done | U + D + A: exact biome properties and spawn lists; all 20 decorator fixtures now exact (D2) |
 | GenLayerDownfall | Done | L: four original layer endpoints, five signed seeds and non-square/negative/Far Lands queries |
 | GenLayerTemperature | Done | L: four original layer endpoints, five signed seeds and non-square/negative/Far Lands queries |
@@ -120,10 +121,10 @@ Done means literal implementation with the listed original-bytecode coverage; in
 | ComponentMineshaftCorridor | Done | M2: real starts/piece order/bounds/state, retained candidate maps, generated blocks/metadata/chest inventories/CaveSpider spawners, six seeds exact. |
 | StructureVillagePieces | Done | V2: real starts/piece order/bounds/state/sizeable flag, retained nonempty real-biome candidate maps, generated blocks/metadata/loot, six seeds exact. Vanilla provider size zero checked. |
 | ComponentVillageHouse3 | Done | V2: real starts/piece order/bounds/state/sizeable flag, retained nonempty real-biome candidate maps, generated blocks/metadata/loot, six seeds exact. Vanilla provider size zero checked. |
-| ComponentStrongholdLibrary | Not done | Concrete stronghold implementation remains absent. |
-| StructureStrongholdPieces | Not done | Concrete stronghold implementation remains absent. |
-| ComponentStronghold | Not done | Concrete stronghold implementation remains absent. |
-| ComponentStrongholdRoomCrossing | Not done | Concrete stronghold implementation remains absent. |
+| ComponentStrongholdLibrary | Done | H3: original-bytecode layout/map/block/wet/component/grid fixtures across six signed seeds; real graph order/bounds/fields, clipped blocks/metadata, chest slots and RNG states exact. Right-turn factory retains its inherited LeftTurn factory bug. |
+| StructureStrongholdPieces | Done | H3: original-bytecode layout/map/block/wet/component/grid fixtures across six signed seeds; real graph order/bounds/fields, clipped blocks/metadata, chest slots and RNG states exact. Right-turn factory retains its inherited LeftTurn factory bug. |
+| ComponentStronghold | Done | H3: original-bytecode layout/map/block/wet/component/grid fixtures across six signed seeds; real graph order/bounds/fields, clipped blocks/metadata, chest slots and RNG states exact. Right-turn factory retains its inherited LeftTurn factory bug. |
+| ComponentStrongholdRoomCrossing | Done | H3: original-bytecode layout/map/block/wet/component/grid fixtures across six signed seeds; real graph order/bounds/fields, clipped blocks/metadata, chest slots and RNG states exact. Right-turn factory retains its inherited LeftTurn factory bug. |
 | ComponentMineshaftCross | Done | M2: real starts/piece order/bounds/state, retained candidate maps, generated blocks/metadata/chest inventories/CaveSpider spawners, six seeds exact. |
 | ComponentVillageHouse1 | Done | V2: real starts/piece order/bounds/state/sizeable flag, retained nonempty real-biome candidate maps, generated blocks/metadata/loot, six seeds exact. Vanilla provider size zero checked. |
 | ComponentVillageHall | Done | V2: real starts/piece order/bounds/state/sizeable flag, retained nonempty real-biome candidate maps, generated blocks/metadata/loot, six seeds exact. Vanilla provider size zero checked. |
@@ -131,49 +132,52 @@ Done means literal implementation with the listed original-bytecode coverage; in
 | StructureBoundingBox | Done | U: constructors/fields, inclusive boxes, orientation/overflow, key/hash, stone selector RNG, piece limit/depth gates, enum order |
 | ComponentMineshaftRoom | Done | M2: real starts/piece order/bounds/state, retained candidate maps, generated blocks/metadata/chest inventories/CaveSpider spawners, six seeds exact. |
 | ComponentVillagePathGen | Done | V2: real starts/piece order/bounds/state/sizeable flag, retained nonempty real-biome candidate maps, generated blocks/metadata/loot, six seeds exact. Vanilla provider size zero checked. |
-| ComponentStrongholdCrossing | Not done | Concrete stronghold implementation remains absent. |
+| ComponentStrongholdCrossing | Done | H3: original-bytecode layout/map/block/wet/component/grid fixtures across six signed seeds; real graph order/bounds/fields, clipped blocks/metadata, chest slots and RNG states exact. Right-turn factory retains its inherited LeftTurn factory bug. |
 | ComponentVillageWoodHut | Done | V2: real starts/piece order/bounds/state/sizeable flag, retained nonempty real-biome candidate maps, generated blocks/metadata/loot, six seeds exact. Vanilla provider size zero checked. |
 | ComponentVillageHouse2 | Done | V2: real starts/piece order/bounds/state/sizeable flag, retained nonempty real-biome candidate maps, generated blocks/metadata/loot, six seeds exact. Vanilla provider size zero checked. |
-| ComponentStrongholdStairs | Not done | Concrete stronghold implementation remains absent. |
+| ComponentStrongholdStairs | Done | H3: original-bytecode layout/map/block/wet/component/grid fixtures across six signed seeds; real graph order/bounds/fields, clipped blocks/metadata, chest slots and RNG states exact. Right-turn factory retains its inherited LeftTurn factory bug. |
 | ComponentMineshaftStairs | Done | M2: real starts/piece order/bounds/state, retained candidate maps, generated blocks/metadata/chest inventories/CaveSpider spawners, six seeds exact. |
 | ComponentVillageWell | Done | V2: real starts/piece order/bounds/state/sizeable flag, retained nonempty real-biome candidate maps, generated blocks/metadata/loot, six seeds exact. Vanilla provider size zero checked. |
 | ComponentVillage | Done | V2: real starts/piece order/bounds/state/sizeable flag, retained nonempty real-biome candidate maps, generated blocks/metadata/loot, six seeds exact. Vanilla provider size zero checked. |
-| ComponentStrongholdCorridor | Not done | Concrete stronghold implementation remains absent. |
+| ComponentStrongholdCorridor | Done | H3: original-bytecode layout/map/block/wet/component/grid fixtures across six signed seeds; real graph order/bounds/fields, clipped blocks/metadata, chest slots and RNG states exact. Right-turn factory retains its inherited LeftTurn factory bug. |
 | ComponentVillageField | Done | V2: real starts/piece order/bounds/state/sizeable flag, retained nonempty real-biome candidate maps, generated blocks/metadata/loot, six seeds exact. Vanilla provider size zero checked. |
-| ComponentStrongholdStraight | Not done | Concrete stronghold implementation remains absent. |
+| ComponentStrongholdStraight | Done | H3: original-bytecode layout/map/block/wet/component/grid fixtures across six signed seeds; real graph order/bounds/fields, clipped blocks/metadata, chest slots and RNG states exact. Right-turn factory retains its inherited LeftTurn factory bug. |
 | ComponentVillageField2 | Done | V2: real starts/piece order/bounds/state/sizeable flag, retained nonempty real-biome candidate maps, generated blocks/metadata/loot, six seeds exact. Vanilla provider size zero checked. |
-| MapGenStronghold | Not done | H2: all three candidate coordinates, biome relocation and final RNG exact for six seeds. Actual stronghold starts, piece factory and population remain absent. |
+| MapGenStronghold | Done | H3: original-bytecode layout/map/block/wet/component/grid fixtures across six signed seeds; real graph order/bounds/fields, clipped blocks/metadata, chest slots and RNG states exact. Right-turn factory retains its inherited LeftTurn factory bug. |
 | StructureMineshaftPieces | Done | M2: real starts/piece order/bounds/state, retained candidate maps, generated blocks/metadata/chest inventories/CaveSpider spawners, six seeds exact. |
 | StructureStart | Done | S: aggregation, sea-level translation, intersection filtering, failed-component removal, RNG states (64 starts per seed) |
 | StructureVillageStart | Done | V2: real starts/piece order/bounds/state/sizeable flag, retained nonempty real-biome candidate maps, generated blocks/metadata/loot, six seeds exact. Vanilla provider size zero checked. |
-| ComponentStrongholdPrison | Not done | Concrete stronghold implementation remains absent. |
-| ComponentStrongholdStairsStraight | Not done | Concrete stronghold implementation remains absent. |
-| ComponentStrongholdLeftTurn | Not done | Concrete stronghold implementation remains absent. |
+| ComponentStrongholdPrison | Done | H3: original-bytecode layout/map/block/wet/component/grid fixtures across six signed seeds; real graph order/bounds/fields, clipped blocks/metadata, chest slots and RNG states exact. Right-turn factory retains its inherited LeftTurn factory bug. |
+| ComponentStrongholdStairsStraight | Done | H3: original-bytecode layout/map/block/wet/component/grid fixtures across six signed seeds; real graph order/bounds/fields, clipped blocks/metadata, chest slots and RNG states exact. Right-turn factory retains its inherited LeftTurn factory bug. |
+| ComponentStrongholdLeftTurn | Done | H3: original-bytecode layout/map/block/wet/component/grid fixtures across six signed seeds; real graph order/bounds/fields, clipped blocks/metadata, chest slots and RNG states exact. Right-turn factory retains its inherited LeftTurn factory bug. |
 | ComponentVillageTorch | Done | V2: real starts/piece order/bounds/state/sizeable flag, retained nonempty real-biome candidate maps, generated blocks/metadata/loot, six seeds exact. Vanilla provider size zero checked. |
 | MapGenVillage | Done | V2: real starts/piece order/bounds/state/sizeable flag, retained nonempty real-biome candidate maps, generated blocks/metadata/loot, six seeds exact. Vanilla provider size zero checked. |
-| MapGenStructure | Not done | M2 + V2 prove retained registration maps, Java 8 HashMap<Long> iteration, chunk-key arithmetic, generation scan/RNG and mineshaft/village population. Stronghold specialization and structure-location API remain incomplete. |
-| ComponentStrongholdRightTurn | Not done | Concrete stronghold implementation remains absent. |
+| MapGenStructure | Done | M2 + V2 + H3: all three concrete map generators, retained Java HashMap order, registration RNG, sizeable/intersection gates, failed-component removal and real populated stronghold grids exact. |
+| ComponentStrongholdRightTurn | Done | H3: original-bytecode layout/map/block/wet/component/grid fixtures across six signed seeds; real graph order/bounds/fields, clipped blocks/metadata, chest slots and RNG states exact. Right-turn factory retains its inherited LeftTurn factory bug. |
 | StructureStrongholdStones | Done | U: constructors/fields, inclusive boxes, orientation/overflow, key/hash, stone selector RNG, piece limit/depth gates, enum order |
 | EnumDoorHelper | Done | U: constructors/fields, inclusive boxes, orientation/overflow, key/hash, stone selector RNG, piece limit/depth gates, enum order |
 | ComponentVillageStartPiece | Done | V2: real starts/piece order/bounds/state/sizeable flag, retained nonempty real-biome candidate maps, generated blocks/metadata/loot, six seeds exact. Vanilla provider size zero checked. |
-| StructureStrongholdStart | Not done | Concrete stronghold implementation remains absent. |
+| StructureStrongholdStart | Done | H3: original-bytecode layout/map/block/wet/component/grid fixtures across six signed seeds; real graph order/bounds/fields, clipped blocks/metadata, chest slots and RNG states exact. Right-turn factory retains its inherited LeftTurn factory bug. |
 | StructureStrongholdPieceWeight | Done | U: constructors/fields, inclusive boxes, orientation/overflow, key/hash, stone selector RNG, piece limit/depth gates, enum order |
 | StructureVillagePieceWeight | Done | U: constructors/fields, inclusive boxes, orientation/overflow, key/hash, stone selector RNG, piece limit/depth gates, enum order |
 | StructurePieceTreasure | Done | U: constructors/fields, inclusive boxes, orientation/overflow, key/hash, stone selector RNG, piece limit/depth gates, enum order |
 | StructurePieceBlockSelector | Done | U: constructors/fields, inclusive boxes, orientation/overflow, key/hash, stone selector RNG, piece limit/depth gates, enum order |
 | StructureMineshaftStart | Done | M2: real starts/piece order/bounds/state, retained candidate maps, generated blocks/metadata/chest inventories/CaveSpider spawners, six seeds exact. |
-| ComponentStrongholdStairs2 | Not done | Concrete stronghold implementation remains absent. |
+| ComponentStrongholdStairs2 | Done | H3: original-bytecode layout/map/block/wet/component/grid fixtures across six signed seeds; real graph order/bounds/fields, clipped blocks/metadata, chest slots and RNG states exact. Right-turn factory retains its inherited LeftTurn factory bug. |
 | MapGenMineshaft | Done | M2: real starts/piece order/bounds/state, retained candidate maps, generated blocks/metadata/chest inventories/CaveSpider spawners, six seeds exact. |
 | StructureStrongholdPieceWeight2 | Done | U: constructors/fields, inclusive boxes, orientation/overflow, key/hash, stone selector RNG, piece limit/depth gates, enum order |
 | EnumDoor | Done | U: constructors/fields, inclusive boxes, orientation/overflow, key/hash, stone selector RNG, piece limit/depth gates, enum order |
 | ComponentVillageRoadPiece | Done | V2: real starts/piece order/bounds/state/sizeable flag, retained nonempty real-biome candidate maps, generated blocks/metadata/loot, six seeds exact. Vanilla provider size zero checked. |
 | ComponentVillageHouse4_Garden | Done | V2: real layout and generated blocks across six seeds; additional village house required by the factory. |
+| NBTTagCompound | Done | E3 + S3: original String hashing, resizing/tree-bin iteration, replacement-key writes and all independent saved chunk bytes. Reads now use put semantics for duplicate keys as vanilla does. |
+| NBTTagList | Done | E3 + S3: empty lists always emit byte type 1; actual saved entity/tile lists are byte-identical. |
+| McRegionChunkLoader | Done for terrain serialization | S3: six independently populated saves, all 2,103 chunk payloads exact, plus both cross-load directions. Existing region allocator/cross-read implementation retained. |
+
+
+Final release build `cargo build --release -p worldgen181 -p client` succeeds (`target/terrain3-release-final.log`). The existing three unreachable biome-pattern warnings and 26 client dead-code warnings remain. Bash syntax and `git diff --check` pass.
 
 ## Remaining work
 
-1. Implement every concrete stronghold piece/factory/start, portal-room retry, registration/population and location API, with real graph/block/tile oracle checks. Candidate coordinates alone are implemented.
-2. Audit and port changed ChunkProvider and ChunkProviderLoadOrGenerate cache/unload lifecycle. Their round-1 implementation is retained and unproven.
-3. Resolve the independently generated save serialization/entity differences described above; rerun the full suite with the corrected harness and coordinate renderer/player/entity failures with their owners. The focused populated grids and both save-load directions are already exact.
-4. Integrator: wire Sky world rendering/camera behavior to the new dimension and biome color APIs.
+All assigned stronghold, provider/cache and independent-save work is resolved with the scoped checks above. Sky renderer/camera integration remains integrator work. Whole-world/player/entity/rendering failures and the obsolete server harness are indexed with owner follow-ups in `reports/b181-terrain3-owner-handoff.md`.
 
-`target/commit-b181-terrain2.sh` stages this worker's explicit file list and uses the requested author/co-author trailers. The sandbox blocks Git writes; the script was not executed.
+Git writes are blocked by the sandbox. `target/commit-b181-terrain3.sh` stages this worker's explicit file list and commits with the requested identity and both co-author trailers. It has not been executed.

@@ -478,9 +478,19 @@ pub fn chunk_to_nbt(c: &Chunk, world_time: i64) -> Compound {
     l.put("TerrainPopulated", Tag::Byte(c.populated as i8));
     l.put("Entities", Tag::List(10, c.raw_entities.clone()));
     let mut tes = Vec::new();
-    let mut keys: Vec<_> = c.tile_entities.keys().copied().collect();
-    keys.sort();
-    for k in keys {
+    let mut insertion = c.tile_entity_order.clone();
+    let mut remaining: Vec<_> = c.tile_entities.keys().copied()
+        .filter(|k| !insertion.contains(k)).collect();
+    remaining.sort();
+    insertion.extend(remaining);
+    let mut order = crate::world::java_hash::JavaHashSet::default();
+    for k in insertion {
+        if c.tile_entities.contains_key(&k) {
+            order.insert(k.0.wrapping_mul(8976890)
+                .wrapping_add(k.1.wrapping_mul(981131)).wrapping_add(k.2), k);
+        }
+    }
+    for k in order.iter() {
         let te = &c.tile_entities[&k];
         let mut t = Compound::new();
         let (x, y, z) = (c.x * 16 + k.0, k.1, c.z * 16 + k.2);

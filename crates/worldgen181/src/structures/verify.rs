@@ -52,6 +52,18 @@ fn pieces(out: &mut Vec<u8>, ps: &[MineshaftPiece], b: B) {
     }
 }
 pub fn dump(mode: &str, seed: i64) -> Vec<u8> {
+    if mode == "terrain-nbt" {
+        return terrain_nbt(seed);
+    }
+    if let Some(mode) = mode.strip_prefix("chunkcache-") {
+        return crate::world::cache_verify181::dump_cache(mode, seed);
+    }
+    if let Some(mode) = mode.strip_prefix("provider-") {
+        return provider(mode, seed);
+    }
+    if let Some(mode) = mode.strip_prefix("stronghold-") {
+        return stronghold(mode, seed);
+    }
     if mode.starts_with("village") {
         return village(mode, seed);
     }
@@ -129,6 +141,416 @@ pub fn dump(mode: &str, seed: i64) -> Vec<u8> {
         tiles(&mut out, &mut w, -112, 127);
     } else {
         panic!("unknown structure fixture {mode}");
+    }
+    out
+}
+fn terrain_nbt(seed: i64) -> Vec<u8> {
+    use crate::nbt::{Compound, Tag};
+    let mut keys: Vec<String> = [
+        "xPos",
+        "zPos",
+        "LastUpdate",
+        "Blocks",
+        "Data",
+        "SkyLight",
+        "BlockLight",
+        "HeightMap",
+        "TerrainPopulated",
+        "Entities",
+        "TileEntities",
+        "id",
+        "x",
+        "y",
+        "z",
+        "Items",
+        "Slot",
+        "Count",
+        "Damage",
+        "EntityId",
+        "Delay",
+        "Pos",
+        "Motion",
+        "Rotation",
+        "FallDistance",
+        "Fire",
+        "Air",
+        "OnGround",
+        "Health",
+        "HurtTime",
+        "DeathTime",
+        "AttackTime",
+        "Sheared",
+        "Color",
+    ]
+    .into_iter()
+    .map(str::to_owned)
+    .collect();
+    for i in 0..64 {
+        let mut s = String::new();
+        for b in 0..6 {
+            s.push_str(if i & (1 << b) == 0 { "Aa" } else { "BB" });
+        }
+        keys.push(s);
+    }
+    let mut r = JavaRandom::new(seed);
+    let mut out = Vec::new();
+    for _ in 0..8 {
+        let mut order = keys.clone();
+        for i in (2..=order.len()).rev() {
+            let j = r.next_int(i as i32) as usize;
+            order.swap(i - 1, j);
+        }
+        let mut c = Compound::new();
+        for (i, k) in order.iter().enumerate() {
+            c.put(k, Tag::Int(i as i32));
+        }
+        for k in order.iter().take(12) {
+            c.put(k, Tag::Int(r.next_int_unbounded()));
+        }
+        c.put("Empty", Tag::List(10, vec![]));
+        let mut root = Compound::new();
+        root.put("Level", Tag::Compound(c));
+        crate::nbt::write_root(&mut out, &root).unwrap();
+    }
+    out.extend(r.state().to_be_bytes());
+    out
+}
+fn provider(mode: &str, seed: i64) -> Vec<u8> {
+    let mut out = Vec::new();
+    let mut r = JavaRandom::new(seed);
+    if mode == "longset" {
+        let mut s = super::long_map_order::LongMapOrder::default();
+        let mut pool = Vec::new();
+        for i in -80..=80 {
+            pool.push(super::ChunkCoordIntPair { x: i, z: i }.packed());
+        }
+        for _ in 0..80 {
+            pool.push(r.next_long());
+        }
+        for i in 0..2400 {
+            let k = pool[if i < 161 {
+                i
+            } else {
+                r.next_int(pool.len() as i32) as usize
+            }];
+            let add = i < 161 || r.next_bool();
+            let hash = (k ^ ((k as u64 >> 32) as i64)) as i32;
+            out.push(if add {
+                s.insert(hash, k)
+            } else {
+                s.remove(hash, k)
+            } as u8);
+            int(&mut out, s.len() as i32);
+            for k in s.iter() {
+                out.extend(k.to_be_bytes());
+            }
+        }
+        while let Some(k) = s.first() {
+            s.remove((k ^ ((k as u64 >> 32) as i64)) as i32, k);
+            out.extend(k.to_be_bytes());
+            int(&mut out, s.len() as i32);
+            for k in s.iter() {
+                out.extend(k.to_be_bytes());
+            }
+        }
+        out.extend(r.state().to_be_bytes());
+        return out;
+    }
+    let mut w = World::new(0, 300);
+    w.spawn = (0, 64, 0);
+    for i in -80..=80 {
+        let mut c = Chunk::new(i, i, Box::new([0; 32768]));
+        c.populated = true;
+        c.loaded = true;
+        w.chunks.insert((i, i), Box::new(c));
+        w.chunk_list.push((i, i));
+    }
+    if mode == "saves" {
+        for &(x, z) in &w.chunk_list.clone() {
+            let c = w.chunk_mut(x, z);
+            c.has_entities = r.next_bool();
+            c.never_save = r.next_int(7) == 0;
+            c.modified = r.next_bool();
+            c.last_save_time = r.next_int(1000) as i64;
+        }
+        for time in [0, 599, 600, 1000, i64::MAX, i64::MIN] {
+            w.world_time = time;
+            for _ in 0..3 {
+                out.push(w.save_chunks(false) as u8);
+                provider_dump(&mut out, &w);
+            }
+            out.push(w.save_chunks(true) as u8);
+            provider_dump(&mut out, &w);
+        }
+        out.extend(r.state().to_be_bytes());
+        return out;
+    }
+    for i in 0..70 {
+        let x = if i < 12 {
+            0.0
+        } else if i < 32 {
+            900.0
+        } else {
+            -900.0
+        };
+        w.players = vec![(x, if i % 3 == 0 { 400.0 } else { 64.0 }, x)];
+        if i == 4 {
+            for (x, z) in w.chunk_list.clone() {
+                w.provider_drop_chunk(x, z);
+            }
+            w.provider_load_chunk(42, 42);
+            w.provide_chunk(-42, -42);
+        }
+        if i == 10 {
+            w.spawn = (880, 64, 880);
+        }
+        if i == 20 {
+            w.spawn = (-880, 64, -880);
+        }
+        if i == 35 {
+            for (x, z) in [(1875004, 0), (-1875005, 0), (0, 1875004), (0, -1875005)] {
+                w.provider_load_chunk(x, z);
+                out.push(!w.chunk_exists(x, z) as u8);
+                out.push(w.chunk_exists(x, z) as u8);
+            }
+        }
+        w.unload_oldest_chunks();
+        provider_dump(&mut out, &w);
+    }
+    out
+}
+fn provider_dump(out: &mut Vec<u8>, w: &World) {
+    int(out, w.provider.scan_cursor as i32);
+    int(out, w.chunk_list.len() as i32);
+    for &(x, z) in &w.chunk_list {
+        let c = w.chunk(x, z);
+        int(out, x);
+        int(out, z);
+        for b in [
+            c.loaded,
+            c.populated,
+            c.modified,
+            c.never_save,
+            c.has_entities,
+        ] {
+            out.push(b as u8);
+        }
+        out.extend(c.last_save_time.to_be_bytes());
+    }
+    let dropped = w.provider.dropped();
+    int(out, dropped.len() as i32);
+    for k in dropped {
+        out.extend(k.to_be_bytes());
+    }
+    text(
+        out,
+        &format!(
+            "ServerChunkCache: {} Drop: {}",
+            w.chunks.len(),
+            w.provider.dropped.len()
+        ),
+    );
+}
+fn stronghold_piece(out: &mut Vec<u8>, p: &super::stronghold::StrongholdPiece) {
+    text(out, p.name());
+    int(out, p.component.depth);
+    int(out, p.component.orientation);
+    bounds(out, p.bounds());
+    int(out, p.door as i32);
+    for f in p.flags {
+        out.push(f as u8);
+    }
+    int(out, p.style);
+    int(out, p.length);
+}
+fn stronghold_pieces(out: &mut Vec<u8>, s: &super::stronghold::StrongholdStart) {
+    bounds(out, s.bounds);
+    int(out, s.pieces.len() as i32);
+    for p in &s.pieces {
+        stronghold_piece(out, p);
+    }
+}
+fn stronghold_solid(w: &mut World) {
+    for cx in -8..=8 {
+        for cz in -8..=8 {
+            let mut bs = Box::new([0; 32768]);
+            for x in 0..16 {
+                for z in 0..16 {
+                    for y in 0..64 {
+                        bs[x << 11 | z << 7 | y] = 1;
+                    }
+                }
+            }
+            let mut c = Chunk::new(cx, cz, bs);
+            c.populated = true;
+            c.loaded = true;
+            c.init_height_and_sky();
+            w.chunks.insert((cx, cz), Box::new(c));
+        }
+    }
+}
+fn stronghold(mode: &str, seed: i64) -> Vec<u8> {
+    use super::stronghold::{StrongholdGenerator, StrongholdPiece, StrongholdStart};
+    let mut out = Vec::new();
+    let mut r = JavaRandom::new(seed);
+    match mode {
+        "grid" => {
+            let mut w = World::new(seed, 300);
+            let candidates = super::locations::strongholds(
+                seed,
+                &w.terrain.biome_source,
+                &mut JavaRandom::new(0),
+            );
+            for (cx, cz) in candidates {
+                for x in cx - 3..=cx + 3 {
+                    for z in cz - 3..=cz + 3 {
+                        w.load_chunk(x, z);
+                    }
+                }
+            }
+            out.extend(w.prand().state().to_be_bytes());
+            out.extend(w.rand.state().to_be_bytes());
+            int(&mut out, w.chunks.len() as i32);
+            let mut keys: Vec<_> = w.chunks.keys().copied().collect();
+            keys.sort();
+            for (x, z) in keys {
+                let c = w.chunk(x, z);
+                int(&mut out, x);
+                int(&mut out, z);
+                out.push(c.populated as u8);
+                out.extend(&c.blocks[..]);
+                out.extend(&c.data.0[..]);
+                out.extend(&c.sky_light.0[..]);
+                out.extend(&c.block_light.0[..]);
+                out.extend(&c.height_map[..]);
+            }
+            int(&mut out, w.strongholds.starts.len() as i32);
+            for k in w.strongholds.keys() {
+                out.extend(k.to_be_bytes());
+                stronghold_pieces(&mut out, &w.strongholds.starts[&k]);
+            }
+        }
+        "layout" => {
+            for i in 0..16 {
+                let s = StrongholdStart::new(&mut r, i % 4 - 2, i / 4 - 2);
+                stronghold_pieces(&mut out, &s);
+                out.extend(r.state().to_be_bytes());
+            }
+        }
+        "map" => {
+            let biomes = crate::BiomeSource::new(seed);
+            let candidates = super::locations::strongholds(seed, &biomes, &mut JavaRandom::new(0));
+            let mut g = StrongholdGenerator::default();
+            let mut qs = vec![
+                [0, 0],
+                [40, -30],
+                [-40, 30],
+                [784425, 0],
+                [-3, -784425],
+                [40, -30],
+            ];
+            for (x, z) in candidates {
+                qs.push([x, z]);
+            }
+            for (x, z) in candidates {
+                qs.push([x + 7, z - 7]);
+            }
+            for [x, z] in qs {
+                out.extend(g.generate(seed, x, z, &biomes).to_be_bytes());
+                for (x, z) in g.candidates.unwrap() {
+                    int(&mut out, x);
+                    int(&mut out, z);
+                }
+                int(&mut out, g.starts.len() as i32);
+                for key in g.keys() {
+                    out.extend(key.to_be_bytes());
+                    stronghold_pieces(&mut out, &g.starts[&key]);
+                }
+            }
+        }
+        "blocks" | "wet" => {
+            let mut s = StrongholdStart::new(&mut r, 0, 0);
+            stronghold_pieces(&mut out, &s);
+            out.extend(r.state().to_be_bytes());
+            let mut w = World::new(0, 300);
+            w.sand_fall_instantly = true;
+            stronghold_solid(&mut w);
+            if mode == "wet" {
+                for x in -80..=80 {
+                    for z in -80..=80 {
+                        w.chunk_mut(x >> 4, z >> 4).blocks
+                            [((x & 15) << 11 | (z & 15) << 7 | 25) as usize] = 9;
+                    }
+                }
+            }
+            for cx in -7..7 {
+                for cz in -7..7 {
+                    let x = cx * 16 + 8;
+                    let z = cz * 16 + 8;
+                    let clip = B::region(x, z, x + 15, z + 15);
+                    if s.bounds.intersects(clip) {
+                        s.populate(&mut w, &mut r, clip);
+                    }
+                }
+            }
+            stronghold_pieces(&mut out, &s);
+            out.extend(r.state().to_be_bytes());
+            out.extend(w.rand.state().to_be_bytes());
+            for cx in -7..=7 {
+                for cz in -7..=7 {
+                    let c = w.chunk(cx, cz);
+                    out.extend(&c.blocks[..]);
+                    out.extend(&c.data.0[..]);
+                }
+            }
+            tiles(&mut out, &mut w, -112, 127);
+        }
+        "pieces" => {
+            let sizes = [
+                [5, 5, 7],
+                [9, 5, 11],
+                [5, 5, 5],
+                [5, 5, 5],
+                [11, 7, 11],
+                [5, 11, 8],
+                [5, 11, 5],
+                [10, 9, 11],
+                [14, 11, 15],
+                [5, 5, 3],
+                [14, 6, 15],
+            ];
+            let mut w = World::new(0, 300);
+            w.sand_fall_instantly = true;
+            for (k, [sx, sy, sz]) in sizes.into_iter().enumerate() {
+                for d in 0..4 {
+                    stronghold_solid(&mut w);
+                    w.rand.set_seed(300);
+                    let mut p = StrongholdPiece::new(
+                        if k == 10 { 8 } else { k },
+                        7,
+                        B::oriented(0, 30, 0, 0, 0, 0, sx, sy, sz, d),
+                        d,
+                        &mut r,
+                    );
+                    stronghold_piece(&mut out, &p);
+                    out.extend(r.state().to_be_bytes());
+                    out.push(p.generate(&mut w, &mut r, B::new([-32, 0, -32, 6, 127, 32])) as u8);
+                    out.push(p.generate(&mut w, &mut r, B::new([7, 0, -32, 32, 127, 32])) as u8);
+                    stronghold_piece(&mut out, &p);
+                    out.extend(r.state().to_be_bytes());
+                    out.extend(w.rand.state().to_be_bytes());
+                    for cx in -2..=2 {
+                        for cz in -2..=2 {
+                            let c = w.chunk(cx, cz);
+                            out.extend(&c.blocks[..]);
+                            out.extend(&c.data.0[..]);
+                        }
+                    }
+                    tiles(&mut out, &mut w, -32, 47);
+                }
+            }
+        }
+        _ => panic!("unknown stronghold fixture {mode}"),
     }
     out
 }

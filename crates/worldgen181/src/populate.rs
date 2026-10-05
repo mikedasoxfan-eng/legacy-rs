@@ -24,6 +24,15 @@ pub fn populate(w: &mut World, cx: i32, cz: i32) {
     );
     let mut village = false;
     if w.info.map_features {
+        let mut strongholds = std::mem::take(&mut w.strongholds);
+        let mut r = w.prand().clone();
+        strongholds.populate(w, &mut r, cx, cz);
+        *w.prand() = r;
+        for key in w.strongholds.keys() {
+            let start = w.strongholds.starts.remove(&key).unwrap();
+            strongholds.merge_start(key, start);
+        }
+        w.strongholds = strongholds;
         let mut structures = std::mem::take(&mut w.mineshafts);
         let mut r = w.prand().clone();
         structures.populate(w, &mut r, cx, cz);
