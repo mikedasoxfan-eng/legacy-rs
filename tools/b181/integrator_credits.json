@@ -70,6 +70,7 @@
  "Slot",
  "Tessellator",
  "TextureCompassFX",
+ "TileEntityRenderer",
  "TileEntitySign",
  "TileEntitySignRenderer",
  "TileEntitySpecialRenderer",

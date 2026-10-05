@@ -41539,6 +41539,12 @@
   "world-blocks b1.8.1: visual",
   "world-blocks b1.8.1: weather"
  ],
+ "TileEntityRenderer": [
+  "entities181: xprender181",
+  "world-blocks b1.8.1: lights",
+  "decorations181: sign renderer (TileEntitySignRenderer)",
+  "moving piston renderer (original TileEntityRendererPiston vertex bits)"
+ ],
  "TileEntitySign": [
   "decorations181: signs: placement, editing, NBT",
   "decorations181: sign renderer (TileEntitySignRenderer)"
