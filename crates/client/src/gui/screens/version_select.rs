@@ -1,6 +1,7 @@
 //! beta-rs version picker: shown once at a plain launch, before the title screen. Beta 1.7.3
 //! continues in this process; Beta 1.8.1 restarts the exe as `beta --mc b1.8.1`, which keeps its
-//! own options, saves and stats in the `b1.8.1` folder.
+//! own options, saves and stats in the `b1.8.1` folder. Beta 1.8.1 Enhanced (`--mc b1.8.1e`) is the
+//! same exact game with faster rendering, a far view and comfort settings; it shares the worlds.
 
 use crate::gui::widgets::GuiButton;
 use crate::gui::{Action, Screen, ScreenBase, Ui};
@@ -27,6 +28,7 @@ impl Screen for GuiVersionSelect {
         let (w, h) = (self.base.width, self.base.height);
         self.base.buttons.push(GuiButton::new(0, w / 2 - 100, h / 4 + 48, "Minecraft Beta 1.7.3"));
         self.base.buttons.push(GuiButton::new(1, w / 2 - 100, h / 4 + 72, "Minecraft Beta 1.8.1"));
+        self.base.buttons.push(GuiButton::new(3, w / 2 - 100, h / 4 + 96, "Minecraft Beta 1.8.1 Enhanced"));
         self.base.buttons.push(GuiButton::new(2, w / 2 - 100, h / 4 + 120 + 12, "Quit"));
     }
 
@@ -34,10 +36,11 @@ impl Screen for GuiVersionSelect {
         match id {
             // No world is open, so closing this screen shows the b1.7.3 title screen.
             0 => ui.display(None),
-            1 => {
+            1 | 3 => {
+                let version = if id == 3 { "b1.8.1e" } else { "b1.8.1" };
                 let started = std::env::current_exe()
                     .map_err(|e| e.to_string())
-                    .and_then(|exe| std::process::Command::new(exe).args(["--mc", "b1.8.1"]).spawn().map_err(|e| e.to_string()));
+                    .and_then(|exe| std::process::Command::new(exe).args(["--mc", version]).spawn().map_err(|e| e.to_string()));
                 match started {
                     Ok(_) => ui.actions.push(Action::Shutdown),
                     Err(e) => self.error = Some(format!("Could not start Beta 1.8.1: {e}")),

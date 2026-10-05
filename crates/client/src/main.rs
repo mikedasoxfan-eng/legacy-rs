@@ -360,9 +360,13 @@ fn main() {
     if let Some(i) = args.iter().position(|a| a == "--mc") {
         match args.get(i + 1).map(String::as_str) {
             Some("b1.8.1") => return client181::run(),
+            Some("b1.8.1e") => {
+                client181::set_enhanced();
+                return client181::run();
+            }
             Some("b1.7.3") => {}
             other => {
-                eprintln!("unknown --mc {other:?}: b1.7.3 or b1.8.1");
+                eprintln!("unknown --mc {other:?}: b1.7.3, b1.8.1 or b1.8.1e");
                 std::process::exit(2);
             }
         }

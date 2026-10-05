@@ -20,6 +20,7 @@ mod texture_packs;
 mod gui;
 mod playscript;
 mod render;
+mod meshbench;
 mod sound;
 mod worker;
 mod minecraft_input;
@@ -63,6 +64,19 @@ fn java_string_hash(s: &str) -> i32 {
 
 /// The b1.8.1 data folder (options.txt, saves, stats, screenshots, texture packs).
 pub const DATA_DIR: &str = "b1.8.1";
+
+/// Beta 1.8.1 Enhanced (`--mc b1.8.1e`): the same exact simulation and worlds, plus faster
+/// rendering, a far view beyond the original distances and comfort settings. Everything it adds
+/// is gated on this flag; plain `--mc b1.8.1` is the verified original client.
+static ENHANCED: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(false);
+pub fn set_enhanced() {
+    ENHANCED.store(true, std::sync::atomic::Ordering::Relaxed);
+}
+pub fn enhanced() -> bool {
+    ENHANCED.load(std::sync::atomic::Ordering::Relaxed)
+}
+/// Enhanced keeps its own options (worlds, statistics and screenshots are shared with b1.8.1).
+pub const ENHANCED_OPTIONS_DIR: &str = "b1.8.1/enhanced";
 
 pub struct Options {
     pub world: WorldOptions,
@@ -141,7 +155,7 @@ fn parse_args() -> Options {
         },
         flowtest: get("--flowtest").map(Into::into),
         // Beta 1.8.1 keeps its options, saves, stats and screenshots apart from b1.7.3's.
-        options_dir: Some(get("--options-dir").map(Into::into).unwrap_or_else(|| DATA_DIR.into())),
+        options_dir: Some(get("--options-dir").map(Into::into).unwrap_or_else(|| if enhanced() { ENHANCED_OPTIONS_DIR.into() } else { DATA_DIR.into() })),
         video_flowtest: get("--video-flowtest").map(Into::into),
         shot_ticks: get("--shot-ticks").and_then(|s| s.parse().ok()).unwrap_or(0),
         play_script: get("--play-script").map(Into::into),
@@ -380,6 +394,7 @@ pub fn run() {
         std::process::exit(if minecraft_check::check_debug(&args[2]) {0}else{1});
     }
     let _ = std::fs::create_dir_all(DATA_DIR);
+    if enhanced() { let _ = std::fs::create_dir_all(ENHANCED_OPTIONS_DIR); }
     match args.get(1).map(String::as_str) {
         Some("--version" | "-V") => {
             println!("beta-rs {} (Minecraft Beta 1.8.1)", env!("CARGO_PKG_VERSION"));
@@ -596,6 +611,7 @@ pub fn run() {
         let ok = render::lightmap::check(&args[2]);
         std::process::exit(if ok { 0 } else { 1 });
     }
+    if args.get(1).map(String::as_str) == Some("--meshbench") { meshbench::run(&args); return; }
     if args.get(1).map(String::as_str) == Some("--meshcheck") {
         let ok = mesh_check(&args);
         println!("{}", if ok { "MESHES EXACT" } else { "MESHES DIFFER" });
