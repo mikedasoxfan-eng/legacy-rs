@@ -443,7 +443,17 @@ impl Entity {
                     w.entities.insert(id, e);
                 }
             }
+            // The fireball is still in the world during its own explosion: at zero distance the
+            // knockback direction is NaN, and that NaN reaches its later motion and smoke.
+            let me = self.entity_id;
+            let mut copy = self.clone();
+            copy.kind = EntityKind::Fireball(s.clone());
+            w.entities.insert(me, copy);
             w.new_explosion(None, self.pos, 1.0, true);
+            if let Some(back) = w.entities.remove(&me) {
+                self.motion = back.motion;
+                self.velocity_changed = back.velocity_changed;
+            }
             }
             self.dead = true;
         }
