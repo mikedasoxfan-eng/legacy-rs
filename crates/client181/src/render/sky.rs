@@ -260,11 +260,13 @@ pub fn cloud_color(angle: f32, rain: f32, thunder: f32) -> [f32; 3] {
 /// `RenderGlobal.renderClouds` Fast branch. Camera-relative flat quads, no scale.
 pub fn flat_clouds(cam_x: f64, cam_y: f64, cam_z: f64, offset: f32, color: [f32; 3]) -> Vec<super::Vertex> {
     let step = 0.5f32 / 1024.0f32;
-    let mut px = cam_x + (offset * 0.03f32) as f64;
+    // b1.8.1: (double)(cloudOffsetX + partial) * (double)0.03F (plus World.field_35467_J's time
+    // warp, which nothing ever sets), no longer a float product.
+    let mut px = cam_x + offset as f64 * 0.03f32 as f64;
     let mut pz = cam_z;
     px -= (math::floor_double(px / 2048.0) * 2048) as f64;
     pz -= (math::floor_double(pz / 2048.0) * 2048) as f64;
-    let y = 108.0f32 - cam_y as f32 + 0.33f32;
+    let y = 128.0f32 - cam_y as f32 + 0.33f32; // b1.8.1 getCloudHeight: 128
     let u = (px * step as f64) as f32;
     let v = (pz * step as f64) as f32;
     let ch = |c: f32| ((c * 255.0f32) as i32).clamp(0, 255) as u8;
@@ -290,9 +292,9 @@ pub fn flat_clouds(cam_x: f64, cam_y: f64, cam_z: f64, offset: f32, color: [f32;
 pub fn fancy_clouds(cam_x: f64, cam_y: f64, cam_z: f64, offset: f32, color: [f32; 3]) -> Vec<super::Vertex> {
     let scale = 12.0f32;
     let thick = 4.0f32;
-    let mut px = (cam_x + ((offset * 0.03f32) as f64)) / scale as f64;
+    let mut px = (cam_x + offset as f64 * 0.03f32 as f64) / scale as f64;
     let mut pz = cam_z / scale as f64 + 0.33f32 as f64;
-    let rel_y = 108.0f32 - cam_y as f32 + 0.33f32;
+    let rel_y = 128.0f32 - cam_y as f32 + 0.33f32; // b1.8.1 getCloudHeight: 128
     let wx = math::floor_double(px / 2048.0);
     let wz = math::floor_double(pz / 2048.0);
     px -= (wx * 2048) as f64;
@@ -304,7 +306,7 @@ pub fn fancy_clouds(cam_x: f64, cam_y: f64, cam_z: f64, offset: f32, color: [f32
     let fx = (px - math::floor_double(px) as f64) as f32;
     let fz = (pz - math::floor_double(pz) as f64) as f32;
     let cell = 8i32;
-    let radius = 3i32;
+    let radius = 4i32; // b1.8.1 draws one more ring of cloud cells
     let eps = 1.0f32 / 1024.0f32;
     let mut out = Vec::new();
     let mut color_now = [0u8; 4];

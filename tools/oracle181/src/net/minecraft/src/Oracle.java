@@ -1016,6 +1016,7 @@ public class Oracle {
         mc.gameSettings=new GameSettings();mc.gameSettings.renderDistance=Integer.parseInt(a[1]);
         RenderGlobal global=(RenderGlobal)allocate(RenderGlobal.class);
         setField(global,"mc",mc);setField(global,"worldRenderersToUpdate",new ArrayList());
+        setField(global,"worldObj",newWorld(0));  // b1.8.1 loadRenderers does nothing without a world
         setField(global,"tileEntities",new ArrayList());
         // Record display-list compilation as lists, not ambient geometry draws.
         RendererOracle.active=true;
