@@ -24866,6 +24866,11 @@
   "player-gui b1.8.1: statistics synchronization",
   "player-gui b1.8.1: whole-player ticks"
  ],
+ "GuiParticle": [
+  "gui181: options",
+  "gui181: select",
+  "gui181: chest_items"
+ ],
  "GuiRenameWorld": [
   "gui181: rename",
   "gui181: select_hover_rename"
@@ -30759,6 +30764,11 @@
   "terrain round2 skygrid seed 42",
   "terrain round2 skygrid seed 9223372036854775807",
   "utilities"
+ ],
+ "Particle": [
+  "gui181: options",
+  "gui181: select",
+  "gui181: chest_items"
  ],
  "PathEntity": [
   "entities181: Arrow",
