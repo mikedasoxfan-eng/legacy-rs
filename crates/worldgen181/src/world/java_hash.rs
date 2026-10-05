@@ -3,8 +3,8 @@
 //! whose linked order is reshuffled by `treeify`, `putTreeVal` and `moveRootToFront`.
 //! Only the operations the game uses on these sets are modelled (add, clear, iterate).
 //!
-//! Keys carry their Java `hashCode`; distinct keys must have distinct hash codes (true for
-//! `ChunkCoordIntPair` and `Integer`), so tie-breaking by identity hash never happens.
+//! Keys carry their Java `hashCode`. `insert_with_identity` supplies the per-object
+//! identity hash needed by b1.8.1 ChunkCoordIntPair's colliding X ^ Z hashes.
 
 const TREEIFY_THRESHOLD: usize = 8;
 const UNTREEIFY_THRESHOLD: usize = 6;
@@ -14,6 +14,7 @@ const NIL: u32 = u32::MAX;
 #[derive(Clone, Copy)]
 struct Node<K> {
     hash: i32,
+    identity: i32,
     key: K,
     next: u32,
     tree: bool,
@@ -33,7 +34,12 @@ pub struct JavaHashSet<K> {
 
 impl<K: PartialEq + Copy> Default for JavaHashSet<K> {
     fn default() -> Self {
-        JavaHashSet { nodes: Vec::new(), table: Vec::new(), size: 0, threshold: 0 }
+        JavaHashSet {
+            nodes: Vec::new(),
+            table: Vec::new(),
+            size: 0,
+            threshold: 0,
+        }
     }
 }
 
@@ -62,13 +68,30 @@ impl<K: PartialEq + Copy> JavaHashSet<K> {
         &mut self.nodes[i as usize]
     }
 
-    fn new_node(&mut self, hash: i32, key: K, next: u32) -> u32 {
-        self.nodes.push(Node { hash, key, next, tree: false, parent: NIL, left: NIL, right: NIL, prev: NIL, red: false });
+    fn new_node(&mut self, hash: i32, identity: i32, key: K, next: u32) -> u32 {
+        self.nodes.push(Node {
+            hash,
+            identity,
+            key,
+            next,
+            tree: false,
+            parent: NIL,
+            left: NIL,
+            right: NIL,
+            prev: NIL,
+            red: false,
+        });
         (self.nodes.len() - 1) as u32
     }
 
     /// `HashSet.add`; returns false if the key was already present.
     pub fn insert(&mut self, hash_code: i32, key: K) -> bool {
+        self.insert_with_identity(hash_code, self.nodes.len() as i32 + 1, key)
+    }
+
+    /// Same-class TreeNode.tieBreakOrder uses identityHashCode(a) <= identityHashCode(b).
+    /// The caller may pin this otherwise VM-dependent input for oracle replays.
+    pub fn insert_with_identity(&mut self, hash_code: i32, identity: i32, key: K) -> bool {
         let hash = spread(hash_code);
         if self.table.is_empty() {
             self.resize();
@@ -77,12 +100,12 @@ impl<K: PartialEq + Copy> JavaHashSet<K> {
         let i = (n - 1) & hash as usize;
         let p = self.table[i];
         if p == NIL {
-            let x = self.new_node(hash, key, NIL);
+            let x = self.new_node(hash, identity, key, NIL);
             self.table[i] = x;
         } else if self.n(p).hash == hash && self.n(p).key == key {
             return false;
         } else if self.n(p).tree {
-            if !self.put_tree_val(p, hash, key) {
+            if !self.put_tree_val(p, hash, identity, key) {
                 return false;
             }
         } else {
@@ -91,7 +114,7 @@ impl<K: PartialEq + Copy> JavaHashSet<K> {
             loop {
                 let e = self.n(p).next;
                 if e == NIL {
-                    let x = self.new_node(hash, key, NIL);
+                    let x = self.new_node(hash, identity, key, NIL);
                     self.m(p).next = x;
                     if bin_count >= TREEIFY_THRESHOLD - 1 {
                         self.treeify_bin(hash);
@@ -138,7 +161,11 @@ impl<K: PartialEq + Copy> JavaHashSet<K> {
 
     fn resize(&mut self) {
         let old_cap = self.table.len();
-        let (new_cap, new_thr) = if old_cap > 0 { (old_cap << 1, self.threshold << 1) } else { (16, 12) };
+        let (new_cap, new_thr) = if old_cap > 0 {
+            (old_cap << 1, self.threshold << 1)
+        } else {
+            (16, 12)
+        };
         self.threshold = new_thr;
         let old = std::mem::replace(&mut self.table, vec![NIL; new_cap]);
         for (j, &e) in old.iter().enumerate() {
@@ -226,10 +253,13 @@ impl<K: PartialEq + Copy> JavaHashSet<K> {
                 let mut p = root;
                 loop {
                     let ph = self.n(p).hash;
-                    assert!(ph != h, "JavaHashSet: equal hash codes need tieBreakOrder");
-                    let left = ph > h;
+                    let left = ph > h || (ph == h && self.n(x).identity <= self.n(p).identity);
                     let xp = p;
-                    p = if left { self.n(p).left } else { self.n(p).right };
+                    p = if left {
+                        self.n(p).left
+                    } else {
+                        self.n(p).right
+                    };
                     if p == NIL {
                         self.m(x).parent = xp;
                         if left {
@@ -263,7 +293,17 @@ impl<K: PartialEq + Copy> JavaHashSet<K> {
     }
 
     /// `TreeNode.putTreeVal`; false if the key exists.
-    fn put_tree_val(&mut self, first: u32, h: i32, key: K) -> bool {
+    fn put_tree_val(&mut self, first: u32, h: i32, identity: i32, key: K) -> bool {
+        // Native TreeNode.find searches both equal-hash subtrees before insertion.
+        // The linked bucket contains the same nodes, so this membership lookup
+        // preserves its result without changing the tree or iteration order.
+        let mut existing = first;
+        while existing != NIL {
+            if self.n(existing).hash == h && self.n(existing).key == key {
+                return false;
+            }
+            existing = self.n(existing).next;
+        }
         let mut root = first;
         while self.n(root).parent != NIL {
             root = self.n(root).parent;
@@ -271,16 +311,16 @@ impl<K: PartialEq + Copy> JavaHashSet<K> {
         let mut p = root;
         loop {
             let ph = self.n(p).hash;
-            if ph == h {
-                assert!(self.n(p).key == key, "JavaHashSet: equal hash codes need tieBreakOrder");
-                return false;
-            }
-            let left = ph > h;
+            let left = ph > h || (ph == h && identity <= self.n(p).identity);
             let xp = p;
-            p = if left { self.n(p).left } else { self.n(p).right };
+            p = if left {
+                self.n(p).left
+            } else {
+                self.n(p).right
+            };
             if p == NIL {
                 let xpn = self.n(xp).next;
-                let x = self.new_node(h, key, xpn);
+                let x = self.new_node(h, identity, key, xpn);
                 self.m(x).tree = true;
                 if left {
                     self.m(xp).left = x;

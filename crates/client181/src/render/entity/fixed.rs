@@ -204,6 +204,7 @@ impl Draw {
                 43 => "mob/spider.png",
                 44 => "mob/spider_eyes.png",
                 45 => "mob/cavespider.png",
+                46 => "mob/skeleton.png",47 => "mob/pig.png",48 => "mob/saddle.png",49 => "mob/cow.png",50 => "mob/sheep.png",51 => "mob/sheep_fur.png",52 => "mob/chicken.png",53 => "mob/squid.png",54 => "mob/wolf.png",55 => "mob/wolf_tame.png",56 => "mob/wolf_angry.png",57 => "mob/creeper.png",58 => "armor/power.png",
                 20..=29 => super::player::ARMOR[(self.texture - 20) as usize],
                 _ => "__white",
             })

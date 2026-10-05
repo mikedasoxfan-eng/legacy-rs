@@ -170,7 +170,7 @@ pub fn model_check(path: &str) -> bool {
 
 pub fn registry_check(path: &str) -> bool {
     use ModelKind::*;
-    let kinds=[Biped,Zombie,Skeleton,Quadruped,Pig,Cow,SheepFur,Sheep,Chicken,Spider,Creeper,SlimeOuter,SlimeInner,Squid,Wolf,Ghast,Enderman,Silverfish,Chest,LargeChest];
+    let kinds=[Biped,Zombie,Skeleton,Quadruped,Pig,Cow,SheepFur,Sheep,Chicken,Spider,Creeper,SlimeOuter,SlimeInner,Squid,Wolf,Ghast,Enderman,Silverfish,Chest,LargeChest,Minecart,Boat,Sign];
     let mut d=Dump {data:std::fs::read(path).unwrap(),at:0,checks:0,bad:0};
     let cases=d.u32();
     fn part(d:&mut Dump,p:&super::geometry::ModelRenderer) {

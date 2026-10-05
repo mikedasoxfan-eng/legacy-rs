@@ -25,11 +25,8 @@ pub fn angle(block: u8, metadata: i32) -> f32 {
     }
 }
 pub fn models() -> [ModelRenderer; 2] {
-    let mut board = ModelRenderer::new(0, 0);
-    board.add_box(-12.0, -14.0, -1.0, 24, 12, 2, 0.0);
-    let mut post = ModelRenderer::new(0, 14);
-    post.add_box(-1.0, -2.0, -1.0, 2, 14, 2, 0.0);
-    [board, post]
+    let m = crate::render::entity::models::Model::new(crate::render::entity::models::ModelKind::Sign);
+    [m.parts["signBoard"].clone(), m.parts["signStick"].clone()]
 }
 pub fn render(sign: &Sign, block: u8, metadata: i32, position: [f64; 3], brightness: f32) -> Fixed {
     let mut g = Fixed::new(brightness);

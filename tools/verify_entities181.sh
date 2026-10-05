@@ -9,7 +9,7 @@ if [ -z "${VERIFY181_LOCKED:-}" ]; then
   trap 'rmdir target/verify181.lock 2>/dev/null' EXIT
   export VERIFY181_LOCKED=1
 fi
-cargo build --release -p worldgen181 -p client -j 2 || exit 1
+if [ "${1:-}" != --built ]; then cargo build --release -p worldgen181 -p client -j 2 || exit 1; fi
 oracle="$root/tools/oracle181/oracle.sh"
 out="$root/tools/oracle181/out"
 cmp="$root/target/release/entity_compare181.exe"

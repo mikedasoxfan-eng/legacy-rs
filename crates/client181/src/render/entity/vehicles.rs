@@ -74,7 +74,7 @@ pub fn state(e: &Entity, partial: f32) -> Option<VehicleState> {
         track: [None; 3],
     })
 }
-pub fn model(cart: bool) -> Vec<ModelRenderer> {
+pub(super) fn model_parts(cart: bool) -> Vec<ModelRenderer> {
     let (width, height, depth) = if cart { (20, 8, 16) } else { (24, 6, 20) };
     let mut parts: Vec<_> = (0..if cart { 6 } else { 5 })
         .map(|i| {
@@ -142,6 +142,12 @@ pub fn model(cart: bool) -> Vec<ModelRenderer> {
         parts[5].rotate_angle_x = PI_F32 * -0.5;
     }
     parts
+}
+pub fn model(cart: bool) -> Vec<ModelRenderer> {
+    use super::models::{Model, ModelKind};
+    let mut m = Model::new(if cart { ModelKind::Minecart } else { ModelKind::Boat });
+    m.set_rotation_angles([0.0, 0.0, -0.1, 0.0, 0.0, 0.0625]);
+    m.render_parts().into_iter().map(|(p, _)| p.clone()).collect()
 }
 pub fn render(
     g: &mut Fixed,

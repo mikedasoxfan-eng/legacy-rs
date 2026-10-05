@@ -28,6 +28,9 @@ pub enum ModelKind {
     Silverfish,
     Chest,
     LargeChest,
+    Minecart,
+    Boat,
+    Sign,
 }
 
 #[derive(Clone, Debug)]
@@ -124,6 +127,20 @@ impl Model {
             ModelKind::Silverfish => m.init_silverfish(),
             ModelKind::Chest => m.init_chest(false),
             ModelKind::LargeChest => { m.init_chest(false); m.init_chest(true); },
+            ModelKind::Minecart | ModelKind::Boat => {
+                for (i, mut part) in super::vehicles::model_parts(kind == ModelKind::Minecart).into_iter().enumerate() {
+                    if i == 5 { part.rotation_point_y = 4.0; }
+                    m.insert_part(format!("side[{i}]"), part);
+                }
+            }
+            ModelKind::Sign => {
+                let mut board = ModelRenderer::new(0, 0);
+                board.add_box(-12.0, -14.0, -1.0, 24, 12, 2, 0.0);
+                m.insert_part("signBoard".into(), board);
+                let mut stick = ModelRenderer::new(0, 14);
+                stick.add_box(-1.0, -2.0, -1.0, 2, 14, 2, 0.0);
+                m.insert_part("signStick".into(), stick);
+            }
         }
         m
     }
@@ -136,7 +153,8 @@ impl Model {
                 self.pose_enderman();
             }
             ModelKind::Silverfish => self.pose_silverfish(p[2]),
-            ModelKind::Chest | ModelKind::LargeChest => {}
+            ModelKind::Chest | ModelKind::LargeChest | ModelKind::Boat | ModelKind::Sign => {}
+            ModelKind::Minecart => self.parts.get_mut("side[5]").unwrap().rotation_point_y = 4.0 - p[2],
             ModelKind::Biped => self.pose_biped(p),
             ModelKind::Zombie | ModelKind::Skeleton => {
                 self.pose_biped(p);
@@ -1061,6 +1079,9 @@ impl Model {
     }
     /// Original model draw order (ears/cloak and creeper headwear are not body parts).
     pub fn render_parts(&self) -> Vec<(&ModelRenderer, bool)> {
+        if matches!(self.kind, ModelKind::Minecart | ModelKind::Boat | ModelKind::Sign) {
+            return self.registered.iter().map(|name| (&self.parts[name], false)).collect();
+        }
         let names: &[(&str, bool)] = match self.kind {
             ModelKind::Biped | ModelKind::Zombie | ModelKind::Skeleton | ModelKind::Enderman => &[
                 ("bipedHead", false),
@@ -1138,7 +1159,8 @@ impl Model {
                 ("field_35404_c", false),
                 ("field_35403_b", false),
             ],
-            ModelKind::Squid | ModelKind::Ghast | ModelKind::Silverfish => &[],
+            ModelKind::Squid | ModelKind::Ghast | ModelKind::Silverfish
+                | ModelKind::Minecart | ModelKind::Boat | ModelKind::Sign => &[],
         };
         let mut parts: Vec<_> = names
             .iter()

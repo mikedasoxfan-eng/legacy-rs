@@ -1,5 +1,8 @@
 use super::{AxisAlignedBB as BB, Entity, EntityKind, Vec3D};
 use crate::{biome::Biome, block::*, math::floor_double as floor, JavaRandom, World};
+pub(crate) fn spawn_identity(x: i32, z: i32) -> i32 {
+    ((((x as u32 & 0x7fff) << 16 | (z as u32 & 0xffff)).wrapping_add(1) & 0x7fffffff) as i32).max(1)
+}
 impl Entity {
     pub fn get_can_spawn_here(&mut self, w: &mut World) -> bool {
         let (x, y, z) = (
@@ -118,16 +121,7 @@ pub fn spawn_list181(biome: i32, category: i32) -> Vec<(&'static str, i32, i32, 
     }
 }
 fn spawn_list(biome: Biome, category: i32) -> Vec<(&'static str, i32)> {
-    let id = match biome {
-        Biome::Hell => 8,
-        Biome::Sky => 9,
-        Biome::Forest | Biome::SeasonalForest | Biome::Rainforest => 4,
-        Biome::Taiga => 5,
-        Biome::Desert | Biome::IceDesert => 2,
-        Biome::Swampland => 6,
-        _ => 1,
-    };
-    spawn_list181(id, category)
+    spawn_list181(biome as i32, category)
         .into_iter()
         .map(|(name, weight, _, _)| (name, weight))
         .collect()
@@ -137,7 +131,14 @@ fn category(kind: &EntityKind) -> i32 {
         0
     } else if matches!(kind, EntityKind::Squid(..)) {
         2
-    } else if kind.is_living() {
+    } else if matches!(
+        kind,
+        EntityKind::Pig { .. }
+            | EntityKind::Sheep { .. }
+            | EntityKind::Cow
+            | EntityKind::Chicken { .. }
+            | EntityKind::Wolf(..)
+    ) {
         1
     } else {
         -1
@@ -145,6 +146,18 @@ fn category(kind: &EntityKind) -> i32 {
 }
 impl World {
     pub fn perform_spawning(&mut self, hostile: bool, peaceful: bool) -> i32 {
+        self.perform_spawning_with_identity(hostile, peaceful, |x, z| {
+            // Identity hashes are a VM-dependent input, just like clock-seeded RNG.
+            // Stable per-coordinate identities keep the port's traversal repeatable.
+            spawn_identity(x, z)
+        })
+    }
+    pub fn perform_spawning_with_identity(
+        &mut self,
+        hostile: bool,
+        peaceful: bool,
+        mut identity: impl FnMut(i32, i32) -> i32,
+    ) -> i32 {
         if !hostile && !peaceful {
             return 0;
         }
@@ -156,7 +169,7 @@ impl World {
             for dx in -8..=8 {
                 for dz in -8..=8 {
                     let key = (cx + dx, cz + dz);
-                    eligible.insert(crate::world::server::chunk_xz_to_int(key.0, key.1), key);
+                    eligible.insert_with_identity(key.0 ^ key.1, identity(key.0, key.1), key);
                 }
             }
         }
@@ -166,8 +179,9 @@ impl World {
                 continue;
             }
             let count = self
-                .entities
-                .values()
+                .loaded_entity_list
+                .iter()
+                .filter_map(|id| self.entities.get(id))
                 .filter(|e| category(&e.kind) == cat)
                 .count();
             let max = match cat {

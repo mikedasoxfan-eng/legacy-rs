@@ -893,6 +893,9 @@ impl Entity {
                 let item = 2256 + self.rand.next_int(2);
                 self.drop_item(w, item, 1, 0, 0.0);
             }
+            // Vanilla's Skeleton sniper achievement is unreachable in this build:
+            // DamageSource.func_35526_e delegates to func_35532_a, so both
+            // accessors return the owner. One entity cannot be Arrow and Player.
         }
         true
     }
