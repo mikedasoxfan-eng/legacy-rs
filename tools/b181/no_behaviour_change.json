@@ -4,5 +4,6 @@
  "BlockRedstoneOre": "only the field_468_a -> glowing rename",
  "BlockDoor": "func_28107_a -> playAuxSFXAtEntity rename; height bound 127 written as 128 - 1",
  "BlockCloth": "static dye/block mapping methods renamed (getBlockFromDye/getDyeFromBlock)",
- "ItemCloth": "calls the renamed BlockCloth.getBlockFromDye"
+ "ItemCloth": "calls the renamed BlockCloth.getBlockFromDye",
+ "BlockBed": "ChunkCoordinates field rename only (x,y,z -> posX,posY,posZ)"
 }

@@ -4563,6 +4563,9 @@
   "world-blocks b1.8.1: growth4",
   "player-gui b1.8.1: whole-player ticks"
  ],
+ "BlockCake": [
+  "world-blocks b1.8.1: cake181"
+ ],
  "BlockChest": [
   "container clicks, recipes, furnace and dispenser world replay",
   "player-gui b1.8.1 round 4: chest container lifecycle",

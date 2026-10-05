@@ -88,5 +88,6 @@
  "WorldProviderHell",
  "WorldProviderSky",
  "PlayerControllerSP",
- "RenderList"
+ "RenderList",
+ "BlockCake"
 ]

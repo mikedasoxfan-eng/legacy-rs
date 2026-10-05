@@ -3,6 +3,7 @@ mod round4;
 mod round5;
 mod round6;
 mod round7;
+mod integrator;
 use super::{
     behavior,
     chunk::{idx, Chunk},
@@ -65,6 +66,7 @@ fn fixture(bright: bool) -> World {
 pub fn bytes(kind: &str) -> Vec<u8> {
     let mut o = Vec::new();
     match kind {
+        "cake181" => integrator::cake(&mut o),
         "furnace7" => round7::furnace(&mut o),
         "inventory7" => round7::inventory(&mut o),
         "container7" => round7::container(&mut o),
