@@ -17,7 +17,7 @@ impl Entity {
         }
         if self.player_state().unwrap().capabilities.creative {stack.count=original.count;stack.damage=original.damage;}
         let inv = &mut self.player_state_mut().unwrap().inventory;
-        inv.main[inv.current_item as usize] = if stack.count <= 0 { None } else { Some(stack) };
+        inv.main[inv.current_item as usize] = if stack.count == 0 { None } else { Some(stack) };
         used
     }
     /// Item.onItemUse, before ItemStack's statistics and the controller's creative restore.
@@ -184,7 +184,7 @@ impl Entity {
         } else if stack.id == 346 {
             self.use_fishing_rod(w, &mut stack);
         } else if stack.id == 261 {
-            if self.player_state().unwrap().inventory.main.iter().flatten().any(|i| i.id == 262) {
+            if self.player_state().unwrap().inventory.contains_item(262) {
                 self.start_item_use(stack, 72000);
             }
         } else if matches!(stack.id, 332 | 344) {
@@ -283,9 +283,9 @@ impl Entity {
                 }
             }
         }
-        let changed = stack.id != original.id || stack.count != original.count;
+        let changed = !stack.same_object(original) || stack.count != original.count;
         let inv = &mut self.player_state_mut().unwrap().inventory;
-        inv.main[inv.current_item as usize] = if stack.count == 0 { None } else { Some(stack) };
+        inv.main[inv.current_item as usize] = if changed && stack.count == 0 { None } else { Some(stack) };
         changed
     }
 }

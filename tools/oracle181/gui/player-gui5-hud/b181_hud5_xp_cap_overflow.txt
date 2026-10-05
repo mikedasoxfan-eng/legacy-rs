@@ -1,0 +1,5 @@
+world 42
+clear 128
+hud health=20 prev=20 food=20 saturation=5 xp=0 level=0 item=0 armor=0 helmet=-1 creative=0 sleep=0 portal=0 prev_portal=0 nausea=0 pos=0.5,120,0.5 brightness=0.0 xp=10 level=2147483647
+counter 0
+shot b181_hud5_xp_cap_overflow

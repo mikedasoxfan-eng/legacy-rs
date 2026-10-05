@@ -495,6 +495,7 @@ pub fn run() {
         return;
     }
     if args.get(1).map(String::as_str)==Some("--worldseedcheck"){std::process::exit(if gui::screens::select_world::check_seeds(&args[2]) {0}else{1});}
+    if args.get(1).map(String::as_str)==Some("--worldcallbackcheck"){std::process::exit(if gui::screens::select_world::check_callbacks(&args[2]) {0}else{1});}
     if args.get(1).map(String::as_str)==Some("--statsordercheck"){std::process::exit(if gui::screens::stats::check_order(&args[2]) {0}else{1});}
     if args.get(1).map(String::as_str)==Some("--keyregistrycheck"){std::process::exit(if gui::settings::check_key_registry(&args[2]) {0}else{1});}
     if args.get(1).map(String::as_str)==Some("--guiutilitycheck"){std::process::exit(if gui::utility_check::check(&args[2]) {0}else{1});}

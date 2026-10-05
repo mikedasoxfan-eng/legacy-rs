@@ -296,12 +296,16 @@ pub fn run(script: &str, out_dir: &std::path::Path) -> Result<(), String> {
                         "poison" => p.poison = i()? != 0,
                         "hunger" => p.hunger = i()? != 0,
                         "regen" => p.regeneration = i()? != 0,
+                        "nausea" => p.nausea = i()? != 0,
+                        "portal" => p.time_in_portal = v.parse().map_err(|_| "hud portal")?,
+                        "prev_portal" => p.prev_time_in_portal = v.parse().map_err(|_| "hud prev_portal")?,
+                        "sleep" => p.sleep_timer = i()?,
                         "prev" => p.prev_health = i()?,
                         "hearts_life" => p.hearts_life = i()?,
                         "item" => p.current_item = i()?,
                         "helmet" => p.helmet = Some(i()?).filter(|&id| id >= 0),
                         "brightness" => p.brightness = v.parse().map_err(|_| "hud brightness")?,
-                        "pos" => {}
+                        "pos" => {let pos:Vec<_>=v.split(',').map(str::parse::<f64>).collect::<Result<_,_>>().map_err(|_|"hud pos")?;p.pos=pos.try_into().map_err(|_|"hud pos requires three coordinates")?;}
                         _ => return Err(format!("unknown hud field {k}")),
                     }
                 }

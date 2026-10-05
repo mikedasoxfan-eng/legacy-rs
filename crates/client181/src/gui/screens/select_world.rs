@@ -350,6 +350,151 @@ pub fn check_seeds(path:&str)->bool {
     if out==expected {println!("CREATE WORLD SEED POLICY EXACT: 65536 Java digits, 10096 seed/mode/features records (clock-random seeds classified; Rust GUI callbacks not replayed)");true}else{eprintln!("CREATE WORLD SEEDS DIFFER at {}",out.iter().zip(expected).position(|(a,b)|*a!=b).unwrap_or(out.len()));false}
 }
 
+/// Replay the production screen callbacks, including their queued Display/StartWorld actions.
+pub fn check_callbacks(path: &str) -> bool {
+    fn int(out: &mut Vec<u8>, n: i32) {
+        out.extend(n.to_le_bytes());
+    }
+    fn string(out: &mut Vec<u8>, s: &str) {
+        let units: Vec<_> = s.encode_utf16().collect();
+        int(out, units.len() as i32);
+        for c in units {
+            out.extend(c.to_le_bytes());
+        }
+    }
+    fn state(out: &mut Vec<u8>, g: &GuiCreateWorld) {
+        for s in [&g.name.text, &g.seed.text, &g.folder_name] {
+            string(out, s);
+        }
+        for b in [
+            g.map_features,
+            g.create_clicked,
+            g.more_options,
+            g.creative,
+            g.name.focused,
+            g.seed.focused,
+        ] {
+            out.push(b as u8);
+        }
+        for b in &g.base.buttons {
+            int(out, b.id);
+            out.push(b.enabled as u8);
+            out.push(b.visible as u8);
+            string(out, &b.text);
+        }
+    }
+    let saves = std::path::PathBuf::from("target/worldcallbacks181-saves");
+    for folder in ["Taken", "Taken-", "Taken--", "Empty"] {
+        let dir = saves.join(folder);
+        std::fs::create_dir_all(&dir).unwrap();
+        if folder != "Empty" {
+            let mut root = worldgen::nbt::Compound::new();
+            root.put("Data", worldgen::nbt::Tag::Compound(Default::default()));
+            std::fs::write(
+                dir.join("level.dat"),
+                worldgen::nbt::write_gzip(&root).unwrap(),
+            )
+            .unwrap();
+        }
+    }
+    let mut ui = crate::gui::utility_check::fixture_ui(saves);
+    let mut out = Vec::new();
+    let names = [
+        "Name",
+        "Taken",
+        "Taken-",
+        "Empty",
+        "",
+        "   ",
+        "  trim  ",
+        "A/B\\C:D*?<>|\"`",
+        "World\nName",
+        "\tWorld\r",
+        "\u{a0}",
+        "\u{2003}",
+        "é",
+        "😀",
+    ];
+    let seeds = [
+        "+123",
+        "-123",
+        "9223372036854775807",
+        "-9223372036854775808",
+        "9223372036854775808",
+        "hello",
+    ];
+    for c in 0..336 {
+        let mut g = GuiCreateWorld::new(Box::new(super::main_menu::GuiMainMenu::with_splash(
+            "fixture",
+        )));
+        g.base.width = 427;
+        g.base.height = 240;
+        g.init_gui(&mut ui);
+        g.name.text = names[c % names.len()].into();
+        g.seed.text = seeds[c % seeds.len()].into();
+        g.key_typed(&mut ui, '\0', 0);
+        state(&mut out, &g);
+        if c & 1 != 0 {
+            g.action_performed(&mut ui, 2);
+        }
+        if c & 2 != 0 {
+            g.action_performed(&mut ui, 4);
+        }
+        g.action_performed(&mut ui, 3);
+        g.key_typed(&mut ui, '\t', 15);
+        state(&mut out, &g);
+        g.key_typed(&mut ui, '\t', 15);
+        g.action_performed(&mut ui, 3);
+        state(&mut out, &g);
+        g.action_performed(&mut ui, 0);
+        g.action_performed(&mut ui, 0);
+        g.action_performed(&mut ui, 1);
+        state(&mut out, &g);
+        let mut calls = Vec::new();
+        for action in std::mem::take(&mut ui.actions) {
+            match action {
+                Action::Display(screen) => calls.push(screen.is_some() as u8),
+                Action::StartWorld {
+                    folder,
+                    name,
+                    seed,
+                    settings,
+                } => {
+                    calls.push(2);
+                    string(&mut calls, &folder);
+                    string(&mut calls, &name);
+                    calls.extend(seed.unwrap().to_le_bytes());
+                    let s = settings.unwrap();
+                    int(&mut calls, s.game_mode);
+                    calls.push(s.map_features as u8);
+                }
+                _ => panic!("unexpected create-world callback"),
+            }
+        }
+        int(&mut out, calls.len() as i32);
+        out.extend(calls);
+    }
+    std::fs::write("target/worldcallbacks181-rust.bin", &out).unwrap();
+    let expected = std::fs::read(path).unwrap();
+    if out == expected {
+        println!(
+            "CREATE WORLD CALLBACKS EXACT: 336 production screen replays, 1344 snapshots and full launch/display traces"
+        );
+        true
+    } else {
+        eprintln!(
+            "CREATE WORLD CALLBACKS DIFFER byte {}, lengths {}/{}",
+            out.iter()
+                .zip(&expected)
+                .position(|(a, b)| a != b)
+                .unwrap_or(out.len().min(expected.len())),
+            out.len(),
+            expected.len()
+        );
+        false
+    }
+}
+
 /// `new Random().nextLong()`
 pub fn random_seed() -> i64 {
     let nanos = std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).map_or(0, |d| d.as_nanos()) as i64;

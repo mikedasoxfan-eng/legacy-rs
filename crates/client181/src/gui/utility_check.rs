@@ -1,4 +1,49 @@
 use super::{font::FontRenderer, widgets::GuiButton, ScaledResolution};
+/// Real screen callbacks without a window or GPU; only drawing resources are omitted.
+pub(super) fn fixture_ui(saves_dir: std::path::PathBuf) -> super::Ui {
+    let mut jar = crate::assets::Jar::open().unwrap();
+    let font = FontRenderer::new(
+        &jar.image("font/default.png").unwrap(),
+        0,
+        &jar.text("font.txt").unwrap(),
+    );
+    let mut lang = super::lang::Lang::default();
+    for name in ["lang/en_US.lang", "lang/stats_US.lang"] {
+        lang.load(jar.text(name).unwrap().as_bytes());
+    }
+    super::Ui {
+        packs: crate::texture_packs::TexturePackList::new(&saves_dir, "Default"),
+        pack_icons: Vec::new(),
+        gl: super::gl::Gl::new(),
+        font,
+        textures: Default::default(),
+        lang,
+        settings: Default::default(),
+        display_width: 854,
+        display_height: 480,
+        world_open: false,
+        hide_quit_button: false,
+        splashes: Vec::new(),
+        saves_dir,
+        actions: Vec::new(),
+        millis: 0,
+        shift_down: false,
+        fixed_date: true,
+        clipboard: None,
+        mouse_down: false,
+        world_saved: true,
+        player_dead: false,
+        player_score: 0,
+        save_requests: Vec::new(),
+        sounds: Vec::new(),
+        stats: Default::default(),
+        container_snapshot: None,
+        container_commands: Vec::new(),
+        sign_commands: Vec::new(),
+        inventory_armor_state: Default::default(),
+    }
+}
+
 pub fn check(path: &str) -> bool {
     let mut out = Vec::new();
     let mut r = worldgen::JavaRandom::new(181);
