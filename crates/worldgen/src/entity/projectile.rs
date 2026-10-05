@@ -37,7 +37,7 @@ pub struct FireballState {
 }
 impl Entity {
     pub fn can_be_collided_with(&self) -> bool {
-        matches!(self.kind, EntityKind::Fireball(..))
+        matches!(self.kind, EntityKind::Fireball(..) | EntityKind::Painting(..))
             || (!self.dead
                 && (self.kind.is_living()
                     || matches!(

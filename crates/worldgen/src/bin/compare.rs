@@ -24,6 +24,10 @@ fn main() -> ExitCode {
     let a: Vec<String> = std::env::args().collect();
     let p = |i: usize| a[i].parse::<i64>().expect("number");
     match a.get(1).map(String::as_str) {
+        Some("paintings") => {
+            let java=std::fs::read(&a[2]).unwrap();let rust=worldgen::decoration_verify::paintings();
+            if java==rust {println!("EXACT MATCH: paintings selection, walls, overlaps, support ticks, damage, NBT");ExitCode::SUCCESS} else {eprintln!("paintings differ at {:?}; {}/{} bytes",java.iter().zip(&rust).position(|(a,b)|a!=b),java.len(),rust.len());std::fs::write("target/paintings-rust.bin",rust).unwrap();ExitCode::FAILURE}
+        }
         Some("signs") => {
             let java=std::fs::read(&a[2]).unwrap();let len=i32::from_le_bytes(java[..4].try_into().unwrap()) as usize;
             let allowed=std::str::from_utf8(&java[4..4+len]).unwrap();let rust=worldgen::decoration_verify::signs(allowed);let java=&java[4+len..];

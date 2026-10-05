@@ -66,6 +66,10 @@ impl Entity {
             }
         }
         match &self.kind {
+            EntityKind::Painting(s) => {
+                n.put("Dir",Tag::Byte(s.direction as i8));n.put("Motive",Tag::String(super::painting::ARTS[s.art].title.into()));
+                for (key,v) in ["TileX","TileY","TileZ"].into_iter().zip(s.tile){n.put(key,Tag::Int(v));}
+            }
             EntityKind::Item {
                 item, age, health, ..
             } => {
@@ -135,6 +139,7 @@ impl Entity {
         }
         let name = n.string("id");
         let mut e = match name.as_str() {
+            "Painting" => Self::painting_base(w),
             "Player" | "ThrownEgg" => return None,
             "Item" => {
                 let mut e = Self::base(
@@ -315,6 +320,10 @@ impl Entity {
         }
         if matches!(self.kind, EntityKind::Player(..)) {
             self.read_player_tags(w, n);
+        }
+        if let EntityKind::Painting(s)=&mut self.kind {
+            s.direction=n.byte("Dir") as i32;s.tile=[n.int("TileX"),n.int("TileY"),n.int("TileZ")];
+            s.art=super::painting::ARTS.iter().position(|a|a.title==n.string("Motive")).unwrap_or(0);let direction=s.direction;self.set_painting_direction(direction);
         }
         Some(())
     }

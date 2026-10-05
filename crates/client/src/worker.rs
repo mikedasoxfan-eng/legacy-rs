@@ -573,6 +573,9 @@ fn run(opts: WorldOptions, col: Colorizers, mut video: VideoSettings, rx: Receiv
                         }
                     }
                 }
+                for xyz in crate::render::painting::light_positions(&e) {
+                    let [x,y,z]=xyz;surfaces.push(crate::render::entity::effects::Surface{xyz,block:0,brightness:world.light_brightness_table[access.light_value(x,y,z) as usize]});
+                }
                 snapshot.push(crate::render::entity::effects::Snapshot {
                     entity: e,
                     brightness: b,

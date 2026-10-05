@@ -2,6 +2,28 @@
 use crate::{World,JavaRandom,entity::{Entity,EntitySeedSource},world::{tile::TileEntity,chunk::{Chunk,idx}}};
 fn i(o:&mut Vec<u8>,v:i32){o.extend_from_slice(&v.to_le_bytes());}
 fn text(o:&mut Vec<u8>,s:&str){i(o,s.len() as i32);o.extend_from_slice(s.as_bytes());}
+fn painting_state(o:&mut Vec<u8>,p:&Entity,w:&mut World) {
+    let crate::entity::EntityKind::Painting(s)=&p.kind else{unreachable!()};
+    for v in [s.art as i32,s.direction,s.tile[0],s.tile[1],s.tile[2],s.check_counter]{i(o,v);}
+    for v in [p.pos.x,p.pos.y,p.pos.z,p.bounding_box.min_x,p.bounding_box.min_y,p.bounding_box.min_z,p.bounding_box.max_x,p.bounding_box.max_y,p.bounding_box.max_z]{o.extend_from_slice(&v.to_bits().to_le_bytes());}
+    for v in [p.yaw,p.prev_yaw]{o.extend_from_slice(&v.to_bits().to_le_bytes());}
+    for v in [p.dead as i32,p.been_attacked as i32,p.painting_valid_surface(w) as i32]{i(o,v);}o.extend_from_slice(&p.rand.state().to_le_bytes());i(o,w.loaded_entity_list.len() as i32);
+}
+fn raw(w:&mut World,x:i32,y:i32,z:i32,id:u8) {w.chunk_mut(x>>4,z>>4).blocks[idx(x&15,y,z&15)]=id;}
+pub fn paintings()->Vec<u8> {
+    let mut o=Vec::new();let widths=[8,1,2,1,2,4,4,4];let heights=[8,1,1,2,2,2,3,4];
+    for scene in 0..12{for dir in 0..4{for seed in 0..8{
+        let mut w=flat_world();w.entity_seed_source=EntitySeedSource::Deterministic(100+seed);
+        let width=widths[scene%8];let height=heights[scene%8];let material=match scene{8=>20,9=>18,10=>44,11=>0,_=>1};
+        for a in 0..width{for b in 0..height{let x=if dir==0||dir==2{a-width/2}else{0};let z=if dir==0||dir==2{0}else{a-width/2};raw(&mut w,x,67+b-height/2,z,material);}}
+        let mut p=Entity::painting(&mut w,0,67,0,dir);painting_state(&mut o,&p,&mut w);
+        let n=p.to_nbt().unwrap();let q=Entity::from_nbt(&mut w,&n).unwrap();painting_state(&mut o,&q,&mut w);
+        if scene%3==0 {w.entity_joined_world(p.clone());let overlap=Entity::painting(&mut w,0,67,0,dir);painting_state(&mut o,&overlap,&mut w);}
+        for y in 64..73{for a in -4..=4{raw(&mut w,if dir==0||dir==2{a}else{0},y,if dir==0||dir==2{0}else{a},0);}}
+        for _ in 0..103{p.on_update(&mut w);painting_state(&mut o,&p,&mut w);}
+        p.attack(&mut w,None,0);painting_state(&mut o,&p,&mut w);
+    }}}o
+}
 fn sign(o:&mut Vec<u8>,s:Option<&crate::sign::Sign>){i(o,s.is_some() as i32);if let Some(s)=s{for s in &s.text{text(o,s);}}}
 pub fn flat_world()->World {
     let mut w=World::new(0,300);w.entity_seed_source=EntitySeedSource::Deterministic(100);w.math_random=JavaRandom::new(200);

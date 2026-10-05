@@ -179,6 +179,7 @@ impl Draw {
                 13 => "misc/mapicons.png",
                 14 => "font/default.png",
                 15 => "item/sign.png",
+                16 => "art/kz.png",
                 20..=29 => super::player::ARMOR[(self.texture - 20) as usize],
                 _ => "__white",
             })

@@ -380,6 +380,11 @@ impl EntityPipeline {
         let mut batches = living::scene_with_lighting(&self.states, camera, &mut self.normalize);
         for snapshot in &self.snapshots {
             let e = &snapshot.entity;
+            if matches!(e.kind,worldgen::entity::EntityKind::Painting(_)) {
+                let lights:Vec<_>=crate::render::painting::light_positions(e).iter().map(|p|snapshot.surfaces.iter().find(|s|s.xyz==*p&&s.block==0).map_or(snapshot.brightness,|s|s.brightness)).collect();
+                let p=super::bridge::position(e,self.partial);let relative=std::array::from_fn(|i|p[i]-camera[i] as f64);
+                let g=crate::render::painting::render(e,relative,&lights);batches.extend(g.draws.iter().map(|d|d.batch()));
+            }
             if let Some(s) = super::bridge::render_state(e, self.partial, snapshot.brightness) {
                 batches.extend(living::scene_with_lighting(&[s], camera, &mut self.normalize));
             } else if let Some(s) =

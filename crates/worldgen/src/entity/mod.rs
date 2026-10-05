@@ -12,6 +12,7 @@ pub mod living;
 pub mod nbt;
 pub mod objects;
 pub mod path;
+pub mod painting;
 pub mod physics;
 pub mod player;
 pub mod projectile;
@@ -61,6 +62,7 @@ impl EntitySeedSource {
 
 #[derive(Clone, Debug)]
 pub enum EntityKind {
+    Painting(painting::PaintingState),
     Player(Box<player::PlayerState>),
     Item {
         item: ItemStack,
@@ -129,6 +131,7 @@ pub enum EntityKind {
 impl EntityKind {
     pub fn name(&self) -> &'static str {
         match self {
+            Self::Painting(..) => "Painting",
             Self::Player(..) => "Player",
             Self::Ghast(..) => "Ghast",
             Self::Wolf(..) => "Wolf",
@@ -168,6 +171,7 @@ impl EntityKind {
     pub fn is_living(&self) -> bool {
         !matches!(
             self,
+            Self::Painting(..) |
             Self::Item { .. }
                 | Self::FallingSand { .. }
                 | Self::Tnt { .. }
@@ -405,6 +409,7 @@ impl Entity {
         self.pitch = pitch;
     }
     pub fn attack(&mut self, w: &mut World, attacker: Option<i32>, mut damage: i32) -> bool {
+        if matches!(self.kind,EntityKind::Painting(_)) {if !self.dead{self.break_painting(w,true);}return true;}
         if matches!(self.kind, EntityKind::Player(..))
             && !self.player_damage(w, attacker, &mut damage)
         {
@@ -468,6 +473,7 @@ impl Entity {
     }
     pub fn on_update(&mut self, w: &mut World) {
         match self.kind {
+            EntityKind::Painting(..) => self.update_painting(w),
             EntityKind::Player(..) => self.update_player(w),
             EntityKind::Item { .. } => self.update_item(w),
             EntityKind::FallingSand { .. } => self.update_falling_sand(w),

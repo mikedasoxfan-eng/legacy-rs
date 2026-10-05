@@ -131,6 +131,16 @@ pub fn sign_check(path:&str)->bool {
     }
     assert_eq!(d.at,d.data.len());println!("sign renderers: {} values, {} differences",d.checks,d.bad);d.bad==0
 }
+pub fn painting_check(path:&str)->bool {
+    let mut d=Input{data:std::fs::read(path).unwrap(),at:0,checks:0,bad:0};let n=d.u();let mut w=worldgen::decoration_verify::flat_world();
+    for case in 0..n {let art=d.u() as usize;let dir=d.u() as i32;
+        let mut e=worldgen::entity::Entity::painting_base(&mut w);if let worldgen::entity::EntityKind::Painting(s)=&mut e.kind{s.art=art;s.tile=[0,67,0];}e.set_painting_direction(dir);
+        let a=worldgen::entity::painting::ARTS[art];let lights:Vec<_>=(0..a.width/16*(a.height/16)).map(|_|d.f()).collect();
+        let g=crate::render::painting::render(&e,[-0.25,10.5,3.75],&lights);
+        assert_eq!(d.u() as usize,g.draws.len(),"painting {case} draw count");for (i,r) in g.draws.iter().enumerate(){d.draw(r,&format!("painting {case} draw {i}"));}
+    }
+    assert_eq!(d.at,d.data.len());println!("painting renderers: {} values, {} differences",d.checks,d.bad);d.bad==0
+}
 
 pub fn effects_check(path: &str) -> bool {
     use super::effects::Surface;
