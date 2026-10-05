@@ -84,6 +84,9 @@ impl GuiRenderer {
             g.color_mask = 7;
         }
         let view = self.texture_view(p.frame);
+        // The offscreen frame is an RGBA texture, whatever format the window uses.
+        let window_format = std::mem::replace(&mut self.format, wgpu::TextureFormat::Rgba8Unorm);
+        self.depth = None;
         // The copy operation uses OpenGL's bottom-up framebuffer coordinates.
         let orientation = self.gl_orientation;
         self.gl_orientation = true;
@@ -109,5 +112,7 @@ impl GuiRenderer {
             self.render(device,queue,&view,(256,256),&blur,None);
         }
         self.gl_orientation = orientation;
+        self.format = window_format;
+        self.depth = None;
     }
 }

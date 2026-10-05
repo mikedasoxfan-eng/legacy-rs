@@ -61,7 +61,7 @@ struct GuiTexture {
 }
 
 pub struct GuiRenderer {
-    format: wgpu::TextureFormat,
+    pub(super) format: wgpu::TextureFormat,
     /// Multisample count (the driver may force MSAA on the original's GL window).
     samples: u32,
     /// Rasterize bottom-up like an OpenGL framebuffer (the image comes out upside down).
@@ -69,7 +69,8 @@ pub struct GuiRenderer {
     pub gl_orientation: bool,
     shader: wgpu::ShaderModule,
     layout: wgpu::PipelineLayout,
-    pipes: HashMap<PipeKey, wgpu::RenderPipeline>,
+    /// Pipelines per state and colour-target format (the window, or an offscreen texture).
+    pipes: HashMap<(PipeKey, wgpu::TextureFormat), wgpu::RenderPipeline>,
     tex_layout: wgpu::BindGroupLayout,
     uniforms: wgpu::Buffer,
     uniform_bind: wgpu::BindGroup,
@@ -81,7 +82,7 @@ pub struct GuiRenderer {
     textures: Vec<GuiTexture>,
     white: GuiTexture,
     vbuf: Option<(wgpu::Buffer, u64)>,
-    depth: Option<(wgpu::Texture, wgpu::TextureView, u32, u32)>,
+    pub(super) depth: Option<(wgpu::Texture, wgpu::TextureView, u32, u32)>,
     /// Multisampled color target, resolved into the real target after drawing.
     msaa: Option<(wgpu::Texture, wgpu::TextureView, u32, u32)>,
 }
@@ -290,7 +291,7 @@ impl GuiRenderer {
     fn pipeline(&mut self, device: &wgpu::Device, key: PipeKey) -> &wgpu::RenderPipeline {
         let (format, shader, layout, samples) =
             (self.format, &self.shader, &self.layout, self.samples);
-        self.pipes.entry(key).or_insert_with(|| {
+        self.pipes.entry((key, format)).or_insert_with(|| {
             let blend = key.blend.map(|(s, d)| {
                 let c = wgpu::BlendComponent { src_factor: factor(s), dst_factor: factor(d), operation: wgpu::BlendOperation::Add };
                 wgpu::BlendState { color: c, alpha: c }
@@ -471,7 +472,7 @@ impl GuiRenderer {
                 rp.set_vertex_buffer(0, vb.slice(..));
             }
             for (i, d) in gl.draws.iter().enumerate() {
-                rp.set_pipeline(&self.pipes[&keys[i]]);
+                rp.set_pipeline(&self.pipes[&(keys[i], self.format)]);
                 rp.set_bind_group(
                     0,
                     &self.uniform_bind,
