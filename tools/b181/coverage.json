@@ -45486,6 +45486,11 @@
   "world-blocks b1.8.1: weather",
   "world-blocks b1.8.1: wire8"
  ],
+ "ItemBlock": [
+  "entities10: itemblock10",
+  "entities11: blockfull11 (all registered block items)",
+  "entities11: itempiston11"
+ ],
  "ItemBow": [
   "Nether terrain meshes (fire, glowstone, the Nether light table)",
   "block showcase: fancy off, anaglyph",
@@ -49922,6 +49927,11 @@
   "world-blocks b1.8.1: visual",
   "world-blocks b1.8.1: weather",
   "world-blocks b1.8.1: wire8"
+ ],
+ "ItemStack": [
+  "entities11: itemstack11",
+  "entities11: stackdata11",
+  "entities11: stacknbt11"
  ],
  "ItemSword": [
   "Nether terrain meshes (fire, glowstone, the Nether light table)",

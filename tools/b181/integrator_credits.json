@@ -92,5 +92,7 @@
  "BlockCake",
  "Minecraft",
  "SpawnerAnimals",
- "Item"
+ "Item",
+ "ItemBlock",
+ "ItemStack"
 ]
