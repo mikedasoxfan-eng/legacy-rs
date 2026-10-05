@@ -4460,6 +4460,11 @@
   "terrain round2 skygrid seed 9223372036854775807",
   "utilities"
  ],
+ "BlockCactus": [
+  "world-blocks b1.8.1: placepred4",
+  "world-blocks b1.8.1: growth4",
+  "player-gui b1.8.1: whole-player ticks"
+ ],
  "BlockChest": [
   "world-blocks b1.8.1: chests",
   "world-blocks b1.8.1: chestlife",
@@ -4534,6 +4539,10 @@
   "world-blocks b1.8.1: visual",
   "world-blocks b1.8.1: weather"
  ],
+ "BlockFlower": [
+  "world-blocks b1.8.1: placepred4",
+  "world-blocks b1.8.1: growth4"
+ ],
  "BlockMelon": [
   "world-blocks b1.8.1: actions",
   "world-blocks b1.8.1: activation4",
@@ -4589,6 +4598,10 @@
   "world-blocks b1.8.1: textures",
   "world-blocks b1.8.1: visual",
   "world-blocks b1.8.1: weather"
+ ],
+ "BlockMobSpawner": [
+  "entities3: spawnbranches",
+  "entities181: rules"
  ],
  "BlockMushroom": [
   "world-blocks b1.8.1: actions",
@@ -4823,6 +4836,14 @@
   "redstone: pistons_clock",
   "redstone: rails"
  ],
+ "BlockReed": [
+  "world-blocks b1.8.1: placement4",
+  "world-blocks b1.8.1: placepred4",
+  "world-blocks b1.8.1: growth4"
+ ],
+ "BlockSign": [
+  "decorations181: signs: placement, editing, NBT"
+ ],
  "BlockSilverfish": [
   "world-blocks b1.8.1: actions",
   "world-blocks b1.8.1: activation4",
@@ -4878,6 +4899,11 @@
   "world-blocks b1.8.1: textures",
   "world-blocks b1.8.1: visual",
   "world-blocks b1.8.1: weather"
+ ],
+ "BlockSnowBlock": [
+  "world-blocks b1.8.1: growth4",
+  "world-blocks b1.8.1: geometry",
+  "world-blocks b1.8.1: drops"
  ],
  "BlockStem": [
   "world-blocks b1.8.1: actions",
@@ -27377,6 +27403,10 @@
   "world-blocks b1.8.1: visual",
   "world-blocks b1.8.1: weather"
  ],
+ "ItemMap": [
+  "decorations181: maps: palette, terrain, markers, NBT",
+  "decorations181: map files"
+ ],
  "ItemPainting": [
   "entities181: Arrow",
   "entities181: Boat",
@@ -40814,6 +40844,10 @@
   "world-blocks b1.8.1: textures",
   "world-blocks b1.8.1: visual",
   "world-blocks b1.8.1: weather"
+ ],
+ "TileEntitySign": [
+  "decorations181: signs: placement, editing, NBT",
+  "decorations181: sign renderer (TileEntitySignRenderer)"
  ],
  "TileEntitySignRenderer": [
   "decorations181: sign renderer (TileEntitySignRenderer)",
