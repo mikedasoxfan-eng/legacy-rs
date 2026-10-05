@@ -86,18 +86,18 @@ pub fn check(path: &str) -> bool {
         let light = std::array::from_fn(|_| d.f());
         let original_kind = kind;
         let kind = match kind {
-            0 => ObjectKind::Item { item: worldgen::world::tile::ItemStack { id, count, damage }, age, hover },
+            0 => ObjectKind::Item { item: worldgen::world::tile::ItemStack { id, count: count as i32, damage }, age, hover },
             1 => ObjectKind::Falling { block: id as u8, light },
             2 => ObjectKind::Tnt { fuse },
             3 => ObjectKind::Arrow { yaw, pitch, shake, visible: true },
             4 => ObjectKind::Sprite { icon: 14, scale: 2.0 },
             5 => ObjectKind::Sprite { icon: 14, scale: 0.5 },
-            6 | 7 => ObjectKind::Item { item: worldgen::world::tile::ItemStack { id, count, damage }, age, hover },
+            6 | 7 => ObjectKind::Item { item: worldgen::world::tile::ItemStack { id, count: count as i32, damage }, age, hover },
             _ => panic!("kind"),
         };
         let s = ObjectState { kind, position, partial, brightness };
         let r = if original_kind == 6 || original_kind == 7 {
-            let item = worldgen::world::tile::ItemStack { id, count, damage };
+            let item = worldgen::world::tile::ItemStack { id, count: count as i32, damage };
             if original_kind == 6 {
                 super::gui_item::geometry(&item, 12, 9, true)
             } else {

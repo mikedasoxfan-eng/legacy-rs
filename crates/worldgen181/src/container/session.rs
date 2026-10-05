@@ -253,9 +253,9 @@ impl World {
         for &(x, y, z) in &c.positions {
             match self.get_block_tile_entity(x, y, z) {
                 Some(TileEntity::Chest(items)) => {
-                    for s in items.iter() {
+                    for s in items.iter().take(27) {
                         c.tile[offset] = s.map(|s| {
-                            ItemStack::new(s.id as i32, s.count as i8 as i32, s.damage as i32)
+                            ItemStack::new(s.id as i32, s.count, s.damage as i32)
                         });
                         offset += 1;
                     }
@@ -283,7 +283,7 @@ impl World {
         for &(x, y, z) in &c.positions {
             match self.get_block_tile_entity(x, y, z) {
                 Some(TileEntity::Chest(items)) => {
-                    for s in items.iter_mut() {
+                    for s in items.iter_mut().take(27) {
                         *s = c.tile[offset].map(Into::into);
                         offset += 1;
                     }

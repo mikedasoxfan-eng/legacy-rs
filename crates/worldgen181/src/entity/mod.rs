@@ -99,6 +99,8 @@ pub enum EntityKind {
     Zombie,
     Skeleton,
     Spider,
+    /// Construction/registration for BlockSilverfish; AI is owned by entities.
+    Silverfish,
     Creeper {
         ignition: i32,
         prev_ignition: i32,
@@ -153,6 +155,7 @@ impl EntityKind {
             Self::Zombie => "Zombie",
             Self::Skeleton => "Skeleton",
             Self::Spider => "Spider",
+            Self::Silverfish => "Silverfish",
             Self::Creeper { .. } => "Creeper",
             Self::PigZombie { .. } => "PigZombie",
             Self::Giant => "Giant",
@@ -172,6 +175,7 @@ impl EntityKind {
             Self::Zombie
                 | Self::Skeleton
                 | Self::Spider
+                | Self::Silverfish
                 | Self::Creeper { .. }
                 | Self::PigZombie { .. }
                 | Self::Giant
@@ -419,7 +423,11 @@ impl Entity {
         self.yaw = yaw;
         self.pitch = pitch;
     }
-    pub fn attack(&mut self, w: &mut World, attacker: Option<i32>, mut damage: i32) -> bool {
+    pub fn attack(&mut self, w: &mut World, attacker: Option<i32>, damage: i32) -> bool {
+        self.attack_source181(w, attacker, damage, false, 0.3)
+    }
+    /// Minimal DamageSource adapter; the entities owner supplies flags for each source.
+    pub fn attack_source181(&mut self, w: &mut World, attacker: Option<i32>, mut damage: i32, bypass_armor:bool, exhaustion:f32) -> bool {
         if matches!(self.kind,EntityKind::Painting(_)) {if !self.dead{self.break_painting(w,true);}return true;}
         if matches!(self.kind, EntityKind::Minecart(..) | EntityKind::Boat(..)) {
             return self.attack_vehicle(w, damage);
@@ -431,7 +439,7 @@ impl Entity {
         }
         self.prepare_special_attack(w, attacker, &mut damage);
         if self.kind.is_living() {
-            let hit = self.living_attack(w, attacker, damage);
+            let hit = self.living_attack_source181(w, attacker, damage, bypass_armor, exhaustion);
             if hit
                 && self.kind.is_mob()
                 && attacker.is_some()

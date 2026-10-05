@@ -3,6 +3,7 @@
 //! original classes by the oracle, so it cannot drift from vanilla.
 
 mod ids;
+pub mod visual181;
 pub mod table;
 
 pub use ids::*;

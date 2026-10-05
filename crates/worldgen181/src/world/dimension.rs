@@ -134,9 +134,12 @@ impl World {
             self.spawn.1 = 64;
         }
         let (mut x, _, mut z) = self.spawn;
+        let mut attempts = 0;
         while self.get_first_uncovered_block(x, z) == 0 {
             x += self.rand.next_int(8) - self.rand.next_int(8);
             z += self.rand.next_int(8) - self.rand.next_int(8);
+            attempts += 1;
+            if attempts == 10000 { break; }
         }
         self.spawn.0 = x;
         self.spawn.2 = z;

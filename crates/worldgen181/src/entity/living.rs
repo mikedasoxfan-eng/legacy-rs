@@ -117,6 +117,7 @@ impl Entity {
             "Zombie" => EntityKind::Zombie,
             "Skeleton" => EntityKind::Skeleton,
             "Spider" => EntityKind::Spider,
+            "Silverfish" => EntityKind::Silverfish,
             "Giant" => EntityKind::Giant,
             "PigZombie" => EntityKind::PigZombie {
                 anger: 0,
@@ -188,6 +189,7 @@ impl Entity {
                 e.height = 0.9;
                 e.living.move_speed = 0.8;
             }
+            EntityKind::Silverfish => {e.width=0.3;e.height=0.7;e.living.move_speed=0.6;}
             EntityKind::Giant => {
                 e.living.move_speed = 0.5;
                 e.living.health *= 10;
@@ -640,11 +642,13 @@ impl Entity {
             floor(self.pos.z),
         ) == LADDER
     }
-    pub(super) fn living_attack(
+    pub(super) fn living_attack_source181(
         &mut self,
         w: &mut World,
         attacker: Option<i32>,
         damage: i32,
+        bypass_armor: bool,
+        exhaustion: f32,
     ) -> bool {
         self.living.entity_age = 0;
         if self.living.health <= 0 {
@@ -656,14 +660,14 @@ impl Entity {
             if damage <= self.living.last_damage {
                 return false;
             }
-            self.damage_living(damage - self.living.last_damage);
+            self.damage_living_source181(damage - self.living.last_damage, bypass_armor, exhaustion);
             self.living.last_damage = damage;
             fresh = false;
         } else {
             self.living.last_damage = damage;
             self.living.prev_health = self.living.health;
             self.living.hearts_life = self.living.hearts_halves_life;
-            self.damage_living(damage);
+            self.damage_living_source181(damage, bypass_armor, exhaustion);
             self.living.hurt_time = 10;
             self.living.max_hurt_time = 10;
             fresh = true;

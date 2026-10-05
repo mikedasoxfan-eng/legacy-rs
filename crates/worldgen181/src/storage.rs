@@ -416,7 +416,7 @@ impl Storage {
     ) -> Option<Chunk> {
         let raw = self.region(cx, cz).ok()?.read_chunk(cx & 31, cz & 31)?;
         let root = nbt::read_root(&mut &raw[..]).ok()?;
-        let mut level = match root.compound("Level") {
+        let level = match root.compound("Level") {
             Some(l) if l.has("Blocks") => l.clone(),
             Some(_) => {
                 eprintln!("Chunk file at {cx},{cz} is missing block data, skipping");
@@ -429,8 +429,8 @@ impl Storage {
         };
         if level.int("xPos") != cx || level.int("zPos") != cz {
             eprintln!("Chunk file at {cx},{cz} is in the wrong location; relocating.");
-            level.put("xPos", Tag::Int(cx));
-            level.put("zPos", Tag::Int(cz));
+            // Vanilla writes the corrected coordinates to the outer root,
+            // then reloads the unchanged Level compound: relocation is ineffective.
         }
         let mut c = chunk_from_nbt_for_dimension(&level, dimension)?;
         // ChunkBlockMap: ids without a block become air.
@@ -582,7 +582,7 @@ pub fn chunk_from_nbt_for_dimension(
                     if slot < 27 && crate::entity::player::registry::item(it.short("id") as i32).is_some() {
                         slots[slot] = Some(ItemStack {
                             id: it.short("id"),
-                            count: it.byte("Count") as u8,
+                            count: it.byte("Count") as i32,
                             damage: it.short("Damage"),
                         });
                     }

@@ -5,6 +5,8 @@ use crate::block::props;
 
 pub type TileId = u64;
 pub struct TileObject {
+    pub cached_metadata: i32,
+    pub cached_block: Option<u8>,
     pub position: (i32, i32, i32),
     pub invalid: bool,
     // Attached objects live in Chunk.tile_entities for the inventory APIs. An
@@ -13,6 +15,29 @@ pub struct TileObject {
 }
 
 impl World {
+    pub fn tile_metadata181(&mut self,id:TileId)->i32 {
+        if self.tile_objects[&id].cached_metadata == -1 {
+            let (x,y,z)=self.tile_objects[&id].position;
+            let meta=self.get_block_metadata(x,y,z);self.tile_objects.get_mut(&id).unwrap().cached_metadata=meta;
+        }
+        self.tile_objects[&id].cached_metadata
+    }
+    pub fn tile_block181(&mut self,id:TileId)->Option<u8> {
+        if self.tile_objects[&id].cached_block.is_none() {
+            let (x,y,z)=self.tile_objects[&id].position;let block=self.get_block_id(x,y,z);
+            self.tile_objects.get_mut(&id).unwrap().cached_block=if block==0 {None}else{Some(block)};
+        }
+        self.tile_objects[&id].cached_block
+    }
+    pub fn reset_tile_cache181(&mut self,id:TileId) {
+        let o=self.tile_objects.get_mut(&id).unwrap();o.cached_metadata=-1;o.cached_block=None;
+        if let Some(a)=self.chest_animations.get_mut(&id) {a.adjacency_checked=false;}
+    }
+    pub fn tile_inventory_changed181(&mut self,id:TileId) {
+        let (x,y,z)=self.tile_objects[&id].position;
+        let meta=self.get_block_metadata(x,y,z);self.tile_objects.get_mut(&id).unwrap().cached_metadata=meta;
+        self.touch(x>>4,z>>4);
+    }
     pub(crate) fn new_tile_object(&mut self, position: (i32, i32, i32), te: TileEntity) -> TileId {
         let chest=matches!(&te,TileEntity::Chest(_));
         let id = self.next_tile_id;
@@ -21,6 +46,8 @@ impl World {
         self.tile_objects.insert(
             id,
             TileObject {
+                cached_metadata: -1,
+                cached_block: None,
                 position,
                 invalid: false,
                 detached: Some(te),
@@ -127,6 +154,7 @@ impl World {
     pub(crate) fn remove_chunk_tile(&mut self, x: i32, y: i32, z: i32) {
         if self.access_chunk(x >> 4, z >> 4) && self.chunk(x >> 4, z >> 4).loaded {
             if let Some(id) = self.detach_chunk_tile(x, y, z) {
+                self.reset_tile_cache181(id);
                 if self.chest_animations.contains_key(&id){self.chest_animations.get_mut(&id).unwrap().adjacency_checked=false;self.check_chest_adjacency181(id);}
                 self.tile_objects.get_mut(&id).unwrap().invalid = true;
             }
@@ -149,6 +177,7 @@ impl World {
             .copied();
         if let Some(id) = id {
             if self.scanning_tiles {
+                self.reset_tile_cache181(id);
                 if self.chest_animations.contains_key(&id){self.chest_animations.get_mut(&id).unwrap().adjacency_checked=false;self.check_chest_adjacency181(id);}
                 self.tile_objects.get_mut(&id).unwrap().invalid = true;
                 return;

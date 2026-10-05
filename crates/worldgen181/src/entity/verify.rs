@@ -1036,7 +1036,7 @@ pub fn append_world(w: &World, out: &mut Vec<u8>) {
                         })
                         .unwrap_or(ItemStack::new(-1, 0, 0));
                     out.extend_from_slice(&item.id.to_le_bytes());
-                    out.push(item.count);
+                    out.push(item.count as u8);
                     out.extend_from_slice(&item.damage.to_le_bytes());
                 }
                 if furnace {
@@ -1066,7 +1066,7 @@ pub fn append_world(w: &World, out: &mut Vec<u8>) {
                     for slot in slots.iter() {
                         let item = slot.unwrap_or(ItemStack::new(-1, 0, 0));
                         out.extend_from_slice(&item.id.to_le_bytes());
-                        out.push(item.count);
+                        out.push(item.count as u8);
                         out.extend_from_slice(&item.damage.to_le_bytes());
                     }
                 }
@@ -1082,7 +1082,7 @@ pub fn append_world(w: &World, out: &mut Vec<u8>) {
                             .unwrap_or(crate::entity::player::ItemStack::new(-1, 0, 0))
                             .into();
                         out.extend_from_slice(&s.id.to_le_bytes());
-                        out.push(s.count);
+                        out.push(s.count as u8);
                         out.extend_from_slice(&s.damage.to_le_bytes());
                     }
                     out.extend_from_slice(&(f.burn as i16).to_le_bytes());
@@ -1095,7 +1095,7 @@ pub fn append_world(w: &World, out: &mut Vec<u8>) {
                             .unwrap_or(crate::entity::player::ItemStack::new(-1, 0, 0))
                             .into();
                         out.extend_from_slice(&s.id.to_le_bytes());
-                        out.push(s.count);
+                        out.push(s.count as u8);
                         out.extend_from_slice(&s.damage.to_le_bytes());
                     }
                 }

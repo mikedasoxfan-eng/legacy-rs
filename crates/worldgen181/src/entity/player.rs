@@ -7,6 +7,7 @@ pub mod dye;
 pub mod interactions;
 pub mod inventory;
 pub mod items;
+pub mod use181;
 pub mod persistence;
 pub mod picking;
 pub mod placement;
@@ -86,6 +87,11 @@ pub enum SleepStatus {
 }
 #[derive(Clone, Debug)]
 pub struct PlayerState {
+    pub item_use: Option<use181::ItemUse>,
+    pub food: use181::FoodStats,
+    /// Local food effects; the entities port can reuse these states.
+    pub food_effects: Vec<use181::FoodEffect>,
+    pub invulnerable: bool,
     pub fish_entity:Option<i32>,
     pub left_click_counter: i32,
     pub last_click_tick: i32,
@@ -123,6 +129,10 @@ pub struct PlayerState {
 impl Default for PlayerState {
     fn default() -> Self {
         Self {
+            item_use: None,
+            food: Default::default(),
+            food_effects: Vec::new(),
+            invulnerable: false,
             fish_entity:None,
             left_click_counter: 0,
             last_click_tick: 0,
@@ -177,11 +187,13 @@ impl Entity {
             let n = java_round_f(((dx * dx + dy * dy + dz * dz).sqrt() as f32) * 100.0);
             if n > 0 {
                 self.add_stat(stat::DIVE, n);
+                self.add_food_exhaustion181(0.015 * n as f32 * 0.01);
             }
         } else if self.in_water {
             let n = java_round_f(((dx * dx + dz * dz).sqrt() as f32) * 100.0);
             if n > 0 {
                 self.add_stat(stat::SWIM, n);
+                self.add_food_exhaustion181(0.015 * n as f32 * 0.01);
             }
         } else if self.is_on_ladder(w) {
             if dy > 0.0 {
@@ -191,6 +203,7 @@ impl Entity {
             let n = java_round_f(((dx * dx + dz * dz).sqrt() as f32) * 100.0);
             if n > 0 {
                 self.add_stat(stat::WALK, n);
+                self.add_food_exhaustion181(0.01 * n as f32 * 0.01);
             }
         } else {
             let n = java_round_f(((dx * dx + dz * dz).sqrt() as f32) * 100.0);
@@ -292,7 +305,8 @@ impl Entity {
             s.swing_ticks = 0;
         }
         let swing = s.swing_ticks as f32 / 8.0;
-        let (strafe, forward) = s.input.movement();
+        let (mut strafe, mut forward) = s.input.movement();
+        if s.item_use.is_some() { strafe *= 0.2; forward *= 0.2; }
         let jump = s.input.jump;
         self.living.swing_progress = swing;
         self.living.move_strafing = strafe;
@@ -488,6 +502,8 @@ impl Entity {
         }
     }
     pub(super) fn update_player(&mut self, w: &mut World) {
+        self.tick_item_use(w);
+        self.tick_food_effects(w);
         let s = self.player_state_mut().unwrap();
         if s.sleeping {
             s.sleep_timer = (s.sleep_timer + 1).min(100);
@@ -535,6 +551,7 @@ impl Entity {
         if self.riding.is_none() {
             self.player_state_mut().unwrap().minecart_start = None;
         }
+        self.tick_food(w);
     }
     pub(super) fn player_damage(
         &mut self,
@@ -575,8 +592,9 @@ impl Entity {
         }
         *damage != 0
     }
-    pub(super) fn damage_living(&mut self, mut amount: i32) {
-        if let Some(s) = self.player_state_mut() {
+    pub(crate) fn damage_living_source181(&mut self, mut amount: i32, bypass_armor:bool, exhaustion:f32) {
+        if !bypass_armor && self.is_blocking() { amount = (1 + amount) >> 1; }
+        if let Some(s) = self.player_state_mut().filter(|_|!bypass_armor) {
             let damage = amount * (25 - s.inventory.armor_value()) + s.damage_remainder;
             let broken = s.inventory.damage_armor(amount);
             amount = damage / 25;
@@ -585,6 +603,7 @@ impl Entity {
                 self.add_stat(stat::broken(id), 1);
             }
         }
+        self.add_food_exhaustion181(exhaustion);
         self.living.health -= amount;
     }
     pub(super) fn player_death(&mut self, w: &mut World, attacker: Option<i32>) {

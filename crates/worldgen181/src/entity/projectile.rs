@@ -5,6 +5,7 @@ use crate::{
 };
 #[derive(Clone, Debug)]
 pub struct ArrowState {
+    pub critical: bool,
     pub tile: [i32; 3],
     pub block: u8,
     pub metadata: i32,
@@ -18,6 +19,7 @@ pub struct ArrowState {
 impl Default for ArrowState {
     fn default() -> Self {
         Self {
+            critical: false,
             tile: [-1; 3],
             block: 0,
             metadata: 0,
@@ -53,6 +55,9 @@ impl Entity {
         e
     }
     pub fn arrow_from_owner(w: &mut World, owner: &Entity) -> Self {
+        Self::arrow_from_owner_speed(w, owner, 1.0)
+    }
+    pub fn arrow_from_owner_speed(w: &mut World, owner: &Entity, speed: f32) -> Self {
         let mut e = Self::base(
             w,
             EntityKind::Arrow(ArrowState {
@@ -78,7 +83,7 @@ impl Entity {
             (-math::sin(e.yaw / 180.0 * PI) * math::cos(e.pitch / 180.0 * PI)) as f64,
             (-math::sin(e.pitch / 180.0 * PI)) as f64,
             (math::cos(e.yaw / 180.0 * PI) * math::cos(e.pitch / 180.0 * PI)) as f64,
-            1.5,
+            speed * 1.5,
             1.0,
         );
         e
@@ -320,7 +325,10 @@ impl Entity {
                 match hit {
                     Hit::Entity { id, .. } => {
                         let success = if let Some(mut target) = w.entities.remove(&id) {
-                            let hit = target.attack(w, s.owner, 4);
+                            let speed = self.motion.length() as f32;
+                            let mut damage = (speed as f64 * 2.0).ceil() as i32;
+                            if s.critical { damage = damage * 3 / 2 + 1; }
+                            let hit = target.attack(w, s.owner, damage);
                             w.entities.insert(id, target);
                             hit
                         } else {
@@ -356,13 +364,17 @@ impl Entity {
                         w.play_sound_at_entity(self, "random.drr", 1.0, pitch);
                         s.in_ground = true;
                         s.shake = 7;
+                        s.critical = false;
                     }
                 }
+            }
+            if s.critical {
+                for k in 0..4 { w.spawn_particle("crit", self.pos.add(self.motion.x*k as f64/4.0,self.motion.y*k as f64/4.0,self.motion.z*k as f64/4.0),Vec3D::new(-self.motion.x,-self.motion.y+0.2,-self.motion.z)); }
             }
             self.projectile_advance(
                 w,
                 if self.in_water { 0.8 } else { 0.99 },
-                0.03,
+                0.05,
                 Vec3D::default(),
             );
         }

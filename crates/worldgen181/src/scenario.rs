@@ -5,31 +5,17 @@ use crate::block;
 use crate::world::World;
 
 impl World {
-    /// `World.getInitialSpawnLocation` (`generateSpawnPoint` on the server, which allows
-    /// chunk loading while it searches): random walk until the top block is sand.
-    pub fn find_initial_spawn(&mut self) {
-        if let Some(s) = &mut self.server {
-            s.world_override = true;
-        }
-        let mut x = 0;
-        let mut z = 0;
-        while !self.can_coordinate_be_spawn(x, z) {
-            x += self.rand.next_int(64) - self.rand.next_int(64);
-            z += self.rand.next_int(64) - self.rand.next_int(64);
-        }
-        self.spawn = (x, 64, z);
-        if let Some(s) = &mut self.server {
-            s.world_override = false;
-        }
-    }
+    /// The terrain owner must use `find_initial_spawn181` with its GenLayer biome grid.
+    /// Until that integration lands, preserve the original bounded, seed-local fallback.
+    pub fn find_initial_spawn(&mut self) { self.find_initial_spawn181(&[]); }
 
     /// `WorldProvider.canCoordinateBeSpawn`
-    fn can_coordinate_be_spawn(&mut self, x: i32, z: i32) -> bool {
+    pub(crate) fn can_coordinate_be_spawn(&mut self, x: i32, z: i32) -> bool {
         let id = self.get_first_uncovered_block(x, z);
         if self.dimension.is_hell_world() {
             id != block::BEDROCK && id != block::AIR && block::opaque_cube_lookup(id)
         } else {
-            id == block::SAND
+            id == block::GRASS
         }
     }
 

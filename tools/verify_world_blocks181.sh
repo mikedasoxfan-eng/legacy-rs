@@ -29,5 +29,10 @@ echo "== world-blocks b1.8.1: region cross-read"
 if "$cmp" regions181 write "$out/wb181-rust.mcr" \
    && "$oracle" wbregions "$(cygpath -w "$out/wb181-rust.mcr")" wb181-regions.bin \
    && "$cmp" regions181 check "$out/wb181-regions.bin" "$out/wb181-rust.mcr"; then :; else fail=1; fi
+# Round two: separate original-bytecode modes keep the shared oracle untouched.
+for suite in use useticks mushrooms chestlife math storage silverfish visual colors spawn blocking relocation foodstats; do
+  echo "== world-blocks b1.8.1: $suite"
+  if "$oracle" "wb$suite" "wb181-$suite.bin" && "$cmp" worldblocks181 "$suite" "$out/wb181-$suite.bin"; then :; else fail=1; fi
+done
 [ $fail -eq 0 ] && echo "WORLD-BLOCKS FOCUSED CASES EXACT" || echo "WORLD-BLOCKS FOCUSED CASES DIFFER"
 exit $fail
