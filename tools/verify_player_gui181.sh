@@ -11,6 +11,8 @@ if [ -z "${VERIFY181_LOCKED:-}" ]; then
 fi
 cd "$root"
 cargo build --release -q -p worldgen181 -p client || exit 1
+# The world-list scenes need the fixture saves (a fresh tree has none).
+python tools/oracle181/gui/make_saves.py "$root/tools/oracle181/out/guisaves" >/dev/null || exit 1
 fail=0
 echo "== player-gui b1.8.1 round 5: inventory/NBT and player callbacks"
 bash tools/oracle181/oracle.sh playerstate181 playerstate181-java.bin && target/release/playerstate181 target/playerstate181-rust.bin tools/oracle181/out/playerstate181-java.bin || fail=1
