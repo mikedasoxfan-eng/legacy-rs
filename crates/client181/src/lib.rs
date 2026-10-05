@@ -453,6 +453,9 @@ pub fn run() {
         std::process::exit(if ok { 0 } else { 1 });
     }
     if args.get(1).map(String::as_str)==Some("--fishrenderercheck") {std::process::exit(if render::entity::object_check::fish_check(&args[2]) {0}else{1});}
+    if args.get(1).map(String::as_str)==Some("--screenshotcheck") {
+        let ok=screenshot::check(std::path::Path::new(&args[2]),&args[3]);std::process::exit(if ok {0}else{1});
+    }
     if args.get(1).map(String::as_str)==Some("--signrenderercheck") {
         let ok=render::entity::object_check::sign_check(&args[2]);std::process::exit(if ok {0}else{1});
     }
