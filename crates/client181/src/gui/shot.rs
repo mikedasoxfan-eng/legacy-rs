@@ -88,6 +88,9 @@ pub fn run(script: &str, out_dir: &std::path::Path) -> Result<(), String> {
     let mut ingame = super::ingame::GuiIngame::new();
     let mut clear_level = 0.0f64;
     let mut lightmap_pattern: Option<i32> = None;
+    // Script commands run inside the current frame's GUI callback. Settings
+    // changed by them affect the world-renderer mask on the following frame.
+    let mut frame_anaglyph = false;
     let mut container: Option<(
         worldgen::container::Container,
         worldgen::container::InventoryPlayer,
@@ -397,6 +400,11 @@ pub fn run(script: &str, out_dir: &std::path::Path) -> Result<(), String> {
                 // It disables unit 1 before GUI drawing; the first capture just
                 // after `world` still precedes its first lightmap binding.
                 sys.ui.gl.lightmap_enabled = false;
+                // The intervening original world frame leaves the stereo RGB
+                // mask active. glClear and the title's first cube sample use it.
+                if sys.ui.world_open {
+                    sys.ui.gl.color_mask = if frame_anaglyph { 7 } else { 15 };
+                }
                 if let Some(pattern)=lightmap_pattern {
                     sys.ui.gl.lightmap_texels=Some(Box::new(std::array::from_fn(|i| {
                         let (x,y)=((i%16) as u32,(i/16) as u32);
@@ -438,13 +446,19 @@ pub fn run(script: &str, out_dir: &std::path::Path) -> Result<(), String> {
                 }
                 sys.renderer
                     .render(&device, &queue, &view, SIZE, &sys.ui.gl, clear);
-                let img = read_back(&device, &queue, &target);
+                let mut img = read_back(&device, &queue, &target);
+                if std::env::var_os("GUI_CAPTURE_ALPHA").is_some() {
+                    let alpha: Vec<_> = img.rgba.chunks_exact(4).map(|p| p[3]).collect();
+                    std::fs::write(out_dir.join(format!("{}.alpha", rest.trim())), alpha).map_err(|e| e.to_string())?;
+                }
+                for px in img.rgba.chunks_exact_mut(4) { px[3] = 255; }
                 let path = out_dir.join(format!("{}.png", rest.trim()));
                 crate::assets::save_png(&img, &path).map_err(|e| e.to_string())?;
                 println!("rust: {}", path.display());
                 if sys.ui.world_open {
                     sys.ui.gl.lightmap_texels = Some(Box::new([0xff000000; 256]));
                 }
+                frame_anaglyph = sys.ui.settings.anaglyph;
             }
             other => return Err(format!("unknown script command {other}")),
         }
@@ -480,8 +494,8 @@ pub fn run(script: &str, out_dir: &std::path::Path) -> Result<(), String> {
     Ok(())
 }
 
-fn read_back(device: &wgpu::Device, queue: &wgpu::Queue, tex: &wgpu::Texture) -> Image {
-    let (w, h) = SIZE;
+pub(crate) fn read_back(device: &wgpu::Device, queue: &wgpu::Queue, tex: &wgpu::Texture) -> Image {
+    let (w, h) = (tex.width(), tex.height());
     let row = (w * 4).div_ceil(256) * 256;
     let buf = device.create_buffer(&wgpu::BufferDescriptor {
         label: Some("guishot readback"),
@@ -529,10 +543,6 @@ fn read_back(device: &wgpu::Device, queue: &wgpu::Queue, tex: &wgpu::Texture) ->
             flipped.extend_from_slice(&rgba[y * row..(y + 1) * row]);
         }
         rgba = flipped;
-    }
-    // Opaque output like the GL color buffer read as RGB.
-    for px in rgba.chunks_mut(4) {
-        px[3] = 255;
     }
     Image {
         width: w,

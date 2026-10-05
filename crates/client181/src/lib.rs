@@ -499,6 +499,7 @@ pub fn run() {
     if args.get(1).map(String::as_str)==Some("--worldcallbackcheck"){std::process::exit(if gui::screens::select_world::check_callbacks(&args[2]) {0}else{1});}
     if args.get(1).map(String::as_str)==Some("--guiclosecheck"){std::process::exit(if gui::container_check::check(&args[2]) {0}else{1});}
     if args.get(1).map(String::as_str)==Some("--inventoryguicheck"){std::process::exit(if gui::inventory_check::check(&args[2]) {0}else{1});}
+    if args.get(1).map(String::as_str)==Some("--guiframebuffercheck"){std::process::exit(if gui::framebuffer_check9::check(&args[2]) {0}else{1});}
     if args.get(1).map(String::as_str)==Some("--guislot8check"){std::process::exit(if gui::slot::check(&args[2]) {0}else{1});}
     if args.get(1).map(String::as_str)==Some("--yesno8check"){std::process::exit(if gui::screens::select_world::check_yes_no(&args[2]) {0}else{1});}
     if args.get(1).map(String::as_str)==Some("--rename8check"){std::process::exit(if gui::screens::select_world::check_rename(&args[2]) {0}else{1});}

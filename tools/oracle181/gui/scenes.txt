@@ -733,3 +733,142 @@ shot b181_gui8_stats_items_clear
 mouse 155 75
 shot b181_gui8_stats_items_tooltip
 # --- end player-gui round 8 ---
+
+# --- player-gui round 9: inventory death, material clamp and retained state ---
+world 42
+clear 128
+lightmap 2
+mouse -1 -1
+open inventory
+previewlight 0
+pose 27 0.0 0.0 0.0 off off 0 1
+shot b181_gui9_death1_light0
+open inventory
+previewlight 7
+pose 27 0.0 0.0 0.0 off off 0 1
+shot b181_gui9_death1_light7
+open inventory
+previewlight 15
+pose 27 0.0 0.0 0.0 off off 0 1
+shot b181_gui9_death1_light15
+open inventory
+previewlight 0
+pose 27 0.0 0.0 0.0 off off 0 2
+shot b181_gui9_death2_light0
+open inventory
+previewlight 7
+pose 27 0.0 0.0 0.0 off off 0 2
+shot b181_gui9_death2_light7
+open inventory
+previewlight 15
+pose 27 0.0 0.0 0.0 off off 0 2
+shot b181_gui9_death2_light15
+open inventory
+previewlight 0
+pose 27 0.0 0.0 0.0 off off 0 5
+shot b181_gui9_death5_light0
+open inventory
+previewlight 7
+pose 27 0.0 0.0 0.0 off off 0 5
+shot b181_gui9_death5_light7
+open inventory
+previewlight 15
+pose 27 0.0 0.0 0.0 off off 0 5
+shot b181_gui9_death5_light15
+open inventory
+previewlight 0
+pose 27 0.0 0.0 0.0 off off 0 9
+shot b181_gui9_death9_light0
+open inventory
+previewlight 7
+pose 27 0.0 0.0 0.0 off off 0 9
+shot b181_gui9_death9_light7
+open inventory
+previewlight 15
+pose 27 0.0 0.0 0.0 off off 0 9
+shot b181_gui9_death9_light15
+open inventory
+previewlight 0
+pose 27 0.0 0.0 0.0 off off 0 13
+shot b181_gui9_death13_light0
+open inventory
+previewlight 7
+pose 27 0.0 0.0 0.0 off off 0 13
+shot b181_gui9_death13_light7
+open inventory
+previewlight 15
+pose 27 0.0 0.0 0.0 off off 0 13
+shot b181_gui9_death13_light15
+open inventory
+previewlight 0
+pose 27 0.0 0.0 0.0 off off 0 20
+shot b181_gui9_death20_light0
+open inventory
+previewlight 7
+pose 27 0.0 0.0 0.0 off off 0 20
+shot b181_gui9_death20_light7
+open inventory
+previewlight 15
+pose 27 0.0 0.0 0.0 off off 0 20
+shot b181_gui9_death20_light15
+open inventory
+previewlight 7
+stack 5 310 1 0
+stack 6 311 1 0
+stack 7 312 1 0
+stack 8 313 1 0
+stack 36 257 1 0
+pose 83 2.5 0.7 0.0 off off 0 1
+shot b181_gui9_armor_death1
+open inventory
+previewlight 7
+stack 5 310 1 0
+stack 6 311 1 0
+stack 7 312 1 0
+stack 8 313 1 0
+stack 36 257 1 0
+pose 83 2.5 0.7 0.0 off off 0 5
+shot b181_gui9_armor_death5
+open inventory
+previewlight 7
+stack 5 310 1 0
+stack 6 311 1 0
+stack 7 312 1 0
+stack 8 313 1 0
+stack 36 257 1 0
+pose 83 2.5 0.7 0.0 off off 0 13
+shot b181_gui9_armor_death13
+open inventory
+previewlight 7
+stack 5 310 1 0
+stack 6 311 1 0
+stack 7 312 1 0
+stack 8 313 1 0
+stack 36 257 1 0
+pose 83 2.5 0.7 0.0 off off 0 20
+shot b181_gui9_armor_death20
+open inventory
+previewlight 7
+mouse 140 130
+pose 27 0.0 0.0 0.0 off off 0 1
+shot b181_gui9_mouse0_first
+shot b181_gui9_mouse0_retained
+open inventory
+previewlight 7
+mouse 220 80
+pose 27 0.0 0.0 0.0 off off 0 5
+shot b181_gui9_mouse1_first
+shot b181_gui9_mouse1_retained
+open inventory
+previewlight 7
+mouse 15 15
+pose 27 0.0 0.0 0.0 off off 0 13
+shot b181_gui9_mouse2_first
+shot b181_gui9_mouse2_retained
+open inventory
+previewlight 7
+mouse 400 200
+pose 27 0.0 0.0 0.0 off off 0 20
+shot b181_gui9_mouse3_first
+shot b181_gui9_mouse3_retained
+# --- end player-gui round 9 ---

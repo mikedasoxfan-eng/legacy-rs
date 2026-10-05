@@ -3,25 +3,32 @@ use super::{gl::{Factor, Gl, TexId}, render::GuiRenderer, Ui};
 
 pub struct Panorama {
     faces: [TexId; 6],
-    frame: TexId,
     snapshot: TexId,
     time: f32,
     projection: glam::Mat4,
     modelview: glam::Mat4,
     width: i32,
     height: i32,
+    color_mask: u8,
+    depth_test: bool,
 }
 
 pub fn draw(ui: &mut Ui, width: i32, height: i32, time: f32) {
     let snapshot = ui.texture("panorama_snapshot");
     ui.gl.panorama = Some(Panorama {
         faces: std::array::from_fn(|i| ui.texture(&format!("title/bg/panorama{i}.png"))),
-        frame: ui.texture("panorama_frame"), snapshot, time,
+        snapshot, time,
         projection: ui.gl.proj, modelview: ui.gl.modelview_matrix(), width, height,
+        color_mask: ui.gl.color_mask, depth_test: ui.gl.depth_test,
     });
     let scale = 120.0 / width.max(height) as f32;
     let (u, v) = (height as f32 * scale / 256.0, width as f32 * scale / 256.0);
     let g = &mut ui.gl;
+    // func_35355_b and every blur restore these states before the final crop.
+    g.depth_mask = true;
+    g.depth_test = true;
+    g.alpha_test = true;
+    g.color_mask = 15;
     g.bind_texture(snapshot);
     g.blend = true;
     g.blend_func = (Factor::SrcAlpha, Factor::OneMinusSrcAlpha);
@@ -35,8 +42,26 @@ pub fn draw(ui: &mut Ui, width: i32, height: i32, time: f32) {
 }
 
 impl GuiRenderer {
-    pub(super) fn render_panorama(&mut self, device: &wgpu::Device, queue: &wgpu::Queue, p: &Panorama) {
+    /// Exercise the actual viewport/copy passes with the checker's textures.
+    /// Pixel equivalence for arbitrary small-window GL reads is not asserted.
+    pub(super) fn check_panorama_resize(&mut self, device: &wgpu::Device, queue: &wgpu::Queue,
+        target: &wgpu::TextureView, size: (u32,u32), face: TexId, snapshot: TexId) {
         let mut g = Gl::new();
+        g.ortho(0.0,size.0 as f64,size.1 as f64,0.0,1000.0,3000.0);
+        g.translatef(0.0,0.0,-2000.0);
+        self.render_panorama(device,queue,target,size,&Panorama {
+            faces: [face;6], snapshot, time: 0.0,
+            projection: g.proj, modelview: g.modelview_matrix(),
+            width: size.0 as i32, height: size.1 as i32,
+            color_mask: 15, depth_test: true,
+        });
+    }
+
+    pub(super) fn render_panorama(&mut self, device: &wgpu::Device, queue: &wgpu::Queue,
+        target: &wgpu::TextureView, size: (u32, u32), p: &Panorama) {
+        let mut g = Gl::new();
+        g.color_mask = p.color_mask;
+        g.depth_test = p.depth_test;
         // LWJGL GLU.gluPerspective computes cotangent from a float radian angle.
         let radians = 120.0f32 / 2.0 * std::f32::consts::PI / 180.0;
         let cot = radians.cos() / radians.sin();
@@ -83,16 +108,23 @@ impl GuiRenderer {
             g.pop_matrix();
             g.color_mask = 7;
         }
-        let view = self.texture_view(p.frame);
-        // The offscreen frame is an RGBA texture, whatever format the window uses.
-        let window_format = std::mem::replace(&mut self.format, wgpu::TextureFormat::Rgba8Unorm);
-        self.depth = None;
-        // The copy operation uses OpenGL's bottom-up framebuffer coordinates.
-        let orientation = self.gl_orientation;
-        self.gl_orientation = true;
-        self.render(device,queue,&view,(256,256),&g,Some([0.0;4]));
+        let (viewport_width, viewport_height) = (size.0.min(256), size.1.min(256));
+        // OpenGL permits the viewport to extend outside a small window. WebGPU
+        // requires an in-bounds viewport: crop its clip coordinates instead,
+        // preserving the original 256-pixel mapping on the visible portion.
+        let crop = if viewport_width < 256 || viewport_height < 256 {
+            let (x, y) = (256.0/viewport_width as f32, 256.0/viewport_height as f32);
+            Some(glam::Mat4::from_translation(glam::Vec3::new(x-1.0,y-1.0,0.0))
+                * glam::Mat4::from_scale(glam::Vec3::new(x,y,1.0)))
+        } else { None };
+        if let Some(crop) = crop {
+            for draw in &mut g.draws { draw.proj = crop * draw.proj; }
+        }
+        let viewport = Some((0.0, if self.gl_orientation { 0.0 } else { size.1.saturating_sub(256) as f32 },
+            viewport_width as f32,viewport_height as f32));
+        self.render_recorded(device,queue,target,size,&g,None,false,viewport);
         for _ in 0..8 {
-            self.copy_texture(device,queue,p.frame,p.snapshot);
+            self.copy_framebuffer(device,queue,target,size,p.snapshot);
             let mut blur = Gl::new();
             blur.proj = p.projection;
             blur.set_modelview(p.modelview);
@@ -109,10 +141,10 @@ impl GuiRenderer {
                 }
             }
             blur.draw();
-            self.render(device,queue,&view,(256,256),&blur,None);
+            if let Some(crop) = crop {
+                for draw in &mut blur.draws { draw.proj = crop * draw.proj; }
+            }
+            self.render_recorded(device,queue,target,size,&blur,None,false,viewport);
         }
-        self.gl_orientation = orientation;
-        self.format = window_format;
-        self.depth = None;
     }
 }

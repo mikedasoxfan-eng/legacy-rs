@@ -95,6 +95,7 @@ fn factor(f: Factor) -> wgpu::BlendFactor {
         Factor::Zero => wgpu::BlendFactor::Zero,
         Factor::One => wgpu::BlendFactor::One,
         Factor::SrcAlpha => wgpu::BlendFactor::SrcAlpha,
+        Factor::DstAlpha => wgpu::BlendFactor::DstAlpha,
         Factor::OneMinusSrcAlpha => wgpu::BlendFactor::OneMinusSrcAlpha,
         Factor::DstColor => wgpu::BlendFactor::Dst,
         Factor::OneMinusDstColor => wgpu::BlendFactor::OneMinusDst,
@@ -283,12 +284,57 @@ impl GuiRenderer {
         self.textures[id as usize].texture.create_view(&Default::default())
     }
 
-    pub(super) fn copy_texture(&self, device: &wgpu::Device, queue: &wgpu::Queue, source: TexId, destination: TexId) {
-        let mut encoder = device.create_command_encoder(&Default::default());
-        encoder.copy_texture_to_texture(self.textures[source as usize].texture.as_image_copy(),
-            self.textures[destination as usize].texture.as_image_copy(),
-            wgpu::Extent3d { width: 256, height: 256, depth_or_array_layers: 1 });
-        queue.submit([encoder.finish()]);
+    /// glCopyTexSubImage2D reads the framebuffer, including its retained alpha.
+    /// The intermediate keeps the source format (window surfaces can be BGRA).
+    pub(super) fn copy_framebuffer(&mut self, device: &wgpu::Device, queue: &wgpu::Queue,
+        source: &wgpu::TextureView, size: (u32, u32), destination: TexId) {
+        let texture = device.create_texture(&wgpu::TextureDescriptor {
+            label: Some("GUI framebuffer copy"),
+            size: wgpu::Extent3d { width: 256, height: 256, depth_or_array_layers: 1 },
+            mip_level_count: 1, sample_count: 1, dimension: wgpu::TextureDimension::D2,
+            format: self.format,
+            usage: wgpu::TextureUsages::COPY_DST | wgpu::TextureUsages::TEXTURE_BINDING,
+            view_formats: &[],
+        });
+        let mut enc = device.create_command_encoder(&Default::default());
+        let (width, height) = (size.0.min(256), size.1.min(256));
+        let origin = wgpu::Origin3d { x: 0, y: if self.gl_orientation { 0 } else { size.1.saturating_sub(256) }, z: 0 };
+        // GL leaves pixels outside a small window undefined. Copy every defined
+        // pixel and leave the inaccessible texels at WebGPU's initialized zero.
+        let destination_origin = wgpu::Origin3d { x: 0, y: if self.gl_orientation { 0 } else { 256-height }, z: 0 };
+        enc.copy_texture_to_texture(wgpu::TexelCopyTextureInfo { origin, ..source.texture().as_image_copy() },
+            wgpu::TexelCopyTextureInfo { origin: destination_origin, ..texture.as_image_copy() },
+            wgpu::Extent3d { width, height, depth_or_array_layers: 1 });
+        queue.submit([enc.finish()]);
+        let bind = device.create_bind_group(&wgpu::BindGroupDescriptor {
+            label: Some("GUI framebuffer copy"), layout: &self.tex_layout,
+            entries: &[
+                wgpu::BindGroupEntry { binding: 0, resource: wgpu::BindingResource::TextureView(&texture.create_view(&Default::default())) },
+                wgpu::BindGroupEntry { binding: 1, resource: wgpu::BindingResource::Sampler(&self.sampler) },
+            ],
+        });
+        let id = self.textures.len() as TexId;
+        self.textures.push(GuiTexture { texture, bind });
+        let mut copy = Gl::new();
+        copy.depth_test = false;
+        copy.alpha_test = false;
+        copy.bind_texture(id);
+        copy.start_drawing_quads();
+        for (x,y,u,v) in [(-1.0,-1.0,0.0,0.0),(1.0,-1.0,1.0,0.0),(1.0,1.0,1.0,1.0),(-1.0,1.0,0.0,1.0)] {
+            copy.add_vertex_with_uv(x,y,0.0,u,if self.gl_orientation { v } else { 1.0-v });
+        }
+        copy.draw();
+        let depth = self.depth.take();
+        let msaa = self.msaa.take();
+        let format = std::mem::replace(&mut self.format, wgpu::TextureFormat::Rgba8Unorm);
+        let orientation = std::mem::replace(&mut self.gl_orientation, true);
+        let view = self.texture_view(destination);
+        self.render_recorded(device, queue, &view, (256,256), &copy, None, true, None);
+        self.gl_orientation = orientation;
+        self.format = format;
+        self.depth = depth;
+        self.msaa = msaa;
+        self.textures.pop();
     }
 
     fn pipeline(&mut self, device: &wgpu::Device, key: PipeKey) -> &wgpu::RenderPipeline {
@@ -348,9 +394,42 @@ impl GuiRenderer {
         gl: &Gl,
         clear: Option<[f64; 4]>,
     ) {
-        if let Some(panorama) = &gl.panorama {
-            self.render_panorama(device, queue, panorama);
+        if gl.panorama.is_none() && gl.clear_color_mask == 15 {
+            self.render_recorded(device, queue, target, size, gl, clear, true, None);
+            return;
         }
+        if let Some(c) = clear {
+            // glClear obeys GL_COLOR_WRITEMASK. A render-pass clear cannot do that.
+            let mut reset = Gl::new();
+            reset.color_mask = gl.clear_color_mask;
+            reset.depth_test = false;
+            reset.texture_2d = false;
+            reset.alpha_test = false;
+            reset.color4f(c[0] as f32, c[1] as f32, c[2] as f32, c[3] as f32);
+            reset.start_drawing_quads();
+            for (x, y) in [(-1.0, -1.0), (1.0, -1.0), (1.0, 1.0), (-1.0, 1.0)] {
+                reset.add_vertex(x, y, 0.0);
+            }
+            reset.draw();
+            self.render_recorded(device, queue, target, size, &reset, None, true, None);
+        }
+        if let Some(panorama) = &gl.panorama {
+            self.render_panorama(device, queue, target, size, panorama);
+        }
+        self.render_recorded(device, queue, target, size, gl, None, gl.panorama.is_none(), None);
+    }
+
+    pub(super) fn render_recorded(
+        &mut self,
+        device: &wgpu::Device,
+        queue: &wgpu::Queue,
+        target: &wgpu::TextureView,
+        size: (u32, u32),
+        gl: &Gl,
+        clear: Option<[f64; 4]>,
+        clear_depth: bool,
+        viewport: Option<(f32, f32, f32, f32)>,
+    ) {
         if self.depth.as_ref().is_none_or(|d| (d.2, d.3) != size) {
             let t = device.create_texture(&wgpu::TextureDescriptor {
                 label: Some("gui depth"),
@@ -462,8 +541,8 @@ impl GuiRenderer {
                 depth_stencil_attachment: Some(wgpu::RenderPassDepthStencilAttachment {
                     view: depth_view,
                     depth_ops: Some(wgpu::Operations {
-                        load: wgpu::LoadOp::Clear(1.0),
-                        store: wgpu::StoreOp::Discard,
+                        load: if clear_depth { wgpu::LoadOp::Clear(1.0) } else { wgpu::LoadOp::Load },
+                        store: wgpu::StoreOp::Store,
                     }),
                     stencil_ops: None,
                 }),
@@ -473,6 +552,9 @@ impl GuiRenderer {
             });
             if let Some((vb, _)) = &self.vbuf {
                 rp.set_vertex_buffer(0, vb.slice(..));
+            }
+            if let Some((x, y, w, h)) = viewport {
+                rp.set_viewport(x, y, w, h, 0.0, 1.0);
             }
             for (i, d) in gl.draws.iter().enumerate() {
                 rp.set_pipeline(&self.pipes[&(keys[i], self.format)]);

@@ -480,6 +480,10 @@ bash "$root/tools/verify_entities7_181.sh" --built || fail=1
 # Round 8: player replay fixes and completed GUI class deltas.
 bash tools/verify_player_gui8_181.sh --built || fail=1
 # --- end player-gui ---
+# --- player-gui (b1.8.1) ---
+# Round 9: inventory death/material state and original framebuffer alpha.
+bash tools/verify_player_gui9_181.sh --built || fail=1
+# --- end player-gui ---
 pflush
 [ $fail -eq 0 ] && echo "ALL CASES EXACT" || echo "SOME CASES DIFFER"
 exit $fail

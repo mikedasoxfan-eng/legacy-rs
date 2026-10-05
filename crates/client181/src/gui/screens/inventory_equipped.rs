@@ -16,37 +16,39 @@ pub struct HeldSprite {
 
 pub fn render_item(
     model: &Model,
-    mut m: Mat4,
+    m: Mat4,
     item: HeldSprite,
     material: [f32; 4],
     normalize: bool,
     rotate: bool,
     lights: [Vec3; 2],
-) -> Batch {
-    m = model["bipedRightArm"].post_render(m, 1.0 / 16.0);
-    m *= Mat4::from_translation(Vec3::new(-1.0 / 16.0, 7.0 / 16.0, 1.0 / 16.0));
+) -> (Batch, Mat4) {
+    let mut gl = crate::gui::gl::Gl::new();
+    gl.set_modelview(model["bipedRightArm"].post_render(m, 1.0 / 16.0));
+    gl.translatef(-1.0 / 16.0, 7.0 / 16.0, 1.0 / 16.0);
     if item.full_3d {
         if rotate {
-            m *= Mat4::from_rotation_z(std::f32::consts::PI);
-            m *= Mat4::from_translation(Vec3::new(0.0, -2.0 / 16.0, 0.0));
+            gl.rotatef(180.0, 0.0, 0.0, 1.0);
+            gl.translatef(0.0, -2.0 / 16.0, 0.0);
         }
-        m *= Mat4::from_translation(Vec3::new(0.0, 3.0 / 16.0, 0.0));
-        m *= Mat4::from_scale(Vec3::new(10.0 / 16.0, -10.0 / 16.0, 10.0 / 16.0));
-        m *= Mat4::from_rotation_x((-100f32).to_radians());
-        m *= Mat4::from_rotation_y(45f32.to_radians());
+        gl.translatef(0.0, 3.0 / 16.0, 0.0);
+        gl.scalef(10.0 / 16.0, -10.0 / 16.0, 10.0 / 16.0);
+        gl.rotatef(-100.0, 1.0, 0.0, 0.0);
+        gl.rotatef(45.0, 0.0, 1.0, 0.0);
     } else {
-        m *= Mat4::from_translation(Vec3::new(0.25, 3.0 / 16.0, -3.0 / 16.0));
-        m *= Mat4::from_scale(Vec3::splat(6.0 / 16.0));
-        m *= Mat4::from_rotation_z(60f32.to_radians());
-        m *= Mat4::from_rotation_x((-90f32).to_radians());
-        m *= Mat4::from_rotation_z(20f32.to_radians());
+        gl.translatef(0.25, 3.0 / 16.0, -3.0 / 16.0);
+        gl.scalef(6.0 / 16.0, 6.0 / 16.0, 6.0 / 16.0);
+        gl.rotatef(60.0, 0.0, 0.0, 1.0);
+        gl.rotatef(-90.0, 1.0, 0.0, 0.0);
+        gl.rotatef(20.0, 0.0, 0.0, 1.0);
     }
     // ItemRenderer.renderItem, with its original 1/16 thickness and 16 strips.
-    m *= Mat4::from_translation(Vec3::new(-0.0, -0.3, 0.0));
-    m *= Mat4::from_scale(Vec3::splat(1.5));
-    m *= Mat4::from_rotation_y(50f32.to_radians());
-    m *= Mat4::from_rotation_z(335f32.to_radians());
-    m *= Mat4::from_translation(Vec3::new(-15.0 / 16.0, -1.0 / 16.0, 0.0));
+    gl.translatef(-0.0, -0.3, 0.0);
+    gl.scalef(1.5, 1.5, 1.5);
+    gl.rotatef(50.0, 0.0, 1.0, 0.0);
+    gl.rotatef(335.0, 0.0, 0.0, 1.0);
+    gl.translatef(-15.0 / 16.0, -1.0 / 16.0, 0.0);
+    let m = gl.modelview_matrix();
     let u0 = (item.icon % 16 * 16) as f32 / 256.0;
     let u1 = ((item.icon % 16 * 16) as f32 + 15.99) / 256.0;
     let v0 = (item.icon / 16 * 16) as f32 / 256.0;
@@ -79,7 +81,9 @@ pub fn render_item(
             material[3],
         ];
         let verts: [_; 4] = std::array::from_fn(|i| EntityVertex {
-            pos: m.transform_point3(Vec3::from_array(pts[i])).to_array(),
+            // Tessellator submits object-space vertices. Keep the MVP on the
+            // GPU, including the depth ties with the player and armor models.
+            pos: pts[i],
             uv: uv[i],
             color,
         });
@@ -167,5 +171,5 @@ pub fn render_item(
             -Vec3::Y,
         );
     }
-    b
+    (b, m)
 }

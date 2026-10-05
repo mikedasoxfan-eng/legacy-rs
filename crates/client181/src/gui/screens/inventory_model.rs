@@ -41,6 +41,7 @@ fn part(
     rotation: bool,
     lights: [Vec3; 2],
     overlay: Option<[f32; 4]>,
+    rescale_normal: bool,
 ) {
     if part.hidden || !part.show_model {
         return;
@@ -48,7 +49,7 @@ fn part(
     let m = part.transform(parent, 1.0 / 16.0, rotation);
     let inverse = m.inverse();
     let normal = inverse.transpose();
-    let rescale = 1.0 / inverse.row(2).truncate().length();
+    let rescale = if rescale_normal { 1.0 / inverse.row(2).truncate().length() } else { 1.0 };
     let mut vertices = Vec::new();
     for face in &part.faces {
         // ModelRenderer compiles Tessellator.draw into a display list. GL captures
@@ -57,7 +58,9 @@ fn part(
         let packed = living::packed_normal(face);
         let b = |shift| (2.0 * ((packed >> shift) as u8 as i8) as f32 + 1.0) / 255.0;
         let n = normal.transform_vector3(Vec3::new(b(0), b(8), b(16))) * rescale;
-        let c = (0.4 + 0.6 * n.dot(lights[0]).max(0.0) + 0.6 * n.dot(lights[1]).max(0.0)).min(1.0);
+        // GL_COLOR_MATERIAL multiplies the material before clamping the
+        // primary color. Hurt/death materials can expose lighting above one.
+        let c = 0.4 + 0.6 * n.dot(lights[0]).max(0.0) + 0.6 * n.dot(lights[1]).max(0.0);
         let v = face.vertices.map(|v| EntityVertex {
             pos: v.pos.map(|n| n as f32 / 16.0),
             uv: v.uv,
@@ -69,7 +72,7 @@ fn part(
     }
     ui.gl.model_triangles(&vertices, m);
     for child in &part.children {
-        self::part(ui, child, m, false, lights, overlay);
+        self::part(ui, child, m, false, lights, overlay, rescale_normal);
     }
 }
 pub fn draw(
@@ -130,7 +133,7 @@ pub fn draw(
     ui.gl.load_identity();
     ui.gl.bind_texture(ui.texture("mob/char.png"));
     for (p, r) in model.render_parts() {
-        part(ui, p, parent, r, lights, None);
+        part(ui, p, parent, r, lights, None, true);
     }
     const PREFIX: [&str; 5] = ["cloth", "chain", "iron", "diamond", "gold"];
     const DATA: &[u8] = include_bytes!("item_render.bin");
@@ -185,7 +188,7 @@ pub fn draw(
                     if pass == 2 { 2 } else { 1 }
                 )));
                 for (p, r) in armor.render_parts() {
-                    part(ui, p, parent, r, lights, None);
+                    part(ui, p, parent, r, lights, None, true);
                 }
                 armor_models.push(armor);
             }
@@ -220,7 +223,7 @@ pub fn draw(
                 terrain: item.id < 256,
             };
             let material = [1.0; 4];
-            let batch = super::inventory_equipped::render_item(
+            let (batch, matrix) = super::inventory_equipped::render_item(
                 &model,
                 parent,
                 held,
@@ -230,7 +233,7 @@ pub fn draw(
                 lights,
             );
             ui.gl.bind_texture(ui.texture(batch.texture.unwrap()));
-            ui.gl.triangles(&batch.vertices);
+            ui.gl.model_triangles(&batch.vertices, matrix);
         }
     }
     // RenderLiving disables texture unit 1 for the color/hurt overlay, then
@@ -246,12 +249,16 @@ pub fn draw(
         );
         ui.gl.depth_equal = true;
         let color = Some([snapshot.preview.brightness, 0.0, 0.0, 0.4]);
+        // ItemRenderer's extruded sprite disables RESCALE_NORMAL before
+        // RenderLiving draws its overlays. Its block branch leaves it enabled.
+        let rescale_normal = !snapshot.held.is_some_and(|item|
+            !crate::render::entity::inventory::in_3d(item.id as i16));
         for (p, r) in model.render_parts() {
-            part(ui, p, parent, r, lights, color);
+            part(ui, p, parent, r, lights, color, rescale_normal);
         }
         for armor in &armor_models {
             for (p, r) in armor.render_parts() {
-                part(ui, p, parent, r, lights, color);
+                part(ui, p, parent, r, lights, color, rescale_normal);
             }
         }
         ui.gl.depth_equal = false;
