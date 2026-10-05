@@ -29,7 +29,7 @@ public final class Mode_playertick181 {
     }
     public static void main(String[] a)throws Exception {
         String kind=a[1];int ticks=Integer.parseInt(a[2]);World w=Mode_entities181.world();
-        // Mode_entities181.world() now attaches only WorldEventOracle's recorder.
+        // Mode_entities181.world installs the single complete event recorder.
         Item.itemRand.setSeed(600);
         PlayerOracle.HeadlessPlayer p=PlayerOracle.player(w);p.mc.gameSettings=new GameSettings();
         p.mc.playerController=new PlayerControllerSP(p.mc);
@@ -60,6 +60,9 @@ public final class Mode_playertick181 {
                 if(kind.equals("damage")&&t%5==0)p.attackEntityFrom(t%10==0?DamageSource.field_35536_f:DamageSource.field_35537_g,5);
                 if(kind.equals("creativevoid")&&t==0){PlayerControllerTest.func_35646_d(p);p.attackEntityFrom(DamageSource.field_35550_i,4);}
                 if(kind.equals("speed")&&t==0)p.func_35165_a(new PotionEffect(1,80,1));
+                if(kind.equals("haste")&&t%100==0)p.func_35165_a(new PotionEffect(3,80,t/100%8));
+                if(kind.equals("fatigue")&&t%100==0)p.func_35165_a(new PotionEffect(4,80,t/100%4));
+                if(kind.equals("nausea")&&t==0)p.func_35165_a(new PotionEffect(9,300,0));
                 if(kind.equals("creativedamage")){PlayerControllerTest.func_35646_d(p);if(t%5==0)p.attackEntityFrom(t%10==0?DamageSource.field_35536_f:DamageSource.field_35537_g,5);}
                 if(kind.equals("identity")) {
                     if(t%80==0){food(p,10,0);p.inventory.mainInventory[0]=new ItemStack(260,3,0);p.inventory.currentItem=0;p.func_35199_b(p.inventory.mainInventory[0],32);}
