@@ -490,7 +490,7 @@ impl Entity {
             return self.attack_vehicle(w, damage);
         }
         if matches!(self.kind, EntityKind::Player(..))
-            && !self.player_damage(w, attacker, &mut damage)
+            && !self.player_damage(w, source, &mut damage)
         {
             return false;
         }

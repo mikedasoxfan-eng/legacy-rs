@@ -517,6 +517,7 @@ impl Entity {
     /// the fall to the rider, `EntityLiving` takes damage, `EntityPig` gives its rider "When
     /// Pigs Fly"; chickens and ghasts ignore falls (rider included).
     pub fn fall(&mut self, w: &mut World, distance: f32) {
+        if self.player_state().is_some_and(|s| s.capabilities.allow_flying) { return; }
         if matches!(
             self.kind,
             EntityKind::Ghast(..) | EntityKind::Chicken { .. }

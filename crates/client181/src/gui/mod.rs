@@ -12,6 +12,7 @@ pub mod ingame;
 pub mod keynames;
 pub mod lang;
 pub mod loading;
+pub mod panorama;
 pub mod render;
 pub mod saves;
 pub mod screens;
@@ -40,6 +41,12 @@ pub const TEXTURES: &[&str] = &[
     "gui/items.png",
     "title/mclogo.png",
     "title/mojang.png",
+    "title/bg/panorama0.png",
+    "title/bg/panorama1.png",
+    "title/bg/panorama2.png",
+    "title/bg/panorama3.png",
+    "title/bg/panorama4.png",
+    "title/bg/panorama5.png",
     "pack.png",
     "gui/unknown_pack.png",
     "terrain.png",

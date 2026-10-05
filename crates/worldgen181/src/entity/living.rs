@@ -550,6 +550,9 @@ impl Entity {
                 }
                 self.velocity_changed = true;
                 self.add_stat(crate::entity::player::stat::JUMP, 1);
+                if self.player_state().is_some() {
+                    self.add_exhaustion(if self.sprinting { 0.8 } else { 0.2 });
+                }
             }
         }
         self.living.move_strafing *= 0.98;

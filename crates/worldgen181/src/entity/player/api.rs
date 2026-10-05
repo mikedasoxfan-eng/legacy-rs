@@ -14,8 +14,10 @@ pub struct PlayerTickInput {
     pub movement: PlayerInput,
     pub target: PlayerTarget,
     pub left_pressed: bool,
+    pub attack_presses: i32,
     pub left_held: bool,
     pub right_pressed: bool,
+    pub use_presses: i32,
     pub right_held: bool,
     pub drop_pressed: bool,
     pub hotbar_slot: Option<u8>,
@@ -62,6 +64,8 @@ impl Entity {
         }
         if !right {
             self.swing_item();
+        } else {
+            self.player_state_mut().unwrap().right_click_delay = 6;
         }
         let mut use_item = true;
         match hit {
@@ -134,12 +138,19 @@ impl World {
         &mut self,
         id: i32,
         input: PlayerTickInput,
-        ticks: i32,
+        _ticks: i32,
     ) -> Option<Hit> {
         let mut p = self.entities.remove(&id)?;
         if p.player_state().is_none() {
             self.entities.insert(id, p);
             return None;
+        }
+        {
+            let s=p.player_state_mut().unwrap();
+            if s.left_click_counter>0 {s.left_click_counter-=1;}
+            if s.right_click_delay>0 {s.right_click_delay-=1;}
+            s.pending_attack_presses += input.attack_presses + input.left_pressed as i32;
+            s.pending_use_presses += input.use_presses + input.right_pressed as i32;
         }
         p.set_player_input(input.movement);
         let hit = match input.target {
@@ -159,26 +170,17 @@ impl World {
                 p.drop_player_item(self, stack, false);
             }
         }
-        if p.player_state().unwrap().item_in_use.is_some() && !input.right_held { p.stop_item_use(self); }
         let using = p.player_state().unwrap().item_in_use.is_some();
-        if input.left_pressed && !using {
-            p.click_player(self, &mut controller, hit, false);
-            p.player_state_mut().unwrap().last_click_tick = ticks;
+        if using && !input.right_held { p.stop_item_use(self); }
+        if !using {
+            let s=p.player_state_mut().unwrap();
+            let (attacks,uses)=(s.pending_attack_presses,s.pending_use_presses);
+            s.pending_attack_presses=0;s.pending_use_presses=0;
+            for _ in 0..attacks {p.click_player(self,&mut controller,hit,false);}
+            for _ in 0..uses {p.click_player(self,&mut controller,hit,true);}
         }
-        if input.right_pressed && !using {
-            p.click_player(self, &mut controller, hit, true);
-            p.player_state_mut().unwrap().last_click_tick = ticks;
-        }
-        if p.player_state().unwrap().left_click_counter > 0 {
-            p.player_state_mut().unwrap().left_click_counter -= 1;
-        }
-        if input.left_held && !using && ticks.wrapping_sub(p.player_state().unwrap().last_click_tick) >= 5 {
-            p.click_player(self, &mut controller, hit, false);
-            p.player_state_mut().unwrap().last_click_tick = ticks;
-        }
-        if input.right_held && !using && ticks.wrapping_sub(p.player_state().unwrap().last_click_tick) >= 5 {
-            p.click_player(self, &mut controller, hit, true);
-            p.player_state_mut().unwrap().last_click_tick = ticks;
+        if input.right_held && p.player_state().unwrap().right_click_delay == 0 && p.player_state().unwrap().item_in_use.is_none() {
+            p.click_player(self,&mut controller,hit,true);
         }
         if !input.left_held {
             p.player_state_mut().unwrap().left_click_counter = 0;

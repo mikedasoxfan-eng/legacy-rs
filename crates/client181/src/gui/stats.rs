@@ -21,7 +21,7 @@ const fn a(i: i32, key: &'static str, column: i32, row: i32, icon: i16, parent: 
 }
 
 /// In registration order (`AchievementList.achievementList`).
-pub const ACHIEVEMENTS: [Achievement; 16] = [
+pub const ACHIEVEMENTS: [Achievement; 17] = [
     a(0, "openInventory", 0, 0, 340, None, false),
     a(1, "mineWood", 2, 1, 17, Some(0), false),
     a(2, "buildWorkBench", 4, -1, 58, Some(1), false),
@@ -38,6 +38,7 @@ pub const ACHIEVEMENTS: [Achievement; 16] = [
     a(13, "killEnemy", 8, -1, 352, Some(12), false),
     a(14, "killCow", 7, -3, 334, Some(12), false),
     a(15, "flyPig", 8, -4, 329, Some(14), true),
+    a(16, "snipeSkeleton", 7, 0, 261, Some(13), true),
 ];
 
 /// `AchievementList.min/maxDisplayColumn/Row` after registration.

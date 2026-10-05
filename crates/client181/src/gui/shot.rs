@@ -271,6 +271,7 @@ pub fn run(script: &str, out_dir: &std::path::Path) -> Result<(), String> {
                     let i = || v.parse::<i32>().map_err(|_| format!("hud {k}"));
                     match k {
                         "health" => p.health = i()?,
+                        "water" => p.head_in_water = i()? != 0,
                         "food" => p.food_level = i()?,
                         "saturation" => p.food_saturation = v.parse().map_err(|_| "hud saturation")?,
                         "xp" => p.xp_points = i()?,

@@ -37,3 +37,11 @@ path = "src/bin/playercore.rs"
 [[bin]]
 name = "creative181"
 path = "src/bin/creative.rs"
+
+[[bin]]
+name = "playertick181"
+path = "src/bin/playertick181.rs"
+
+[[bin]]
+name = "playerlist181"
+path = "src/bin/playerlist181.rs"

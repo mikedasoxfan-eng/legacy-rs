@@ -177,6 +177,17 @@ fn java_float(f: f32) -> String {
 }
 
 impl GameSettings {
+    pub fn input_event(&mut self,code:i32,pressed:bool) {
+        self.key_state(code,pressed);
+        if pressed {self.key_tick(code);}
+    }
+    pub fn binding_pressed(&self,name:&str)->bool {
+        self.key_bindings.iter().any(|k|k.description==name&&k.pressed)
+    }
+    pub fn take_binding_presses(&mut self,name:&str)->i32 {
+        let Some(k)=self.key_bindings.iter_mut().find(|k|k.description==name) else {return 0;};
+        let count=k.press_count;k.press_count=0;count
+    }
     /// `new GameSettings(mc, dir)`: defaults, then `options.txt` if present.
     pub fn load(dir: &std::path::Path) -> GameSettings {
         let mut s = GameSettings { file: Some(dir.join("options.txt")), ..Default::default() };

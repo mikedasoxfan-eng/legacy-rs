@@ -12,7 +12,9 @@ pub struct ItemStack {
     pub animations: i32,
 }
 impl PartialEq for ItemStack {
-    fn eq(&self,other:&Self)->bool {self.id==other.id&&self.count==other.count&&self.damage==other.damage&&self.animations==other.animations}
+    fn eq(&self, other: &Self) -> bool {
+        (self.id,self.count,self.damage,self.animations)==(other.id,other.count,other.damage,other.animations)
+    }
 }
 impl Eq for ItemStack {}
 impl ItemStack {
@@ -28,6 +30,7 @@ impl ItemStack {
             animations: 0,
         }
     }
+    pub fn same_object(self, other: Self) -> bool { self.identity == other.identity }
     pub fn max_stack(&self) -> i32 {
         registry::item(self.id).map_or(64, |i| i.max_stack)
     }

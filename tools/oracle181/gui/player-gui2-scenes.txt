@@ -1,0 +1,25 @@
+# --- player-gui round 2 (b1.8.1) ---
+world 42
+clear 128
+hud health=11 prev=11 food=13 saturation=0 xp=25 level=7 armor=20 poison=1 hunger=1 regen=1 pos=0.5,120,0.5 brightness=0.0
+counter 0
+shot b181_hud_potions
+hud health=11 prev=11 food=13 saturation=0 xp=25 level=7 armor=20 poison=1 hunger=1 regen=1 pos=0.5,120,0.5 brightness=1.0
+counter 3
+shot b181_hud_regen_shift
+hud health=11 prev=11 food=13 saturation=0 xp=25 level=7 armor=20 poison=1 hunger=1 regen=1 pos=0.5,120,0.5 brightness=0.77777773 water=1 air=300
+counter 3
+shot b181_hud_air_full
+hud health=11 prev=11 food=13 saturation=0 xp=25 level=7 armor=20 poison=1 hunger=1 regen=1 pos=0.5,120,0.5 brightness=0.77777773 water=1 air=151
+counter 3
+shot b181_hud_air_half
+hud health=11 prev=11 food=13 saturation=0 xp=25 level=7 armor=20 poison=1 hunger=1 regen=1 pos=0.5,120,0.5 brightness=0.77777773 water=1 air=1
+counter 3
+shot b181_hud_air_popping
+hud health=11 prev=11 food=13 saturation=0 xp=25 level=7 armor=20 poison=1 hunger=1 regen=1 pos=0.5,120,0.5 brightness=0.77777773 water=1 air=0
+counter 3
+shot b181_hud_air_empty
+hud health=11 prev=11 food=13 saturation=0 xp=25 level=7 armor=20 poison=1 hunger=1 regen=1 pos=0.5,120,0.5 brightness=0.77777773 water=1 air=151 creative=1
+counter 3
+shot b181_hud_air_creative
+# --- end player-gui round 2 ---

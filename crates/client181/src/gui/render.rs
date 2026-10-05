@@ -47,6 +47,7 @@ fn fs(i: VO) -> @location(0) vec4<f32> {
 
 #[derive(Clone, Copy, PartialEq, Eq, Hash)]
 struct PipeKey {
+    color_mask: u8,
     blend: Option<(Factor, Factor)>,
     depth_test: bool,
     depth_gequal: bool,
@@ -150,7 +151,7 @@ impl GuiRenderer {
         });
         let align = device.limits().min_uniform_buffer_offset_alignment as u64;
         let uniform_stride = 64u64.div_ceil(align) * align;
-        let uniform_slots = 256;
+        let uniform_slots = 512;
         let uniforms = device.create_buffer(&wgpu::BufferDescriptor {
             label: Some("gui uniforms"),
             size: uniform_stride * uniform_slots,
@@ -274,6 +275,18 @@ impl GuiRenderer {
         write_tile(queue, &self.textures[id as usize].texture, icon, image);
     }
 
+    pub(super) fn texture_view(&self, id: TexId) -> wgpu::TextureView {
+        self.textures[id as usize].texture.create_view(&Default::default())
+    }
+
+    pub(super) fn copy_texture(&self, device: &wgpu::Device, queue: &wgpu::Queue, source: TexId, destination: TexId) {
+        let mut encoder = device.create_command_encoder(&Default::default());
+        encoder.copy_texture_to_texture(self.textures[source as usize].texture.as_image_copy(),
+            self.textures[destination as usize].texture.as_image_copy(),
+            wgpu::Extent3d { width: 256, height: 256, depth_or_array_layers: 1 });
+        queue.submit([encoder.finish()]);
+    }
+
     fn pipeline(&mut self, device: &wgpu::Device, key: PipeKey) -> &wgpu::RenderPipeline {
         let (format, shader, layout, samples) =
             (self.format, &self.shader, &self.layout, self.samples);
@@ -299,7 +312,7 @@ impl GuiRenderer {
                     module: shader,
                     entry_point: Some("fs"),
                     compilation_options: Default::default(),
-                    targets: &[Some(wgpu::ColorTargetState { format, blend, write_mask: wgpu::ColorWrites::ALL })],
+                    targets: &[Some(wgpu::ColorTargetState { format, blend, write_mask: wgpu::ColorWrites::from_bits_truncate(key.color_mask as u32) })],
                 }),
                 primitive: wgpu::PrimitiveState { cull_mode: None, ..Default::default() },
                 depth_stencil: Some(wgpu::DepthStencilState {
@@ -331,6 +344,9 @@ impl GuiRenderer {
         gl: &Gl,
         clear: Option<[f64; 4]>,
     ) {
+        if let Some(panorama) = &gl.panorama {
+            self.render_panorama(device, queue, panorama);
+        }
         if self.depth.as_ref().is_none_or(|d| (d.2, d.3) != size) {
             let t = device.create_texture(&wgpu::TextureDescriptor {
                 label: Some("gui depth"),
@@ -475,6 +491,7 @@ impl GuiRenderer {
 
 fn key_of(s: &DrawState) -> PipeKey {
     PipeKey {
+        color_mask: s.color_mask,
         blend: s.blend,
         depth_test: s.depth_test,
         depth_write: s.depth_write,
@@ -501,7 +518,7 @@ fn make_texture(
         sample_count: 1,
         dimension: wgpu::TextureDimension::D2,
         format: wgpu::TextureFormat::Rgba8Unorm,
-        usage: wgpu::TextureUsages::TEXTURE_BINDING | wgpu::TextureUsages::COPY_DST,
+        usage: wgpu::TextureUsages::TEXTURE_BINDING | wgpu::TextureUsages::COPY_DST | wgpu::TextureUsages::COPY_SRC | wgpu::TextureUsages::RENDER_ATTACHMENT,
         view_formats: &[],
     });
     write(queue, &texture, img);

@@ -49,8 +49,10 @@ pub struct InputFrame {
     pub yaw_delta: f32,
     pub pitch_delta: f32,
     pub left_pressed: bool,
+    pub attack_presses: i32,
     pub left_held: bool,
     pub right_pressed: bool,
+    pub use_presses: i32,
     pub right_held: bool,
     pub drop_pressed: bool,
     /// `clickMiddleMouseButton`
@@ -73,8 +75,10 @@ impl InputFrame {
         self.yaw_delta += n.yaw_delta;
         self.pitch_delta += n.pitch_delta;
         self.left_pressed |= n.left_pressed;
+        self.attack_presses += n.attack_presses;
         self.left_held = n.left_held;
         self.right_pressed |= n.right_pressed;
+        self.use_presses += n.use_presses;
         self.right_held = n.right_held;
         self.drop_pressed |= n.drop_pressed;
         self.middle_pressed |= n.middle_pressed;
@@ -99,8 +103,10 @@ impl InputFrame {
                 pitch_delta: self.pitch_delta,
             },
             left_pressed: self.left_pressed,
+            attack_presses: self.attack_presses,
             left_held: self.left_held,
             right_pressed: self.right_pressed,
+            use_presses: self.use_presses,
             right_held: self.right_held,
             drop_pressed: self.drop_pressed,
             hotbar_slot: self.hotbar_slot,
@@ -110,7 +116,9 @@ impl InputFrame {
         self.yaw_delta = 0.0;
         self.pitch_delta = 0.0;
         self.left_pressed = false;
+        self.attack_presses = 0;
         self.right_pressed = false;
+        self.use_presses = 0;
         self.drop_pressed = false;
         self.middle_pressed = false;
         self.hotbar_slot = None;
@@ -337,7 +345,7 @@ fn run(opts: WorldOptions, mut col: Colorizers, mut video: VideoSettings, rx: Re
     // Singleplayer: the real player (Minecraft.changeWorld creates thePlayer).
     let player = if opts.server { None } else { Some(world.spawn_player("Player")) };
     if let Some(id) = player {
-        if let Some(e) = world.entities.get_mut(&id) { e.set_creative(world.info.game_type == 1); }
+        if let Some(e) = world.entities.get_mut(&id) { e.initialize_player_mode(world.info.game_type == 1); }
     }
     let mut input = InputFrame::default();
     let mut life = 0u32;
@@ -444,7 +452,7 @@ fn run(opts: WorldOptions, mut col: Colorizers, mut video: VideoSettings, rx: Re
                         if let Some(key) = world.respawn_player(old, &mut progress) {
                             let _ = tx.send(FromWorker::Chat(key.to_string()));
                         }
-                        if let Some(e)=world.entities.get_mut(&old){e.set_creative(world.info.game_type==1);}
+                        if let Some(e)=world.entities.get_mut(&old){e.initialize_player_mode(world.info.game_type==1);}
                         life += 1;
                         if let Some(e) = world.entities.get(&old) {
                             cam = (e.pos.x, e.pos.y, e.pos.z);
