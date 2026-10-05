@@ -23,7 +23,7 @@ for line in open(sys.argv[1], encoding='utf-8', errors='replace'):
         # The strict comparator's form of the same policy for the title panorama (the blurred 3D
         # cube): one level off on a few pixels is the driver's filtering, as for title.png.
         print(f'== gui181: {m.group(1)}')
-        print('OK: ' + m.group(2) + ' (known driver rounding)')
+        print('OK: within one level (' + m.group(2).split()[0] + ' pixels) (known driver rounding)')
         continue
     if not m or not re.search(r'EXACT|differ', m.group(2)):
         continue
