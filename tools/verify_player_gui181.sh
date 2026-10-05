@@ -13,6 +13,7 @@ cd "$root"
 cargo build --release -q -p worldgen181 -p client || exit 1
 fail=0
 for mode in playercore creative; do
+  echo "== player-gui b1.8.1: $mode"
   bash tools/oracle181/oracle.sh "$mode" "$mode-java.bin" || { fail=1; continue; }
   "target/release/${mode}181" "target/$mode-rust.bin" || { fail=1; continue; }
   python - "$mode" "tools/oracle181/out/$mode-java.bin" "target/$mode-rust.bin" <<'EOF'
@@ -28,9 +29,11 @@ print(f"{mode}: EXACT ({len(a)} bytes)")
 EOF
   [ $? -eq 0 ] || fail=1
 done
+echo "== player-gui b1.8.1: options and keybindings"
 bash tools/oracle181/oracle.sh options181 options181-java.txt && target/release/beta --mc b1.8.1 --playerguicheck tools/oracle181/out/options181-java.txt || fail=1
 if [ "${1:-}" != --no-gui ]; then
   for scenes in tools/oracle181/gui/player-gui-scenes.txt tools/oracle181/gui/player-gui-container-scenes.txt; do
+  echo "== player-gui b1.8.1: GUI pixels $(basename "$scenes" .txt)"
   java=tools/oracle181/out/player-gui-java
   rust=target/player-gui-rust
   python - "$scenes" "$java" "$rust" <<'EOF'

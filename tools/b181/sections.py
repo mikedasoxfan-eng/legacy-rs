@@ -10,6 +10,8 @@ GOOD = re.compile(rb'EXACT|MATCH|exact|identical|OK\b')
 data = open(sys.argv[1], 'rb').read().split(b'\n')
 sections, cur = [], None
 for line in data:
+    if b'MinecraftResources' in line:
+        continue  # the old client's resource download thread: the server is gone, harmless
     if line.startswith(b'== '):
         cur = [line[3:].strip().decode('utf-8', 'replace'), 0, 0]
         sections.append(cur)

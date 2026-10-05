@@ -31,6 +31,8 @@ def exact_sections(log):
     good = re.compile(rb'EXACT|MATCH|exact|identical|OK\b')
     out, cur = {}, None
     for line in open(log, 'rb').read().split(b'\n'):
+        if b'MinecraftResources' in line:
+            continue  # the old client's resource download thread: the server is gone, harmless
         if line.startswith(b'== '):
             cur = line[3:].strip().decode('utf-8', 'replace')
             out[cur] = [0, 0]

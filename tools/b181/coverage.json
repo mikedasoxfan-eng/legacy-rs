@@ -1813,6 +1813,55 @@
   "starts",
   "utilities"
  ],
+ "Container": [
+  "player-gui b1.8.1: GUI pixels player-gui-container-scenes",
+  "player-gui b1.8.1: GUI pixels player-gui-scenes",
+  "player-gui b1.8.1: creative",
+  "player-gui b1.8.1: options and keybindings",
+  "player-gui b1.8.1: playercore"
+ ],
+ "ContainerCreative": [
+  "player-gui b1.8.1: GUI pixels player-gui-container-scenes",
+  "player-gui b1.8.1: GUI pixels player-gui-scenes",
+  "player-gui b1.8.1: creative",
+  "player-gui b1.8.1: options and keybindings",
+  "player-gui b1.8.1: playercore"
+ ],
+ "ContainerDispenser": [
+  "player-gui b1.8.1: GUI pixels player-gui-container-scenes",
+  "player-gui b1.8.1: GUI pixels player-gui-scenes",
+  "player-gui b1.8.1: creative",
+  "player-gui b1.8.1: options and keybindings",
+  "player-gui b1.8.1: playercore"
+ ],
+ "ContainerFurnace": [
+  "player-gui b1.8.1: GUI pixels player-gui-container-scenes",
+  "player-gui b1.8.1: GUI pixels player-gui-scenes",
+  "player-gui b1.8.1: creative",
+  "player-gui b1.8.1: options and keybindings",
+  "player-gui b1.8.1: playercore"
+ ],
+ "ContainerPlayer": [
+  "player-gui b1.8.1: GUI pixels player-gui-container-scenes",
+  "player-gui b1.8.1: GUI pixels player-gui-scenes",
+  "player-gui b1.8.1: creative",
+  "player-gui b1.8.1: options and keybindings",
+  "player-gui b1.8.1: playercore"
+ ],
+ "ContainerWorkbench": [
+  "player-gui b1.8.1: GUI pixels player-gui-container-scenes",
+  "player-gui b1.8.1: GUI pixels player-gui-scenes",
+  "player-gui b1.8.1: creative",
+  "player-gui b1.8.1: options and keybindings",
+  "player-gui b1.8.1: playercore"
+ ],
+ "CraftingManager": [
+  "player-gui b1.8.1: GUI pixels player-gui-container-scenes",
+  "player-gui b1.8.1: GUI pixels player-gui-scenes",
+  "player-gui b1.8.1: creative",
+  "player-gui b1.8.1: options and keybindings",
+  "player-gui b1.8.1: playercore"
+ ],
  "EnumAction": [
   "world-blocks b1.8.1: actions"
  ],
@@ -2093,6 +2142,27 @@
   "spawn",
   "starts",
   "utilities"
+ ],
+ "EnumOptions": [
+  "player-gui b1.8.1: GUI pixels player-gui-container-scenes",
+  "player-gui b1.8.1: GUI pixels player-gui-scenes",
+  "player-gui b1.8.1: creative",
+  "player-gui b1.8.1: options and keybindings",
+  "player-gui b1.8.1: playercore"
+ ],
+ "FoodStats": [
+  "player-gui b1.8.1: GUI pixels player-gui-container-scenes",
+  "player-gui b1.8.1: GUI pixels player-gui-scenes",
+  "player-gui b1.8.1: creative",
+  "player-gui b1.8.1: options and keybindings",
+  "player-gui b1.8.1: playercore"
+ ],
+ "GameSettings": [
+  "player-gui b1.8.1: GUI pixels player-gui-container-scenes",
+  "player-gui b1.8.1: GUI pixels player-gui-scenes",
+  "player-gui b1.8.1: creative",
+  "player-gui b1.8.1: options and keybindings",
+  "player-gui b1.8.1: playercore"
  ],
  "GenLayer": [
   "BiomeDecorator 0 fixture 0",
@@ -4179,6 +4249,48 @@
   "starts",
   "utilities"
  ],
+ "GuiChest": [
+  "player-gui b1.8.1: GUI pixels player-gui-container-scenes",
+  "player-gui b1.8.1: GUI pixels player-gui-scenes",
+  "player-gui b1.8.1: creative",
+  "player-gui b1.8.1: options and keybindings",
+  "player-gui b1.8.1: playercore"
+ ],
+ "GuiContainerCreative": [
+  "player-gui b1.8.1: GUI pixels player-gui-container-scenes",
+  "player-gui b1.8.1: GUI pixels player-gui-scenes",
+  "player-gui b1.8.1: creative",
+  "player-gui b1.8.1: options and keybindings",
+  "player-gui b1.8.1: playercore"
+ ],
+ "GuiControls": [
+  "player-gui b1.8.1: GUI pixels player-gui-container-scenes",
+  "player-gui b1.8.1: GUI pixels player-gui-scenes",
+  "player-gui b1.8.1: creative",
+  "player-gui b1.8.1: options and keybindings",
+  "player-gui b1.8.1: playercore"
+ ],
+ "GuiCrafting": [
+  "player-gui b1.8.1: GUI pixels player-gui-container-scenes",
+  "player-gui b1.8.1: GUI pixels player-gui-scenes",
+  "player-gui b1.8.1: creative",
+  "player-gui b1.8.1: options and keybindings",
+  "player-gui b1.8.1: playercore"
+ ],
+ "GuiOptions": [
+  "player-gui b1.8.1: GUI pixels player-gui-container-scenes",
+  "player-gui b1.8.1: GUI pixels player-gui-scenes",
+  "player-gui b1.8.1: creative",
+  "player-gui b1.8.1: options and keybindings",
+  "player-gui b1.8.1: playercore"
+ ],
+ "GuiVideoSettings": [
+  "player-gui b1.8.1: GUI pixels player-gui-container-scenes",
+  "player-gui b1.8.1: GUI pixels player-gui-scenes",
+  "player-gui b1.8.1: creative",
+  "player-gui b1.8.1: options and keybindings",
+  "player-gui b1.8.1: playercore"
+ ],
  "IntCache": [
   "BiomeDecorator 0 fixture 0",
   "BiomeDecorator 0 fixture 1",
@@ -5020,6 +5132,20 @@
  "MaterialWeb": [
   "world-blocks b1.8.1: definitions"
  ],
+ "MovementInput": [
+  "player-gui b1.8.1: GUI pixels player-gui-container-scenes",
+  "player-gui b1.8.1: GUI pixels player-gui-scenes",
+  "player-gui b1.8.1: creative",
+  "player-gui b1.8.1: options and keybindings",
+  "player-gui b1.8.1: playercore"
+ ],
+ "MovementInputFromOptions": [
+  "player-gui b1.8.1: GUI pixels player-gui-container-scenes",
+  "player-gui b1.8.1: GUI pixels player-gui-scenes",
+  "player-gui b1.8.1: creative",
+  "player-gui b1.8.1: options and keybindings",
+  "player-gui b1.8.1: playercore"
+ ],
  "NibbleArray": [
   "world-blocks b1.8.1: helpers"
  ],
@@ -5301,6 +5427,34 @@
   "starts",
   "utilities"
  ],
+ "PlayerCapabilities": [
+  "player-gui b1.8.1: GUI pixels player-gui-container-scenes",
+  "player-gui b1.8.1: GUI pixels player-gui-scenes",
+  "player-gui b1.8.1: creative",
+  "player-gui b1.8.1: options and keybindings",
+  "player-gui b1.8.1: playercore"
+ ],
+ "RecipesCrafting": [
+  "player-gui b1.8.1: GUI pixels player-gui-container-scenes",
+  "player-gui b1.8.1: GUI pixels player-gui-scenes",
+  "player-gui b1.8.1: creative",
+  "player-gui b1.8.1: options and keybindings",
+  "player-gui b1.8.1: playercore"
+ ],
+ "RecipesDyes": [
+  "player-gui b1.8.1: GUI pixels player-gui-container-scenes",
+  "player-gui b1.8.1: GUI pixels player-gui-scenes",
+  "player-gui b1.8.1: creative",
+  "player-gui b1.8.1: options and keybindings",
+  "player-gui b1.8.1: playercore"
+ ],
+ "RecipesFood": [
+  "player-gui b1.8.1: GUI pixels player-gui-container-scenes",
+  "player-gui b1.8.1: GUI pixels player-gui-scenes",
+  "player-gui b1.8.1: creative",
+  "player-gui b1.8.1: options and keybindings",
+  "player-gui b1.8.1: playercore"
+ ],
  "RegionFile": [
   "world-blocks b1.8.1: actions",
   "world-blocks b1.8.1: chests",
@@ -5359,6 +5513,20 @@
   "chunk meshes: seed 25, world rand 1, fancy, AO on",
   "chunk meshes: seed 25, world rand 1, fast, AO off",
   "chunk meshes: seed 25, world rand 1, fast, AO on"
+ ],
+ "ShapedRecipes": [
+  "player-gui b1.8.1: GUI pixels player-gui-container-scenes",
+  "player-gui b1.8.1: GUI pixels player-gui-scenes",
+  "player-gui b1.8.1: creative",
+  "player-gui b1.8.1: options and keybindings",
+  "player-gui b1.8.1: playercore"
+ ],
+ "ShapelessRecipes": [
+  "player-gui b1.8.1: GUI pixels player-gui-container-scenes",
+  "player-gui b1.8.1: GUI pixels player-gui-scenes",
+  "player-gui b1.8.1: creative",
+  "player-gui b1.8.1: options and keybindings",
+  "player-gui b1.8.1: playercore"
  ],
  "SpawnListEntry": [
   "BiomeDecorator 0 fixture 0",
@@ -8580,5 +8748,12 @@
   "chunk meshes: seed 25, world rand 1, fancy, AO on",
   "chunk meshes: seed 25, world rand 1, fast, AO off",
   "chunk meshes: seed 25, world rand 1, fast, AO on"
+ ],
+ "WorldSettings": [
+  "player-gui b1.8.1: GUI pixels player-gui-container-scenes",
+  "player-gui b1.8.1: GUI pixels player-gui-scenes",
+  "player-gui b1.8.1: creative",
+  "player-gui b1.8.1: options and keybindings",
+  "player-gui b1.8.1: playercore"
  ]
 }
