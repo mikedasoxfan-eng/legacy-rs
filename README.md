@@ -32,7 +32,7 @@ The port of **Minecraft Beta 1.8.1** (the Adventure Update) is under way, next t
 b1.7.3 (which stays exact). Run it with `beta.exe --mc b1.8.1`.
 
 ```
-Beta 1.8.1  ███████████████████████████████████░░░░░  88.6 %  (18,580 / 20,982 lines)
+Beta 1.8.1  ████████████████████████████████████████  99.5 %  (20,879 / 20,982 lines)
 ```
 
 Exact, not estimated: the work is every class that b1.8.1 added or changed (compared
@@ -48,14 +48,14 @@ matching. Every other screen is compared with zero tolerance.
 | Area | Done | Lines | Classes |
 |---|---:|---:|---:|
 | World generation (biomes, rivers, villages, strongholds, mineshafts, ravines) | 100.0 % | 6,549 / 6,549 | 107 / 107 |
-| World, chunks, lighting, saves | 91.9 % | 2,291 / 2,494 | 42 / 49 |
+| World, chunks, lighting, saves | 100.0 % | 2,494 / 2,494 | 49 / 49 |
 | Mobs and entities (Endermen, Silverfish, Cave Spiders, XP orbs, damage) | 100.0 % | 1,746 / 1,746 | 47 / 47 |
-| Player (hunger, sprinting, experience, creative) | 6.4 % | 61 / 947 | 2 / 11 |
+| Player (hunger, sprinting, experience, creative) | 100.0 % | 947 / 947 | 11 / 11 |
 | Blocks and items (vines, stems, melons, panes, fence gates, food, bow) | 97.4 % | 2,259 / 2,320 | 78 / 80 |
-| Screens and HUD (hunger/XP bars, creative inventory, new menus, stats) | 29.9 % | 535 / 1,787 | 13 / 66 |
+| Screens and HUD (hunger/XP bars, creative inventory, new menus, stats) | 97.6 % | 1,745 / 1,787 | 64 / 66 |
 | Rendering (lightmap lighting, new block shapes, models, particles) | 100.0 % | 5,139 / 5,139 | 81 / 81 |
 
-Oracle checks (`tools/verify181.sh`): **1057 of 1058** sections exact.
+Oracle checks (`tools/verify181.sh`): **1058 of 1058** sections exact.
 <!-- b181-progress:end -->
 
 ---

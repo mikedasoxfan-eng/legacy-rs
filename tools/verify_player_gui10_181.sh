@@ -15,7 +15,16 @@ fail=0
 for spec in "mainmenu10_181 mainmenu10check" "renderengine10_181 renderengine10check" "statfile10_181 statfile10check"; do
   read -r mode check <<<"$spec"
   echo "== player-gui round 10: $mode"
-  bash tools/oracle181/oracle.sh "$mode" "$mode-java.bin" && target/release/beta --mc b1.8.1 "--$check" "tools/oracle181/out/$mode-java.bin" || fail=1
+  # The original prints its own parse errors for the malformed inputs; keep them out of the section.
+  # Both sides print the original's own messages for malformed stats files (CHECKSUM MISMATCH,
+  # invalid syntax); full output goes to target/, the section shows the check's summary.
+  if bash tools/oracle181/oracle.sh "$mode" "$mode-java.bin" >"target/$mode-oracle.log" 2>&1; then
+    target/release/beta --mc b1.8.1 "--$check" "tools/oracle181/out/$mode-java.bin" >"target/$mode-check.log" 2>&1; rc=$?
+    grep -v -E 'is not a valid stat|invalid syntax|CHECKSUM MISMATCH' "target/$mode-check.log" | tail -n 3
+    [ $rc -eq 0 ] || { echo "DIFFERS: $mode"; fail=1; }
+  else
+    tail -n 5 "target/$mode-oracle.log"; echo "ORACLE FAILED: $mode"; fail=1
+  fi
 done
 if [ "${2:-}" != --no-gui ]; then
   for scenes in tools/oracle181/gui/player-gui10-scenes.txt tools/oracle181/gui/feature-scenes.txt; do

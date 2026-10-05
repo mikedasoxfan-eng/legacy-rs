@@ -697,7 +697,7 @@
  "player-gui b1.8.1: whole-player ticks": true,
  "player-gui round 10: mainmenu10_181": true,
  "player-gui round 10: renderengine10_181": true,
- "player-gui round 10: statfile10_181": false,
+ "player-gui round 10: statfile10_181": true,
  "player-gui round 7: controllerlife181": true,
  "player-gui round 7: entity brightness and inventory redirects (zero tolerance)": true,
  "player-gui round 7: inventorybounds181": true,
