@@ -12,6 +12,7 @@ beta="$root/target/release/beta"
 quick="${1:-}"
 
 fail=0
+bash "$root/tools/verify_vehicles.sh" --built || fail=1
 run() { # label, oracle args..., then "--", compare args (oracle output file appended)
   local label="$1"; shift
   local oargs=() cargs=()

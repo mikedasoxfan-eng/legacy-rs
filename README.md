@@ -36,7 +36,7 @@ against the original game code, not just "looks right".
 | World generation (Overworld + Nether: terrain, caves, ores, lakes, dungeons, trees, plants, snow) | 12 | 100 % | ✅ verified |
 | Lighting, chunk loading/unloading, saving (McRegion, level.dat) | 8 | 100 % | ✅ verified |
 | World ticking (block ticks, random ticks, fire, liquids, growth, weather, lightning) | 8 | 95 % | ✅ verified |
-| Mobs and other entities (physics, AI, spawning, items, arrows, TNT, NBT) | 12 | 90 % | ✅ verified (minecarts and boats can be placed but not ridden yet) |
+| Mobs and other entities (physics, AI, spawning, items, arrows, TNT, NBT) | 12 | 90 % | ✅ verified (minecarts, boats and riding included) |
 | The player (movement, health, mining, placing, items, beds, portals, respawn) | 10 | 95 % | ✅ verified |
 | Block rendering (all 18 render types, smooth lighting, Fancy/Fast) | 8 | 100 % | ✅ verified |
 | Mob/item/effect rendering, sky, clouds, rain, snow, fog | 8 | 95 % | ✅ verified |
@@ -46,7 +46,7 @@ against the original game code, not just "looks right".
 | First-person view (hand, held item, block outline, cracks, bobbing, third person) | 5 | 100 % | ✅ verified (8.1 million values, 0 differences) |
 | Particles and world sounds | 5 | 90 % | ✅ verified (every particle type; sounds in the original order) |
 | Tile entities that tick (mob spawners ✅, furnaces ✅, dispensers ✅, pistons) | 2 | 60 % | 🟡 pistons in progress |
-| Vehicles, signs, paintings, maps, fishing, records, statistics | 2 | 10 % | 🟡 records play; the rest is next |
+| Vehicles, signs, paintings, maps, fishing, records, statistics | 2 | 10 % | 🟡 vehicles and records work; signs, paintings, maps and fishing remain |
 
 ---
 
@@ -109,6 +109,7 @@ Details that turned out to matter:
 | Entities | 20 frame-by-frame replays: mobs, items, arrows, TNT, falling sand, spawning |
 | Player | 23 replays: walking, swimming, damage, death, digging, placing, items, beds, portals |
 | Inventory | 10,000 original-bytecode inventory operations |
+| Vehicles | Eight 240-tick replays and final worlds; 10,000 cart inventory/NBT operations; 408 renderer cases (1,582,650 raw-bit comparisons) |
 | Containers | 65,706 recorded clicks in every screen (crafting, chests, furnace, dispenser), all 151 recipes, a 1,000-tick furnace/dispenser world |
 | First person | 18,396 cases: hand, held items and maps, block outline, mining cracks on every block, bobbing, FOV, third person, armour |
 | Particles and sounds | Every particle class over 202 frames (465,408 vertices), block break/hit effects, item pickups, the ordered sound/particle stream in every replay |
@@ -264,6 +265,8 @@ Being exact means keeping these too:
 
 ## Development notes
 
+- [Vehicle coverage and vanilla quirks](VEHICLES.md): minecarts, boats, riding, inventories, NBT and renderer verification.
+
 - `tools/verify.sh quick` runs a fast subset; the full run takes a while. Every change has to end
   with `ALL CASES EXACT`.
 - `beta --play-script` plus `--no-save --seed` gives repeatable gameplay screenshots without
@@ -279,7 +282,7 @@ Being exact means keeping these too:
 
 ## Not yet
 
-Minecarts and boats (placing them works; riding and physics don't), pistons (being ported),
+Pistons (being ported),
 signs, paintings, maps, fishing, counting statistics while you play (the screen exists, the
 counters don't move yet), and the 3D anaglyph mode.
 
