@@ -63,6 +63,8 @@ public class GuiShot {
             super.displayGuiScreen(s);
             if (this.currentScreen == null && capture != null) {
                 // Keep running the script after a world starts (it displays no screen).
+                capture.inner = null;
+                capture.mode = "hud";
                 this.currentScreen = capture;
                 return;
             }
@@ -152,6 +154,8 @@ public class GuiShot {
                     }
                     if (!found) throw new IllegalArgumentException("pack missing " + rest);
                     mc.renderEngine.refreshTextures();
+                } else if (cmd.equals("screenstate")) {
+                    if ((inner!=null)!=rest.equals("open")) throw new IllegalStateException("screen state differs: "+rest);
                 } else if (cmd.equals("repeatstate")) {
                     if(Keyboard.areRepeatEventsEnabled()!=rest.equals("on"))throw new AssertionError("keyboard repeat state differs");
                 } else if (cmd.equals("fontstart")) {

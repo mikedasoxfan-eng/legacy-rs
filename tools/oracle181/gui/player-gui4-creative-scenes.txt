@@ -1,0 +1,12 @@
+# --- player-gui round 4 creative close (b1.8.1) ---
+saves ../out/guisaves
+world 42
+clear 128
+hud health=20 prev=20 item=0 pos=0.5,120,0.5 brightness=0.0 food=20 saturation=5 xp=0 level=0 creative=1
+counter 0
+open creative
+key 18 0
+screenstate none
+hud health=20 prev=20 item=0 pos=0.5,120,0.5 brightness=0.0 food=20 saturation=5 xp=0 level=0 creative=1
+shot b181_creative_inventory_close
+# --- end player-gui round 4 creative close ---

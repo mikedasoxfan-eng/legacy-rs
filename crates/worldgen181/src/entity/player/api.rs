@@ -18,6 +18,7 @@ pub struct PlayerTickInput {
     pub left_held: bool,
     pub right_pressed: bool,
     pub use_presses: i32,
+    pub pick_presses: i32,
     pub right_held: bool,
     pub drop_pressed: bool,
     pub drop_presses: i32,
@@ -152,6 +153,7 @@ impl World {
             if s.right_click_delay>0 {s.right_click_delay-=1;}
             s.pending_attack_presses += input.attack_presses + input.left_pressed as i32;
             s.pending_use_presses += input.use_presses + input.right_pressed as i32;
+            s.pending_pick_presses += input.pick_presses;
         }
         p.set_player_input(input.movement);
         let hit = match input.target {
@@ -176,10 +178,11 @@ impl World {
         if using && !input.right_held { p.stop_item_use(self); }
         if !using {
             let s=p.player_state_mut().unwrap();
-            let (attacks,uses)=(s.pending_attack_presses,s.pending_use_presses);
-            s.pending_attack_presses=0;s.pending_use_presses=0;
+            let (attacks,uses,picks)=(s.pending_attack_presses,s.pending_use_presses,s.pending_pick_presses);
+            s.pending_attack_presses=0;s.pending_use_presses=0;s.pending_pick_presses=0;
             for _ in 0..attacks {p.click_player(self,&mut controller,hit,false);}
             for _ in 0..uses {p.click_player(self,&mut controller,hit,true);}
+            for _ in 0..picks {p.pick_block(self,hit);}
         }
         if input.right_held && p.player_state().unwrap().right_click_delay == 0 && p.player_state().unwrap().item_in_use.is_none() {
             p.click_player(self,&mut controller,hit,true);
@@ -188,7 +191,7 @@ impl World {
             p.player_state_mut().unwrap().left_click_counter = 0;
         }
         if p.player_state().unwrap().left_click_counter <= 0 {
-            if input.left_held && !using {
+            if input.left_held {
                 if let Some(Hit::Block { x, y, z, side, .. }) = hit {
                     controller.dig(&mut p, self, x, y, z, side);
                     let block = self.get_block_id(x, y, z);
@@ -204,6 +207,7 @@ impl World {
                                 [b.min_x, b.min_y, b.min_z, b.max_x, b.max_y, b.max_z]
                             },
                         });
+                    p.swing_item();
                 } else {
                     if !p.player_state().unwrap().capabilities.creative { controller.reset(); }
                 }

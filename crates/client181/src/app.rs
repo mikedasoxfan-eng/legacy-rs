@@ -789,7 +789,7 @@ impl App {
         let settings=&mut g.ui.settings;
         self.input.attack_presses += settings.take_binding_presses("key.attack");
         self.input.use_presses += settings.take_binding_presses("key.use");
-        self.input.middle_pressed |= settings.take_binding_presses("key.pickItem")>0;
+        self.input.pick_presses += settings.take_binding_presses("key.pickItem");
         self.input.drop_presses += settings.take_binding_presses("key.drop");
         let inventories=settings.take_binding_presses("key.inventory");
         let chats=settings.take_binding_presses("key.chat");
@@ -889,10 +889,10 @@ impl App {
                             g.ui.settings.third_person_view = !g.ui.settings.third_person_view;
                         }
                     }
-                    KeyCode::F8 => {
-                        if let Some(g) = &mut self.gui {
-                            g.ui.settings.smooth_camera = !g.ui.settings.smooth_camera;
-                        }
+                    KeyCode::KeyF if self.keys.contains(&KeyCode::F3) => {
+                        let backward=self.keys.contains(&KeyCode::ShiftLeft)||self.keys.contains(&KeyCode::ShiftRight);
+                        if let Some(g)=&mut self.gui {g.ui.settings.set_option_value(gui::settings::EnumOptions::RenderDistance,if backward {-1}else {1});}
+                        self.settings_changed();
                     }
                     KeyCode::Digit1
                     | KeyCode::Digit2

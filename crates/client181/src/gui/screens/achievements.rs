@@ -264,7 +264,7 @@ impl Screen for GuiAchievements {
     }
 
     fn key_typed(&mut self, ui: &mut Ui, _c: char, key: i32) {
-        if key == ui.settings.key_bindings[7].code || key == crate::gui::widgets::KEY_ESCAPE {
+        if ui.settings.key_bindings.iter().any(|k| k.description == "key.inventory" && key == k.code()) || key == crate::gui::widgets::KEY_ESCAPE {
             ui.display(None);
         }
     }
@@ -334,7 +334,7 @@ impl Screen for GuiAchievements {
 pub fn description(ui: &Ui, i: usize) -> String {
     let mut desc = ui.translate(&format!("achievement.{}.desc", ACHIEVEMENTS[i].key));
     if i == 0 {
-        let code = ui.settings.key_bindings.iter().find(|binding| binding.description == "key.inventory").unwrap().code;
+        let code = ui.settings.key_bindings.iter().find(|binding| binding.description == "key.inventory").unwrap().code();
         let key = crate::gui::keynames::KEY_NAMES.get(code as usize).copied().flatten().unwrap_or("null");
         desc = desc.replace("%1$s", key);
     }

@@ -319,7 +319,7 @@ impl Screen for GuiContainer {
                 .settings
                 .key_bindings
                 .iter()
-                .any(|binding| binding.description == "key.inventory" && key == binding.code)
+                .any(|binding| binding.description == "key.inventory" && key == binding.code())
         {
             ui.display(None);
         }

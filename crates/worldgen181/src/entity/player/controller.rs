@@ -20,6 +20,9 @@ impl Default for PlayerControllerSP {
     }
 }
 impl PlayerControllerSP {
+    pub fn block_reach(creative: bool) -> f32 { if creative { 5.0 } else { 4.0 } }
+    pub fn should_draw_hud(creative: bool) -> bool { !creative }
+    pub fn has_extended_entity_reach(creative: bool) -> bool { creative }
     pub fn update(&mut self) {
         self.prev_block_damage = self.cur_block_damage;
     }
@@ -75,7 +78,7 @@ impl PlayerControllerSP {
             }
             self.cur_block_damage += p.relative_block_hardness(w, id);
             if self.step_sound_counter % 4.0 == 0.0 {
-                let (name, volume, pitch) = crate::world::events::step_sound(id);
+                let (name, volume, pitch) = crate::world::events::step_sound(if id == VINE { 31 } else { id });
                 w.direct_sound(
                     name,
                     Some(Vec3D::new(
@@ -108,7 +111,9 @@ impl PlayerControllerSP {
         let id=w.get_block_id(x,y,z);if id==0{return false;}
         let meta=w.get_block_metadata(x,y,z);w.auxiliary_effect(2001,(x,y,z),id as i32+meta*256);
         let removed=w.set_block_with_notify(x,y,z,0);
-        if removed && id==46 && meta&1!=0 {w.ignite_tnt(x,y,z);}removed
+        if removed && id==46 && meta&1!=0 {w.ignite_tnt(x,y,z);}
+        if removed && id==97 {w.silverfish_destroyed181(x,y,z);}
+        removed
     }
     pub fn remove_block(
         &mut self,
@@ -143,7 +148,8 @@ impl PlayerControllerSP {
             };
             p.damage_held(cost);
             // ItemStack.onDestroyBlock: ItemTool and ItemSword report a use.
-            if matches!(s.id, 267 | 268 | 272 | 276 | 283 | 256..=258 | 269..=271 | 273..=275 | 277..=279 | 284..=286) {
+            if matches!(s.id, 267 | 268 | 272 | 276 | 283 | 256..=258 | 269..=271 | 273..=275 | 277..=279 | 284..=286)
+                || (s.id == 359 && matches!(id,18|30|31|106)) {
                 p.add_stat(super::stat::used(s.id), 1);
             }
         }
@@ -215,12 +221,13 @@ impl Entity {
         if id != 78 {
             self.add_stat(super::stat::mine(id as i32), 1);
         }
-        if matches!(id,18|106) && self.held_item().is_some_and(|s| s.id == 359) {
+        if matches!(id,18|31|106) && self.held_item().is_some_and(|s| s.id == 359) {
             super::block_hooks::drop_stack(w, x, y, z, ItemStack::new(id as i32, 1, if id==18 {meta & 3}else{meta}));
         } else if id == 78 {
             super::block_hooks::drop_stack(w, x, y, z, ItemStack::new(332, 1, 0));
             self.add_stat(super::stat::mine(78), 1);
         } else {
+            self.add_exhaustion(0.025);
             crate::world::behavior::drop_block_as_item(w, id, x, y, z, meta);
         }
         if id == 79 {
