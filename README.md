@@ -5,6 +5,7 @@
 **Minecraft Beta 1.7.3, rewritten in Rust, proven identical to the original.**
 
 [![release](https://img.shields.io/badge/release-v1.0.0-2ea44f?style=flat&labelColor=3b3b3b)](https://github.com/mikedasoxfan-eng/beta-rs/releases/latest)
+[![CI](https://github.com/mikedasoxfan-eng/beta-rs/actions/workflows/ci.yml/badge.svg)](https://github.com/mikedasoxfan-eng/beta-rs/actions/workflows/ci.yml)
 [![Minecraft](https://img.shields.io/badge/Minecraft-Beta_1.7.3-6aa84f?style=flat&labelColor=3b3b3b)](#)
 [![Rust](https://img.shields.io/badge/built_with-Rust-b7410e?style=flat&logo=rust&logoColor=white&labelColor=3b3b3b)](#)
 [![wgpu](https://img.shields.io/badge/graphics-wgpu-4b6ec2?style=flat&labelColor=3b3b3b)](#)
