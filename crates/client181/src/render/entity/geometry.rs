@@ -63,6 +63,7 @@ impl TexturedQuad {
 #[derive(Clone, Debug)]
 pub struct ModelRenderer {
     pub texture_size: [f32; 2],
+    pub raw_bounds: [f32; 6],
     pub corners: [PositionTextureVertex; 8],
     pub faces: Vec<TexturedQuad>,
     texture_offset: [i32; 2],
@@ -84,6 +85,7 @@ impl ModelRenderer {
     pub fn new(u: i32, v: i32) -> Self {
         Self {
             texture_size: [64.0, 32.0],
+            raw_bounds: [0.0; 6],
             corners: [PositionTextureVertex {
                 pos: [0.0; 3],
                 uv: [0.0; 2],
@@ -115,6 +117,7 @@ impl ModelRenderer {
         d: i32,
         inflate: f32,
     ) {
+        self.raw_bounds = [x, y, z, x + w as f32, y + h as f32, z + d as f32];
         let mut x1 = x + w as f32;
         let mut y1 = y + h as f32;
         let mut z1 = z + d as f32;

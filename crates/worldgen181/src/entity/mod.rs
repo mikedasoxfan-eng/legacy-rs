@@ -1,11 +1,15 @@
 //! Singleplayer Beta 1.8.1 entity simulation. Arithmetic follows the client source.
 pub mod aquatic;
+pub mod api_verify181;
 pub mod block_hooks;
 pub mod block_table;
 pub mod blocks;
 pub mod client_tick;
 pub mod creature;
+pub mod combat_verify181;
 pub mod damage;
+pub mod data_watcher;
+pub mod registry;
 pub mod explosion;
 pub mod fishing;
 pub mod geometry;

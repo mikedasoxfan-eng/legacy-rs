@@ -32,6 +32,9 @@ pub fn render_state(e: &Entity, partial: f32, brightness: f32) -> Option<RenderS
         _ => return None,
     };
     let mut s = RenderState::new(kind);
+    s.entity_id = e.entity_id;
+    s.arrow_count = e.living.arrows_stuck;
+    s.overlay_brightness = brightness;
     let p = partial as f64;
     // RenderManager: lastTickPos + (pos - lastTickPos) * partialTicks.
     s.position = [
@@ -53,6 +56,8 @@ pub fn render_state(e: &Entity, partial: f32, brightness: f32) -> Option<RenderS
     s.brightness = brightness;
     s.spider_eye_brightness = brightness;
     if let EntityKind::Enderman(state) = &e.kind {
+        s.carried_block = state.carried.max(0) as u8;
+        s.carried_data = state.carried_data as i32;
         s.carrying = state.carried > 0;
         s.screaming = state.screaming;
     }

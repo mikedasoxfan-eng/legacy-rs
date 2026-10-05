@@ -196,6 +196,14 @@ impl Draw {
                 19 => "item/boat.png",
                 31 => "item/chest.png",
                 30 => "item/xporb.png",
+                31 => "item/chest.png",
+                32 => "item/largechest.png",
+                40 => "mob/enderman.png",
+                41 => "mob/enderman_eyes.png",
+                42 => "mob/silverfish.png",
+                43 => "mob/spider.png",
+                44 => "mob/spider_eyes.png",
+                45 => "mob/cavespider.png",
                 20..=29 => super::player::ARMOR[(self.texture - 20) as usize],
                 _ => "__white",
             })
@@ -205,9 +213,11 @@ impl Draw {
         } else if self.texture == 12 {
             Pass::UntestedAlpha
         } else if self.depth == 514 {
-            Pass::Overlay
+            if self.src == 1 && self.dst == 1 {Pass::EyesOverlay} else {Pass::Overlay}
         } else if self.flags & 16 == 0 {
             Pass::Opaque
+        } else if self.src == 1 && self.dst == 1 {
+            Pass::Eyes
         } else if self.dst == 768 {
             Pass::Damage
         } else if self.dst == 772 {

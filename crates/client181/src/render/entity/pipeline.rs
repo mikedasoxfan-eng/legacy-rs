@@ -29,6 +29,7 @@ pub struct EntityPipeline {
     opaque: crate::render::color_mask::Pipelines,
     alpha: crate::render::color_mask::Pipelines,
     eyes: crate::render::color_mask::Pipelines,
+    eyes_overlay: crate::render::color_mask::Pipelines,
     additive: crate::render::color_mask::Pipelines,
     overlay: crate::render::color_mask::Pipelines,
     shadow: crate::render::color_mask::Pipelines,
@@ -64,6 +65,7 @@ pub struct EntityPipeline {
     capacity: usize,
     draws: Vec<Draw>,
     normalize: bool,
+    enderman_random: crate::render::weather::ClientRandom,
 }
 
 /// Light value of a vertex drawn without the lightmap (texture unit 1 disabled).
@@ -182,7 +184,9 @@ impl EntityPipeline {
         let opaque = make("entity opaque", None, LessEqual, "fs_test", true);
         let alpha =
             make("entity translucent slime", Some(wgpu::BlendState::ALPHA_BLENDING), LessEqual, "fs_test", true);
-        let eyes = make("entity spider eyes", Some(wgpu::BlendState::ALPHA_BLENDING), LessEqual, "fs_main", true);
+        let eye_blend = wgpu::BlendState { color: wgpu::BlendComponent { src_factor: wgpu::BlendFactor::One, dst_factor: wgpu::BlendFactor::One, operation: wgpu::BlendOperation::Add }, alpha: wgpu::BlendComponent { src_factor: wgpu::BlendFactor::One, dst_factor: wgpu::BlendFactor::One, operation: wgpu::BlendOperation::Add } };
+        let eyes = make("entity spider eyes", Some(eye_blend), LessEqual, "fs_main", true);
+        let eyes_overlay = make("entity eye hurt overlay", Some(eye_blend), Equal, "fs_main", true);
         let additive = make(
             "entity powered creeper",
             Some(wgpu::BlendState {
@@ -391,6 +395,7 @@ impl EntityPipeline {
             opaque,
             alpha,
             eyes,
+            eyes_overlay,
             additive,
             overlay,
             uniforms,
@@ -406,6 +411,7 @@ impl EntityPipeline {
             capacity: 0,
             draws: Vec::new(),
             normalize: false,
+            enderman_random: crate::render::weather::ClientRandom::new(worldgen::entity::EntitySeedSource::Time.next_seed()),
         }
     }
 
@@ -493,8 +499,10 @@ impl EntityPipeline {
         for snapshot in &self.snapshots {
             let e = &snapshot.entity;
             let first = batches.len();
+            let mut explicit_lights = Vec::new();
             // b1.8.1 RenderManager.renderEntity: glColor 1 and the entity's lightmap coordinates;
             // the colour no longer carries the brightness.
+            let overlay_brightness = snapshot.brightness;
             let brightness = if snapshot.light.is_some() { 1.0 } else { snapshot.brightness };
             let snapshot = &super::effects::Snapshot { brightness, ..snapshot.clone() };
             if let worldgen::entity::EntityKind::Fish(s)=&e.kind {
@@ -506,8 +514,14 @@ impl EntityPipeline {
                 let p=super::bridge::position(e,self.partial);let relative=std::array::from_fn(|i|p[i]-camera[i] as f64);
                 let g=crate::render::painting::render(e,relative,&lights);batches.extend(g.draws.iter().map(|d|d.batch()));
             }
-            if let Some(s) = super::bridge::render_state(e, self.partial, snapshot.brightness) {
-                batches.extend(living::scene_with_lighting(&[s], camera, &mut self.normalize));
+            if let Some(mut s) = super::bridge::render_state(e, self.partial, snapshot.brightness) {
+                s.overlay_brightness = overlay_brightness;
+                if s.kind == living::MobKind::Enderman && s.screaming { s.scream_jitter = [self.enderman_random.gaussian()*0.02,self.enderman_random.gaussian()*0.02]; }
+                if matches!(s.kind,living::MobKind::Enderman|living::MobKind::Silverfish|living::MobKind::Spider|living::MobKind::CaveSpider) {
+                    let g=super::raw_living181::render(&s,camera.to_array(),self.normalize);
+                    explicit_lights=super::raw_living181::packed_brightnesses(&g.draws,snapshot.light.unwrap_or(NO_LIGHTMAP) as i32).into_iter().map(|v|v as u32).collect();
+                    batches.extend(g.draws.iter().map(|d|d.batch()));
+                } else { batches.extend(living::scene_with_lighting(&[s], camera, &mut self.normalize)); }
             } else if let Some(mut s) =
                 super::bridge::object_state(e, self.partial, snapshot.brightness, snapshot.falling_light)
             {
@@ -536,8 +550,9 @@ impl EntityPipeline {
             }
             // RenderLiving turns the lightmap off for its hurt/flash overlay passes.
             let light = snapshot.light.unwrap_or(NO_LIGHTMAP);
-            lights.extend(batches[first..].iter().map(|b| {
-                if matches!(b.pass, Pass::Overlay | Pass::Damage | Pass::TntFlash) { NO_LIGHTMAP } else { light }
+            let trailing_light=explicit_lights.last().copied().unwrap_or(light);
+            lights.extend(batches[first..].iter().enumerate().map(|(i,b)| {
+                if matches!(b.pass, Pass::Overlay | Pass::EyesOverlay | Pass::Damage | Pass::TntFlash) { NO_LIGHTMAP } else { explicit_lights.get(i).copied().unwrap_or(trailing_light) }
             }));
         }
         lights.resize(batches.len(), NO_LIGHTMAP);
@@ -655,6 +670,7 @@ impl EntityPipeline {
                 Pass::Opaque => &self.opaque,
                 Pass::Alpha => &self.alpha,
                 Pass::Eyes => &self.eyes,
+                Pass::EyesOverlay => &self.eyes_overlay,
                 Pass::Additive => &self.additive,
                 Pass::Overlay => &self.overlay,
                 Pass::Shadow => &self.shadow,

@@ -27,7 +27,7 @@ pub fn check(a: &[String]) {
         let blocks = d.bytes(128).try_into().unwrap();
         let meta = d.bytes(128).try_into().unwrap();
         let brightness = std::array::from_fn(|_| f32::from_bits(d.i32() as u32));
-        s.columns.push(Column { x, z, top, biome, rain: kind == 1, snow: kind == 0, light, particle_rain, blocks, meta, brightness });
+        s.columns.push(Column { x, z, top, biome, rain: kind == 1, snow: kind == 0, packed_light: light.map(|l: u32| l as i32), particle_rain, blocks, meta, brightness });
     }
     let mut rng = ClientRandom::new(0);
     let rain_snow = super::weather::precipitation181(&s, cam, tick, partial, rain, fancy, &mut rng);

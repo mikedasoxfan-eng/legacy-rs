@@ -6,14 +6,7 @@ use crate::{
 impl Entity {
     pub fn brightness(&self, w: &mut World) -> f32 {
         let b = self.bounding_box;
-        if w.check_chunks_exist(
-            floor(b.min_x),
-            floor(b.min_y),
-            floor(b.min_z),
-            floor(b.max_x),
-            floor(b.max_y),
-            floor(b.max_z),
-        ) {
+        if w.block_exists(floor(self.pos.x), 64, floor(self.pos.z)) {
             w.get_light_brightness(
                 floor(self.pos.x),
                 floor(self.pos.y - self.y_offset as f64 + (b.max_y - b.min_y) * 0.66),
@@ -22,6 +15,14 @@ impl Entity {
         } else {
             0.0
         }
+    }
+    pub fn packed_brightness(&self, w: &mut World, _partial: f32) -> i32 {
+        let (x, z) = (floor(self.pos.x), floor(self.pos.z));
+        let y = floor(self.pos.y - self.y_offset as f64 + (self.bounding_box.max_y - self.bounding_box.min_y) * 0.66);
+        let base = if w.block_exists(x,64,z) { w.packed_light181(x, y, z, 0) } else { 0 };
+        if matches!(self.kind, EntityKind::XPOrb(_)) {
+            ((base & 255) + 180).min(240) | (base & 0xff0000)
+        } else { base }
     }
     pub(super) fn update_hostile_living(&mut self, w: &mut World) {
         if let EntityKind::Creeper {

@@ -43,17 +43,20 @@ pub struct Column {
     /// b1.8.1 BiomeGenBase.canSpawnLightningBolt / getEnableSnow for renderRainSnow.
     pub rain: bool,
     pub snow: bool,
-    /// b1.8.1 `World.func_35451_b(x, y, z, 0)` for y 0..=128.
-    pub light: [u32; 129],
     pub blocks: [u8; 128],
     pub meta: [u8; 128],
     pub brightness: [f32; 129],
+    pub packed_light: [i32; 129],
 }
 #[derive(Clone, Default)]
 pub struct Snapshot {
     pub columns: Vec<Column>,
 }
 impl Snapshot {
+    pub fn packed_brightness(&self, p: [f64; 3]) -> i32 {
+        self.column(math::floor_double(p[0]), math::floor_double(p[2]))
+            .map_or(0, |c| c.packed_light[math::floor_double(p[1]).clamp(0, 128) as usize])
+    }
     pub fn column(&self, x: i32, z: i32) -> Option<&Column> {
         let first = self.columns.first()?;
         let (dx, dz) = (x - first.x, z - first.z);
@@ -329,7 +332,7 @@ pub fn precipitation181(
         let dx = (x as f32 + 0.5f32) as f64 - cam[0];
         let dz = (z as f32 + 0.5f32) as f64 - cam[2];
         let dist = math::sqrt_double(dx * dx + dz * dz) / radius as f32;
-        let packed = c.light[light_y.clamp(0, 128) as usize];
+        let packed = c.packed_light[light_y.clamp(0, 128) as usize] as u32;
         let (tex, u, scroll, drift, alpha, light);
         if c.rain {
             tex = 1u8;

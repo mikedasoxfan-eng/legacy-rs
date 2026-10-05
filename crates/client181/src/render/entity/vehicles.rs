@@ -186,13 +186,13 @@ pub fn render(
     if let Some(t) = s.cart_type.filter(|t| *t != 0) {
         g.texture = 1;
         g.scale(0.75, 0.75, 0.75);
-        g.translate(0.0, 0.3125, 0.0);
+        if t==1 {g.translate(-0.5,0.0,0.5);} else {g.translate(0.0,0.3125,0.0);}
         g.rotate(90.0, 0.0, 1.0, 0.0);
         if t == 1 || t == 2 {
             super::inventory::inventory(g, if t == 1 { 54 } else { 61 }, 0, brightness, true);
         }
         g.rotate(-90.0, 0.0, 1.0, 0.0);
-        g.translate(0.0, -0.3125, 0.0);
+        if t==1 {g.translate(0.5,0.0,-0.5);} else {g.translate(0.0,-0.3125,0.0);}
         g.scale(1.0 / 0.75, 1.0 / 0.75, 1.0 / 0.75);
     } else if s.cart_type.is_none() {
         g.texture = 1;

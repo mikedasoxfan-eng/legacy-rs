@@ -167,3 +167,23 @@ pub fn model_check(path: &str) -> bool {
     );
     d.bad == 0
 }
+
+pub fn registry_check(path: &str) -> bool {
+    use ModelKind::*;
+    let kinds=[Biped,Zombie,Skeleton,Quadruped,Pig,Cow,SheepFur,Sheep,Chicken,Spider,Creeper,SlimeOuter,SlimeInner,Squid,Wolf,Ghast,Enderman,Silverfish,Chest,LargeChest];
+    let mut d=Dump {data:std::fs::read(path).unwrap(),at:0,checks:0,bad:0};
+    let cases=d.u32();
+    fn part(d:&mut Dump,p:&super::geometry::ModelRenderer) {
+        for v in p.raw_bounds.into_iter().chain([p.rotation_point_x,p.rotation_point_y,p.rotation_point_z,p.rotate_angle_x,p.rotate_angle_y,p.rotate_angle_z]).chain(p.texture_size) {
+            let java=d.u32();d.equal(java as u64,v.to_bits() as u64,"model registry part");
+        }
+    }
+    for _ in 0..cases {
+        let kind=d.u32() as usize;let model=Model::new(kinds[kind]);
+        assert_eq!(d.u32() as usize,model.registered.len(),"{:?} registry size",kinds[kind]);
+        for i in 0..model.registered.len() {part(&mut d,model.registered_part(i));}
+        let mut r=worldgen::JavaRandom::new(42);
+        for _ in 0..256 {part(&mut d,model.random_part(&mut r));let java=u64::from_le_bytes(d.bytes());d.equal(java,r.state() as u64,"random part RNG");}
+    }
+    assert_eq!(d.at,d.data.len());println!("model registry: {cases} models, {} comparisons, {} differences",d.checks,d.bad);d.bad==0
+}

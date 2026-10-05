@@ -811,28 +811,10 @@ fn run(opts: WorldOptions, mut col: Colorizers, mut video: VideoSettings, rx: Re
 
 /// `Entity.getEntityBrightness` for a simulated entity.
 fn living_brightness(world: &mut World, e: &worldgen::entity::Entity) -> f32 {
-    let fl = worldgen::math::floor_double;
-    let b = &e.bounding_box;
-    if !world.check_chunks_exist(fl(b.min_x), fl(b.min_y), fl(b.min_z), fl(b.max_x), fl(b.max_y), fl(b.max_z)) {
-        return 0.0;
-    }
-    let h = (b.max_y - b.min_y) * 0.66;
-    let (x, y, z) = (fl(e.pos.x), fl(e.pos.y - e.y_offset as f64 + h), fl(e.pos.z));
-    let l = world.get_block_light_value(x, y, z);
-    world.light_brightness_table[l.clamp(0, 15) as usize]
+    e.brightness(world)
 }
-
-/// `Entity.func_35115_a` (b1.8.1): the packed lightmap brightness two thirds up the entity,
-/// 0 while its column is not loaded.
 fn entity_light(world: &mut World, e: &worldgen::entity::Entity) -> u32 {
-    let fl = worldgen::math::floor_double;
-    let (x, z) = (fl(e.pos.x), fl(e.pos.z));
-    if !world.block_exists(x, 128 / 2, z) {
-        return 0;
-    }
-    let h = (e.bounding_box.max_y - e.bounding_box.min_y) * 0.66;
-    let y = fl(e.pos.y - e.y_offset as f64 + h);
-    world.packed_light181(x, y, z, 0) as u32
+    e.packed_brightness(world, 0.0) as u32
 }
 
 /// `Entity.getEntityBrightness` for a player whose eyes are at `cam` (1.8 tall, eyes 1.62 up).
@@ -902,10 +884,6 @@ fn weather_snapshot_radius(world: &mut World, cam: (f64, f64, f64), radius: i32)
             // b1.8.1 func_35461_e: the cached precipitation height.
             let top = world.precipitation_height181(x, z);
             let biome = biomes[columns.len()];
-            let mut light = [0u32; 129];
-            for (y, l) in light.iter_mut().enumerate() {
-                *l = world.packed_light181(x, y as i32, z, 0) as u32;
-            }
             let mut c = Column {
                 x,
                 z,
@@ -913,18 +891,20 @@ fn weather_snapshot_radius(world: &mut World, cam: (f64, f64, f64), radius: i32)
                 biome,
                 rain: biome.enable_rain(),
                 snow: biome.enable_snow(),
-                light,
                 particle_rain: crate::render::weather::rains(bs.biome_at(x, z)),
                 blocks: [0; 128],
                 meta: [0; 128],
                 brightness: [0.0; 129],
+                packed_light: [0; 129],
             };
             for y in 0..128 {
                 c.blocks[y] = world.get_block_id(x, y as i32, z);
                 c.meta[y] = world.get_block_metadata(x, y as i32, z) as u8;
+                c.packed_light[y] = world.packed_light181(x, y as i32, z, 0);
                 let l = world.get_block_light_value(x, y as i32, z);
                 c.brightness[y] = world.light_brightness_table[l as usize];
             }
+            c.packed_light[128] = world.packed_light181(x, 128, z, 0);
             let light = world.get_block_light_value(x, 128, z);
             c.brightness[128] = world.light_brightness_table[light as usize];
             columns.push(c);

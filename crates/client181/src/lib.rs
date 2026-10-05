@@ -511,6 +511,18 @@ pub fn run() {
         std::process::exit(if ok { 0 } else { 1 });
     }
     if args.get(1).map(String::as_str)==Some("--particlefxcheck") {let ok=render::particle_check::effects_check(args.get(2).expect("--particlefxcheck oracle.bin"));println!("{}",if ok {"EFFECT RENDERER EXACT"}else{"EFFECT RENDERER DIFFER"});std::process::exit(if ok {0}else{1});}
+    if args.get(1).map(String::as_str) == Some("--modelregistrycheck") {
+        std::process::exit(if render::entity::check::registry_check(&args[2]) {0} else {1});
+    }
+    if args.get(1).map(String::as_str) == Some("--arrowcheck") {std::process::exit(if render::entity::object_check::arrow_check(&args[2]) {0}else{1});}
+    if args.get(1).map(String::as_str) == Some("--bedmodelcheck") {std::process::exit(if render::entity::object_check::bed_check(&args[2]) {0}else{1});}
+    if args.get(1).map(String::as_str) == Some("--newlivingcheck") { std::process::exit(if render::entity::object_check::new_living_check(&args[2]) {0}else{1}); }
+    if args.get(1).map(String::as_str) == Some("--chestcheck") {
+        std::process::exit(if render::entity::object_check::chest_check(&args[2]) {0} else {1});
+    }
+    if args.get(1).map(String::as_str) == Some("--particleemittercheck") {
+        std::process::exit(if render::particle_check::emitter_check(&args[2]) {0} else {1});
+    }
     if args.get(1).map(String::as_str) == Some("--particlecheck") {
         let ok=render::particle_check::check(args.get(2).expect("--particlecheck oracle.bin"));
         println!("{}",if ok {"PARTICLES EXACT"}else{"PARTICLES DIFFER"});std::process::exit(if ok {0}else{1});

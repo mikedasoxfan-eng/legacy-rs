@@ -15,9 +15,7 @@ public final class Mode_entities181 {
         for(Object c0:((EntityOracle.FlatProvider)w.chunkProvider).chunks.values()) {Chunk c=(Chunk)c0;Arrays.fill(c.skylightMap.data,(byte)255);Arrays.fill(c.heightMap,(byte)64);}
         w.difficultySetting=2;w.skylightSubtracted=11;w.worldInfo.setWorldTime(18000);
         WorldEventOracle.attach(w);
-        w.addWorldAccess((IWorldAccess)Proxy.newProxyInstance(Mode_entities181.class.getClassLoader(),new Class[]{IWorldAccess.class},(proxy,method,args)->{
-            if(method.getName().equals("playAuxSFX")){ByteArrayOutputStream b=new ByteArrayOutputStream();DataOutputStream o=new DataOutputStream(b);o.writeByte(3);for(int j=1;j<=5;j++)i(o,(Integer)args[j]);WorldEventOracle.events.get(w).add(b.toByteArray());}return null;
-        }));
+        // WorldEventOracle now records playAuxSFX itself; keep one recording listener.
         Field id=Entity.class.getDeclaredField("nextEntityID");id.setAccessible(true);id.setInt(null,0);
         OracleHooks.reset(100);EntityOracle.mathRandom().setSeed(200);w.rand.setSeed(300);
         return w;

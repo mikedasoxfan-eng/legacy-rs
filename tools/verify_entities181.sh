@@ -28,5 +28,22 @@ echo "== entities181: particles181"
 if "$oracle" particles181 particles181.bin && "$beta" --mc b1.8.1 --particlecheck "$out/particles181.bin"; then :; else fail=1; fi
 echo "== entities181: xprender181"
 if "$oracle" xprender181 xprender181.bin && "$beta" --mc b1.8.1 --renderercheck "$out/xprender181.bin"; then :; else fail=1; fi
+if "$oracle" vehiclerenders181 vehiclerenders181.bin && "$beta" --mc b1.8.1 --vehiclerenderercheck "$out/vehiclerenders181.bin"; then :; else fail=1; fi
+if "$oracle" bedmodel181 bedmodel181.bin && "$beta" --mc b1.8.1 --bedmodelcheck "$out/bedmodel181.bin"; then :; else fail=1; fi
+if "$oracle" arrows181 arrows181.bin && "$beta" --mc b1.8.1 --arrowcheck "$out/arrows181.bin"; then :; else fail=1; fi
+# Round 2: packed light, wire APIs, combat, explosions and renderer callbacks.
+for name in Pig Wolf Skeleton Spider CaveSpider Creeper PigZombie Ghast Squid Slime Silverfish; do
+  if "$oracle" entities181 "kill-$name" 40 "entity181_kill-${name}.bin" && "$cmp" "kill-$name" 40 "$out/entity181_kill-${name}.bin"; then :; else fail=1; fi
+done
+for kind in watchers coordinates light registry; do
+  if "$oracle" entityapi181 "$kind" 0 "entityapi181_${kind}.bin" && "$cmp" "$kind" 0 "$out/entityapi181_${kind}.bin"; then :; else fail=1; fi
+done
+if "$oracle" combat181 combat 0 combat181.bin && "$cmp" combat 0 "$out/combat181.bin"; then :; else fail=1; fi
+if "$oracle" explosion181 explosion 0 explosion181.bin && "$cmp" explosion 0 "$out/explosion181.bin"; then :; else fail=1; fi
+if "$oracle" particles2_181 particles2_181.bin && "$beta" --mc b1.8.1 --particlecheck "$out/particles2_181.bin"; then :; else fail=1; fi
+if "$oracle" emitters181 emitters181.bin && "$beta" --mc b1.8.1 --particleemittercheck "$out/emitters181.bin"; then :; else fail=1; fi
+if "$oracle" chests181 chests181.bin && "$beta" --mc b1.8.1 --chestcheck "$out/chests181.bin"; then :; else fail=1; fi
+if "$oracle" modelregistry181 modelregistry181.bin && "$beta" --mc b1.8.1 --modelregistrycheck "$out/modelregistry181.bin"; then :; else fail=1; fi
+if "$oracle" newliving181 newliving181.bin && "$beta" --mc b1.8.1 --newlivingcheck "$out/newliving181.bin"; then :; else fail=1; fi
 [ "$fail" -eq 0 ] && echo "ENTITIES181 ALL FOCUSED CASES EXACT" || echo "ENTITIES181 SOME CASES DIFFER"
 exit "$fail"
