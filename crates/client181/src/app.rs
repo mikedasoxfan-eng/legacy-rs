@@ -900,7 +900,12 @@ impl App {
                     self.mouse_delta.0 += x;
                     self.mouse_delta.1 -= y;
                 }
-                Command::Scroll(n) => self.minecraft_events.mouse.push(crate::minecraft_input::MouseEvent {button:-1,pressed:false,wheel:n,fresh:true}),
+                // Routed like WindowEvent::MouseWheel: an open screen scrolls, otherwise the hotbar.
+                Command::Scroll(n) => {
+                    let screen_open = self.gui.as_ref().is_some_and(|g| g.screen.is_some());
+                    if screen_open && n != 0 {if let Some(g)=self.gui.as_mut(){if let Some(s)=g.screen.as_mut(){s.mouse_scrolled(&mut g.ui,n.signum());}}}
+                    else {self.minecraft_events.mouse.push(crate::minecraft_input::MouseEvent {button:-1,pressed:false,wheel:n,fresh:true});}
+                }
                 Command::Move(x, y) => {
                     self.cursor = (x, y);
                     if let Some(g) = &mut self.gui {
