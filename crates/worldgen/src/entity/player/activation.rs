@@ -132,13 +132,20 @@ impl Entity {
                             e.player_state()
                                 .is_some_and(|s| s.sleeping && s.bed == Some((bx, y, bz)))
                         }) {
+                            self.player_state_mut().unwrap().events.push(PlayerEvent::Chat("tile.bed.occupied"));
                             return true;
                         }
                         w.set_block_metadata_with_notify(bx, y, bz, m & !4);
                     }
-                    if self.sleep_in_bed(w, bx, y, bz) == SleepStatus::Ok {
-                        let m = w.get_block_metadata(bx, y, bz);
-                        w.set_block_metadata_with_notify(bx, y, bz, m | 4);
+                    match self.sleep_in_bed(w, bx, y, bz) {
+                        SleepStatus::Ok => {
+                            let m = w.get_block_metadata(bx, y, bz);
+                            w.set_block_metadata_with_notify(bx, y, bz, m | 4);
+                        }
+                        SleepStatus::NotPossibleNow => {
+                            self.player_state_mut().unwrap().events.push(PlayerEvent::Chat("tile.bed.noSleep"));
+                        }
+                        _ => {}
                     }
                 }
                 true

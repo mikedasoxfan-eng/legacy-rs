@@ -48,6 +48,8 @@ impl PlayerInput {
 pub enum PlayerEvent {
     /// `EntityPlayer.addStat` (the client's StatFileWriter and achievement pop-up).
     Stat { id: i32, amount: i32 },
+    /// `addChatMessage(key)`: a translated line in the chat area.
+    Chat(&'static str),
     Container(crate::container::ContainerEvent),
     Pickup {
         entity: i32,

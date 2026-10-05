@@ -1141,6 +1141,12 @@ impl App {
                                 worldgen::entity::player::PlayerEvent::Pickup { source, .. } => self.particles.pickup(source, entity.entity_id),
                                 // The world thread switches dimension itself (usePortal).
                                 worldgen::entity::player::PlayerEvent::ChangeDimension => {}
+                                worldgen::entity::player::PlayerEvent::Chat(key) => {
+                                    if let Some(g) = &self.gui {
+                                        let text = g.ui.lang.translate_key(key);
+                                        self.ingame.add_chat_message(&g.ui, text);
+                                    }
+                                }
                                 worldgen::entity::player::PlayerEvent::Stat { id, amount } => {
                                     if let Some(g) = &mut self.gui {
                                         g.add_stat(id, amount);
