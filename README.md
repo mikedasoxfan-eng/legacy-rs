@@ -116,6 +116,7 @@ Details that turned out to matter:
 | Portals | Teleporter find/build (incl. the ocean platform), the whole `usePortal` sequence |
 | Respawn | At spawn, at a bed, with the bed gone |
 | Statistics file | The port's stats file read by the original and back, checksum rejection, unknown stat ids |
+| Old worlds | An Alpha-format copy of a world converted by the original and by the port: every chunk and progress step identical |
 | Statistics | Every `addStat` call (about 13,000) in all 24 player replays, in order, with amounts |
 | Redstone | Scripted circuits, rail layouts, all piston facings and push lengths, sticky pulls, quick pulses, clocks, pushing entities, note instruments and pitches, every tick |
 | Moving pistons | 24,840 original-bytecode renderer cases: partial ticks, all facings, carried blocks, Fancy/Fast, smooth lighting |
