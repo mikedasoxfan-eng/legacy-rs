@@ -1072,7 +1072,11 @@ impl App {
                             flow.reset = true;
                         }
                     }
-                    Ok(FromWorker::Entities(list)) => self.entities = list,
+                    Ok(FromWorker::Entities(list)) => {
+                        // EntityCrit2FX follows its live target entity.
+                        for e in &list { self.particles.renderer.update_critical_target(&e.entity); }
+                        self.entities = list;
+                    }
                     Ok(FromWorker::BlockTiles {pistons,events}) => {
                         self.pistons=pistons;
                         // Note and piston sounds arrive with the world effects (BlockNote/BlockPistonBase.playBlock).
@@ -1171,6 +1175,7 @@ impl App {
                                     if let Some(g)=&mut self.gui {g.ui.display(Some(Box::new(gui::screens::edit_sign::GuiEditSign::new(position,block,metadata,sign))));}
                                 }
                                 worldgen::entity::player::PlayerEvent::Pickup { source, .. } => self.particles.pickup(source, entity.entity_id),
+                                worldgen::entity::player::PlayerEvent::CriticalHit { target } => self.particles.renderer.critical_hit(&target, self.cam.pos.to_array()),
                                 // The world thread switches dimension itself (usePortal).
                                 worldgen::entity::player::PlayerEvent::ChangeDimension => {}
                                 worldgen::entity::player::PlayerEvent::Chat(key) => {

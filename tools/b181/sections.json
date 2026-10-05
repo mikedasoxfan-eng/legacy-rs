@@ -22,6 +22,7 @@
  "BlockVine: random-tick growth, crowding and losing support": true,
  "EffectRenderer destruction, hits, tint, eviction and vertex bits": false,
  "EntityPickupFX item and arrow renderer draws": false,
+ "EntityPlayer NBT: read then write, byte order of level.dat player data": true,
  "Fast and Fancy clouds": true,
  "GenLayer: -4172144997902289642 300 -100 43 29": true,
  "GenLayer: -9223372036854775808 12550784 -12550784 31 17": true,

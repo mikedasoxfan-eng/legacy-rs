@@ -75,6 +75,10 @@ pub enum PlayerEvent {
         source: Box<Entity>,
     },
     ChangeDimension,
+    /// `EntityPlayer.func_35200_b`: a critical hit (EntityPlayerSP adds an EntityCrit2FX).
+    CriticalHit {
+        target: Box<Entity>,
+    },
     OpenContainer {
         block: u8,
         position: (i32, i32, i32),

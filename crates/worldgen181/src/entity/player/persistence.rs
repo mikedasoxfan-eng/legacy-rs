@@ -31,14 +31,16 @@ impl Entity {
         n.put("Dimension", Tag::Int(s.dimension));
         n.put("Sleeping", Tag::Byte(s.sleeping as i8));
         n.put("SleepTimer", Tag::Short(s.sleep_timer as i16));
-        n.put("Score", Tag::Int(s.score));
-        s.food.write_nbt(&mut n);
+        // EntityPlayer.writeEntityToNBT's order matters: Java's HashMap keeps colliding keys in
+        // insertion order. EntityPlayerSP adds the score last.
         s.experience.write_nbt(&mut n);
         if let Some((x, y, z)) = s.spawn {
             n.put("SpawnX", Tag::Int(x));
             n.put("SpawnY", Tag::Int(y));
             n.put("SpawnZ", Tag::Int(z));
         }
+        s.food.write_nbt(&mut n);
+        n.put("Score", Tag::Int(s.score));
         Some(n)
     }
     pub fn player_from_nbt(

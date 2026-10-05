@@ -28,6 +28,9 @@ impl Entity {
                 self.motion.z *= 0.6;
                 self.set_sprinting(false);
             }
+            if hit && critical {
+                self.player_state_mut().unwrap().events.push(PlayerEvent::CriticalHit { target: Box::new(target.clone()) });
+            }
             if target.kind.is_living() {
                 if let Some(s) = self.held_item() {
                     if matches!(s.id, 267 | 268 | 272 | 276 | 283) {

@@ -18497,6 +18497,13 @@
   "entities3: vehiclebranches",
   "entities3: wolfbranches"
  ],
+ "EntityPlayer": [
+  "player-gui b1.8.1: playercore",
+  "player-gui b1.8.1: whole-player ticks",
+  "player-gui b1.8.1: melee and potion mining",
+  "player-gui b1.8.1 round 4: controllers, picking and creative reach",
+  "EntityPlayer NBT: read then write, byte order of level.dat player data"
+ ],
  "EntityPortalFX": [
   "entities181: Arrow",
   "entities181: Boat",

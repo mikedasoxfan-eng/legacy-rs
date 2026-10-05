@@ -332,6 +332,30 @@ pub fn replay(kind: &str, ticks: i32) -> Vec<u8> {
     if kind == "explosion" { return super::combat_verify181::explosion_replay(); }
     if kind == "combat" { return super::combat_verify181::replay(); }
     if matches!(kind, "watchers" | "coordinates" | "light" | "registry") { return super::api_verify181::replay(kind); }
+    if kind == "playernbt" {
+        // EntityPlayer read/write NBT for the crafted players of Mode_playernbt181: the input is
+        // taken from the Java dump, the output must equal Java's.
+        let java = std::fs::read(std::env::var("PLAYERNBT_JAVA").expect("PLAYERNBT_JAVA")).unwrap();
+        let mut at = 4;
+        let mut o = java[..4].to_vec();
+        let mut w = world();
+        for _ in 0..i32::from_le_bytes(java[..4].try_into().unwrap()) {
+            let len = i32::from_le_bytes(java[at..at + 4].try_into().unwrap()) as usize;
+            let input = &java[at + 4..at + 4 + len];
+            at += 4 + len;
+            let skip = i32::from_le_bytes(java[at..at + 4].try_into().unwrap()) as usize;
+            at += 4 + skip;
+            let n = crate::nbt::read_root(&mut &input[..]).unwrap();
+            let e = Entity::player_from_nbt(&mut w, &n, "Player").unwrap();
+            let mut out = Vec::new();
+            crate::nbt::write_root(&mut out, &e.player_nbt().unwrap()).unwrap();
+            i(&mut o, len as i32);
+            o.extend_from_slice(input);
+            i(&mut o, out.len() as i32);
+            o.extend(out);
+        }
+        return o;
+    }
     if kind == "vine" {
         // BlockVine.updateTick / onNeighborBlockChange in the flat fixture (Mode_vine181).
         let mut w = world();
