@@ -31,7 +31,7 @@ impl Snapshot {
                     copy.data = c.data.clone();
                     copy.sky_light = c.sky_light.clone();
                     copy.block_light = c.block_light.clone();
-                    copy.height_map = c.height_map;
+                    copy.height_map = c.height_map.clone();
                     copy.entity_lists = c.entity_lists.clone();
                     for id in c.entity_lists.iter().flatten() {
                         if let Some(e) = w.entities.get(id) {

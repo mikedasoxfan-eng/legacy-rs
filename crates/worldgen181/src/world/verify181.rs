@@ -81,10 +81,272 @@ pub fn bytes(kind: &str) -> Vec<u8> {
         "spawn" => spawn_cases(&mut o),
         "relocation" => relocation_cases(&mut o),
         "silverfish" => silverfish(&mut o),
+        "cache" => chunk_cache(&mut o),
+        "textures" => coordinate_textures(&mut o),
+        "weather" => weather_cases(&mut o),
+        "arrays" => chunk_arrays(&mut o),
+        "savelife" => save_lifecycle(&mut o),
+        "sides" => block_sides(&mut o),
+        "nextticks" => next_tick_cases(&mut o),
+        "frost" => frost_cases(&mut o),
+        "fileclasses" => file_classes(&mut o),
         "registry" => o.extend_from_slice(include_bytes!("../entity/player/registry.bin")),
         _ => panic!("unknown worldblocks181 suite {kind}"),
     };
     o
+}
+fn file_classes(o:&mut Vec<u8>) {
+    use crate::storage181::{ChunkFile181,SaveFormatComparator181,chunk_filename_matches,chunk_folder_matches};
+    let names=["c.0.0.dat","c.-1.1a.dat","c.-zik0zk.zik0zj.dat","c.zik0zk.0.dat","c.-zik0zl.0.dat","c.00001.-0.dat","c.a.b.dat.bak","c.A.b.dat","c.+1.0.dat","c..0.dat","c.1.2.3.dat","x","c.zzzzzzzzzz.0.dat","c.1.1.dat\n"];
+    for name in names {
+        o.push(chunk_filename_matches(name) as u8);
+        match ChunkFile181::new(name.into()) {Ok(c)=>{o.push(1);i(o,c.x);i(o,c.z);o.push((c.path.file_name().unwrap()==name) as u8);},Err(_)=>o.push(0)}
+    }
+    for left in names {for right in names {
+        i(o,match(ChunkFile181::new(left.into()),ChunkFile181::new(right.into())) {(Ok(a),Ok(b))=>a.compare(&b),_=>i32::MIN});
+    }}
+    let strings=["","a","aa","A","z","world","world2","é","😀","\u{e000}"];
+    let times=[i64::MIN,-1,0,1,i64::MAX];
+    for t in times {for u in times {for left in strings {for right in strings {
+        let x=SaveFormatComparator181{file_name:left.into(),display_name:"display".into(),last_played:t,size_on_disk:u,game_type:3,requires_conversion:true};
+        let y=SaveFormatComparator181{file_name:right.into(),display_name:"other".into(),last_played:u,size_on_disk:t,game_type:0,requires_conversion:false};
+        i(o,x.compare(&y));l(o,x.last_played);l(o,x.size_on_disk);i(o,x.game_type);o.extend([x.requires_conversion as u8,(x.file_name==left) as u8,(x.display_name=="display") as u8]);
+    }}}}
+    for name in ["0","z","00","az","zz","000","A","-1","a.b","a_"] {o.extend([chunk_folder_matches(name,true) as u8,chunk_folder_matches(name,false) as u8]);}
+    let mut w=fixture(true);
+    for below in 0..=109 {if below!=0&&!crate::block::props(below).exists{continue;}for target in 0..=109 {if target!=0&&!crate::block::props(target).exists{continue;}
+        raw(&mut w,8,63,8,below,0);raw(&mut w,8,64,8,target,0);
+        o.push(crate::entity::player::placement::can_place_at(&mut w,107,8,64,8,1) as u8);
+    }}
+}
+fn cache_sample(o: &mut Vec<u8>, c: &super::cache181::ChunkCache181<'_>, x: i32, y: i32, z: i32, minimum: i32) {
+    use super::chunk::LightKind;
+    i(o,c.block_id(x,y,z) as i32); i(o,c.metadata(x,y,z));
+    i(o,c.light_value(x,y,z)); i(o,c.light_value_ext(x,y,z,false));
+    for kind in [LightKind::Sky,LightKind::Block] {
+        i(o,c.saved_light(kind,x,y,z)); i(o,c.saved_light_raw(kind,x,y,z));
+    }
+    i(o,c.packed_light(x,y,z,minimum));
+    o.extend(c.brightness(x,y,z,minimum).to_bits().to_le_bytes());
+    o.extend(c.light_brightness(x,y,z).to_bits().to_le_bytes());
+    o.extend([c.air_block(x,y,z) as u8,c.opaque_cube(x,y,z) as u8,c.normal_cube(x,y,z) as u8]);
+    let m=crate::block::mat(c.material(x,y,z));o.extend([m.blocks_movement as u8,m.is_liquid as u8]);
+}
+fn coordinate_textures(o:&mut Vec<u8>) {
+    use crate::block::{self,visual181};
+    let mut w=fixture(true);
+    for fancy in 0..2 {for id in 1..=109u8 {if !block::props(id).exists{continue;}
+        for meta in 0..16 {raw(&mut w,8,64,8,id,meta);
+            for above in [0,1,78,80] {raw(&mut w,8,65,8,above,0);
+                for side in 0..6 {i(o,visual181::texture_at(id,side,meta as usize,fancy!=0,8,64,8,|x,y,z|w.get_block_id(x,y,z)).unwrap_or(i32::MIN));}
+            }
+        }
+    }}
+    for id in [54,95] {for pair in 0..16 {for mask in 0..256 {
+        raw(&mut w,8,64,8,id,mask&15);
+        let dx=[0,0,-1,1,-1,1,-1,1];let dz=[-1,1,0,0,-1,-1,1,1];
+        for k in 0..8 {raw(&mut w,8+dx[k],64,8+dz[k],if k<4&&pair&(1<<k)!=0{id}else if mask&(1<<k)!=0{1}else{0},0);}
+        for side in 0..6 {i(o,visual181::texture_at(id,side,(mask&15) as usize,true,8,64,8,|x,y,z|w.get_block_id(x,y,z)).unwrap_or(i32::MIN));}
+    }}}
+}
+fn f181(o:&mut Vec<u8>,f:f32){i(o,if f.is_nan(){0x7fc00000}else{f.to_bits()} as i32);}
+fn weather_cases(o:&mut Vec<u8>) {
+    let mut r=crate::JavaRandom::new(81731);
+    for dim in [super::Dimension::Overworld,super::Dimension::Nether] {
+        let mut w=World::with_dimension(0,300,dim);
+        for n in 0..512 {
+            w.rand.set_seed(r.next_long());w.world_time=r.next_long();
+            w.info.rain_time=[-1,0,1,2,20,i32::MAX][n%6];
+            w.info.thunder_time=[-1,0,1,2,20,i32::MAX][(n/6)%6];
+            w.info.raining=n&1!=0;w.info.thundering=n&2!=0;w.lightning_flash=n as i32%4-1;
+            w.raining_strength=if n%4==0 {f32::from_bits(r.next_int_unbounded() as u32)}else{r.next_float()};
+            w.thundering_strength=if n%4==0 {f32::from_bits(r.next_int_unbounded() as u32)}else{r.next_float()};
+            w.prev_raining_strength=-0.0;w.prev_thundering_strength=1.0;
+            for _ in 0..32 {
+                w.update_weather();i(o,w.info.rain_time);i(o,w.info.thunder_time);
+                o.extend([w.info.raining as u8,w.info.thundering as u8]);i(o,w.lightning_flash);
+                for f in [w.raining_strength,w.prev_raining_strength,w.thundering_strength,w.prev_thundering_strength]{f181(o,f);}
+                l(o,w.rand.state());
+                for partial in [0.0,0.5,1.0,-1.0,2.0] {
+                    f181(o,w.rain_strength(partial));f181(o,w.thunder_strength(partial));i(o,w.calculate_skylight_subtracted(partial));
+                }
+                o.extend([w.is_raining() as u8,w.is_thundering() as u8]);
+            }
+        }
+    }
+}
+fn array_data(len:usize,salt:usize)->Box<[u8]>{(0..len).map(|k|(k*31+salt) as u8).collect()}
+fn array_snapshot(o:&mut Vec<u8>,c:&Chunk) {
+    i(o,c.x);i(o,c.z);
+    for a in [&c.blocks[..],&c.data.0[..],&c.sky_light.0[..],&c.block_light.0[..],&c.height_map[..]]{i(o,a.len() as i32);o.extend_from_slice(a);}
+    i(o,c.lowest_block_height);o.extend([c.modified as u8,c.populated as u8,c.has_entities as u8]);
+    for p in c.precipitation_height{i(o,p);}for b in c.skylight_occlusion{o.push(b as u8);}
+}
+fn chunk_arrays(o:&mut Vec<u8>) {
+    let keys=["Blocks","Data","SkyLight","BlockLight","HeightMap"];
+    for len in [0,1,127,256,32768] {array_snapshot(o,&Chunk::new(-7,11,array_data(len,3)));}
+    for field in 0..5 {for len in [-1,0,1,127,256,16384,32768,65536] {
+        let mut n=Compound::new();n.put("xPos",Tag::Int(-7));n.put("zPos",Tag::Int(11));n.put("TerrainPopulated",Tag::Byte((len&1!=0) as i8));
+        for k in 0..5 {if k!=field || len>=0 {n.put(keys[k],Tag::ByteArray(array_data(if k==field{len as usize}else if k==0{32768}else if k==4{256}else{16384},k+3).into_vec()));}}
+        let mut c=crate::storage::chunk_from_nbt(&n).unwrap();array_snapshot(o,&c);
+        for b in &mut c.blocks {if *b!=0 && !crate::block::props(*b).exists{*b=0;}}
+        i(o,c.blocks.len() as i32);o.extend_from_slice(&c.blocks);
+    }}
+    for key in keys {let mut n=Compound::new();n.put(key,Tag::Int(1));o.push(crate::storage::chunk_from_nbt(&n).is_none() as u8);}
+}
+fn saved_info(o:&mut Vec<u8>,info:Option<LevelInfo>) {
+    o.push(info.is_some() as u8);if let Some(n)=info{l(o,n.seed);i(o,n.game_type);o.push(n.map_features as u8);i(o,n.version);}
+}
+fn save_state(o:&mut Vec<u8>,s:&crate::storage::Storage) {
+    for name in ["data","players","region","level.dat","level.dat_old","level.dat_new"]{o.push(s.dir.join(name).exists() as u8);}
+    saved_info(o,s.load_level());
+}
+fn save_fixture(dir:&std::path::Path,name:&str,kind:i32,seed:i64) {
+    if kind==0{std::fs::write(dir.join(name),[1,2,3]).unwrap();return;}
+    let mut root=Compound::new();if kind==1{let mut n=Compound::new();n.put("RandomSeed",Tag::Long(seed));n.put("GameType",Tag::Int(seed as i32));root.put("Data",Tag::Compound(n));}
+    if kind==3{root.put("Data",Tag::Int(4));}
+    std::fs::write(dir.join(name),crate::nbt::write_gzip(&root).unwrap()).unwrap();
+}
+fn verification_dir(name:&str)->std::path::PathBuf {
+    let target=std::env::current_dir().unwrap().join("target");std::fs::create_dir_all(&target).unwrap();
+    let target=target.canonicalize().unwrap();let root=target.join(name);
+    assert!(root.starts_with(&target)&&root.parent()==Some(target.as_path()));
+    if root.exists(){std::fs::remove_dir_all(&root).unwrap();}std::fs::create_dir(&root).unwrap();root
+}
+fn save_lifecycle(o:&mut Vec<u8>) {
+    use crate::storage::Storage;
+    let root=verification_dir("wb181-savelife-rust");
+    for n in 0..8 {
+        let dir=root.join(format!("world{n}"));let s=Storage::open_with_players(&dir,n&1!=0).unwrap();save_state(o,&s);
+        let lock=std::fs::read(dir.join("session.lock")).unwrap();o.push(s.session_ok() as u8);
+        let mut extra=lock.clone();extra.push(99);std::fs::write(dir.join("session.lock"),extra).unwrap();o.push(s.session_ok() as u8);
+        std::fs::write(dir.join("session.lock"),[0;7]).unwrap();o.push(s.session_ok() as u8);
+        std::fs::remove_file(dir.join("session.lock")).unwrap();o.push(s.session_ok() as u8);
+        std::fs::write(dir.join("session.lock"),lock).unwrap();
+        if n>0{save_fixture(&dir,"level.dat",if n==1{2}else if n==2{3}else if n==3{0}else{1},71);}
+        if n>=2{save_fixture(&dir,"level.dat_old",1,99);}
+        save_state(o,&s);
+        if n>=6{std::fs::remove_file(dir.join("level.dat")).unwrap();std::fs::create_dir(dir.join("level.dat")).unwrap();std::fs::write(dir.join("level.dat/keep"),[]).unwrap();}
+        if n==7{std::fs::remove_file(dir.join("level.dat_old")).unwrap();std::fs::create_dir(dir.join("level.dat_old")).unwrap();std::fs::write(dir.join("level.dat_old/keep"),[]).unwrap();}
+        let mut tag=Compound::new();tag.put("RandomSeed",Tag::Long(123));tag.put("GameType",Tag::Int(1));tag.put("version",Tag::Int(19132));
+        s.save_level(&LevelInfo::from_nbt(&tag)).unwrap();save_state(o,&s);
+        let _nether=s.for_dimension(super::Dimension::Nether).unwrap();o.push(dir.join("DIM-1").is_dir() as u8);o.push(dir.join("DIM-1/region").exists() as u8);
+        o.push((s.data_file("map_1")==dir.join("data/map_1.dat")) as u8);
+    }
+}
+fn block_sides(o:&mut Vec<u8>) {
+    use crate::block::{self,visual181};
+    let mut w=fixture(true);
+    for fancy in 0..2 {
+        w.leaves_opaque=fancy==0;
+        for id in 1..=109u8 {if !block::props(id).exists{continue;}
+            for bounds in [[0.0f32,0.0,0.0,1.0,1.0,1.0],[0.2,0.3,0.4,0.8,0.7,0.6],[-0.1,-0.1,-0.1,1.1,1.1,1.1]] {
+                w.block_bounds[id as usize]=BB::new(bounds[0] as f64,bounds[1] as f64,bounds[2] as f64,bounds[3] as f64,bounds[4] as f64,bounds[5] as f64);
+                for neighbor in 0..=109u8 {raw(&mut w,8,64,8,neighbor,0);
+                    for side in 0..6 {o.push(w.should_side_render181(id,8,64,8,side) as u8);
+                        let solid=if matches!(id,8..=11){w.fluid_side_solid181(block::material_of(id),8,64,8,side)}else{block::mat(block::material_of(neighbor)).is_solid};o.push(solid as u8);
+                    }
+                }
+            }
+        }
+    }
+    for mask in 0..256 {raw(&mut w,8,64,8,0,0);let dx=[-1,-2,1,2,0,0,0,0];let dz=[0,0,0,0,-1,-2,1,2];
+        for k in 0..8{raw(&mut w,8+dx[k],64,8+dz[k],if mask&(1<<k)!=0{90}else{0},0);}
+        for side in 0..6{o.push(w.should_side_render181(90,8,64,8,side) as u8);}
+    }
+    for id in [101,102]{i(o,visual181::pane_edge_texture(id).unwrap());}
+    for id in [29,33] {for bounds in [BB::new(0.,0.,0.,1.,1.,1.),BB::new(0.,0.,0.,0.75,1.,1.),BB::new(0.,0.,0.25,1.,1.,1.)] {
+        w.block_bounds[id as usize]=bounds;
+        for meta in 0..16 {raw(&mut w,8,64,8,id,meta);for side in 0..6{i(o,w.block_texture181(id,8,64,8,side).unwrap());}}
+    }}
+}
+fn tick_queue(o:&mut Vec<u8>,w:&World) {
+    i(o,w.tick_order.len() as i32);
+    for &(time,id,key) in &w.tick_order{for v in [key.x,key.y,key.z,key.block]{i(o,v);}l(o,time);l(o,id);}
+}
+fn next_tick_cases(o:&mut Vec<u8>) {
+    use super::TickKey;
+    let mut r=crate::JavaRandom::new(9831);let mut counter=i64::MAX-100;
+    for n in 0..10000 {
+        let key=TickKey{x:r.next_int_unbounded(),y:r.next_int_unbounded(),z:r.next_int_unbounded(),block:r.next_int_unbounded()};
+        let time=r.next_long();let id=counter;counter=counter.wrapping_add(1);
+        o.push(1);i(o,key.java_hash181());counter=counter.wrapping_add(2);o.extend([1,0,0]);
+        let other_id=counter;counter=counter.wrapping_add(1);let other_time=if n%3==0{time}else{time^1};
+        i(o,(time,id).cmp(&(other_time,other_id)) as i32);i(o,0);
+    }
+    for time in [0,4000,i64::MIN,i64::MAX-10] {
+        let mut w=fixture(true);w.world_time=time;super::NEXT_TICK_ENTRY_ID181.store(i64::MAX-100,std::sync::atomic::Ordering::Relaxed);r.set_seed(33);
+        for n in 0..5000 {
+            let x=r.next_int(101)-50;let y=r.next_int(160)-16;let z=r.next_int(101)-50;let id=[0,1,98][r.next_int(3) as usize];let delay=r.next_int(120)-3;
+            w.schedule_block_update(x,y,z,id,delay);if n%10==0{w.schedule_block_update(x,y,z,id,delay+100);}
+            if n%500==499{tick_queue(o,&w);}
+        }
+        for n in 0..6{o.push(w.tick_updates(n>=2) as u8);tick_queue(o,&w);}
+    }
+    super::NEXT_TICK_ENTRY_ID181.store(0,std::sync::atomic::Ordering::Relaxed);
+    let mut a=fixture(true);let mut b=fixture(true);
+    for n in 0..1000 {
+        let w=if n&1==0{&mut a}else{&mut b};let x=8+n%32;let z=8+n/32;
+        w.schedule_block_update(x,64,z,1,20);
+        if n%3==0 {w.schedule_block_update(x,64,z,1,30);}
+        if n%100==99 {tick_queue(o,&a);tick_queue(o,&b);}
+    }
+}
+fn frost_cases(o:&mut Vec<u8>) {
+    use super::chunk::LightKind;
+    for snows in 0..2 {for rain in 0..2 {for pattern in 0..2 {for light in 0..2 {
+        let mut w=fixture(true);w.sound_counter=100000;w.update_lcg=3457;w.rand.set_seed(1337);w.raining_strength=rain as f32;
+        w.chunk_mut(0,0).block_light.0.fill(if light==0{0}else{255});
+        for x in 0..16 {for z in 0..16 {raw(&mut w,x,63,z,if pattern==0{9}else if (x+z)%2==0{1}else{9},0);}}
+        for _ in 0..100 {
+            w.tick_active_chunks181(&[(0,0)],|_,_,_|snows!=0);l(o,w.rand.state());i(o,w.update_lcg);i(o,w.sound_counter);
+            for x in 0..16 {for z in 0..16 {for y in 62..=65 {
+                o.push(w.get_block_id(x,y,z));o.push(w.get_block_metadata(x,y,z) as u8);
+                o.push(w.get_saved_light_value(LightKind::Sky,x,y,z) as u8);o.push(w.get_saved_light_value(LightKind::Block,x,y,z) as u8);
+            }}}
+            for p in w.chunk(0,0).precipitation_height{i(o,p);}
+        }
+    }}}}
+    for id in 0..10 {let b=crate::biome::Biome::from_id(id);o.extend([b.enable_snow() as u8,(!b.enable_snow()&&b.enable_rain()) as u8]);}
+}
+fn cache_fill(c: &mut Chunk) {
+    for x in 0..16 {for z in 0..16 {for y in 0..128 {
+        c.sky_light.set(x,y,z,(x*3+z*5+y*7)&15);c.block_light.set(x,y,z,(x*7+z*11+y*3)&15);
+    }}}
+}
+fn chunk_cache(o: &mut Vec<u8>) {
+    use super::cache181::ChunkCache181;
+    let mut w=fixture(true);for c in w.chunks.values_mut(){cache_fill(c);}
+    for fancy in 0..2 {
+        w.leaves_opaque=fancy==0;
+        for sub in [0,3,15,20] {
+            w.skylight_subtracted=sub;
+            {let c=ChunkCache181::new(&mut w,-17,-17,32,32);i(o,c.height());o.push(1);}
+            for id in 0..=109u8 {if id!=0 && !crate::block::props(id).exists{continue;}
+                for meta in 0..16 {
+                    raw(&mut w,8,64,8,id,meta);
+                    {let c=ChunkCache181::new(&mut w,-17,-17,32,32);cache_sample(o,&c,8,64,8,meta);}
+                    o.push(w.is_block_normal_cube(8,64,8) as u8);
+                }
+            }
+            raw(&mut w,8,64,8,0,0);
+            let c=ChunkCache181::new(&mut w,-17,-17,32,32);
+            for x in [-17,-16,-1,0,15,16,31,32] {for z in [-17,-1,0,15,16,32] {for y in [-100,-1,0,1,63,64,126,127,128,300] {cache_sample(o,&c,x,y,z,0);}}}
+            for x in [-33,48] {for y in [-1,0,128] {i(o,c.block_id(x,y,0) as i32);}}
+        }
+    }
+    w.leaves_opaque=false;
+    for x in [-30000001,-30000000,29999999,30000000] {for z in [-30000001,-30000000,29999999,30000000,30000001] {
+        let mut ch=Chunk::new(x>>4,z>>4,vec![0;32768].into_boxed_slice().try_into().unwrap());cache_fill(&mut ch);
+        w.chunks.insert((x>>4,z>>4),Box::new(ch));
+        let c=ChunkCache181::new(&mut w,x,z,x,z);for y in [-1,0,127,128] {cache_sample(o,&c,x,y,z,0);}
+    }}
+    raw(&mut w,8,64,8,54,3);
+    let mut c=ChunkCache181::new(&mut w,0,0,15,15);
+    o.push(matches!(c.tile_entity(8,64,8),Some(super::tile::TileEntity::Chest{..})) as u8);
+    let p=c.tile_entity(8,64,8).unwrap() as *mut _;
+    o.push((p==c.tile_entity(8,64,8).unwrap() as *mut _) as u8);
+    i(o,c.metadata(8,64,8));o.push(c.tile_entity(8,63,8).is_none() as u8);
 }
 fn plants(o: &mut Vec<u8>) {
     for id in [104u8, 105, 106, 39, 40, 18, 60] {
@@ -343,7 +605,7 @@ fn lights(o: &mut Vec<u8>) {
         for cx in -1..=1 {
             for cz in -1..=1 {
                 let c = w.chunk(cx, cz);
-                o.extend(c.height_map);
+                o.extend_from_slice(&c.height_map);
                 o.extend(c.skylight_occlusion.map(|v| v as u8));
             }
         }

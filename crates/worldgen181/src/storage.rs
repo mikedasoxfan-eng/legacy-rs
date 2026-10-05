@@ -3,7 +3,6 @@
 //! original game.
 
 use crate::nbt::{self, Compound, Tag};
-use crate::overworld::CHUNK_VOLUME;
 use crate::world::chunk::{Chunk, Nibbles};
 use crate::world::tile::{ItemStack, TileEntity};
 use std::collections::HashMap;
@@ -312,9 +311,14 @@ pub struct Storage {
 impl Storage {
     /// Open (creating if needed) a save directory and take the session lock.
     pub fn open(dir: &Path) -> io::Result<Storage> {
-        std::fs::create_dir_all(dir.join("region"))?;
+        Self::open_with_players(dir, true)
+    }
+
+    /// SaveHandler's boolean controls creation of the players directory.
+    /// RegionFileCache creates region/ lazily when a chunk is first accessed.
+    pub fn open_with_players(dir: &Path, players: bool) -> io::Result<Storage> {
         std::fs::create_dir_all(dir.join("data"))?;
-        std::fs::create_dir_all(dir.join("players"))?;
+        if players { std::fs::create_dir_all(dir.join("players"))?; }
         let session = std::time::SystemTime::now()
             .duration_since(std::time::UNIX_EPOCH)
             .map(|d| d.as_millis() as i64)
@@ -332,42 +336,33 @@ impl Storage {
     /// keeps its regions in `DIM-1`.
     pub fn for_dimension(&self, dimension: crate::world::Dimension) -> io::Result<Storage> {
         let chunk_dir = if dimension.is_hell_world() { self.dir.join("DIM-1") } else { self.dir.clone() };
-        std::fs::create_dir_all(chunk_dir.join("region"))?;
+        std::fs::create_dir_all(&chunk_dir)?;
         Ok(Storage { dir: self.dir.clone(), chunk_dir, regions: HashMap::new(), session: self.session })
     }
 
     /// `checkSessionLock`: someone else opened this world since we did.
     pub fn session_ok(&self) -> bool {
         std::fs::read(self.dir.join("session.lock"))
-            .map(|b| b.len() == 8 && i64::from_be_bytes(b[..8].try_into().unwrap()) == self.session)
+            .map(|b| b.len() >= 8 && i64::from_be_bytes(b[..8].try_into().unwrap()) == self.session)
             .unwrap_or(false)
     }
 
     /// `SaveFormatOld.func_22173_b`: level.dat (or level.dat_old) without opening the save.
     pub fn read_level(dir: &Path) -> Option<LevelInfo> {
         for name in ["level.dat", "level.dat_old"] {
-            if let Ok(bytes) = std::fs::read(dir.join(name)) {
-                if let Ok(root) = nbt::read_gzip(&bytes) {
-                    if let Some(data) = root.compound("Data") {
-                        return Some(LevelInfo::from_nbt(data));
+            if let Ok(root) = crate::storage181::read_gzip_file(&dir.join(name)) {
+                    match root.get("Data") {
+                        Some(Tag::Compound(data)) => return Some(LevelInfo::from_nbt(data)),
+                        None => return Some(LevelInfo::from_nbt(&Compound::new())),
+                        _ => (),
                     }
-                }
             }
         }
         None
     }
 
     pub fn load_level(&self) -> Option<LevelInfo> {
-        for name in ["level.dat", "level.dat_old"] {
-            if let Ok(bytes) = std::fs::read(self.dir.join(name)) {
-                if let Ok(root) = nbt::read_gzip(&bytes) {
-                    if let Some(data) = root.compound("Data") {
-                        return Some(LevelInfo::from_nbt(data));
-                    }
-                }
-            }
-        }
-        None
+        Self::read_level(&self.dir)
     }
 
     /// `saveWorldInfoAndPlayer`: write level.dat_new, keep the previous file as level.dat_old.
@@ -384,7 +379,11 @@ impl Storage {
         let _ = std::fs::remove_file(&old);
         let _ = std::fs::rename(&cur, &old);
         let _ = std::fs::remove_file(&cur);
-        std::fs::rename(&new, &cur)
+        let _ = std::fs::rename(&new, &cur);
+        // File.renameTo's result is ignored. Even after a failed rename the
+        // original deletes the new file instead of retaining it for recovery.
+        let _ = std::fs::remove_file(&new);
+        Ok(())
     }
 
     fn region(&mut self, cx: i32, cz: i32) -> io::Result<&mut RegionFile> {
@@ -393,6 +392,7 @@ impl Storage {
             if self.regions.len() >= 256 {
                 self.regions.clear();
             }
+            std::fs::create_dir_all(self.chunk_dir.join("region"))?;
             let path = self
                 .chunk_dir
                 .join("region")
@@ -455,6 +455,11 @@ impl Storage {
         r.write_chunk(c.x & 31, c.z & 31, &compressed)?;
         Ok(r.take_size_delta() as i64)
     }
+
+    /// Release cached RegionFiles (SaveConverterMcRegion.flushCache).
+    pub fn flush_region_cache(&mut self) { self.regions.clear(); }
+
+    pub fn data_file(&self, name: &str) -> PathBuf { self.dir.join("data").join(format!("{name}.dat")) }
 }
 
 // ---------------------------------------------------------------- chunk <-> NBT
@@ -523,15 +528,6 @@ pub fn chunk_to_nbt(c: &Chunk, world_time: i64) -> Compound {
     l
 }
 
-fn nibbles(bytes: Option<&[u8]>) -> Option<Nibbles> {
-    // NibbleArray.isValid(): data present; the arrays the game writes are always full size.
-    let b = bytes?;
-    if b.len() != CHUNK_VOLUME / 2 {
-        return None;
-    }
-    Some(Nibbles(b.to_vec().into_boxed_slice().try_into().ok()?))
-}
-
 /// `ChunkLoader.loadChunkIntoWorldFromCompound`. Note `lowestBlockHeight` is not stored and
 /// stays 0, as in the original.
 pub fn chunk_from_nbt(l: &Compound) -> Option<Chunk> {
@@ -541,32 +537,27 @@ pub fn chunk_from_nbt(l: &Compound) -> Option<Chunk> {
 /// `ChunkLoader.loadChunkIntoWorldFromCompound` with the world's provider.
 pub fn chunk_from_nbt_for_dimension(
     l: &Compound,
-    dimension: crate::world::Dimension,
+    _dimension: crate::world::Dimension,
 ) -> Option<Chunk> {
-    let blocks = l.bytes("Blocks")?;
-    if blocks.len() != CHUNK_VOLUME {
-        return None;
+    // NBTTagCompound.getByteArray returns an empty (non-null) array for an
+    // absent tag. NibbleArray.isValid tests null only, never its length.
+    // Consequently vanilla preserves missing and malformed arrays; it does
+    // not silently repair them. A wrong tag type throws and loadChunk skips it.
+    fn bytes<'a>(l: &'a Compound, key: &str) -> Option<&'a [u8]> {
+        match l.get(key) {None => Some(&[]),Some(Tag::ByteArray(v))=>Some(v),_=>None}
     }
+    let blocks = bytes(l,"Blocks")?;
     let mut c = Chunk::new(
         l.int("xPos"),
         l.int("zPos"),
-        blocks.to_vec().into_boxed_slice().try_into().ok()?,
+        blocks.to_vec().into_boxed_slice(),
     );
     c.lowest_block_height = 0;
-    c.data = nibbles(l.bytes("Data")).unwrap_or_default();
+    c.data = Nibbles(bytes(l,"Data")?.to_vec().into_boxed_slice());
     c.populated = l.boolean("TerrainPopulated");
-    let height = l.bytes("HeightMap").filter(|h| h.len() == 256);
-    match (height, nibbles(l.bytes("SkyLight"))) {
-        (Some(h), Some(sky)) => {
-            c.height_map.copy_from_slice(h);
-            c.sky_light = sky;
-        }
-        _ => {
-            c.sky_light = Nibbles::default();
-            c.init_height_and_sky_for_dimension(dimension);
-        }
-    }
-    c.block_light = nibbles(l.bytes("BlockLight")).unwrap_or_default();
+    c.height_map=bytes(l,"HeightMap")?.to_vec().into_boxed_slice();
+    c.sky_light=Nibbles(bytes(l,"SkyLight")?.to_vec().into_boxed_slice());
+    c.block_light=Nibbles(bytes(l,"BlockLight")?.to_vec().into_boxed_slice());
     c.raw_entities = l.list("Entities").to_vec();
     c.has_entities = !c.raw_entities.is_empty();
     for t in l.list("TileEntities") {

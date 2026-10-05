@@ -32,7 +32,8 @@ pub fn can_place(w: &mut World, id: u8, x: i32, y: i32, z: i32, side: i32) -> bo
 pub fn can_place_at(w: &mut World, id: u8, x: i32, y: i32, z: i32, side: i32) -> bool {
     match id {
         VINE => crate::world::plants181::vine_can_place(w,x,y,z,side),
-        FENCE_GATE => mat(w.get_block_material(x,y-1,z)).is_solid,
+        FENCE_GATE => mat(w.get_block_material(x,y-1,z)).is_solid
+            && (w.get_block_id(x,y,z)==0 || mat(w.get_block_material(x,y,z)).ground_cover),
         PUMPKIN_STEM | MELON_STEM => w.get_block_id(x,y-1,z)==TILLED_FIELD,
         34 | 36 => false,
         50 | 75 | 76 => {
