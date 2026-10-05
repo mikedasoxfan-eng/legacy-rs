@@ -29,13 +29,13 @@ pub struct RawChunk {
 pub struct OverworldGenerator {
     seed: i64,
     rand: JavaRandom,
-    min_limit: OctavePerlin,  // field_912_k
-    max_limit: OctavePerlin,  // field_911_l
-    main: OctavePerlin,       // field_910_m
+    min_limit: OctavePerlin,   // field_912_k
+    max_limit: OctavePerlin,   // field_911_l
+    main: OctavePerlin,        // field_910_m
     stone_depth: OctavePerlin, // field_908_o
-    pub scale: OctavePerlin,  // field_922_a
-    pub depth: OctavePerlin,  // field_921_b
-    pub forest: OctavePerlin, // mobSpawnerNoise (tree density)
+    pub scale: OctavePerlin,   // field_922_a
+    pub depth: OctavePerlin,   // field_921_b
+    pub forest: OctavePerlin,  // mobSpawnerNoise (tree density)
     pub biome_source: BiomeSource,
     caves: CaveCarver,
     ravines: CaveCarver,
@@ -74,7 +74,9 @@ impl OverworldGenerator {
             biome_source: BiomeSource::new(seed),
             caves: CaveCarver::default(),
             ravines: CaveCarver::ravines(),
-            big_trees: (0..10).map(|_| Some(crate::features::BigTree::new())).collect(),
+            big_trees: (0..10)
+                .map(|_| Some(crate::features::BigTree::new()))
+                .collect(),
             density: Vec::new(),
             // The Java fields start as `new double[256]`, not null.
             stone_noise: vec![0.0; 256],
@@ -97,17 +99,31 @@ impl OverworldGenerator {
 
     /// `provideChunk`
     pub fn generate(&mut self, cx: i32, cz: i32) -> RawChunk {
-        self.rand
-            .set_seed((cx as i64).wrapping_mul(341873128712).wrapping_add((cz as i64).wrapping_mul(132897987541)));
-        let mut blocks: Box<[u8; CHUNK_VOLUME]> = vec![0u8; CHUNK_VOLUME].into_boxed_slice().try_into().unwrap();
+        self.rand.set_seed(
+            (cx as i64)
+                .wrapping_mul(341873128712)
+                .wrapping_add((cz as i64).wrapping_mul(132897987541)),
+        );
+        let mut blocks: Box<[u8; CHUNK_VOLUME]> = vec![0u8; CHUNK_VOLUME]
+            .into_boxed_slice()
+            .try_into()
+            .unwrap();
         let mut biomes = std::mem::take(&mut self.biomes);
-        self.biomes = self.biome_source.generation_biomes(cx * 4 - 2, cz * 4 - 2, 10, 10);
+        self.biomes = self
+            .biome_source
+            .generation_biomes(cx * 4 - 2, cz * 4 - 2, 10, 10);
         self.terrain(cx, cz, &mut blocks[..]);
-        self.biome_source.biomes(&mut biomes, cx * 16, cz * 16, 16, 16);
+        self.biome_source
+            .biomes(&mut biomes, cx * 16, cz * 16, 16, 16);
         self.surface(cx, cz, &mut blocks[..], &biomes);
         self.caves.carve(self.seed, cx, cz, &mut blocks[..]);
         self.ravines.carve(self.seed, cx, cz, &mut blocks[..]);
-        let out = RawChunk { x: cx, z: cz, blocks, biomes: biomes[..256].to_vec() };
+        let out = RawChunk {
+            x: cx,
+            z: cz,
+            blocks,
+            biomes: biomes[..256].to_vec(),
+        };
         self.biomes = biomes;
         out
     }
@@ -120,7 +136,15 @@ impl OverworldGenerator {
         let sy = 17usize;
         let sz = (cell + 1) as usize;
         let mut density = std::mem::take(&mut self.density);
-        self.density_field(&mut density, cx * cell, 0, cz * cell, sx as i32, sy as i32, sz as i32);
+        self.density_field(
+            &mut density,
+            cx * cell,
+            0,
+            cz * cell,
+            sx as i32,
+            sy as i32,
+            sz as i32,
+        );
 
         let d = |x: usize, z: usize, y: usize| density[(x * sz + z) * sy + y];
         for i in 0..cell as usize {
@@ -175,14 +199,25 @@ impl OverworldGenerator {
 
     /// `func_4061_a`
     #[allow(clippy::too_many_arguments)]
-    fn density_field(&mut self, out: &mut Vec<f64>, x: i32, y: i32, z: i32, sx: i32, sy: i32, sz: i32) {
+    fn density_field(
+        &mut self,
+        out: &mut Vec<f64>,
+        x: i32,
+        y: i32,
+        z: i32,
+        sx: i32,
+        sy: i32,
+        sz: i32,
+    ) {
         if out.is_empty() {
             *out = vec![0.0; (sx * sy * sz) as usize];
         }
         let h_scale = 684.412;
         let v_scale = 684.412;
-        self.scale.generate_2d(&mut self.scale_noise, x, z, sx, sz, 1.121, 1.121, 0.5);
-        self.depth.generate_2d(&mut self.depth_noise, x, z, sx, sz, 200.0, 200.0, 0.5);
+        self.scale
+            .generate_2d(&mut self.scale_noise, x, z, sx, sz, 1.121, 1.121, 0.5);
+        self.depth
+            .generate_2d(&mut self.depth_noise, x, z, sx, sz, 200.0, 200.0, 0.5);
         self.main.generate(
             &mut self.main_noise,
             x as f64,
@@ -195,15 +230,38 @@ impl OverworldGenerator {
             v_scale / 160.0,
             h_scale / 80.0,
         );
-        self.min_limit
-            .generate(&mut self.min_noise, x as f64, y as f64, z as f64, sx, sy, sz, h_scale, v_scale, h_scale);
-        self.max_limit
-            .generate(&mut self.max_noise, x as f64, y as f64, z as f64, sx, sy, sz, h_scale, v_scale, h_scale);
+        self.min_limit.generate(
+            &mut self.min_noise,
+            x as f64,
+            y as f64,
+            z as f64,
+            sx,
+            sy,
+            sz,
+            h_scale,
+            v_scale,
+            h_scale,
+        );
+        self.max_limit.generate(
+            &mut self.max_noise,
+            x as f64,
+            y as f64,
+            z as f64,
+            sx,
+            sy,
+            sz,
+            h_scale,
+            v_scale,
+            h_scale,
+        );
 
         let mut weights = [0.0f32; 25];
-        for dx in -2i32..=2 { for dz in -2i32..=2 {
-            weights[(dx + 2 + (dz + 2) * 5) as usize] = 10.0f32 / (((dx*dx+dz*dz) as f32 + 0.2f32) as f64).sqrt() as f32;
-        } }
+        for dx in -2i32..=2 {
+            for dz in -2i32..=2 {
+                weights[(dx + 2 + (dz + 2) * 5) as usize] =
+                    10.0f32 / (((dx * dx + dz * dz) as f32 + 0.2f32) as f64).sqrt() as f32;
+            }
+        }
         let mut i3 = 0usize;
         let mut i2 = 0usize;
         for ix in 0..sx {
@@ -211,14 +269,25 @@ impl OverworldGenerator {
                 let mut scale = 0.0f32;
                 let mut height = 0.0f32;
                 let mut total = 0.0f32;
-                let center = self.biomes[(ix+2+(iz+2)*(sx+5)) as usize].heights().0;
-                for dx in -2..=2 { for dz in -2..=2 {
-                    let (lo, hi) = self.biomes[(ix+dx+2+(iz+dz+2)*(sx+5)) as usize].heights();
-                    let mut weight = weights[(dx+2+(dz+2)*5) as usize] / (lo + 2.0f32);
-                    if lo > center { weight /= 2.0f32; }
-                    scale += hi * weight; height += lo * weight; total += weight;
-                } }
-                scale /= total; height /= total;
+                let center = self.biomes[(ix + 2 + (iz + 2) * (sx + 5)) as usize]
+                    .heights()
+                    .0;
+                for dx in -2..=2 {
+                    for dz in -2..=2 {
+                        let (lo, hi) = self.biomes
+                            [(ix + dx + 2 + (iz + dz + 2) * (sx + 5)) as usize]
+                            .heights();
+                        let mut weight = weights[(dx + 2 + (dz + 2) * 5) as usize] / (lo + 2.0f32);
+                        if lo > center {
+                            weight /= 2.0f32;
+                        }
+                        scale += hi * weight;
+                        height += lo * weight;
+                        total += weight;
+                    }
+                }
+                scale /= total;
+                height /= total;
                 scale = scale * 0.9f32 + 0.1f32;
                 height = (height * 4.0f32 - 1.0f32) / 8.0f32;
                 let mut depth = self.depth_noise[i2] / 8000.0;
@@ -291,7 +360,9 @@ impl OverworldGenerator {
         for a in 0..16usize {
             for b in 0..16usize {
                 let biome = biomes[b + a * 16];
-                let depth = (self.stone_noise[a + b * 16] / 3.0 + 3.0 + self.rand.next_double() * 0.25) as i32;
+                let depth = (self.stone_noise[a + b * 16] / 3.0
+                    + 3.0
+                    + self.rand.next_double() * 0.25) as i32;
                 let mut run = -1i32;
                 let mut top = biome.top_block();
                 let mut filler = biome.filler_block();

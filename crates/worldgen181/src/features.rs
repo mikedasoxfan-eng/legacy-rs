@@ -2,10 +2,10 @@
 //! line for line. All of them draw from the population RNG (`w.prand()`).
 
 use crate::block::{self, mat, opaque_cube_lookup, MAT_LAVA, MAT_WATER};
+use crate::features181::swamp_tree;
 use crate::jmath;
 use crate::math::{self, PI_F32};
 use crate::random::JavaRandom;
-use crate::features181::swamp_tree;
 use crate::world::behavior;
 use crate::world::chunk::LightKind;
 use crate::world::tile::{ItemStack, TileEntity};
@@ -101,7 +101,10 @@ pub fn lakes(w: &mut World, liquid: u8, x: i32, y: i32, z: i32) -> bool {
             for j in 0..16usize {
                 for k in 0..8usize {
                     let (bx, by, bz) = (x + i as i32, y + k as i32, z + j as i32);
-                    if border(i, j, k) && (k < 4 || w.prand().next_int(2) != 0) && w.material_is_solid(bx, by, bz) {
+                    if border(i, j, k)
+                        && (k < 4 || w.prand().next_int(2) != 0)
+                        && w.material_is_solid(bx, by, bz)
+                    {
                         w.set_block(bx, by, bz, block::STONE);
                     }
                 }
@@ -190,7 +193,9 @@ pub fn dungeon(w: &mut World, x: i32, y: i32, z: i32) -> bool {
                     for _ in 0..8 {
                         if let Some(item) = pick_loot(w.prand()) {
                             let slot = w.prand().next_int(27) as usize;
-                            if let Some(TileEntity::Chest(slots)) = w.get_block_tile_entity(cx, y, cz) {
+                            if let Some(TileEntity::Chest(slots)) =
+                                w.get_block_tile_entity(cx, y, cz)
+                            {
                                 slots[slot] = Some(item);
                             }
                         }
@@ -212,17 +217,17 @@ pub fn dungeon(w: &mut World, x: i32, y: i32, z: i32) -> bool {
 fn pick_loot(r: &mut JavaRandom) -> Option<ItemStack> {
     let one = |id: i32| Some(ItemStack::new(id, 1, 0));
     match r.next_int(11) {
-        0 => one(329), // saddle
-        1 => Some(ItemStack::new(265, r.next_int(4) + 1, 0)), // iron ingot
-        2 => one(297), // bread
-        3 => Some(ItemStack::new(296, r.next_int(4) + 1, 0)), // wheat
-        4 => Some(ItemStack::new(289, r.next_int(4) + 1, 0)), // gunpowder
-        5 => Some(ItemStack::new(287, r.next_int(4) + 1, 0)), // string
-        6 => one(325), // bucket
-        7 if r.next_int(100) == 0 => one(322), // golden apple
+        0 => one(329),                                                              // saddle
+        1 => Some(ItemStack::new(265, r.next_int(4) + 1, 0)),                       // iron ingot
+        2 => one(297),                                                              // bread
+        3 => Some(ItemStack::new(296, r.next_int(4) + 1, 0)),                       // wheat
+        4 => Some(ItemStack::new(289, r.next_int(4) + 1, 0)),                       // gunpowder
+        5 => Some(ItemStack::new(287, r.next_int(4) + 1, 0)),                       // string
+        6 => one(325),                                                              // bucket
+        7 if r.next_int(100) == 0 => one(322),                                      // golden apple
         8 if r.next_int(2) == 0 => Some(ItemStack::new(331, r.next_int(4) + 1, 0)), // redstone
         9 if r.next_int(10) == 0 => one(2256 + r.next_int(2)), // record 13 / cat
-        10 => Some(ItemStack::new(351, 1, 3)), // cocoa beans
+        10 => Some(ItemStack::new(351, 1, 3)),                 // cocoa beans
         _ => None,
     }
 }
@@ -249,18 +254,27 @@ pub fn clay(w: &mut World, n: i32, x: i32, y: i32, z: i32) -> bool {
 
 /// `WorldGenSand`, also used for gravel (the decorator accidentally calls sand twice).
 pub fn sand(w: &mut World, n: i32, id: u8, x: i32, y: i32, z: i32) -> bool {
-    if w.get_block_material(x,y,z) != MAT_WATER {return false;}
-    disc(w,n,x,y,z,id,2,block::GRASS);
+    if w.get_block_material(x, y, z) != MAT_WATER {
+        return false;
+    }
+    disc(w, n, x, y, z, id, 2, block::GRASS);
     true
 }
 #[allow(clippy::too_many_arguments)]
-fn disc(w:&mut World,n:i32,x:i32,y:i32,z:i32,id:u8,dy:i32,replace:u8) {
-    let radius=w.prand().next_int(n-2)+2;
-    for bx in x-radius..=x+radius {for bz in z-radius..=z+radius {
-        if (bx-x)*(bx-x)+(bz-z)*(bz-z)<=radius*radius {
-            for by in y-dy..=y+dy {let b=w.get_block_id(bx,by,bz);if b==block::DIRT||b==replace {w.set_block(bx,by,bz,id);}}
+fn disc(w: &mut World, n: i32, x: i32, y: i32, z: i32, id: u8, dy: i32, replace: u8) {
+    let radius = w.prand().next_int(n - 2) + 2;
+    for bx in x - radius..=x + radius {
+        for bz in z - radius..=z + radius {
+            if (bx - x) * (bx - x) + (bz - z) * (bz - z) <= radius * radius {
+                for by in y - dy..=y + dy {
+                    let b = w.get_block_id(bx, by, bz);
+                    if b == block::DIRT || b == replace {
+                        w.set_block(bx, by, bz, id);
+                    }
+                }
+            }
         }
-    }}
+    }
 }
 
 /// `WorldGenMinable`
@@ -301,7 +315,8 @@ fn blob(w: &mut World, n: i32, x: i32, y: i32, z: i32, clay_loops: bool, target:
                         let dx = (bx as f64 + 0.5 - cx) / (rh / 2.0);
                         let dy = (by as f64 + 0.5 - cy) / (rv / 2.0);
                         let dz = (bz as f64 + 0.5 - cz) / (rh / 2.0);
-                        if dx * dx + dy * dy + dz * dz < 1.0 && w.get_block_id(bx, by, bz) == target {
+                        if dx * dx + dy * dy + dz * dz < 1.0 && w.get_block_id(bx, by, bz) == target
+                        {
                             w.set_block(bx, by, bz, place);
                         }
                     }
@@ -316,7 +331,9 @@ fn blob(w: &mut World, n: i32, x: i32, y: i32, z: i32, clay_loops: bool, target:
                         if dx * dx + dy * dy < 1.0 {
                             for bz in bz0..=bz1 {
                                 let dz = (bz as f64 + 0.5 - cz) / (rh / 2.0);
-                                if dx * dx + dy * dy + dz * dz < 1.0 && w.get_block_id(bx, by, bz) == target {
+                                if dx * dx + dy * dy + dz * dz < 1.0
+                                    && w.get_block_id(bx, by, bz) == target
+                                {
                                     w.set_block(bx, by, bz, place);
                                 }
                             }
@@ -494,12 +511,12 @@ pub fn liquid_spring(w: &mut World, id: u8, x: i32, y: i32, z: i32) -> bool {
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum TreeKind {
-    Oak,      // WorldGenTrees
-    Birch,    // WorldGenForest
-    BigOak,   // WorldGenBigTree
-    Spruce1,  // WorldGenTaiga1
-    Spruce2,  // WorldGenTaiga2
-    Swamp,    // WorldGenSwamp
+    Oak,     // WorldGenTrees
+    Birch,   // WorldGenForest
+    BigOak,  // WorldGenBigTree
+    Spruce1, // WorldGenTaiga1
+    Spruce2, // WorldGenTaiga2
+    Swamp,   // WorldGenSwamp
 }
 
 pub fn tree(w: &mut World, kind: TreeKind, x: i32, y: i32, z: i32) -> bool {
@@ -509,13 +526,21 @@ pub fn tree(w: &mut World, kind: TreeKind, x: i32, y: i32, z: i32) -> bool {
         TreeKind::BigOak => BigTree::new().generate(w, x, y, z),
         TreeKind::Spruce1 => taiga1(w, x, y, z),
         TreeKind::Spruce2 => taiga2(w, x, y, z),
-        TreeKind::Swamp => swamp_tree(w,x,y,z),
+        TreeKind::Swamp => swamp_tree(w, x, y, z),
     }
 }
 
 /// Shared trunk/clearance check of the four small tree generators.
 /// `outer_breaks` mirrors whether the y loop also stops on failure (taiga variants).
-fn space_clear(w: &mut World, x: i32, y: i32, z: i32, height: i32, radius_at: impl Fn(i32) -> i32, outer_breaks: bool) -> bool {
+fn space_clear(
+    w: &mut World,
+    x: i32,
+    y: i32,
+    z: i32,
+    height: i32,
+    radius_at: impl Fn(i32) -> i32,
+    outer_breaks: bool,
+) -> bool {
     let mut ok = true;
     let mut by = y;
     while by <= y + 1 + height && (ok || !outer_breaks) {
@@ -615,7 +640,15 @@ fn taiga1(w: &mut World, x: i32, y: i32, z: i32) -> bool {
     if y < 1 || y + height + 1 > 128 {
         return false;
     }
-    let clear = space_clear(w, x, y, z, height, |by| if by - y < bare { 0 } else { max_r }, true);
+    let clear = space_clear(
+        w,
+        x,
+        y,
+        z,
+        height,
+        |by| if by - y < bare { 0 } else { max_r },
+        true,
+    );
     if !clear {
         return false;
     }
@@ -631,7 +664,9 @@ fn taiga1(w: &mut World, x: i32, y: i32, z: i32) -> bool {
             let dx = lx - x;
             for lz in z - rad..=z + rad {
                 let dz = lz - z;
-                if (dx.abs() != rad || dz.abs() != rad || rad <= 0) && !opaque_cube_lookup(w.get_block_id(lx, ly, lz)) {
+                if (dx.abs() != rad || dz.abs() != rad || rad <= 0)
+                    && !opaque_cube_lookup(w.get_block_id(lx, ly, lz))
+                {
                     w.set_block_and_metadata(lx, ly, lz, block::LEAVES, 1);
                 }
             }
@@ -662,7 +697,15 @@ fn taiga2(w: &mut World, x: i32, y: i32, z: i32) -> bool {
     if y < 1 || y + height + 1 > 128 {
         return false;
     }
-    let clear = space_clear(w, x, y, z, height, |by| if by - y < bare { 0 } else { max_r }, true);
+    let clear = space_clear(
+        w,
+        x,
+        y,
+        z,
+        height,
+        |by| if by - y < bare { 0 } else { max_r },
+        true,
+    );
     if !clear {
         return false;
     }
@@ -680,7 +723,9 @@ fn taiga2(w: &mut World, x: i32, y: i32, z: i32) -> bool {
             let dx = lx - x;
             for lz in z - rad..=z + rad {
                 let dz = lz - z;
-                if (dx.abs() != rad || dz.abs() != rad || rad <= 0) && !opaque_cube_lookup(w.get_block_id(lx, ly, lz)) {
+                if (dx.abs() != rad || dz.abs() != rad || rad <= 0)
+                    && !opaque_cube_lookup(w.get_block_id(lx, ly, lz))
+                {
                     w.set_block_and_metadata(lx, ly, lz, block::LEAVES, 1);
                 }
             }
@@ -785,7 +830,8 @@ impl BigTree {
         if self.height >= self.height_limit {
             self.height = self.height_limit - 1;
         }
-        let mut per_layer = (1.382 + pow2(self.leaf_density * self.height_limit as f64 / 13.0)) as i32;
+        let mut per_layer =
+            (1.382 + pow2(self.leaf_density * self.height_limit as f64 / 13.0)) as i32;
         if per_layer < 1 {
             per_layer = 1;
         }
@@ -806,13 +852,19 @@ impl BigTree {
             for _ in 0..per_layer {
                 let dist = self.scale_width * size as f64 * (self.rand.next_float() as f64 + 0.328);
                 let angle = self.rand.next_float() as f64 * 2.0 * 3.14159;
-                let nx = math::floor_double(dist * jmath::java_sin(angle) + self.base[0] as f64 + offset);
-                let nz = math::floor_double(dist * jmath::java_cos(angle) + self.base[2] as f64 + offset);
+                let nx = math::floor_double(
+                    dist * jmath::java_sin(angle) + self.base[0] as f64 + offset,
+                );
+                let nz = math::floor_double(
+                    dist * jmath::java_cos(angle) + self.base[2] as f64 + offset,
+                );
                 let start = [nx, layer_y, nz];
                 let end = [nx, layer_y + self.leaf_distance_limit, nz];
                 if self.check_block_line(w, start, end) == -1 {
                     let mut branch_base = [self.base[0], self.base[1], self.base[2]];
-                    let horiz = (pow2((self.base[0] - start[0]).abs() as f64) + pow2((self.base[2] - start[2]).abs() as f64)).sqrt();
+                    let horiz = (pow2((self.base[0] - start[0]).abs() as f64)
+                        + pow2((self.base[2] - start[2]).abs() as f64))
+                    .sqrt();
                     let drop = horiz * self.branch_slope;
                     if start[1] as f64 - drop > trunk_top as f64 {
                         branch_base[1] = trunk_top;
@@ -832,7 +884,16 @@ impl BigTree {
 
     /// `func_523_a`
     #[allow(clippy::too_many_arguments)]
-    fn gen_tree_layer(&self, w: &mut World, x: i32, y: i32, z: i32, size: f32, axis: usize, id: u8) {
+    fn gen_tree_layer(
+        &self,
+        w: &mut World,
+        x: i32,
+        y: i32,
+        z: i32,
+        size: f32,
+        axis: usize,
+        id: u8,
+    ) {
         let r = (size as f64 + 0.618) as i32;
         let a1 = OTHER_COORD_PAIRS[axis];
         let a2 = OTHER_COORD_PAIRS[axis + 3];
@@ -1010,7 +1071,11 @@ impl BigTree {
     /// `func_519_e`
     fn valid_location(&mut self, w: &mut World) -> bool {
         let a = self.base;
-        let b = [self.base[0], self.base[1] + self.height_limit - 1, self.base[2]];
+        let b = [
+            self.base[0],
+            self.base[1] + self.height_limit - 1,
+            self.base[2],
+        ];
         let ground = w.get_block_id(self.base[0], self.base[1] - 1, self.base[2]);
         if ground != block::GRASS && ground != block::DIRT {
             return false;

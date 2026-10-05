@@ -13,12 +13,21 @@ pub struct CaveCarver {
 
 impl Default for CaveCarver {
     fn default() -> Self {
-        CaveCarver { range: 8, rand: JavaRandom::new(0), ravine: false }
+        CaveCarver {
+            range: 8,
+            rand: JavaRandom::new(0),
+            ravine: false,
+        }
     }
 }
 
 impl CaveCarver {
-    pub fn ravines() -> Self { Self { ravine: true, ..Self::default() } }
+    pub fn ravines() -> Self {
+        Self {
+            ravine: true,
+            ..Self::default()
+        }
+    }
     /// `func_867_a`
     pub fn carve(&mut self, world_seed: i64, chunk_x: i32, chunk_z: i32, blocks: &mut [u8]) {
         let r = self.range;
@@ -27,7 +36,9 @@ impl CaveCarver {
         let mz = self.rand.next_long();
         for x in chunk_x - r..=chunk_x + r {
             for z in chunk_z - r..=chunk_z + r {
-                self.rand.set_seed((x as i64).wrapping_mul(mx) ^ (z as i64).wrapping_mul(mz) ^ world_seed);
+                self.rand.set_seed(
+                    (x as i64).wrapping_mul(mx) ^ (z as i64).wrapping_mul(mz) ^ world_seed,
+                );
                 self.starts(x, z, chunk_x, chunk_z, blocks);
             }
         }
@@ -45,7 +56,9 @@ impl CaveCarver {
                 let pitch = (self.rand.next_float() - 0.5) * 2.0 / 8.0;
                 let width = (self.rand.next_float() * 2.0 + self.rand.next_float()) * 2.0;
                 let seed = self.rand.next_long();
-                self.tunnel(seed, chunk_x, chunk_z, blocks, px, py, pz, width, yaw, pitch, 0, 0, 3.0);
+                self.tunnel(
+                    seed, chunk_x, chunk_z, blocks, px, py, pz, width, yaw, pitch, 0, 0, 3.0,
+                );
             }
             return;
         }
@@ -70,17 +83,32 @@ impl CaveCarver {
                 let yaw = self.rand.next_float() * PI_F32 * 2.0;
                 let pitch = (self.rand.next_float() - 0.5) * 2.0 / 8.0;
                 let mut width = self.rand.next_float() * 2.0 + self.rand.next_float();
-                if self.rand.next_int(10) == 0 { width *= self.rand.next_float() * self.rand.next_float() * 3.0 + 1.0; }
+                if self.rand.next_int(10) == 0 {
+                    width *= self.rand.next_float() * self.rand.next_float() * 3.0 + 1.0;
+                }
                 let seed = self.rand.next_long();
-                self.tunnel(seed, chunk_x, chunk_z, blocks, px, py, pz, width, yaw, pitch, 0, 0, 1.0);
+                self.tunnel(
+                    seed, chunk_x, chunk_z, blocks, px, py, pz, width, yaw, pitch, 0, 0, 1.0,
+                );
             }
         }
     }
 
     /// `func_870_a`
-    fn room(&mut self, seed: i64, chunk_x: i32, chunk_z: i32, blocks: &mut [u8], x: f64, y: f64, z: f64) {
+    fn room(
+        &mut self,
+        seed: i64,
+        chunk_x: i32,
+        chunk_z: i32,
+        blocks: &mut [u8],
+        x: f64,
+        y: f64,
+        z: f64,
+    ) {
         let width = 1.0 + self.rand.next_float() * 6.0;
-        self.tunnel(seed, chunk_x, chunk_z, blocks, x, y, z, width, 0.0, 0.0, -1, -1, 0.5);
+        self.tunnel(
+            seed, chunk_x, chunk_z, blocks, x, y, z, width, 0.0, 0.0, -1, -1, 0.5,
+        );
     }
 
     /// `releaseEntitySkin` (sic): walk one tunnel, recursing once to branch.
@@ -115,17 +143,25 @@ impl CaveCarver {
             step = length / 2;
             is_room = true;
         }
-        let mut widths = [0.0f32;128];
+        let mut widths = [0.0f32; 128];
         let (branch_at, steep) = if self.ravine {
             let mut w = 1.0f32;
-            for (i,v) in widths.iter_mut().enumerate() {
-                if i == 0 || rand.next_int(3) == 0 { w = 1.0 + rand.next_float() * rand.next_float() * 1.0; }
+            for (i, v) in widths.iter_mut().enumerate() {
+                if i == 0 || rand.next_int(3) == 0 {
+                    w = 1.0 + rand.next_float() * rand.next_float() * 1.0;
+                }
                 *v = w * w;
             }
-            (-1,false)
-        } else { (rand.next_int(length / 2) + length / 4,rand.next_int(6) == 0) };
+            (-1, false)
+        } else {
+            (
+                rand.next_int(length / 2) + length / 4,
+                rand.next_int(6) == 0,
+            )
+        };
         while step < length {
-            let mut radius = 1.5 + (math::sin(step as f32 * PI_F32 / length as f32) * width * 1.0) as f64;
+            let mut radius =
+                1.5 + (math::sin(step as f32 * PI_F32 / length as f32) * width * 1.0) as f64;
             let mut radius_y = radius * y_scale;
             if self.ravine {
                 radius *= rand.next_float() as f64 * 0.25 + 0.75;
@@ -141,20 +177,48 @@ impl CaveCarver {
             } else {
                 pitch *= 0.7;
             }
-            pitch += pitch_delta * if self.ravine {0.05} else {0.1};
-            yaw += yaw_delta * if self.ravine {0.05} else {0.1};
-            pitch_delta *= if self.ravine {0.8} else {0.9};
-            yaw_delta *= if self.ravine {0.5} else {0.75};
+            pitch += pitch_delta * if self.ravine { 0.05 } else { 0.1 };
+            yaw += yaw_delta * if self.ravine { 0.05 } else { 0.1 };
+            pitch_delta *= if self.ravine { 0.8 } else { 0.9 };
+            yaw_delta *= if self.ravine { 0.5 } else { 0.75 };
             pitch_delta += (rand.next_float() - rand.next_float()) * rand.next_float() * 2.0;
             yaw_delta += (rand.next_float() - rand.next_float()) * rand.next_float() * 4.0;
 
             if !is_room && step == branch_at && width > 1.0 {
                 let seed1 = rand.next_long();
                 let w1 = rand.next_float() * 0.5 + 0.5;
-                self.tunnel(seed1, chunk_x, chunk_z, blocks, x, y, z, w1, yaw - PI_F32 * 0.5, pitch / 3.0, step, length, 1.0);
+                self.tunnel(
+                    seed1,
+                    chunk_x,
+                    chunk_z,
+                    blocks,
+                    x,
+                    y,
+                    z,
+                    w1,
+                    yaw - PI_F32 * 0.5,
+                    pitch / 3.0,
+                    step,
+                    length,
+                    1.0,
+                );
                 let seed2 = rand.next_long();
                 let w2 = rand.next_float() * 0.5 + 0.5;
-                self.tunnel(seed2, chunk_x, chunk_z, blocks, x, y, z, w2, yaw + PI_F32 * 0.5, pitch / 3.0, step, length, 1.0);
+                self.tunnel(
+                    seed2,
+                    chunk_x,
+                    chunk_z,
+                    blocks,
+                    x,
+                    y,
+                    z,
+                    w2,
+                    yaw + PI_F32 * 0.5,
+                    pitch / 3.0,
+                    step,
+                    length,
+                    1.0,
+                );
                 return;
             }
 
@@ -207,10 +271,17 @@ impl CaveCarver {
                             while !water && by >= y0 - 1 {
                                 let i = ((bx * 16 + bz) * 128 + by) as usize;
                                 if (0..128).contains(&by) {
-                                    if blocks[i] == block::WATER_MOVING || blocks[i] == block::WATER_STILL {
+                                    if blocks[i] == block::WATER_MOVING
+                                        || blocks[i] == block::WATER_STILL
+                                    {
                                         water = true;
                                     }
-                                    if by != y0 - 1 && bx != x0 && bx != x1 - 1 && bz != z0 && bz != z1 - 1 {
+                                    if by != y0 - 1
+                                        && bx != x0
+                                        && bx != x1 - 1
+                                        && bz != z0
+                                        && bz != z1 - 1
+                                    {
                                         by = y0;
                                     }
                                 }
@@ -233,14 +304,21 @@ impl CaveCarver {
                                     while by >= y0 {
                                         let ny = (by as f64 + 0.5 - y) / radius_y;
                                         let inside = if self.ravine {
-                                            (nx * nx + nz * nz) * widths[by as usize] as f64 + ny * ny / 6.0 < 1.0
-                                        } else { ny > -0.7 && nx * nx + ny * ny + nz * nz < 1.0 };
+                                            (nx * nx + nz * nz) * widths[by as usize] as f64
+                                                + ny * ny / 6.0
+                                                < 1.0
+                                        } else {
+                                            ny > -0.7 && nx * nx + ny * ny + nz * nz < 1.0
+                                        };
                                         if inside {
                                             let b = blocks[i];
                                             if b == block::GRASS {
                                                 grass = true;
                                             }
-                                            if b == block::STONE || b == block::DIRT || b == block::GRASS {
+                                            if b == block::STONE
+                                                || b == block::DIRT
+                                                || b == block::GRASS
+                                            {
                                                 if by < 10 {
                                                     blocks[i] = block::LAVA_MOVING;
                                                 } else {

@@ -12,7 +12,10 @@ pub struct CaveCarver {
 
 impl Default for CaveCarver {
     fn default() -> Self {
-        CaveCarver { range: 8, rand: JavaRandom::new(0) }
+        CaveCarver {
+            range: 8,
+            rand: JavaRandom::new(0),
+        }
     }
 }
 
@@ -25,7 +28,9 @@ impl CaveCarver {
         let mz = self.rand.next_long();
         for x in chunk_x - r..=chunk_x + r {
             for z in chunk_z - r..=chunk_z + r {
-                self.rand.set_seed((x as i64).wrapping_mul(mx) ^ (z as i64).wrapping_mul(mz) ^ world_seed);
+                self.rand.set_seed(
+                    (x as i64).wrapping_mul(mx) ^ (z as i64).wrapping_mul(mz) ^ world_seed,
+                );
                 self.starts(x, z, chunk_x, chunk_z, blocks);
             }
         }
@@ -52,7 +57,20 @@ impl CaveCarver {
                 let yaw = self.rand.next_float() * PI_F32 * 2.0;
                 let pitch = (self.rand.next_float() - 0.5) * 2.0 / 8.0;
                 let width = self.rand.next_float() * 2.0 + self.rand.next_float();
-                self.tunnel(chunk_x, chunk_z, blocks, px, py, pz, width * 2.0, yaw, pitch, 0, 0, 0.5);
+                self.tunnel(
+                    chunk_x,
+                    chunk_z,
+                    blocks,
+                    px,
+                    py,
+                    pz,
+                    width * 2.0,
+                    yaw,
+                    pitch,
+                    0,
+                    0,
+                    0.5,
+                );
             }
         }
     }
@@ -60,7 +78,9 @@ impl CaveCarver {
     /// `func_4129_a`
     fn room(&mut self, chunk_x: i32, chunk_z: i32, blocks: &mut [u8], x: f64, y: f64, z: f64) {
         let width = 1.0 + self.rand.next_float() * 6.0;
-        self.tunnel(chunk_x, chunk_z, blocks, x, y, z, width, 0.0, 0.0, -1, -1, 0.5);
+        self.tunnel(
+            chunk_x, chunk_z, blocks, x, y, z, width, 0.0, 0.0, -1, -1, 0.5,
+        );
     }
 
     /// `func_4128_a`: walk one tunnel, recursing once to branch.
@@ -97,7 +117,8 @@ impl CaveCarver {
         let branch_at = rand.next_int(length / 2) + length / 4;
         let steep = rand.next_int(6) == 0;
         while step < length {
-            let radius = 1.5 + (math::sin(step as f32 * PI_F32 / length as f32) * width * 1.0) as f64;
+            let radius =
+                1.5 + (math::sin(step as f32 * PI_F32 / length as f32) * width * 1.0) as f64;
             let radius_y = radius * y_scale;
             let cp = math::cos(pitch);
             let sp = math::sin(pitch);
@@ -118,9 +139,35 @@ impl CaveCarver {
 
             if !is_room && step == branch_at && width > 1.0 {
                 let w1 = rand.next_float() * 0.5 + 0.5;
-                self.tunnel(chunk_x, chunk_z, blocks, x, y, z, w1, yaw - PI_F32 * 0.5, pitch / 3.0, step, length, 1.0);
+                self.tunnel(
+                    chunk_x,
+                    chunk_z,
+                    blocks,
+                    x,
+                    y,
+                    z,
+                    w1,
+                    yaw - PI_F32 * 0.5,
+                    pitch / 3.0,
+                    step,
+                    length,
+                    1.0,
+                );
                 let w2 = rand.next_float() * 0.5 + 0.5;
-                self.tunnel(chunk_x, chunk_z, blocks, x, y, z, w2, yaw + PI_F32 * 0.5, pitch / 3.0, step, length, 1.0);
+                self.tunnel(
+                    chunk_x,
+                    chunk_z,
+                    blocks,
+                    x,
+                    y,
+                    z,
+                    w2,
+                    yaw + PI_F32 * 0.5,
+                    pitch / 3.0,
+                    step,
+                    length,
+                    1.0,
+                );
                 return;
             }
 
@@ -173,10 +220,17 @@ impl CaveCarver {
                             while !lava && by >= y0 - 1 {
                                 let i = ((bx * 16 + bz) * 128 + by) as usize;
                                 if (0..128).contains(&by) {
-                                    if blocks[i] == block::LAVA_MOVING || blocks[i] == block::LAVA_STILL {
+                                    if blocks[i] == block::LAVA_MOVING
+                                        || blocks[i] == block::LAVA_STILL
+                                    {
                                         lava = true;
                                     }
-                                    if by != y0 - 1 && bx != x0 && bx != x1 - 1 && bz != z0 && bz != z1 - 1 {
+                                    if by != y0 - 1
+                                        && bx != x0
+                                        && bx != x1 - 1
+                                        && bz != z0
+                                        && bz != z1 - 1
+                                    {
                                         by = y0;
                                     }
                                 }
@@ -198,7 +252,10 @@ impl CaveCarver {
                                     let ny = (by as f64 + 0.5 - y) / radius_y;
                                     if ny > -0.7 && nx * nx + ny * ny + nz * nz < 1.0 {
                                         let b = blocks[i];
-                                        if b == block::NETHERRACK || b == block::DIRT || b == block::GRASS {
+                                        if b == block::NETHERRACK
+                                            || b == block::DIRT
+                                            || b == block::GRASS
+                                        {
                                             blocks[i] = block::AIR;
                                         }
                                     }

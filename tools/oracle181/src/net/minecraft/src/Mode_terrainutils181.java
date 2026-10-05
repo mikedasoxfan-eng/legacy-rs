@@ -18,12 +18,12 @@ public final class Mode_terrainutils181 {
    for(int[] weights:sets) {WeightedRandomChoice[] list=new WeightedRandomChoice[weights.length];for(int i=0;i<list.length;i++)list[i]=new WeightedRandomChoice(weights[i]);ArrayList<WeightedRandomChoice> collection=new ArrayList<>(Arrays.asList(list));o.writeInt(WeightedRandom.func_35737_a(list));o.writeInt(WeightedRandom.func_35736_a(collection));
     for(int k=0;k<64;k++){WeightedRandomChoice chosen=WeightedRandom.func_35732_a(r,list,100);o.writeInt(Arrays.asList(list).indexOf(chosen));chosen=WeightedRandom.func_35734_a(r,collection,100);o.writeInt(collection.indexOf(chosen));}}
    o.writeLong(EntityOracle.rngState(r));
-   StructureStrongholdStones stones=new StructureStrongholdStones(null);
+   java.lang.reflect.Constructor ctor=StructureStrongholdStones.class.getDeclaredConstructor();ctor.setAccessible(true);StructureStrongholdStones stones=(StructureStrongholdStones)ctor.newInstance();
    for(int k=0;k<256;k++){int x=r.nextInt(),z=r.nextInt();ChunkCoordIntPair p=new ChunkCoordIntPair(x,z);o.writeLong(ChunkCoordIntPair.chunkXZ2Int(x,z));o.writeInt(p.hashCode());o.writeBoolean(p.equals(new ChunkCoordIntPair(x,z)));stones.func_35706_a(r,x,k,z,k%3!=0);o.writeInt(stones.func_35707_a());o.writeInt(stones.func_35708_b());
     int weight=r.nextInt(),limit=r.nextInt(5),spawned=r.nextInt(8);StructureStrongholdPieceWeight s=new StructureStrongholdPieceWeight(ComponentStrongholdLibrary.class,weight,limit);StructureVillagePieceWeight v=new StructureVillagePieceWeight(ComponentVillageHouse1.class,weight,limit);StructureStrongholdPieceWeight2 l=new StructureStrongholdPieceWeight2(ComponentStrongholdLibrary.class,weight,limit);s.field_35617_c=spawned;v.field_35606_c=spawned;l.field_35617_c=spawned;int depth=k%10;o.writeBoolean(s.func_35613_a(depth));o.writeBoolean(s.func_35614_a());o.writeBoolean(v.func_35602_a(depth));o.writeBoolean(v.func_35603_a());o.writeBoolean(l.func_35613_a(depth));
     StructurePieceTreasure t=new StructurePieceTreasure(x,z,k,limit,weight);for(int n:new int[]{t.field_35596_a,t.field_35594_b,t.field_35595_c,t.field_35593_e,t.field_35590_d})o.writeInt(n);
    }
-   for(EnumDoor d:EnumDoor.values()){o.writeInt(d.ordinal());o.writeInt(EnumDoorHelper.field_35619_a[d.ordinal()]);}o.writeLong(EntityOracle.rngState(r));
+   java.lang.reflect.Field doorMap=EnumDoorHelper.class.getDeclaredField("field_35619_a");doorMap.setAccessible(true);for(EnumDoor d:EnumDoor.values()){o.writeInt(d.ordinal());o.writeInt(((int[])doorMap.get(null))[d.ordinal()]);}o.writeLong(EntityOracle.rngState(r));
   }
  }
 }
