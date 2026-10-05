@@ -7,6 +7,18 @@ use crate::{
     math::{self, floor_double as floor},
     World,
 };
+// Coordinate-only targets in the inherited entity fixture represent an
+// EntityOtherPlayerMP, whose 1.8.1 eye height is 1.82F. Local players retain 0.12F.
+thread_local! {
+    static STAND_IN_EYE_HEIGHT: std::cell::Cell<f32> = const { std::cell::Cell::new(0.12) };
+}
+pub(crate) struct StandInEyeHeight(f32);
+pub(crate) fn stand_in_eye_height(height: f32) -> StandInEyeHeight {
+    StandInEyeHeight(STAND_IN_EYE_HEIGHT.with(|eye| eye.replace(height)))
+}
+impl Drop for StandInEyeHeight {
+    fn drop(&mut self) { STAND_IN_EYE_HEIGHT.with(|eye| eye.set(self.0)); }
+}
 impl Entity {
     pub fn target_position(&self, w: &World, target: Target) -> Option<(Vec3D, f32, bool)> {
         match target {
@@ -19,7 +31,7 @@ impl Entity {
                 } else {
                     w.players
                         .get(i)
-                        .map(|&(x, y, z)| (Vec3D::new(x, y, z), 0.12, true))
+                        .map(|&(x, y, z)| (Vec3D::new(x, y, z), STAND_IN_EYE_HEIGHT.with(|eye| eye.get()), true))
                 }
             }
             Target::Entity(id) => w.entities.get(&id).map(|e| {

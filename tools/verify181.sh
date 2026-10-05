@@ -33,7 +33,7 @@ run() { # label, oracle args..., then "--", compare args (oracle output file app
   elif ! "$cmp" "${cargs[@]}" "$out/$f"; then
     echo "DIFFERS: $label"; fail=1
   fi
-  rm -f "$out/$f" "$out/$f.txt" "$out/$f.events" "$out/$f.identities" "$out/$f.frames" "$out/$f.log"
+  rm -f "$out/$f" "$out/$f.txt" "$out/$f.events" "$out/$f.identities" "$out/$f.spawnidentities" "$out/$f.frames" "$out/$f.log"
 }
 run_extra() { # like run, but the oracle takes an argument after the output file
   local label="$1" extra="$2"; shift 2
@@ -47,7 +47,7 @@ run_extra() { # like run, but the oracle takes an argument after the output file
   elif ! "$cmp" "${cargs[@]}" "$out/$f" "$extra"; then
     echo "DIFFERS: $label"; fail=1
   fi
-  rm -f "$out/$f" "$out/$f.txt" "$out/$f.events" "$out/$f.identities" "$out/$f.frames" "$out/$f.log"
+  rm -f "$out/$f" "$out/$f.txt" "$out/$f.events" "$out/$f.identities" "$out/$f.spawnidentities" "$out/$f.frames" "$out/$f.log"
 }
 
 echo "== MathHelper sine table"
@@ -68,7 +68,7 @@ echo "== all Beta block collision/selection states (10000 cases)"
 "$oracle" entityblocks entity_blocks.bin && "$cmp" entityblocks "$out/entity_blocks.bin" || fail=1
 for entity_case in "items 6005" "sand 300" "tnt 300" "arrows 1300" "passive 13000" "aquatic 3000" "hostile 3000" "special 3000" "spawning 3000" "spawner 3000" "client 3000" "nbt 1000" "nbtall 1000" "slimes 3000" "hooks 1000" "combat 3000" "stormclient 3000" "lightning 1000" "rider 3000" "nether 3000"; do
   read -r kind ticks <<<"$entity_case"
-  run "entities: $kind, every frame for $ticks ticks" entities "$kind" "$ticks" -- entities "$kind" "$ticks"
+  run "entities: $kind, every frame for $ticks ticks" entityintegration181 "$kind" "$ticks" -- entities "$kind" "$ticks"
 done
 
 # ---- base terrain (order-independent): seed x0 z0 x1 z1
@@ -255,7 +255,7 @@ rm -f "$out/models_case.bin"
 # ---- dropped/GUI items, falling blocks, TNT, arrows and projectile sprites
 # Compare original Tessellator bits and per-draw GL transforms/state, before GPU math.
 echo "== remaining entity renderers and GUI item geometry"
-if "$oracle" renderers renderers_case.bin && beta --renderercheck "$out/renderers_case.bin"; then :; else fail=1; fi
+if "$oracle" renderintegration181 renderers renderers_case.bin && beta --renderercheck "$out/renderers_case.bin"; then :; else fail=1; fi
 echo "== ghast, pig zombie and giant full renderer draws"
 if "$oracle" livingrenderers living_case.bin && beta --livingrenderercheck "$out/living_case.bin"; then :; else fail=1; fi
 echo "== entity shadows and fire"
@@ -319,8 +319,8 @@ if "$oracle" musaudio mus_case.bin && beta --muscheck "$out/mus_case.bin"; then 
 rm -f "$out/mus_case.bin"
 
 echo "== EntityPickupFX item and arrow renderer draws"
-if "$oracle" pickuprenderers pickup_draws.bin && beta --renderercheck "$out/pickup_draws.bin"; then :; else fail=1; fi
-if "$oracle" pickuprenderersfast pickup_draws_fast.bin && beta --renderercheck "$out/pickup_draws_fast.bin"; then :; else fail=1; fi
+if "$oracle" renderintegration181 pickuprenderers pickup_draws.bin && beta --renderercheck "$out/pickup_draws.bin"; then :; else fail=1; fi
+if "$oracle" renderintegration181 pickuprenderersfast pickup_draws_fast.bin && beta --renderercheck "$out/pickup_draws_fast.bin"; then :; else fail=1; fi
 rm -f "$out/pickup_draws.bin" "$out/pickup_draws_fast.bin"
 echo "== note instruments, jukebox insertion/ejection and every step/break sound"
 if "$oracle" musicevents music_case.bin && "$cmp" musicevents "$out/music_case.bin"; then :; else fail=1; fi

@@ -114,7 +114,8 @@ class Replay:
             self.context = f'frame {frame}, event {event}'
             tag = self.b('tag')
             if tag in {0, 1, 4}:
-                self.text('name')
+                name = self.text('name')
+                self.context += f' {name!r} (tag {tag})'
                 if tag != 4 or self.b('positioned'): self.fields('<d', 'x y z')
                 if tag == 1: self.fields('<d', 'vx vy vz')
                 else: self.fields('<f', 'volume pitch')

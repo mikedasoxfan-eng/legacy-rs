@@ -209,7 +209,10 @@ impl World {
         self.terrain.biome_source.cleanup_cache();
         self.update_weather();
         self.tick_sleeping_players();
-        self.perform_spawning(self.spawn_hostile_mobs, self.spawn_peaceful_mobs);
+        self.perform_spawning(
+            self.spawn_hostile_mobs,
+            self.spawn_peaceful_mobs && self.world_time % 400 == 0,
+        );
         self.unload_oldest_chunks();
         let s = self.calculate_skylight_subtracted(1.0);
         if s != self.skylight_subtracted {
