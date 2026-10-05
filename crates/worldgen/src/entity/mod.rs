@@ -19,6 +19,8 @@ mod sounds;
 pub mod spawning;
 pub mod special;
 pub mod verify;
+pub mod vehicles;
+pub mod vehicle_verify;
 pub mod world;
 use crate::world::tile::ItemStack;
 use crate::{JavaRandom, World};
@@ -61,6 +63,8 @@ impl EntitySeedSource {
 
 #[derive(Clone, Debug)]
 pub enum EntityKind {
+    Minecart(vehicles::MinecartState),
+    Boat(vehicles::BoatState),
     Player(Box<player::PlayerState>),
     Item {
         item: ItemStack,
@@ -129,6 +133,8 @@ pub enum EntityKind {
 impl EntityKind {
     pub fn name(&self) -> &'static str {
         match self {
+            Self::Minecart(..) => "Minecart",
+            Self::Boat(..) => "Boat",
             Self::Player(..) => "Player",
             Self::Ghast(..) => "Ghast",
             Self::Wolf(..) => "Wolf",
@@ -168,6 +174,7 @@ impl EntityKind {
     pub fn is_living(&self) -> bool {
         !matches!(
             self,
+            Self::Minecart(..) | Self::Boat(..) |
             Self::Item { .. }
                 | Self::FallingSand { .. }
                 | Self::Tnt { .. }
@@ -405,6 +412,9 @@ impl Entity {
         self.pitch = pitch;
     }
     pub fn attack(&mut self, w: &mut World, attacker: Option<i32>, mut damage: i32) -> bool {
+        if matches!(self.kind, EntityKind::Minecart(..) | EntityKind::Boat(..)) {
+            return self.attack_vehicle(w, damage);
+        }
         if matches!(self.kind, EntityKind::Player(..))
             && !self.player_damage(w, attacker, &mut damage)
         {
@@ -468,6 +478,8 @@ impl Entity {
     }
     pub fn on_update(&mut self, w: &mut World) {
         match self.kind {
+            EntityKind::Minecart(..) => self.update_minecart(w),
+            EntityKind::Boat(..) => self.update_boat(w),
             EntityKind::Player(..) => self.update_player(w),
             EntityKind::Item { .. } => self.update_item(w),
             EntityKind::FallingSand { .. } => self.update_falling_sand(w),

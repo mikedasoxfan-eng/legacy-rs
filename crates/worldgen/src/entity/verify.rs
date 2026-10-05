@@ -462,6 +462,18 @@ pub fn snapshot(w: &mut World, out: &mut Vec<u8>) {
         if let Some(s) = e.player_state() {
             super::player::verify::state_bytes(s, e, out);
         }
+        if let EntityKind::Minecart(s)=&e.kind {
+            for v in [s.cart_type,s.damage,s.time_since_hit,s.rock_direction,s.fuel] { i(out,v); }
+            d(out,s.push_x);d(out,s.push_z);out.push(s.reversed as u8);
+            i(out,s.items.len() as i32);
+            for item in &s.items { super::player::verify::write(out,*item); }
+        }
+        if let EntityKind::Boat(s)=&e.kind { for v in [s.damage,s.time_since_hit,s.rock_direction] { i(out,v); } }
+        if matches!(e.kind,EntityKind::Boat(..)|EntityKind::Minecart(..)) {
+            for v in [e.collided_horizontally,e.collided_vertically,e.collided,e.been_attacked,e.first_update,e.prevent_entity_spawning] {out.push(v as u8);}
+            for v in [e.collision_reduction,e.width,e.height,e.y_offset,e.step_height,e.prev_distance_walked] {f(out,v);}
+        }
+        i(out,e.riding.unwrap_or(-1));i(out,e.ridden_by.unwrap_or(-1));d(out,e.rider_yaw_delta);d(out,e.rider_pitch_delta);
         l(out, e.rand.state());
     }
     l(out, w.rand.state());

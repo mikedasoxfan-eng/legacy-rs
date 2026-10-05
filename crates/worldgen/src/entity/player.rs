@@ -46,6 +46,8 @@ impl PlayerInput {
 }
 #[derive(Clone, Debug)]
 pub enum PlayerEvent {
+    OpenVehicleInventory { entity: i32 },
+    Stat { name: &'static str, amount: i32 },
     Container(crate::container::ContainerEvent),
     Pickup {
         entity: i32,
@@ -79,6 +81,7 @@ pub enum SleepStatus {
 }
 #[derive(Clone, Debug)]
 pub struct PlayerState {
+    pub start_minecart_riding_coordinate: Option<(i32,i32,i32)>,
     pub left_click_counter: i32,
     pub last_click_tick: i32,
     pub controller: controller::PlayerControllerSP,
@@ -111,6 +114,7 @@ pub struct PlayerState {
 impl Default for PlayerState {
     fn default() -> Self {
         Self {
+            start_minecart_riding_coordinate: None,
             left_click_counter: 0,
             last_click_tick: 0,
             controller: Default::default(),
@@ -143,6 +147,31 @@ impl Default for PlayerState {
     }
 }
 impl Entity {
+    pub(super) fn add_mounted_movement_stat(&mut self,w:&World,old:Vec3D) {
+        let Some(parent)=self.riding.and_then(|id|w.entities.get(&id)) else { return; };
+        let d=self.pos.add(-old.x,-old.y,-old.z);
+        let n=((d.x*d.x+d.y*d.y+d.z*d.z).sqrt() as f32 * 100.0 + 0.5).floor() as i32;
+        if n<=0 { return; }
+        let pos=(floor(self.pos.x),floor(self.pos.y),floor(self.pos.z));
+        let Some(s)=self.player_state_mut() else { return; };
+        let name=match parent.kind {
+            EntityKind::Minecart(..)=>"distanceByMinecart",
+            EntityKind::Boat(..)=>"distanceByBoat",
+            EntityKind::Pig {..}=>"distanceByPig",
+            _=>return,
+        };
+        s.events.push(PlayerEvent::Stat {name,amount:n});
+        if matches!(parent.kind,EntityKind::Minecart(..)) {
+            if let Some(start)=s.start_minecart_riding_coordinate {
+                let x=start.0.wrapping_sub(pos.0); let y=start.1.wrapping_sub(pos.1); let z=start.2.wrapping_sub(pos.2);
+                // ChunkCoordinates.getSqDistanceTo is misnamed: it returns sqrt.
+                let distance=(x.wrapping_mul(x).wrapping_add(y.wrapping_mul(y)).wrapping_add(z.wrapping_mul(z)) as f64).sqrt();
+                if distance>=1000.0 {
+                    s.events.push(PlayerEvent::Container(crate::container::ContainerEvent::Achievement("onARail")));
+                }
+            } else { s.start_minecart_riding_coordinate=Some(pos); }
+        }
+    }
     pub fn player(w: &mut World, username: impl Into<String>) -> Self {
         let mut e = Self::living(w, "Player").unwrap();
         e.player_state_mut().unwrap().username = username.into();
@@ -422,7 +451,9 @@ impl Entity {
         self.update_living(w);
         w.validate_container_entity(self);
         let pos = self.pos;
+        let riding=self.riding.is_some();
         let s = self.player_state_mut().unwrap();
+        if !riding {s.start_minecart_riding_coordinate=None;}
         s.prev_cloak = s.cloak;
         let delta = s.cloak.subtract(pos);
         if delta.x > 10.0 || delta.x < -10.0 {

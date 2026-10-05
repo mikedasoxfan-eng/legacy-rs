@@ -27,6 +27,7 @@ impl Entity {
             || w.can_block_be_rained_on(floor(self.pos.x), floor(self.pos.y), floor(self.pos.z))
     }
     pub fn on_entity_update(&mut self, w: &mut World) {
+        if self.riding.and_then(|id|w.entities.get(&id)).is_some_and(|p|p.dead) {self.riding=None;}
         self.ticks_existed = self.ticks_existed.wrapping_add(1);
         self.prev_distance_walked = self.distance_walked;
         self.prev_pos = self.pos;
@@ -102,7 +103,7 @@ impl Entity {
             if self.kind.is_living() {
                 self.attack(w, None, 4);
             } else {
-                self.dead = true;
+                self.set_entity_dead(w);
             }
         }
         self.first_update = false;
@@ -398,6 +399,13 @@ impl Entity {
     }
     fn on_entity_collided_with_block(&mut self, w: &mut World, id: u8, x: i32, y: i32, z: i32) {
         match id {
+            28 => {
+                if w.get_block_metadata(x,y,z)&8==0 {
+                    w.entities.insert(self.entity_id,self.clone());
+                    w.update_detector_rail(x,y,z);
+                    w.entities.remove(&self.entity_id);
+                }
+            }
             PORTAL => self.set_in_portal(),
             CACTUS => {
                 self.attack(w, None, 1);

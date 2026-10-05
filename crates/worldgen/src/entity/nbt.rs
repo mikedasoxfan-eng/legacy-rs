@@ -66,6 +66,21 @@ impl Entity {
             }
         }
         match &self.kind {
+            EntityKind::Minecart(s) => {
+                n.put("Type",Tag::Int(s.cart_type));
+                if s.cart_type==2 {
+                    n.put("PushX",Tag::Double(s.push_x)); n.put("PushZ",Tag::Double(s.push_z));
+                    n.put("Fuel",Tag::Short(s.fuel as i16));
+                } else if s.cart_type==1 {
+                    let items:Vec<_>=s.items.iter().enumerate().filter_map(|(slot,item)| {
+                        let item=item.as_ref()?; let mut n=Compound::new();
+                        n.put("Slot",Tag::Byte(slot as i8)); n.put("id",Tag::Short(item.id as i16));
+                        n.put("Count",Tag::Byte(item.count as i8)); n.put("Damage",Tag::Short(item.damage as i16));
+                        Some(Tag::Compound(n))
+                    }).collect();
+                    n.put("Items",Tag::List(if items.is_empty() {1} else {10},items));
+                }
+            }
             EntityKind::Item {
                 item, age, health, ..
             } => {
@@ -135,6 +150,8 @@ impl Entity {
         }
         let name = n.string("id");
         let mut e = match name.as_str() {
+            "Minecart" => Self::minecart_base(w),
+            "Boat" => Self::boat_base(w),
             "Player" | "ThrownEgg" => return None,
             "Item" => {
                 let mut e = Self::base(
@@ -269,6 +286,22 @@ impl Entity {
             self.living.attack_time = n.short("AttackTime") as i32;
         }
         match &mut self.kind {
+            EntityKind::Minecart(s) => {
+                s.cart_type=n.int("Type");
+                if s.cart_type==2 {
+                    s.push_x=match n.get("PushX") { Some(Tag::Double(x))=>*x,_=>0.0 };
+                    s.push_z=match n.get("PushZ") { Some(Tag::Double(x))=>*x,_=>0.0 };
+                    s.fuel=n.short("Fuel") as i32;
+                } else if s.cart_type==1 {
+                    s.items=vec![None;27];
+                    for item in n.list("Items") {
+                        if let Tag::Compound(item)=item {
+                            let slot=item.byte("Slot") as u8 as usize;
+                            if slot<27 { s.items[slot]=Some(super::player::ItemStack::new(item.short("id") as i32,item.byte("Count") as i32,item.short("Damage") as i32)); }
+                        }
+                    }
+                }
+            }
             EntityKind::Item {
                 item, age, health, ..
             } => {

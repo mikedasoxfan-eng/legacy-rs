@@ -18,7 +18,7 @@ impl World {
         let mut session = self.container_sessions.remove(&player).unwrap_or_default();
         let p = &mut entity.player_state_mut()?.inventory;
         match command {
-            ContainerCommand::OpenInventory | ContainerCommand::OpenBlock { .. } => {
+            ContainerCommand::OpenInventory | ContainerCommand::OpenBlock { .. } | ContainerCommand::OpenVehicle { .. } => {
                 if let Some(mut old) = session.active.take() {
                     old.close(p, false);
                     self.deliver_container_events(&mut entity, &mut old);
@@ -33,6 +33,13 @@ impl World {
                     } => {
                         session.next_window = session.next_window % 100 + 1;
                         self.make_block_container(block, x, y, z, session.next_window)
+                    }
+                    ContainerCommand::OpenVehicle { entity:id } => {
+                        session.next_window=session.next_window%100+1;
+                        if self.entities.get(&id).is_some_and(|v|!v.dead && matches!(&v.kind,crate::entity::EntityKind::Minecart(s) if s.cart_type==1) && v.pos.square_distance(entity.pos)<=64.0) {
+                            let mut c=Container::new(ContainerKind::Chest {rows:3},session.next_window);
+                            c.vehicle=Some(id); self.read_container_tiles(&mut c); Some(c)
+                        } else { None }
                     }
                     _ => unreachable!(),
                 };
@@ -114,8 +121,8 @@ impl World {
             return;
         };
         let usable = session.active.as_ref().is_none_or(|c| {
-            c.kind == ContainerKind::Player
-                || c.positions.iter().all(|&(x, y, z)| {
+            self.vehicle_container_usable(c,e)
+                && (c.kind == ContainerKind::Player || c.positions.iter().all(|&(x, y, z)| {
                     let id = self.get_block_id(x, y, z);
                     let valid = match c.kind {
                         ContainerKind::Workbench => id == 58,
@@ -128,7 +135,7 @@ impl World {
                     let dy = e.pos.y - (y as f64 + 0.5);
                     let dz = e.pos.z - (z as f64 + 0.5);
                     valid && dx * dx + dy * dy + dz * dz <= 64.0
-                })
+                }))
         });
         if !usable {
             if let Some(mut c) = session.active.take() {
@@ -207,8 +214,8 @@ impl World {
                 return false;
             };
             let pos = e.pos;
-            c.kind == ContainerKind::Player
-                || c.positions.iter().all(|&(x, y, z)| {
+            self.vehicle_container_usable(c,e)
+                && (c.kind == ContainerKind::Player || c.positions.iter().all(|&(x, y, z)| {
                     let dx = pos.x - (x as f64 + 0.5);
                     let dy = pos.y - (y as f64 + 0.5);
                     let dz = pos.z - (z as f64 + 0.5);
@@ -221,12 +228,19 @@ impl World {
                         _ => true,
                     };
                     valid && dx * dx + dy * dy + dz * dz <= 64.0
-                })
+                }))
         });
         self.container_sessions.insert(player, session);
         result
     }
+    fn vehicle_container_usable(&self,c:&Container,e:&crate::entity::Entity)->bool {
+        c.vehicle.is_none_or(|id|self.entities.get(&id).is_some_and(|v|!v.dead && v.pos.square_distance(e.pos)<=64.0))
+    }
     fn read_container_tiles(&mut self, c: &mut Container) {
+        if let Some(id)=c.vehicle {
+            if let Some(crate::entity::Entity {kind:crate::entity::EntityKind::Minecart(s),..})=self.entities.get(&id) { c.tile.copy_from_slice(&s.items[..27]); }
+            return;
+        }
         let mut offset = 0;
         for &(x, y, z) in &c.positions {
             match self.get_block_tile_entity(x, y, z) {
@@ -253,6 +267,10 @@ impl World {
         }
     }
     fn write_container_tiles(&mut self, c: &Container) {
+        if let Some(id)=c.vehicle {
+            if let Some(crate::entity::Entity {kind:crate::entity::EntityKind::Minecart(s),..})=self.entities.get_mut(&id) { s.items[..27].copy_from_slice(&c.tile); }
+            return;
+        }
         let mut offset = 0;
         for &(x, y, z) in &c.positions {
             match self.get_block_tile_entity(x, y, z) {

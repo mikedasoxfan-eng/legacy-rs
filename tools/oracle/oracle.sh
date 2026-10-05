@@ -8,8 +8,12 @@ jar="$here/../retromcp/minecraft/jars/deobfuscated.jar"
 libs=$(find "$here/../retromcp/libraries" -name '*.jar' ! -name '*sources*' ! -name '*natives*' 2>/dev/null | while read -r f; do printf ';%s' "$(cygpath -w "$f")"; done)
 [ -f "$jar" ] || { echo "missing $jar - run RetroMCP setup+decompile for b1.7.3 first" >&2; exit 1; }
 mkdir -p "$here/build" "$here/out"
-if [ ! -f "$here/build/net/minecraft/src/Oracle.class" ] || find "$here/src" "$here/headless" -name '*.java' -newer "$here/build/net/minecraft/src/Oracle.class" | grep -q .; then
-  javac -nowarn -cp "$jar$libs" -d "$here/build" "$here/src/net/minecraft/src/Oracle.java" "$here/src/net/minecraft/src/RendererOracle.java" "$here/src/net/minecraft/src/EntityOracle.java" "$here/src/net/minecraft/src/PlayerOracle.java" "$here/src/net/minecraft/src/ContainerOracle.java" "$here/src/net/minecraft/src/OracleHooks.java" "$here/src/net/minecraft/src/TeleportOracle.java" "$here/src/net/minecraft/src/ShowcaseOracle.java" "$here/src/net/minecraft/src/RedstoneOracle.java" "$here/src/net/minecraft/src/StatsOracle.java" "$here/src/net/minecraft/src/FirstPersonOracle.java" "$here/src/net/minecraft/src/WorldEventOracle.java" "$here/src/net/minecraft/src/ParticleOracle.java" "$here/src/net/minecraft/src/SoundOracle.java" "$here"/headless/org/lwjgl/opengl/*.java
+# A stamp written only after successful javac prevents partial class output from
+# hiding a failed build. Consume find output fully under pipefail.
+stamp="$here/build/oracle.stamp"
+if [ ! -f "$here/build/net/minecraft/src/Oracle.class" ] || [ ! -f "$stamp" ] || find "$here/src" "$here/headless" -name '*.java' -newer "$stamp" | grep . >/dev/null; then
+  javac -nowarn -cp "$jar$libs" -d "$here/build" "$here/src/net/minecraft/src/Oracle.java" "$here/src/net/minecraft/src/RendererOracle.java" "$here/src/net/minecraft/src/EntityOracle.java" "$here/src/net/minecraft/src/VehicleOracle.java" "$here/src/net/minecraft/src/PlayerOracle.java" "$here/src/net/minecraft/src/ContainerOracle.java" "$here/src/net/minecraft/src/OracleHooks.java" "$here/src/net/minecraft/src/TeleportOracle.java" "$here/src/net/minecraft/src/ShowcaseOracle.java" "$here/src/net/minecraft/src/RedstoneOracle.java" "$here/src/net/minecraft/src/StatsOracle.java" "$here/src/net/minecraft/src/FirstPersonOracle.java" "$here/src/net/minecraft/src/WorldEventOracle.java" "$here/src/net/minecraft/src/ParticleOracle.java" "$here/src/net/minecraft/src/SoundOracle.java" "$here"/headless/org/lwjgl/opengl/*.java
+  touch "$stamp"
 fi
 if [ ! -f "$here/build/net/minecraft/src/Explosion.class" ] || [ ! -f "$here/build/net/minecraft/src/Entity.class" ] || [ "$here/build_entity.py" -nt "$here/build/net/minecraft/src/Entity.class" ] || [ "$here/src/net/minecraft/src/OracleHooks.java" -nt "$here/build/net/minecraft/src/Entity.class" ]; then
   python "$here/build_entity.py" >&2
