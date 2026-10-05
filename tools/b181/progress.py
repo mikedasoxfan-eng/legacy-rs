@@ -4,7 +4,7 @@ Work = every b1.8.1 class that is new or changed against b1.7.3 (tools/b181/chan
 weighted by its changed lines (all lines for a new class). A class counts as done only when
 its port is merged into the b1.8.1 branch AND every verify181 section that covers it
 (tools/b181/coverage.json: {"Class": ["section name", ...]}) is EXACT in the given log.
-Usage: python tools/b181/progress.py target/verify181.log [--readme]
+Usage: python tools/b181/progress.py [verify logs...] [--readme]
 """
 import json
 import os
@@ -48,8 +48,14 @@ def main():
     changes = json.load(open(os.path.join(ROOT, 'tools/b181/changes.json')))
     cov_path = os.path.join(ROOT, 'tools/b181/coverage.json')
     coverage = json.load(open(cov_path)) if os.path.exists(cov_path) else {}
-    log = sys.argv[1] if len(sys.argv) > 1 and not sys.argv[1].startswith('--') else None
-    exact = exact_sections(log) if log and os.path.exists(log) else {}
+    # Results accumulate in tools/b181/sections.json: every log given updates the sections it ran
+    # (a later run of a section replaces the earlier result), so partial runs count too.
+    store = os.path.join(ROOT, 'tools/b181/sections.json')
+    exact = json.load(open(store)) if os.path.exists(store) else {}
+    for log in [a for a in sys.argv[1:] if not a.startswith('--')]:
+        if os.path.exists(log):
+            exact.update(exact_sections(log))
+    json.dump(exact, open(store, 'w'), indent=1, sort_keys=True)
     areas = {a: [0, 0, 0, 0] for a in ORDER}  # done lines, total lines, done classes, classes
     for r in changes['classes']:
         if r['status'] == 'same':
