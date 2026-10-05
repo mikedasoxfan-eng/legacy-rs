@@ -609,3 +609,127 @@ inventorymode survival
 update
 shot b181_creative_to_inventory
 # --- end player-gui ---
+
+# --- player-gui round 8: GuiSlot, GuiYesNo and GuiRenameWorld ---
+saves ../out/guisaves
+clear 128
+open select
+mouse 0 0
+shot b181_gui8_select
+mouse 213 50
+click
+mouse 0 0
+shot b181_gui8_selected
+mouse 165 220
+click
+mouse 100 145
+shot b181_gui8_yes_hover
+mouse 290 145
+shot b181_gui8_no_hover
+click
+mouse 0 0
+shot b181_gui8_cancel_return
+open rename World1
+repeatstate on
+mouse 0 0
+shot b181_gui8_rename
+update 13
+shot b181_gui8_rename_cursor
+mouse 112 60
+click 1
+mouse 0 0
+shot b181_gui8_rename_unfocused
+mouse 213 70
+click
+key 14 0
+key 14 0
+key 14 0
+key 14 0
+key 14 0
+key 14 0
+key 14 0
+key 14 0
+key 14 0
+key 14 0
+key 14 0
+key 14 0
+key 14 0
+key 14 0
+key 28 13
+screenstate open
+mouse 0 0
+shot b181_gui8_rename_empty
+key 57 32
+key 57 32
+key 28 13
+screenstate open
+shot b181_gui8_rename_spaces
+key 19 82
+key 18 101
+key 49 110
+key 30 97
+key 50 109
+key 18 101
+key 32 100
+key 57 32
+key 28 13
+repeatstate off
+open select
+shot b181_gui8_renamed_list
+mouse 213 50
+click
+mouse 165 220
+click
+mouse 100 145
+click
+mouse 0 0
+shot b181_gui8_deleted_list
+# --- end player-gui round 8 ---
+
+# --- player-gui round 8: statistics lists, flat vanilla icons ---
+world 42
+clear 128
+hud health=20 prev=20 item=0 pos=0.5,120,0.5 brightness=0.0 food=20 saturation=5 xp=0 level=0
+statsreset
+stat 16777253 1234
+stat 16777254 9
+stat 16777266 55
+stat 16908548 7
+stat 16908557 1234
+stat 16908568 250
+stat 16843032 22
+stat 16974093 3
+open stats
+mouse 213 198
+click
+mouse 0 0
+shot b181_gui8_stats_blocks
+mouse 311 45
+shot b181_gui8_stats_blocks_header
+down
+shot b181_gui8_stats_blocks_press
+up
+shot b181_gui8_stats_blocks_sorted
+mouse 155 75
+shot b181_gui8_stats_blocks_tooltip
+mouse 320 198
+click
+mouse 0 0
+shot b181_gui8_stats_items
+mouse 211 45
+shot b181_gui8_stats_items_header
+down
+shot b181_gui8_stats_items_press
+up
+shot b181_gui8_stats_items_sorted
+down
+shot b181_gui8_stats_items_reverse_press
+up
+shot b181_gui8_stats_items_reverse
+down
+shot b181_gui8_stats_items_clear_press
+up
+shot b181_gui8_stats_items_clear
+mouse 155 75
+shot b181_gui8_stats_items_tooltip
+# --- end player-gui round 8 ---

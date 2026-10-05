@@ -346,7 +346,8 @@ pub fn player_bytes(scenario: &str, ticks: i32) -> Vec<u8> {
                         let source = arrow.entity_id;
                         w.entity_joined_world(arrow);
                         p.living.hearts_life = 0;
-                        p.attack(&mut w, Some(source), 5);
+                        p.attack_from(&mut w, super::super::damage::DamageSource::indirect(
+                            super::super::damage::DamageKind::Arrow, source, Some(p.entity_id)), 5);
                     }
                 }
                 if scenario == "stats" {

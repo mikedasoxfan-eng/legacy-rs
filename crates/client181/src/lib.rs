@@ -498,6 +498,11 @@ pub fn run() {
     if args.get(1).map(String::as_str)==Some("--worldcallbackcheck"){std::process::exit(if gui::screens::select_world::check_callbacks(&args[2]) {0}else{1});}
     if args.get(1).map(String::as_str)==Some("--guiclosecheck"){std::process::exit(if gui::container_check::check(&args[2]) {0}else{1});}
     if args.get(1).map(String::as_str)==Some("--inventoryguicheck"){std::process::exit(if gui::inventory_check::check(&args[2]) {0}else{1});}
+    if args.get(1).map(String::as_str)==Some("--guislot8check"){std::process::exit(if gui::slot::check(&args[2]) {0}else{1});}
+    if args.get(1).map(String::as_str)==Some("--yesno8check"){std::process::exit(if gui::screens::select_world::check_yes_no(&args[2]) {0}else{1});}
+    if args.get(1).map(String::as_str)==Some("--rename8check"){std::process::exit(if gui::screens::select_world::check_rename(&args[2]) {0}else{1});}
+    if args.get(1).map(String::as_str)==Some("--select8check"){std::process::exit(if gui::screens::select_world::check_select(&args[2]) {0}else{1});}
+    if args.get(1).map(String::as_str)==Some("--stats8check"){std::process::exit(if gui::screens::stats::check(&args[2]) {0}else{1});}
     if args.get(1).map(String::as_str)==Some("--statsordercheck"){std::process::exit(if gui::screens::stats::check_order(&args[2]) {0}else{1});}
     if args.get(1).map(String::as_str)==Some("--generalstatscheck"){std::process::exit(if gui::screens::stats::check_general(&args[2]) {0}else{1});}
     if args.get(1).map(String::as_str)==Some("--keyregistrycheck"){std::process::exit(if gui::settings::check_key_registry(&args[2]) {0}else{1});}

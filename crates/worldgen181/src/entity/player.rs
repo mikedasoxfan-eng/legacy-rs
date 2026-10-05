@@ -743,7 +743,7 @@ impl Entity {
         }
         self.living.health -= amount;
     }
-    pub(super) fn player_death(&mut self, w: &mut World, attacker: Option<i32>) {
+    pub(super) fn player_death(&mut self, w: &mut World, source: Option<super::damage::DamageSource>) {
         self.width = 0.2;
         self.height = 0.2;
         self.set_position(self.pos.x, self.pos.y, self.pos.z);
@@ -761,7 +761,7 @@ impl Entity {
                 self.drop_player_item(w, stack, true);
             }
         }
-        if attacker.is_some() {
+        if source.is_some() {
             let angle = (self.living.attacked_at_yaw + self.yaw) * math::PI_F32 / 180.0;
             self.motion.x = (-math::cos(angle) * 0.1) as f64;
             self.motion.z = (-math::sin(angle) * 0.1) as f64;

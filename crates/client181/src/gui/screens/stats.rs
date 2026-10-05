@@ -8,6 +8,10 @@ use crate::gui::{Screen, ScreenBase, Ui};
 use crate::render::entity::gui_item;
 use worldgen::world::tile::ItemStack;
 
+#[path = "stats_check8.rs"]
+mod check8;
+pub use check8::check;
+
 /// `StatBase.func_27083_i()`: `NumberFormat.getIntegerInstance(Locale.US)`.
 fn integer_format(v: i64) -> String {
     let digits = v.unsigned_abs().to_string();
@@ -253,13 +257,37 @@ impl StatsList {
     }
 
     /// `func_27265_a`: a number right-aligned at `x`.
-    fn cell(ui: &mut Ui, stat: Option<i32>, x: i32, y: i32, even: bool) {
+    fn cell_args(ui: &Ui, stat: Option<i32>, x: i32, y: i32, even: bool) -> GeneralCell {
         let v = match stat {
             Some(s) => format_stat(StatType::Simple, ui.stats.get(s)),
             None => "-".to_string(),
         };
         let w = ui.string_width(&v);
-        ui.draw_string(&v, x - w, y + 5, if even { 16777215 } else { 9474192 });
+        GeneralCell { text: v, x: x - w, y: y + 5, color: if even { 16777215 } else { 9474192 } }
+    }
+    fn row_args(&self, ui: &Ui, index: i32, x: i32, y: i32) -> (i32, [GeneralCell; 3]) {
+        let (stat, item) = self.rows[index as usize];
+        let [a, b, _] = self.columns();
+        (item, [Self::cell_args(ui, table::lookup(a, item), x + 115, y, index % 2 == 0),
+            Self::cell_args(ui, table::lookup(b, item), x + 165, y, index % 2 == 0),
+            Self::cell_args(ui, Some(stat), x + 215, y, index % 2 == 0)])
+    }
+    fn tooltip_args(&self, ui: &Ui, slot: &GuiSlot, mx: i32, my: i32) -> Option<GeneralCell> {
+        if my < slot.top || my > slot.bottom { return None; }
+        let row = slot.slot_at(self, mx, my);
+        let left = ui.scaled().width / 2 - 92 - 16;
+        let text = if row >= 0 {
+            if mx < left + 40 || mx > left + 60 { return None; }
+            let item = self.rows[row as usize].1;
+            ui.lang.translate_named_key(super::container::item_name(worldgen::container::ItemStack::new(item, 1, 0)).trim()).trim().to_string()
+        } else {
+            let key = if mx >= left + 97 && mx <= left + 115 { self.column_key(0) }
+                else if mx >= left + 147 && mx <= left + 165 { self.column_key(1) }
+                else if mx >= left + 197 && mx <= left + 215 { self.column_key(2) }
+                else { return None; };
+            ui.translate(key).trim().to_string()
+        };
+        if text.is_empty() { None } else { Some(GeneralCell { text, x: mx + 12, y: my - 12, color: -1 }) }
     }
 }
 
@@ -351,43 +379,15 @@ impl SlotList for StatsList {
         }
     }
     fn draw_slot(&mut self, ui: &mut Ui, index: i32, x: i32, y: i32, _h: i32) {
-        let (stat, item) = self.rows[index as usize];
+        let (item, cells) = self.row_args(ui, index, x, y);
         item_cell(ui, x + 40, y, item);
-        let even = index % 2 == 0;
-        let [a, b, _] = self.columns();
-        Self::cell(ui, table::lookup(a, item), x + 115, y, even);
-        Self::cell(ui, table::lookup(b, item), x + 165, y, even);
-        Self::cell(ui, Some(stat), x + 215, y, even);
+        for cell in cells { ui.draw_string(&cell.text, cell.x, cell.y, cell.color); }
     }
     fn draw_overlay(&mut self, ui: &mut Ui, slot: &GuiSlot, mx: i32, my: i32) {
-        if my < slot.top || my > slot.bottom {
-            return;
-        }
-        let row = slot.slot_at(self, mx, my);
-        let left = ui.scaled().width / 2 - 92 - 16;
-        let text = if row >= 0 {
-            if mx < left + 40 || mx > left + 40 + 20 {
-                return;
-            }
-            let item = self.rows[row as usize].1;
-            ui.lang.translate_named_key(super::container::item_name(worldgen::container::ItemStack::new(item, 1, 0)).trim()).trim().to_string()
-        } else {
-            let key = if mx >= left + 115 - 18 && mx <= left + 115 {
-                self.column_key(0)
-            } else if mx >= left + 165 - 18 && mx <= left + 165 {
-                self.column_key(1)
-            } else if mx >= left + 215 - 18 && mx <= left + 215 {
-                self.column_key(2)
-            } else {
-                return;
-            };
-            ui.translate(key).trim().to_string()
-        };
-        if !text.is_empty() {
-            let (x, y) = (mx + 12, my - 12);
-            let w = ui.string_width(&text);
-            ui.draw_gradient_rect(x - 3, y - 3, x + w + 3, y + 8 + 3, -1073741824, -1073741824);
-            ui.font.draw_string_with_shadow(&mut ui.gl, &text, x, y, -1);
+        if let Some(cell) = self.tooltip_args(ui, slot, mx, my) {
+            let w = ui.string_width(&cell.text);
+            ui.draw_gradient_rect(cell.x - 3, cell.y - 3, cell.x + w + 3, cell.y + 11, -1073741824, -1073741824);
+            ui.font.draw_string_with_shadow(&mut ui.gl, &cell.text, cell.x, cell.y, cell.color);
         }
     }
 }

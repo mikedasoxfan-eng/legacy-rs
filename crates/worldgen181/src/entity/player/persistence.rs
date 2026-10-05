@@ -78,7 +78,8 @@ impl World {
         let saved = self.info.player.take();
         let mut e = super::controller::PlayerControllerSP::create_player(self, &username);
         e.prepare_player_to_spawn(self);
-        super::controller::PlayerControllerSP::flip_player(&mut e, self.info.game_type == 1);
+        super::controller::PlayerControllerSP::flip_player(&mut e,
+            super::controller::PlayerControllerSP::saved_world_is_creative(self.info.game_type));
         if let Some(n) = saved {
             let _ = e.read_existing_nbt(self, &n);
         }
