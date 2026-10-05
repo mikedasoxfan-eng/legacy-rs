@@ -286,34 +286,8 @@ impl Entity {
         self.collided = self.collided_horizontally || self.collided_vertically;
         if self.on_ground {
             if self.fall_distance > 0.0 {
-                if self.player_state().is_some() && self.fall_distance >= 2.0 {
-                    let n = crate::entity::player::java_round_d(self.fall_distance as f64 * 100.0);
-                    self.add_stat(crate::entity::player::stat::FALL, n);
-                }
-                if self.kind.is_living()
-                    && !matches!(
-                        self.kind,
-                        EntityKind::Ghast(..) | EntityKind::Chicken { .. }
-                    )
-                {
-                    let damage = (self.fall_distance - 3.0).ceil() as i32;
-                    if damage > 0 {
-                        self.attack(w, None, damage);
-                        let id = w.get_block_id(
-                            floor(self.pos.x),
-                            floor(self.pos.y - 0.2f32 as f64 - self.y_offset as f64),
-                            floor(self.pos.z),
-                        );
-                        if id > 0 {
-                            self.play_step_sound(w, id, 0.5, 12.0 / 16.0);
-                        }
-                    }
-                }
-                if matches!(self.kind, EntityKind::Pig { .. }) && self.fall_distance > 5.0 {
-                    if let Some(rider) = self.ridden_by.and_then(|id| w.entities.get_mut(&id)) {
-                        rider.add_stat(crate::entity::player::stat::FLY_PIG, 1);
-                    }
-                }
+                let distance = self.fall_distance;
+                self.fall(w, distance);
                 self.fall_distance = 0.0;
             }
         } else if dy < 0.0 {
@@ -466,6 +440,47 @@ impl Entity {
             Some(4) => self.motion.z = (-push) as f64,
             Some(5) => self.motion.z = push as f64,
             _ => {}
+        }
+    }
+}
+
+impl Entity {
+    /// `fall(distance)` with its overrides: `EntityPlayer` counts the distance, `Entity` passes
+    /// the fall to the rider, `EntityLiving` takes damage, `EntityPig` gives its rider "When
+    /// Pigs Fly"; chickens and ghasts ignore falls (rider included).
+    pub fn fall(&mut self, w: &mut World, distance: f32) {
+        if matches!(self.kind, EntityKind::Ghast(..) | EntityKind::Chicken { .. }) {
+            return;
+        }
+        if self.player_state().is_some() && distance >= 2.0 {
+            let n = crate::entity::player::java_round_d(distance as f64 * 100.0);
+            self.add_stat(crate::entity::player::stat::FALL, n);
+        }
+        // Entity.fall: the rider falls with its mount.
+        if let Some(id) = self.ridden_by {
+            if let Some(mut rider) = w.entities.remove(&id) {
+                rider.fall(w, distance);
+                w.entities.insert(id, rider);
+            }
+        }
+        if self.kind.is_living() {
+            let damage = (distance - 3.0).ceil() as i32;
+            if damage > 0 {
+                self.attack(w, None, damage);
+                let id = w.get_block_id(
+                    floor(self.pos.x),
+                    floor(self.pos.y - 0.2f32 as f64 - self.y_offset as f64),
+                    floor(self.pos.z),
+                );
+                if id > 0 {
+                    self.play_step_sound(w, id, 0.5, 12.0 / 16.0);
+                }
+            }
+        }
+        if matches!(self.kind, EntityKind::Pig { .. }) && distance > 5.0 {
+            if let Some(rider) = self.ridden_by.and_then(|id| w.entities.get_mut(&id)) {
+                rider.add_stat(crate::entity::player::stat::FLY_PIG, 1);
+            }
         }
     }
 }

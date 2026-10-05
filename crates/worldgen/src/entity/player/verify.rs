@@ -349,6 +349,50 @@ pub fn player_bytes(scenario: &str, ticks: i32) -> Vec<u8> {
                         p.attack(&mut w, Some(source), 5);
                     }
                 }
+                if scenario == "stats" {
+                    p.set_player_input(Default::default());
+                    if t % 40 == 0 || t % 40 == 20 {
+                        let e = Entity::item(
+                            &mut w,
+                            p.pos.x,
+                            p.pos.y - 1.3,
+                            p.pos.z,
+                            crate::world::tile::ItemStack::new(if t % 40 == 0 { 17 } else { 334 }, 1, 0),
+                        );
+                        w.entity_joined_world(e);
+                    }
+                    if t % 100 == 10 {
+                        p.living.health = 20;
+                        p.living.hearts_life = 0;
+                        let mut mob = Entity::living(&mut w, "Zombie").unwrap();
+                        mob.set_location_and_angles(p.pos.x, p.pos.y - 1.62, p.pos.z + 1.0, 0.0, 0.0);
+                        mob.living.health = 1;
+                        let target = mob.entity_id;
+                        w.entity_joined_world(mob);
+                        let s = p.player_state_mut().unwrap();
+                        s.inventory.current_item = 0;
+                        s.inventory.main[0] = Some(ItemStack::new(268, 1, 59));
+                        p.attack_with_item(&mut w, target);
+                    }
+                    if t % 100 == 50 {
+                        p.living.health = 20;
+                        p.living.hearts_life = 0;
+                        let s = p.player_state_mut().unwrap();
+                        s.inventory.armor[3] = Some(ItemStack::new(298, 1, 500));
+                        s.inventory.armor[0] = Some(ItemStack::new(301, 1, 500));
+                        p.attack(&mut w, None, 4);
+                    }
+                    if t == 250 {
+                        let mut pig = Entity::living(&mut w, "Pig").unwrap();
+                        pig.set_location_and_angles(0.5, 80.0, 0.5, 0.0, 0.0);
+                        if let crate::entity::EntityKind::Pig { saddled } = &mut pig.kind {
+                            *saddled = true;
+                        }
+                        let pig_id = pig.entity_id;
+                        w.entity_joined_world(pig);
+                        p.mount_entity(&mut w, Some(pig_id));
+                    }
+                }
                 if scenario == "survival" {
                     p.set_player_input(Default::default());
                     if t < 400 {

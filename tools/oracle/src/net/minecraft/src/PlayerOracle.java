@@ -98,6 +98,13 @@ public final class PlayerOracle {
                         if(t%100==0){p.health=20;p.heartsLife=0;w.difficultySetting=t/100%4;EntityLiving mob=t%200==0?new EntityWolf(w):new EntityPigZombie(w);mob.setLocationAndAngles(0.5,64,1.5,0,0);w.entityJoinedWorld(mob);p.inventory.mainInventory[0]=null;p.attackTargetEntityWithCurrentItem(mob);}
                         if(t%100==20){EntityArrow arrow=new EntityArrow(w,p);w.entityJoinedWorld(arrow);p.heartsLife=0;p.attackEntityFrom(arrow,5);}
                     }
+                    if(scenario.equals("stats")) {
+                        p.movementInput.moveForward=p.movementInput.moveStrafe=0;p.movementInput.jump=p.movementInput.sneak=false;
+                        if(t%40==0||t%40==20){EntityItem item=new EntityItem(w,p.posX,p.posY-1.3,p.posZ,new ItemStack(t%40==0?17:334,1,0));w.entityJoinedWorld(item);}
+                        if(t%100==10){p.health=20;p.heartsLife=0;EntityZombie mob=new EntityZombie(w);mob.setLocationAndAngles(p.posX,p.posY-1.62,p.posZ+1,0,0);mob.health=1;w.entityJoinedWorld(mob);p.inventory.currentItem=0;p.inventory.mainInventory[0]=new ItemStack(268,1,59);p.attackTargetEntityWithCurrentItem(mob);}
+                        if(t%100==50){p.health=20;p.heartsLife=0;p.inventory.armorInventory[3]=new ItemStack(298,1,500);p.inventory.armorInventory[0]=new ItemStack(301,1,500);p.attackEntityFrom(null,4);}
+                        if(t==250){EntityPig pig=new EntityPig(w);pig.setLocationAndAngles(0.5,80,0.5,0,0);pig.setSaddled(true);w.entityJoinedWorld(pig);p.mountEntity(pig);}
+                    }
                     if(scenario.equals("survival")) {
                         p.movementInput.moveForward=p.movementInput.moveStrafe=0;p.movementInput.jump=p.movementInput.sneak=false;
                         if(t<400){p.setLocationAndAngles(11.5,65.5,0.5,0,0);p.motionX=p.motionY=p.motionZ=0;}
