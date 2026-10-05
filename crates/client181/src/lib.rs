@@ -296,7 +296,7 @@ fn mesh_check(a: &[String]) -> bool {
     let biomes = std::cell::RefCell::new(if nether { BiomeSource::hell() } else { BiomeSource::new(seed) });
     let magic = i32_();
     let _ = i32_();
-    assert_eq!(magic, i32::from_le_bytes(*b"B173"), "not a mesh dump");
+    assert_eq!(magic, i32::from_le_bytes(*b"B181"), "not a b1.8.1 mesh dump");
     let sky_sub = i32_();
     let n = i32_();
     let mut ok = true;
@@ -311,7 +311,7 @@ fn mesh_check(a: &[String]) -> bool {
             let nv = i32_() as usize;
             let mut java = Vec::with_capacity(nv);
             for _ in 0..nv {
-                let f: Vec<i32> = (0..6).map(|_| i32_()).collect();
+                let f: Vec<i32> = (0..7).map(|_| i32_()).collect();
                 java.push(f);
             }
             let mut bad = 0;
@@ -324,14 +324,15 @@ fn mesh_check(a: &[String]) -> bool {
                     r.uv[0].to_bits() as i32,
                     r.uv[1].to_bits() as i32,
                     i32::from_le_bytes(r.color),
+                    r.light as i32,
                 ];
                 if rv[..] != j[..] {
                     if bad < 4 {
                         let f = |v: i32| f32::from_bits(v as u32);
                         eprintln!(
-                            "  chunk ({cx},{cz}) pass {pass} vertex {k}: java pos ({},{},{}) uv ({},{}) rgba {:08x} | rust pos ({},{},{}) uv ({},{}) rgba {:08x}",
-                            f(j[0]), f(j[1]), f(j[2]), f(j[3]), f(j[4]), j[5],
-                            r.pos[0], r.pos[1], r.pos[2], r.uv[0], r.uv[1], rv[5]
+                            "  chunk ({cx},{cz}) pass {pass} vertex {k}: java pos ({},{},{}) uv ({},{}) rgba {:08x} light {:x} | rust pos ({},{},{}) uv ({},{}) rgba {:08x} light {:x}",
+                            f(j[0]), f(j[1]), f(j[2]), f(j[3]), f(j[4]), j[5], j[6],
+                            r.pos[0], r.pos[1], r.pos[2], r.uv[0], r.uv[1], rv[5], rv[6]
                         );
                     }
                     bad += 1;

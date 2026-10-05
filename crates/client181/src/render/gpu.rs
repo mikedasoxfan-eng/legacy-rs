@@ -119,7 +119,7 @@ pub struct Gpu {
 const DEPTH_FORMAT: wgpu::TextureFormat = wgpu::TextureFormat::Depth32Float;
 
 fn tri_list(verts: &[[f32; 3]], color: [u8; 4]) -> Vec<Vertex> {
-    verts.iter().map(|p| Vertex { pos: *p, uv: [0.0, 0.0], color }).collect()
+    verts.iter().map(|p| Vertex { pos: *p, uv: [0.0, 0.0], color, light: 0 }).collect()
 }
 
 impl Gpu {
@@ -378,7 +378,7 @@ impl Gpu {
         let void_plane = vbuf(&tri_list(&sky::sky_plane(-16.0, false), white), "void plane");
         let stars = vbuf(&tri_list(&sky::stars(), white), "stars");
         let quad = |y: f32, s: f32, uvs: [[f32; 2]; 4], pts: [[f32; 3]; 4]| -> Vec<Vertex> {
-            let v: Vec<Vertex> = (0..4).map(|i| Vertex { pos: pts[i], uv: uvs[i], color: white }).collect();
+            let v: Vec<Vertex> = (0..4).map(|i| Vertex { pos: pts[i], uv: uvs[i], color: white, light: 0 }).collect();
             let _ = (y, s);
             vec![v[0], v[1], v[2], v[0], v[2], v[3]]
         };

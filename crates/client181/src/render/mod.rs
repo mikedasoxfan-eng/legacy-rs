@@ -60,13 +60,15 @@ pub fn rprops(id: u8) -> &'static RenderProps {
     &table::RENDER[id as usize]
 }
 
-/// One terrain vertex: position relative to the chunk origin, atlas UV, RGBA8 color.
+/// One terrain vertex: position relative to the chunk origin, atlas UV, RGBA8 color, and the
+/// b1.8.1 lightmap brightness (`Tessellator.setBrightness`: sky light << 20 | block light << 4).
 #[repr(C)]
 #[derive(Clone, Copy, Debug, Default, bytemuck::Pod, bytemuck::Zeroable)]
 pub struct Vertex {
     pub pos: [f32; 3],
     pub uv: [f32; 2],
     pub color: [u8; 4],
+    pub light: u32,
 }
 
 /// `Tessellator`: accumulates quads with a current color and translation.
@@ -74,6 +76,8 @@ pub struct Tessellator {
     pub verts: Vec<Vertex>,
     pub raw_positions: Option<Vec<[f64;3]>>,
     color: [u8; 4],
+    /// `setBrightness` value (raw[7]); written into every following vertex.
+    pub brightness: u32,
     /// `xOffset`/`yOffset`/`zOffset`: starts at minus the chunk origin, like WorldRenderer's
     /// `setTranslationD`, and the cactus renderer nudges it with `setTranslationF`.
     offset: [f64; 3],
@@ -81,7 +85,7 @@ pub struct Tessellator {
 
 impl Tessellator {
     pub fn new(origin: [f64; 3]) -> Self {
-        Tessellator { raw_positions:None, verts: Vec::new(), color: [255; 4], offset: [-origin[0], -origin[1], -origin[2]] }
+        Tessellator { raw_positions:None, verts: Vec::new(), color: [255; 4], brightness: 0, offset: [-origin[0], -origin[1], -origin[2]] }
     }
 
     #[inline]
@@ -93,6 +97,12 @@ impl Tessellator {
 
     pub fn set_color_opaque_f(&mut self, r: f32, g: f32, b: f32) {
         self.color = [Self::channel(r), Self::channel(g), Self::channel(b), 255];
+    }
+
+    /// `setBrightness` (func_35835_b).
+    #[inline]
+    pub fn set_brightness(&mut self, b: i32) {
+        self.brightness = b as u32;
     }
 
     /// `setTranslationF` adds to the current translation (as used by the cactus renderer).
@@ -109,6 +119,7 @@ impl Tessellator {
             pos: [(x + self.offset[0]) as f32, (y + self.offset[1]) as f32, (z + self.offset[2]) as f32],
             uv: [u as f32, v as f32],
             color: self.color,
+            light: self.brightness,
         });
     }
 }

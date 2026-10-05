@@ -112,10 +112,11 @@ impl Dimension {
 
     /// `WorldProvider.generateLightBrightnessTable` and the Hell override.
     pub fn light_brightness_table(self) -> [f32; 16] {
+        // b1.8.1: the overworld minimum dropped from 0.05 to 0 (the lightmap adds its own floor).
         let ambient = if self.is_hell_world() {
             0.1f32
         } else {
-            0.05f32
+            0.0f32
         };
         let mut table = [0.0; 16];
         for i in 0..=15 {

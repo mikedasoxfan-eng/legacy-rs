@@ -89,9 +89,9 @@ pub fn mobility(id: u8) -> i32 {
         27 | 28 | 66 | 79 => 0,
         _ => match material_of(id) {
             MAT_WATER | MAT_LAVA | MAT_LEAVES | MAT_PLANTS | MAT_FIRE | MAT_CIRCUITS
-            | MAT_FIELD_4262_Q | MAT_SNOW | MAT_CACTUS | MAT_PUMPKIN | MAT_CAKEMATERIAL
-            | MAT_FIELD_31068_A => 1,
-            MAT_PORTAL | MAT_FIELD_31067_B => 2,
+            | MAT_UNUSED | MAT_SNOW | MAT_CACTUS | MAT_PUMPKIN | MAT_CAKEMATERIAL
+            | MAT_WEB => 1,
+            MAT_PORTAL | MAT_PISTON => 2,
             _ => 0,
         },
     }
