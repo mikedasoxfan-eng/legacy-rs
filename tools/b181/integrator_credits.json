@@ -35,6 +35,7 @@
  "RenderFish",
  "RenderGlobal",
  "RenderLightningBolt",
+ "RenderManager",
  "ScreenShotHelper",
  "Slot",
  "Tessellator",

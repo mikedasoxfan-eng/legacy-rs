@@ -32,7 +32,7 @@ The port of **Minecraft Beta 1.8.1** (the Adventure Update) is under way, next t
 b1.7.3 (which stays exact). Run it with `beta.exe --mc b1.8.1`.
 
 ```
-Beta 1.8.1  █████████████████████████████████░░░░░░░  83.6 %  (17,555 / 21,004 lines)
+Beta 1.8.1  ██████████████████████████████████░░░░░░  83.9 %  (17,618 / 21,004 lines)
 ```
 
 Exact, not estimated: the work is every class that b1.8.1 added or changed (compared
@@ -51,10 +51,10 @@ lighting); those screens count as matching.
 | Mobs and entities (Endermen, Silverfish, Cave Spiders, XP orbs, damage) | 68.4 % | 1,195 / 1,746 | 40 / 47 |
 | Player (hunger, sprinting, experience, creative) | 59.7 % | 565 / 947 | 6 / 11 |
 | Blocks and items (vines, stems, melons, panes, fence gates, food, bow) | 65.4 % | 1,518 / 2,320 | 33 / 80 |
-| Screens and HUD (hunger/XP bars, creative inventory, new menus, stats) | 79.6 % | 1,429 / 1,795 | 51 / 67 |
-| Rendering (lightmap lighting, new block shapes, models, particles) | 97.1 % | 4,988 / 5,139 | 71 / 81 |
+| Screens and HUD (hunger/XP bars, creative inventory, new menus, stats) | 82.3 % | 1,478 / 1,795 | 56 / 67 |
+| Rendering (lightmap lighting, new block shapes, models, particles) | 97.3 % | 5,002 / 5,139 | 72 / 81 |
 
-Oracle checks (`tools/verify181.sh`): **681 of 772** sections exact.
+Oracle checks (`tools/verify181.sh`): **713 of 804** sections exact.
 <!-- b181-progress:end -->
 
 ---
