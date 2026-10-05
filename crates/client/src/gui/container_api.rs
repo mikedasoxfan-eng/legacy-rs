@@ -16,6 +16,8 @@ pub fn activation_request(event: &PlayerEvent) -> Option<ContainerCommand> {
             block: *block,
             position: *position,
         })
+    } else if let PlayerEvent::OpenVehicleInventory {entity}=event {
+        Some(ContainerCommand::OpenVehicle {entity:*entity})
     } else {
         None
     }

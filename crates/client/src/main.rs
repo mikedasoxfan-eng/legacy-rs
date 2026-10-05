@@ -376,6 +376,11 @@ fn main() {
             render::first_person_check::check(args.get(2).expect("--firstpersoncheck oracle.bin"));
         std::process::exit(if ok { 0 } else { 1 });
     }
+    if args.get(1).map(String::as_str) == Some("--vehiclerenderercheck") {
+        let ok=render::entity::object_check::vehicle_check(args.get(2).expect("oracle vehicle renderer dump"));
+        println!("{}",if ok {"VEHICLE RENDERERS EXACT"} else {"VEHICLE RENDERERS DIFFER"});
+        std::process::exit(if ok {0} else {1});
+    }
     if args.get(1).map(String::as_str) == Some("--renderercheck") {
         let ok = render::entity::object_check::check(args.get(2).expect("--renderercheck oracle-renderers.bin"));
         println!("{}", if ok { "RENDERERS EXACT" } else { "RENDERERS DIFFER" });

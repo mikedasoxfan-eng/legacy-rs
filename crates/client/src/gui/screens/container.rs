@@ -8,6 +8,7 @@ pub struct GuiContainer {
     base: ScreenBase,
     window: i32,
     kind: ContainerKind,
+    inventory_name: Option<&'static str>,
     previous_mouse: [f32; 2],
 }
 pub type GuiInventory = GuiContainer;
@@ -21,6 +22,7 @@ impl GuiContainer {
             base: Default::default(),
             window: snapshot.window,
             kind: snapshot.kind,
+            inventory_name: snapshot.inventory_name,
             previous_mouse: [0.0; 2],
         }
     }
@@ -79,7 +81,7 @@ impl GuiContainer {
             ContainerKind::Player => ("Crafting", 86, 16),
             ContainerKind::Workbench => ("Crafting", 28, 6),
             ContainerKind::Chest { rows } => {
-                (if rows == 3 { "Chest" } else { "Large chest" }, 8, 6)
+                (self.inventory_name.unwrap_or(if rows == 3 { "Chest" } else { "Large chest" }), 8, 6)
             }
             ContainerKind::Furnace => ("Furnace", 60, 6),
             ContainerKind::Dispenser => ("Dispenser", 60, 6),

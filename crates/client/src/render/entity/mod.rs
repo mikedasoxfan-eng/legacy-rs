@@ -17,6 +17,7 @@ pub mod pipeline;
 pub mod player;
 pub mod shot;
 pub mod special;
+pub mod vehicles;
 
 #[cfg(test)]
 mod tests;

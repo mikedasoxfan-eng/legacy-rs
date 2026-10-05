@@ -12,6 +12,7 @@ pub struct Snapshot {
     pub entity: Entity,
     pub brightness: f32,
     pub falling_light: [f32; 7],
+    pub vehicle_rails: Option<super::vehicles::RailSnapshot>,
     pub surfaces: Vec<Surface>,
 }
 pub fn radius(e: &Entity) -> f32 {

@@ -109,6 +109,7 @@ pub fn lightning(e: &Entity) -> Option<crate::render::weather::Lightning> {
 pub fn object_state(e: &Entity, partial: f32, brightness: f32, light: [f32; 7]) -> Option<super::objects::ObjectState> {
     use super::objects::{ObjectKind, ObjectState};
     let kind = match &e.kind {
+        EntityKind::Boat(..) | EntityKind::Minecart(..) => ObjectKind::Vehicle(super::vehicles::state(e,partial)?),
         EntityKind::Item { item, age, hover_start, .. } => {
             ObjectKind::Item { item: item.clone(), age: *age, hover: *hover_start }
         }

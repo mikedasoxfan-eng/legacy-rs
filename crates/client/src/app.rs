@@ -1091,6 +1091,10 @@ impl App {
                         }
                         for ev in events {
                             match ev {
+                                worldgen::entity::player::PlayerEvent::Stat {name,amount} => {
+                                    let id=match name {"distanceByMinecart"=>2006,"distanceByBoat"=>2007,"distanceByPig"=>2008,_=>continue};
+                                    if let Some(g)=&mut self.gui {g.ui.stats.add(id,amount);}
+                                }
                                 worldgen::entity::player::PlayerEvent::Pickup { source, .. } => self.particles.pickup(source, entity.entity_id),
                                 // The world thread switches dimension itself (usePortal).
                                 worldgen::entity::player::PlayerEvent::ChangeDimension => {}

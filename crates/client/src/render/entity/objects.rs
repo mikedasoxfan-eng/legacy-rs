@@ -4,6 +4,7 @@ use worldgen::world::tile::ItemStack;
 use worldgen::{math, JavaRandom};
 #[derive(Clone, Debug)]
 pub enum ObjectKind {
+    Vehicle(super::vehicles::VehicleState),
     Item { item: ItemStack, age: i32, hover: f32 },
     Falling { block: u8, light: [f32; 7] },
     Tnt { fuse: i32 },
@@ -22,6 +23,7 @@ pub fn render(s: &ObjectState, camera: [f64; 3], view: [f32; 2]) -> Fixed {
     let [x, y, z] = std::array::from_fn(|i| (s.position[i] - camera[i]) as f32);
     let partial = s.partial;
     match s.kind {
+        ObjectKind::Vehicle(v) => super::vehicles::render(&mut g,v,std::array::from_fn(|i|s.position[i]-camera[i]),partial,s.brightness),
         ObjectKind::Item { item, age, hover } => {
             let mut rng = JavaRandom::new(187);
             g.push();
