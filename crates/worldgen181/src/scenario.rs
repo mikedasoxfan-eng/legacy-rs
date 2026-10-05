@@ -56,22 +56,13 @@ impl World {
 
     /// `Minecraft.func_6255_d` with `setLoadingProgress(n * 100 / 289)` before each chunk.
     pub fn preload_spawn_area_with(&mut self, progress: &mut dyn FnMut(i32)) {
-        let total = (128 * 2 / 16 + 1) * (128 * 2 / 16 + 1);
-        let mut n = 0;
         let (sx, _, sz) = self.spawn;
-        let r = 128;
-        let mut dx = -r;
-        while dx <= r {
-            let mut dz = -r;
-            while dz <= r {
-                progress(n * 100 / total);
-                n += 1;
-                self.get_block_id(sx + dx, 64, sz + dz);
-                self.drain_lighting();
-                dz += 16;
-            }
-            dx += 16;
-        }
+        // Both vanilla singleplayer controllers inherit func_35643_e == false.
+        preload_grid(sx,sz,false,true,&mut |call| match call {
+            PreloadCall::Progress(n)=>{progress(n);false},
+            PreloadCall::Block(x,z)=>{self.get_block_id(x,64,z);false},
+            PreloadCall::Lighting=>self.updating_lighting(),
+        });
     }
 
     /// The full vanilla new-world flow: spawn search, then preload.
@@ -195,6 +186,24 @@ impl World {
             w.save_world(true);
         }
         Ok((w, is_new))
+    }
+}
+
+#[derive(Clone,Copy,Debug)]
+pub enum PreloadCall { Progress(i32), Block(i32,i32), Lighting }
+
+/// The exact preloadWorld loop. A controller with reduced preload omits every
+/// lighting poll; a missing LoadingScreenRenderer omits progress callbacks.
+pub fn preload_grid(sx:i32,sz:i32,reduced:bool,loading:bool,call:&mut dyn FnMut(PreloadCall)->bool) {
+    let radius=if reduced {64}else{128};
+    let total=(radius*2/16+1)*(radius*2/16+1);
+    let mut n=0;
+    for dx in (-radius..=radius).step_by(16) {
+        for dz in (-radius..=radius).step_by(16) {
+            if loading {call(PreloadCall::Progress(n*100/total));n+=1;}
+            call(PreloadCall::Block(sx.wrapping_add(dx),sz.wrapping_add(dz)));
+            if !reduced {while call(PreloadCall::Lighting) {}}
+        }
     }
 }
 

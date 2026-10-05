@@ -486,6 +486,9 @@ bash "$root/tools/verify_entities8_181.sh" --built || fail=1
 # --- terrain (b1.8.1 integration round 6) ---
 bash "$root/tools/verify_drawtrace181.sh" || fail=1
 # --- end terrain ---
+# --- minecraft (b1.8.1), round 1 ---
+bash "$root/tools/verify_minecraft181.sh" --built || fail=1
+# --- end minecraft ---
 pflush
 [ $fail -eq 0 ] && echo "ALL CASES EXACT" || echo "SOME CASES DIFFER"
 exit $fail
