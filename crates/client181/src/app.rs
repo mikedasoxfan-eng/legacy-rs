@@ -1477,7 +1477,8 @@ impl App {
             let dim = if self.nether { worldgen::world::Dimension::Nether } else { worldgen::world::Dimension::Overworld };
             let angle1 = if self.nether { 0.5 } else { sky::celestial_angle(self.world_time, 1.0) };
             let sky_factor = render::lightmap::sky_factor(angle1, self.weather.rain_at(1.0), self.weather.thunder_at(1.0));
-            let texels = render::lightmap::compute(&dim.light_brightness_table(), sky_factor, self.flicker.x, self.weather.flash > 0, 0.0);
+            let gamma = self.gui.as_ref().map_or(0.0, |g| g.ui.settings.gamma);
+            let texels = render::lightmap::compute(&dim.light_brightness_table(), sky_factor, self.flicker.x, self.weather.flash > 0, gamma);
             let mut out: [Vec<render::weather::WeatherVertex>; 2] = [Vec::new(), Vec::new()];
             for (tex, mut v, light) in render::weather::precipitation181(
                 &self.weather_terrain,
@@ -1577,7 +1578,8 @@ impl App {
             let dim = if self.nether { worldgen::world::Dimension::Nether } else { worldgen::world::Dimension::Overworld };
             let angle1 = if self.nether { 0.5 } else { sky::celestial_angle(self.world_time, 1.0) };
             let sky_factor = render::lightmap::sky_factor(angle1, self.weather.rain_at(1.0), self.weather.thunder_at(1.0));
-            let gamma = 0.0f32; // the Brightness option (field_35380_M) arrives with the b1.8.1 options screen
+            // The Brightness option (GameSettings.field_35380_M).
+            let gamma = self.gui.as_ref().map_or(0.0, |g| g.ui.settings.gamma);
             render::lightmap::compute(&dim.light_brightness_table(), sky_factor, self.flicker.x, self.weather.flash > 0, gamma)
         };
         if let Some(gpu) = &mut self.gpu {
