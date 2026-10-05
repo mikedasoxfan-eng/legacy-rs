@@ -20,3 +20,4 @@ options.txt
 /tools/oracle181/server/build/
 /tools/oracle181/gui/build/
 /tools/oracle181/visual_build/
+__pycache__/
