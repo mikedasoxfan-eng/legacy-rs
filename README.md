@@ -126,14 +126,17 @@ Details that turned out to matter:
 ### The GUI pixel diff
 
 `tools/verify_gui.sh` opens the **real** b1.7.3 client for a few seconds, drives it through
-75 scenes (title screen, options, video settings, controls, world list, create and rename
+90 scenes (title screen, options, video settings, controls, world list, create and rename
 world, texture packs, loading screens, in-game HUD states, achievements, death screen, the
 statistics screen with sorting, tooltips and scrolling, and 35
 inventory, crafting, chest, furnace and dispenser screens with items, tooltips and a held
 cursor stack), and takes screenshots. Then it renders the same scenes with the port and diffs
-them pixel for pixel. 67 are identical; 8 (3D block icons under the achievement and
+them pixel for pixel. 82 are identical; 8 (3D block icons under the achievement and
 statistics screens' lighting) differ by one colour level on at most a few hundred pixels,
-which is GPU rounding in item lighting.
+which is GPU rounding in item lighting. The 15 texture-pack, chat and anaglyph scenes
+are strictly identical. Generated test packs come from the user's jar; no game assets
+are committed. The same run checks all 16,777,216 RGB texture conversions, dynamic
+animations and actual GPU color masks against original-client OpenGL readback.
 
 Getting there needed a few fixes:
 - **Forced anti-aliasing:** the NVIDIA driver forces 4× anti-aliasing on OpenGL apps, so the
@@ -184,7 +187,15 @@ Same as the original's defaults, and rebindable in Options → Controls:
 | F | Cycle render distance (Shift: backwards) |
 | F1 / F2 / F3 | Hide HUD / screenshot / debug info |
 | F5 / F8 | Third person / smooth camera |
+| T | Chat (Enter is a no-op in singleplayer; Escape closes) |
+| F11 | Toggle fullscreen |
+| F3 + S | Reload sound resources |
 | Esc | Game menu (pauses and saves) |
+
+Texture packs are ZIP files in `texturepacks/` beside `options.txt`. Choose one from
+**Texture Packs** on the title screen. Missing resources fall back to the installed jar;
+changing packs or 3D Anaglyph refreshes textures, animations and world meshes.
+See [the fidelity notes](docs/client-textures-chat-anaglyph.md) for vanilla quirks and verification.
 
 ### Command line
 
@@ -284,7 +295,7 @@ Being exact means keeping these too:
 
 Minecarts and boats (placing them works; riding and physics don't), pistons (being ported),
 signs, paintings, maps, fishing, counting statistics while you play (the screen exists, the
-counters don't move yet), and the 3D anaglyph mode.
+counters don't move yet).
 
 ---
 

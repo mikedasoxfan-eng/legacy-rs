@@ -1071,7 +1071,6 @@ impl Gpu {
                     rp.draw_indexed(0..*n, 0, i as u32..i as u32 + 1);
                 }
             }
-            if p.video.advanced_opengl && p.video.fancy { mask = super::color_mask::eye_mask(p.video.anaglyph, eye, true); }
             // Weather effects belong to renderEntities, before particles and water.
             if weather_n[3] > 0 {
                 rp.set_pipeline(self.p_lightning.get(mask));

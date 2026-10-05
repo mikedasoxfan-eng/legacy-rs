@@ -89,6 +89,10 @@ public class GuiShot {
         int loadingProgress = -1;
         TileEntityFurnace furnace;
 
+        public void onGuiClosed() {
+            if(inner!=null)inner.onGuiClosed();
+        }
+
         public void handleInput() {
             while (Mouse.next()) {
             }
@@ -145,6 +149,8 @@ public class GuiShot {
                     }
                     if (!found) throw new IllegalArgumentException("pack missing " + rest);
                     mc.renderEngine.refreshTextures();
+                } else if (cmd.equals("repeatstate")) {
+                    if(Keyboard.areRepeatEventsEnabled()!=rest.equals("on"))throw new AssertionError("keyboard repeat state differs");
                 } else if (cmd.equals("fontstart")) {
                     mc.gameSettings.anaglyph=rest.equals("on");
                     mc.fontRenderer=new FontRenderer(mc.gameSettings,"/font/default.png",mc.renderEngine);

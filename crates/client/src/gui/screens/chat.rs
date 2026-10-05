@@ -9,6 +9,7 @@ pub struct GuiChat {
 }
 
 impl Screen for GuiChat {
+    fn repeats_keys(&self) -> bool { true }
     fn is_chat(&self) -> bool {
         true
     }

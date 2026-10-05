@@ -487,6 +487,8 @@ pub trait Screen {
     fn on_gui_closed(&mut self, _ui: &mut Ui) {}
 
     fn is_chat(&self) -> bool { false }
+    /// Keyboard.enableRepeatEvents is enabled only by the original text-entry screens.
+    fn repeats_keys(&self) -> bool { false }
 
     fn does_gui_pause_game(&self) -> bool {
         true

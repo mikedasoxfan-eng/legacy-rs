@@ -3,18 +3,22 @@ packs ../out/packmc
 millis 250
 splash Ported to Rust!
 open texturepacks
+repeatstate off
 mouse -1 -1
 shot packs_list
 pack Oracle.zip
 open texturepacks
+repeatstate off
 shot packs_selected
 open title
+repeatstate off
 shot pack_title
 world 25
 hud health=13 prev=13 item=0 brightness=1
 shot pack_hud
 pack Default
 open chat
+repeatstate on
 shot chat_empty
 key 30 97
 key 48 98
@@ -142,6 +146,7 @@ key 48 98
 shot chat_limit_backspace
 key 1 0
 open chat
+repeatstate on
 key 20 116
 key 28 13
 open video
@@ -149,9 +154,11 @@ anaglyph on
 shot anaglyph_video
 pack Oracle.zip
 open texturepacks
+repeatstate off
 shot anaglyph_packs
 sessionless
 open title
+repeatstate off
 shot anaglyph_pack_title
 anaglyph off
 pack Default
@@ -162,4 +169,10 @@ hud health=13 prev=13 item=0 brightness=1
 shot anaglyph_start_font
 anaglyph off
 shot anaglyph_font_palette_retained
+open create
+repeatstate on
+open rename World1
+repeatstate on
+open video
+repeatstate off
 texturecheck texture-fx.bin

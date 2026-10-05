@@ -10,7 +10,8 @@ with zipfile.ZipFile(jar) as source, zipfile.ZipFile(folder / "Oracle.zip", "w",
     pack.writestr("pack.txt", "A generated oracle texture pack, truncated here\r\nSecond description line\r\nIgnored third line")
     for name in ["pack.png", "gui/gui.png", "gui/background.png", "gui/icons.png", "gui/items.png", "terrain.png", "title/mclogo.png"]:
         image = Image.open(BytesIO(source.read(name))).convert("RGBA")
-        image.putdata([(b, r, g, a) for r, g, b, a in image.getdata()])
+        r, g, b, a = image.split()
+        image = Image.merge("RGBA", (b, r, g, a))
         buf = BytesIO(); image.save(buf, format="PNG"); pack.writestr(name, buf.getvalue())
     pack.writestr("oracle-resource.txt", b"pack resource override")
 (folder / "Broken.zip").write_bytes(b"vanilla keeps malformed zip entries")

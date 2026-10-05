@@ -789,7 +789,9 @@ impl App {
 
     /// A key going down or up (`c` is the typed character for screens).
     fn key_input(&mut self, el: &ActiveEventLoop, code: KeyCode, c: char, pressed: bool, repeat: bool) {
-        if pressed && !repeat && code == KeyCode::F11 {
+        let repeats = self.gui.as_ref().and_then(|g| g.screen.as_ref()).is_some_and(|s| s.repeats_keys());
+        if repeat && !repeats { return; }
+        if pressed && code == KeyCode::F11 {
             if let Some(gpu) = &self.gpu {
                 let fullscreen = gpu.window.fullscreen().is_none().then(|| winit::window::Fullscreen::Borderless(gpu.window.current_monitor()));
                 gpu.window.set_fullscreen(fullscreen);

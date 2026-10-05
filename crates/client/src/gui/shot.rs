@@ -116,6 +116,10 @@ pub fn run(script: &str, out_dir: &std::path::Path) -> Result<(), String> {
                 sys.ui.packs.select(i);
                 sys.refresh_textures(&device, &queue)?;
             }
+            "repeatstate" => {
+                let expected = rest == "on";
+                if sys.screen.as_ref().is_some_and(|s| s.repeats_keys()) != expected { return Err("keyboard repeat state differs".into()); }
+            }
             "fontstart" => {
                 sys.ui.settings.anaglyph = rest == "on";
                 let mut jar = crate::assets::Jar::open()?;
