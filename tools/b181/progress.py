@@ -27,7 +27,8 @@ ORDER = list(AREA_NAMES)
 
 def exact_sections(log):
     """Section name -> EXACT? using the same rules as sections.py."""
-    bad = re.compile(rb'DIFFER|MISMATCH|mismatch|FAIL|differ:|Exception|panicked|error', re.I)
+    bad = re.compile(rb'DIFFER|MISMATCH|mismatch|FAIL|differ:|panicked|error', re.I)
+    soft = re.compile(rb'Exception|^	at ')  # Java stack traces the original prints and survives
     good = re.compile(rb'EXACT|MATCH|exact|identical|OK\b')
     out, cur = {}, None
     for line in open(log, 'rb').read().split(b'\n'):
@@ -35,17 +36,22 @@ def exact_sections(log):
             continue  # the old client's resource download thread: the server is gone, harmless
         if line.startswith(b'== '):
             cur = line[3:].strip().decode('utf-8', 'replace')
-            out[cur] = [0, 0]
+            out[cur] = [0, 0, 0]
         elif cur is not None and re.match(rb'^([A-Z0-9 .()-]*CASES[A-Z ]*(EXACT|DIFFER)|exit [0-9]+)[ \t\r]*$', line):
             cur = None  # the suite's own summary line, not part of the last section
         elif cur is not None:
             if re.search(rb'\b0 (of \d+ \w+ )?differ', line):
                 out[cur][1] += 1
+            elif b'warning:' in line or line.startswith(b'  ') and b'(' in line and b';' in line:
+                continue  # javac warnings and the source lines they quote
+            elif soft.search(line):
+                out[cur][2] += 1
             elif bad.search(line):
                 out[cur][0] += 1
             elif good.search(line):
                 out[cur][1] += 1
-    return {k: v[0] == 0 for k, v in out.items()}
+    # Exceptions alone fail a section only when it never reports an exact result.
+    return {k: v[0] == 0 and (v[2] == 0 or v[1] > 0) for k, v in out.items()}
 
 
 def main():
