@@ -5,6 +5,7 @@ pub mod creative;
 pub mod session;
 pub mod tiles;
 pub mod verify;
+pub mod verify_interfaces;
 use crate::entity::player::registry;
 pub use crate::entity::player::{InventoryPlayer, ItemStack};
 use recipes::CraftingManager;

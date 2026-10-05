@@ -248,22 +248,24 @@ public class GuiShot {
                     EntityPlayerSP p = mc.thePlayer;
                     for (String kv : a) {
                         String[] e = kv.split("=");
-                        int v = e.length > 1 && !e[0].equals("pos") && !e[0].equals("brightness") && !e[0].equals("saturation") && !e[0].equals("portal") ? Integer.parseInt(e[1]) : 0;
+                        int v = e.length > 1 && !e[0].equals("pos") && !e[0].equals("brightness") && !e[0].equals("saturation") && !e[0].equals("portal") && !e[0].equals("prev_portal") ? Integer.parseInt(e[1]) : 0;
                         if (e[0].equals("health")) p.health = v;
                         else if (e[0].equals("food")) p.func_35191_at().func_35764_a(v);
                         else if (e[0].equals("saturation")) p.func_35191_at().func_35767_b(Float.parseFloat(e[1]));
                         else if (e[0].equals("xp")) p.field_35211_aX=v;
                         else if (e[0].equals("level")) p.field_35210_aY=v;
+                        else if (e[0].equals("portal")) p.timeInPortal=Float.parseFloat(e[1]);
+                        else if (e[0].equals("prev_portal")) p.prevTimeInPortal=Float.parseFloat(e[1]);
+                        else if (e[0].equals("sleep")) {Field f=EntityPlayer.class.getDeclaredField("sleepTimer");f.setAccessible(true);f.setInt(p,v);}
                         else if (e[0].equals("air")) p.air=v;
                         else if (e[0].equals("water")) water=v!=0;
                         else if (e[0].equals("creative")) mc.playerController=v!=0?new PlayerControllerTest(mc):new PlayerControllerSP(mc);
                         else if (e[0].equals("armor")) { for(int slot=0;slot<4;slot++)p.inventory.armorInventory[slot]=v==20?new ItemStack(313-slot,1,0):null; }
                         else if (e[0].equals("seed")) { }
-                        else if (e[0].equals("portal")) { p.timeInPortal=p.prevTimeInPortal=Float.parseFloat(e[1]); }
-                        else if (e[0].equals("nausea")) { if(v!=0)p.func_35165_a(new PotionEffect(9,10000,0)); }
-                        else if (e[0].equals("poison") || e[0].equals("hunger") || e[0].equals("regen")) {
-                            int effect=e[0].equals("poison")?19:e[0].equals("hunger")?17:10;
+                        else if (e[0].equals("poison") || e[0].equals("hunger") || e[0].equals("regen") || e[0].equals("nausea")) {
+                            int effect=e[0].equals("poison")?19:e[0].equals("hunger")?17:e[0].equals("nausea")?9:10;
                             if(v!=0)p.func_35165_a(new PotionEffect(effect,10000,0));
+                            else p.field_35170_bR.remove(Integer.valueOf(effect));
                         }
                         else if (e[0].equals("prev")) p.prevHealth = v;
                         else if (e[0].equals("hearts_life")) p.heartsLife = v;

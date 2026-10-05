@@ -1,6 +1,27 @@
 //! EntityPlayer / EntityPlayerSP additions introduced in Beta 1.8.1.
 use super::*;
 impl Entity {
+    /// EntityPlayerSP.setHealth: remote health changes bypass armor and blocking.
+    pub fn set_player_health(&mut self, health: i32) {
+        let damage = self.living.health.wrapping_sub(health);
+        if damage <= 0 {
+            self.living.health = health;
+            if damage < 0 {
+                self.living.hearts_life = self.living.hearts_halves_life / 2;
+            }
+        } else {
+            self.living.last_damage = damage;
+            self.living.prev_health = self.living.health;
+            self.living.hearts_life = self.living.hearts_halves_life;
+            self.damage_living_from(super::super::damage::DamageSource::new(super::super::damage::DamageKind::Generic), damage);
+            self.living.hurt_time = 10;
+            self.living.max_hurt_time = 10;
+        }
+    }
+    /// EntityPlayerSP.func_35219_c, whose argument order differs from its field order.
+    pub fn set_player_experience(&mut self, points: i32, total: i32, level: i32) {
+        self.player_state_mut().unwrap().experience = Experience { points, total, level };
+    }
     pub(super) fn player_swing_duration(&self) -> i32 {
         if let Some(effect) = self.potion_effect(3) {
             6i32.wrapping_sub(effect.amplifier.wrapping_add(1))
@@ -103,7 +124,7 @@ impl Entity {
     }
     pub fn stop_item_use(&mut self, w: &mut World) {
         let s=self.player_state().unwrap();
-        if s.item_in_use.is_some_and(|i|i.id==261) && s.inventory.main.iter().flatten().any(|i|i.id==262) {
+        if s.item_in_use.is_some_and(|i|i.id==261) && s.inventory.contains_item(262) {
             let mut charge=(72000-s.item_use_ticks) as f32/20.0;
             charge=(charge*charge+charge*2.0)/3.0;
             if charge as f64>=0.1 {

@@ -161,6 +161,12 @@ impl Entity {
             if (s.id == 359 && matches!(id,18|30|31|106)) || matches!(s.id, 267 | 268 | 272 | 276 | 283 | 256..=258 | 269..=271 | 273..=275 | 277..=279 | 284..=286) {
                 self.add_stat(super::stat::used(s.id), 1);
             }
+            // sendBlockRemoved clears a zero-sized equipped stack even when its item hook
+            // does not damage it (for example, a zero-sized block stack).
+            let inv = &mut self.player_state_mut().unwrap().inventory;
+            if inv.held().is_some_and(|held| held.count == 0) {
+                inv.main[inv.current_item as usize] = None;
+            }
         }
     }
     pub fn held_item(&self) -> Option<ItemStack> {

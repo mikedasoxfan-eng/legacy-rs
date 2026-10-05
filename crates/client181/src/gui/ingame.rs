@@ -226,9 +226,9 @@ impl GuiIngame {
         if p.survival {
             let left = w / 2 - 91;
             let right = w / 2 + 91;
-            let cap = (p.xp_level + 1) * 10;
+            let cap = p.xp_level.wrapping_add(1).wrapping_mul(10);
             if cap > 0 {
-                let fill = p.xp_points * 183 / cap;
+                let fill = p.xp_points.wrapping_mul(183) / cap;
                 ui.draw_textured_modal_rect_z(left, h - 29, 0, 64, 182, 5, z);
                 if fill > 0 { ui.draw_textured_modal_rect_z(left, h - 29, 0, 69, fill, 5, z); }
             }

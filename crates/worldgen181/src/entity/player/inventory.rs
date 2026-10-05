@@ -106,6 +106,10 @@ impl Default for InventoryPlayer {
     }
 }
 impl InventoryPlayer {
+    /// InventoryPlayer.func_35157_d: search all main slots, including zero-count stacks.
+    pub fn contains_item(&self, id: i32) -> bool {
+        self.main.iter().any(|s| s.is_some_and(|s| s.id == id))
+    }
     pub fn set_current_item(&mut self, id: i32) {
         if let Some(slot) = self.main.iter().position(|s| s.is_some_and(|s| s.id == id)) {
             if slot < 9 { self.current_item = slot as i32; }
@@ -253,8 +257,7 @@ impl InventoryPlayer {
         for t in tags {
             if let Tag::Compound(n) = t {
                 let slot = n.byte("Slot") as u8 as usize;
-                let s = ItemStack::from_nbt(n);
-                if registry::item(s.id).is_some() {
+                if let Some(s) = ItemStack::try_from_nbt181(n) {
                     if slot < 36 {
                         self.main[slot] = Some(s);
                     } else if (100..104).contains(&slot) {
