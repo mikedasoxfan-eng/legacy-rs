@@ -19,6 +19,6 @@ for kind in idle movement sprint flight creativecontroller starve regen eat260 e
   java="$root/tools/oracle181/out/playertick181-$kind.bin"
   rust="$root/target/playertick181-$kind-rust.bin"
   rm -f "$java" "$rust"
-  bash tools/oracle181/oracle.sh playertick181 "$kind" "$ticks" "$java"
+  bash tools/oracle181/oracle.sh playertickintegration181 "$kind" "$ticks" "$java"
   target/release/playertick181 "$kind" "$ticks" "$rust" "$java"
 done

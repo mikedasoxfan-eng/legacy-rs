@@ -28,8 +28,12 @@ run() { # label, oracle args..., then "--", compare args (oracle output file app
   cargs=("$@")
   local f="case_$(echo "${oargs[*]}" | tr ' ' '_').bin"
   echo "== $label"
-  if "$oracle" "${oargs[@]:0:1}" "${oargs[@]:1}" "$f" >/dev/null && "$cmp" "${cargs[@]}" "$out/$f"; then :; else fail=1; fi
-  rm -f "$out/$f" "$out/$f.txt" "$out/$f.events"
+  if ! "$oracle" "${oargs[@]:0:1}" "${oargs[@]:1}" "$f" >"$out/$f.log" 2>&1; then
+    cat "$out/$f.log"; echo "ORACLE FAILED: $label"; fail=1
+  elif ! "$cmp" "${cargs[@]}" "$out/$f"; then
+    echo "DIFFERS: $label"; fail=1
+  fi
+  rm -f "$out/$f" "$out/$f.txt" "$out/$f.events" "$out/$f.identities" "$out/$f.frames" "$out/$f.log"
 }
 run_extra() { # like run, but the oracle takes an argument after the output file
   local label="$1" extra="$2"; shift 2
@@ -38,12 +42,16 @@ run_extra() { # like run, but the oracle takes an argument after the output file
   cargs=("$@")
   local f="case_$(echo "${oargs[*]}_$extra" | tr ' :,' '_xc' | cut -c1-80).bin"
   echo "== $label"
-  if "$oracle" "${oargs[@]}" "$f" "$extra" >/dev/null && "$cmp" "${cargs[@]}" "$out/$f" "$extra"; then :; else fail=1; fi
-  rm -f "$out/$f" "$out/$f.txt" "$out/$f.events"
+  if ! "$oracle" "${oargs[@]}" "$f" "$extra" >"$out/$f.log" 2>&1; then
+    cat "$out/$f.log"; echo "ORACLE FAILED: $label"; fail=1
+  elif ! "$cmp" "${cargs[@]}" "$out/$f" "$extra"; then
+    echo "DIFFERS: $label"; fail=1
+  fi
+  rm -f "$out/$f" "$out/$f.txt" "$out/$f.events" "$out/$f.identities" "$out/$f.frames" "$out/$f.log"
 }
 
 echo "== MathHelper sine table"
-"$oracle" sin sin.bin && "$cmp" sin "$out/sin.bin" || fail=1
+"$oracle" sin sin.bin && "$cmp" sin "$out/sin.bin" && echo "sine table EXACT" || fail=1
 
 echo "== player inventory (10000 original-bytecode operations)"
 "$oracle" playerinventory player_inventory.bin && "$cmp" playerinventory "$out/player_inventory.bin" || fail=1
@@ -51,7 +59,7 @@ echo "== container clicks, recipes, furnace and dispenser world replay"
 bash "$root/tools/verify_containers181.sh" || fail=1
 for player_case in "movement 1000" "damage 1000" "pickup 1000" "sleep 300" "portal 300" "nbt 300" "look 1000" "dig 1000" "place 360" "use 300" "shoot 300" "interact 210" "fertilize 50" "activate 100" "api 200" "pipeline 100" "night 150" "sleepworld 150" "survival 800" "bucket 100" "combat 400" "pickentities 200" "digextras 1600" "slimecontact 360" "stats 400"; do
   read -r kind ticks <<<"$player_case"
-  run "player: $kind, every frame and final world" player "$kind" "$ticks" -- player "$kind" "$ticks"
+  run "player: $kind, every frame and final world" playerintegration181 "$kind" "$ticks" -- player "$kind" "$ticks"
 done
 
 echo "== entity geometry (10000 original-bytecode cases)"
@@ -156,12 +164,13 @@ if "$oracle" readsave ../../../b1.8.1/saves/_verify_rust v_read.bin 2>/dev/null 
 if [ "$quick" != quick ]; then
   echo "== server mode: 900-tick walk (real World.tick), unload/reload through region files"
   rm -rf "$root/b1.8.1/saves/_verify_srv_java" "$root/b1.8.1/saves/_verify_srv_rust"
-  "$root/tools/oracle181/server_oracle.sh" serverwalk 0 1 10 ../../../b1.8.1/saves/_verify_srv_java 900 v_srv.bin >/dev/null 2>&1
+  "$root/tools/oracle181/server_oracle.sh" serverwalk 0 1 10 ../../../b1.8.1/saves/_verify_srv_java 900 v_srv.bin >"$out/v_srv.log" 2>&1 || { cat "$out/v_srv.log"; echo "ORACLE FAILED: server walk"; fail=1; }
   "$cmp" serverwalk 0 1 10 "$root/b1.8.1/saves/_verify_srv_rust" 900 "$out/v_srv.bin" | tail -1 | grep -q "EXACT MATCH" && echo "in memory: EXACT MATCH" || { echo "in memory: DIFFERS"; fail=1; }
   "$oracle" readsave ../../../b1.8.1/saves/_verify_srv_java v_srv_saved.bin >/dev/null 2>&1
   "$cmp" savecheck "$root/b1.8.1/saves/_verify_srv_rust" "$out/v_srv_saved.bin" | tail -1 | grep -q "EXACT MATCH" && echo "on disk: EXACT MATCH" || { echo "on disk: DIFFERS"; fail=1; }
+  python "$root/tools/oracle181/compare_regions.py" "$root/b1.8.1/saves/_verify_srv_java" "$root/b1.8.1/saves/_verify_srv_rust" && echo "serialized chunk NBT: EXACT MATCH" || { echo "serialized chunk NBT: DIFFERS"; fail=1; }
 fi
-rm -rf "$root"/b1.8.1/saves/_verify_* "$out"/v_*.bin
+rm -rf "$root"/b1.8.1/saves/_verify_* "$out"/v_*.bin "$out"/v_*.bin.txt "$out"/v_*.bin.identities "$out"/v_*.bin.events "$out"/v_*.bin.frames "$out/v_srv.log"
 
 # ---- world ticking: weather, scheduled and random block ticks, cave-sound and lightning
 # draws, chunk loading around the player. seed wrand lcg sound ticks weather dx dz [fires]
@@ -172,15 +181,15 @@ tick_cases=(
 )
 [ "$quick" = quick ] && tick_cases=("1 1 12345 5 300 clear 0 0")
 for c in "${tick_cases[@]}"; do
-  run "ticks: $c" ticks $c -- ticks $c
+  run "ticks: $c" ticksintegration181 $c -- ticks $c
 done
 if [ "$quick" != quick ]; then
   # Seed 6 spawns in forest: set it alight (fire spread, logs burning, leaf decay).
   fires="12:0,12:12,16:0,-16:-16,20:0,20:20,-20:-20,24:0,0:-24,28:28,-28:-28,0:-32,32:32"
-  run_extra "ticks: forest fire, seed 6" "$fires" ticks 6 1 777 5 4000 clear 0 0 -- ticks 6 1 777 5 4000 clear 0 0
+  run_extra "ticks: forest fire, seed 6" "$fires" ticksintegration181 6 1 777 5 4000 clear 0 0 -- ticks 6 1 777 5 4000 clear 0 0
   # 49 saplings of each kind around spawn, four days: BlockSapling growth and growTree.
   saplings=$(cat "$root/tools/oracle181/saplings.txt")
-  run_extra "ticks: saplings growing, seed 6" "$saplings" ticks 6 1 777 5 96000 clear 0 0 -- ticks 6 1 777 5 96000 clear 0 0
+  run_extra "ticks: saplings growing, seed 6" "$saplings" ticksintegration181 6 1 777 5 96000 clear 0 0 -- ticks 6 1 777 5 96000 clear 0 0
 fi
 
 # ---- every RenderBlocks render type: each block id x metadata plus neighbour arrangements
@@ -240,7 +249,7 @@ fi
 
 # ---- mob geometry, UVs, successive poses and packed normals
 echo "== mob models: boxes, UVs, successive poses and wolf living animations"
-if "$oracle" models models_case.bin && beta --modelcheck "$out/models_case.bin"; then :; else fail=1; fi
+if "$oracle" models181 models_case.bin && beta --modelcheck "$out/models_case.bin"; then :; else fail=1; fi
 rm -f "$out/models_case.bin"
 
 # ---- dropped/GUI items, falling blocks, TNT, arrows and projectile sprites
@@ -261,13 +270,16 @@ rm -f "$out/firstperson_case.bin"
 
 # ---- sky, fog and cloud colors, sun angle, night darkness
 echo "== renderer window sizes and Java negative-coordinate wrapping"
+window_ok=1
 for distance in 0 1 2 3; do
   for position in 0 -1 8 -8 208 -209 30000000 -30000000; do
     j=$("$oracle" videowindow "$distance" "$position"); r=$(beta --videowindow "$distance" "$position")
-    [ "$j" = "$r" ] || { echo "window differs: $distance $position"; echo "java $j"; echo "rust $r"; fail=1; }
+    [ "$j" = "$r" ] || { echo "window differs: $distance $position"; echo "java $j"; echo "rust $r"; fail=1; window_ok=0; }
   done
 done
+[ "$window_ok" -eq 1 ] && echo "renderer windows EXACT"
 echo "== sky colors"
+sky_ok=1
 for args in "3257840388504953787 -39 65 6000 0.0" "0 1000 -2000 13000 0.5" "123 -500 77 23500 0.25" "42 99999 -12345 18000 0.9" "1 0 0 12500 0.75" \
   "1 0 0 6000 0.5 1 1 2" "0 1000 -2000 13000 0.5 0.75 0.4 1" \
   "123 -500 77 23500 0.25 0.33 0.9 0" "42 99999 -12345 18000 0.9 1 1 1" \
@@ -283,7 +295,7 @@ for args in "3257840388504953787 -39 65 6000 0.0" "0 1000 -2000 13000 0.5" "123 
       else skyargs+=("${defaults[i-5]}"); fi
     done
     j=$("$oracle" skycolor "${skyargs[@]}" "$distance"); r=$(beta --skycolor "${skyargs[@]}" "$distance")
-  [ "$j" = "$r" ] || { echo "sky differs for $args"; echo " java $j"; echo " rust $r"; fail=1; }
+  [ "$j" = "$r" ] || { echo "sky differs for $args"; echo " java $j"; echo " rust $r"; fail=1; sky_ok=0; }
   done
 done
 # The Nether: WorldProviderHell's fog color, celestial angle 0.5, fog from the eye.
@@ -297,10 +309,10 @@ for args in "5 10 -20 6000 0.5" "5 300 40 18000 0.25 1 0 0 1 0" "9 -7 7 100 0.75
       else skyargs+=("${defaults[i-5]}"); fi
     done
     j=$("$oracle" skycolornether "${skyargs[@]}" "$distance"); r=$(beta --skycolor-nether "${skyargs[@]}" "$distance")
-  [ "$j" = "$r" ] || { echo "nether sky differs for $args"; echo " java $j"; echo " rust $r"; fail=1; }
+  [ "$j" = "$r" ] || { echo "nether sky differs for $args"; echo " java $j"; echo " rust $r"; fail=1; sky_ok=0; }
   done
 done
-[ $fail -eq 0 ] && echo "sky colors exact"
+[ "$sky_ok" -eq 1 ] && echo "sky colors EXACT"
 
 echo "== original MusInputStream encrypted audio bytes"
 if "$oracle" musaudio mus_case.bin && beta --muscheck "$out/mus_case.bin"; then :; else fail=1; fi

@@ -797,28 +797,9 @@ fn api_bytes(w: &mut crate::World, id: i32, out: &mut Vec<u8>) {
 }
 
 fn nbt_bytes(w: &crate::World, id: i32, out: &mut Vec<u8>) {
-    use crate::nbt::{Compound, Tag};
-    fn sort(c: &mut Compound) {
-        c.0.sort_by(|a, b| a.0.cmp(&b.0));
-        for (_, v) in &mut c.0 {
-            walk(v);
-        }
-    }
-    fn walk(t: &mut Tag) {
-        match t {
-            Tag::Compound(c) => sort(c),
-            Tag::List(_, items) => {
-                for t in items {
-                    walk(t);
-                }
-            }
-            _ => {}
-        }
-    }
-    let mut n = w.entities[&id].player_nbt().unwrap();
-    sort(&mut n);
+    let n = w.entities[&id].player_nbt().unwrap();
     let mut data = Vec::new();
-    crate::nbt::write_root(&mut data, &n).unwrap();
+    crate::nbt::write_root_canonical(&mut data, &n).unwrap();
     out.extend_from_slice(&(data.len() as i32).to_le_bytes());
     out.extend_from_slice(&data);
 }

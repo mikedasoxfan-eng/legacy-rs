@@ -1,5 +1,5 @@
 //! The `WorldGen*` feature generators used by overworld population, ported
-//! line for line. All of them draw from the population RNG (`w.prand()`).
+//! line for line. Population uses `w.prand()`; saplings use their supplied RNG.
 
 use crate::block::{self, mat, opaque_cube_lookup, MAT_LAVA, MAT_WATER};
 use crate::features181::swamp_tree;
@@ -521,12 +521,24 @@ pub enum TreeKind {
 
 pub fn tree(w: &mut World, kind: TreeKind, x: i32, y: i32, z: i32) -> bool {
     match kind {
-        TreeKind::Oak => simple_tree(w, x, y, z, 4, 0),
-        TreeKind::Birch => simple_tree(w, x, y, z, 5, 2),
+        TreeKind::Oak => simple_tree(w, x, y, z, 4, 0, RandSel::Populate),
+        TreeKind::Birch => simple_tree(w, x, y, z, 5, 2, RandSel::Populate),
         TreeKind::BigOak => BigTree::new().generate(w, x, y, z),
-        TreeKind::Spruce1 => taiga1(w, x, y, z),
-        TreeKind::Spruce2 => taiga2(w, x, y, z),
+        TreeKind::Spruce1 => taiga1(w, x, y, z, RandSel::Populate),
+        TreeKind::Spruce2 => taiga2(w, x, y, z, RandSel::Populate),
         TreeKind::Swamp => swamp_tree(w, x, y, z),
+    }
+}
+
+/// BlockSapling creates a fresh generator without populate's func_517_a(1,1,1).
+/// Keep the supplied RNG separate from generators invoked by nested chunk loads.
+pub fn sapling_tree(w: &mut World, kind: TreeKind, x: i32, y: i32, z: i32, rs: RandSel) -> bool {
+    match kind {
+        TreeKind::Oak => simple_tree(w, x, y, z, 4, 0, rs),
+        TreeKind::Birch => simple_tree(w, x, y, z, 5, 2, rs),
+        TreeKind::BigOak => BigTree::unscaled().generate_with_random(w, x, y, z, rs),
+        TreeKind::Spruce2 => taiga2(w, x, y, z, rs),
+        _ => unreachable!("BlockSapling tree kind"),
     }
 }
 
@@ -575,8 +587,8 @@ fn set_tree_block(w: &mut World, x: i32, y: i32, z: i32, id: u8, meta: i32) {
 }
 
 /// `WorldGenTrees` (meta 0, base height 4) and `WorldGenForest` (birch, meta 2, base height 5).
-fn simple_tree(w: &mut World, x: i32, y: i32, z: i32, base: i32, meta: i32) -> bool {
-    let height = w.prand().next_int(3) + base;
+fn simple_tree(w: &mut World, x: i32, y: i32, z: i32, base: i32, meta: i32, rs: RandSel) -> bool {
+    let height = w.rng(rs).next_int(3) + base;
     if y < 1 || y + height + 1 > 128 {
         return false;
     }
@@ -613,7 +625,7 @@ fn simple_tree(w: &mut World, x: i32, y: i32, z: i32, base: i32, meta: i32) -> b
             let dx = lx - x;
             for lz in z - r..=z + r {
                 let dz = lz - z;
-                if (dx.abs() != r || dz.abs() != r || w.prand().next_int(2) != 0 && dy != 0)
+                if (dx.abs() != r || dz.abs() != r || w.rng(rs).next_int(2) != 0 && dy != 0)
                     && !opaque_cube_lookup(w.get_block_id(lx, ly, lz))
                 {
                     set_tree_block(w, lx, ly, lz, block::LEAVES, meta);
@@ -631,8 +643,8 @@ fn simple_tree(w: &mut World, x: i32, y: i32, z: i32, base: i32, meta: i32) -> b
 }
 
 /// `WorldGenTaiga1` (tall, sparse spruce)
-fn taiga1(w: &mut World, x: i32, y: i32, z: i32) -> bool {
-    let r = w.prand();
+fn taiga1(w: &mut World, x: i32, y: i32, z: i32, rs: RandSel) -> bool {
+    let r = w.rng(rs);
     let height = r.next_int(5) + 7;
     let bare = height - r.next_int(2) - 3;
     let crown = height - bare;
@@ -688,8 +700,8 @@ fn taiga1(w: &mut World, x: i32, y: i32, z: i32) -> bool {
 }
 
 /// `WorldGenTaiga2` (bushy spruce)
-fn taiga2(w: &mut World, x: i32, y: i32, z: i32) -> bool {
-    let r = w.prand();
+fn taiga2(w: &mut World, x: i32, y: i32, z: i32, rs: RandSel) -> bool {
+    let r = w.rng(rs);
     let height = r.next_int(4) + 6;
     let bare = 1 + r.next_int(2);
     let crown = height - bare;
@@ -714,7 +726,7 @@ fn taiga2(w: &mut World, x: i32, y: i32, z: i32) -> bool {
         return false;
     }
     w.set_block(x, y - 1, z, block::DIRT);
-    let mut rad = w.prand().next_int(2);
+    let mut rad = w.rng(rs).next_int(2);
     let mut limit = 1;
     let mut reset = 0;
     for i in 0..=crown {
@@ -741,7 +753,7 @@ fn taiga2(w: &mut World, x: i32, y: i32, z: i32) -> bool {
             rad += 1;
         }
     }
-    let top_gap = w.prand().next_int(3);
+    let top_gap = w.rng(rs).next_int(3);
     for i in 0..height - top_gap {
         let id = w.get_block_id(x, y + i, z);
         if id == block::AIR || id == block::LEAVES {
@@ -778,7 +790,14 @@ fn pow2(v: f64) -> f64 {
 
 impl BigTree {
     pub fn new() -> Self {
-        let mut t = BigTree {
+        let mut t = Self::unscaled();
+        // populate() calls func_517_a(1.0, 1.0, 1.0) on every tree generator.
+        t.set_scale(1.0, 1.0, 1.0);
+        t
+    }
+
+    fn unscaled() -> Self {
+        BigTree {
             rand: JavaRandom::new(0),
             base: [0; 3],
             height_limit: 0,
@@ -791,10 +810,7 @@ impl BigTree {
             height_limit_limit: 12,
             leaf_distance_limit: 4,
             leaf_nodes: Vec::new(),
-        };
-        // populate() calls func_517_a(1.0, 1.0, 1.0) on every tree generator.
-        t.set_scale(1.0, 1.0, 1.0);
-        t
+        }
     }
 
     /// `func_517_a`
@@ -808,7 +824,11 @@ impl BigTree {
     }
 
     pub fn generate(&mut self, w: &mut World, x: i32, y: i32, z: i32) -> bool {
-        let seed = w.prand().next_long();
+        self.generate_with_random(w, x, y, z, RandSel::Populate)
+    }
+
+    fn generate_with_random(&mut self, w: &mut World, x: i32, y: i32, z: i32, rs: RandSel) -> bool {
+        let seed = w.rng(rs).next_long();
         self.rand.set_seed(seed);
         self.base = [x, y, z];
         if self.height_limit == 0 {

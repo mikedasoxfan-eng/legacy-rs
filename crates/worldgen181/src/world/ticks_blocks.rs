@@ -477,18 +477,7 @@ pub fn grow_tree(w: &mut World, x: i32, y: i32, z: i32, rs: RandSel) {
             }
         }
     };
-    // Feature generators read the population stream; hand them `rand` for the call.
-    let grown = if rs == RandSel::World {
-        let old = w.prand().clone();
-        let random = w.rand.clone();
-        *w.prand() = random;
-        let grown = crate::features::tree(w, kind, x, y, z);
-        w.rand = w.prand().clone();
-        *w.prand() = old;
-        grown
-    } else {
-        crate::features::tree(w, kind, x, y, z)
-    };
+    let grown = crate::features::sapling_tree(w, kind, x, y, z, rs);
     if !grown {
         w.set_block_and_metadata(x, y, z, block::SAPLING, meta);
     }

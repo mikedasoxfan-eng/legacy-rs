@@ -243,6 +243,34 @@ pub fn write_root<W: Write>(w: &mut W, root: &Compound) -> io::Result<()> {
     write_named(w, "", &Tag::Compound(root.clone()))
 }
 
+/// Canonical comparison fixtures sort compound names instead of Java HashMap order.
+/// Production saves continue to use write_root.
+pub fn write_root_canonical<W: Write>(w: &mut W, root: &Compound) -> io::Result<()> {
+    fn payload<W: Write>(w: &mut W, tag: &Tag) -> io::Result<()> {
+        match tag {
+            Tag::Compound(compound) => {
+                let mut entries: Vec<_> = compound.0.iter().collect();
+                entries.sort_by(|a, b| a.0.encode_utf16().cmp(b.0.encode_utf16()));
+                for (name, value) in entries {
+                    w.write_all(&[value.id()])?;
+                    write_utf(w, name)?;
+                    payload(w, value)?;
+                }
+                w.write_all(&[0])
+            }
+            Tag::List(_, items) => {
+                w.write_all(&[items.first().map_or(1, Tag::id)])?;
+                w.write_all(&(items.len() as i32).to_be_bytes())?;
+                for value in items { payload(w, value)?; }
+                Ok(())
+            }
+            _ => tag.write_payload(w),
+        }
+    }
+    w.write_all(&[10, 0, 0])?;
+    payload(w, &Tag::Compound(root.clone()))
+}
+
 /// `CompressedStreamTools.func_1141_a`: the root must be a compound.
 pub fn read_root<R: Read>(r: &mut R) -> io::Result<Compound> {
     let ty = read_n::<1, _>(r)?[0];

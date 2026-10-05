@@ -483,7 +483,9 @@ impl World {
         if let Some(c) = self.chunks.get_mut(&(cx, cz)) {
             for (key, id) in &c.tile_entity_ids {
                 let o = self.tile_objects.get_mut(id).unwrap();
-                o.invalid = true;
+                // b1.8.1 queues removal from the world list without invalidate().
+                // The old object gets its final update before removeAll runs.
+                o.pending_unload = true;
                 o.detached = c.tile_entities.get(key).cloned();
             }
         }

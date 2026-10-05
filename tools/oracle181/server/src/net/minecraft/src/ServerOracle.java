@@ -8,7 +8,7 @@ import java.util.*;
 import net.minecraft.server.MinecraftServer;
 
 /**
- * Ground truth for server-mode chunk handling, running the original b1.7.3 *server*
+ * Ground truth for server-mode chunk handling, running the original b1.8.1 *server*
  * classes (RetroMCP's deobfuscated server jar): WorldServer, ChunkProviderServer and
  * PlayerManager, with a stand-in player walking a scripted path.
  *
@@ -32,6 +32,12 @@ public class ServerOracle {
         return (sun.misc.Unsafe) f.get(null);
     }
 
+    static void seedRandom(Object object, Class<?> type, String name, long seed) throws Exception {
+        Field field = type.getDeclaredField(name);
+        field.setAccessible(true);
+        ((Random) field.get(object)).setSeed(seed);
+    }
+
     /** The scripted walk; must match `walk_path` in the Rust compare tool. */
     static double[] path(double sx, double sz, int t) {
         if (t < 600) return new double[] {sx + 3.0D * t, sz + 1.0D * t};
@@ -51,17 +57,24 @@ public class ServerOracle {
         int ticks = Integer.parseInt(a[5]);
         final String name = dir.getName();
 
+        // Item constructors and machine/chest drops otherwise use clock seeds.
+        seedRandom(null, Class.forName("java.lang.Math$RandomNumberGeneratorHolder"), "randomNumberGenerator", 200);
+        seedRandom(Block.chest, BlockChest.class, "random", 500);
+        seedRandom(Block.stoneOvenIdle, BlockFurnace.class, "furnaceRand", 700);
+        seedRandom(Block.stoneOvenActive, BlockFurnace.class, "furnaceRand", 701);
+        seedRandom(Block.dispenser, BlockDispenser.class, "random", 702);
+
         sun.misc.Unsafe u = unsafe();
         MinecraftServer mc = (MinecraftServer) u.allocateInstance(MinecraftServer.class);
         // Preset WorldInfo: skip the constructor's unseeded spawn search; redo it seeded below.
         SaveOldDir handler = new SaveOldDir(dir.getParentFile(), name, false) {
             boolean first = true;
-            public WorldInfo func_22096_c() {
-                if (first) { first = false; return new WorldInfo(seed, name); }
-                return super.func_22096_c();
+            public WorldInfo loadWorldInfo() {
+                if (first) { first = false; return new WorldInfo(new WorldSettings(seed, 0, true), name); }
+                return super.loadWorldInfo();
             }
         };
-        WorldServer w = new WorldServer(mc, handler, name, 0, seed);
+        WorldServer w = new WorldServer(mc, handler, name, 0, new WorldSettings(seed, 0, true));
         mc.worldMngr = new WorldServer[] {w, null};
         w.rand.setSeed(wrand);
         w.generateSpawnPoint();
@@ -72,13 +85,20 @@ public class ServerOracle {
         for (int dx = -r; dx <= r; dx += 16) {
             for (int dz = -r; dz <= r; dz += 16) {
                 w.chunkProviderServer.loadChunk(sp.posX + dx >> 4, sp.posZ + dz >> 4);
-                while (w.func_6156_d()) {
+                while (w.updatingLighting()) {
                 }
             }
         }
 
         PlayerManager pm = new PlayerManager(mc, 0, radius);
         EntityPlayerMP p = (EntityPlayerMP) u.allocateInstance(EntityPlayerMP.class);
+        p.worldObj = w;
+        p.itemInWorldManager = new ItemInWorldManager(w);
+        p.field_35214_K = new PlayerCapabilities();
+        p.field_35191_aF = new HashMap(); // Unsafe skips EntityLiving's field initializer.
+        Field food = EntityPlayer.class.getDeclaredField("field_35217_m");
+        food.setAccessible(true);
+        food.set(p, new FoodStats());
         p.loadedChunks = new LinkedList();
         p.field_420_ah = new HashSet();
         p.playerNetServerHandler = (NetServerHandler) u.allocateInstance(NullHandler.class);
@@ -97,9 +117,19 @@ public class ServerOracle {
         amb.setAccessible(true);
         amb.setInt(w, 100);
 
+        Field active = World.class.getDeclaredField("activeChunkSet");
+        active.setAccessible(true);
+        try (final DataOutputStream identities = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(a[6] + ".identities")))) {
+        active.set(w, new HashSet<ChunkCoordIntPair>() {
+            public boolean add(ChunkCoordIntPair pair) {
+                try { identities.writeInt(System.identityHashCode(pair)); }
+                catch (IOException e) { throw new UncheckedIOException(e); }
+                return super.add(pair);
+            }
+        });
         for (int t = 0; t < ticks; t++) {
             w.tick();
-            while (w.func_6156_d()) {
+            while (w.updatingLighting()) {
             }
             double[] pos = path(sx, sz, t);
             p.posX = pos[0];
@@ -109,13 +139,20 @@ public class ServerOracle {
         pm.removePlayer(p);
         w.saveWorld(true, null);
         dump(w, a[6], sp);
+        try (PrintWriter state = new PrintWriter(a[6] + ".txt")) {
+            state.println("time " + w.getWorldTime());
+            state.println("lcg " + lcg.getInt(w));
+            state.println("sound " + amb.getInt(w));
+            state.println("rand " + w.rand.nextLong());
+        }
+        }
     }
 
     @SuppressWarnings("unchecked")
     static void dump(WorldServer w, String out, ChunkCoordinates sp) throws Exception {
-        Field cm = ChunkProviderServer.class.getDeclaredField("id2ChunkMap");
+        Field cm = ChunkProviderServer.class.getDeclaredField("field_727_f");
         cm.setAccessible(true);
-        List<Chunk> chunks = new ArrayList<>(((Map<Integer, Chunk>) cm.get(w.chunkProviderServer)).values());
+        List<Chunk> chunks = new ArrayList<>((List<Chunk>) cm.get(w.chunkProviderServer));
         chunks.sort((p, q) -> p.xPosition != q.xPosition ? Integer.compare(p.xPosition, q.xPosition) : Integer.compare(p.zPosition, q.zPosition));
         Field mob = TileEntityMobSpawner.class.getDeclaredField("mobID");
         mob.setAccessible(true);

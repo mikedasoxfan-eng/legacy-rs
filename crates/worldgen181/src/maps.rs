@@ -1,4 +1,4 @@
-//! ItemMap, MapData and singleplayer MapStorage. Arithmetic follows Beta 1.7.3.
+//! ItemMap, MapData and singleplayer MapStorage for Beta 1.8.1.
 use crate::{
     World,
     block::{mat, material_of},

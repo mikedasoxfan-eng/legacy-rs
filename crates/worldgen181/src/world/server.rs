@@ -1,96 +1,25 @@
 //! The multiplayer server's chunk handling (`ChunkProviderServer`, `PlayerManager`,
 //! `PlayerInstance`): chunks load around players and unload when nobody can see them.
-//! Singleplayer b1.7.3 never unloads chunks; this is opt-in.
+//! Server mode is opt-in; the singleplayer provider is in provider181.rs.
 
 use super::World;
 use std::collections::HashSet;
 
-/// `ChunkCoordIntPair.chunkXZ2Int`
-pub fn chunk_xz_to_int(x: i32, z: i32) -> i32 {
-    (if x < 0 { i32::MIN } else { 0 })
-        | (x & 0x7fff) << 16
-        | (if z < 0 { 0x8000 } else { 0 })
-        | z & 0x7fff
+/// `ChunkCoordIntPair.chunkXZ2Int`: full signed 32-bit coordinates in a long.
+pub fn chunk_xz_to_int(x: i32, z: i32) -> i64 {
+    ((x as u32 as u64) | ((z as u32 as u64) << 32)) as i64
 }
-
-/// `java.util.HashSet<Integer>` with Java 8's iteration order (bucket index, then insertion
-/// order within a bucket; resizes split buckets stably). Tree bins are not modelled.
-#[derive(Default)]
-pub struct JavaIntSet {
-    table: Vec<Vec<i32>>,
-    size: usize,
-}
-
-impl JavaIntSet {
-    #[inline]
-    fn index(k: i32, n: usize) -> usize {
-        let h = k as u32;
-        ((h ^ (h >> 16)) as usize) & (n - 1)
-    }
-
-    pub fn len(&self) -> usize {
-        self.size
-    }
-
-    pub fn is_empty(&self) -> bool {
-        self.size == 0
-    }
-
-    pub fn contains(&self, k: i32) -> bool {
-        !self.table.is_empty() && self.table[Self::index(k, self.table.len())].contains(&k)
-    }
-
-    pub fn insert(&mut self, k: i32) -> bool {
-        if self.table.is_empty() {
-            self.table = vec![Vec::new(); 16];
-        }
-        let n = self.table.len();
-        let b = &mut self.table[Self::index(k, n)];
-        if b.contains(&k) {
-            return false;
-        }
-        b.push(k);
-        self.size += 1;
-        if self.size > n * 3 / 4 {
-            let mut t = vec![Vec::new(); n * 2];
-            for bucket in &self.table {
-                for &v in bucket {
-                    t[Self::index(v, n * 2)].push(v);
-                }
-            }
-            self.table = t;
-        }
-        true
-    }
-
-    pub fn remove(&mut self, k: i32) -> bool {
-        if self.table.is_empty() {
-            return false;
-        }
-        let n = self.table.len();
-        let b = &mut self.table[Self::index(k, n)];
-        if let Some(i) = b.iter().position(|&v| v == k) {
-            b.remove(i);
-            self.size -= 1;
-            true
-        } else {
-            false
-        }
-    }
-
-    /// `iterator().next()`
-    pub fn first(&self) -> Option<i32> {
-        self.table.iter().find_map(|b| b.first().copied())
-    }
+fn chunk_hash(key: i64) -> i32 {
+    (key ^ ((key as u64 >> 32) as i64)) as i32
 }
 
 /// Server-side chunk provider state.
 #[derive(Default)]
 pub struct ServerChunks {
     /// `ChunkProviderServer.field_725_a`: chunks waiting to be unloaded.
-    pub dropped: JavaIntSet,
+    pub dropped: crate::structures::long_map_order::LongMapOrder<i64>,
     /// Reverse of `chunk_xz_to_int` for queued chunks.
-    keys: std::collections::HashMap<i32, (i32, i32)>,
+    keys: std::collections::HashMap<i64, (i32, i32)>,
     /// `ChunkProviderServer.chunkLoadOverride`
     pub load_override: bool,
     /// `World.worldChunkLoadOverride`
@@ -106,7 +35,7 @@ impl World {
     pub fn server_load_chunk(&mut self, cx: i32, cz: i32) {
         let key = chunk_xz_to_int(cx, cz);
         if let Some(s) = &mut self.server {
-            s.dropped.remove(key);
+            s.dropped.remove(chunk_hash(key), key);
             s.keys.remove(&key);
         }
         if !self.chunk_exists(cx, cz) {
@@ -123,13 +52,13 @@ impl World {
         if dx < -r || dx > r || dz < -r || dz > r {
             if let Some(s) = &mut self.server {
                 let key = chunk_xz_to_int(cx, cz);
-                s.dropped.insert(key);
+                s.dropped.insert(chunk_hash(key), key);
                 s.keys.insert(key, (cx, cz));
             }
         }
     }
 
-    /// Dispatch to Beta 1.8.1's singleplayer provider or the legacy server provider.
+    /// Dispatch to Beta 1.8.1's singleplayer provider or the dedicated server provider.
     pub fn unload_oldest_chunks(&mut self) {
         if self.server.is_none() {
             self.unload_provider_chunks();
@@ -142,10 +71,10 @@ impl World {
             let Some(s) = &mut self.server else { return };
             let Some(key) = s.dropped.first() else { break };
             let pos = s.keys.remove(&key).expect("queued chunk position");
-            s.dropped.remove(key);
+            s.dropped.remove(chunk_hash(key), key);
             if self.chunk_exists(pos.0, pos.1) {
-                self.save_chunk(pos.0, pos.1);
                 self.unload_chunk_entities(pos.0, pos.1);
+                self.save_chunk(pos.0, pos.1);
                 self.chunks.remove(&pos);
                 if let Some(i) = self.chunk_list.iter().position(|&p| p == pos) {
                     self.chunk_list.remove(i);
