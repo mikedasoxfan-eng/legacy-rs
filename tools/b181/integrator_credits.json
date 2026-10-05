@@ -8,6 +8,7 @@
  "BlockVine",
  "Chunk",
  "ChunkCache",
+ "Entity",
  "EntityPlayer",
  "EntityRenderer",
  "GuiAchievements",
