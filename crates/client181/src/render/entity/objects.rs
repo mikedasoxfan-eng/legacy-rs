@@ -111,10 +111,8 @@ pub fn render(s: &ObjectState, camera: [f64; 3], view: [f32; 2]) -> Fixed {
                 g.rotate(angle, 0.0, 1.0, 0.0);
                 g.texture = 1;
                 let id = item.id as u8;
-                let scale = if !crate::render::rprops(id).normal
-                    && id != 44
-                    && crate::render::rprops(id).render_type != 16
-                {
+                // RenderItem.doRenderItem (b1.8.1): half size for render types 1, 19, 12 and 2.
+                let scale = if matches!(crate::render::rprops(id).render_type, 1 | 19 | 12 | 2) {
                     0.5
                 } else {
                     0.25
@@ -129,7 +127,8 @@ pub fn render(s: &ObjectState, camera: [f64; 3], view: [f32; 2]) -> Fixed {
                             (rng.next_float() * 2.0 - 1.0) * 0.2 / scale,
                         );
                     }
-                    inventory::inventory(&mut g, id, item.damage as i32, s.brightness, true);
+                    // b1.8.1 passes brightness 1; the lightmap lights the item.
+                    inventory::inventory(&mut g, id, item.damage as i32, 1.0, true);
                     g.pop();
                 }
             } else {
@@ -137,9 +136,9 @@ pub fn render(s: &ObjectState, camera: [f64; 3], view: [f32; 2]) -> Fixed {
                 g.texture = if item.id < 256 { 1 } else { 2 };
                 let (icon, color, _) = super::item_table::properties(item.id, item.damage);
                 g.material = [
-                    (color >> 16 & 255) as f32 / 255.0 * s.brightness,
-                    (color >> 8 & 255) as f32 / 255.0 * s.brightness,
-                    (color & 255) as f32 / 255.0 * s.brightness,
+                    (color >> 16 & 255) as f32 / 255.0,
+                    (color >> 8 & 255) as f32 / 255.0,
+                    (color & 255) as f32 / 255.0,
                     1.0,
                 ];
                 for i in 0..copies {
@@ -216,6 +215,8 @@ pub fn render(s: &ObjectState, camera: [f64; 3], view: [f32; 2]) -> Fixed {
             visible: _,
         } => {
             { // Beta 1.8.1 renders arrows even before their first nonzero rotation.
+                // RenderManager.renderEntity / EntityPickupFX set glColor 1; the lightmap lights it.
+                g.material = [1.0; 4];
                 g.texture = 3;
                 g.push();
                 g.translate(x, y, z);

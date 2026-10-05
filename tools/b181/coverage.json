@@ -17673,6 +17673,15 @@
   "entities4: sun4",
   "entities5: watchers5"
  ],
+ "EffectRenderer": [
+  "entities181: particles181",
+  "entities4: effectlifecycle4_181",
+  "entities4: rendereffects",
+  "entities4: particleeffects",
+  "entities5: particlefactory5_181",
+  "entities6: particlefactory6_181",
+  "EntityPickupFX item and arrow renderer draws"
+ ],
  "EmptyChunk": [
   "world-blocks b1.8.1: emptycache4",
   "world-blocks b1.8.1: cache"
@@ -35694,6 +35703,11 @@
   "chunk meshes: seed 0, world rand 1, fast, AO on",
   "chunk meshes: seed 0, world rand 1, fast, AO off",
   "moving piston renderer (original TileEntityRendererPiston vertex bits)"
+ ],
+ "RenderItem": [
+  "remaining entity renderers and GUI item geometry",
+  "EntityPickupFX item and arrow renderer draws",
+  "gui181: chest_items"
  ],
  "RenderLightningBolt": [
   "ambient weather vertices",

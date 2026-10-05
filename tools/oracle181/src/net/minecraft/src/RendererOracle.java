@@ -68,7 +68,10 @@ public final class RendererOracle {
         textures.put("/mob/ghast.png",5);textures.put("/mob/ghast_fire.png",6);textures.put("/mob/zombie.png",7);textures.put("/mob/pigzombie.png",8);
         textures.put("/terrain.png",1);textures.put("/gui/items.png",2);textures.put("/item/arrows.png",3);textures.put("%clamp%/misc/shadow.png",4);
         textures.put("/item/cart.png",18);textures.put("/item/boat.png",19);
+        textures.put("/item/chest.png",31);
         Oracle.setField(m.renderEngine,"urlToImageDataMap",new HashMap());Oracle.setField(m.renderEngine,"textureMap",textures);Oracle.setField(m.renderEngine,"texturePack",Oracle.allocate(TexturePackList.class));
+        // In the game RenderGlobal.renderEntities caches the engine in TileEntityRenderer every frame.
+        TileEntityRenderer.instance.renderEngine=m.renderEngine;
         return m;
     }
     static void writeCase(Oracle.DataOut out,int kind,Entity e,Render renderer,RenderManager manager,int id,int number,int damage,int age,float hover,int fuse,int shake,float partial) throws Exception {
