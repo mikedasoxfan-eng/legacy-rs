@@ -280,14 +280,31 @@ pub fn fog_base(sky: [f32; 3], fog: [f32; 3], distance: i32, rain: f32, thunder:
 }
 /// Uniform convention: linear=1, exponential=2 (density in x).
 /// RenderGlobal.func_27307_a always returns false in b1.7.3: no cloud-fog branch.
-pub fn fog(m: Medium, far: f32, sky: bool, nether: bool) -> [f32; 3] {
+/// `EntityRenderer.setupFog`. `void` is b1.8.1's depth factor: the view entity's sky light / 16
+/// plus (interpolated y + 4) / 32 (see `void_factor`); below 1 the fog closes in.
+pub fn fog(m: Medium, far: f32, sky: bool, nether: bool, void: f64) -> [f32; 3] {
     match m {
         Medium::Water => [0.1, 0.0, 2.0],
         Medium::Lava => [2.0, 0.0, 2.0],
-        Medium::Air => [
-            if sky || nether { 0.0 } else { far * 0.25 },
-            if sky { far * 0.8 } else { far },
-            1.0,
-        ],
+        Medium::Air => {
+            let mut far = far;
+            if void < 1.0 {
+                let v = if void < 0.0 { 0.0 } else { void };
+                let near = (100.0f32 * (v * v) as f32).max(5.0);
+                if far > near {
+                    far = near;
+                }
+            }
+            [
+                if sky || nether { 0.0 } else { far * 0.25 },
+                if sky { far * 0.8 } else { far },
+                1.0,
+            ]
+        }
     }
+}
+
+/// The void-fog factor from the view entity's packed brightness (`func_35115_a`) and eye-less y.
+pub fn void_factor(packed_light: u32, y: f64) -> f64 {
+    ((packed_light & 15728640) >> 20) as f64 / 16.0 + (y + 4.0) / 32.0
 }

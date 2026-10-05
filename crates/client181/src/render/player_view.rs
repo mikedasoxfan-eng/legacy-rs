@@ -82,6 +82,8 @@ pub struct Frame {
     pub map_image: Option<super::gpu::Image>,
     /// b1.8.1: `World.func_35451_b` at the player's block, for the held item and hand.
     pub hand_light: u32,
+    /// b1.8.1 void-fog factor (`camera::void_factor`) of the view entity.
+    pub void_fog: f64,
 }
 pub struct View {
     pub entity: Entity,
@@ -201,6 +203,10 @@ impl View {
             worldgen::math::floor_double(e.pos.z),
             0,
         ) as u32;
+        let void_fog = camera::void_factor(
+            e.packed_brightness(&mut self.world, t) as u32,
+            e.last_tick_pos.y + (e.pos.y - e.last_tick_pos.y) * t as f64,
+        );
         let fallback = self
             .equip
             .item
@@ -261,6 +267,7 @@ impl View {
             damage,
             map_image,
             hand_light,
+            void_fog,
         }
     }
 }

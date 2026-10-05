@@ -175,10 +175,12 @@ public final class FirstPersonOracle {
             p.mc.gameSettings.renderDistance=c%4;p.mc.gameSettings.anaglyph=(c&4)!=0;
             EntityOracle.rawBlock(w,0,65,-3,c%3==1?9:c%3==2?11:0,c%16);
             float t=(c%11)*.1F,old=.3F,newer=.85F,far=(float)(256>>(c%4));int mode=c%3-1;
+            // Deep players reach the b1.8.1 void fog (sky light / 16 + (y + 4) / 32 below 1).
+            if(c%3==0){p.posY=-9.0+(c%41)*.75;p.lastTickPosY=p.posY-.4;}
             Oracle.setField(er,"fogColor2",old);Oracle.setField(er,"fogColor1",newer);Oracle.setField(er,"farPlaneDistance",far);
             out.i32(6);state(out,p);f(out,t);out.i32(c%4);out.i32((c&4)!=0?1:0);out.i32((c&8)!=0?1:0);out.i32(mode);f(out,far);f(out,old);f(out,newer);
             Vec3D sky=w.getSkyColor(p,t),fog=w.getFogColor(t);for(double v:new double[]{sky.xCoord,sky.yCoord,sky.zCoord,fog.xCoord,fog.yCoord,fog.zCoord})f(out,(float)v);
-            f(out,w.getRainStrength(t));f(out,w.getWeightedThunderStrength(t));out.i32(p.isInsideOfMaterial(Material.water)?1:p.isInsideOfMaterial(Material.lava)?2:0);f(out,w.getCelestialAngle(t));
+            f(out,w.getRainStrength(t));f(out,w.getWeightedThunderStrength(t));out.i32(p.isInsideOfMaterial(Material.water)?1:p.isInsideOfMaterial(Material.lava)?2:0);f(out,w.getCelestialAngle(t));out.i32(p.func_35115_a(t));
             start(1);call(er,"updateFogColor",new Class[]{float.class},t);call(er,"setupFog",new Class[]{int.class,float.class},mode,t);stop();
             for(int i=0;i<3;i++)f(out,GL11.clearColor[i]);out.i32(GL11.fogMode);if(GL11.fogMode==GL11.GL_EXP){f(out,GL11.fogDensity);}else{f(out,GL11.fogStart);f(out,GL11.fogEnd);}n++;
         }

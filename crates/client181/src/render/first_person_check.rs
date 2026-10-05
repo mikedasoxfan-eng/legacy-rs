@@ -513,6 +513,7 @@ pub fn check(path: &str) -> bool {
                     _ => camera::Medium::Air,
                 };
                 let angle = d.f();
+                let light = d.i() as u32;
                 let look = super::sky::look(e.yaw, e.pitch, e.prev_yaw, e.prev_pitch, t);
                 let fog = super::sky::sunrise_fog(fog, angle, distance, look);
                 let base = camera::fog_base(sky, fog, distance, rain, thunder);
@@ -520,7 +521,7 @@ pub fn check(path: &str) -> bool {
                 for v in camera::fog_color(base, medium, camera::lerp(old, new, t), anaglyph, eye_y) {
                     d.eq(v.to_bits(), "fog color");
                 }
-                let fog = camera::fog(medium, far, mode < 0, nether);
+                let fog = camera::fog(medium, far, mode < 0, nether, camera::void_factor(light, eye_y));
                 d.eq(if fog[2] == 2.0 { 2048 } else { 9729 }, "fog mode");
                 d.eq(fog[0].to_bits(), "fog start/density");
                 if fog[2] != 2.0 {

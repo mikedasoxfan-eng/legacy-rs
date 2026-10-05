@@ -839,7 +839,8 @@ impl Gpu {
             .map_or(super::camera::Medium::Air, |v| v.medium);
         let nether = p.nether || player.is_some_and(|v| v.nether);
         let fog_color = p.fog_color;
-        let fog = super::camera::fog(medium, p.far, false, nether);
+        let void_fog = player.map_or(2.0, |v| v.void_fog);
+        let fog = super::camera::fog(medium, p.far, false, nether, void_fog);
         self.entities.fog_override = Some(fog);
         self.entities.fog_view = rot;
         if let Some(v) = player {
@@ -913,7 +914,7 @@ impl Gpu {
         let fog4 = [fog_color[0], fog_color[1], fog_color[2], 1.0];
 
         // ---- sky (RenderGlobal.renderSky)
-        let sf = super::camera::fog(medium, p.far, true, nether);
+        let sf = super::camera::fog(medium, p.far, true, nether, void_fog);
         let sky_fog = [sf[0], sf[1], sf[2], -1.0];
         let sky_u = Uniforms {
             view_proj: view_proj.to_cols_array_2d(),
