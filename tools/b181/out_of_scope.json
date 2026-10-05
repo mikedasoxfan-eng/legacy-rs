@@ -1,3 +1,4 @@
 {
- "WorldBlockPositionType": "used only by WorldClient (multiplayer)"
+ "WorldBlockPositionType": "used only by WorldClient (multiplayer)",
+ "GuiSavingLevelString": "player-list entry created only by NetClientHandler (multiplayer)"
 }
