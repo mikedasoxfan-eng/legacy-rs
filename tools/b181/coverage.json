@@ -41,7 +41,12 @@
   "player-gui b1.8.1: scaling, buttons and font measurements",
   "player-gui b1.8.1: settings before initial terrain and save",
   "player-gui b1.8.1: statistics synchronization",
-  "player-gui b1.8.1: whole-player ticks"
+  "player-gui b1.8.1: whole-player ticks",
+  "player-gui round 7: controllerlife181",
+  "player-gui round 7: entity brightness and inventory redirects (zero tolerance)",
+  "player-gui round 7: inventorybounds181",
+  "player-gui round 7: original general-stat drawing arguments",
+  "player-gui round 7: original inventory-screen callbacks"
  ],
  "AchievementList": [
   "player-gui b1.8.1 round 4: chest container lifecycle",
@@ -85,7 +90,12 @@
   "player-gui b1.8.1: scaling, buttons and font measurements",
   "player-gui b1.8.1: settings before initial terrain and save",
   "player-gui b1.8.1: statistics synchronization",
-  "player-gui b1.8.1: whole-player ticks"
+  "player-gui b1.8.1: whole-player ticks",
+  "player-gui round 7: controllerlife181",
+  "player-gui round 7: entity brightness and inventory redirects (zero tolerance)",
+  "player-gui round 7: inventorybounds181",
+  "player-gui round 7: original general-stat drawing arguments",
+  "player-gui round 7: original inventory-screen callbacks"
  ],
  "AxisAlignedBB": [
   "entities181: entitygeometry"
@@ -18300,7 +18310,12 @@
   "player-gui b1.8.1: scaling, buttons and font measurements",
   "player-gui b1.8.1: settings before initial terrain and save",
   "player-gui b1.8.1: statistics synchronization",
-  "player-gui b1.8.1: whole-player ticks"
+  "player-gui b1.8.1: whole-player ticks",
+  "player-gui round 7: controllerlife181",
+  "player-gui round 7: entity brightness and inventory redirects (zero tolerance)",
+  "player-gui round 7: inventorybounds181",
+  "player-gui round 7: original general-stat drawing arguments",
+  "player-gui round 7: original inventory-screen callbacks"
  ],
  "ContainerChest": [
   "player-gui b1.8.1 round 4: chest container lifecycle",
@@ -18344,7 +18359,12 @@
   "player-gui b1.8.1: scaling, buttons and font measurements",
   "player-gui b1.8.1: settings before initial terrain and save",
   "player-gui b1.8.1: statistics synchronization",
-  "player-gui b1.8.1: whole-player ticks"
+  "player-gui b1.8.1: whole-player ticks",
+  "player-gui round 7: controllerlife181",
+  "player-gui round 7: entity brightness and inventory redirects (zero tolerance)",
+  "player-gui round 7: inventorybounds181",
+  "player-gui round 7: original general-stat drawing arguments",
+  "player-gui round 7: original inventory-screen callbacks"
  ],
  "ContainerCreative": [
   "player-gui b1.8.1 round 4: chest container lifecycle",
@@ -18388,7 +18408,12 @@
   "player-gui b1.8.1: scaling, buttons and font measurements",
   "player-gui b1.8.1: settings before initial terrain and save",
   "player-gui b1.8.1: statistics synchronization",
-  "player-gui b1.8.1: whole-player ticks"
+  "player-gui b1.8.1: whole-player ticks",
+  "player-gui round 7: controllerlife181",
+  "player-gui round 7: entity brightness and inventory redirects (zero tolerance)",
+  "player-gui round 7: inventorybounds181",
+  "player-gui round 7: original general-stat drawing arguments",
+  "player-gui round 7: original inventory-screen callbacks"
  ],
  "ContainerDispenser": [
   "player-gui b1.8.1 round 4: chest container lifecycle",
@@ -18432,7 +18457,12 @@
   "player-gui b1.8.1: scaling, buttons and font measurements",
   "player-gui b1.8.1: settings before initial terrain and save",
   "player-gui b1.8.1: statistics synchronization",
-  "player-gui b1.8.1: whole-player ticks"
+  "player-gui b1.8.1: whole-player ticks",
+  "player-gui round 7: controllerlife181",
+  "player-gui round 7: entity brightness and inventory redirects (zero tolerance)",
+  "player-gui round 7: inventorybounds181",
+  "player-gui round 7: original general-stat drawing arguments",
+  "player-gui round 7: original inventory-screen callbacks"
  ],
  "ContainerFurnace": [
   "player-gui b1.8.1 round 4: chest container lifecycle",
@@ -18476,7 +18506,12 @@
   "player-gui b1.8.1: scaling, buttons and font measurements",
   "player-gui b1.8.1: settings before initial terrain and save",
   "player-gui b1.8.1: statistics synchronization",
-  "player-gui b1.8.1: whole-player ticks"
+  "player-gui b1.8.1: whole-player ticks",
+  "player-gui round 7: controllerlife181",
+  "player-gui round 7: entity brightness and inventory redirects (zero tolerance)",
+  "player-gui round 7: inventorybounds181",
+  "player-gui round 7: original general-stat drawing arguments",
+  "player-gui round 7: original inventory-screen callbacks"
  ],
  "ContainerPlayer": [
   "player-gui b1.8.1 round 4: chest container lifecycle",
@@ -18520,7 +18555,12 @@
   "player-gui b1.8.1: scaling, buttons and font measurements",
   "player-gui b1.8.1: settings before initial terrain and save",
   "player-gui b1.8.1: statistics synchronization",
-  "player-gui b1.8.1: whole-player ticks"
+  "player-gui b1.8.1: whole-player ticks",
+  "player-gui round 7: controllerlife181",
+  "player-gui round 7: entity brightness and inventory redirects (zero tolerance)",
+  "player-gui round 7: inventorybounds181",
+  "player-gui round 7: original general-stat drawing arguments",
+  "player-gui round 7: original inventory-screen callbacks"
  ],
  "ContainerWorkbench": [
   "player-gui b1.8.1 round 4: chest container lifecycle",
@@ -18564,7 +18604,12 @@
   "player-gui b1.8.1: scaling, buttons and font measurements",
   "player-gui b1.8.1: settings before initial terrain and save",
   "player-gui b1.8.1: statistics synchronization",
-  "player-gui b1.8.1: whole-player ticks"
+  "player-gui b1.8.1: whole-player ticks",
+  "player-gui round 7: controllerlife181",
+  "player-gui round 7: entity brightness and inventory redirects (zero tolerance)",
+  "player-gui round 7: inventorybounds181",
+  "player-gui round 7: original general-stat drawing arguments",
+  "player-gui round 7: original inventory-screen callbacks"
  ],
  "CraftingManager": [
   "player-gui b1.8.1 round 4: chest container lifecycle",
@@ -18608,7 +18653,12 @@
   "player-gui b1.8.1: scaling, buttons and font measurements",
   "player-gui b1.8.1: settings before initial terrain and save",
   "player-gui b1.8.1: statistics synchronization",
-  "player-gui b1.8.1: whole-player ticks"
+  "player-gui b1.8.1: whole-player ticks",
+  "player-gui round 7: controllerlife181",
+  "player-gui round 7: entity brightness and inventory redirects (zero tolerance)",
+  "player-gui round 7: inventorybounds181",
+  "player-gui round 7: original general-stat drawing arguments",
+  "player-gui round 7: original inventory-screen callbacks"
  ],
  "DamageSource": [
   "entities181: Arrow",
@@ -21413,7 +21463,12 @@
   "player-gui b1.8.1: scaling, buttons and font measurements",
   "player-gui b1.8.1: settings before initial terrain and save",
   "player-gui b1.8.1: statistics synchronization",
-  "player-gui b1.8.1: whole-player ticks"
+  "player-gui b1.8.1: whole-player ticks",
+  "player-gui round 7: controllerlife181",
+  "player-gui round 7: entity brightness and inventory redirects (zero tolerance)",
+  "player-gui round 7: inventorybounds181",
+  "player-gui round 7: original general-stat drawing arguments",
+  "player-gui round 7: original inventory-screen callbacks"
  ],
  "EntityPlayerSP": [
   "player-gui b1.8.1 round 4: chest container lifecycle",
@@ -21457,7 +21512,12 @@
   "player-gui b1.8.1: scaling, buttons and font measurements",
   "player-gui b1.8.1: settings before initial terrain and save",
   "player-gui b1.8.1: statistics synchronization",
-  "player-gui b1.8.1: whole-player ticks"
+  "player-gui b1.8.1: whole-player ticks",
+  "player-gui round 7: controllerlife181",
+  "player-gui round 7: entity brightness and inventory redirects (zero tolerance)",
+  "player-gui round 7: inventorybounds181",
+  "player-gui round 7: original general-stat drawing arguments",
+  "player-gui round 7: original inventory-screen callbacks"
  ],
  "EntityPortalFX": [
   "entities181: Arrow",
@@ -23045,7 +23105,12 @@
   "player-gui b1.8.1: scaling, buttons and font measurements",
   "player-gui b1.8.1: settings before initial terrain and save",
   "player-gui b1.8.1: statistics synchronization",
-  "player-gui b1.8.1: whole-player ticks"
+  "player-gui b1.8.1: whole-player ticks",
+  "player-gui round 7: controllerlife181",
+  "player-gui round 7: entity brightness and inventory redirects (zero tolerance)",
+  "player-gui round 7: inventorybounds181",
+  "player-gui round 7: original general-stat drawing arguments",
+  "player-gui round 7: original inventory-screen callbacks"
  ],
  "Explosion": [
   "entities181: Arrow",
@@ -23189,7 +23254,12 @@
   "player-gui b1.8.1: scaling, buttons and font measurements",
   "player-gui b1.8.1: settings before initial terrain and save",
   "player-gui b1.8.1: statistics synchronization",
-  "player-gui b1.8.1: whole-player ticks"
+  "player-gui b1.8.1: whole-player ticks",
+  "player-gui round 7: controllerlife181",
+  "player-gui round 7: entity brightness and inventory redirects (zero tolerance)",
+  "player-gui round 7: inventorybounds181",
+  "player-gui round 7: original general-stat drawing arguments",
+  "player-gui round 7: original inventory-screen callbacks"
  ],
  "FoodStats": [
   "player-gui b1.8.1 round 4: chest container lifecycle",
@@ -23234,6 +23304,11 @@
   "player-gui b1.8.1: settings before initial terrain and save",
   "player-gui b1.8.1: statistics synchronization",
   "player-gui b1.8.1: whole-player ticks",
+  "player-gui round 7: controllerlife181",
+  "player-gui round 7: entity brightness and inventory redirects (zero tolerance)",
+  "player-gui round 7: inventorybounds181",
+  "player-gui round 7: original general-stat drawing arguments",
+  "player-gui round 7: original inventory-screen callbacks",
   "world-blocks b1.8.1: actions",
   "world-blocks b1.8.1: activation4",
   "world-blocks b1.8.1: arrays",
@@ -23344,7 +23419,12 @@
   "player-gui b1.8.1: scaling, buttons and font measurements",
   "player-gui b1.8.1: settings before initial terrain and save",
   "player-gui b1.8.1: statistics synchronization",
-  "player-gui b1.8.1: whole-player ticks"
+  "player-gui b1.8.1: whole-player ticks",
+  "player-gui round 7: controllerlife181",
+  "player-gui round 7: entity brightness and inventory redirects (zero tolerance)",
+  "player-gui round 7: inventorybounds181",
+  "player-gui round 7: original general-stat drawing arguments",
+  "player-gui round 7: original inventory-screen callbacks"
  ],
  "GameSettings": [
   "player-gui b1.8.1 round 4: chest container lifecycle",
@@ -23388,7 +23468,12 @@
   "player-gui b1.8.1: scaling, buttons and font measurements",
   "player-gui b1.8.1: settings before initial terrain and save",
   "player-gui b1.8.1: statistics synchronization",
-  "player-gui b1.8.1: whole-player ticks"
+  "player-gui b1.8.1: whole-player ticks",
+  "player-gui round 7: controllerlife181",
+  "player-gui round 7: entity brightness and inventory redirects (zero tolerance)",
+  "player-gui round 7: inventorybounds181",
+  "player-gui round 7: original general-stat drawing arguments",
+  "player-gui round 7: original inventory-screen callbacks"
  ],
  "GenLayer": [
   "BiomeDecorator 0 fixture 0",
@@ -28127,7 +28212,12 @@
   "player-gui b1.8.1: scaling, buttons and font measurements",
   "player-gui b1.8.1: settings before initial terrain and save",
   "player-gui b1.8.1: statistics synchronization",
-  "player-gui b1.8.1: whole-player ticks"
+  "player-gui b1.8.1: whole-player ticks",
+  "player-gui round 7: controllerlife181",
+  "player-gui round 7: entity brightness and inventory redirects (zero tolerance)",
+  "player-gui round 7: inventorybounds181",
+  "player-gui round 7: original general-stat drawing arguments",
+  "player-gui round 7: original inventory-screen callbacks"
  ],
  "GuiAchievements": [
   "gui181: achievements",
@@ -28174,7 +28264,12 @@
   "player-gui b1.8.1: scaling, buttons and font measurements",
   "player-gui b1.8.1: settings before initial terrain and save",
   "player-gui b1.8.1: statistics synchronization",
-  "player-gui b1.8.1: whole-player ticks"
+  "player-gui b1.8.1: whole-player ticks",
+  "player-gui round 7: controllerlife181",
+  "player-gui round 7: entity brightness and inventory redirects (zero tolerance)",
+  "player-gui round 7: inventorybounds181",
+  "player-gui round 7: original general-stat drawing arguments",
+  "player-gui round 7: original inventory-screen callbacks"
  ],
  "GuiButton": [
   "player-gui b1.8.1 round 4: chest container lifecycle",
@@ -28218,7 +28313,12 @@
   "player-gui b1.8.1: scaling, buttons and font measurements",
   "player-gui b1.8.1: settings before initial terrain and save",
   "player-gui b1.8.1: statistics synchronization",
-  "player-gui b1.8.1: whole-player ticks"
+  "player-gui b1.8.1: whole-player ticks",
+  "player-gui round 7: controllerlife181",
+  "player-gui round 7: entity brightness and inventory redirects (zero tolerance)",
+  "player-gui round 7: inventorybounds181",
+  "player-gui round 7: original general-stat drawing arguments",
+  "player-gui round 7: original inventory-screen callbacks"
  ],
  "GuiChat": [
   "gui181: chat_empty",
@@ -28270,7 +28370,12 @@
   "player-gui b1.8.1: scaling, buttons and font measurements",
   "player-gui b1.8.1: settings before initial terrain and save",
   "player-gui b1.8.1: statistics synchronization",
-  "player-gui b1.8.1: whole-player ticks"
+  "player-gui b1.8.1: whole-player ticks",
+  "player-gui round 7: controllerlife181",
+  "player-gui round 7: entity brightness and inventory redirects (zero tolerance)",
+  "player-gui round 7: inventorybounds181",
+  "player-gui round 7: original general-stat drawing arguments",
+  "player-gui round 7: original inventory-screen callbacks"
  ],
  "GuiContainer": [
   "player-gui b1.8.1 round 4: chest container lifecycle",
@@ -28314,7 +28419,12 @@
   "player-gui b1.8.1: scaling, buttons and font measurements",
   "player-gui b1.8.1: settings before initial terrain and save",
   "player-gui b1.8.1: statistics synchronization",
-  "player-gui b1.8.1: whole-player ticks"
+  "player-gui b1.8.1: whole-player ticks",
+  "player-gui round 7: controllerlife181",
+  "player-gui round 7: entity brightness and inventory redirects (zero tolerance)",
+  "player-gui round 7: inventorybounds181",
+  "player-gui round 7: original general-stat drawing arguments",
+  "player-gui round 7: original inventory-screen callbacks"
  ],
  "GuiContainerCreative": [
   "player-gui b1.8.1 round 4: chest container lifecycle",
@@ -28358,7 +28468,12 @@
   "player-gui b1.8.1: scaling, buttons and font measurements",
   "player-gui b1.8.1: settings before initial terrain and save",
   "player-gui b1.8.1: statistics synchronization",
-  "player-gui b1.8.1: whole-player ticks"
+  "player-gui b1.8.1: whole-player ticks",
+  "player-gui round 7: controllerlife181",
+  "player-gui round 7: entity brightness and inventory redirects (zero tolerance)",
+  "player-gui round 7: inventorybounds181",
+  "player-gui round 7: original general-stat drawing arguments",
+  "player-gui round 7: original inventory-screen callbacks"
  ],
  "GuiControls": [
   "player-gui b1.8.1 round 4: chest container lifecycle",
@@ -28402,7 +28517,12 @@
   "player-gui b1.8.1: scaling, buttons and font measurements",
   "player-gui b1.8.1: settings before initial terrain and save",
   "player-gui b1.8.1: statistics synchronization",
-  "player-gui b1.8.1: whole-player ticks"
+  "player-gui b1.8.1: whole-player ticks",
+  "player-gui round 7: controllerlife181",
+  "player-gui round 7: entity brightness and inventory redirects (zero tolerance)",
+  "player-gui round 7: inventorybounds181",
+  "player-gui round 7: original general-stat drawing arguments",
+  "player-gui round 7: original inventory-screen callbacks"
  ],
  "GuiCrafting": [
   "player-gui b1.8.1 round 4: chest container lifecycle",
@@ -28446,7 +28566,12 @@
   "player-gui b1.8.1: scaling, buttons and font measurements",
   "player-gui b1.8.1: settings before initial terrain and save",
   "player-gui b1.8.1: statistics synchronization",
-  "player-gui b1.8.1: whole-player ticks"
+  "player-gui b1.8.1: whole-player ticks",
+  "player-gui round 7: controllerlife181",
+  "player-gui round 7: entity brightness and inventory redirects (zero tolerance)",
+  "player-gui round 7: inventorybounds181",
+  "player-gui round 7: original general-stat drawing arguments",
+  "player-gui round 7: original inventory-screen callbacks"
  ],
  "GuiCreateWorld": [
   "gui181: b181_create_creative",
@@ -28498,7 +28623,12 @@
   "player-gui b1.8.1: scaling, buttons and font measurements",
   "player-gui b1.8.1: settings before initial terrain and save",
   "player-gui b1.8.1: statistics synchronization",
-  "player-gui b1.8.1: whole-player ticks"
+  "player-gui b1.8.1: whole-player ticks",
+  "player-gui round 7: controllerlife181",
+  "player-gui round 7: entity brightness and inventory redirects (zero tolerance)",
+  "player-gui round 7: inventorybounds181",
+  "player-gui round 7: original general-stat drawing arguments",
+  "player-gui round 7: original inventory-screen callbacks"
  ],
  "GuiIngame": [
   "player-gui b1.8.1: GUI pixels player-gui-scenes",
@@ -28549,7 +28679,12 @@
   "player-gui b1.8.1: scaling, buttons and font measurements",
   "player-gui b1.8.1: settings before initial terrain and save",
   "player-gui b1.8.1: statistics synchronization",
-  "player-gui b1.8.1: whole-player ticks"
+  "player-gui b1.8.1: whole-player ticks",
+  "player-gui round 7: controllerlife181",
+  "player-gui round 7: entity brightness and inventory redirects (zero tolerance)",
+  "player-gui round 7: inventorybounds181",
+  "player-gui round 7: original general-stat drawing arguments",
+  "player-gui round 7: original inventory-screen callbacks"
  ],
  "GuiParticle": [
   "gui181: options",
@@ -28594,7 +28729,54 @@
   "gui181: stats_blocks_sort_down"
  ],
  "GuiSlotStatsGeneral": [
-  "gui181: stats_general"
+  "gui181: stats_general",
+  "player-gui b1.8.1 round 4: chest container lifecycle",
+  "player-gui b1.8.1 round 4: controllers, picking and creative reach",
+  "player-gui b1.8.1 round 4: create-world seeds",
+  "player-gui b1.8.1 round 4: global key registry",
+  "player-gui b1.8.1 round 4: statistics comparators",
+  "player-gui b1.8.1 round 5: inventory interfaces and base slots",
+  "player-gui b1.8.1 round 5: inventory/NBT and player callbacks",
+  "player-gui b1.8.1 round 5: production create-world callbacks",
+  "player-gui b1.8.1 round 5: queued click/use transitions",
+  "player-gui b1.8.1 round 6: SP action state, FOV and sprint expiration",
+  "player-gui b1.8.1 round 6: actual GUI container close callbacks",
+  "player-gui b1.8.1 round 6: creative initialization and controller update policy",
+  "player-gui b1.8.1 round 6: world-side GUI chest close hooks",
+  "player-gui b1.8.1: GUI pixels b181_hud5_portal_full",
+  "player-gui b1.8.1: GUI pixels b181_hud5_portal_nausea",
+  "player-gui b1.8.1: GUI pixels b181_hud5_portal_partial",
+  "player-gui b1.8.1: GUI pixels b181_hud5_pumpkin_creative",
+  "player-gui b1.8.1: GUI pixels b181_hud5_sleep_end",
+  "player-gui b1.8.1: GUI pixels b181_hud5_sleep_enter",
+  "player-gui b1.8.1: GUI pixels b181_hud5_sleep_exit",
+  "player-gui b1.8.1: GUI pixels b181_hud5_sleep_full",
+  "player-gui b1.8.1: GUI pixels b181_hud5_xp_cap_overflow",
+  "player-gui b1.8.1: GUI pixels b181_hud5_xp_overflow",
+  "player-gui b1.8.1: GUI pixels container-scenes",
+  "player-gui b1.8.1: GUI pixels player-gui-container-scenes",
+  "player-gui b1.8.1: GUI pixels player-gui-scenes",
+  "player-gui b1.8.1: GUI pixels player-gui2-scenes",
+  "player-gui b1.8.1: GUI pixels player-gui3-scenes",
+  "player-gui b1.8.1: GUI pixels player-gui4-creative-scenes",
+  "player-gui b1.8.1: GUI pixels player-gui4-scenes",
+  "player-gui b1.8.1: GUI pixels player-gui5-scenes",
+  "player-gui b1.8.1: GUI pixels player-gui6-scenes",
+  "player-gui b1.8.1: PlayerList hash table",
+  "player-gui b1.8.1: creative",
+  "player-gui b1.8.1: melee and potion mining",
+  "player-gui b1.8.1: options and keybindings",
+  "player-gui b1.8.1: original recipe and smelting catalog",
+  "player-gui b1.8.1: playercore",
+  "player-gui b1.8.1: scaling, buttons and font measurements",
+  "player-gui b1.8.1: settings before initial terrain and save",
+  "player-gui b1.8.1: statistics synchronization",
+  "player-gui b1.8.1: whole-player ticks",
+  "player-gui round 7: controllerlife181",
+  "player-gui round 7: entity brightness and inventory redirects (zero tolerance)",
+  "player-gui round 7: inventorybounds181",
+  "player-gui round 7: original general-stat drawing arguments",
+  "player-gui round 7: original inventory-screen callbacks"
  ],
  "GuiSlotStatsItem": [
   "gui181: stats_items",
@@ -28651,7 +28833,12 @@
   "player-gui b1.8.1: scaling, buttons and font measurements",
   "player-gui b1.8.1: settings before initial terrain and save",
   "player-gui b1.8.1: statistics synchronization",
-  "player-gui b1.8.1: whole-player ticks"
+  "player-gui b1.8.1: whole-player ticks",
+  "player-gui round 7: controllerlife181",
+  "player-gui round 7: entity brightness and inventory redirects (zero tolerance)",
+  "player-gui round 7: inventorybounds181",
+  "player-gui round 7: original general-stat drawing arguments",
+  "player-gui round 7: original inventory-screen callbacks"
  ],
  "GuiTexturePackSlot": [
   "gui181: texturepacks",
@@ -28707,7 +28894,12 @@
   "player-gui b1.8.1: scaling, buttons and font measurements",
   "player-gui b1.8.1: settings before initial terrain and save",
   "player-gui b1.8.1: statistics synchronization",
-  "player-gui b1.8.1: whole-player ticks"
+  "player-gui b1.8.1: whole-player ticks",
+  "player-gui round 7: controllerlife181",
+  "player-gui round 7: entity brightness and inventory redirects (zero tolerance)",
+  "player-gui round 7: inventorybounds181",
+  "player-gui round 7: original general-stat drawing arguments",
+  "player-gui round 7: original inventory-screen callbacks"
  ],
  "GuiWorldSlot": [
   "gui181: select",
@@ -28921,6 +29113,11 @@
   "player-gui b1.8.1: settings before initial terrain and save",
   "player-gui b1.8.1: statistics synchronization",
   "player-gui b1.8.1: whole-player ticks",
+  "player-gui round 7: controllerlife181",
+  "player-gui round 7: entity brightness and inventory redirects (zero tolerance)",
+  "player-gui round 7: inventorybounds181",
+  "player-gui round 7: original general-stat drawing arguments",
+  "player-gui round 7: original inventory-screen callbacks",
   "world-blocks b1.8.1: chestlife",
   "world-blocks b1.8.1: chestopen5"
  ],
@@ -29104,7 +29301,12 @@
   "player-gui b1.8.1: scaling, buttons and font measurements",
   "player-gui b1.8.1: settings before initial terrain and save",
   "player-gui b1.8.1: statistics synchronization",
-  "player-gui b1.8.1: whole-player ticks"
+  "player-gui b1.8.1: whole-player ticks",
+  "player-gui round 7: controllerlife181",
+  "player-gui round 7: entity brightness and inventory redirects (zero tolerance)",
+  "player-gui round 7: inventorybounds181",
+  "player-gui round 7: original general-stat drawing arguments",
+  "player-gui round 7: original inventory-screen callbacks"
  ],
  "IWorldAccess": [
   "World.randomDisplayUpdates: depthsuspend specks and World.rand",
@@ -29532,7 +29734,12 @@
   "player-gui b1.8.1: scaling, buttons and font measurements",
   "player-gui b1.8.1: settings before initial terrain and save",
   "player-gui b1.8.1: statistics synchronization",
-  "player-gui b1.8.1: whole-player ticks"
+  "player-gui b1.8.1: whole-player ticks",
+  "player-gui round 7: controllerlife181",
+  "player-gui round 7: entity brightness and inventory redirects (zero tolerance)",
+  "player-gui round 7: inventorybounds181",
+  "player-gui round 7: original general-stat drawing arguments",
+  "player-gui round 7: original inventory-screen callbacks"
  ],
  "InventoryCraftResult": [
   "player-gui b1.8.1 round 4: chest container lifecycle",
@@ -29576,7 +29783,12 @@
   "player-gui b1.8.1: scaling, buttons and font measurements",
   "player-gui b1.8.1: settings before initial terrain and save",
   "player-gui b1.8.1: statistics synchronization",
-  "player-gui b1.8.1: whole-player ticks"
+  "player-gui b1.8.1: whole-player ticks",
+  "player-gui round 7: controllerlife181",
+  "player-gui round 7: entity brightness and inventory redirects (zero tolerance)",
+  "player-gui round 7: inventorybounds181",
+  "player-gui round 7: original general-stat drawing arguments",
+  "player-gui round 7: original inventory-screen callbacks"
  ],
  "InventoryCrafting": [
   "player-gui b1.8.1 round 4: chest container lifecycle",
@@ -29620,7 +29832,12 @@
   "player-gui b1.8.1: scaling, buttons and font measurements",
   "player-gui b1.8.1: settings before initial terrain and save",
   "player-gui b1.8.1: statistics synchronization",
-  "player-gui b1.8.1: whole-player ticks"
+  "player-gui b1.8.1: whole-player ticks",
+  "player-gui round 7: controllerlife181",
+  "player-gui round 7: entity brightness and inventory redirects (zero tolerance)",
+  "player-gui round 7: inventorybounds181",
+  "player-gui round 7: original general-stat drawing arguments",
+  "player-gui round 7: original inventory-screen callbacks"
  ],
  "InventoryLargeChest": [
   "player-gui b1.8.1 round 4: chest container lifecycle",
@@ -30837,7 +31054,12 @@
   "player-gui b1.8.1: scaling, buttons and font measurements",
   "player-gui b1.8.1: settings before initial terrain and save",
   "player-gui b1.8.1: statistics synchronization",
-  "player-gui b1.8.1: whole-player ticks"
+  "player-gui b1.8.1: whole-player ticks",
+  "player-gui round 7: controllerlife181",
+  "player-gui round 7: entity brightness and inventory redirects (zero tolerance)",
+  "player-gui round 7: inventorybounds181",
+  "player-gui round 7: original general-stat drawing arguments",
+  "player-gui round 7: original inventory-screen callbacks"
  ],
  "LayerIsland": [
   "BiomeDecorator 0 fixture 0",
@@ -34692,7 +34914,12 @@
   "player-gui b1.8.1: scaling, buttons and font measurements",
   "player-gui b1.8.1: settings before initial terrain and save",
   "player-gui b1.8.1: statistics synchronization",
-  "player-gui b1.8.1: whole-player ticks"
+  "player-gui b1.8.1: whole-player ticks",
+  "player-gui round 7: controllerlife181",
+  "player-gui round 7: entity brightness and inventory redirects (zero tolerance)",
+  "player-gui round 7: inventorybounds181",
+  "player-gui round 7: original general-stat drawing arguments",
+  "player-gui round 7: original inventory-screen callbacks"
  ],
  "MovementInputFromOptions": [
   "player-gui b1.8.1 round 4: chest container lifecycle",
@@ -34736,7 +34963,12 @@
   "player-gui b1.8.1: scaling, buttons and font measurements",
   "player-gui b1.8.1: settings before initial terrain and save",
   "player-gui b1.8.1: statistics synchronization",
-  "player-gui b1.8.1: whole-player ticks"
+  "player-gui b1.8.1: whole-player ticks",
+  "player-gui round 7: controllerlife181",
+  "player-gui round 7: entity brightness and inventory redirects (zero tolerance)",
+  "player-gui round 7: inventorybounds181",
+  "player-gui round 7: original general-stat drawing arguments",
+  "player-gui round 7: original inventory-screen callbacks"
  ],
  "NBTTagCompound": [
   "BiomeDecorator 0 fixture 0",
@@ -36242,6 +36474,67 @@
   "player-gui b1.8.1: scaling, buttons and font measurements",
   "player-gui b1.8.1: settings before initial terrain and save",
   "player-gui b1.8.1: statistics synchronization",
+  "player-gui b1.8.1: whole-player ticks",
+  "player-gui round 7: controllerlife181",
+  "player-gui round 7: entity brightness and inventory redirects (zero tolerance)",
+  "player-gui round 7: inventorybounds181",
+  "player-gui round 7: original general-stat drawing arguments",
+  "player-gui round 7: original inventory-screen callbacks"
+ ],
+ "PlayerController": [
+  "player-gui b1.8.1 round 4: chest container lifecycle",
+  "player-gui b1.8.1 round 4: controllers, picking and creative reach",
+  "player-gui b1.8.1 round 4: create-world seeds",
+  "player-gui b1.8.1 round 4: global key registry",
+  "player-gui b1.8.1 round 4: statistics comparators",
+  "player-gui b1.8.1 round 5: inventory interfaces and base slots",
+  "player-gui b1.8.1 round 5: inventory/NBT and player callbacks",
+  "player-gui b1.8.1 round 5: production create-world callbacks",
+  "player-gui b1.8.1 round 5: queued click/use transitions",
+  "player-gui b1.8.1 round 6: SP action state, FOV and sprint expiration",
+  "player-gui b1.8.1 round 6: actual GUI container close callbacks",
+  "player-gui b1.8.1 round 6: creative initialization and controller update policy",
+  "player-gui b1.8.1 round 6: world-side GUI chest close hooks",
+  "player-gui b1.8.1: GUI pixels b181_hud5_portal_full",
+  "player-gui b1.8.1: GUI pixels b181_hud5_portal_nausea",
+  "player-gui b1.8.1: GUI pixels b181_hud5_portal_partial",
+  "player-gui b1.8.1: GUI pixels b181_hud5_pumpkin_creative",
+  "player-gui b1.8.1: GUI pixels b181_hud5_sleep_end",
+  "player-gui b1.8.1: GUI pixels b181_hud5_sleep_enter",
+  "player-gui b1.8.1: GUI pixels b181_hud5_sleep_exit",
+  "player-gui b1.8.1: GUI pixels b181_hud5_sleep_full",
+  "player-gui b1.8.1: GUI pixels b181_hud5_xp_cap_overflow",
+  "player-gui b1.8.1: GUI pixels b181_hud5_xp_overflow",
+  "player-gui b1.8.1: GUI pixels container-scenes",
+  "player-gui b1.8.1: GUI pixels player-gui-container-scenes",
+  "player-gui b1.8.1: GUI pixels player-gui-scenes",
+  "player-gui b1.8.1: GUI pixels player-gui2-scenes",
+  "player-gui b1.8.1: GUI pixels player-gui3-scenes",
+  "player-gui b1.8.1: GUI pixels player-gui4-creative-scenes",
+  "player-gui b1.8.1: GUI pixels player-gui4-scenes",
+  "player-gui b1.8.1: GUI pixels player-gui5-scenes",
+  "player-gui b1.8.1: GUI pixels player-gui6-scenes",
+  "player-gui b1.8.1: PlayerList hash table",
+  "player-gui b1.8.1: creative",
+  "player-gui b1.8.1: melee and potion mining",
+  "player-gui b1.8.1: options and keybindings",
+  "player-gui b1.8.1: original recipe and smelting catalog",
+  "player-gui b1.8.1: playercore",
+  "player-gui b1.8.1: scaling, buttons and font measurements",
+  "player-gui b1.8.1: settings before initial terrain and save",
+  "player-gui b1.8.1: statistics synchronization",
+  "player-gui b1.8.1: whole-player ticks",
+  "player-gui round 7: controllerlife181",
+  "player-gui round 7: entity brightness and inventory redirects (zero tolerance)",
+  "player-gui round 7: inventorybounds181",
+  "player-gui round 7: original general-stat drawing arguments",
+  "player-gui round 7: original inventory-screen callbacks"
+ ],
+ "PlayerControllerSP": [
+  "player-gui round 7: controllerlife181",
+  "player-gui b1.8.1 round 6: creative initialization and controller update policy",
+  "player-gui b1.8.1 round 4: controllers, picking and creative reach",
+  "player-gui b1.8.1 round 5: queued click/use transitions",
   "player-gui b1.8.1: whole-player ticks"
  ],
  "PlayerControllerTest": [
@@ -36286,7 +36579,12 @@
   "player-gui b1.8.1: scaling, buttons and font measurements",
   "player-gui b1.8.1: settings before initial terrain and save",
   "player-gui b1.8.1: statistics synchronization",
-  "player-gui b1.8.1: whole-player ticks"
+  "player-gui b1.8.1: whole-player ticks",
+  "player-gui round 7: controllerlife181",
+  "player-gui round 7: entity brightness and inventory redirects (zero tolerance)",
+  "player-gui round 7: inventorybounds181",
+  "player-gui round 7: original general-stat drawing arguments",
+  "player-gui round 7: original inventory-screen callbacks"
  ],
  "PlayerList": [
   "player-gui b1.8.1 round 4: chest container lifecycle",
@@ -36330,7 +36628,12 @@
   "player-gui b1.8.1: scaling, buttons and font measurements",
   "player-gui b1.8.1: settings before initial terrain and save",
   "player-gui b1.8.1: statistics synchronization",
-  "player-gui b1.8.1: whole-player ticks"
+  "player-gui b1.8.1: whole-player ticks",
+  "player-gui round 7: controllerlife181",
+  "player-gui round 7: entity brightness and inventory redirects (zero tolerance)",
+  "player-gui round 7: inventorybounds181",
+  "player-gui round 7: original general-stat drawing arguments",
+  "player-gui round 7: original inventory-screen callbacks"
  ],
  "PlayerListEntry": [
   "player-gui b1.8.1 round 4: chest container lifecycle",
@@ -36374,7 +36677,12 @@
   "player-gui b1.8.1: scaling, buttons and font measurements",
   "player-gui b1.8.1: settings before initial terrain and save",
   "player-gui b1.8.1: statistics synchronization",
-  "player-gui b1.8.1: whole-player ticks"
+  "player-gui b1.8.1: whole-player ticks",
+  "player-gui round 7: controllerlife181",
+  "player-gui round 7: entity brightness and inventory redirects (zero tolerance)",
+  "player-gui round 7: inventorybounds181",
+  "player-gui round 7: original general-stat drawing arguments",
+  "player-gui round 7: original inventory-screen callbacks"
  ],
  "Potion": [
   "entities181: Arrow",
@@ -36562,7 +36870,12 @@
   "player-gui b1.8.1: scaling, buttons and font measurements",
   "player-gui b1.8.1: settings before initial terrain and save",
   "player-gui b1.8.1: statistics synchronization",
-  "player-gui b1.8.1: whole-player ticks"
+  "player-gui b1.8.1: whole-player ticks",
+  "player-gui round 7: controllerlife181",
+  "player-gui round 7: entity brightness and inventory redirects (zero tolerance)",
+  "player-gui round 7: inventorybounds181",
+  "player-gui round 7: original general-stat drawing arguments",
+  "player-gui round 7: original inventory-screen callbacks"
  ],
  "RecipesDyes": [
   "player-gui b1.8.1 round 4: chest container lifecycle",
@@ -36606,7 +36919,12 @@
   "player-gui b1.8.1: scaling, buttons and font measurements",
   "player-gui b1.8.1: settings before initial terrain and save",
   "player-gui b1.8.1: statistics synchronization",
-  "player-gui b1.8.1: whole-player ticks"
+  "player-gui b1.8.1: whole-player ticks",
+  "player-gui round 7: controllerlife181",
+  "player-gui round 7: entity brightness and inventory redirects (zero tolerance)",
+  "player-gui round 7: inventorybounds181",
+  "player-gui round 7: original general-stat drawing arguments",
+  "player-gui round 7: original inventory-screen callbacks"
  ],
  "RecipesFood": [
   "player-gui b1.8.1 round 4: chest container lifecycle",
@@ -36650,7 +36968,12 @@
   "player-gui b1.8.1: scaling, buttons and font measurements",
   "player-gui b1.8.1: settings before initial terrain and save",
   "player-gui b1.8.1: statistics synchronization",
-  "player-gui b1.8.1: whole-player ticks"
+  "player-gui b1.8.1: whole-player ticks",
+  "player-gui round 7: controllerlife181",
+  "player-gui round 7: entity brightness and inventory redirects (zero tolerance)",
+  "player-gui round 7: inventorybounds181",
+  "player-gui round 7: original general-stat drawing arguments",
+  "player-gui round 7: original inventory-screen callbacks"
  ],
  "RegionFile": [
   "world-blocks b1.8.1: actions",
@@ -38627,7 +38950,12 @@
   "player-gui b1.8.1: scaling, buttons and font measurements",
   "player-gui b1.8.1: settings before initial terrain and save",
   "player-gui b1.8.1: statistics synchronization",
-  "player-gui b1.8.1: whole-player ticks"
+  "player-gui b1.8.1: whole-player ticks",
+  "player-gui round 7: controllerlife181",
+  "player-gui round 7: entity brightness and inventory redirects (zero tolerance)",
+  "player-gui round 7: inventorybounds181",
+  "player-gui round 7: original general-stat drawing arguments",
+  "player-gui round 7: original inventory-screen callbacks"
  ],
  "ScreenShotHelper": [
   "ScreenShotHelper: numbered and named screenshots, pixel order"
@@ -38674,7 +39002,12 @@
   "player-gui b1.8.1: scaling, buttons and font measurements",
   "player-gui b1.8.1: settings before initial terrain and save",
   "player-gui b1.8.1: statistics synchronization",
-  "player-gui b1.8.1: whole-player ticks"
+  "player-gui b1.8.1: whole-player ticks",
+  "player-gui round 7: controllerlife181",
+  "player-gui round 7: entity brightness and inventory redirects (zero tolerance)",
+  "player-gui round 7: inventorybounds181",
+  "player-gui round 7: original general-stat drawing arguments",
+  "player-gui round 7: original inventory-screen callbacks"
  ],
  "ShapelessRecipes": [
   "player-gui b1.8.1 round 4: chest container lifecycle",
@@ -38718,7 +39051,12 @@
   "player-gui b1.8.1: scaling, buttons and font measurements",
   "player-gui b1.8.1: settings before initial terrain and save",
   "player-gui b1.8.1: statistics synchronization",
-  "player-gui b1.8.1: whole-player ticks"
+  "player-gui b1.8.1: whole-player ticks",
+  "player-gui round 7: controllerlife181",
+  "player-gui round 7: entity brightness and inventory redirects (zero tolerance)",
+  "player-gui round 7: inventorybounds181",
+  "player-gui round 7: original general-stat drawing arguments",
+  "player-gui round 7: original inventory-screen callbacks"
  ],
  "SignModel": [
   "entities181: Arrow",
@@ -38864,7 +39202,12 @@
   "player-gui b1.8.1: scaling, buttons and font measurements",
   "player-gui b1.8.1: settings before initial terrain and save",
   "player-gui b1.8.1: statistics synchronization",
-  "player-gui b1.8.1: whole-player ticks"
+  "player-gui b1.8.1: whole-player ticks",
+  "player-gui round 7: controllerlife181",
+  "player-gui round 7: entity brightness and inventory redirects (zero tolerance)",
+  "player-gui round 7: inventorybounds181",
+  "player-gui round 7: original general-stat drawing arguments",
+  "player-gui round 7: original inventory-screen callbacks"
  ],
  "SorterStatsBlock": [
   "player-gui b1.8.1 round 4: chest container lifecycle",
@@ -38908,7 +39251,12 @@
   "player-gui b1.8.1: scaling, buttons and font measurements",
   "player-gui b1.8.1: settings before initial terrain and save",
   "player-gui b1.8.1: statistics synchronization",
-  "player-gui b1.8.1: whole-player ticks"
+  "player-gui b1.8.1: whole-player ticks",
+  "player-gui round 7: controllerlife181",
+  "player-gui round 7: entity brightness and inventory redirects (zero tolerance)",
+  "player-gui round 7: inventorybounds181",
+  "player-gui round 7: original general-stat drawing arguments",
+  "player-gui round 7: original inventory-screen callbacks"
  ],
  "SorterStatsItem": [
   "player-gui b1.8.1 round 4: chest container lifecycle",
@@ -38952,7 +39300,12 @@
   "player-gui b1.8.1: scaling, buttons and font measurements",
   "player-gui b1.8.1: settings before initial terrain and save",
   "player-gui b1.8.1: statistics synchronization",
-  "player-gui b1.8.1: whole-player ticks"
+  "player-gui b1.8.1: whole-player ticks",
+  "player-gui round 7: controllerlife181",
+  "player-gui round 7: entity brightness and inventory redirects (zero tolerance)",
+  "player-gui round 7: inventorybounds181",
+  "player-gui round 7: original general-stat drawing arguments",
+  "player-gui round 7: original inventory-screen callbacks"
  ],
  "SpawnListEntry": [
   "BiomeDecorator 0 fixture 0",
@@ -39309,7 +39662,12 @@
   "player-gui b1.8.1: scaling, buttons and font measurements",
   "player-gui b1.8.1: settings before initial terrain and save",
   "player-gui b1.8.1: statistics synchronization",
-  "player-gui b1.8.1: whole-player ticks"
+  "player-gui b1.8.1: whole-player ticks",
+  "player-gui round 7: controllerlife181",
+  "player-gui round 7: entity brightness and inventory redirects (zero tolerance)",
+  "player-gui round 7: inventorybounds181",
+  "player-gui round 7: original general-stat drawing arguments",
+  "player-gui round 7: original inventory-screen callbacks"
  ],
  "StatList": [
   "player-gui b1.8.1 round 4: chest container lifecycle",
@@ -39353,7 +39711,12 @@
   "player-gui b1.8.1: scaling, buttons and font measurements",
   "player-gui b1.8.1: settings before initial terrain and save",
   "player-gui b1.8.1: statistics synchronization",
-  "player-gui b1.8.1: whole-player ticks"
+  "player-gui b1.8.1: whole-player ticks",
+  "player-gui round 7: controllerlife181",
+  "player-gui round 7: entity brightness and inventory redirects (zero tolerance)",
+  "player-gui round 7: inventorybounds181",
+  "player-gui round 7: original general-stat drawing arguments",
+  "player-gui round 7: original inventory-screen callbacks"
  ],
  "StatTypeDistance": [
   "player-gui b1.8.1 round 4: chest container lifecycle",
@@ -39397,7 +39760,12 @@
   "player-gui b1.8.1: scaling, buttons and font measurements",
   "player-gui b1.8.1: settings before initial terrain and save",
   "player-gui b1.8.1: statistics synchronization",
-  "player-gui b1.8.1: whole-player ticks"
+  "player-gui b1.8.1: whole-player ticks",
+  "player-gui round 7: controllerlife181",
+  "player-gui round 7: entity brightness and inventory redirects (zero tolerance)",
+  "player-gui round 7: inventorybounds181",
+  "player-gui round 7: original general-stat drawing arguments",
+  "player-gui round 7: original inventory-screen callbacks"
  ],
  "StatTypeSimple": [
   "player-gui b1.8.1 round 4: chest container lifecycle",
@@ -39441,7 +39809,12 @@
   "player-gui b1.8.1: scaling, buttons and font measurements",
   "player-gui b1.8.1: settings before initial terrain and save",
   "player-gui b1.8.1: statistics synchronization",
-  "player-gui b1.8.1: whole-player ticks"
+  "player-gui b1.8.1: whole-player ticks",
+  "player-gui round 7: controllerlife181",
+  "player-gui round 7: entity brightness and inventory redirects (zero tolerance)",
+  "player-gui round 7: inventorybounds181",
+  "player-gui round 7: original general-stat drawing arguments",
+  "player-gui round 7: original inventory-screen callbacks"
  ],
  "StatTypeTime": [
   "player-gui b1.8.1 round 4: chest container lifecycle",
@@ -39485,7 +39858,12 @@
   "player-gui b1.8.1: scaling, buttons and font measurements",
   "player-gui b1.8.1: settings before initial terrain and save",
   "player-gui b1.8.1: statistics synchronization",
-  "player-gui b1.8.1: whole-player ticks"
+  "player-gui b1.8.1: whole-player ticks",
+  "player-gui round 7: controllerlife181",
+  "player-gui round 7: entity brightness and inventory redirects (zero tolerance)",
+  "player-gui round 7: inventorybounds181",
+  "player-gui round 7: original general-stat drawing arguments",
+  "player-gui round 7: original inventory-screen callbacks"
  ],
  "StatsSyncher": [
   "player-gui b1.8.1 round 4: chest container lifecycle",
@@ -39529,7 +39907,12 @@
   "player-gui b1.8.1: scaling, buttons and font measurements",
   "player-gui b1.8.1: settings before initial terrain and save",
   "player-gui b1.8.1: statistics synchronization",
-  "player-gui b1.8.1: whole-player ticks"
+  "player-gui b1.8.1: whole-player ticks",
+  "player-gui round 7: controllerlife181",
+  "player-gui round 7: entity brightness and inventory redirects (zero tolerance)",
+  "player-gui round 7: inventorybounds181",
+  "player-gui round 7: original general-stat drawing arguments",
+  "player-gui round 7: original inventory-screen callbacks"
  ],
  "StepSound": [
   "world-blocks b1.8.1: actions",
@@ -44373,7 +44756,12 @@
   "player-gui b1.8.1: scaling, buttons and font measurements",
   "player-gui b1.8.1: settings before initial terrain and save",
   "player-gui b1.8.1: statistics synchronization",
-  "player-gui b1.8.1: whole-player ticks"
+  "player-gui b1.8.1: whole-player ticks",
+  "player-gui round 7: controllerlife181",
+  "player-gui round 7: entity brightness and inventory redirects (zero tolerance)",
+  "player-gui round 7: inventorybounds181",
+  "player-gui round 7: original general-stat drawing arguments",
+  "player-gui round 7: original inventory-screen callbacks"
  ],
  "ThreadStatSyncherSend": [
   "player-gui b1.8.1 round 4: chest container lifecycle",
@@ -44417,7 +44805,12 @@
   "player-gui b1.8.1: scaling, buttons and font measurements",
   "player-gui b1.8.1: settings before initial terrain and save",
   "player-gui b1.8.1: statistics synchronization",
-  "player-gui b1.8.1: whole-player ticks"
+  "player-gui b1.8.1: whole-player ticks",
+  "player-gui round 7: controllerlife181",
+  "player-gui round 7: entity brightness and inventory redirects (zero tolerance)",
+  "player-gui round 7: inventorybounds181",
+  "player-gui round 7: original general-stat drawing arguments",
+  "player-gui round 7: original inventory-screen callbacks"
  ],
  "TileEntityChest": [
   "world-blocks b1.8.1: actions",
@@ -50203,6 +50596,11 @@
   "player-gui b1.8.1: scaling, buttons and font measurements",
   "player-gui b1.8.1: settings before initial terrain and save",
   "player-gui b1.8.1: statistics synchronization",
-  "player-gui b1.8.1: whole-player ticks"
+  "player-gui b1.8.1: whole-player ticks",
+  "player-gui round 7: controllerlife181",
+  "player-gui round 7: entity brightness and inventory redirects (zero tolerance)",
+  "player-gui round 7: inventorybounds181",
+  "player-gui round 7: original general-stat drawing arguments",
+  "player-gui round 7: original inventory-screen callbacks"
  ]
 }
