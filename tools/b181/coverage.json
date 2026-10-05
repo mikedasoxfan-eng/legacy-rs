@@ -24530,6 +24530,14 @@
   "player-gui b1.8.1: statistics synchronization",
   "player-gui b1.8.1: whole-player ticks"
  ],
+ "GuiChat": [
+  "gui181: chat_empty",
+  "gui181: chat_typed",
+  "gui181: chat_cursor_off",
+  "gui181: chat_cursor_on",
+  "gui181: chat_limit",
+  "gui181: chat_limit_backspace"
+ ],
  "GuiChest": [
   "player-gui b1.8.1 round 4: chest container lifecycle",
   "player-gui b1.8.1 round 4: controllers, picking and creative reach",
@@ -24645,6 +24653,30 @@
   "player-gui b1.8.1: statistics synchronization",
   "player-gui b1.8.1: whole-player ticks"
  ],
+ "GuiRenameWorld": [
+  "gui181: rename",
+  "gui181: select_hover_rename"
+ ],
+ "GuiSlot": [
+  "gui181: select",
+  "gui181: select_pressed",
+  "gui181: select_clicked",
+  "gui181: texturepacks",
+  "gui181: packs_list",
+  "gui181: packs_selected"
+ ],
+ "GuiTexturePackSlot": [
+  "gui181: texturepacks",
+  "gui181: packs_list",
+  "gui181: packs_selected",
+  "gui181: pack_hud"
+ ],
+ "GuiTexturePacks": [
+  "gui181: texturepacks",
+  "gui181: packs_list",
+  "gui181: packs_selected",
+  "gui181: pack_hud"
+ ],
  "GuiVideoSettings": [
   "player-gui b1.8.1 round 4: chest container lifecycle",
   "player-gui b1.8.1 round 4: controllers, picking and creative reach",
@@ -24667,6 +24699,12 @@
   "player-gui b1.8.1: settings before initial terrain and save",
   "player-gui b1.8.1: statistics synchronization",
   "player-gui b1.8.1: whole-player ticks"
+ ],
+ "GuiWorldSlot": [
+  "gui181: select",
+  "gui181: select_pressed",
+  "gui181: select_clicked",
+  "gui181: select_hover_rename"
  ],
  "IStatType": [
   "player-gui b1.8.1 round 4: chest container lifecycle",
