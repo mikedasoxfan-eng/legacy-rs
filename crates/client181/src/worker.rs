@@ -135,7 +135,7 @@ pub enum Loading {
 }
 
 pub enum FromWorker {
-    Signs(Vec<crate::render::sign::Snapshot>),
+    Signs(Vec<crate::render::sign::Snapshot>, Vec<crate::render::entity::chest::Tile>),
     /// Ordered after old meshes, before meshes using the new settings.
     ResetMeshes,
     Ready {
@@ -584,9 +584,12 @@ fn run(opts: WorldOptions, mut col: Colorizers, mut video: VideoSettings, rx: Re
                 .filter(|id| {
                     world.entities.get(id).is_some_and(|e| {
                         let (dx, dy, dz) = (e.pos.x - cam.0, e.pos.y - cam.1, e.pos.z - cam.2);
-                        let range = if matches!(e.kind, worldgen::entity::EntityKind::Fish(_)) {
-                            e.bounding_box.average_edge_length() * 4.0 * 64.0
-                        } else {128.0};
+                        // Entity.isInRangeToRenderDist (renderDistanceWeight 1): far mobs are not
+                        // drawn; snowballs, eggs, fireballs and bobbers override it with 4x.
+                        use worldgen::entity::EntityKind as K;
+                        let range = e.bounding_box.average_edge_length()
+                            * if matches!(e.kind, K::Fish(_) | K::Snowball(_) | K::Egg(_) | K::Fireball(_)) { 4.0 } else { 1.0 }
+                            * 64.0;
                         dx * dx + dy * dy + dz * dz < range * range
                     })
                 })
@@ -667,10 +670,27 @@ fn run(opts: WorldOptions, mut col: Colorizers, mut video: VideoSettings, rx: Re
                 if d>=4096.0 {continue;}
                 let sign=match world.get_block_tile_entity(x,y,z) {Some(worldgen::world::tile::TileEntity::Sign(s))=>s.clone(),_=>continue};
                 let block=world.get_block_id(x,y,z);let metadata=world.get_block_metadata(x,y,z);
-                let light=world.get_block_light_value(x,y,z);let brightness=world.light_brightness_table[light as usize];
-                signs.push(crate::render::sign::Snapshot{position:[x,y,z],block,metadata,sign,brightness});
+                // b1.8.1 TileEntityRenderer: colour 1, lightmap at the tile's packed brightness.
+                let light=world.packed_light181(x,y,z,0) as u32;
+                signs.push(crate::render::sign::Snapshot{position:[x,y,z],block,metadata,sign,brightness:1.0,light});
             }
-            let _=tx.send(FromWorker::Signs(signs));
+            // Chests are tile-entity models in b1.8.1 (TileEntityChestRenderer), not chunk geometry.
+            let mut chests=Vec::new();
+            let ids:Vec<_>=world.loaded_tile_entities.iter().copied().filter(|id| !world.tile_objects[id].invalid).collect();
+            for id in ids {
+                if !matches!(world.tile_object(id),Some(worldgen::world::tile::TileEntity::Chest(_))) {continue;}
+                let (x,y,z)=world.tile_objects[&id].position;
+                let d=(x as f64+0.5-cam.0).powi(2)+(y as f64+0.5-cam.1).powi(2)+(z as f64+0.5-cam.2).powi(2);
+                if d>=4096.0 || world.get_block_id(x,y,z)!=54 {continue;}
+                // The renderer orients unset chests (BlockChest.func_35306_h) and finds neighbours.
+                if world.get_block_metadata(x,y,z)==0 {world.orient_chest181(x,y,z);}
+                world.check_chest_adjacency181(id);
+                let (metadata,light)=(world.get_block_metadata(x,y,z),world.packed_light181(x,y,z,0) as u32);
+                let a=&world.chest_animations[&id];
+                chests.push(crate::render::entity::chest::Tile{position:[x,y,z],metadata,
+                    adjacent:a.adjacent.map(|o|o.is_some()),lid:a.lid,prev_lid:a.previous_lid,light});
+            }
+            let _=tx.send(FromWorker::Signs(signs,chests));
             if let Some(id) = player {
                 let events = world.take_player_events(id);
                 // Block activations open their container right here on the world thread.

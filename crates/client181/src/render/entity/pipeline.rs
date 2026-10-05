@@ -45,6 +45,7 @@ pub struct EntityPipeline {
     pub angler: Option<worldgen::entity::Entity>,
     pub third_person: bool,
     pub signs: Vec<crate::render::sign::Snapshot>,
+    pub chests: Vec<super::chest::Tile>,
     pub partial: f32,
     pub fancy: bool,
     pub view: [f32; 2],
@@ -386,6 +387,7 @@ impl EntityPipeline {
             angler: None,
             third_person: false,
             signs: Vec::new(),
+            chests: Vec::new(),
             partial: 0.0,
             fancy: true,
             view: [0.0; 2],
@@ -558,12 +560,20 @@ impl EntityPipeline {
         lights.resize(batches.len(), NO_LIGHTMAP);
         batches.append(&mut self.extra);
         batches.extend(self.pistons.iter().filter(|p|p.visible(camera.to_array())).map(|p|p.batch(self.partial,camera.to_array())));
+        lights.resize(batches.len(), NO_LIGHTMAP);
         for s in &self.signs {
             let relative=std::array::from_fn(|i|s.position[i] as f64-camera[i] as f64);
             let g=crate::render::sign::render(&s.sign,s.block,s.metadata,relative,s.brightness);
             batches.extend(g.draws.iter().map(|d|d.batch()));
+            lights.resize(batches.len(), s.light);
         }
-        lights.resize(batches.len(), NO_LIGHTMAP);
+        for c in &self.chests {
+            let g=super::chest::render(&super::chest::ChestState{
+                position:std::array::from_fn(|i|c.position[i] as f64-camera[i] as f64),
+                metadata:c.metadata,adjacent:c.adjacent,lid:c.lid,prev_lid:c.prev_lid,partial:self.partial});
+            batches.extend(g.draws.iter().map(|d|d.batch()));
+            lights.resize(batches.len(), c.light);
+        }
         self.upload_lit(device, queue, batches, &lights, view_proj, fog, far);
     }
 

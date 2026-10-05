@@ -1242,7 +1242,7 @@ impl App {
                             gui.ui.world_saved = done;
                         }
                     }
-                    Ok(FromWorker::Signs(signs)) => {gpu.entities.signs=signs;}
+                    Ok(FromWorker::Signs(signs,chests)) => {gpu.entities.signs=signs;gpu.entities.chests=chests;}
                     Ok(FromWorker::Mesh { cx, cz, opaque, translucent }) => {
                         gpu.upload_chunk(cx, cz, &opaque, &translucent);
                         uploads += 1;

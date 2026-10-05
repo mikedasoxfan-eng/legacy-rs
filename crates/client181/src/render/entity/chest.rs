@@ -38,5 +38,16 @@ pub fn render(s: &ChestState) -> Fixed {
     g.pop();
     g
 }
+/// A chest tile entity as the world thread sees it, for the live renderer.
+#[derive(Clone, Debug)]
+pub struct Tile {
+    pub position: [i32; 3],
+    pub metadata: i32,
+    pub adjacent: [bool; 4],
+    pub lid: f32,
+    pub prev_lid: f32,
+    /// `World.func_35451_b` at the chest (TileEntityRenderer's lightmap coordinates).
+    pub light: u32,
+}
 /// The helper ignores its block, metadata and brightness arguments.
 pub fn item() -> Fixed { render(&ChestState::default()) }

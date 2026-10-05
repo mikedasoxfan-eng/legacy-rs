@@ -9,6 +9,8 @@ pub struct Snapshot {
     pub metadata: i32,
     pub sign: Sign,
     pub brightness: f32,
+    /// b1.8.1 TileEntityRenderer: `World.func_35451_b` at the tile, sampled from the lightmap.
+    pub light: u32,
 }
 pub fn angle(block: u8, metadata: i32) -> f32 {
     if block == 63 {

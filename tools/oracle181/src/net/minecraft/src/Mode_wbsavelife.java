@@ -20,6 +20,8 @@ public final class Mode_wbsavelife {
     }
     static boolean session(SaveHandler s){try{s.checkSessionLock();return true;}catch(MinecraftException e){return false;}}
     public static void main(String[] a)throws Exception {
+        // SaveHandler.loadWorldInfo prints (and survives) the corrupt level.dat cases on purpose.
+        System.setErr(new PrintStream(new OutputStream(){public void write(int b){}}));
         int init=Block.stone.blockID;File root=new File("wb181-savelife-java");clean(root);root.mkdirs();
         try(DataOutputStream o=new DataOutputStream(new BufferedOutputStream(new FileOutputStream(a[1])))) {
             for(int n=0;n<8;n++) {
