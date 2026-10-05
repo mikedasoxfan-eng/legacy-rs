@@ -244,7 +244,7 @@ impl super::Entity {
             return;
         }
         if !self.immune_to_fire {
-            self.attack(w, None, 5);
+            self.attack_from(w, super::damage::DamageSource::new(super::damage::DamageKind::InFire), 5);
         }
         self.fire += 1;
         if self.fire == 0 {

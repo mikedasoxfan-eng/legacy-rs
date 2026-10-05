@@ -232,8 +232,25 @@ fn general(s: &RenderState, camera: [f64; 3], normalize: bool) -> Fixed {
         let x = (1.0 + f * 0.4) * pulse;
         g.scale(x, (1.0 + f * 0.1) / pulse, x);
     }
+    if s.kind == MobKind::Ghast {
+        let mut f = (s.ghast_attack / 20.0).max(0.0);
+        f = 1.0 / (f * f * f * f * f * 2.0 + 1.0);
+        g.scale((8.0 + 1.0 / f) / 2.0, (8.0 + f) / 2.0, (8.0 + 1.0 / f) / 2.0);
+        g.material = [1.0; 4];
+    } else if s.kind == MobKind::Giant {
+        g.scale(6.0, 6.0, 6.0);
+    } else if s.kind == MobKind::Slime {
+        let squish = s.slime_squish / (s.slime_size as f32 * 0.5 + 1.0);
+        let scale = 1.0 / (squish + 1.0);
+        let size = s.slime_size as f32;
+        g.scale(scale * size, 1.0 / scale * size, scale * size);
+    }
     g.translate(0.0, -24.0 * 0.0625 - 0.0078125, 0.0);
     g.texture = match s.kind {
+        MobKind::Ghast => if s.ghast_attacking { 6 } else { 5 },
+        MobKind::PigZombie => 8,
+        MobKind::Giant => 7,
+        MobKind::Slime => 59,
         MobKind::Zombie => 7,
         MobKind::Skeleton => 46,
         MobKind::Pig => 47,
@@ -267,6 +284,7 @@ fn general(s: &RenderState, camera: [f64; 3], normalize: bool) -> Fixed {
             58,
             Model::with_options(super::models::ModelKind::Creeper, 2.0, 0.0, 6),
         )),
+        MobKind::Slime => Some((59, Model::new(super::models::ModelKind::SlimeOuter))),
         _ => None,
     };
     let mut pass = pass.map(|(texture, mut model)| {
@@ -277,6 +295,9 @@ fn general(s: &RenderState, camera: [f64; 3], normalize: bool) -> Fixed {
     });
     if let Some((texture, model)) = &mut pass {
         g.texture = *texture;
+        if s.kind == MobKind::Slime {
+            g.enable(4, true);g.enable(16, true);g.src = 770;g.dst = 771;
+        }
         if s.kind == MobKind::Sheep {
             let c = super::living::FLEECE_COLORS[s.fleece_color];
             g.material = [c[0], c[1], c[2], 1.0];
@@ -289,6 +310,7 @@ fn general(s: &RenderState, camera: [f64; 3], normalize: bool) -> Fixed {
             g.material = [0.5, 0.5, 0.5, 1.0];
         }
         special::model(&mut g, model);
+        if s.kind == MobKind::Slime {g.enable(16, false);g.material = [1.0;4];}
         if s.kind == MobKind::Creeper {
             g.enable(1, true);
             g.enable(16, false);
@@ -327,7 +349,7 @@ fn general(s: &RenderState, camera: [f64; 3], normalize: bool) -> Fixed {
             special::model(&mut g, &m);
             if s.kind != MobKind::Creeper {
                 if let Some((texture, model)) = &pass {
-                    g.texture = *texture;
+                    if s.kind != MobKind::Slime { g.texture = *texture; }
                     special::model(&mut g, model);
                 }
             }

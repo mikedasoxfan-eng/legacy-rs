@@ -213,7 +213,7 @@ impl Entity {
         }
     }
     pub(super) fn attack_vehicle(&mut self, w: &mut World, damage: i32) -> bool {
-        if self.dead {
+        if self.dead || w.multiplayer_world {
             return true;
         }
         let (broken, cart_type) = match &mut self.kind {
@@ -293,6 +293,16 @@ impl Entity {
             ) {
                 submerged += 1.0 / 5.0;
             }
+        }
+        if w.multiplayer_world {
+            if self.network.increments > 0 {
+                self.interpolate_network(w, false);
+            } else {
+                self.set_position(self.pos.x + self.motion.x, self.pos.y + self.motion.y, self.pos.z + self.motion.z);
+                if self.on_ground { self.motion.x *= 0.5; self.motion.y *= 0.5; self.motion.z *= 0.5; }
+                self.motion.x *= 0.99f32 as f64; self.motion.y *= 0.95f32 as f64; self.motion.z *= 0.99f32 as f64;
+            }
+            return;
         }
         if submerged < 1.0 {
             self.motion.y += 0.04f32 as f64 * (submerged * 2.0 - 1.0);
@@ -418,6 +428,10 @@ impl Entity {
             if s.damage > 0 {
                 s.damage -= 1;
             }
+        }
+        if w.multiplayer_world && self.network.increments > 0 {
+            self.interpolate_network(w, false);
+            return;
         }
         // EntityMinecart deliberately does not call Entity.onUpdate.
         self.prev_pos = self.pos;

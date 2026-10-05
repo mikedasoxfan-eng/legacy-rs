@@ -260,18 +260,8 @@ impl Entity {
         if self.in_water {
             for _ in 0..4 {
                 let t = 0.25f32 as f64;
-                let nan = matches!(self.kind, EntityKind::Fireball(..)) && self.dead;
-                let p = if nan {
-                    Vec3D::new(f64::NAN, f64::NAN, f64::NAN)
-                } else {
-                    self.pos
-                        .add(-self.motion.x * t, -self.motion.y * t, -self.motion.z * t)
-                };
-                let v = if nan {
-                    Vec3D::new(f64::NAN, f64::NAN, f64::NAN)
-                } else {
-                    self.motion
-                };
+                let p = self.pos.add(-self.motion.x * t, -self.motion.y * t, -self.motion.z * t);
+                let v = self.motion;
                 w.spawn_particle("bubble", p, v);
             }
         }
@@ -438,6 +428,7 @@ impl Entity {
         }
         let impact = self.projectile_intersection(w, &s.arrow, true);
         if let Some(hit) = impact {
+            if !w.multiplayer_world {
             if let Hit::Entity { id, .. } = hit {
                 if let Some(mut e) = w.entities.remove(&id) {
                     e.attack_from(
@@ -453,6 +444,7 @@ impl Entity {
                 }
             }
             w.new_explosion(None, self.pos, 1.0, true);
+            }
             self.dead = true;
         }
         self.projectile_advance(
@@ -461,12 +453,7 @@ impl Entity {
             0.0,
             s.acceleration,
         );
-        let smoke = if impact.is_some() {
-            Vec3D::new(f64::NAN, f64::NAN, f64::NAN)
-        } else {
-            self.pos.add(0.0, 0.5, 0.0)
-        };
-        w.spawn_particle("smoke", smoke, Vec3D::default());
+        w.spawn_particle("smoke", self.pos.add(0.0, 0.5, 0.0), Vec3D::default());
         self.kind = EntityKind::Fireball(s);
     }
 }

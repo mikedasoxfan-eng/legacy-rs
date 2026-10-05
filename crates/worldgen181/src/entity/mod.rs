@@ -18,6 +18,8 @@ pub mod hostile;
 pub mod living;
 pub mod mobs181;
 pub mod nbt;
+pub mod network;
+pub mod round4_verify181;
 pub mod objects;
 pub mod painting;
 pub mod path;
@@ -223,6 +225,7 @@ impl EntityKind {
 #[derive(Clone, Debug)]
 pub struct Entity {
     pub living: living::LivingState,
+    pub network: network::NetworkState,
     pub entity_id: i32,
     pub kind: EntityKind,
     pub rand: JavaRandom,
@@ -330,6 +333,7 @@ impl Entity {
         w.next_entity_id = id.wrapping_add(1);
         let mut e = Self {
             living: Default::default(),
+            network: Default::default(),
             entity_id: id,
             kind,
             rand: JavaRandom::new(w.entity_seed_source.next_seed()),
@@ -482,7 +486,7 @@ impl Entity {
         }
 
         if matches!(self.kind, EntityKind::Painting(_)) {
-            if !self.dead {
+            if !self.dead && !w.multiplayer_world {
                 self.break_painting(w, true);
             }
             return true;

@@ -7,6 +7,7 @@ fn main() {
     }
     let actual = match a[1].as_str() {
         "watchers" | "coordinates" | "light" | "registry" => worldgen::entity::api_verify181::replay(&a[1]),
+        "creeperdeath4" | "sun4" | "network4" | "lightning4" | "retaliation4" | "impact4" | "flying4" | "explosionblocks4" | "creeper4" => worldgen::entity::round4_verify181::replay(&a[1]),
         "combat" => worldgen::entity::combat_verify181::replay(),
         "explosion" => worldgen::entity::combat_verify181::explosion_replay(),
         "slimebranches" | "skeletonbranches" | "wolfbranches" | "vehiclebranches" | "fireballbranches" | "spawnbranches" | "spawnorder" | "factorybranches" => worldgen::entity::branches_verify181::replay(&a[1]),

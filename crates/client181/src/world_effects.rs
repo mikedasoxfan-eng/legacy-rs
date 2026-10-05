@@ -239,11 +239,10 @@ impl Effects {
                 .wrapping_mul(v)
                 .wrapping_mul(42317861)
                 .wrapping_add(v.wrapping_mul(11));
-            x = (x as i64 + (v >> 14 & 31)) as i32;
-            z = (z as i64 + (v >> 24 & 31)) as i32;
+            x = (x as i64 + ((v >> 14 & 31) - 16)) as i32;
+            z = (z as i64 + ((v >> 24 & 31) - 16)) as i32;
         }
-        self.biomes.biome_at(x, z);
-        let (t, h) = (self.biomes.temperature[0], self.biomes.humidity[0]);
+        let (t, h) = (self.biomes.raw_temperature(x, z), self.biomes.raw_rainfall(x, z));
         match block {
             18 => c.foliage(t, h),
             31 if meta != 0 => c.grass(t, h),
