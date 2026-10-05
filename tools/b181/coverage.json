@@ -24735,6 +24735,11 @@
   "gui181: rename",
   "gui181: select_hover_rename"
  ],
+ "GuiScreen": [
+  "gui181: options",
+  "gui181: b181_options",
+  "gui181: loading"
+ ],
  "GuiSlot": [
   "gui181: select",
   "gui181: select_pressed",
@@ -24783,6 +24788,15 @@
   "gui181: select_pressed",
   "gui181: select_clicked",
   "gui181: select_hover_rename"
+ ],
+ "ICrafting": [
+  "player-gui b1.8.1: GUI pixels player-gui-container-scenes",
+  "gui181: chest_items"
+ ],
+ "IInventory": [
+  "world-blocks b1.8.1: chestlife",
+  "world-blocks b1.8.1: chestopen5",
+  "player-gui b1.8.1 round 4: chest container lifecycle"
  ],
  "IStatType": [
   "player-gui b1.8.1 round 4: chest container lifecycle",
@@ -26074,6 +26088,10 @@
   "terrain round2 skygrid seed 42",
   "terrain round2 skygrid seed 9223372036854775807",
   "utilities"
+ ],
+ "LoadingScreenRenderer": [
+  "gui181: loading",
+  "gui181: loading_nobar"
  ],
  "MCHash": [
   "world-blocks b1.8.1: actions",
@@ -32118,6 +32136,11 @@
   "entities3: vehiclebranches",
   "entities3: wolfbranches"
  ],
+ "Slot": [
+  "gui181: chest_items",
+  "gui181: chest_shift_transfer",
+  "player-gui b1.8.1: GUI pixels player-gui-container-scenes"
+ ],
  "SorterStatsBlock": [
   "player-gui b1.8.1 round 4: chest container lifecycle",
   "player-gui b1.8.1 round 4: controllers, picking and creative reach",
@@ -37649,6 +37672,9 @@
   "entities3: spawnorder",
   "entities3: vehiclebranches",
   "entities3: wolfbranches"
+ ],
+ "TileEntitySpecialRenderer": [
+  "decorations181: sign renderer (TileEntitySignRenderer)"
  ],
  "Vec3D": [
   "entities181: entitygeometry"
