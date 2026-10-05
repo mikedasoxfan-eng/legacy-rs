@@ -4407,6 +4407,18 @@
   "terrain round2 skygrid seed 9223372036854775807",
   "utilities"
  ],
+ "BlockChest": [
+  "world-blocks b1.8.1: chests",
+  "world-blocks b1.8.1: chestlife",
+  "world-blocks b1.8.1: visual",
+  "world-blocks b1.8.1: textures",
+  "world-blocks b1.8.1: activation4",
+  "world-blocks b1.8.1: chestopen5",
+  "world-blocks b1.8.1: placement4",
+  "world-blocks b1.8.1: drops",
+  "world-blocks b1.8.1: definitions",
+  "player-gui b1.8.1 round 4: chest container lifecycle"
+ ],
  "BlockFarmland": [
   "world-blocks b1.8.1: plants"
  ],
@@ -25151,6 +25163,11 @@
   "terrain round2 skygrid seed 42",
   "terrain round2 skygrid seed 9223372036854775807",
   "utilities"
+ ],
+ "InventoryLargeChest": [
+  "player-gui b1.8.1 round 4: chest container lifecycle",
+  "gui181: largechest_items",
+  "gui181: b181_largechest"
  ],
  "ItemBow": [
   "world-blocks b1.8.1: actions",
