@@ -23,6 +23,10 @@ pub struct PlayerTickInput {
 }
 #[derive(Clone, Debug)]
 pub struct PlayerHud {
+    pub food: FoodStats,
+    pub experience: Experience,
+    pub capabilities: PlayerCapabilities,
+    pub fov_multiplier: f32,
     pub health: i32,
     pub prev_health: i32,
     pub hearts_life: i32,
@@ -62,7 +66,7 @@ impl Entity {
         let mut use_item = true;
         match hit {
             None => {
-                if !right {
+                if !right && !self.player_state().unwrap().capabilities.creative {
                     self.player_state_mut().unwrap().left_click_counter = 10;
                 }
             }
@@ -95,6 +99,10 @@ impl Entity {
     pub fn player_hud(&self, w: &mut World, partial: f32) -> Option<PlayerHud> {
         let s = self.player_state()?;
         Some(PlayerHud {
+            food: s.food.clone(),
+            experience: s.experience,
+            capabilities: s.capabilities,
+            fov_multiplier: self.fov_multiplier(),
             health: self.living.health,
             prev_health: self.living.prev_health,
             hearts_life: self.living.hearts_life,
@@ -151,22 +159,24 @@ impl World {
                 p.drop_player_item(self, stack, false);
             }
         }
-        if input.left_pressed {
+        if p.player_state().unwrap().item_in_use.is_some() && !input.right_held { p.stop_item_use(self); }
+        let using = p.player_state().unwrap().item_in_use.is_some();
+        if input.left_pressed && !using {
             p.click_player(self, &mut controller, hit, false);
             p.player_state_mut().unwrap().last_click_tick = ticks;
         }
-        if input.right_pressed {
+        if input.right_pressed && !using {
             p.click_player(self, &mut controller, hit, true);
             p.player_state_mut().unwrap().last_click_tick = ticks;
         }
         if p.player_state().unwrap().left_click_counter > 0 {
             p.player_state_mut().unwrap().left_click_counter -= 1;
         }
-        if input.left_held && ticks.wrapping_sub(p.player_state().unwrap().last_click_tick) >= 5 {
+        if input.left_held && !using && ticks.wrapping_sub(p.player_state().unwrap().last_click_tick) >= 5 {
             p.click_player(self, &mut controller, hit, false);
             p.player_state_mut().unwrap().last_click_tick = ticks;
         }
-        if input.right_held && ticks.wrapping_sub(p.player_state().unwrap().last_click_tick) >= 5 {
+        if input.right_held && !using && ticks.wrapping_sub(p.player_state().unwrap().last_click_tick) >= 5 {
             p.click_player(self, &mut controller, hit, true);
             p.player_state_mut().unwrap().last_click_tick = ticks;
         }
@@ -174,7 +184,7 @@ impl World {
             p.player_state_mut().unwrap().left_click_counter = 0;
         }
         if p.player_state().unwrap().left_click_counter <= 0 {
-            if input.left_held {
+            if input.left_held && !using {
                 if let Some(Hit::Block { x, y, z, side, .. }) = hit {
                     controller.dig(&mut p, self, x, y, z, side);
                     let block = self.get_block_id(x, y, z);
@@ -191,10 +201,10 @@ impl World {
                             },
                         });
                 } else {
-                    controller.reset();
+                    if !p.player_state().unwrap().capabilities.creative { controller.reset(); }
                 }
             } else {
-                controller.reset();
+                if !p.player_state().unwrap().capabilities.creative { controller.reset(); }
             }
         }
         p.player_state_mut().unwrap().controller = controller;

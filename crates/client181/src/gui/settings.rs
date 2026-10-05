@@ -16,6 +16,8 @@ pub enum EnumOptions {
     Sound,
     InvertMouse,
     Sensitivity,
+    Fov,
+    Gamma,
     RenderDistance,
     ViewBobbing,
     Anaglyph,
@@ -28,11 +30,13 @@ pub enum EnumOptions {
 }
 
 impl EnumOptions {
-    pub const ALL: [EnumOptions; 13] = [
+    pub const ALL: [EnumOptions; 15] = [
         EnumOptions::Music,
         EnumOptions::Sound,
         EnumOptions::InvertMouse,
         EnumOptions::Sensitivity,
+        EnumOptions::Fov,
+        EnumOptions::Gamma,
         EnumOptions::RenderDistance,
         EnumOptions::ViewBobbing,
         EnumOptions::Anaglyph,
@@ -58,6 +62,8 @@ impl EnumOptions {
             EnumOptions::Sound => "options.sound",
             EnumOptions::InvertMouse => "options.invertMouse",
             EnumOptions::Sensitivity => "options.sensitivity",
+            EnumOptions::Fov => "options.fov",
+            EnumOptions::Gamma => "options.gamma",
             EnumOptions::RenderDistance => "options.renderDistance",
             EnumOptions::ViewBobbing => "options.viewBobbing",
             EnumOptions::Anaglyph => "options.anaglyph",
@@ -71,7 +77,7 @@ impl EnumOptions {
     }
 
     pub fn is_float(self) -> bool {
-        matches!(self, EnumOptions::Music | EnumOptions::Sound | EnumOptions::Sensitivity)
+        matches!(self, EnumOptions::Music | EnumOptions::Sound | EnumOptions::Sensitivity | EnumOptions::Fov | EnumOptions::Gamma)
     }
 
     pub fn is_bool(self) -> bool {
@@ -91,6 +97,9 @@ impl EnumOptions {
 pub struct KeyBinding {
     pub description: &'static str,
     pub code: i32,
+    pub pressed:bool,
+    pub press_count:i32,
+    pub registration_order:usize,
 }
 
 #[derive(Clone, Debug)]
@@ -98,6 +107,8 @@ pub struct GameSettings {
     pub music_volume: f32,
     pub sound_volume: f32,
     pub mouse_sensitivity: f32,
+    pub fov:f32,
+    pub gamma:f32,
     pub invert_mouse: bool,
     pub render_distance: i32,
     pub view_bobbing: bool,
@@ -120,11 +131,12 @@ pub struct GameSettings {
 
 impl Default for GameSettings {
     fn default() -> Self {
-        let kb = |d, c| KeyBinding { description: d, code: c };
+        let kb = |d, c| KeyBinding { description: d, code: c,pressed:false,press_count:0,registration_order:["key.forward","key.left","key.back","key.right","key.jump","key.inventory","key.drop","key.chat","key.sneak","key.attack","key.use","key.playerlist","key.pickItem"].iter().position(|s|*s==d).unwrap() };
         GameSettings {
             music_volume: 1.0,
             sound_volume: 1.0,
             mouse_sensitivity: 0.5,
+            fov:0.0,gamma:0.0,
             invert_mouse: false,
             render_distance: 0,
             view_bobbing: true,
@@ -135,6 +147,7 @@ impl Default for GameSettings {
             ambient_occlusion: true,
             skin: "Default".into(),
             key_bindings: vec![
+                kb("key.attack",-100),kb("key.use",-99),
                 kb("key.forward", 17),
                 kb("key.left", 30),
                 kb("key.back", 31),
@@ -144,7 +157,7 @@ impl Default for GameSettings {
                 kb("key.drop", 16),
                 kb("key.inventory", 18),
                 kb("key.chat", 20),
-                kb("key.fog", 33),
+                kb("key.playerlist",15),kb("key.pickItem",-98),
             ],
             difficulty: 2,
             hide_gui: false,
@@ -192,6 +205,7 @@ impl GameSettings {
                 "music" => self.music_volume = float(v()?)?,
                 "sound" => self.sound_volume = float(v()?)?,
                 "mouseSensitivity" => self.mouse_sensitivity = float(v()?)?,
+                "fov"=>self.fov=float(v()?)?,"gamma"=>self.gamma=float(v()?)?,
                 "invertYMouse" => self.invert_mouse = v()? == "true",
                 "viewDistance" => self.render_distance = int(v()?)?,
                 "guiScale" => self.gui_scale = int(v()?)?,
@@ -229,6 +243,7 @@ impl GameSettings {
         line("sound", java_float(self.sound_volume));
         line("invertYMouse", self.invert_mouse.to_string());
         line("mouseSensitivity", java_float(self.mouse_sensitivity));
+        line("fov",java_float(self.fov));line("gamma",java_float(self.gamma));
         line("viewDistance", self.render_distance.to_string());
         line("guiScale", self.gui_scale.to_string());
         line("bobView", self.view_bobbing.to_string());
@@ -253,6 +268,7 @@ impl GameSettings {
             EnumOptions::Music => self.music_volume = v,
             EnumOptions::Sound => self.sound_volume = v,
             EnumOptions::Sensitivity => self.mouse_sensitivity = v,
+            EnumOptions::Fov=>self.fov=v,EnumOptions::Gamma=>self.gamma=v,
             _ => {}
         }
     }
@@ -280,6 +296,7 @@ impl GameSettings {
             EnumOptions::Music => self.music_volume,
             EnumOptions::Sound => self.sound_volume,
             EnumOptions::Sensitivity => self.mouse_sensitivity,
+            EnumOptions::Fov=>self.fov,EnumOptions::Gamma=>self.gamma,
             _ => 0.0,
         }
     }
@@ -309,6 +326,10 @@ impl GameSettings {
                 } else {
                     format!("{head}{}%", (v * 200.0) as i32)
                 }
+            } else if o==EnumOptions::Fov {
+                if v==0.0 {head+&t("options.fov.min")}else if v==1.0 {head+&t("options.fov.max")}else {format!("{head}{}",(70.0+v*40.0) as i32)}
+            } else if o==EnumOptions::Gamma {
+                if v==0.0 {head+&t("options.gamma.min")}else if v==1.0 {head+&t("options.gamma.max")}else {format!("{head}+{}%",(v*100.0) as i32)}
             } else if v == 0.0 {
                 head + &t("options.off")
             } else {
@@ -338,4 +359,13 @@ impl GameSettings {
         self.key_bindings[i].code = code;
         self.save();
     }
+}
+
+impl KeyBinding {
+    pub fn take_press(&mut self)->bool {if self.press_count==0 {false}else {self.press_count=self.press_count.wrapping_sub(1);true}}
+}
+impl GameSettings {
+    pub fn key_tick(&mut self,code:i32){if let Some(k)=self.key_bindings.iter_mut().filter(|k|k.code==code).max_by_key(|k|k.registration_order){k.press_count=k.press_count.wrapping_add(1);}}
+    pub fn key_state(&mut self,code:i32,pressed:bool){if let Some(k)=self.key_bindings.iter_mut().filter(|k|k.code==code).max_by_key(|k|k.registration_order){k.pressed=pressed;}}
+    pub fn release_keys(&mut self){for k in &mut self.key_bindings {k.pressed=false;k.press_count=0;}}
 }

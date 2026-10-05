@@ -35,6 +35,8 @@ import org.lwjgl.opengl.GL11;
  * never touched. GuiMainMenu is recompiled with its clock replaced by GuiShot.millis.
  */
 public class GuiShot {
+    static TileEntityChest chestFixture(World world) { TileEntityChest chest=new TileEntityChest(); chest.worldObj=world; return chest; }
+
     public static long millis = 0L;
 
     static List<String> script = new ArrayList<>();
@@ -201,16 +203,17 @@ public class GuiShot {
                         TileEntityRenderer.instance.cacheActiveRenderInfo(mc.theWorld,mc.renderEngine,mc.fontRenderer,mc.thePlayer,0);
                         s=new GuiEditSign(sign);
                     }
-                    else if (which.equals("inventory") || which.equals("crafting") || which.equals("chest") || which.equals("largechest") || which.equals("furnace") || which.equals("dispenser")) {
+                    else if (which.equals("creative") || which.equals("inventory") || which.equals("crafting") || which.equals("chest") || which.equals("largechest") || which.equals("furnace") || which.equals("dispenser")) {
                         EntityPlayerSP p = mc.thePlayer;
                         p.inventory = new InventoryPlayer(p); p.inventorySlots = new ContainerPlayer(p.inventory);
                         p.ticksExisted=0;p.field_703_S=p.field_704_R=p.field_705_Q=0;p.swingProgress=p.prevSwingProgress=0;
                         p.deathTime=p.hurtTime=0;p.movementInput.sneak=false;
                         RenderManager.instance.cacheActiveRenderInfo(mc.theWorld,mc.renderEngine,mc.fontRenderer,p,mc.gameSettings,1.0F);
-                        if(which.equals("inventory"))s=new GuiInventory(p);
+                        if(which.equals("creative")){mc.playerController=new PlayerControllerTest(mc);PlayerControllerTest.func_35646_d(p);s=new GuiContainerCreative(p);}
+                        else if(which.equals("inventory")){mc.playerController=new PlayerControllerSP(mc);s=new GuiInventory(p);}
                         else if(which.equals("crafting"))s=new GuiCrafting(p.inventory,mc.theWorld,0,64,0);
-                        else if(which.equals("chest"))s=new GuiChest(p.inventory,new TileEntityChest());
-                        else if(which.equals("largechest"))s=new GuiChest(p.inventory,new InventoryLargeChest("Large chest",new TileEntityChest(),new TileEntityChest()));
+                        else if(which.equals("chest"))s=new GuiChest(p.inventory,chestFixture(mc.theWorld));
+                        else if(which.equals("largechest"))s=new GuiChest(p.inventory,new InventoryLargeChest("Large chest",chestFixture(mc.theWorld),chestFixture(mc.theWorld)));
                         else if(which.equals("furnace")){furnace=new TileEntityFurnace();s=new GuiFurnace(p.inventory,furnace);}
                         else s=new GuiDispenser(p.inventory,new TileEntityDispenser());
                     }
@@ -219,7 +222,7 @@ public class GuiShot {
                 } else if (cmd.equals("world")) {
                     mc.session = new Session("Player", "-"); // EntityPlayerSP reads the username
                     mc.playerController = new PlayerControllerSP(mc);
-                    mc.startWorld("guishot_world", "guishot", Long.parseLong(a[0]));
+                    mc.startWorld("guishot_world", "guishot", new WorldSettings(Long.parseLong(a[0]),0,false));
                     mc.currentScreen = this;
                     inner = null;
                 } else if (cmd.equals("pose")) {
@@ -233,8 +236,20 @@ public class GuiShot {
                     EntityPlayerSP p = mc.thePlayer;
                     for (String kv : a) {
                         String[] e = kv.split("=");
-                        int v = e.length > 1 && !e[0].equals("pos") && !e[0].equals("brightness") ? Integer.parseInt(e[1]) : 0;
+                        int v = e.length > 1 && !e[0].equals("pos") && !e[0].equals("brightness") && !e[0].equals("saturation") ? Integer.parseInt(e[1]) : 0;
                         if (e[0].equals("health")) p.health = v;
+                        else if (e[0].equals("food")) p.func_35191_at().func_35764_a(v);
+                        else if (e[0].equals("saturation")) p.func_35191_at().func_35767_b(Float.parseFloat(e[1]));
+                        else if (e[0].equals("xp")) p.field_35211_aX=v;
+                        else if (e[0].equals("level")) p.field_35210_aY=v;
+                        else if (e[0].equals("air")) p.air=v;
+                        else if (e[0].equals("creative")) mc.playerController=v!=0?new PlayerControllerTest(mc):new PlayerControllerSP(mc);
+                        else if (e[0].equals("armor")) { for(int slot=0;slot<4;slot++)p.inventory.armorInventory[slot]=v==20?new ItemStack(313-slot,1,0):null; }
+                        else if (e[0].equals("seed")) { }
+                        else if (e[0].equals("poison") || e[0].equals("hunger") || e[0].equals("regen")) {
+                            int effect=e[0].equals("poison")?19:e[0].equals("hunger")?17:10;
+                            if(v!=0)p.func_35165_a(new PotionEffect(effect,10000,0));
+                        }
                         else if (e[0].equals("prev")) p.prevHealth = v;
                         else if (e[0].equals("hearts_life")) p.heartsLife = v;
                         else if (e[0].equals("item")) p.inventory.currentItem = v;
@@ -281,6 +296,11 @@ public class GuiShot {
                     down = false;
                 } else if (cmd.equals("click")) {
                     call(inner, "mouseClicked", mx, my, a.length==0?0:Integer.parseInt(a[0]));
+                } else if (cmd.equals("wheel")) {
+                    GuiContainerCreative g=(GuiContainerCreative)inner;Field f=GuiContainerCreative.class.getDeclaredField("field_35312_g");f.setAccessible(true);
+                    int rows=((ContainerCreative)g.inventorySlots).field_35375_a.size()/8-8+1;
+                    float position=(float)((double)f.getFloat(g)-(double)Integer.signum(Integer.parseInt(rest))/(double)rows);
+                    position=Math.max(0,Math.min(1,position));f.setFloat(g,position);((ContainerCreative)g.inventorySlots).func_35374_a(position);
                 } else if (cmd.equals("shift")) {
                     Field keys=Keyboard.class.getDeclaredField("keyDownBuffer");keys.setAccessible(true);
                     ((ByteBuffer)keys.get(null)).put(42,(byte)(rest.equals("on")?1:0));

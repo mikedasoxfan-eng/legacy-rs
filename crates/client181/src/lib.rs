@@ -118,6 +118,7 @@ fn parse_args() -> Options {
     });
     Options {
         world: WorldOptions {
+            settings: None,
             dir,
             seed,
             world_rand: get("--world-rand").and_then(|s| s.parse().ok()).unwrap_or(seed ^ 0x5DEECE66D),
@@ -490,6 +491,7 @@ pub fn run() {
         }
         return;
     }
+    if args.get(1).map(String::as_str)==Some("--playerguicheck"){std::process::exit(if gui::player_check::check(&args[2]) {0}else{1});}
     if args.get(1).map(String::as_str) == Some("--guishot") {
         let script = args.get(2).expect("--guishot script.txt outdir");
         let out = std::path::Path::new(args.get(3).map(String::as_str).unwrap_or("shots/gui"));

@@ -4,7 +4,7 @@ import random
 import struct
 
 root = Path(__file__).resolve().parents[2]
-data = memoryview((root / 'crates/worldgen/src/container/recipes.bin').read_bytes())
+data = memoryview((root / 'crates/worldgen181/src/container/recipes.bin').read_bytes())
 offset = 0
 def byte():
     global offset
@@ -38,7 +38,7 @@ for ri in range(n):
             emit('click', 0, 1, 1)
             emit('close')
 
-rng = random.Random(173)
+rng = random.Random(181)
 ids = [1, 5, 6, 17, 35, 86, 263, 264, 265, 280, 281, 282, 296, 298, 299, 300, 301, 310, 311, 312, 313, 325, 327, 335, 351, 354]
 for kind, size in enumerate([45, 46, 63, 90, 39, 45]):
     emit('open', kind)

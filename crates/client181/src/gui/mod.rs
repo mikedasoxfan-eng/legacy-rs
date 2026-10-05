@@ -32,6 +32,7 @@ use widgets::GuiButton;
 /// Textures the GUI binds by name (`RenderEngine.getTexture("/gui/gui.png")`).
 pub const TEXTURES: &[&str] = &[
     "item/sign.png",
+    "item/chest.png",
     "font/default.png",
     "gui/gui.png",
     "gui/background.png",
@@ -47,6 +48,7 @@ pub const TEXTURES: &[&str] = &[
     "achievement/bg.png",
     "gui/slot.png",
     "gui/inventory.png",
+    "gui/allitems.png",
     "gui/crafting.png",
     "gui/container.png",
     "gui/furnace.png",
@@ -124,6 +126,7 @@ pub enum Action {
         folder: String,
         name: String,
         seed: Option<i64>,
+        settings: Option<worldgen::entity::player::food::WorldSettings>,
     },
     /// `GuiIngameMenu` "Save and quit to title".
     QuitWorld,
@@ -437,6 +440,7 @@ impl ScreenBase {
 
 /// A `GuiScreen` subclass. Default methods are the base-class behaviour.
 pub trait Screen {
+    fn mouse_scrolled(&mut self,_ui:&mut Ui,_amount:i32) {}
     fn base(&mut self) -> &mut ScreenBase;
 
     fn init_gui(&mut self, _ui: &mut Ui) {}
@@ -563,3 +567,5 @@ pub fn load_resources(
         jar.text("title/splashes.txt")?.lines().map(|l| l.trim().to_string()).filter(|l| !l.is_empty()).collect();
     Ok((imgs, font_txt, lang, splashes))
 }
+
+pub mod player_check;

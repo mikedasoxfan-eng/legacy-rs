@@ -159,14 +159,4 @@ impl Entity {
             self.dead = true;
         }
     }
-    pub fn add_experience(&mut self, value: i32) {
-        if let Some(p) = self.player_state_mut() {
-            p.experience = p.experience.wrapping_add(value);
-            p.total_experience = p.total_experience.wrapping_add(value);
-            while p.experience >= p.experience_level.wrapping_add(1).wrapping_mul(10) {
-                p.experience -= p.experience_level.wrapping_add(1).wrapping_mul(10);
-                p.experience_level += 1;
-            }
-        }
-    }
 }

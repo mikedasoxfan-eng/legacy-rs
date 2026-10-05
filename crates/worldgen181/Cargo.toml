@@ -29,3 +29,11 @@ flate2 = "1.1.10"
 [[bin]]
 name = "terrain_compare181"
 path = "src/bin/terrain_compare.rs"
+
+[[bin]]
+name = "playercore181"
+path = "src/bin/playercore.rs"
+
+[[bin]]
+name = "creative181"
+path = "src/bin/creative.rs"

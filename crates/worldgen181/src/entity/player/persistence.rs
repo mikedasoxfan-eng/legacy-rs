@@ -32,6 +32,8 @@ impl Entity {
         n.put("Sleeping", Tag::Byte(s.sleeping as i8));
         n.put("SleepTimer", Tag::Short(s.sleep_timer as i16));
         n.put("Score", Tag::Int(s.score));
+        s.food.write_nbt(&mut n);
+        s.experience.write_nbt(&mut n);
         if let Some((x, y, z)) = s.spawn {
             n.put("SpawnX", Tag::Int(x));
             n.put("SpawnY", Tag::Int(y));
@@ -56,6 +58,8 @@ impl Entity {
         s.sleeping = n.boolean("Sleeping");
         s.sleep_timer = n.short("SleepTimer") as i32;
         s.score = n.int("Score");
+        s.food.read_nbt(n);
+        s.experience.read_nbt(n);
         if n.has("SpawnX") && n.has("SpawnY") && n.has("SpawnZ") {
             s.spawn = Some((n.int("SpawnX"), n.int("SpawnY"), n.int("SpawnZ")));
         }

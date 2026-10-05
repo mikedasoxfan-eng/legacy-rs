@@ -58,7 +58,7 @@ impl Screen for GuiOptions {
         option_buttons(
             ui,
             &mut self.base,
-            &[EnumOptions::Music, EnumOptions::Sound, EnumOptions::InvertMouse, EnumOptions::Sensitivity, EnumOptions::Difficulty],
+            &[EnumOptions::Music, EnumOptions::Sound, EnumOptions::InvertMouse, EnumOptions::Sensitivity, EnumOptions::Fov, EnumOptions::Difficulty],
         );
         let (w, h) = (self.base.width, self.base.height);
         self.base.buttons.push(GuiButton::new(101, w / 2 - 100, h / 6 + 96 + 12, ui.translate("options.video")));
@@ -128,6 +128,7 @@ impl Screen for GuiVideoSettings {
                 EnumOptions::ViewBobbing,
                 EnumOptions::GuiScale,
                 EnumOptions::AdvancedOpengl,
+                EnumOptions::Gamma,
             ],
         );
         let (w, h) = (self.base.width, self.base.height);
@@ -177,6 +178,7 @@ impl GuiControls {
 /// `GameSettings.getOptionDisplayString`: LWJGL's key name.
 fn key_name(ui: &Ui, i: usize) -> String {
     let code = ui.settings.key_bindings[i].code;
+    if code<0 {return ui.translate("key.mouseButton").replace("%d",&(code+101).to_string()).replace("%1$s",&(code+101).to_string());}
     KEY_NAMES.get(code as usize).copied().flatten().unwrap_or("").to_string()
 }
 
@@ -214,6 +216,10 @@ impl Screen for GuiControls {
         }
     }
 
+    fn mouse_clicked(&mut self,ui:&mut Ui,x:i32,y:i32,button:i32){
+        if self.button_id>=0 {let i=self.button_id as usize;ui.settings.set_key_binding(i,-100+button);self.base.buttons[i].text=key_name(ui,i);self.button_id=-1;}
+        else {crate::gui::default_mouse_clicked(self,ui,x,y,button);}
+    }
     fn key_typed(&mut self, ui: &mut Ui, _c: char, key: i32) {
         if self.button_id >= 0 {
             let i = self.button_id as usize;
@@ -233,6 +239,9 @@ impl Screen for GuiControls {
         let x = self.left();
         for i in 0..ui.settings.key_bindings.len() {
             let n = i as i32;
+            let code=ui.settings.key_bindings[i].code;
+            let duplicate=ui.settings.key_bindings.iter().enumerate().any(|(j,k)|j!=i && k.code==code);
+            self.base.buttons[i].text=if self.button_id==i as i32 {"\u{a7}f> \u{a7}e??? \u{a7}f<".into()}else if duplicate {format!("\u{a7}c{}",key_name(ui,i))}else {key_name(ui,i)};
             let d = ui.settings.key_binding_description(&ui.lang, i);
             ui.draw_string(&d, x + n % 2 * 160 + 70 + 6, h / 6 + 24 * (n >> 1) + 7, -1);
         }

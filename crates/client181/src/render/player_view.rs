@@ -88,6 +88,10 @@ pub struct View {
     pub model: super::entity::player::Renderer,
     pub equip: super::first_person::Equip,
     maps: BTreeMap<String, super::map::Data>,
+    /// `[field_35813_N, field_35812_M]`: the sprint/bow FOV zoom, eased each tick.
+    fov_multiplier: [f32; 2],
+    /// The FOV option (`field_35379_L`).
+    pub fov_option: f32,
 }
 impl View {
     pub fn new(
@@ -107,6 +111,8 @@ impl View {
             equip,
             maps,
             model: Default::default(),
+            fov_multiplier: [1.0, 1.0],
+            fov_option: 0.0,
         }
     }
     pub fn update(
@@ -115,6 +121,9 @@ impl View {
         hud: worldgen::entity::player::PlayerHud,
         snapshot: Snapshot,
     ) {
+        // EntityRenderer.func_35809_c: previous = current; current eases half way to the target.
+        self.fov_multiplier[0] = self.fov_multiplier[1];
+        self.fov_multiplier[1] += (hud.fov_multiplier - self.fov_multiplier[1]) * 0.5;
         self.equip.update(hud.held_item, hud.inventory.current_item);
         self.entity = entity;
         self.hud = hud;
@@ -152,7 +161,13 @@ impl View {
         let bed = self.bed();
         (
             camera::transform(&e, t, s, d, bed),
-            camera::fov(&e, medium == camera::Medium::Water, t, &s, true),
+            camera::fov(
+                &e,
+                medium == camera::Medium::Water,
+                t,
+                &camera::Settings { fov_option: self.fov_option, fov_zoom: Some(self.fov_multiplier), ..s },
+                true,
+            ),
             medium,
         )
     }

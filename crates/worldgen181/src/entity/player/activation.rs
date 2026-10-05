@@ -160,8 +160,8 @@ impl Entity {
                 true
             }
             92 => {
-                if self.living.health < 20 {
-                    self.heal(3);
+                if self.player_state().unwrap().food.needs_food() && !self.player_state().unwrap().capabilities.disable_damage {
+                    self.player_state_mut().unwrap().food.add_food(2,0.1);
                     if meta + 1 >= 6 {
                         w.set_block_with_notify(x, y, z, 0);
                     } else {

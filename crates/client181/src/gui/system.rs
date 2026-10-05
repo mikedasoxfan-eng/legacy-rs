@@ -15,6 +15,7 @@ pub enum GameAction {
         folder: String,
         name: String,
         seed: Option<i64>,
+        settings: Option<worldgen::entity::player::food::WorldSettings>,
     },
     QuitWorld,
     Shutdown,
@@ -209,8 +210,8 @@ impl GuiSystem {
                             self.display_gui_screen(Some(child), &mut out);
                         }
                     }
-                    Action::StartWorld { folder, name, seed } => {
-                        out.push(GameAction::StartWorld { folder, name, seed })
+                    Action::StartWorld { folder, name, seed, settings } => {
+                        out.push(GameAction::StartWorld { folder, name, seed, settings })
                     }
                     Action::QuitWorld => out.push(GameAction::QuitWorld),
                     Action::Shutdown => out.push(GameAction::Shutdown),

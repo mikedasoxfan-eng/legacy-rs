@@ -538,7 +538,7 @@ impl App {
         }
         for a in acts {
             match a {
-                gui::system::GameAction::StartWorld { folder, name, seed } => {
+                gui::system::GameAction::StartWorld { folder, name, seed, settings } => {
                     let saves = self.gui.as_ref().unwrap().ui.saves_dir.clone();
                     let seed = seed.unwrap_or(0);
                     let w = WorldOptions {
@@ -551,6 +551,7 @@ impl App {
                         weather: None,
                         time: None,
                         name: Some(name),
+                        settings,
                     };
                     self.start_world(w);
                 }
@@ -1172,6 +1173,12 @@ impl App {
                         self.look = look;
                         let h = &mut self.hud;
                         h.health = hud.health;
+                        h.food_level = hud.food.level;
+                        h.food_saturation = hud.food.saturation;
+                        h.xp_points = hud.experience.points;
+                        h.xp_level = hud.experience.level;
+                        h.survival = !hud.capabilities.creative;
+                        h.seed = self.seed;
                         h.prev_health = hud.prev_health;
                         h.hearts_life = hud.hearts_life;
                         h.armor = hud.armor;
@@ -1529,6 +1536,7 @@ impl App {
             ..Default::default()
         };
         let player_frame = self.player.as_mut().map(|p| {
+            p.fov_option=settings.map_or(0.0,|s|s.fov);
             p.frame(
                 partial,
                 self.look,
@@ -1823,6 +1831,7 @@ impl ApplicationHandler for App {
                     winit::event::MouseScrollDelta::PixelDelta(p) => p.y,
                 };
                 let screen_open = self.gui.as_ref().is_some_and(|g| g.screen.is_some());
+                if screen_open && y!=0.0 {if let Some(g)=self.gui.as_mut(){if let Some(s)=g.screen.as_mut(){s.mouse_scrolled(&mut g.ui,y.signum() as i32);}}}
                 if self.ready && !screen_open && y != 0.0 {
                     self.input.scroll += y.signum() as i32;
                 }

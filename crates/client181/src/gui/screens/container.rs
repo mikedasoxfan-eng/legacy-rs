@@ -10,6 +10,7 @@ pub struct GuiContainer {
     kind: ContainerKind,
     inventory_name: Option<&'static str>,
     previous_mouse: [f32; 2],
+    scroll:f32, dragging:bool, previous_down:bool,
 }
 pub type GuiInventory = GuiContainer;
 pub type GuiCrafting = GuiContainer;
@@ -24,13 +25,19 @@ impl GuiContainer {
             kind: snapshot.kind,
             inventory_name: snapshot.inventory_name,
             previous_mouse: [0.0; 2],
+            scroll:0.0,dragging:false,previous_down:false,
         }
+    }
+    fn update_scroll(&self,ui:&mut Ui) {
+        if let Some(s)=ui.container_snapshot.as_mut() {let contents=worldgen::container::creative::contents(self.scroll);s.contents[..72].copy_from_slice(&contents);}
+        ui.container_commands.push(ContainerCommand::ScrollCreative {window:self.window,position:self.scroll});
     }
     fn size(&self) -> (i32, i32) {
         (
             176,
             match self.kind {
                 ContainerKind::Chest { rows } => 114 + rows as i32 * 18,
+                ContainerKind::Creative => 208,
                 _ => 166,
             },
         )
@@ -50,6 +57,7 @@ impl GuiContainer {
         ui.gl.color4f(1.0, 1.0, 1.0, 1.0);
         let texture = match self.kind {
             ContainerKind::Player => "gui/inventory.png",
+            ContainerKind::Creative => "gui/allitems.png",
             ContainerKind::Workbench => "gui/crafting.png",
             ContainerKind::Chest { .. } => "gui/container.png",
             ContainerKind::Furnace => "gui/furnace.png",
@@ -79,6 +87,7 @@ impl GuiContainer {
         let (_, h) = self.size();
         let (name, x, y) = match self.kind {
             ContainerKind::Player => ("Crafting", 86, 16),
+            ContainerKind::Creative => ("Item selection",8,6),
             ContainerKind::Workbench => ("Crafting", 28, 6),
             ContainerKind::Chest { rows } => {
                 (self.inventory_name.unwrap_or(if rows == 3 { "Chest" } else { "Large chest" }), 8, 6)
@@ -87,7 +96,7 @@ impl GuiContainer {
             ContainerKind::Dispenser => ("Dispenser", 60, 6),
         };
         ui.font.draw_string(&mut ui.gl, name, x, y, 4210752);
-        if self.kind != ContainerKind::Player {
+        if !matches!(self.kind,ContainerKind::Player|ContainerKind::Creative) {
             ui.font
                 .draw_string(&mut ui.gl, "Inventory", 8, h - 94, 4210752);
         }
@@ -132,7 +141,7 @@ fn draw_item(ui: &mut Ui, s: Option<ItemStack>, x: i32, y: i32) {
                 {
                     for (v, i) in quad.iter_mut().zip([0, 1, 2, 0, 2, 3]) {
                         let mut n = nm
-                            .transform_vector3(super::inventory_model::byte_normal(raw[i].normal));
+                            .transform_vector3(if s.id==54 {let b=|shift| (2.0*((raw[i].normal>>shift) as u8 as i8) as f32+1.0)/255.0;glam::Vec3::new(b(0),b(8),b(16))}else {super::inventory_model::byte_normal(raw[i].normal)});
                         if d.flags & 4 != 0 {
                             n = n.normalize_or_zero();
                         } else if d.flags & 2 != 0 {
@@ -155,7 +164,14 @@ fn draw_item(ui: &mut Ui, s: Option<ItemStack>, x: i32, y: i32) {
             if let Some(t) = batch.texture {
                 ui.gl.bind_texture(ui.texture(t));
             }
-            ui.gl.triangles(&batch.vertices);
+            if matches!(s.id,18|20) {
+                let mut front=Vec::new();
+                for t in batch.vertices.chunks_exact(3) {
+                    let a=t[0].pos;let b=t[1].pos;let c=t[2].pos;
+                    if (b[0]-a[0])*(c[1]-a[1])-(b[1]-a[1])*(c[0]-a[0])<0.0 {front.extend_from_slice(t);}
+                }
+                ui.gl.triangles(&front);
+            }else {ui.gl.triangles(&batch.vertices);}
         }
         ui.gl.color = g.material;
     }
@@ -182,6 +198,12 @@ impl Screen for GuiContainer {
         &mut self.base
     }
     fn draw_screen(&mut self, ui: &mut Ui, mx: i32, my: i32, partial: f32) {
+        if self.kind==ContainerKind::Creative {
+            let (ox,oy)=self.origin();
+            if !self.previous_down && ui.mouse_down && mx>=ox+155 && mx<ox+169 && my>=oy+17 && my<oy+179 {self.dragging=true;}
+            if !ui.mouse_down {self.dragging=false;}self.previous_down=ui.mouse_down;
+            if self.dragging {self.scroll=((my-(oy+25)) as f32/146.0).clamp(0.0,1.0);self.update_scroll(ui);}
+        }
         let Some(s) = ui
             .container_snapshot
             .clone()
@@ -246,6 +268,10 @@ impl Screen for GuiContainer {
         self.draw_buttons(ui, mx, my);
         ui.gl.depth_test = true;
         let _ = partial;
+        if self.kind==ContainerKind::Creative {
+            ui.gl.color4f(1.0,1.0,1.0,1.0);ui.gl.bind_texture(ui.texture("gui/allitems.png"));
+            ui.draw_textured_modal_rect(ox+154,oy+17+(145.0*self.scroll) as i32,0,208,16,16);
+        }
         self.previous_mouse = [mx as f32, my as f32];
     }
     fn mouse_clicked(&mut self, ui: &mut Ui, x: i32, y: i32, button: i32) {
@@ -278,6 +304,13 @@ impl Screen for GuiContainer {
                 button,
                 shift: slot != -999 && ui.shift_down,
             });
+        }
+    }
+    fn mouse_scrolled(&mut self,ui:&mut Ui,amount:i32) {
+        if self.kind==ContainerKind::Creative && amount!=0 {
+            let rows=worldgen::container::creative::catalog().len()/8-8+1;
+            self.scroll=(self.scroll as f64-amount.signum() as f64/rows as f64) as f32;
+            self.scroll=self.scroll.clamp(0.0,1.0);self.update_scroll(ui);
         }
     }
     fn key_typed(&mut self, ui: &mut Ui, _c: char, key: i32) {

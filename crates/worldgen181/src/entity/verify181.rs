@@ -286,9 +286,9 @@ pub fn rules() -> Vec<u8> {
                 orb.pickup_xp_orb(&mut w, &mut player);
                 let p = player.player_state().unwrap();
                 for v in [
-                    p.experience,
-                    p.experience_level,
-                    p.total_experience,
+                    p.experience.points,
+                    p.experience.level,
+                    p.experience.total,
                     p.xp_pickup_cooldown,
                 ] {
                     i(&mut o, v);

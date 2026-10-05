@@ -160,11 +160,12 @@ pub fn run(script: &str, out_dir: &std::path::Path) -> Result<(), String> {
                 let title: Box<dyn super::Screen> =
                     Box::new(screens::main_menu::GuiMainMenu::with_splash(&splash));
                 let s: Box<dyn super::Screen> = match arg(0).as_str() {
-                    "inventory" | "crafting" | "chest" | "largechest" | "furnace" | "dispenser" => {
+                    "creative" | "inventory" | "crafting" | "chest" | "largechest" | "furnace" | "dispenser" => {
                         preview = Default::default();
                         use worldgen::container::*;
                         let kind = match arg(0).as_str() {
                             "inventory" => ContainerKind::Player,
+                            "creative" => ContainerKind::Creative,
                             "crafting" => ContainerKind::Workbench,
                             "chest" => ContainerKind::Chest { rows: 3 },
                             "largechest" => ContainerKind::Chest { rows: 6 },
@@ -270,6 +271,18 @@ pub fn run(script: &str, out_dir: &std::path::Path) -> Result<(), String> {
                     let i = || v.parse::<i32>().map_err(|_| format!("hud {k}"));
                     match k {
                         "health" => p.health = i()?,
+                        "food" => p.food_level = i()?,
+                        "saturation" => p.food_saturation = v.parse().map_err(|_| "hud saturation")?,
+                        "xp" => p.xp_points = i()?,
+                        "level" => p.xp_level = i()?,
+                        "seed" => p.seed = v.parse().map_err(|_| "hud seed")?,
+                        "armor" => p.armor = i()?,
+                        "air" => p.air = i()?,
+                        "water" => p.head_in_water = i()? != 0,
+                        "creative" => p.survival = i()? == 0,
+                        "poison" => p.poison = i()? != 0,
+                        "hunger" => p.hunger = i()? != 0,
+                        "regen" => p.regeneration = i()? != 0,
                         "prev" => p.prev_health = i()?,
                         "hearts_life" => p.hearts_life = i()?,
                         "item" => p.current_item = i()?,
@@ -319,6 +332,7 @@ pub fn run(script: &str, out_dir: &std::path::Path) -> Result<(), String> {
                 let acts = sys.process_actions();
                 if acts.iter().any(|a| matches!(a, super::system::GameAction::RefreshTextures)) { sys.refresh_textures(&device, &queue)?; }
             }
+            "wheel" => {if let Some(s)=sys.screen.as_mut(){s.mouse_scrolled(&mut sys.ui,rest.parse().map_err(|_|"wheel")?);}},
             "shift" => sys.ui.shift_down = rest == "on",
             "release" => {
                 sys.mouse_event(mx, my, 0, false);
@@ -388,6 +402,7 @@ pub fn run(script: &str, out_dir: &std::path::Path) -> Result<(), String> {
                         c.slot_click(p, slot, button, shift);
                         sys.update_container(c.snapshot(p));
                     }
+                    worldgen::container::ContainerCommand::ScrollCreative {window,position} if window==c.window=>{c.scroll_creative(position);sys.update_container(c.snapshot(p));}
                     worldgen::container::ContainerCommand::Close { window }
                         if window == c.window =>
                     {

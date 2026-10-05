@@ -1,6 +1,7 @@
-//! Literal Beta 1.7.3 Container/Slot rules. The world thread owns this object;
+//! Literal Beta 1.8.1 Container/Slot rules. The world thread owns this object;
 //! the client only receives snapshots and sends window-tagged commands.
 pub mod recipes;
+pub mod creative;
 pub mod session;
 pub mod tiles;
 pub mod verify;
@@ -11,6 +12,7 @@ use recipes::CraftingManager;
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum ContainerKind {
     Player,
+    Creative,
     Workbench,
     Chest { rows: usize },
     Furnace,
@@ -110,6 +112,10 @@ impl Container {
         };
         let mut player_y = 84;
         match kind {
+            ContainerKind::Creative => {
+                c.tile=creative::contents(0.0);c.grid(Inventory::Tile,8,9,8,18);
+                for x in 0..9 {c.add(Inventory::Main,x,8+x as i32*18,184,SlotKind::Normal);}return c;
+            }
             ContainerKind::Player => {
                 c.matrix = vec![None; 4];
                 c.add(Inventory::Result, 0, 144, 36, SlotKind::Crafting);
@@ -194,6 +200,7 @@ impl Container {
             176,
             match self.kind {
                 ContainerKind::Chest { rows } => 114 + rows as i32 * 18,
+                ContainerKind::Creative => 208,
                 _ => 166,
             },
         )
@@ -377,11 +384,12 @@ impl Container {
     }
     fn transfer(&mut self, p: &mut InventoryPlayer, slot: usize) -> Option<ItemStack> {
         let mut s = self.stack(p, slot)?;
+        if self.kind==ContainerKind::Creative {return Some(s);}
         let old = copy(s);
-        if self.kind == ContainerKind::Dispenser {
-            return Some(old);
-        }
         let (start, end, reverse) = match self.kind {
+            ContainerKind::Dispenser => {
+                if slot < 9 { (9, 45, true) } else { (0, 9, false) }
+            }
             ContainerKind::Chest { rows } => {
                 if slot < rows * 9 {
                     (rows * 9, self.slots.len(), true)
@@ -409,6 +417,7 @@ impl Container {
             }
         };
         self.merge(p, &mut s, start, end, reverse);
+        if s.count == old.count { return None; }
         if s.count == 0 {
             self.put_stack(p, slot, None);
         } else {
@@ -434,6 +443,7 @@ impl Container {
         if button != 0 && button != 1 {
             return None;
         }
+        if self.kind==ContainerKind::Creative && slot!=-999 && slot<72 {return self.creative_click(p,slot,button,shift);}
         if slot == -999 {
             if let Some(mut s) = p.cursor.take() {
                 let dropped = if button == 0 { s } else { s.split(1) };
@@ -448,13 +458,14 @@ impl Container {
             return None;
         }
         let slot = slot as usize;
+        if shift && self.kind==ContainerKind::Creative {return self.transfer(p,slot);}
         if shift {
             let transferred = self.transfer(p, slot)?;
             let result = copy(transferred);
-            // Original recurses only when the replenished source is smaller.
+            // Beta 1.8.1 recurses while the replenished source retains the same item ID.
             if self
                 .stack(p, slot)
-                .is_some_and(|s| s.count < transferred.count)
+                .is_some_and(|s| s.id == transferred.id)
             {
                 self.slot_click(p, slot as i32, button, true);
             }
@@ -615,6 +626,7 @@ pub enum ContainerCommand {
         button: i32,
         shift: bool,
     },
+    ScrollCreative { window:i32, position:f32 },
     Close {
         window: i32,
     },

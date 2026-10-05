@@ -1,9 +1,11 @@
-//! Beta 1.7.3 singleplayer simulation and client-facing inputs.
+//! Beta 1.8.1 singleplayer simulation and client-facing inputs.
 pub mod activation;
 pub mod api;
 pub mod block_hooks;
 pub mod controller;
 pub mod dye;
+pub mod food;
+pub mod mechanics;
 pub mod interactions;
 pub mod inventory;
 pub mod items;
@@ -20,6 +22,7 @@ use crate::{
     World,
 };
 pub use api::{PlayerHud, PlayerTarget, PlayerTickInput};
+pub use food::{FoodStats, PlayerCapabilities, Experience};
 pub use inventory::{InventoryPlayer, ItemStack};
 
 #[derive(Clone, Copy, Debug, Default)]
@@ -96,12 +99,22 @@ pub enum SleepStatus {
 }
 #[derive(Clone, Debug)]
 pub struct PlayerState {
-    pub food_exhaustion: f32,
-    pub experience: i32,
-    pub experience_level: i32,
-    pub total_experience: i32,
+    pub food: FoodStats,
+    pub capabilities: PlayerCapabilities,
+    pub experience: Experience,
     pub xp_pickup_cooldown: i32,
-    pub fish_entity: Option<i32>,
+    pub sprinting: bool,
+    pub sprint_toggle_timer: i32,
+    pub sprint_ticks: i32,
+    pub fly_toggle_timer: i32,
+    pub previous_forward: f32,
+    pub previous_jump: bool,
+    pub ground_speed: f32,
+    pub air_speed: f32,
+    pub item_in_use: Option<ItemStack>,
+    pub item_use_slot: i32,
+    pub item_use_ticks: i32,
+    pub fish_entity:Option<i32>,
     pub left_click_counter: i32,
     pub last_click_tick: i32,
     pub controller: controller::PlayerControllerSP,
@@ -128,6 +141,8 @@ pub struct PlayerState {
     pub time_in_portal: f32,
     pub prev_time_in_portal: f32,
     pub damage_remainder: i32,
+    pub damage_bypasses_armor:bool,
+    pub damage_exhaustion:f32,
     pub events: Vec<PlayerEvent>,
     pub player_index: Option<usize>,
     /// `addStat` calls since the last snapshot (stat id, or -1 for a null stat; amount).
@@ -138,12 +153,22 @@ pub struct PlayerState {
 impl Default for PlayerState {
     fn default() -> Self {
         Self {
-            food_exhaustion: 0.0,
-            experience: 0,
-            experience_level: 0,
-            total_experience: 0,
+            food: Default::default(),
+            capabilities: Default::default(),
+            experience: Default::default(),
             xp_pickup_cooldown: 0,
-            fish_entity: None,
+            sprinting: false,
+            sprint_toggle_timer: 0,
+            sprint_ticks: 0,
+            fly_toggle_timer: 0,
+            previous_forward: 0.0,
+            previous_jump: false,
+            ground_speed: 0.1,
+            air_speed: 0.02,
+            item_in_use: None,
+            item_use_slot: 0,
+            item_use_ticks: 0,
+            fish_entity:None,
             left_click_counter: 0,
             last_click_tick: 0,
             controller: Default::default(),
@@ -170,6 +195,7 @@ impl Default for PlayerState {
             time_in_portal: 0.0,
             prev_time_in_portal: 0.0,
             damage_remainder: 0,
+            damage_bypasses_armor:false,damage_exhaustion:0.3,
             events: Vec::new(),
             stat_log: Vec::new(),
             minecart_start: None,
@@ -197,11 +223,13 @@ impl Entity {
             let n = java_round_f(((dx * dx + dy * dy + dz * dz).sqrt() as f32) * 100.0);
             if n > 0 {
                 self.add_stat(stat::DIVE, n);
+                self.add_exhaustion(0.015 * n as f32 * 0.01);
             }
         } else if self.in_water {
             let n = java_round_f(((dx * dx + dz * dz).sqrt() as f32) * 100.0);
             if n > 0 {
                 self.add_stat(stat::SWIM, n);
+                self.add_exhaustion(0.015 * n as f32 * 0.01);
             }
         } else if self.is_on_ladder(w) {
             if dy > 0.0 {
@@ -211,6 +239,8 @@ impl Entity {
             let n = java_round_f(((dx * dx + dz * dz).sqrt() as f32) * 100.0);
             if n > 0 {
                 self.add_stat(stat::WALK, n);
+                let sprint = self.player_state().unwrap().sprinting;
+                self.add_exhaustion(if sprint { 10.0f32 * 0.01 * n as f32 * 0.01 } else { 0.01 * n as f32 * 0.01 });
             }
         } else {
             let n = java_round_f(((dx * dx + dz * dz).sqrt() as f32) * 100.0);
@@ -304,8 +334,9 @@ impl Entity {
     }
     pub fn swing_item(&mut self) {
         if let Some(s) = self.player_state_mut() {
-            s.swing_ticks = -1;
-            s.is_swinging = true;
+            if !s.is_swinging || s.swing_ticks>=3 || s.swing_ticks<0 {
+                s.swing_ticks = -1;s.is_swinging = true;
+            }
         }
     }
     pub fn heal(&mut self, amount: i32) {
@@ -318,15 +349,16 @@ impl Entity {
         let s = self.player_state_mut().unwrap();
         if s.is_swinging {
             s.swing_ticks += 1;
-            if s.swing_ticks >= 8 {
+            if s.swing_ticks >= 6 {
                 s.swing_ticks = 0;
                 s.is_swinging = false;
             }
         } else {
             s.swing_ticks = 0;
         }
-        let swing = s.swing_ticks as f32 / 8.0;
-        let (strafe, forward) = s.input.movement();
+        let swing = s.swing_ticks as f32 / 6.0;
+        let (mut strafe, mut forward) = s.input.movement();
+        if s.item_in_use.is_some() { strafe *= 0.2; forward *= 0.2; }
         let jump = s.input.jump;
         self.living.swing_progress = swing;
         self.living.move_strafing = strafe;
@@ -334,6 +366,7 @@ impl Entity {
         self.living.is_jumping = jump;
     }
     pub(super) fn player_before_living(&mut self, w: &mut World) {
+        self.update_sprint_and_flight();
         if self.player_state().unwrap().in_portal && self.riding.is_some() {
             self.mount_entity(w, None);
         }
@@ -418,6 +451,19 @@ impl Entity {
         }
     }
     pub(super) fn player_after_living(&mut self, w: &mut World) {
+        let on_ground = self.on_ground;
+        let s = self.player_state_mut().unwrap();
+        s.ground_speed = 0.1;
+        s.air_speed = 0.02;
+        if s.sprinting {
+            s.ground_speed = (s.ground_speed as f64 + 0.1f32 as f64 * 0.3) as f32;
+            s.air_speed = (s.air_speed as f64 + 0.02f32 as f64 * 0.3) as f32;
+        }
+        if on_ground && s.capabilities.flying { s.capabilities.flying = false; }
+        // EntityLiving's landMovementFactor / jumpMovementFactor are what movement reads.
+        let (ground, air) = (s.ground_speed, s.air_speed);
+        self.living.ground_acceleration = ground;
+        self.living.air_acceleration = air;
         let mut yaw = (self.motion.x * self.motion.x + self.motion.z * self.motion.z).sqrt() as f32;
         let mut pitch = crate::jmath::java_atan(-self.motion.y * 0.2f32 as f64) as f32 * 15.0;
         if yaw > 0.1 {
@@ -526,6 +572,8 @@ impl Entity {
         }
     }
     pub(super) fn update_player(&mut self, w: &mut World) {
+        self.update_item_use(w);
+        if self.player_state().unwrap().xp_pickup_cooldown > 0 { self.player_state_mut().unwrap().xp_pickup_cooldown -= 1; }
         let s = self.player_state_mut().unwrap();
         if s.xp_pickup_cooldown > 0 {
             s.xp_pickup_cooldown -= 1;
@@ -573,6 +621,17 @@ impl Entity {
         s.cloak.z += delta.z * 0.25;
         s.cloak.y += delta.y * 0.25;
         self.add_stat(stat::MINUTES_PLAYED, 1);
+        let health = self.living.health;
+        match self.player_state_mut().unwrap().food.tick(w.difficulty, health) {
+            food::FoodAction::Heal => self.heal(1),
+            food::FoodAction::Starve => {
+                let s=self.player_state_mut().unwrap();s.damage_bypasses_armor=true;s.damage_exhaustion=0.0;
+                self.attack(w,None,1);
+                let s=self.player_state_mut().unwrap();s.damage_bypasses_armor=false;s.damage_exhaustion=0.3;
+            },
+            food::FoodAction::None => {}
+        }
+        if self.player_state().unwrap().capabilities.disable_damage && self.fire > 0 { self.fire = 0; }
         if self.riding.is_none() {
             self.player_state_mut().unwrap().minecart_start = None;
         }
@@ -583,6 +642,7 @@ impl Entity {
         attacker: Option<i32>,
         damage: &mut i32,
     ) -> bool {
+        if self.player_state().unwrap().capabilities.disable_damage { return false; }
         self.living.entity_age = 0;
         if self.living.health <= 0 {
             return false;
@@ -616,20 +676,17 @@ impl Entity {
         }
         *damage != 0
     }
+    /// `EntityPlayer.damageEntity` (b1.8.1): blocking halves and armor absorbs blockable damage,
+    /// then the source's hunger cost, then health.
     pub(super) fn damage_living_from(
         &mut self,
         source: super::damage::DamageSource,
         mut amount: i32,
     ) {
-        if source.bypasses_armor() {
-            self.living.health -= amount;
-            return;
+        if !source.bypasses_armor() && self.is_blocking() {
+            amount = (1 + amount) >> 1;
         }
-        if let Some(s) = self.player_state_mut() {
-            s.food_exhaustion = (s.food_exhaustion + source.exhaustion()).min(40.0);
-        }
-
-        if let Some(s) = self.player_state_mut() {
+        if let Some(s) = self.player_state_mut().filter(|_| !source.bypasses_armor()) {
             let damage = amount * (25 - s.inventory.armor_value()) + s.damage_remainder;
             let broken = s.inventory.damage_armor(amount);
             amount = damage / 25;
@@ -637,6 +694,9 @@ impl Entity {
             for id in broken {
                 self.add_stat(stat::broken(id), 1);
             }
+        }
+        if self.player_state().is_some() {
+            self.add_exhaustion(source.exhaustion());
         }
         self.living.health -= amount;
     }

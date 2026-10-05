@@ -105,11 +105,8 @@ impl super::Entity {
                 );
             }
             HUNGER => {
-                if let Some(p) = self.player_state_mut() {
-                    p.food_exhaustion = (p.food_exhaustion
-                        + 0.025 * effect.amplifier.wrapping_add(1) as f32)
-                        .min(40.0);
-                }
+                // EntityPlayer.addExhaustion (skipped while damage is disabled).
+                self.add_exhaustion(0.025 * effect.amplifier.wrapping_add(1) as f32);
             }
             _ => {}
         }

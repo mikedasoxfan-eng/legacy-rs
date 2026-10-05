@@ -370,7 +370,7 @@ impl Entity {
             if self.living.death_time > 20 {
                 if self.living.recently_hit > 0 || self.player_state().is_some() {
                     let mut xp = if let Some(p) = self.player_state() {
-                        p.total_experience >> 1
+                        p.experience.total >> 1
                     } else if matches!(
                         self.kind,
                         EntityKind::Pig { .. }
@@ -644,7 +644,18 @@ impl Entity {
     pub fn move_entity_with_heading(&mut self, w: &mut World, strafe: f32, forward: f32) {
         if self.player_state().is_some() {
             let before = self.pos;
+            // EntityPlayer.moveEntityWithHeading: flying uses jumpMovementFactor 0.05 and keeps
+            // 60% of the vertical motion.
+            let flying = self.player_state().unwrap().capabilities.flying;
+            let (vertical, air) = (self.motion.y, self.living.air_acceleration);
+            if flying {
+                self.living.air_acceleration = 0.05;
+            }
             self.living_move_entity_with_heading(w, strafe, forward);
+            if flying {
+                self.motion.y = vertical * 0.6;
+                self.living.air_acceleration = air;
+            }
             let d = (
                 self.pos.x - before.x,
                 self.pos.y - before.y,
