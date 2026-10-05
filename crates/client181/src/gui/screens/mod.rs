@@ -14,3 +14,5 @@ pub mod stats;
 pub mod texture_packs;
 pub mod edit_sign;
 pub mod chat;
+
+pub(crate) mod block_items;

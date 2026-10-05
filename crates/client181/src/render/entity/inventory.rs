@@ -143,8 +143,9 @@ fn bounds(p: [f32; 6]) -> Bounds {
         max_z: p[5] as f64,
     }
 }
+fn item_props(id:u8)->&'static crate::render::RenderProps {&crate::gui::screens::block_items::RENDER[id as usize]}
 pub fn in_3d(id: i16) -> bool {
-    (0..256).contains(&id) && matches!(rprops(id as u8).render_type, 0 | 13 | 10 | 11 | 16)
+    (0..256).contains(&id) && matches!(item_props(id as u8).render_type, 0 | 13 | 10 | 11 | 16 | 21 | 22)
 }
 pub fn block_color(id: u8, meta: i32) -> u32 {
     if id == 18 {
@@ -169,9 +170,9 @@ pub fn inventory(gl: &mut Fixed, id: u8, meta: i32, brightness: f32, tint: bool)
             1.0,
         ];
     }
-    let rt = rprops(id).render_type;
+    let rt = item_props(id).render_type;
     let meta = if rt == 16 { 1 } else { meta };
-    let mut boxes = vec![rprops(id).bounds];
+    let mut boxes = vec![item_props(id).bounds];
     if rt == 10 {
         boxes = vec![[0.0, 0.0, 0.0, 1.0, 1.0, 0.5], [0.0, 0.0, 0.5, 1.0, 0.5, 1.0]];
     }
@@ -182,6 +183,9 @@ pub fn inventory(gl: &mut Fixed, id: u8, meta: i32, brightness: f32, tint: bool)
             [0.4375, 0.8125, -0.125, 0.5625, 0.9375, 1.125],
             [0.4375, 0.3125, -0.125, 0.5625, 0.4375, 1.125],
         ];
+    }
+    if rt==21 {
+        boxes=vec![[0.4375,0.3,0.0,0.5625,1.0,0.125],[0.4375,0.3,0.875,0.5625,1.0,1.0],[0.4375,0.5,0.0,0.5625,0.9375,1.0]];
     }
     if matches!(id, 70 | 72) {
         boxes = vec![[0.0, 0.375, 0.0, 1.0, 0.625, 1.0]];
@@ -201,9 +205,13 @@ pub fn inventory(gl: &mut Fixed, id: u8, meta: i32, brightness: f32, tint: bool)
     for b in boxes {
         gl.translate(-0.5, -0.5, -0.5);
         for (side, n) in NORMALS.iter().enumerate() {
+            if id==2 && tint {
+                let c=if side==1 {grass_color()}else {0xffffff};
+                gl.material=[(c>>16&255) as f32/255.0*brightness,(c>>8&255) as f32/255.0*brightness,(c&255) as f32/255.0*brightness,1.0];
+            }
             gl.begin();
             gl.set_normal(n[0], n[1], n[2]);
-            let tex = rprops(id).textures[if rt == 0 || rt == 16 { (meta & 15) as usize } else { 0 }][side] as i32;
+            let tex = item_props(id).textures[if rt == 0 || rt == 16 { (meta & 15) as usize } else { 0 }][side] as i32;
             let offset = if rt == 13 {
                 match side {
                     2 => [0.0, 0.0, 0.0625],
@@ -230,4 +238,9 @@ pub fn falling(gl: &mut Fixed, id: u8, light: [f32; 7]) {
         Faces { b: bounds(rprops(id).bounds), gl, offset: [-0.5; 3] }.face(side, rprops(id).textures[0][side] as i32);
     }
     gl.end();
+}
+
+fn grass_color()->u32 {
+    static COLOR:std::sync::OnceLock<u32>=std::sync::OnceLock::new();
+    *COLOR.get_or_init(||{let mut jar=crate::assets::Jar::open().unwrap();let image=jar.image("misc/grasscolor.png").unwrap();let at=(127*256+127)*4;let c=&image.rgba[at..at+3];(c[0] as u32)<<16|(c[1] as u32)<<8|c[2] as u32})
 }

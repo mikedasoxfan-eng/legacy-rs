@@ -31,5 +31,15 @@ fn main()->io::Result<()> {
         let settings=worldgen::entity::player::food::WorldSettings::new(seed,mode,features);
         out.write_all(&settings.seed.to_be_bytes())?;int(&mut out,settings.game_mode)?;out.write_all(&[settings.map_features as u8])?;
     }}}
+    for mask in 0..64 {
+        let input=worldgen::entity::player::PlayerInput {forward:mask&1!=0,back:mask&2!=0,left:mask&4!=0,right:mask&8!=0,jump:mask&16!=0,sneak:mask&32!=0,..Default::default()};
+        let (strafe,forward)=input.movement();out.write_all(&strafe.to_be_bytes())?;out.write_all(&forward.to_be_bytes())?;out.write_all(&[input.jump as u8,input.sneak as u8])?;
+    }
+    let mut world=worldgen::World::new(0,0);let mut player=worldgen::entity::Entity::player(&mut world,"Player");
+    for flying in [false,true] {for speed in [0.02,0.1,0.13,0.2] {for draw in [-1,0,1,10,20,21,71999] {
+        let state=player.player_state_mut().unwrap();state.capabilities.flying=flying;state.ground_speed=speed;
+        state.item_in_use=if draw<0 {None}else {Some(worldgen::entity::player::ItemStack::new(261,1,0))};state.item_use_ticks=72000-draw;
+        out.write_all(&player.fov_multiplier().to_be_bytes())?;
+    }}}
     out.flush()
 }

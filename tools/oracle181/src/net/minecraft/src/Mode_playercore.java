@@ -47,6 +47,22 @@ public final class Mode_playercore {
             for(long seed:new long[]{0,181,-1,Long.MIN_VALUE,Long.MAX_VALUE})for(int mode:new int[]{0,1,2})for(boolean features:new boolean[]{false,true}) {
                 WorldSettings settings=new WorldSettings(seed,mode,features);out.writeLong(settings.func_35518_a());out.writeInt(settings.func_35519_b());out.writeBoolean(settings.func_35520_c());
             }
+            GameSettings options=new GameSettings();MovementInputFromOptions movement=new MovementInputFromOptions(options);
+            for(int mask=0;mask<64;mask++) {
+                options.keyBindForward.field_35965_e=(mask&1)!=0;options.keyBindBack.field_35965_e=(mask&2)!=0;
+                options.keyBindLeft.field_35965_e=(mask&4)!=0;options.keyBindRight.field_35965_e=(mask&8)!=0;
+                options.keyBindJump.field_35965_e=(mask&16)!=0;options.keyBindSneak.field_35965_e=(mask&32)!=0;
+                movement.updatePlayerMoveState(p);out.writeFloat(movement.moveStrafe);out.writeFloat(movement.moveForward);out.writeBoolean(movement.jump);out.writeBoolean(movement.sneak);
+            }
+            Block init=Block.stone;
+            EntityPlayerSP sp=(EntityPlayerSP)Oracle.allocate(PlayerOracle.HeadlessPlayer.class);sp.field_35212_aW=new PlayerCapabilities();sp.field_35215_ba=0.1F;
+            for(java.lang.reflect.Field f:EntityLiving.class.getDeclaredFields())if(java.util.Map.class.isAssignableFrom(f.getType())){f.setAccessible(true);f.set(sp,new java.util.HashMap());}
+            java.lang.reflect.Field used=EntityPlayer.class.getDeclaredField("field_34907_d");used.setAccessible(true);
+            java.lang.reflect.Field remaining=EntityPlayer.class.getDeclaredField("field_34906_e");remaining.setAccessible(true);
+            for(boolean flying:new boolean[]{false,true})for(float speed:new float[]{0.02F,0.1F,0.13F,0.2F})for(int draw:new int[]{-1,0,1,10,20,21,71999}) {
+                sp.field_35212_aW.field_35757_b=flying;sp.field_35169_bv=speed;
+                used.set(sp,draw<0?null:new ItemStack(261,1,0));remaining.setInt(sp,72000-draw);out.writeFloat(sp.func_35220_u_());
+            }
         }
     }
 }

@@ -348,7 +348,7 @@ pub fn packed_normal(q: &TexturedQuad) -> u32 {
 }
 
 pub fn pack_normal(n: Vec3) -> u32 {
-    let x = (n.x * 128.0) as i32 as i8 as i32;
+    let x = (n.x * 127.0) as i32 as i8 as i32;
     let y = (n.y * 127.0) as i32 as i8 as i32;
     let z = (n.z * 127.0) as i32 as i8 as i32;
     (x | (y << 8) | (z << 16)) as u32

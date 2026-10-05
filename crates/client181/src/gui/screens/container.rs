@@ -164,7 +164,14 @@ fn draw_item(ui: &mut Ui, s: Option<ItemStack>, x: i32, y: i32) {
             if let Some(t) = batch.texture {
                 ui.gl.bind_texture(ui.texture(t));
             }
-            ui.gl.triangles(&batch.vertices);
+            if matches!(s.id,18|20) {
+                let mut front=Vec::new();
+                for t in batch.vertices.chunks_exact(3) {
+                    let a=t[0].pos;let b=t[1].pos;let c=t[2].pos;
+                    if (b[0]-a[0])*(c[1]-a[1])-(b[1]-a[1])*(c[0]-a[0])<0.0 {front.extend_from_slice(t);}
+                }
+                ui.gl.triangles(&front);
+            }else {ui.gl.triangles(&batch.vertices);}
         }
         ui.gl.color = g.material;
     }
@@ -290,7 +297,7 @@ impl Screen for GuiContainer {
                 .position(|s| self.hover(s, x, y))
                 .map_or(-1, |i| i as i32)
         };
-        if slot != -1 || self.kind==ContainerKind::Creative {
+        if slot != -1 {
             ui.container_commands.push(ContainerCommand::Click {
                 window: self.window,
                 slot,
