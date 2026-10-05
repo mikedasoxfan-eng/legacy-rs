@@ -28,6 +28,8 @@ pub struct HudPlayer {
     pub yaw: f32,
     /// `playerController.shouldDrawHUD()` (survival)
     pub survival: bool,
+    /// `inventory.armorItemInSlot(3)`: the helmet's item id.
+    pub helmet: Option<i32>,
     /// `inventory.mainInventory[0..9]` with each stack's `animationsToGo`.
     pub hotbar: [Option<(worldgen::world::tile::ItemStack, i32)>; 9],
 }
@@ -50,6 +52,7 @@ impl Default for HudPlayer {
             pos: [0.0; 3],
             yaw: 0.0,
             survival: true,
+            helmet: None,
             hotbar: [None; 9],
         }
     }
@@ -172,6 +175,9 @@ impl GuiIngame {
         ui.gl.blend = true;
         if ui.settings.fancy_graphics {
             self.render_vignette(ui, p.brightness, w, h);
+        }
+        if !ui.settings.third_person_view && p.helmet == Some(86) {
+            render_pumpkin_blur(ui, w, h);
         }
         let portal = p.prev_time_in_portal + (p.time_in_portal - p.prev_time_in_portal) * partial;
         if portal > 0.0 {
@@ -370,6 +376,28 @@ impl GuiIngame {
         gl.color4f(1.0, 1.0, 1.0, 1.0);
         gl.blend_func(Factor::SrcAlpha, Factor::OneMinusSrcAlpha);
     }
+}
+
+/// `renderPumpkinBlur`: the carved-pumpkin view while wearing one.
+fn render_pumpkin_blur(ui: &mut Ui, w: i32, h: i32) {
+    let t = ui.texture("%blur%/misc/pumpkinblur.png");
+    let gl = &mut ui.gl;
+    gl.depth_test = false;
+    gl.depth_mask = false;
+    gl.blend_func(Factor::SrcAlpha, Factor::OneMinusSrcAlpha);
+    gl.color4f(1.0, 1.0, 1.0, 1.0);
+    gl.alpha_test = false;
+    gl.bind_texture(t);
+    gl.start_drawing_quads();
+    gl.add_vertex_with_uv(0.0, h as f64, -90.0, 0.0, 1.0);
+    gl.add_vertex_with_uv(w as f64, h as f64, -90.0, 1.0, 1.0);
+    gl.add_vertex_with_uv(w as f64, 0.0, -90.0, 1.0, 0.0);
+    gl.add_vertex_with_uv(0.0, 0.0, -90.0, 0.0, 0.0);
+    gl.draw();
+    gl.depth_mask = true;
+    gl.depth_test = true;
+    gl.alpha_test = true;
+    gl.color4f(1.0, 1.0, 1.0, 1.0);
 }
 
 /// `renderPortalOverlay`: the portal texture over the screen while teleporting.

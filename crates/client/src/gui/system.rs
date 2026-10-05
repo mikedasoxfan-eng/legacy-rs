@@ -35,6 +35,10 @@ pub struct GuiSystem {
     pub splash_rand: worldgen::JavaRandom,
     /// `Minecraft.guiAchievement`
     pub toast: super::achievement_toast::AchievementToast,
+    /// `displayDebugInfo`'s frame-time graph (F3).
+    pub frame_graph: super::frame_graph::FrameGraph,
+    /// Nanoseconds spent ticking this frame (Minecraft.run's tick loop), for the graph.
+    pub tick_nanos: i64,
 }
 
 pub struct Resources {
@@ -101,6 +105,8 @@ impl GuiSystem {
             screen: None,
             splash_rand: worldgen::JavaRandom::new(splash_seed),
             toast: Default::default(),
+            frame_graph: Default::default(),
+            tick_nanos: 0,
         }
     }
 
@@ -245,5 +251,18 @@ impl GuiSystem {
         let gl = &mut self.ui.gl;
         gl.alpha_test = true;
         gl.alpha_ref = 0.1;
+    }
+}
+
+impl GuiSystem {
+    /// Minecraft.run after the frame: the F3 frame graph, then the achievement window.
+    pub fn draw_after_frame(&mut self) {
+        if self.ui.settings.show_debug_info {
+            let ticks = self.tick_nanos;
+            self.frame_graph.draw(&mut self.ui, ticks);
+        } else {
+            self.frame_graph.skip();
+        }
+        self.toast.draw(&mut self.ui);
     }
 }

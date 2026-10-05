@@ -204,6 +204,7 @@ public class GuiShot {
                         else if (e[0].equals("prev")) p.prevHealth = v;
                         else if (e[0].equals("hearts_life")) p.heartsLife = v;
                         else if (e[0].equals("item")) p.inventory.currentItem = v;
+                        else if (e[0].equals("helmet")) p.inventory.armorInventory[3] = v < 0 ? null : new ItemStack(v, 1, 0);
                         else if (e[0].equals("pos")) {
                             String[] c = e[1].split(",");
                             p.setPosition(Double.parseDouble(c[0]), Double.parseDouble(c[1]), Double.parseDouble(c[2]));
