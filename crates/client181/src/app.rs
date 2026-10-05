@@ -930,7 +930,9 @@ impl App {
                 }
             }
         }
-        if !self.ready || self.loading.is_some() || self.player.is_none() {
+        // Started at the title screen (no world flags), the script also drives the menus.
+        let menus = !self.opts.direct && self.loading.is_none();
+        if !menus && (!self.ready || self.loading.is_some() || self.player.is_none()) {
             return None;
         }
         // The script plays the role of the focused window.
@@ -1017,7 +1019,7 @@ impl App {
         if gui_ticks == 20 {
             self.gui_ticks = now;
         }
-        if self.ready && self.player.is_some() {
+        if (self.ready && self.player.is_some()) || (!self.opts.direct && self.loading.is_none()) {
             self.script_ticks += gui_ticks as i64;
         }
         if let Some(g) = &mut self.gui {
