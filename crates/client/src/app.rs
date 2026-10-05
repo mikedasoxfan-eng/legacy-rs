@@ -231,6 +231,8 @@ pub struct App {
     world_time: i64,
     /// When the last tick arrived from the world thread (for partial ticks).
     last_tick: Instant,
+    /// This tick's partial-tick clock was already restarted by the player update.
+    tick_started_by_player: bool,
     last_frame: Instant,
     frame_deadline: Option<Instant>,
     last_cam_sent: DVec3,
@@ -315,6 +317,7 @@ impl App {
             gui_ticks: Instant::now(),
             world_time: 0,
             last_tick: Instant::now(),
+            tick_started_by_player: false,
             last_frame: Instant::now(),
             frame_deadline: None,
             last_cam_sent: DVec3::splat(f64::MAX),
@@ -1123,6 +1126,12 @@ impl App {
                         if life < self.life {
                             continue;
                         }
+                        // The partial tick restarts when the new position is applied: the Time
+                        // message that also restarts it comes a few milliseconds later (after the
+                        // tick's effects), and drawing the new position with the old partial tick
+                        // made the camera overshoot and snap back several times a second.
+                        self.last_tick = now;
+                        self.tick_started_by_player = true;
                         // The world thread's rotation plus the frames it hasn't seen yet.
                         self.pending_look.retain(|&(s, ..)| s > input_seq);
                         let mut look = [entity.yaw, entity.pitch, entity.prev_yaw, entity.prev_pitch];
@@ -1249,7 +1258,9 @@ impl App {
                         self.world_time = time;
                         self.weather = weather;
                         self.weather_terrain = terrain;
-                        self.last_tick = now;
+                        if !std::mem::take(&mut self.tick_started_by_player) {
+                            self.last_tick = now;
+                        }
                         if let Some(snd) = &mut self.sound {
                             // PlayerControllerSP.updateController, every unpaused tick.
                             snd.play_random_music_if_ready();
