@@ -5,6 +5,10 @@ use crate::gui::slot::{GuiSlot, SlotList};
 use crate::gui::widgets::{GuiButton, GuiTextField, KEY_ESCAPE};
 use crate::gui::{Action, Screen, ScreenBase, Ui};
 
+#[path = "world_check8.rs"]
+mod check8;
+pub use check8::{check_yes_no, check_rename, check_select};
+
 pub struct GuiSelectWorld {
     base: ScreenBase,
     parent: Option<Box<dyn Screen>>,
@@ -15,6 +19,7 @@ pub struct GuiSelectWorld {
     slot: Option<GuiSlot>,
     world_label: String,
     conversion_label: String,
+    game_mode_labels: [String; 2],
     deleting: bool,
 }
 
@@ -25,11 +30,12 @@ impl GuiSelectWorld {
             parent: Some(parent),
             title: "Select world".into(),
             selected: false,
-            selected_world: -1,
+            selected_world: 0,
             saves: Vec::new(),
             slot: None,
             world_label: String::new(),
             conversion_label: String::new(),
+            game_mode_labels: Default::default(),
             deleting: false,
         }
     }
@@ -40,14 +46,13 @@ impl GuiSelectWorld {
     }
 
     fn save_file_name(&self, i: i32) -> Option<String> {
-        self.saves.get(i as usize).map(|s| s.file_name.clone())
+        Some(self.saves[i as usize].file_name.clone())
     }
 
     fn save_name(&self, ui: &Ui, i: i32) -> String {
-        match self.saves.get(i as usize) {
-            Some(s) if !s.display_name.is_empty() => s.display_name.clone(),
-            _ => format!("{} {}", ui.translate("selectWorld.world"), i + 1),
-        }
+        let s = &self.saves[i as usize];
+        if s.display_name.is_empty() { format!("{} {}", ui.translate("selectWorld.world"), i + 1) }
+        else { s.display_name.clone() }
     }
 
     fn init_buttons(&mut self, ui: &Ui) {
@@ -83,6 +88,7 @@ struct WorldSlot<'a> {
     buttons: &'a mut Vec<GuiButton>,
     world_label: &'a str,
     conversion_label: &'a str,
+    game_mode_labels: &'a [String; 2],
     background: (i32, i32),
     /// Double-click asks the screen to open the world after drawing.
     open: Option<i32>,
@@ -126,7 +132,7 @@ impl SlotList for WorldSlot<'_> {
         if s.needs_conversion {
             conv = format!("{} {}", self.conversion_label, conv);
         } else {
-            conv = ui.translate(if s.game_mode == 1 { "gameMode.creative" } else { "gameMode.survival" });
+            conv = self.game_mode_labels[s.game_mode as usize].clone();
         }
         ui.draw_string(&name, x + 2, y + 1, 16777215);
         ui.draw_string(&info, x + 2, y + 12, 8421504);
@@ -164,6 +170,7 @@ impl Screen for GuiSelectWorld {
         self.title = ui.translate("selectWorld.title");
         self.world_label = ui.translate("selectWorld.world");
         self.conversion_label = ui.translate("selectWorld.conversion");
+        self.game_mode_labels = [ui.translate("gameMode.survival"), ui.translate("gameMode.creative")];
         self.load_saves(ui);
         let (w, h) = (self.base.width, self.base.height);
         let mut slot = GuiSlot::new(w, h, 32, h - 64, 36);
@@ -204,6 +211,7 @@ impl Screen for GuiSelectWorld {
                         buttons: &mut self.base.buttons,
                         world_label: &self.world_label,
                         conversion_label: &self.conversion_label,
+                        game_mode_labels: &self.game_mode_labels,
                         background: (self.base.width, self.base.height),
                         open: None,
                     };
@@ -236,6 +244,7 @@ impl Screen for GuiSelectWorld {
                 buttons: &mut self.base.buttons,
                 world_label: &self.world_label,
                 conversion_label: &self.conversion_label,
+                game_mode_labels: &self.game_mode_labels,
                 background: (self.base.width, self.base.height),
                 open: None,
             };
@@ -637,7 +646,8 @@ impl Screen for GuiRenameWorld {
         self.base.buttons.clear();
         self.base.buttons.push(GuiButton::new(0, w / 2 - 100, h / 4 + 96 + 12, ui.translate("selectWorld.renameButton")));
         self.base.buttons.push(GuiButton::new(1, w / 2 - 100, h / 4 + 120 + 12, ui.translate("gui.cancel")));
-        let name = saves::world_info(&ui.saves_dir, &self.folder).map(|c| c.string("LevelName")).unwrap_or_default();
+        // The original dereferences getWorldInfo: a missing/corrupt save fails initialization.
+        let name = saves::world_info(&ui.saves_dir, &self.folder).expect("missing WorldInfo").string("LevelName");
         self.field = GuiTextField::new(w / 2 - 100, 60, 200, 20, name);
         self.field.focused = true;
         self.field.max_length = 32;

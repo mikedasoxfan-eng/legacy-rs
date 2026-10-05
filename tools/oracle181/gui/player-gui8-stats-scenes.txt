@@ -1,0 +1,47 @@
+# --- player-gui round 8: statistics lists, flat vanilla icons ---
+world 42
+clear 128
+hud health=20 prev=20 item=0 pos=0.5,120,0.5 brightness=0.0 food=20 saturation=5 xp=0 level=0
+statsreset
+stat 16777253 1234
+stat 16777254 9
+stat 16777266 55
+stat 16908548 7
+stat 16908557 1234
+stat 16908568 250
+stat 16843032 22
+stat 16974093 3
+open stats
+mouse 213 198
+click
+mouse 0 0
+shot b181_gui8_stats_blocks
+mouse 311 45
+shot b181_gui8_stats_blocks_header
+down
+shot b181_gui8_stats_blocks_press
+up
+shot b181_gui8_stats_blocks_sorted
+mouse 155 75
+shot b181_gui8_stats_blocks_tooltip
+mouse 320 198
+click
+mouse 0 0
+shot b181_gui8_stats_items
+mouse 211 45
+shot b181_gui8_stats_items_header
+down
+shot b181_gui8_stats_items_press
+up
+shot b181_gui8_stats_items_sorted
+down
+shot b181_gui8_stats_items_reverse_press
+up
+shot b181_gui8_stats_items_reverse
+down
+shot b181_gui8_stats_items_clear_press
+up
+shot b181_gui8_stats_items_clear
+mouse 155 75
+shot b181_gui8_stats_items_tooltip
+# --- end player-gui round 8 ---

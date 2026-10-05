@@ -804,6 +804,7 @@ impl Entity {
         self.living.attacked_at_yaw = 0.0;
         if let Some(id) = attacker {
             if id < 0
+                || (id == self.entity_id && self.player_state().is_some())
                 || w.entities
                     .get(&id)
                     .is_some_and(|e| e.player_state().is_some())
@@ -826,6 +827,10 @@ impl Entity {
                     w.players
                         .get((-1 - id) as usize)
                         .map(|&(x, y, z)| super::Vec3D::new(x, y, z))
+                } else if id == self.entity_id {
+                    // The live victim remains the source object for a self-owned arrow,
+                    // even while the world temporarily takes it out of its entity map.
+                    Some(self.pos)
                 } else {
                     w.entities.get(&id).map(|e| e.pos)
                 }
@@ -880,8 +885,12 @@ impl Entity {
     pub fn on_living_death(&mut self, w: &mut World, source: super::damage::DamageSource) {
         let attacker = source.attacker;
             self.living.dying = true;
+            if attacker == Some(self.entity_id) && self.player_state().is_some() {
+                self.add_stat(crate::entity::player::stat::PLAYER_KILLS, 1);
+            }
             if let Some(mut a) = attacker
                 .filter(|&id| id >= 0)
+                .filter(|&id| id != self.entity_id)
                 .and_then(|id| w.entities.remove(&id))
             {
                 if let Some(s) = a.player_state_mut() {
@@ -902,7 +911,7 @@ impl Entity {
             }
             if !w.multiplayer_world { self.drop_few_items(w); }
             if matches!(self.kind, EntityKind::Player(..)) {
-                self.player_death(w, attacker);
+                self.player_death(w, Some(source));
             }
             if matches!(self.kind, EntityKind::Creeper { .. })
                 && attacker

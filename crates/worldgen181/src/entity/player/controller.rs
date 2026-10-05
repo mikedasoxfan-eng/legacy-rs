@@ -20,6 +20,8 @@ impl Default for PlayerControllerSP {
     }
 }
 impl PlayerControllerSP {
+    /// GuiSelectWorld.selectWorld: every nonzero saved GameType selects creative.
+    pub fn saved_world_is_creative(game_type: i32) -> bool { game_type != 0 }
     /// PlayerController.createPlayer (SP delegates to this unchanged).
     pub fn create_player(w: &mut World, username: impl Into<String>) -> Entity {
         let mut p = Entity::player(w, username);

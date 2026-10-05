@@ -241,7 +241,8 @@ impl World {
             );
         }
         // flipPlayer
-        crate::entity::player::controller::PlayerControllerSP::flip_player(&mut e, self.info.game_type == 1);
+        crate::entity::player::controller::PlayerControllerSP::flip_player(&mut e,
+            crate::entity::player::controller::PlayerControllerSP::saved_world_is_creative(self.info.game_type));
         // spawnPlayerWithLoadedChunks; then thePlayer.entityId = the old id.
         e.entity_id = old;
         let (px, pz) = (e.pos.x, e.pos.z);

@@ -476,6 +476,10 @@ bash tools/verify_player_gui7_181.sh --built || fail=1
 # --- entities (b1.8.1) ---
 bash "$root/tools/verify_entities7_181.sh" --built || fail=1
 # --- end entities ---
+# --- player-gui (b1.8.1) ---
+# Round 8: player replay fixes and completed GUI class deltas.
+bash tools/verify_player_gui8_181.sh --built || fail=1
+# --- end player-gui ---
 pflush
 [ $fail -eq 0 ] && echo "ALL CASES EXACT" || echo "SOME CASES DIFFER"
 exit $fail

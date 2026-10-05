@@ -348,7 +348,7 @@ fn run(opts: WorldOptions, mut col: Colorizers, mut video: VideoSettings, rx: Re
     // Singleplayer: the real player (Minecraft.changeWorld creates thePlayer).
     let player = if opts.server { None } else { Some(world.spawn_player("Player")) };
     if let Some(id) = player {
-        if let Some(e) = world.entities.get_mut(&id) { e.initialize_player_mode(world.info.game_type == 1); }
+        if let Some(e) = world.entities.get_mut(&id) { e.initialize_player_mode(worldgen::entity::player::controller::PlayerControllerSP::saved_world_is_creative(world.info.game_type)); }
     }
     let mut input = InputFrame::default();
     let mut life = 0u32;
@@ -455,7 +455,7 @@ fn run(opts: WorldOptions, mut col: Colorizers, mut video: VideoSettings, rx: Re
                         if let Some(key) = world.respawn_player(old, &mut progress) {
                             let _ = tx.send(FromWorker::Chat(key.to_string()));
                         }
-                        if let Some(e)=world.entities.get_mut(&old){e.initialize_player_mode(world.info.game_type==1);}
+                        if let Some(e)=world.entities.get_mut(&old){e.initialize_player_mode(worldgen::entity::player::controller::PlayerControllerSP::saved_world_is_creative(world.info.game_type));}
                         life += 1;
                         if let Some(e) = world.entities.get(&old) {
                             cam = (e.pos.x, e.pos.y, e.pos.z);

@@ -3,6 +3,10 @@
 use super::gl::{Factor, Shade};
 use super::Ui;
 
+#[path = "slot_check8.rs"]
+mod check8;
+pub use check8::check;
+
 /// The subclass callbacks (`getSize`, `elementClicked`, ...).
 pub trait SlotList {
     fn size(&self) -> i32;
@@ -30,6 +34,9 @@ pub struct GuiSlot {
     right: i32,
     left: i32,
     pub slot_height: i32,
+    /// GuiSlot's protected mouse coordinates, assigned before subclass callbacks.
+    pub mouse_x: i32,
+    pub mouse_y: i32,
     scroll_up_id: i32,
     scroll_down_id: i32,
     initial_click_y: f32,
@@ -52,6 +59,8 @@ impl GuiSlot {
             right: width,
             left: 0,
             slot_height,
+            mouse_x: 0,
+            mouse_y: 0,
             scroll_up_id: 0,
             scroll_down_id: 0,
             initial_click_y: -2.0,
@@ -127,6 +136,8 @@ impl GuiSlot {
     }
 
     pub fn draw_screen(&mut self, ui: &mut Ui, l: &mut dyn SlotList, mx: i32, my: i32) {
+        self.mouse_x = mx;
+        self.mouse_y = my;
         l.draw_background(ui);
         let size = l.size();
         let bar0 = self.width / 2 + 124;
