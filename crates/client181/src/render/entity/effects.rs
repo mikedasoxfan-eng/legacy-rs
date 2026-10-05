@@ -1,6 +1,6 @@
 //! Render.renderShadow and Render.renderEntityOnFire.
 use super::fixed::Fixed;
-use worldgen::entity::{Entity, EntityKind};
+use worldgen::entity::Entity;
 #[derive(Clone, Debug)]
 pub struct Surface {
     pub xyz: [i32; 3],
@@ -18,23 +18,21 @@ pub struct Snapshot {
     pub surfaces: Vec<Surface>,
 }
 pub fn radius(e: &Entity) -> f32 {
-    match e.kind {
-        EntityKind::Item { .. } => 0.15,
-        EntityKind::Painting(..) | EntityKind::Fish(..) => 0.0,
-        EntityKind::Arrow(_) | EntityKind::Fireball(_) | EntityKind::Lightning { .. } => 0.0,
-        EntityKind::Pig { .. } | EntityKind::Sheep { .. } | EntityKind::Cow | EntityKind::Squid(_) => 0.7,
-        EntityKind::Chicken { .. } => 0.3,
-        EntityKind::Spider => 1.0,
-        EntityKind::Slime { .. } => 0.25,
-        EntityKind::Giant => 3.0,
-        _ => 0.5,
-    }
+    super::manager::renderer_for(e).shadow_size
 }
+
 pub fn shadow(e: &Entity, surfaces: &[Surface], partial: f32, camera: [f64; 3]) -> Fixed {
-    let p=super::bridge::position(e,partial);let relative=std::array::from_fn(|i|p[i]-camera[i]);
-    shadow_at(e,surfaces,partial,camera,relative)
+    shadow_with_camera(e, surfaces, partial, camera, camera)
 }
 pub fn shadow_at(e:&Entity,surfaces:&[Surface],partial:f32,camera:[f64;3],rel:[f64;3])->Fixed {
+    shadow_at_with_camera(e, surfaces, partial, camera, rel)
+}
+/// The render origin and cached viewing entity position differ in third person.
+pub fn shadow_with_camera(e: &Entity, surfaces: &[Surface], partial: f32, origin: [f64; 3], camera: [f64; 3]) -> Fixed {
+    let p = super::bridge::position(e, partial);
+    shadow_at_with_camera(e, surfaces, partial, camera, std::array::from_fn(|i| p[i] - origin[i]))
+}
+fn shadow_at_with_camera(e: &Entity, surfaces: &[Surface], partial: f32, camera: [f64; 3], rel: [f64; 3]) -> Fixed {
     let mut g = Fixed::new(1.0);
     let size = radius(e);
     if size <= 0.0 {
@@ -42,8 +40,8 @@ pub fn shadow_at(e:&Entity,surfaces:&[Surface],partial:f32,camera:[f64;3],rel:[f
     }
     let current = [e.pos.x, e.pos.y, e.pos.z];
     let distance: f64 = (0..3).map(|i| (current[i] - camera[i]).powi(2)).sum();
-    let factor = if matches!(e.kind, EntityKind::Item { .. }) { 0.75 } else { 1.0 };
-    let alpha = ((1.0 - distance / 256.0) * factor) as f32;
+    let factor = super::manager::renderer_for(e).shadow_opacity;
+    let alpha = ((1.0 - distance / 256.0) * factor as f64) as f32;
     if alpha <= 0.0 {
         return g;
     }

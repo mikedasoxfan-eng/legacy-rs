@@ -52,6 +52,7 @@ pub struct EntityPipeline {
     pub partial: f32,
     pub fancy: bool,
     pub view: [f32; 2],
+    pub manager: super::manager::RenderManager,
     uniforms: wgpu::Buffer,
     frame_bind: wgpu::BindGroup,
     texture_layout: wgpu::BindGroupLayout,
@@ -396,6 +397,7 @@ impl EntityPipeline {
             partial: 0.0,
             fancy: true,
             view: [0.0; 2],
+            manager: Default::default(),
             shadow,
             tnt_flash,
             line,
@@ -512,54 +514,70 @@ impl EntityPipeline {
             let overlay_brightness = snapshot.brightness;
             let brightness = if snapshot.light.is_some() { 1.0 } else { snapshot.brightness };
             let snapshot = &super::effects::Snapshot { brightness, ..snapshot.clone() };
-            if let worldgen::entity::EntityKind::Fish(s)=&e.kind {
-                let owner=self.angler.as_ref().filter(|p|Some(p.entity_id)==s.arrow.owner).or_else(||self.snapshots.iter().find(|v|Some(v.entity.entity_id)==s.arrow.owner).map(|v|&v.entity));
-                let p=super::bridge::position(e,self.partial);let relative=std::array::from_fn(|i|p[i]-camera[i]);let g=crate::render::fishing::render(e,owner,relative,self.partial,snapshot.brightness,self.view,self.third_person);batches.extend(g.draws.iter().map(|d|d.batch()));
-            }
-            if matches!(e.kind,worldgen::entity::EntityKind::Painting(_)) {
-                let lights:Vec<_>=crate::render::painting::light_positions(e).iter().map(|p|snapshot.surfaces.iter().find(|s|s.xyz==*p&&s.block==0).map_or(snapshot.brightness,|s|s.brightness)).collect();
-                let p=super::bridge::position(e,self.partial);let relative=std::array::from_fn(|i|p[i]-camera[i] as f64);
-                let g=crate::render::painting::render(e,relative,&lights);batches.extend(g.draws.iter().map(|d|d.batch()));
-            }
-            if let Some(mut s) = super::bridge::render_state(e, self.partial, snapshot.brightness) {
-                s.overlay_brightness = overlay_brightness;
-                if s.kind == living::MobKind::Enderman && s.screaming { s.scream_jitter = [self.enderman_random.gaussian()*0.02,self.enderman_random.gaussian()*0.02]; }
-                {
-                    let g=super::raw_living181::render(&s,camera.to_array(),self.normalize);
-                    explicit_lights=super::raw_living181::packed_brightnesses(&g.draws,snapshot.light.unwrap_or(NO_LIGHTMAP) as i32).into_iter().map(|v|v as u32).collect();
-                    batches.extend(g.draws.iter().map(|d| {
-                        let mut batch=d.batch();
-                        if d.texture==58 && d.flags & 8 != 0 {for vertex in &mut batch.vertices {vertex.uv[0]+=s.age*0.01;vertex.uv[1]+=s.age*0.01;}}
-                        batch
-                    }));
-                    if s.kind == living::MobKind::Slime { self.normalize = true; }
-                }
-            } else if let Some(mut s) =
-                super::bridge::object_state(e, self.partial, snapshot.brightness, snapshot.falling_light)
-            {
-                if let (super::objects::ObjectKind::Vehicle(v),Some(rails))=(&mut s.kind,&snapshot.vehicle_rails) {
-                    v.track=rails.sample(v.position);
-                }
-                let mut g = crate::world_effects::Effects::object_draws(&s, camera.to_array(), self.view, self.fancy);
-                for d in &mut g.draws {
-                    if self.normalize {
-                        d.flags |= 4;
+            self.manager.render_origin = camera.to_array();
+            let distance_camera = self.manager.camera;
+            self.manager.render_entity(
+                Some(super::manager::class(e)), Some(e.into()), self.partial,
+                |_| Ok(snapshot.light.unwrap_or(0) as i32),
+                |event| {
+                    match event {
+                        super::manager::Event::Body(_, _) => {
+                            if let worldgen::entity::EntityKind::Fish(s)=&e.kind {
+                                let owner=self.angler.as_ref().filter(|p|Some(p.entity_id)==s.arrow.owner).or_else(||self.snapshots.iter().find(|v|Some(v.entity.entity_id)==s.arrow.owner).map(|v|&v.entity));
+                                let p=super::bridge::position(e,self.partial);let relative=std::array::from_fn(|i|p[i]-camera[i]);let g=crate::render::fishing::render(e,owner,relative,self.partial,snapshot.brightness,self.view,self.third_person);batches.extend(g.draws.iter().map(|d|d.batch()));
+                            }
+                            if matches!(e.kind,worldgen::entity::EntityKind::Painting(_)) {
+                                let lights:Vec<_>=crate::render::painting::light_positions(e).iter().map(|p|snapshot.surfaces.iter().find(|s|s.xyz==*p&&s.block==0).map_or(snapshot.brightness,|s|s.brightness)).collect();
+                                let p=super::bridge::position(e,self.partial);let relative=std::array::from_fn(|i|p[i]-camera[i] as f64);
+                                let g=crate::render::painting::render(e,relative,&lights);batches.extend(g.draws.iter().map(|d|d.batch()));
+                            }
+                            if let Some(mut s) = super::bridge::render_state(e, self.partial, snapshot.brightness) {
+                                s.overlay_brightness = overlay_brightness;
+                                if s.kind == living::MobKind::Enderman && s.screaming { s.scream_jitter = [self.enderman_random.gaussian()*0.02,self.enderman_random.gaussian()*0.02]; }
+                                {
+                                    let g=super::raw_living181::render(&s,camera.to_array(),self.normalize);
+                                    explicit_lights=super::raw_living181::packed_brightnesses(&g.draws,snapshot.light.unwrap_or(NO_LIGHTMAP) as i32).into_iter().map(|v|v as u32).collect();
+                                    batches.extend(g.draws.iter().map(|d| {
+                                        let mut batch=d.batch();
+                                        if d.texture==58 && d.flags & 8 != 0 {for vertex in &mut batch.vertices {vertex.uv[0]+=s.age*0.01;vertex.uv[1]+=s.age*0.01;}}
+                                        batch
+                                    }));
+                                    if s.kind == living::MobKind::Slime { self.normalize = true; }
+                                }
+                            } else if let Some(mut s) =
+                                super::bridge::object_state(e, self.partial, snapshot.brightness, snapshot.falling_light)
+                            {
+                                if let (super::objects::ObjectKind::Vehicle(v),Some(rails))=(&mut s.kind,&snapshot.vehicle_rails) {
+                                    v.track=rails.sample(v.position);
+                                }
+                                let mut g = crate::world_effects::Effects::object_draws(&s, camera.to_array(), self.view, self.fancy);
+                                for d in &mut g.draws {
+                                    if self.normalize {
+                                        d.flags |= 4;
+                                    }
+                                }
+                                batches.extend(g.draws.iter().map(|d| d.batch()));
+                            }
+                        }
+                        super::manager::Event::ShadowAndFire(_, _) => {
+                            if !matches!(e.kind, worldgen::entity::EntityKind::Lightning { .. }) {
+                                if self.fancy {
+                                    let g = super::effects::shadow_with_camera(e, &snapshot.surfaces, self.partial, camera.to_array(), distance_camera);
+                                    batches.extend(g.draws.iter().map(|d| d.batch()));
+                                }
+                                batches.extend(
+                                    super::effects::fire(e, self.partial, camera.to_array(), self.view[0])
+                                        .draws
+                                        .iter()
+                                        .map(|d| d.batch()),
+                                );
+                            }
+                        }
+                        _ => {}
                     }
-                }
-                batches.extend(g.draws.iter().map(|d| d.batch()));
-            }
-            if !matches!(e.kind, worldgen::entity::EntityKind::Lightning { .. }) {
-                if self.fancy {
-                    let g = super::effects::shadow(e, &snapshot.surfaces, self.partial, camera.to_array());
-                    batches.extend(g.draws.iter().map(|d| d.batch()));
-                }
-                batches.extend(
-                    super::effects::fire(e, self.partial, camera.to_array(), self.view[0])
-                        .draws
-                        .iter()
-                        .map(|d| d.batch()),
-                );
-            }
+                    Ok(())
+                },
+            ).expect("registered simulation entity renderer");
             // RenderLiving turns the lightmap off for its hurt/flash overlay passes.
             let light = snapshot.light.unwrap_or(NO_LIGHTMAP);
             let trailing_light=explicit_lights.last().copied().unwrap_or(light);

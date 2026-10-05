@@ -35,13 +35,8 @@ pub fn render_state(e: &Entity, partial: f32, brightness: f32) -> Option<RenderS
     s.entity_id = e.entity_id;
     s.arrow_count = e.living.arrows_stuck;
     s.overlay_brightness = brightness;
-    let p = partial as f64;
     // RenderManager: lastTickPos + (pos - lastTickPos) * partialTicks.
-    s.position = [
-        e.last_tick_pos.x + (e.pos.x - e.last_tick_pos.x) * p,
-        e.last_tick_pos.y + (e.pos.y - e.last_tick_pos.y) * p,
-        e.last_tick_pos.z + (e.pos.z - e.last_tick_pos.z) * p,
-    ];
+    s.position = position(e, partial);
     let l = &e.living;
     s.yaw = lerp(e.prev_yaw, e.yaw, partial);
     s.body_yaw = lerp(l.prev_render_yaw_offset, l.render_yaw_offset, partial);
@@ -172,6 +167,8 @@ pub fn object_state(
             shake: a.shake,
             visible: e.prev_yaw != 0.0 || e.prev_pitch != 0.0,
         },
+        EntityKind::Snowball(_) => ObjectKind::Sprite { icon: 14, scale: 0.5 },
+        EntityKind::Egg(_) => ObjectKind::Sprite { icon: 12, scale: 0.5 },
         EntityKind::Fireball(_) => ObjectKind::Sprite {
             icon: 14,
             scale: 2.0,
@@ -186,10 +183,8 @@ pub fn object_state(
     })
 }
 pub fn position(e: &Entity, partial: f32) -> [f64; 3] {
-    let p = partial as f64;
-    [
-        e.last_tick_pos.x + (e.pos.x - e.last_tick_pos.x) * p,
-        e.last_tick_pos.y + (e.pos.y - e.last_tick_pos.y) * p,
-        e.last_tick_pos.z + (e.pos.z - e.last_tick_pos.z) * p,
-    ]
+    super::manager::position(
+        [e.last_tick_pos.x, e.last_tick_pos.y, e.last_tick_pos.z],
+        [e.pos.x, e.pos.y, e.pos.z], partial,
+    )
 }

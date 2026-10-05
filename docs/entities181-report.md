@@ -1,3 +1,59 @@
+# Beta 1.8.1 entities - round 9 report
+
+Round 9 completes **RenderManager, TileEntityRenderer and TileEntitySpecialRenderer** at the class/API boundary and connects the entity manager and special-renderer texture binding to the existing backend. Five starting backlog classes remain Not done. This table is authoritative; the earlier reports below retain their historical evidence. The requested backlog is **not entirely finished**.
+
+## Changes and original-bytecode proof
+
+`tools/verify_entities9_181.sh --built` adds four independent Mode classes executing the original Beta 1.8.1 bytecode on Mojang Java 8u51. The final delimited entities block in `tools/verify181.sh` invokes this suite. Original Java, shared fixtures/recorders and Beta 1.7.3 paths are untouched.
+
+| Check | Coverage | Result |
+|---|---|---|
+| rendermanager9_181 | All 32 constructor registrations, renderer classes, distinct slots, shadow size/opacity and association; recursive superclass lookup, retained aliases and null cache results, abstract/player/FX/custom subclasses and invalid/null classes; 2,400 active-camera caches with nullable resources/player/world, sleeping beds and missing beds, float/double interpolation, set/font/distance APIs; 480 regular/explicit dispatches, signed virtual brightness, white reset, ordered body then shadow/fire, suppressed null renderer and propagated callback failure | EXACT, 312,372 bytes |
+| managervisual9_181 | 160 real Cave Spider, Silverfish and XP orb shadow cases plus snowball/egg sprite cases; four partial ticks, distinct render origins and viewing-player positions, exact 16-block shadow fade boundary and Fancy on/off; actual renderer GL/Tessellator output | EXACT, 7,544 comparisons, zero differences |
+| tilespecial9_181 | 864 base-class cases: unset/rebound/null renderer, null/non-null engine and font, null/empty/NUL/normal texture names, six signed texture results, get-before-bind callback order and failures, empty world callback, exact font handle forwarding | EXACT, 55,872 bytes |
+| tilemanager9_181 | Four actual constructor registrations and association; superclass/null/unsupported tile caches; 540 active-context caches, world identity transitions, same-world reuse, duplicate cached renderer hooks, null entries and callback failures before resource assignment; 1,080 regular/explicit dispatch calls covering null tiles/worlds, unsupported subclasses, signed light, negative/NaN/infinite distances and the strict 4,096 squared-distance boundary; native tile-center distance | EXACT, 166,109 bytes |
+
+RenderManager now owns the ordered body/shadow dispatch used by EntityPipeline. Its interpolated position helper is also used by the existing bridge. The app supplies the existing player snapshot, look angles and bed query to the camera cache; a sleeping camera without a bed preserves the previous view angles. The original cached viewing-player position is separate from the rendering origin, fixing third-person shadow attenuation. Cave Spider's radius is 1.0, Silverfish's is 0.3, and XP orbs use radius 0.15 and opacity 12/16. Snowballs and eggs now reach the existing sprite renderer with icons 14/12 and scale 0.5. Lightmap texture ownership and GPU sampling remain the integrator's existing implementations.
+
+TileEntityRenderer is a backend-independent class facade over the existing JavaHashSet, interpolation, packed-light and resource-context APIs. Its world setter preserves Java HashMap value iteration, including repeated calls for cached aliases of one renderer and skipping null entries. The oracle records actual JVM Class identity hashes as **external ordering inputs**; Rust computes the map transitions and callback order from them. It does not copy expected output ordering, pin VM identities, or change a shared fixture. The TileEntityRenderer resources can be borrowed by TileEntitySpecialRenderer rather than maintaining another texture/font cache. Live tile drawing, terrain/world tiles, lids, and the integrator's existing tile loops are unchanged; this is completion of the class facade, not a claim that those loops were rewritten to use it.
+
+TileEntitySpecialRenderer forwards nullable texture names to the engine, checks for a missing engine after dereferencing the renderer, and forwards the font handle. Its original empty world callback remains empty even with an unset context. The existing chest renderer's texture binding now calls this base helper through Fixed's existing texture binding. Chest model geometry, lid math, item helper behavior and world tile/inventory simulation are unchanged, with the existing chest oracle retained.
+
+The constructor proofs inspect original private constructors and original registry objects before any probes are installed. Virtual probes isolate the managers/base renderer from inherited drawing dependencies; the separate visual matrix executes real registered renderers. Rust represents dependency exceptions as typed results. The existing broad pickup-renderer failure is not claimed fixed, and no GPU screenshot validation is claimed.
+
+## Per-class status
+
+| Class | Status | Proof or remaining gap |
+|---|---|---|
+| RenderManager | Done | Full Java version diff audit; rendermanager9_181 and managervisual9_181 EXACT, plus retained model/living/object/effect checks. Entity pipeline and active-camera cache use the implementation. |
+| TileEntityRenderer | Done at class/API boundary | Full Java version diff audit; tilemanager9_181 EXACT, with actual Class hashes supplied as allocation-dependent inputs. Existing concrete sign/chest/piston/spawner draw APIs retained. Integrator-owned live tile dispatch is unchanged. |
+| TileEntitySpecialRenderer | Done | Full Java version diff audit; tilespecial9_181 EXACT; existing chest renderer delegates texture binding through the helper and existing chest checks remain EXACT. |
+| SpawnerAnimals | Not done | Existing population/sleep/identity-input proofs retained. Live terrain population and allocation-dependent broad spawning integration remain. |
+| EntityList | Not done | Existing registry/factory proofs retained. Complete concrete nullable/malformed constructor and NBT-exception fidelity remains. |
+| Item | Not done | Full inherited lifecycle, exceptional/edit behavior and delegation audit remain. |
+| ItemBlock | Not done | Placement proofs retained. Broad block callback dependencies, sponge and malformed moving-piston paths remain unclaimed. |
+| ItemStack | Not done | Complete alias mutation, load/exception and delegation audit remains with player integration; representation and player code untouched. |
+| EffectRenderer | Done, retained | Round-8 dispatch and previous particle/factory/lifecycle/emitter proofs retained. |
+| ItemMap | Done, retained | Round-8 lookup/update/creation plus previous map/storage/registry proofs retained. |
+
+All earlier Done statuses, including the eight round-7 Item classes, are retained. Multiplayer synchronization/interpolation, labels, ears and capes remain outside singleplayer scope. No partial changes were made to the five remaining backlog classes.
+
+## Validation and handoff
+
+The required `cargo build --release -p worldgen181 -p client` passed on the final code (`target/entities9-build5.log`, 31.54s). The final focused suite passed all four checks and ended `ENTITIES9 ALL FOCUSED CASES EXACT` (`target/entities9-final-verify_entities9_181.sh.log`).
+
+The first retained regression run passed all eight suites: `verify_entities181.sh`, `verify_entities3_181.sh`, `verify_entities4_181.sh`, `verify_entities5_181.sh`, `verify_entities6_181.sh`, `verify_entities7_181.sh`, `verify_entities8_181.sh` and `verify_world_blocks181.sh`, all with `--built`. The combined log is `target/entities9-regressions.log`, with individual `target/entities9-<script>.log` files. The final-source rerun passed the same eight suites, again with their EXACT summaries (`target/entities9-final-checks.log` and individual `target/entities9-final-<script>.log` files). The combined run returned exit status 0; it also ran the four new checks first, with their EXACT summary.
+
+The exact new verify181 sections are the four checks in `verify_entities9_181.sh`, included in one new final delimited entities block. Existing sections and recorders were not rewritten. The previous inherited broad `pickuprenderers` / `pickuprenderersfast` dependency differences remain unclaimed, with round-7 baseline evidence preserved below. Run the roughly one-hour full `tools/verify181.sh` after merge, as requested by the task. No interactive GPU validation was performed.
+
+Raw source audits for all eight starting backlog classes are `target/entities9-<Class>.diff`. `docs/entities181-round9-audit.md` maps the completed classes' methods to the port and checks. Formatting of the six new Rust modules, shell syntax for both verification scripts and the commit script, and `git diff --check` pass (`target/entities9-static-checks.log`). The explicit commit manifest exactly matches the 22 changed/new files and excludes protected source paths.
+
+`target/commit-b181-entities9.sh` stages the explicit round-9 files and commits using the requested logiu identity/email and both co-author trailers. It is not executed because .git is read-only in this sandbox. The round-9 script takes precedence over the duplicated stale round-7 filename in the task.
+
+Protected Beta 1.7.3 crates/tools, original Java, shared oracle fixtures/recorders, terrain generation, world-block simulation, player tick/hunger/XP/GUI, ItemStack/inventory representation, first-person, weather, live tile dispatch/lids, world/chunk renderer, render range and lightmap implementations remain untouched. App changes only supply the entity renderer's active context; entity pipeline changes only affect entity dispatch and shadows.
+
+## Preserved round 8 report
+
 # Beta 1.8.1 entities - round 8 report
 
 Round 8 completes **EffectRenderer and ItemMap** and fixes the inherited wild-wolf despawn RNG discrepancy. Eight starting backlog classes remain Not done. The round-8 table below is authoritative; the preserved earlier reports retain their historical validation and scope.
