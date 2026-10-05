@@ -1,4 +1,5 @@
 //! `ChunkProviderSky`: the Beta 1.8.1 floating-island raw chunk generator.
+pub use crate::sky_populate::populate;
 use crate::{
     biome::{Biome, BiomeSource},
     caves::CaveCarver,

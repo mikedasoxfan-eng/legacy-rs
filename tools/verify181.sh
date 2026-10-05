@@ -411,6 +411,7 @@ bash "$root/tools/verify_world_blocks181.sh" --built || fail=1
 # --- end world-blocks ---
 # --- terrain (b1.8.1) ---
 bash "$root/tools/verify_terrain181.sh" --built || fail=1
+bash "$root/tools/verify_terrain2_181.sh" --built || fail=1
 # --- end terrain ---
 # --- entities (b1.8.1) ---
 bash "$root/tools/verify_entities181.sh" || fail=1

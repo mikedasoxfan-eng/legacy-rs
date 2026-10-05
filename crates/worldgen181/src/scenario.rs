@@ -32,6 +32,8 @@ impl World {
         let id = self.get_first_uncovered_block(x, z);
         if self.dimension.is_hell_world() {
             id != block::BEDROCK && id != block::AIR && block::opaque_cube_lookup(id)
+        } else if self.dimension == crate::world::Dimension::Sky {
+            id != 0 && block::mat(block::material_of(id)).is_solid
         } else {
             id == block::GRASS
         }
@@ -126,11 +128,7 @@ impl World {
         let existing = storage.as_ref().and_then(|s| s.load_level());
         let seed = existing.as_ref().map_or(seed, |i| i.seed);
         // World's constructor: a player saved in the Nether reopens it (WorldInfo.getDimension).
-        let dimension = if existing.as_ref().is_some_and(|i| i.dimension() == -1) {
-            crate::world::Dimension::Nether
-        } else {
-            crate::world::Dimension::Overworld
-        };
+        let dimension = existing.as_ref().and_then(|i|crate::world::Dimension::from_id(i.dimension())).unwrap_or(crate::world::Dimension::Overworld);
         let mut w = World::with_dimension(seed, world_rand_seed, dimension);
         if server {
             w.server = Some(Default::default());

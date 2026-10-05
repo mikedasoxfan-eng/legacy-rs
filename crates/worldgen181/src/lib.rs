@@ -23,6 +23,7 @@ pub mod terrain_verify;
 pub mod weighted;
 pub mod structures;
 pub mod sky;
+mod sky_populate;
 pub mod jmath;
 pub mod math;
 pub mod maps;

@@ -40,6 +40,8 @@ fn tick_rate(id: u8) -> i32 {
 // ---------------------------------------------------------------- dispatch
 
 pub fn on_block_added(w: &mut World, id: u8, x: i32, y: i32, z: i32) {
+    // Structure placement reaches BlockTorch with metadata zero and no support.
+    if id == 50 { w.torch_added(id,x,y,z); return; }
     if crate::entity::player::block_hooks::added(w, id, x, y, z) {
         return;
     }
@@ -136,6 +138,7 @@ pub fn on_block_removal(w: &mut World, id: u8, x: i32, y: i32, z: i32) {
 }
 
 pub fn on_neighbor_block_change(w: &mut World, id: u8, x: i32, y: i32, z: i32, _changed: u8) {
+    if id == 50 { w.torch_neighbor_change(id,x,y,z); return; }
     if id == 106 { crate::features181::vine_neighbor(w,x,y,z); return; }
     if matches!(id, 63 | 68) { crate::sign::neighbor(w,id,x,y,z); return; }
     if id != 26 && crate::entity::player::block_hooks::neighbor(w, id, x, y, z, _changed) {
@@ -733,7 +736,7 @@ pub fn reed_can_place(w: &mut World, x: i32, y: i32, z: i32) -> bool {
     if below == block::REED {
         return true;
     }
-    if below != block::GRASS && below != block::DIRT {
+    if below != block::GRASS && below != block::DIRT && below != block::SAND {
         return false;
     }
     w.material_is(x - 1, y - 1, z, MAT_WATER)
