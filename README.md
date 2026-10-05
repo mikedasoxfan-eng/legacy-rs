@@ -54,7 +54,7 @@ lighting); those screens count as matching.
 | Screens and HUD (hunger/XP bars, creative inventory, new menus, stats) | 88.5 % | 1,582 / 1,787 | 62 / 66 |
 | Rendering (lightmap lighting, new block shapes, models, particles) | 100.0 % | 5,139 / 5,139 | 81 / 81 |
 
-Oracle checks (`tools/verify181.sh`): **828 of 865** sections exact.
+Oracle checks (`tools/verify181.sh`): **811 of 865** sections exact.
 <!-- b181-progress:end -->
 
 ---
