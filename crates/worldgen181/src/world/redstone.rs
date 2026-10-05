@@ -148,6 +148,7 @@ impl World {
 
     /// `BlockRedstoneWire.onBlockAdded`
     pub(crate) fn wire_added(&mut self, x: i32, y: i32, z: i32) {
+        if self.multiplayer_world {return;}
         self.wire_update(x, y, z);
         self.notify_blocks_of_neighbor_change(x, y + 1, z, WIRE);
         self.notify_blocks_of_neighbor_change(x, y - 1, z, WIRE);
@@ -156,6 +157,7 @@ impl World {
 
     /// `BlockRedstoneWire.onBlockRemoval`
     pub(crate) fn wire_removed(&mut self, x: i32, y: i32, z: i32) {
+        if self.multiplayer_world {return;}
         self.notify_blocks_of_neighbor_change(x, y + 1, z, WIRE);
         self.notify_blocks_of_neighbor_change(x, y - 1, z, WIRE);
         self.wire_update(x, y, z);
@@ -164,6 +166,7 @@ impl World {
 
     /// `BlockRedstoneWire.onNeighborBlockChange`
     pub(crate) fn wire_neighbor_change(&mut self, x: i32, y: i32, z: i32) {
+        if self.multiplayer_world {return;}
         let meta = self.get_block_metadata(x, y, z);
         // canPlaceBlockAt: a normal cube below.
         if !self.is_block_normal_cube(x, y - 1, z) {

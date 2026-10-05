@@ -3,6 +3,28 @@ use super::World;
 use crate::{block::*, entity::AxisAlignedBB as BB};
 
 impl World {
+    /// Both registered sign classes refresh state bounds before selection.
+    /// The standing sign's state hook leaves its singleton bounds untouched.
+    pub fn sign_selected_box181(&mut self, id: u8, x: i32, y: i32, z: i32) -> BB {
+        assert!(matches!(id,63|68));
+        self.set_block_bounds_based_on_state(id,x,y,z);
+        self.block_bounds[id as usize].translated(x as f64,y as f64,z as f64)
+    }
+    /// BlockStairs selection delegates to the model singleton's current bounds.
+    /// Unlike collision/ray state bounds, this method does not reset either singleton.
+    pub fn stairs_selected_box181(&self, id: u8, x: i32, y: i32, z: i32) -> BB {
+        let model=crate::block::visual181::stairs_model181(id).expect("stairs block");
+        self.block_bounds[model as usize].translated(x as f64,y as f64,z as f64)
+    }
+    pub fn trapdoor_can_place_on_side181(&mut self, x: i32, y: i32, z: i32, side: i32) -> bool {
+        if side == 0 || side == 1 { return false; }
+        let (dx,dz)=match side {2=>(0,1),3=>(0,-1),4=>(1,0),5=>(-1,0),_=>(0,0)};
+        self.is_block_normal_cube(x.wrapping_add(dx),y,z.wrapping_add(dz))
+    }
+    /// Original item bounds are singleton fields, consumed by selection/rendering.
+    pub fn set_trapdoor_item_bounds181(&mut self) {
+        self.block_bounds[96] = BB::new(0.0, 0.40625, 0.0, 1.0, 0.59375, 1.0);
+    }
     /// Button/lever neighbor callbacks first check all attachment candidates,
     /// then only the original enumerated metadata orientations.
     pub fn attached_control_neighbor181(&mut self,id:u8,x:i32,y:i32,z:i32) {

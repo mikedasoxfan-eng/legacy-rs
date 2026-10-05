@@ -30,6 +30,8 @@ pub fn can_place_at(w: &mut World, id: u8, x: i32, y: i32, z: i32, side: i32) ->
     let target=w.get_block_id(x,y,z);
     let base=target==0 || mat(material_of(target)).ground_cover;
     match id {
+        55 => w.is_block_normal_cube(x,y-1,z),
+        96 => w.trapdoor_can_place_on_side181(x,y,z,side),
         VINE => crate::world::plants181::vine_can_place(w,x,y,z,side),
         FENCE_GATE => mat(w.get_block_material(x,y-1,z)).is_solid
             && (w.get_block_id(x,y,z)==0 || mat(w.get_block_material(x,y,z)).ground_cover),
@@ -43,7 +45,7 @@ pub fn can_place_at(w: &mut World, id: u8, x: i32, y: i32, z: i32, side: i32) ->
                 || w.is_block_normal_cube(x, y - 1, z)
                 || (id == 50 && w.get_block_id(x, y - 1, z) == 85)
         }
-        69 | 77 | 96 => {
+        69 | 77 => {
             if side == 1 && id == 69 {
                 return w.is_block_normal_cube(x, y - 1, z);
             }
@@ -75,7 +77,8 @@ pub fn can_place_at(w: &mut World, id: u8, x: i32, y: i32, z: i32, side: i32) ->
         }
         70 | 72 => w.is_block_normal_cube(x,y-1,z) || w.get_block_id(x,y-1,z)==85,
         86 | 91 => base && w.is_block_normal_cube(x,y-1,z),
-        27 | 28 | 66 | 93 | 94 => w.is_block_normal_cube(x, y - 1, z),
+        93 | 94 => w.is_block_normal_cube(x, y - 1, z) && base,
+        27 | 28 | 66 => w.is_block_normal_cube(x, y - 1, z),
         92 => mat(w.get_block_material(x, y - 1, z)).is_solid,
         6 | 31 | 37 | 38 => base && matches!(w.get_block_id(x, y - 1, z), 2 | 3 | 60),
         32 => base && w.get_block_id(x, y - 1, z) == 12,

@@ -83,7 +83,8 @@ impl World {
         }
         false
     }
-    fn wire_neighbor(&mut self, x: i32, y: i32, z: i32, side: i32) -> bool {
+    /// BlockRedstoneWire.isPowerProviderOrWire, including signed direction inputs.
+    pub fn wire_neighbor(&mut self, x: i32, y: i32, z: i32, side: i32) -> bool {
         let id = self.get_block_id(x, y, z);
         if id == 55 {
             return true;
@@ -100,7 +101,8 @@ impl World {
         let meta = self.get_block_metadata(x, y, z);
         side == [2, 3, 0, 1][(meta & 3) as usize]
     }
-    fn block_power(&mut self, x: i32, y: i32, z: i32, side: i32, strong: bool) -> bool {
+    /// Dispatch the original isPoweringTo / isIndirectlyPoweringTo block callbacks.
+    pub fn block_power(&mut self, x: i32, y: i32, z: i32, side: i32, strong: bool) -> bool {
         let id = self.get_block_id(x, y, z);
         if !provides_power(id) && id != 93 && id != 94 {
             return false;
