@@ -544,6 +544,7 @@ pub fn snapshot(w: &mut World, out: &mut Vec<u8>) {
     }
 }
 pub fn object_bytes(scenario: &str, ticks: i32) -> Vec<u8> {
+    let _remote_eye = super::creature::stand_in_eye_height(1.82);
     let mut w = World::with_dimension(
         0,
         300,

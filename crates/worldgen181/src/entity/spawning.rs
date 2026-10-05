@@ -1,5 +1,22 @@
 use super::{AxisAlignedBB as BB, Entity, EntityKind, Vec3D};
 use crate::{biome::Biome, block::*, math::floor_double as floor, JavaRandom, World};
+// Oracle-only VM identity input. Normal play retains the stable local identities.
+thread_local! {
+    static REPLAY_SPAWN_IDENTITIES: std::cell::RefCell<Option<std::vec::IntoIter<i32>>> = const { std::cell::RefCell::new(None) };
+}
+pub fn replay_spawn_identities181(identities: Vec<i32>) {
+    REPLAY_SPAWN_IDENTITIES.with(|stream| *stream.borrow_mut() = Some(identities.into_iter()));
+}
+pub fn finish_spawn_identity_replay181() {
+    REPLAY_SPAWN_IDENTITIES.with(|stream| {
+        if let Some(mut identities) = stream.borrow_mut().take() {
+            assert!(identities.next().is_none(), "unused spawning identity hashes");
+        }
+    });
+}
+fn replay_spawn_identity181() -> Option<i32> {
+    REPLAY_SPAWN_IDENTITIES.with(|stream| stream.borrow_mut().as_mut().map(|s| s.next().expect("spawning identity stream exhausted")))
+}
 pub(crate) fn spawn_identity(x: i32, z: i32) -> i32 {
     ((((x as u32 & 0x7fff) << 16 | (z as u32 & 0xffff)).wrapping_add(1) & 0x7fffffff) as i32).max(1)
 }
@@ -149,7 +166,7 @@ impl World {
         self.perform_spawning_with_identity(hostile, peaceful, |x, z| {
             // Identity hashes are a VM-dependent input, just like clock-seeded RNG.
             // Stable per-coordinate identities keep the port's traversal repeatable.
-            spawn_identity(x, z)
+            replay_spawn_identity181().unwrap_or_else(|| spawn_identity(x, z))
         })
     }
     pub fn perform_spawning_with_identity(

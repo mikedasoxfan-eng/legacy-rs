@@ -99,8 +99,10 @@ fn main() -> ExitCode {
             }
         }
         Some("player") => {
+            start_replay_identities181(&a[4]);
             let java = std::fs::read(&a[4]).expect("player dump");
             let rust = worldgen::entity::player::verify::player_bytes(&a[2], p(3) as i32);
+            finish_replay_identities181();
             if java == rust {
                 println!("EXACT MATCH: player {}, {} ticks and world", a[2], a[3]);
                 ExitCode::SUCCESS
@@ -147,8 +149,10 @@ fn main() -> ExitCode {
             }
         }
         Some("entities") => {
+            start_replay_identities181(&a[4]);
             let java = std::fs::read(&a[4]).expect("entity dump");
             let rust = worldgen::entity::verify::object_bytes(&a[2], p(3) as i32);
+            finish_replay_identities181();
             if java == rust {
                 println!("EXACT MATCH: {} entities, {} ticks", a[2], a[3]);
                 ExitCode::SUCCESS
@@ -1431,4 +1435,29 @@ fn redstone_events(w:&mut World,s:&mut String) {
             s.push('\n');
         }
     }
+}
+
+// Sidecars are optional for older non-ticking fixtures; present streams must be
+// consumed exactly so an input mismatch cannot silently become a simulation diff.
+fn start_replay_identities181(path: &str) {
+    fn read(path: String) -> Option<Vec<i32>> {
+        match std::fs::read(path) {
+            Ok(bytes) => {
+                assert_eq!(bytes.len() % 4, 0, "truncated replay identity stream");
+                Some(bytes.chunks_exact(4).map(|b| i32::from_be_bytes(b.try_into().unwrap())).collect())
+            }
+            Err(e) if e.kind() == std::io::ErrorKind::NotFound => None,
+            Err(e) => panic!("replay identity sidecar: {e}"),
+        }
+    }
+    if let Some(ids) = read(format!("{path}.identities")) {
+        worldgen::world::tick::replay_chunk_identities181(ids);
+    }
+    if let Some(ids) = read(format!("{path}.spawnidentities")) {
+        worldgen::entity::spawning::replay_spawn_identities181(ids);
+    }
+}
+fn finish_replay_identities181() {
+    worldgen::world::tick::finish_chunk_identity_replay181();
+    worldgen::entity::spawning::finish_spawn_identity_replay181();
 }

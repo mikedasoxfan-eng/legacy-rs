@@ -7,7 +7,7 @@ import static net.minecraft.src.PlayerOracle.*;
 /** The inherited player script with explicit generic DamageSource inputs.
  * Beta 1.8.1 no longer accepts the old null-source damage calls. All snapshots
  * use the unchanged PlayerOracle/EntityOracle fixtures. The removed Minecraft
- * mouseTicksRan field is now driver state; reloaded players get a controller. */
+ * mouseTicksRan field is absent; reloaded players get a controller. */
 public final class Mode_playerintegration181 {
     static final Map<Minecraft, Integer> repeatClock = new WeakHashMap<>();
     static HeadlessPlayer player(World w) throws Exception {
@@ -19,14 +19,20 @@ public final class Mode_playerintegration181 {
         Minecraft mc=p.mc;Method click=Minecraft.class.getDeclaredMethod("clickMouse",int.class);click.setAccessible(true);
         Method held=Minecraft.class.getDeclaredMethod("sendClickBlockToController",int.class,boolean.class);held.setAccessible(true);
         boolean left=ticks%40<15||ticks%40>=35,right=ticks%40>=20&&ticks%40<34;
-        int last=repeatClock.getOrDefault(mc,0);
-        if(ticks%40==0||ticks%40==35){click.invoke(mc,0);last=ticks;}
-        if(ticks%40==20){click.invoke(mc,1);last=ticks;}
         Field counter=Minecraft.class.getDeclaredField("leftClickCounter");counter.setAccessible(true);
         int value=counter.getInt(mc);if(value>0)counter.setInt(mc,value-1);
-        if(left&&ticks-last>=5){click.invoke(mc,0);last=ticks;}
-        if(right&&ticks-last>=5){click.invoke(mc,1);last=ticks;}
-        repeatClock.put(mc,last);held.invoke(mc,0,left);
+        Field delay=Minecraft.class.getDeclaredField("field_35001_ab");delay.setAccessible(true);
+        value=delay.getInt(mc);if(value>0)delay.setInt(mc,value-1);
+        // Minecraft.runTick consumes attack/use presses once, then repeats only
+        // held use when the six-tick right-click delay expires in Beta 1.8.1.
+        boolean using=p.func_35196_Z();
+        if(using&&!right)c.func_35638_c(p);
+        if(!using){
+            if(ticks%40==0||ticks%40==35)click.invoke(mc,0);
+            if(ticks%40==20)click.invoke(mc,1);
+        }
+        if(right&&delay.getInt(mc)==0&&!p.func_35196_Z())click.invoke(mc,1);
+        held.invoke(mc,0,left);
     }
     static void apiState(HeadlessPlayer p, DataOutputStream o) throws Exception {
         i(o,EntityOracle.intField(Minecraft.class,"leftClickCounter",p.mc));
@@ -41,6 +47,7 @@ public final class Mode_playerintegration181 {
         Item.itemRand.setSeed(600);OracleHooks.reset(100);EntityOracle.mathRandom().setSeed(200);w.rand.setSeed(300);w.updateLCG=0;Field sound=World.class.getDeclaredField("soundCounter");sound.setAccessible(true);sound.setInt(w,0);
         Field chest=BlockChest.class.getDeclaredField("random");chest.setAccessible(true);((Random)chest.get(Block.chest)).setSeed(500);
         if(scenario.equals("pipeline")||scenario.equals("sleepworld")) {EntityOracle.FlatProvider f=(EntityOracle.FlatProvider)w.chunkProvider;for(int x=-12;x<=12;x++)for(int z=-12;z<=12;z++)if(!f.chunkExists(x,z)){byte[] blocks=new byte[32768];for(int bx=0;bx<16;bx++)for(int bz=0;bz<16;bz++)blocks[(bx<<11)|(bz<<7)|63]=1;Chunk c=new Chunk(w,blocks,x,z);c.isTerrainPopulated=true;c.isChunkLoaded=true;f.chunks.put(f.key(x,z),c);}}
+        try (Mode_replayidentities181 identities = new Mode_replayidentities181(w, path)) {
         HeadlessPlayer p=player(w);p.setLocationAndAngles(0.5,64,0.5,0,0);w.entityJoinedWorld(p);
         PlayerControllerSP controller=new PlayerControllerSP(p.mc);p.mc.playerController=controller;p.mc.effectRenderer=new HeadlessEffects(w);p.mc.entityRenderer=(EntityRenderer)Oracle.allocate(EntityRenderer.class);p.mc.entityRenderer.itemRenderer=(ItemRenderer)Oracle.allocate(ItemRenderer.class);boolean interaction=scenario.equals("digextras")||scenario.equals("dig")||scenario.equals("place")||scenario.equals("use")||scenario.equals("shoot")||scenario.equals("interact")||scenario.equals("fertilize")||scenario.equals("activate")||scenario.equals("api")||scenario.equals("pipeline")||scenario.equals("bucket");int result=0;
         for(int z=3;z<=5;z++)for(int x=-2;x<=2;x++)EntityOracle.rawBlock(w,x,64,z,1,0);
@@ -151,5 +158,6 @@ public final class Mode_playerintegration181 {
         }
         Oracle.dumpWorld(w,path+".world",0,0,0);
         try(FileOutputStream o=new FileOutputStream(path,true)){o.write(java.nio.file.Files.readAllBytes(new File(path+".world").toPath()));}new File(path+".world").delete();
+        }
     }
 }

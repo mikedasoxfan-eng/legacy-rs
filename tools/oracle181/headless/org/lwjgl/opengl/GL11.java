@@ -124,5 +124,5 @@ public final class GL11 {
     public static void glVertexPointer(int a,int b,int c,long d) { throw new AssertionError("VBO"); }
     public static void glEnableClientState(int x) {}
     public static void glDisableClientState(int x) {}
-    public static void glDrawArrays(int mode,int first,int count) { if(RendererOracle.active||RendererOracle.isCompiling()||RendererOracle.pistonCapture) RendererOracle.record(mode,count); else Oracle.recordWeatherDraw(mode,count,color,texture); }
+    public static void glDrawArrays(int mode,int first,int count) { net.minecraft.src.Mode_drawintegration181.record(mode,first,count); if(RendererOracle.active||RendererOracle.isCompiling()||RendererOracle.pistonCapture) RendererOracle.record(mode,count); else Oracle.recordWeatherDraw(mode,count,color,texture); }
 }
