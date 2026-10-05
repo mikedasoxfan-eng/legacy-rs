@@ -67,8 +67,10 @@ def main():
             exact.update(exact_sections(log))
     json.dump(exact, open(store, 'w'), indent=1, sort_keys=True)
     areas = {a: [0, 0, 0, 0] for a in ORDER}  # done lines, total lines, done classes, classes
+    oos_path = os.path.join(ROOT, 'tools/b181/out_of_scope.json')
+    out_of_scope = json.load(open(oos_path)) if os.path.exists(oos_path) else {}
     for r in changes['classes']:
-        if r['status'] == 'same':
+        if r['status'] == 'same' or r['class'] in out_of_scope:
             continue
         a = areas[r['area']]
         a[1] += r['changed_lines']

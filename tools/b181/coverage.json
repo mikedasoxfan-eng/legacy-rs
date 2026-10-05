@@ -17461,6 +17461,10 @@
   "entities4: sun4",
   "entities5: watchers5"
  ],
+ "EmptyChunk": [
+  "world-blocks b1.8.1: emptycache4",
+  "world-blocks b1.8.1: cache"
+ ],
  "Entity": [
   "entities181: rules",
   "entities181: indirect",
@@ -26544,6 +26548,30 @@
   "gui181: select_clicked",
   "gui181: select_hover_rename"
  ],
+ "IBlockAccess": [
+  "world-blocks b1.8.1: cache",
+  "world-blocks b1.8.1: emptycache4"
+ ],
+ "IChunkProvider": [
+  "Java save / Rust load seed -4172144997902289642",
+  "Java save / Rust load seed -9223372036854775808",
+  "Java save / Rust load seed 0",
+  "Java save / Rust load seed 3257840388504953787",
+  "Java save / Rust load seed 42",
+  "Java save / Rust load seed 9223372036854775807",
+  "Rust save / Java load seed -4172144997902289642",
+  "Rust save / Java load seed -9223372036854775808",
+  "Rust save / Java load seed 0",
+  "Rust save / Java load seed 3257840388504953787",
+  "Rust save / Java load seed 42",
+  "Rust save / Java load seed 9223372036854775807",
+  "chunk provider saves seed -4172144997902289642",
+  "chunk provider saves seed -9223372036854775808",
+  "chunk provider saves seed 0",
+  "chunk provider saves seed 3257840388504953787",
+  "chunk provider saves seed 42",
+  "chunk provider saves seed 9223372036854775807"
+ ],
  "ICrafting": [
   "player-gui b1.8.1: GUI pixels player-gui-container-scenes",
   "gui181: chest_items"
@@ -26588,6 +26616,13 @@
   "world-blocks b1.8.1: chestlife",
   "world-blocks b1.8.1: chestopen5"
  ],
+ "ISaveFormat": [
+  "world-blocks b1.8.1: oldformat4",
+  "world-blocks b1.8.1: savelife"
+ ],
+ "ISaveHandler": [
+  "world-blocks b1.8.1: savelife"
+ ],
  "IStatType": [
   "player-gui b1.8.1 round 4: chest container lifecycle",
   "player-gui b1.8.1 round 4: controllers, picking and creative reach",
@@ -26625,6 +26660,10 @@
   "player-gui b1.8.1: settings before initial terrain and save",
   "player-gui b1.8.1: statistics synchronization",
   "player-gui b1.8.1: whole-player ticks"
+ ],
+ "IWorldAccess": [
+  "World.randomDisplayUpdates: depthsuspend specks and World.rand",
+  "ambient weather vertices"
  ],
  "IntCache": [
   "BiomeDecorator 0 fixture 0",
@@ -30772,6 +30811,11 @@
   "first-person view, player and block targeting",
   "decorations181: maps: palette, terrain, markers, NBT"
  ],
+ "MapStorage": [
+  "decorations181: maps: palette, terrain, markers, NBT",
+  "decorations181: map files",
+  "decorations181: map files read back"
+ ],
  "Material": [
   "world-blocks b1.8.1: definitions"
  ],
@@ -32258,6 +32302,9 @@
   "terrain round2 skygrid seed 9223372036854775807",
   "utilities"
  ],
+ "NextTickListEntry": [
+  "world-blocks b1.8.1: nextticks"
+ ],
  "NibbleArray": [
   "world-blocks b1.8.1: helpers"
  ],
@@ -33385,6 +33432,27 @@
   "world-blocks b1.8.1: textures",
   "world-blocks b1.8.1: visual",
   "world-blocks b1.8.1: weather"
+ ],
+ "RegionFileCache": [
+  "world-blocks b1.8.1: regioncache4",
+  "Java save / Rust load seed -4172144997902289642",
+  "Java save / Rust load seed -9223372036854775808",
+  "Java save / Rust load seed 0",
+  "Java save / Rust load seed 3257840388504953787",
+  "Java save / Rust load seed 42",
+  "Java save / Rust load seed 9223372036854775807",
+  "Rust save / Java load seed -4172144997902289642",
+  "Rust save / Java load seed -9223372036854775808",
+  "Rust save / Java load seed 0",
+  "Rust save / Java load seed 3257840388504953787",
+  "Rust save / Java load seed 42",
+  "Rust save / Java load seed 9223372036854775807",
+  "chunk provider saves seed -4172144997902289642",
+  "chunk provider saves seed -9223372036854775808",
+  "chunk provider saves seed 0",
+  "chunk provider saves seed 3257840388504953787",
+  "chunk provider saves seed 42",
+  "chunk provider saves seed 9223372036854775807"
  ],
  "RegionFileChunkBuffer": [
   "world-blocks b1.8.1: actions",
@@ -34794,6 +34862,33 @@
   "world-blocks b1.8.1: textures",
   "world-blocks b1.8.1: visual",
   "world-blocks b1.8.1: weather"
+ ],
+ "SaveFormatOld": [
+  "world-blocks b1.8.1: oldformat4",
+  "world-blocks b1.8.1: legacy5",
+  "world-blocks b1.8.1: savelife"
+ ],
+ "SaveHandler": [
+  "world-blocks b1.8.1: savelife",
+  "Java save / Rust load seed -4172144997902289642",
+  "Java save / Rust load seed -9223372036854775808",
+  "Java save / Rust load seed 0",
+  "Java save / Rust load seed 3257840388504953787",
+  "Java save / Rust load seed 42",
+  "Java save / Rust load seed 9223372036854775807",
+  "Rust save / Java load seed -4172144997902289642",
+  "Rust save / Java load seed -9223372036854775808",
+  "Rust save / Java load seed 0",
+  "Rust save / Java load seed 3257840388504953787",
+  "Rust save / Java load seed 42",
+  "Rust save / Java load seed 9223372036854775807",
+  "chunk provider saves seed -4172144997902289642",
+  "chunk provider saves seed -9223372036854775808",
+  "chunk provider saves seed 0",
+  "chunk provider saves seed 3257840388504953787",
+  "chunk provider saves seed 42",
+  "chunk provider saves seed 9223372036854775807",
+  "EntityPlayer NBT: read then write, byte order of level.dat player data"
  ],
  "ScaledResolution": [
   "player-gui b1.8.1 round 4: chest container lifecycle",
@@ -45825,6 +45920,31 @@
  ],
  "WorldInfo": [
   "world-blocks b1.8.1: saves"
+ ],
+ "WorldProvider": [
+  "world-blocks b1.8.1: spawn",
+  "world-blocks b1.8.1: lights",
+  "Java save / Rust load seed -4172144997902289642",
+  "Java save / Rust load seed -9223372036854775808",
+  "Java save / Rust load seed 0",
+  "Java save / Rust load seed 3257840388504953787",
+  "Java save / Rust load seed 42",
+  "Java save / Rust load seed 9223372036854775807",
+  "Rust save / Java load seed -4172144997902289642",
+  "Rust save / Java load seed -9223372036854775808",
+  "Rust save / Java load seed 0",
+  "Rust save / Java load seed 3257840388504953787",
+  "Rust save / Java load seed 42",
+  "Rust save / Java load seed 9223372036854775807",
+  "chunk provider saves seed -4172144997902289642",
+  "chunk provider saves seed -9223372036854775808",
+  "chunk provider saves seed 0",
+  "chunk provider saves seed 3257840388504953787",
+  "chunk provider saves seed 42",
+  "chunk provider saves seed 9223372036854775807"
+ ],
+ "WorldProviderSky": [
+  "world-blocks b1.8.1: spawn"
  ],
  "WorldRenderer": [
   "chunk meshes: seed -1, world rand -1, fancy, AO off",

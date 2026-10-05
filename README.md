@@ -32,7 +32,7 @@ The port of **Minecraft Beta 1.8.1** (the Adventure Update) is under way, next t
 b1.7.3 (which stays exact). Run it with `beta.exe --mc b1.8.1`.
 
 ```
-Beta 1.8.1  ██████████████████████████████████░░░░░░  84.6 %  (17,765 / 21,004 lines)
+Beta 1.8.1  ██████████████████████████████████░░░░░░  84.9 %  (17,819 / 20,990 lines)
 ```
 
 Exact, not estimated: the work is every class that b1.8.1 added or changed (compared
@@ -47,7 +47,7 @@ lighting); those screens count as matching.
 | Area | Done | Lines | Classes |
 |---|---:|---:|---:|
 | World generation (biomes, rivers, villages, strongholds, mineshafts, ravines) | 100.0 % | 6,549 / 6,549 | 107 / 107 |
-| World, chunks, lighting, saves | 52.3 % | 1,311 / 2,508 | 31 / 50 |
+| World, chunks, lighting, saves | 54.7 % | 1,365 / 2,494 | 44 / 49 |
 | Mobs and entities (Endermen, Silverfish, Cave Spiders, XP orbs, damage) | 75.6 % | 1,320 / 1,746 | 44 / 47 |
 | Player (hunger, sprinting, experience, creative) | 59.7 % | 565 / 947 | 6 / 11 |
 | Blocks and items (vines, stems, melons, panes, fence gates, food, bow) | 66.0 % | 1,532 / 2,320 | 35 / 80 |
