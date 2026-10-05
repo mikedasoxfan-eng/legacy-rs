@@ -1,0 +1,5 @@
+{
+ "Timer": "only ticksPerSecond's visibility changed (public -> package)",
+ "SoundManager": "only the field_587_e -> latestSoundID rename",
+ "BlockRedstoneOre": "only the field_468_a -> glowing rename"
+}

@@ -5797,6 +5797,12 @@
   "world-blocks b1.8.1: visual",
   "world-blocks b1.8.1: weather"
  ],
+ "ChunkLoader": [
+  "world conversion from the old chunk-file format",
+  "world-blocks b1.8.1: legacy5",
+  "world-blocks b1.8.1: relocation",
+  "world-blocks b1.8.1: arrays"
+ ],
  "ChunkProvider": [
   "BiomeDecorator 0 fixture 0",
   "BiomeDecorator 0 fixture 1",
@@ -26568,6 +26574,29 @@
   "gui181: packs_list",
   "gui181: packs_selected"
  ],
+ "GuiSlotStats": [
+  "gui181: stats_items",
+  "gui181: stats_items_drag_mid",
+  "gui181: stats_items_scrolled",
+  "gui181: stats_blocks",
+  "gui181: stats_blocks_hover_header",
+  "gui181: stats_blocks_sort_down"
+ ],
+ "GuiSlotStatsBlock": [
+  "gui181: stats_blocks",
+  "gui181: stats_blocks_sorted",
+  "gui181: stats_blocks_hover_item",
+  "gui181: stats_blocks_sort_down"
+ ],
+ "GuiSlotStatsGeneral": [
+  "gui181: stats_general"
+ ],
+ "GuiSlotStatsItem": [
+  "gui181: stats_items",
+  "gui181: stats_items_sorted",
+  "gui181: stats_items_sort_used",
+  "gui181: stats_items_hover_item"
+ ],
  "GuiStats": [
   "gui181: stats_general",
   "gui181: stats_items",
@@ -26633,6 +26662,9 @@
   "gui181: select_pressed",
   "gui181: select_clicked",
   "gui181: select_hover_rename"
+ ],
+ "GuiYesNo": [
+  "player-gui b1.8.1: GUI pixels player-gui5-scenes"
  ],
  "IBlockAccess": [
   "world-blocks b1.8.1: cache",
@@ -34896,6 +34928,10 @@
  ],
  "RenderXPOrb": [
   "entities181: xprender181"
+ ],
+ "SaveConverterMcRegion": [
+  "world conversion from the old chunk-file format",
+  "world-blocks b1.8.1: fileclasses"
  ],
  "SaveFormatComparator": [
   "world-blocks b1.8.1: actions",

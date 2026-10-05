@@ -69,6 +69,9 @@ def main():
     areas = {a: [0, 0, 0, 0] for a in ORDER}  # done lines, total lines, done classes, classes
     oos_path = os.path.join(ROOT, 'tools/b181/out_of_scope.json')
     out_of_scope = json.load(open(oos_path)) if os.path.exists(oos_path) else {}
+    # Classes whose b1.8.1 diff is only identifier renames/visibility (no behaviour to check).
+    rn_path = os.path.join(ROOT, 'tools/b181/no_behaviour_change.json')
+    renames_only = json.load(open(rn_path)) if os.path.exists(rn_path) else {}
     for r in changes['classes']:
         if r['status'] == 'same' or r['class'] in out_of_scope:
             continue
@@ -76,7 +79,7 @@ def main():
         a[1] += r['changed_lines']
         a[3] += 1
         secs = coverage.get(r['class'], [])
-        if secs and all(exact.get(s, False) for s in secs):
+        if r['class'] in renames_only or (secs and all(exact.get(s, False) for s in secs)):
             a[0] += r['changed_lines']
             a[2] += 1
     done = sum(v[0] for v in areas.values())
