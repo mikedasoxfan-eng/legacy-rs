@@ -4,6 +4,7 @@
 
 use crate::scenario::LoadStep;
 use crate::storage::{RegionFile, Storage};
+use crate::storage181::{ChunkFile181 as ChunkFile,chunk_filename_matches,chunk_folder_matches};
 use std::collections::HashMap;
 use std::io::{Read, Write};
 use std::path::{Path, PathBuf};
@@ -13,37 +14,16 @@ pub fn is_old_map_format(dir: &Path) -> bool {
     Storage::read_level(dir).is_some_and(|l| l.version == 0)
 }
 
-/// A `c.<x>.<z>.dat` chunk file (`ChunkFile`).
-struct ChunkFile {
-    path: PathBuf,
-    x: i32,
-    z: i32,
-}
-
 /// `ChunkFolderPattern`: one or two characters of `[0-9a-z]`.
 fn is_chunk_folder(p: &Path) -> bool {
-    p.is_dir()
-        && p.file_name().and_then(|n| n.to_str()).is_some_and(|n| {
-            (1..=2).contains(&n.len()) && n.bytes().all(|b| b.is_ascii_digit() || b.is_ascii_lowercase())
-        })
+    p.file_name().and_then(|n|n.to_str()).is_some_and(|n|chunk_folder_matches(n,p.is_dir()))
 }
 
 /// `ChunkFilePattern`: `c\.(-?[0-9a-z]+)\.(-?[0-9a-z]+)\.dat`, coordinates in base 36.
+#[cfg(test)]
 fn chunk_coords(name: &str) -> Option<(i32, i32)> {
-    let rest = name.strip_prefix("c.")?.strip_suffix(".dat")?;
-    let (a, b) = rest.split_once('.')?;
-    fn base36(s: &str) -> Option<i32> {
-        let (neg, digits) = match s.strip_prefix('-') {
-            Some(d) => (true, d),
-            None => (false, s),
-        };
-        if digits.is_empty() || !digits.bytes().all(|b| b.is_ascii_digit() || b.is_ascii_lowercase()) {
-            return None;
-        }
-        let v = i32::from_str_radix(digits, 36).ok()?;
-        Some(if neg { -v } else { v })
-    }
-    Some((base36(a)?, base36(b)?))
+    if !chunk_filename_matches(name) { return None; }
+    ChunkFile::new(PathBuf::from(name)).ok().map(|c| (c.x,c.z))
 }
 
 /// `File.listFiles` in the order Windows returns them (by name).
@@ -61,8 +41,8 @@ fn scan(dir: &Path, chunks: &mut Vec<ChunkFile>, folders: &mut Vec<PathBuf>) {
         for sub in list(&top).into_iter().filter(|p| is_chunk_folder(p)) {
             for f in list(&sub) {
                 let name = f.file_name().map(|n| n.to_string_lossy().into_owned()).unwrap_or_default();
-                if let Some((x, z)) = chunk_coords(&name) {
-                    chunks.push(ChunkFile { path: f, x, z });
+                if chunk_filename_matches(&name) {
+                    chunks.push(ChunkFile::new(f).expect("ChunkFile coordinate NumberFormatException"));
                 }
             }
         }
@@ -79,7 +59,7 @@ fn convert_chunks(
     progress: &mut dyn FnMut(LoadStep),
 ) {
     // Collections.sort (stable) by region x, then region z.
-    chunks.sort_by(|a, b| (a.x >> 5).cmp(&(b.x >> 5)).then((a.z >> 5).cmp(&(b.z >> 5))));
+    chunks.sort_by(|a, b| a.compare(b).cmp(&0));
     let mut regions: HashMap<(i32, i32), RegionFile> = HashMap::new();
     for c in chunks {
         let key = (c.x >> 5, c.z >> 5);
@@ -148,7 +128,7 @@ pub fn convert_map_format(dir: &Path, progress: &mut dyn FnMut(LoadStep)) -> boo
     convert_chunks(&nether, nether_chunks, &mut done, total, progress);
     let Some(mut info) = Storage::read_level(dir) else { return false };
     info.version = 19132;
-    match Storage::open(dir) {
+    match Storage::open_with_players(dir, false) {
         Ok(s) => {
             if let Err(e) = s.save_level(&info) {
                 eprintln!("{e}");

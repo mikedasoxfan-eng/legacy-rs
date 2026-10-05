@@ -8,7 +8,7 @@ use std::collections::HashMap;
 
 /// `NibbleArray` with the chunk layout (`x << 11 | z << 7 | y`).
 #[derive(Clone)]
-pub struct Nibbles(pub Box<[u8; CHUNK_VOLUME / 2]>);
+pub struct Nibbles(pub Box<[u8]>);
 
 impl Default for Nibbles {
     fn default() -> Self {
@@ -60,7 +60,7 @@ impl LightKind {
 pub struct Chunk {
     pub x: i32,
     pub z: i32,
-    pub blocks: Box<[u8; CHUNK_VOLUME]>,
+    pub blocks: Box<[u8]>,
     pub precipitation_height: [i32;256],
     pub skylight_occlusion: [bool;256],
     pub skylight_updated: bool,
@@ -68,7 +68,7 @@ pub struct Chunk {
     pub sky_light: Nibbles,
     pub block_light: Nibbles,
     /// Index `z << 4 | x`.
-    pub height_map: [u8; 256],
+    pub height_map: Box<[u8]>,
     pub lowest_block_height: i32,
     pub populated: bool,
     pub loaded: bool,
@@ -98,17 +98,20 @@ pub fn idx(x: i32, y: i32, z: i32) -> usize {
 }
 
 impl Chunk {
-    pub fn new(x: i32, z: i32, blocks: Box<[u8; CHUNK_VOLUME]>) -> Self {
+    pub fn new(x: i32, z: i32, blocks: Box<[u8]>) -> Self {
+        let nibbles = || Nibbles(vec![0; blocks.len() >> 1].into_boxed_slice());
+        let (data, sky_light, block_light) = (nibbles(), nibbles(), nibbles());
         Chunk {
             x,
             z,
             blocks,
             precipitation_height: [-999;256],
             skylight_occlusion: [false;256],
-            skylight_updated: false,            data: Nibbles::default(),
-            sky_light: Nibbles::default(),
-            block_light: Nibbles::default(),
-            height_map: [0; 256],
+            skylight_updated: false,
+            data,
+            sky_light,
+            block_light,
+            height_map: vec![0; 256].into_boxed_slice(),
             lowest_block_height: 0,
             populated: false,
             loaded: false,

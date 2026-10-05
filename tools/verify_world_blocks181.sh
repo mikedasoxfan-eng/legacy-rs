@@ -34,5 +34,10 @@ for suite in mushrooms chestlife math storage silverfish visual colors spawn rel
   echo "== world-blocks b1.8.1: $suite"
   if "$oracle" "wb$suite" "wb181-$suite.bin" && "$cmp" worldblocks181 "$suite" "$out/wb181-$suite.bin"; then :; else fail=1; fi
 done
+# Round three: cache, coordinate rendering, save lifecycle and tick replays.
+for suite in cache textures weather arrays savelife sides nextticks frost fileclasses; do
+  echo "== world-blocks b1.8.1: $suite"
+  if "$oracle" "wb$suite" "wb181-$suite.bin" && "$cmp" worldblocks181 "$suite" "$out/wb181-$suite.bin"; then :; else fail=1; fi
+done
 [ $fail -eq 0 ] && echo "WORLD-BLOCKS FOCUSED CASES EXACT" || echo "WORLD-BLOCKS FOCUSED CASES DIFFER"
 exit $fail

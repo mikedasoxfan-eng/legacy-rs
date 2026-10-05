@@ -12,6 +12,7 @@ pub mod verify181;
 mod light181;
 pub mod chests181;
 pub mod chunk;
+pub mod cache181;
 pub mod events;
 pub mod java_hash;
 pub mod light;
@@ -36,6 +37,13 @@ use chunk::{idx, Chunk, LightKind};
 use light::LightUpdate;
 use std::collections::HashMap;
 use std::hash::{BuildHasherDefault, Hasher};
+use std::sync::atomic::{AtomicI64, Ordering};
+
+/// NextTickListEntry IDs survive World construction and dimension changes.
+pub(crate) static NEXT_TICK_ENTRY_ID181: AtomicI64 = AtomicI64::new(0);
+fn next_tick_entry_id181() -> i64 {
+    NEXT_TICK_ENTRY_ID181.fetch_add(1, Ordering::Relaxed)
+}
 
 
 /// Which `java.util.Random` a block tick draws from.
@@ -54,6 +62,11 @@ pub struct TickKey {
     pub y: i32,
     pub z: i32,
     pub block: i32,
+}
+impl TickKey {
+    pub fn java_hash181(self)->i32 {
+        self.x.wrapping_mul(1024*1024).wrapping_add(self.z.wrapping_mul(1024)).wrapping_add(self.y).wrapping_mul(256).wrapping_add(self.block)
+    }
 }
 
 /// An item entity spawned by a block drop. Kept only for inspection.
@@ -160,11 +173,9 @@ pub struct World {
     /// `World.lightingToUpdate`
     pub light_queue: Vec<LightUpdate>,
     /// `scheduledTickSet`: entry -> (scheduled time, `tickEntryID`).
-    pub pending_ticks: HashMap<TickKey, (i64, u64)>,
+    pub pending_ticks: HashMap<TickKey, (i64, i64)>,
     /// `scheduledTickTreeSet`, ordered like `NextTickListEntry.compareTo`.
-    pub tick_order: std::collections::BTreeSet<(i64, u64, TickKey)>,
-    /// `NextTickListEntry.nextTickEntryID` (a JVM-wide static in the original).
-    pub next_tick_entry_id: u64,
+    pub tick_order: std::collections::BTreeSet<(i64, i64, TickKey)>,
     pub world_time: i64,
     /// `World.scheduledUpdatesAreImmediate`
     pub immediate_updates: bool,
@@ -295,7 +306,6 @@ impl World {
             light_queue: Vec::new(),
             pending_ticks: HashMap::new(),
             tick_order: Default::default(),
-            next_tick_entry_id: 0,
             world_time: 0,
             immediate_updates: false,
             editing_blocks: false,
@@ -875,11 +885,15 @@ impl World {
 
     /// `Block.isOpaqueCube()` on the instance (differs from the lookup table for leaves).
     pub fn is_opaque_cube_instance(&self, id: u8) -> bool {
-        if id == block::LEAVES {
-            self.leaves_opaque
-        } else {
-            block::opaque_cube_lookup(id)
-        }
+        block::visual181::opaque_instance(id,!self.leaves_opaque)
+    }
+
+    pub fn block_texture181(&mut self,id:u8,x:i32,y:i32,z:i32,side:usize)->Result<i32,()> {
+        let meta=self.get_block_metadata(x,y,z) as usize;let bounds=self.block_bounds[id as usize];
+        block::visual181::texture_at_with_bounds(id,side,meta,!self.leaves_opaque,x,y,z,bounds,|x,y,z|self.get_block_id(x,y,z))
+    }
+    pub fn should_side_render181(&mut self,id:u8,x:i32,y:i32,z:i32,side:i32)->bool {
+        block::visual181::should_side_render(id,side,self.block_bounds[id as usize],!self.leaves_opaque,x,y,z,|x,y,z|self.get_block_id(x,y,z))
     }
 
     // ------------------------------------------------------------ light
@@ -967,8 +981,7 @@ impl World {
     /// `scheduleBlockUpdate`
     pub fn schedule_block_update(&mut self, x: i32, y: i32, z: i32, id: u8, delay: i32) {
         // new NextTickListEntry(...) takes an id from the global counter every time.
-        let entry_id = self.next_tick_entry_id;
-        self.next_tick_entry_id += 1;
+        let entry_id = next_tick_entry_id181();
         let r = 8;
         if self.immediate_updates {
             if self.check_chunks_exist(x - r, y - r, z - r, x + r, y + r, z + r) {
@@ -984,7 +997,7 @@ impl World {
                 z,
                 block: id as i32,
             };
-            let t = delay as i64 + self.world_time;
+            let t = if id>0 {self.world_time.wrapping_add(delay as i64)} else {0};
             if let std::collections::hash_map::Entry::Vacant(e) = self.pending_ticks.entry(key) {
                 e.insert((t, entry_id));
                 self.tick_order.insert((t, entry_id, key));
