@@ -369,7 +369,7 @@ fn main() {
     }
     match args.get(1).map(String::as_str) {
         Some("--version" | "-V") => {
-            println!("beta-rs {} (Minecraft Beta 1.7.3)", env!("CARGO_PKG_VERSION"));
+            println!("beta-rs {} (Minecraft Beta 1.7.3 and Beta 1.8.1)", env!("CARGO_PKG_VERSION"));
             return;
         }
         Some("--help" | "-h") => {

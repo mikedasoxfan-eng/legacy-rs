@@ -2,18 +2,18 @@
 
 # beta-rs
 
-**Minecraft Beta 1.7.3, rewritten in Rust, proven identical to the original.**
+**Minecraft Beta 1.7.3 and Beta 1.8.1, rewritten in Rust, proven identical to the originals.**
 
-[![release](https://img.shields.io/badge/release-v1.0.0-2ea44f?style=flat&labelColor=3b3b3b)](https://github.com/mikedasoxfan-eng/beta-rs/releases/latest)
+[![release](https://img.shields.io/badge/release-v2.0.0-2ea44f?style=flat&labelColor=3b3b3b)](https://github.com/mikedasoxfan-eng/beta-rs/releases/latest)
 [![CI](https://github.com/mikedasoxfan-eng/beta-rs/actions/workflows/ci.yml/badge.svg)](https://github.com/mikedasoxfan-eng/beta-rs/actions/workflows/ci.yml)
-[![Minecraft](https://img.shields.io/badge/Minecraft-Beta_1.7.3-6aa84f?style=flat&labelColor=3b3b3b)](#)
+[![Minecraft](https://img.shields.io/badge/Minecraft-Beta_1.7.3_%2B_1.8.1-6aa84f?style=flat&labelColor=3b3b3b)](#)
 [![Rust](https://img.shields.io/badge/built_with-Rust-b7410e?style=flat&logo=rust&logoColor=white&labelColor=3b3b3b)](#)
 [![wgpu](https://img.shields.io/badge/graphics-wgpu-4b6ec2?style=flat&labelColor=3b3b3b)](#)
 [![oracle](https://img.shields.io/badge/oracle-ALL_CASES_EXACT-2ea44f?style=flat&logo=openjdk&logoColor=white&labelColor=3b3b3b)](#how-exact-is-exact)
 [![GUI](https://img.shields.io/badge/GUI_pixel_diff-92_exact,_8_within_1_shade-2ea44f?style=flat&labelColor=3b3b3b)](#the-gui-pixel-diff)
 
-[![progress](https://img.shields.io/badge/goal_progress-100%25-8fbc3a?style=flat&labelColor=3b3b3b)](#progress)
-[![verified sections](https://img.shields.io/badge/verified_sections-165-2ea44f?style=flat&labelColor=3b3b3b)](#what-is-checked)
+[![progress](https://img.shields.io/badge/goal_progress-100%25-8fbc3a?style=flat&labelColor=3b3b3b)](#beta-173-progress)
+[![verified sections](https://img.shields.io/badge/verified_sections-1232-2ea44f?style=flat&labelColor=3b3b3b)](#what-is-checked)
 [![Rust lines](https://img.shields.io/badge/Rust-64k_lines-b7410e?style=flat&labelColor=3b3b3b)](#layout)
 [![Mojang assets](https://img.shields.io/badge/Mojang_assets_bundled-0_bytes-2ea44f?style=flat&labelColor=3b3b3b)](#you-need-your-own-copy)
 [![multiplayer](https://img.shields.io/badge/multiplayer-not_planned-9e9e9e?style=flat&labelColor=3b3b3b)](#scope)
@@ -62,20 +62,28 @@ Oracle checks (`tools/verify181.sh`): **1067 of 1067** sections exact.
 
 ## Download
 
-Grab `beta-rs-1.0.0-windows-x64.exe` from the
-[latest release](https://github.com/mikedasoxfan-eng/beta-rs/releases/latest) and run it.
+Grab `beta-rs-2.0.0-windows-x64.exe` from the
+[latest release](https://github.com/mikedasoxfan-eng/beta-rs/releases/latest), put it in its own
+folder and run it. It asks which version to play: **Beta 1.7.3** or **Beta 1.8.1** (the Adventure
+Update). `--mc b1.8.1` or `--mc b1.7.3` skips the question.
 
-**You need Minecraft Beta 1.7.3 installed through the official launcher first** (Installations →
-tick "Historical versions" → New installation → version "old_beta b1.7.3", then play it once). beta-rs reads the textures, sounds
-and fonts from that installation; it ships none of its own. Windows 10/11 64-bit with a
-DirectX 12, Vulkan or OpenGL capable GPU.
+**You need the versions you want to play installed through the official launcher first**
+(Installations → tick "Historical versions" → New installation → "old_beta b1.7.3" and/or
+"old_beta b1.8.1", then play each once). beta-rs reads the textures, sounds and fonts from those
+installations; it ships none of its own. Windows 10/11 64-bit with a DirectX 12, Vulkan or
+OpenGL capable GPU.
 
-Worlds are saved next to the exe in `saves\`, in the original format: copy a world into
-`%APPDATA%\.minecraft\saves` to open it in the real game, or the other way round.
+| Version | Worlds | Options, statistics, screenshots |
+|---|---|---|
+| Beta 1.7.3 | `saves\` next to the exe | next to the exe, as in 1.0.0 |
+| Beta 1.8.1 | `b1.8.1\saves\` | `b1.8.1\` |
+
+Both use the original save formats: copy a world into `%APPDATA%\.minecraft\saves` to open it
+in the real game of the same version, or the other way round.
 
 ---
 
-## Progress
+## Beta 1.7.3 progress
 
 ```
 Overall  ████████████████████████████████████████  100 %
@@ -106,7 +114,8 @@ against the original game code, not just "looks right".
 
 ## What this is
 
-A singleplayer-only rewrite of the Minecraft Beta 1.7.3 client (July 2011) in Rust, with
+A singleplayer-only rewrite of the Minecraft Beta 1.7.3 (July 2011) and Beta 1.8.1
+(September 2011, the Adventure Update) clients in Rust, with
 [wgpu](https://wgpu.rs) for graphics. It aims to be an **exact copy**, not a remake:
 
 - the same world from the same seed, block for block, including every ore vein, cave,
@@ -184,6 +193,16 @@ Details that turned out to matter:
 | Sky | Sky, fog and cloud colours across times, weather and render distances, and in the Nether |
 | Weather | Rain/snow quads, splash particles, lightning bolt strips |
 
+### Beta 1.8.1
+
+The same method, against the original b1.8.1 bytecode: `tools/verify181.sh` and its focused
+suites (1067 sections, every one EXACT), plus `tools/verify_gui181.sh` for the screens. On top
+of everything above it covers biomes, rivers and the new structures (villages, strongholds,
+mineshafts, ravines) for many seeds; hunger, sprinting, experience and creative mode; the new
+mobs, potion effects and critical hits; the lightmap; the new blocks and items; the new
+screens and HUD. How the progress figure is counted, and the per-area reports:
+[docs/beta-1.8.1.md](docs/beta-1.8.1.md).
+
 ### The GUI pixel diff
 
 `tools/verify_gui.sh` opens the **real** b1.7.3 client for a few seconds, drives it through
@@ -217,7 +236,8 @@ reads them from your own installation:
 
 The verification harness additionally needs the original client decompiled with
 [RetroMCP](https://github.com/MCPHackers/RetroMCP-Java) into `tools/retromcp` (ignored by
-git), and Mojang's Java 8u51 runtime, which the official launcher installs.
+git) and Beta 1.8.1 into `tools/retromcp-b181`, and Mojang's Java 8u51 runtime, which the
+official launcher installs.
 
 ---
 
@@ -299,6 +319,8 @@ crates/
                       inventory and containers, statistics),
                       ingame.rs (HUD), font, language files, settings
     sound.rs          SoundManager / SoundPool semantics over cpal
+  worldgen181/, client181/  Beta 1.8.1: the same layout, ported forward class by class
+                      (see docs/beta-1.8.1.md)
 docs/                 design notes and verification coverage per subsystem
 assets/               the exe icon (original pixel art, not a Mojang texture)
 tools/
@@ -357,7 +379,7 @@ Being exact means keeping these too:
 
 ## Not yet
 
-Nothing in singleplayer. The one known difference from the original is cosmetic: 3D block
+Nothing in singleplayer, in either version. The one known difference from the original is cosmetic: 3D block
 icons on the achievement and statistics screens can be one colour shade off on a few hundred
 pixels, which comes from the graphics driver's own rounding of item lighting (measured, but
 not reproducible bit for bit). Multiplayer, the launcher and online skins were never in

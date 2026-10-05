@@ -1,9 +1,9 @@
 # Changelog
 
 All notable changes to beta-rs. Versions follow [Semantic Versioning](https://semver.org);
-"exact" always means checked bit for bit against the original b1.7.3 bytecode.
+"exact" always means checked bit for bit against the original bytecode of that version.
 
-## [Unreleased] - 2.0.0
+## [2.0.0] - 2026-10-05
 
 Minecraft Beta 1.8.1 (the Adventure Update), next to Beta 1.7.3 in the same program.
 
@@ -13,7 +13,7 @@ Minecraft Beta 1.8.1 (the Adventure Update), next to Beta 1.7.3 in the same prog
 - Beta 1.8.1 keeps its own saves, options, statistics and screenshots in `b1.8.1\`.
   Beta 1.7.3 is unchanged and still checked bit for bit.
 
-### Beta 1.8.1 (in progress; see the README for the exact verified share)
+### Beta 1.8.1
 - Rendering: the lightmap (smooth day/night, torch flicker, the Brightness option), b1.8.1
   smooth lighting and block shapes (vines, stems, panes, fence gates, ...), sky, clouds, fog
   (including the void fog near bedrock), rain and snow, first-person hand with arm sway,
@@ -22,9 +22,12 @@ Minecraft Beta 1.8.1 (the Adventure Update), next to Beta 1.7.3 in the same prog
   monster spawners; distant mobs are hidden at the original render range.
 - Play-tested from the title screen: world creation (survival/creative), the creative
   inventory and flying, sprinting, Nether portals and the Nether.
-- World generation, entities, the player (hunger, sprinting, experience, creative), blocks,
-  items and screens are being ported area by area; each part counts only once the original
-  b1.8.1 bytecode agrees with it bit for bit.
+- Everything else b1.8.1 added or changed in singleplayer: world generation (biomes, rivers,
+  villages, strongholds, mineshafts, ravines), entities (Endermen, cave spiders, silverfish, XP
+  orbs, potion effects, critical hits), the player (hunger, sprinting, experience, creative),
+  blocks and items (vines, stems, melons, panes, fence gates, food, the bow), and the new
+  screens. All 20,982 changed lines of the b1.8.1 classes are ported and checked bit
+  for bit against the original bytecode (1067 oracle sections).
 
 ## [1.0.0] - 2026-10-04
 
