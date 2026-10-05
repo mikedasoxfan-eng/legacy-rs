@@ -14,6 +14,7 @@ beta() { "$root/target/release/beta" --mc b1.8.1 "$@"; }
 cd "$root"
 if [ "${1:-}" != --built ]; then cargo build --release -q -p worldgen181 -p client || exit 1; fi
 oracle=tools/oracle181/oracle.sh
+mkdir -p tools/oracle181/out  # a fresh checkout has no output folder yet
 fail=0
 for scene in rails train boats riding nbt longrail ridingnbt placing; do
   file="vehicles_${scene}.bin"
