@@ -182,6 +182,8 @@ pub enum FromWorker {
         life: u32,
     },
     Saved,
+    /// `MinecraftException` from `checkSessionLock`: the world was dropped unsaved.
+    SessionConflict,
     Error(String),
 }
 
@@ -434,6 +436,10 @@ fn run(opts: WorldOptions, col: Colorizers, mut video: VideoSettings, rx: Receiv
                     if n == 0 {
                         world.save_level();
                     }
+                    if world.session_conflict {
+                        let _ = tx.send(FromWorker::SessionConflict);
+                        return;
+                    }
                     let done = world.save_chunks(false);
                     let _ = tx.send(FromWorker::QuickSaved(done));
                 }
@@ -495,6 +501,12 @@ fn run(opts: WorldOptions, col: Colorizers, mut video: VideoSettings, rx: Receiv
             // The client relights a little every frame and the server once per tick; here
             // the queue is simply emptied.
             world.drain_lighting();
+            if world.session_conflict {
+                // Minecraft.run: theWorld = null, changeWorld1(null) (nothing saved), then
+                // GuiConflictWarning.
+                let _ = tx.send(FromWorker::SessionConflict);
+                return;
+            }
             if let Some(pm) = &mut players {
                 // MinecraftServer.doTick: world tick, lighting, then player movement packets.
                 pm.update_player(&mut world, cam.0, cam.2);
