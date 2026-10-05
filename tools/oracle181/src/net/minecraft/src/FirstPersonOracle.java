@@ -73,7 +73,7 @@ public final class FirstPersonOracle {
         ColorizerGrass.func_28181_a(Oracle.jarImage("misc/grasscolor.png"));ColorizerFoliage.func_28152_a(Oracle.jarImage("misc/foliagecolor.png"));
         RenderManager m=RendererOracle.manager(p.worldObj);m.livingPlayer=p;RenderManager.instance=m;
         HashMap<Class,Render> renderers=new HashMap<Class,Render>();RenderPlayer rp=new RenderPlayer();rp.setRenderManager(m);renderers.put(EntityPlayer.class,rp);Oracle.setField(m,"entityRenderMap",renderers);
-        Map textures=(Map)Oracle.getField(m.renderEngine,"textureMap");textures.put("/mob/char.png",9);textures.put("/misc/water.png",10);textures.put("/misc/mapbg.png",11);
+        Map textures=(Map)Oracle.getField(m.renderEngine,"textureMap");textures.put("/mob/char.png",9);textures.put("/misc/water.png",10);textures.put("/misc/mapbg.png",11);textures.put("/item/chest.png",31);TileEntityRenderer.instance.renderEngine=m.renderEngine;
         String[] names={"cloth","chain","iron","diamond","gold"};for(int a=0;a<5;a++)for(int b=1;b<=2;b++)textures.put("/armor/"+names[a]+"_"+b+".png",20+a*2+b-1);
         Minecraft mc=p.mc;mc.renderViewEntity=p;mc.thePlayer=p;if(mc.playerController==null)mc.playerController=(PlayerController)Oracle.allocate(PlayerControllerSP.class);mc.renderEngine=m.renderEngine;mc.gameSettings=m.options;mc.displayWidth=853;mc.displayHeight=480;
         RenderGlobal global=(RenderGlobal)Oracle.allocate(RenderGlobal.class);Oracle.setField(global,"worldObj",p.worldObj);Oracle.setField(global,"renderEngine",m.renderEngine);Oracle.setField(global,"mc",mc);Oracle.setField(global,"globalRenderBlocks",new RenderBlocks(p.worldObj));mc.renderGlobal=global;
