@@ -19594,6 +19594,10 @@
   "entities6: sleep6",
   "entities6: spawninputs6 (real JVM identity hashes)"
  ],
+ "EntityList": [
+  "entities3: factorybranches",
+  "entities181: xprender181"
+ ],
  "EntityLiving": [
   "entities181: Arrow",
   "entities181: Boat",
@@ -28110,6 +28114,10 @@
   "player-gui b1.8.1 round 4: chest container lifecycle",
   "gui181: largechest_items",
   "gui181: b181_largechest"
+ ],
+ "InventoryPlayer": [
+  "player-gui b1.8.1 round 5: inventory/NBT and player callbacks",
+  "player-gui b1.8.1 round 5: inventory interfaces and base slots"
  ],
  "ItemBow": [
   "world-blocks b1.8.1: actions",
