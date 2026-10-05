@@ -60,6 +60,11 @@ shot hud_low_flash
 hud health=12 prev=16 hearts_life=11 item=5 pos=0.5,120,0.5 brightness=1.0
 counter 3
 shot hud_flash
+# Wearing a carved pumpkin (renderPumpkinBlur).
+hud health=20 prev=20 item=0 pos=0.5,120,0.5 brightness=1.0 helmet=86
+counter 0
+shot hud_pumpkin
+hud health=20 prev=20 item=0 pos=0.5,120,0.5 brightness=1.0 helmet=-1
 # Achievements (fresh stats: only "Taking Inventory" can be unlocked), over the world.
 open achievements
 mouse -1 -1

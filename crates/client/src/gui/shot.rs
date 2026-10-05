@@ -246,6 +246,7 @@ pub fn run(script: &str, out_dir: &std::path::Path) -> Result<(), String> {
                         "prev" => p.prev_health = i()?,
                         "hearts_life" => p.hearts_life = i()?,
                         "item" => p.current_item = i()?,
+                        "helmet" => p.helmet = Some(i()?).filter(|&id| id >= 0),
                         "brightness" => p.brightness = v.parse().map_err(|_| "hud brightness")?,
                         "pos" => {}
                         _ => return Err(format!("unknown hud field {k}")),

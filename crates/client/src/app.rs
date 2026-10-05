@@ -1135,6 +1135,7 @@ impl App {
                         h.prev_health = hud.prev_health;
                         h.hearts_life = hud.hearts_life;
                         h.armor = hud.armor;
+                        h.helmet = hud.inventory.armor[3].map(|s| s.id);
                         h.current_item = hud.inventory.current_item;
                         h.air = hud.air;
                         h.head_in_water = in_water;
