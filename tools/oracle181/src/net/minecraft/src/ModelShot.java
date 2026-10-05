@@ -22,7 +22,7 @@ public class ModelShot {
         JarTextures() throws Exception {
             super(null,null);
             String path = System.getenv("BETA_JAR");
-            if (path == null) path = System.getenv("APPDATA") + "/.minecraft/versions/b1.7.3/b1.7.3.jar";
+            if (path == null) path = System.getenv("APPDATA") + "/.minecraft/versions/b1.8.1/b1.8.1.jar";
             jar = new ZipFile(path);
         }
         public int getTexture(String name) {

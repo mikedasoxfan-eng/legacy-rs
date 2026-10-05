@@ -277,6 +277,7 @@ pub fn flat_clouds(cam_x: f64, cam_y: f64, cam_z: f64, offset: f32, color: [f32;
                     pos: [xx as f32, y, zz as f32],
                     uv: [xx as f32 * step + u, zz as f32 * step + v],
                     color,
+                    light: 0,
                 });
             }
         }
@@ -312,7 +313,7 @@ pub fn fancy_clouds(cam_x: f64, cam_y: f64, cam_z: f64, offset: f32, color: [f32
         [ch(r), ch(g), ch(b), ch(a)]
     };
     let v = |out: &mut Vec<super::Vertex>, col: [u8; 4], x: f32, y: f32, z: f32, u: f32, vv: f32| {
-        out.push(super::Vertex { pos: [x, y, z], uv: [u, vv], color: col });
+        out.push(super::Vertex { pos: [x, y, z], uv: [u, vv], color: col, light: 0 });
     };
     for cx in -radius + 1..=radius {
         for cz in -radius + 1..=radius {
@@ -396,12 +397,12 @@ pub fn sunrise_fan(angle: f32, anaglyph: bool) -> Option<Vec<super::Vertex>> {
     let c = sunrise_colors(angle)?;
     let rgb = if anaglyph { super::stereo_color([c[0], c[1], c[2]]) } else { [c[0], c[1], c[2]] };
     let rgba = |rgb: [f32; 3], alpha: f32| [rgb[0],rgb[1],rgb[2],alpha].map(|v| ((v*255.0f32) as i32).clamp(0,255) as u8);
-    let center = super::Vertex { pos: [0.0,100.0,0.0], uv: [0.0;2], color: rgba(rgb,c[3]) };
+    let center = super::Vertex { pos: [0.0,100.0,0.0], uv: [0.0;2], color: rgba(rgb,c[3]), light: 0 };
     let mut rim=Vec::new();
     for i in 0..=16 {
         let a=i as f32 * PI_F * 2.0 / 16.0;
         let (s,co)=(math::sin(a),math::cos(a));
-        rim.push(super::Vertex { pos: [s*120.0,co*120.0,-co*40.0*c[3]],uv:[0.0;2],color:rgba([c[0],c[1],c[2]],0.0) });
+        rim.push(super::Vertex { pos: [s*120.0,co*120.0,-co*40.0*c[3]],uv:[0.0;2],color:rgba([c[0],c[1],c[2]],0.0), light: 0 });
     }
     let mut fan=Vec::new();
     for i in 0..16 { fan.extend_from_slice(&[center,rim[i],rim[i+1]]); }

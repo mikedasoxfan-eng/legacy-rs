@@ -8,7 +8,7 @@
 //! renderer that sets them without resetting leaves them for the next block of that kind.
 //! `BOUNDS` keeps that state per block id for this thread.
 
-use super::{Bounds, RenderBlocks};
+use super::{rgb, Bounds, RenderBlocks};
 use crate::render::rprops;
 use std::cell::RefCell;
 use worldgen::block::{self, mat, material_of};
@@ -274,8 +274,9 @@ impl<'a, 'b> RenderBlocks<'a, 'b> {
         // BlockBed.isBlockFootOfBed is (meta & 8) != 0, despite the name.
         let foot = meta & 8 != 0;
         let (c_bottom, c_top, c_ns, c_ew) = (0.5f32, 1.0f32, 0.8f32, 0.6f32);
-        let own = self.brightness(id, x, y, z);
-        self.color(c_bottom * own, c_bottom * own, c_bottom * own);
+        let own = self.mixed(id, x, y, z);
+        self.t.set_brightness(own);
+        self.color(c_bottom, c_bottom, c_bottom);
         let tex = self.texture(id, x, y, z, 0);
         let tu = (tex & 15) << 4;
         let tv = tex & 240;
@@ -291,8 +292,9 @@ impl<'a, 'b> RenderBlocks<'a, 'b> {
         self.v(x1, yb, z0, u1, v0);
         self.v(x1, yb, z1, u1, v1);
 
-        let above = self.brightness(id, x, y + 1, z);
-        self.color(c_top * above, c_top * above, c_top * above);
+        let above = self.mixed(id, x, y + 1, z);
+        self.t.set_brightness(above);
+        self.color(c_top, c_top, c_top);
         let tex = self.texture(id, x, y, z, 1);
         let tu = (tex & 15) << 4;
         let tv = tex & 240;
@@ -339,41 +341,37 @@ impl<'a, 'b> RenderBlocks<'a, 'b> {
             _ => 4,
         };
         if skip != 2 && (self.render_all_faces || self.should_side_be_rendered(id, x, y, z - 1, 2)) {
-            let mut l = self.brightness(id, x, y, z - 1);
-            if self.b.min_z > 0.0 {
-                l = own;
-            }
-            self.color(c_ns * l, c_ns * l, c_ns * l);
+            // b1.8.1 tests minZ/maxZ for the x faces too (vanilla bug, kept).
+            let l = if self.b.min_z > 0.0 { own } else { self.mixed(id, x, y, z - 1) };
+            self.t.set_brightness(l);
+            self.color(c_ns, c_ns, c_ns);
             self.flip_texture = flip == 2;
             let t = self.texture(id, x, y, z, 2);
             self.render_east_face(x as f64, y as f64, z as f64, t);
         }
         if skip != 3 && (self.render_all_faces || self.should_side_be_rendered(id, x, y, z + 1, 3)) {
-            let mut l = self.brightness(id, x, y, z + 1);
-            if self.b.max_z < 1.0 {
-                l = own;
-            }
-            self.color(c_ns * l, c_ns * l, c_ns * l);
+            // b1.8.1 tests minZ/maxZ for the x faces too (vanilla bug, kept).
+            let l = if self.b.max_z < 1.0 { own } else { self.mixed(id, x, y, z + 1) };
+            self.t.set_brightness(l);
+            self.color(c_ns, c_ns, c_ns);
             self.flip_texture = flip == 3;
             let t = self.texture(id, x, y, z, 3);
             self.render_west_face(x as f64, y as f64, z as f64, t);
         }
         if skip != 4 && (self.render_all_faces || self.should_side_be_rendered(id, x - 1, y, z, 4)) {
-            let mut l = self.brightness(id, x - 1, y, z);
-            if self.b.min_x > 0.0 {
-                l = own;
-            }
-            self.color(c_ew * l, c_ew * l, c_ew * l);
+            // b1.8.1 tests minZ/maxZ for the x faces too (vanilla bug, kept).
+            let l = if self.b.min_z > 0.0 { own } else { self.mixed(id, x - 1, y, z) };
+            self.t.set_brightness(l);
+            self.color(c_ew, c_ew, c_ew);
             self.flip_texture = flip == 4;
             let t = self.texture(id, x, y, z, 4);
             self.render_north_face(x as f64, y as f64, z as f64, t);
         }
         if skip != 5 && (self.render_all_faces || self.should_side_be_rendered(id, x + 1, y, z, 5)) {
-            let mut l = self.brightness(id, x + 1, y, z);
-            if self.b.max_x < 1.0 {
-                l = own;
-            }
-            self.color(c_ew * l, c_ew * l, c_ew * l);
+            // b1.8.1 tests minZ/maxZ for the x faces too (vanilla bug, kept).
+            let l = if self.b.max_z < 1.0 { own } else { self.mixed(id, x + 1, y, z) };
+            self.t.set_brightness(l);
+            self.color(c_ew, c_ew, c_ew);
             self.flip_texture = flip == 5;
             let t = self.texture(id, x, y, z, 5);
             self.render_south_face(x as f64, y as f64, z as f64, t);
@@ -386,11 +384,9 @@ impl<'a, 'b> RenderBlocks<'a, 'b> {
 
     pub(super) fn render_block_torch(&mut self, id: u8, x: i32, y: i32, z: i32) -> bool {
         let meta = self.w.meta(x, y, z);
-        let mut l = self.brightness(id, x, y, z);
-        if Self::light_value_of(id) > 0 {
-            l = 1.0;
-        }
-        self.color(l, l, l);
+        let l = self.mixed(id, x, y, z);
+        self.t.set_brightness(l);
+        self.color(1.0, 1.0, 1.0);
         let lean = 0.4f32 as f64;
         let off = 0.5 - lean;
         let up = 0.2f32 as f64;
@@ -749,10 +745,9 @@ impl<'a, 'b> RenderBlocks<'a, 'b> {
         if !had_override {
             self.override_texture = -1;
         }
-        let mut l = self.brightness(id, x, y, z);
-        if Self::light_value_of(id) > 0 {
-            l = 1.0;
-        }
+        let own = self.mixed(id, x, y, z);
+        self.t.set_brightness(own);
+        let l = 1.0f32;
         self.color(l, l, l);
         let tex = self.face_tex(self.texture_meta(id, 0, 0));
         let tu = (tex & 15) << 4;
@@ -855,8 +850,9 @@ impl<'a, 'b> RenderBlocks<'a, 'b> {
 
     pub(super) fn render_block_fire(&mut self, id: u8, x: i32, y: i32, z: i32) -> bool {
         let tex = self.face_tex(self.texture_meta(id, 0, 0));
-        let l = self.brightness(id, x, y, z);
-        self.color(l, l, l);
+        self.color(1.0, 1.0, 1.0);
+        let own = self.mixed(id, x, y, z);
+        self.t.set_brightness(own);
         let tu = (tex & 15) << 4;
         let tv = tex & 240;
         let mut u0 = (tu as f32 / 256.0f32) as f64;
@@ -1039,7 +1035,9 @@ impl<'a, 'b> RenderBlocks<'a, 'b> {
     pub(super) fn render_block_redstone_wire(&mut self, id: u8, x: i32, y: i32, z: i32) -> bool {
         let meta = self.w.meta(x, y, z);
         let tex = self.face_tex(self.texture_meta(id, 1, meta));
-        let l = self.brightness(id, x, y, z);
+        let own = self.mixed(id, x, y, z);
+        self.t.set_brightness(own);
+        let l = 1.0f32;
         let p = meta as f32 / 15.0f32;
         let mut r = p * 0.6f32 + 0.4f32;
         if meta == 0 {
@@ -1234,8 +1232,9 @@ impl<'a, 'b> RenderBlocks<'a, 'b> {
         if id == 27 || id == 28 {
             meta &= 7;
         }
-        let l = self.brightness(id, x, y, z);
-        self.color(l, l, l);
+        let own = self.mixed(id, x, y, z);
+        self.t.set_brightness(own);
+        self.color(1.0, 1.0, 1.0);
         let tu = (tex & 15) << 4;
         let tv = tex & 240;
         let u0 = (tu as f32 / 256.0f32) as f64;
@@ -1302,8 +1301,9 @@ impl<'a, 'b> RenderBlocks<'a, 'b> {
 
     pub(super) fn render_block_ladder(&mut self, id: u8, x: i32, y: i32, z: i32) -> bool {
         let tex = self.face_tex(self.texture_meta(id, 0, 0));
-        let l = self.brightness(id, x, y, z);
-        self.color(l, l, l);
+        let own = self.mixed(id, x, y, z);
+        self.t.set_brightness(own);
+        self.color(1.0, 1.0, 1.0);
         let tu = (tex & 15) << 4;
         let tv = tex & 240;
         let u0 = (tu as f32 / 256.0f32) as f64;
@@ -1311,10 +1311,11 @@ impl<'a, 'b> RenderBlocks<'a, 'b> {
         let v0 = (tv as f32 / 256.0f32) as f64;
         let v1 = ((tv as f32 + 15.99f32) / 256.0f32) as f64;
         let meta = self.w.meta(x, y, z);
-        let (e, o) = (0.0f32, 0.05f32);
-        let d = |v: f32| v as f64;
-        let (xf, yf, zf) = (x as f32, y as f32, z as f32);
-        let (x1f, y1f, z1f) = ((x + 1) as f32, (y + 1) as f32, (z + 1) as f32);
+        // b1.8.1 does the ladder offsets in double (0.05F widened).
+        let (e, o) = (0.0f64, 0.05f32 as f64);
+        let d = |v: f64| v;
+        let (xf, yf, zf) = (x as f64, y as f64, z as f64);
+        let (x1f, y1f, z1f) = ((x + 1) as f64, (y + 1) as f64, (z + 1) as f64);
         if meta == 5 {
             self.v(d(xf + o), d(y1f + e), d(z1f + e), u0, v0);
             self.v(d(xf + o), d(yf - e), d(z1f + e), u0, v1);
@@ -1345,8 +1346,9 @@ impl<'a, 'b> RenderBlocks<'a, 'b> {
     // ------------------------------------------------------------------ type 6: crops
 
     pub(super) fn render_block_crops(&mut self, id: u8, x: i32, y: i32, z: i32) -> bool {
-        let l = self.brightness(id, x, y, z);
-        self.color(l, l, l);
+        let own = self.mixed(id, x, y, z);
+        self.t.set_brightness(own);
+        self.color(1.0, 1.0, 1.0);
         let meta = self.w.meta(x, y, z);
         self.render_crops_squares(id, meta, x as f64, (y as f32 - 1.0f32 / 16.0) as f64, z as f64);
         true
@@ -1411,16 +1413,18 @@ impl<'a, 'b> RenderBlocks<'a, 'b> {
         self.render_standard_block_pub(id, x, y, z);
         let mut along_x = false;
         let mut along_z = false;
-        if self.w.block(x - 1, y, z) == id || self.w.block(x + 1, y, z) == id {
+        // BlockFence.func_35303_f: fences join fences and fence gates.
+        let joins = |b: u8| b == id || b == 107;
+        if joins(self.w.block(x - 1, y, z)) || joins(self.w.block(x + 1, y, z)) {
             along_x = true;
         }
-        if self.w.block(x, y, z - 1) == id || self.w.block(x, y, z + 1) == id {
+        if joins(self.w.block(x, y, z - 1)) || joins(self.w.block(x, y, z + 1)) {
             along_z = true;
         }
-        let w = self.w.block(x - 1, y, z) == id;
-        let e = self.w.block(x + 1, y, z) == id;
-        let n = self.w.block(x, y, z - 1) == id;
-        let s = self.w.block(x, y, z + 1) == id;
+        let w = joins(self.w.block(x - 1, y, z));
+        let e = joins(self.w.block(x + 1, y, z));
+        let n = joins(self.w.block(x, y, z - 1));
+        let s = joins(self.w.block(x, y, z + 1));
         if !along_x && !along_z {
             along_x = true;
         }
@@ -1442,6 +1446,680 @@ impl<'a, 'b> RenderBlocks<'a, 'b> {
             }
             y0 = 6.0 / 16.0;
             y1 = 9.0 / 16.0;
+        }
+        self.set_block_bounds(0.0, 0.0, 0.0, 1.0, 1.0, 1.0);
+        true
+    }
+
+    // ------------------------------------------------------------------ b1.8.1 render types
+
+    /// `BlockPane.func_35298_d`: panes join panes, glass and opaque cubes.
+    fn pane_connects(&self, id: u8, other: u8) -> bool {
+        block::opaque_cube_lookup(other) || other == id || other == 20
+    }
+
+    /// Render type 18, `func_35922_a`: glass panes and iron bars.
+    #[allow(unused_parens, clippy::all)]
+    pub(super) fn render_block_pane(&mut self, id: u8, x: i32, y: i32, z: i32) -> bool {
+        let var5 = 128;
+        let own = self.mixed(id, x, y, z);
+        self.t.set_brightness(own);
+        let var7 = 1.0f32;
+        let (r, g, b) = self.tinted_rgb(self.color_multiplier(id, x, y, z));
+        self.color(var7 * r, var7 * g, var7 * b);
+        let (var65, var67) = if self.override_texture >= 0 {
+            (self.override_texture, self.override_texture)
+        } else {
+            let m = self.w.meta(x, y, z);
+            // BlockPane.func_35299_s: the pane edge texture (iron bars 85, glass pane 148).
+            (self.texture_meta(id, 0, m), if id == 101 { 85 } else { 148 })
+        };
+        let var68 = (var65 & 15) << 4;
+        let var15 = var65 & 240;
+        let var16 = (var68 as f32 / 256.0f32) as f64;
+        let var18 = ((var68 as f32 + 7.99f32) / 256.0f32) as f64;
+        let var20 = ((var68 as f32 + 15.99f32) / 256.0f32) as f64;
+        let var22 = (var15 as f32 / 256.0f32) as f64;
+        let var24 = ((var15 as f32 + 15.99f32) / 256.0f32) as f64;
+        let var26 = (var67 & 15) << 4;
+        let var27 = var67 & 240;
+        let var28 = ((var26 + 7) as f32 / 256.0f32) as f64;
+        let var30 = ((var26 as f32 + 8.99f32) / 256.0f32) as f64;
+        let var32 = (var27 as f32 / 256.0f32) as f64;
+        let var34 = ((var27 + 8) as f32 / 256.0f32) as f64;
+        let var36 = ((var27 as f32 + 15.99f32) / 256.0f32) as f64;
+        let var38 = x as f64;
+        let var40 = x as f64 + 0.5;
+        let var42 = (x + 1) as f64;
+        let var44 = z as f64;
+        let var46 = z as f64 + 0.5;
+        let var48 = (z + 1) as f64;
+        let var50 = x as f64 + 0.5 - 1.0 / 16.0;
+        let var52 = x as f64 + 0.5 + 1.0 / 16.0;
+        let var54 = z as f64 + 0.5 - 1.0 / 16.0;
+        let var56 = z as f64 + 0.5 + 1.0 / 16.0;
+        let _ = (var44, var48, var50, var52);
+        let var58 = self.pane_connects(id, self.w.block(x, y, z - 1));
+        let var59 = self.pane_connects(id, self.w.block(x, y, z + 1));
+        let var60 = self.pane_connects(id, self.w.block(x - 1, y, z));
+        let var61 = self.pane_connects(id, self.w.block(x + 1, y, z));
+        // BlockPane.shouldSideBeRendered: never against the same pane.
+        let var62 = self.w.block(x, y + 1, z) != id && self.should_side_be_rendered(id, x, y + 1, z, 1);
+        let var63 = self.w.block(x, y - 1, z) != id && self.should_side_be_rendered(id, x, y - 1, z, 0);
+        if (!var60 || !var61) && (var60 || var61 || var58 || var59) {
+            if var60 && !var61 {
+                self.t.vertex_uv(var38, ((y + 1) as f64), var46, var16, var22);
+                self.t.vertex_uv(var38, ((y + 0) as f64), var46, var16, var24);
+                self.t.vertex_uv(var40, ((y + 0) as f64), var46, var18, var24);
+                self.t.vertex_uv(var40, ((y + 1) as f64), var46, var18, var22);
+                self.t.vertex_uv(var40, ((y + 1) as f64), var46, var16, var22);
+                self.t.vertex_uv(var40, ((y + 0) as f64), var46, var16, var24);
+                self.t.vertex_uv(var38, ((y + 0) as f64), var46, var18, var24);
+                self.t.vertex_uv(var38, ((y + 1) as f64), var46, var18, var22);
+                if !var59 && !var58 {
+                    self.t.vertex_uv(var40, ((y + 1) as f64), var56, var28, var32);
+                    self.t.vertex_uv(var40, ((y + 0) as f64), var56, var28, var36);
+                    self.t.vertex_uv(var40, ((y + 0) as f64), var54, var30, var36);
+                    self.t.vertex_uv(var40, ((y + 1) as f64), var54, var30, var32);
+                    self.t.vertex_uv(var40, ((y + 1) as f64), var54, var28, var32);
+                    self.t.vertex_uv(var40, ((y + 0) as f64), var54, var28, var36);
+                    self.t.vertex_uv(var40, ((y + 0) as f64), var56, var30, var36);
+                    self.t.vertex_uv(var40, ((y + 1) as f64), var56, var30, var32);
+                }
+                if var62 || y < var5 - 1 && self.w.is_air(x - 1, y + 1, z) {
+                    self.t.vertex_uv(var38, ((y + 1) as f64) + 0.01, var56, var30, var34);
+                    self.t.vertex_uv(var40, ((y + 1) as f64) + 0.01, var56, var30, var36);
+                    self.t.vertex_uv(var40, ((y + 1) as f64) + 0.01, var54, var28, var36);
+                    self.t.vertex_uv(var38, ((y + 1) as f64) + 0.01, var54, var28, var34);
+                    self.t.vertex_uv(var40, ((y + 1) as f64) + 0.01, var56, var30, var34);
+                    self.t.vertex_uv(var38, ((y + 1) as f64) + 0.01, var56, var30, var36);
+                    self.t.vertex_uv(var38, ((y + 1) as f64) + 0.01, var54, var28, var36);
+                    self.t.vertex_uv(var40, ((y + 1) as f64) + 0.01, var54, var28, var34);
+                }
+                if var63 || y > 1 && self.w.is_air(x - 1, y - 1, z) {
+                    self.t.vertex_uv(var38, (y as f64) - 0.01, var56, var30, var34);
+                    self.t.vertex_uv(var40, (y as f64) - 0.01, var56, var30, var36);
+                    self.t.vertex_uv(var40, (y as f64) - 0.01, var54, var28, var36);
+                    self.t.vertex_uv(var38, (y as f64) - 0.01, var54, var28, var34);
+                    self.t.vertex_uv(var40, (y as f64) - 0.01, var56, var30, var34);
+                    self.t.vertex_uv(var38, (y as f64) - 0.01, var56, var30, var36);
+                    self.t.vertex_uv(var38, (y as f64) - 0.01, var54, var28, var36);
+                    self.t.vertex_uv(var40, (y as f64) - 0.01, var54, var28, var34);
+                }
+            } else if !var60 && var61 {
+                self.t.vertex_uv(var40, ((y + 1) as f64), var46, var18, var22);
+                self.t.vertex_uv(var40, ((y + 0) as f64), var46, var18, var24);
+                self.t.vertex_uv(var42, ((y + 0) as f64), var46, var20, var24);
+                self.t.vertex_uv(var42, ((y + 1) as f64), var46, var20, var22);
+                self.t.vertex_uv(var42, ((y + 1) as f64), var46, var18, var22);
+                self.t.vertex_uv(var42, ((y + 0) as f64), var46, var18, var24);
+                self.t.vertex_uv(var40, ((y + 0) as f64), var46, var20, var24);
+                self.t.vertex_uv(var40, ((y + 1) as f64), var46, var20, var22);
+                if !var59 && !var58 {
+                    self.t.vertex_uv(var40, ((y + 1) as f64), var54, var28, var32);
+                    self.t.vertex_uv(var40, ((y + 0) as f64), var54, var28, var36);
+                    self.t.vertex_uv(var40, ((y + 0) as f64), var56, var30, var36);
+                    self.t.vertex_uv(var40, ((y + 1) as f64), var56, var30, var32);
+                    self.t.vertex_uv(var40, ((y + 1) as f64), var56, var28, var32);
+                    self.t.vertex_uv(var40, ((y + 0) as f64), var56, var28, var36);
+                    self.t.vertex_uv(var40, ((y + 0) as f64), var54, var30, var36);
+                    self.t.vertex_uv(var40, ((y + 1) as f64), var54, var30, var32);
+                }
+                if var62 || y < var5 - 1 && self.w.is_air(x + 1, y + 1, z) {
+                    self.t.vertex_uv(var40, ((y + 1) as f64) + 0.01, var56, var30, var32);
+                    self.t.vertex_uv(var42, ((y + 1) as f64) + 0.01, var56, var30, var34);
+                    self.t.vertex_uv(var42, ((y + 1) as f64) + 0.01, var54, var28, var34);
+                    self.t.vertex_uv(var40, ((y + 1) as f64) + 0.01, var54, var28, var32);
+                    self.t.vertex_uv(var42, ((y + 1) as f64) + 0.01, var56, var30, var32);
+                    self.t.vertex_uv(var40, ((y + 1) as f64) + 0.01, var56, var30, var34);
+                    self.t.vertex_uv(var40, ((y + 1) as f64) + 0.01, var54, var28, var34);
+                    self.t.vertex_uv(var42, ((y + 1) as f64) + 0.01, var54, var28, var32);
+                }
+                if var63 || y > 1 && self.w.is_air(x + 1, y - 1, z) {
+                    self.t.vertex_uv(var40, (y as f64) - 0.01, var56, var30, var32);
+                    self.t.vertex_uv(var42, (y as f64) - 0.01, var56, var30, var34);
+                    self.t.vertex_uv(var42, (y as f64) - 0.01, var54, var28, var34);
+                    self.t.vertex_uv(var40, (y as f64) - 0.01, var54, var28, var32);
+                    self.t.vertex_uv(var42, (y as f64) - 0.01, var56, var30, var32);
+                    self.t.vertex_uv(var40, (y as f64) - 0.01, var56, var30, var34);
+                    self.t.vertex_uv(var40, (y as f64) - 0.01, var54, var28, var34);
+                    self.t.vertex_uv(var42, (y as f64) - 0.01, var54, var28, var32);
+                }
+            }
+        } else {
+            self.t.vertex_uv(var38, ((y + 1) as f64), var46, var16, var22);
+            self.t.vertex_uv(var38, ((y + 0) as f64), var46, var16, var24);
+            self.t.vertex_uv(var42, ((y + 0) as f64), var46, var20, var24);
+            self.t.vertex_uv(var42, ((y + 1) as f64), var46, var20, var22);
+            self.t.vertex_uv(var42, ((y + 1) as f64), var46, var16, var22);
+            self.t.vertex_uv(var42, ((y + 0) as f64), var46, var16, var24);
+            self.t.vertex_uv(var38, ((y + 0) as f64), var46, var20, var24);
+            self.t.vertex_uv(var38, ((y + 1) as f64), var46, var20, var22);
+            if var62 {
+                self.t.vertex_uv(var38, ((y + 1) as f64) + 0.01, var56, var30, var36);
+                self.t.vertex_uv(var42, ((y + 1) as f64) + 0.01, var56, var30, var32);
+                self.t.vertex_uv(var42, ((y + 1) as f64) + 0.01, var54, var28, var32);
+                self.t.vertex_uv(var38, ((y + 1) as f64) + 0.01, var54, var28, var36);
+                self.t.vertex_uv(var42, ((y + 1) as f64) + 0.01, var56, var30, var36);
+                self.t.vertex_uv(var38, ((y + 1) as f64) + 0.01, var56, var30, var32);
+                self.t.vertex_uv(var38, ((y + 1) as f64) + 0.01, var54, var28, var32);
+                self.t.vertex_uv(var42, ((y + 1) as f64) + 0.01, var54, var28, var36);
+            } else {
+                if y < var5 - 1 && self.w.is_air(x - 1, y + 1, z) {
+                    self.t.vertex_uv(var38, ((y + 1) as f64) + 0.01, var56, var30, var34);
+                    self.t.vertex_uv(var40, ((y + 1) as f64) + 0.01, var56, var30, var36);
+                    self.t.vertex_uv(var40, ((y + 1) as f64) + 0.01, var54, var28, var36);
+                    self.t.vertex_uv(var38, ((y + 1) as f64) + 0.01, var54, var28, var34);
+                    self.t.vertex_uv(var40, ((y + 1) as f64) + 0.01, var56, var30, var34);
+                    self.t.vertex_uv(var38, ((y + 1) as f64) + 0.01, var56, var30, var36);
+                    self.t.vertex_uv(var38, ((y + 1) as f64) + 0.01, var54, var28, var36);
+                    self.t.vertex_uv(var40, ((y + 1) as f64) + 0.01, var54, var28, var34);
+                }
+                if y < var5 - 1 && self.w.is_air(x + 1, y + 1, z) {
+                    self.t.vertex_uv(var40, ((y + 1) as f64) + 0.01, var56, var30, var32);
+                    self.t.vertex_uv(var42, ((y + 1) as f64) + 0.01, var56, var30, var34);
+                    self.t.vertex_uv(var42, ((y + 1) as f64) + 0.01, var54, var28, var34);
+                    self.t.vertex_uv(var40, ((y + 1) as f64) + 0.01, var54, var28, var32);
+                    self.t.vertex_uv(var42, ((y + 1) as f64) + 0.01, var56, var30, var32);
+                    self.t.vertex_uv(var40, ((y + 1) as f64) + 0.01, var56, var30, var34);
+                    self.t.vertex_uv(var40, ((y + 1) as f64) + 0.01, var54, var28, var34);
+                    self.t.vertex_uv(var42, ((y + 1) as f64) + 0.01, var54, var28, var32);
+                }
+            }
+            if var63 {
+                self.t.vertex_uv(var38, (y as f64) - 0.01, var56, var30, var36);
+                self.t.vertex_uv(var42, (y as f64) - 0.01, var56, var30, var32);
+                self.t.vertex_uv(var42, (y as f64) - 0.01, var54, var28, var32);
+                self.t.vertex_uv(var38, (y as f64) - 0.01, var54, var28, var36);
+                self.t.vertex_uv(var42, (y as f64) - 0.01, var56, var30, var36);
+                self.t.vertex_uv(var38, (y as f64) - 0.01, var56, var30, var32);
+                self.t.vertex_uv(var38, (y as f64) - 0.01, var54, var28, var32);
+                self.t.vertex_uv(var42, (y as f64) - 0.01, var54, var28, var36);
+            } else {
+                if y > 1 && self.w.is_air(x - 1, y - 1, z) {
+                    self.t.vertex_uv(var38, (y as f64) - 0.01, var56, var30, var34);
+                    self.t.vertex_uv(var40, (y as f64) - 0.01, var56, var30, var36);
+                    self.t.vertex_uv(var40, (y as f64) - 0.01, var54, var28, var36);
+                    self.t.vertex_uv(var38, (y as f64) - 0.01, var54, var28, var34);
+                    self.t.vertex_uv(var40, (y as f64) - 0.01, var56, var30, var34);
+                    self.t.vertex_uv(var38, (y as f64) - 0.01, var56, var30, var36);
+                    self.t.vertex_uv(var38, (y as f64) - 0.01, var54, var28, var36);
+                    self.t.vertex_uv(var40, (y as f64) - 0.01, var54, var28, var34);
+                }
+                if y > 1 && self.w.is_air(x + 1, y - 1, z) {
+                    self.t.vertex_uv(var40, (y as f64) - 0.01, var56, var30, var32);
+                    self.t.vertex_uv(var42, (y as f64) - 0.01, var56, var30, var34);
+                    self.t.vertex_uv(var42, (y as f64) - 0.01, var54, var28, var34);
+                    self.t.vertex_uv(var40, (y as f64) - 0.01, var54, var28, var32);
+                    self.t.vertex_uv(var42, (y as f64) - 0.01, var56, var30, var32);
+                    self.t.vertex_uv(var40, (y as f64) - 0.01, var56, var30, var34);
+                    self.t.vertex_uv(var40, (y as f64) - 0.01, var54, var28, var34);
+                    self.t.vertex_uv(var42, (y as f64) - 0.01, var54, var28, var32);
+                }
+            }
+        }
+        if (!var58 || !var59) && (var60 || var61 || var58 || var59) {
+            if var58 && !var59 {
+                self.t.vertex_uv(var40, ((y + 1) as f64), var44, var16, var22);
+                self.t.vertex_uv(var40, ((y + 0) as f64), var44, var16, var24);
+                self.t.vertex_uv(var40, ((y + 0) as f64), var46, var18, var24);
+                self.t.vertex_uv(var40, ((y + 1) as f64), var46, var18, var22);
+                self.t.vertex_uv(var40, ((y + 1) as f64), var46, var16, var22);
+                self.t.vertex_uv(var40, ((y + 0) as f64), var46, var16, var24);
+                self.t.vertex_uv(var40, ((y + 0) as f64), var44, var18, var24);
+                self.t.vertex_uv(var40, ((y + 1) as f64), var44, var18, var22);
+                if !var61 && !var60 {
+                    self.t.vertex_uv(var50, ((y + 1) as f64), var46, var28, var32);
+                    self.t.vertex_uv(var50, ((y + 0) as f64), var46, var28, var36);
+                    self.t.vertex_uv(var52, ((y + 0) as f64), var46, var30, var36);
+                    self.t.vertex_uv(var52, ((y + 1) as f64), var46, var30, var32);
+                    self.t.vertex_uv(var52, ((y + 1) as f64), var46, var28, var32);
+                    self.t.vertex_uv(var52, ((y + 0) as f64), var46, var28, var36);
+                    self.t.vertex_uv(var50, ((y + 0) as f64), var46, var30, var36);
+                    self.t.vertex_uv(var50, ((y + 1) as f64), var46, var30, var32);
+                }
+                if var62 || y < var5 - 1 && self.w.is_air(x, y + 1, z - 1) {
+                    self.t.vertex_uv(var50, ((y + 1) as f64), var44, var30, var32);
+                    self.t.vertex_uv(var50, ((y + 1) as f64), var46, var30, var34);
+                    self.t.vertex_uv(var52, ((y + 1) as f64), var46, var28, var34);
+                    self.t.vertex_uv(var52, ((y + 1) as f64), var44, var28, var32);
+                    self.t.vertex_uv(var50, ((y + 1) as f64), var46, var30, var32);
+                    self.t.vertex_uv(var50, ((y + 1) as f64), var44, var30, var34);
+                    self.t.vertex_uv(var52, ((y + 1) as f64), var44, var28, var34);
+                    self.t.vertex_uv(var52, ((y + 1) as f64), var46, var28, var32);
+                }
+                if var63 || y > 1 && self.w.is_air(x, y - 1, z - 1) {
+                    self.t.vertex_uv(var50, (y as f64), var44, var30, var32);
+                    self.t.vertex_uv(var50, (y as f64), var46, var30, var34);
+                    self.t.vertex_uv(var52, (y as f64), var46, var28, var34);
+                    self.t.vertex_uv(var52, (y as f64), var44, var28, var32);
+                    self.t.vertex_uv(var50, (y as f64), var46, var30, var32);
+                    self.t.vertex_uv(var50, (y as f64), var44, var30, var34);
+                    self.t.vertex_uv(var52, (y as f64), var44, var28, var34);
+                    self.t.vertex_uv(var52, (y as f64), var46, var28, var32);
+                }
+            } else if !var58 && var59 {
+                self.t.vertex_uv(var40, ((y + 1) as f64), var46, var18, var22);
+                self.t.vertex_uv(var40, ((y + 0) as f64), var46, var18, var24);
+                self.t.vertex_uv(var40, ((y + 0) as f64), var48, var20, var24);
+                self.t.vertex_uv(var40, ((y + 1) as f64), var48, var20, var22);
+                self.t.vertex_uv(var40, ((y + 1) as f64), var48, var18, var22);
+                self.t.vertex_uv(var40, ((y + 0) as f64), var48, var18, var24);
+                self.t.vertex_uv(var40, ((y + 0) as f64), var46, var20, var24);
+                self.t.vertex_uv(var40, ((y + 1) as f64), var46, var20, var22);
+                if !var61 && !var60 {
+                    self.t.vertex_uv(var52, ((y + 1) as f64), var46, var28, var32);
+                    self.t.vertex_uv(var52, ((y + 0) as f64), var46, var28, var36);
+                    self.t.vertex_uv(var50, ((y + 0) as f64), var46, var30, var36);
+                    self.t.vertex_uv(var50, ((y + 1) as f64), var46, var30, var32);
+                    self.t.vertex_uv(var50, ((y + 1) as f64), var46, var28, var32);
+                    self.t.vertex_uv(var50, ((y + 0) as f64), var46, var28, var36);
+                    self.t.vertex_uv(var52, ((y + 0) as f64), var46, var30, var36);
+                    self.t.vertex_uv(var52, ((y + 1) as f64), var46, var30, var32);
+                }
+                if var62 || y < var5 - 1 && self.w.is_air(x, y + 1, z + 1) {
+                    self.t.vertex_uv(var50, ((y + 1) as f64), var46, var28, var34);
+                    self.t.vertex_uv(var50, ((y + 1) as f64), var48, var28, var36);
+                    self.t.vertex_uv(var52, ((y + 1) as f64), var48, var30, var36);
+                    self.t.vertex_uv(var52, ((y + 1) as f64), var46, var30, var34);
+                    self.t.vertex_uv(var50, ((y + 1) as f64), var48, var28, var34);
+                    self.t.vertex_uv(var50, ((y + 1) as f64), var46, var28, var36);
+                    self.t.vertex_uv(var52, ((y + 1) as f64), var46, var30, var36);
+                    self.t.vertex_uv(var52, ((y + 1) as f64), var48, var30, var34);
+                }
+                if var63 || y > 1 && self.w.is_air(x, y - 1, z + 1) {
+                    self.t.vertex_uv(var50, (y as f64), var46, var28, var34);
+                    self.t.vertex_uv(var50, (y as f64), var48, var28, var36);
+                    self.t.vertex_uv(var52, (y as f64), var48, var30, var36);
+                    self.t.vertex_uv(var52, (y as f64), var46, var30, var34);
+                    self.t.vertex_uv(var50, (y as f64), var48, var28, var34);
+                    self.t.vertex_uv(var50, (y as f64), var46, var28, var36);
+                    self.t.vertex_uv(var52, (y as f64), var46, var30, var36);
+                    self.t.vertex_uv(var52, (y as f64), var48, var30, var34);
+                }
+            }
+        } else {
+            self.t.vertex_uv(var40, ((y + 1) as f64), var48, var16, var22);
+            self.t.vertex_uv(var40, ((y + 0) as f64), var48, var16, var24);
+            self.t.vertex_uv(var40, ((y + 0) as f64), var44, var20, var24);
+            self.t.vertex_uv(var40, ((y + 1) as f64), var44, var20, var22);
+            self.t.vertex_uv(var40, ((y + 1) as f64), var44, var16, var22);
+            self.t.vertex_uv(var40, ((y + 0) as f64), var44, var16, var24);
+            self.t.vertex_uv(var40, ((y + 0) as f64), var48, var20, var24);
+            self.t.vertex_uv(var40, ((y + 1) as f64), var48, var20, var22);
+            if var62 {
+                self.t.vertex_uv(var52, ((y + 1) as f64), var48, var30, var36);
+                self.t.vertex_uv(var52, ((y + 1) as f64), var44, var30, var32);
+                self.t.vertex_uv(var50, ((y + 1) as f64), var44, var28, var32);
+                self.t.vertex_uv(var50, ((y + 1) as f64), var48, var28, var36);
+                self.t.vertex_uv(var52, ((y + 1) as f64), var44, var30, var36);
+                self.t.vertex_uv(var52, ((y + 1) as f64), var48, var30, var32);
+                self.t.vertex_uv(var50, ((y + 1) as f64), var48, var28, var32);
+                self.t.vertex_uv(var50, ((y + 1) as f64), var44, var28, var36);
+            } else {
+                if y < var5 - 1 && self.w.is_air(x, y + 1, z - 1) {
+                    self.t.vertex_uv(var50, ((y + 1) as f64), var44, var30, var32);
+                    self.t.vertex_uv(var50, ((y + 1) as f64), var46, var30, var34);
+                    self.t.vertex_uv(var52, ((y + 1) as f64), var46, var28, var34);
+                    self.t.vertex_uv(var52, ((y + 1) as f64), var44, var28, var32);
+                    self.t.vertex_uv(var50, ((y + 1) as f64), var46, var30, var32);
+                    self.t.vertex_uv(var50, ((y + 1) as f64), var44, var30, var34);
+                    self.t.vertex_uv(var52, ((y + 1) as f64), var44, var28, var34);
+                    self.t.vertex_uv(var52, ((y + 1) as f64), var46, var28, var32);
+                }
+                if y < var5 - 1 && self.w.is_air(x, y + 1, z + 1) {
+                    self.t.vertex_uv(var50, ((y + 1) as f64), var46, var28, var34);
+                    self.t.vertex_uv(var50, ((y + 1) as f64), var48, var28, var36);
+                    self.t.vertex_uv(var52, ((y + 1) as f64), var48, var30, var36);
+                    self.t.vertex_uv(var52, ((y + 1) as f64), var46, var30, var34);
+                    self.t.vertex_uv(var50, ((y + 1) as f64), var48, var28, var34);
+                    self.t.vertex_uv(var50, ((y + 1) as f64), var46, var28, var36);
+                    self.t.vertex_uv(var52, ((y + 1) as f64), var46, var30, var36);
+                    self.t.vertex_uv(var52, ((y + 1) as f64), var48, var30, var34);
+                }
+            }
+            if var63 {
+                self.t.vertex_uv(var52, (y as f64), var48, var30, var36);
+                self.t.vertex_uv(var52, (y as f64), var44, var30, var32);
+                self.t.vertex_uv(var50, (y as f64), var44, var28, var32);
+                self.t.vertex_uv(var50, (y as f64), var48, var28, var36);
+                self.t.vertex_uv(var52, (y as f64), var44, var30, var36);
+                self.t.vertex_uv(var52, (y as f64), var48, var30, var32);
+                self.t.vertex_uv(var50, (y as f64), var48, var28, var32);
+                self.t.vertex_uv(var50, (y as f64), var44, var28, var36);
+            } else {
+                if y > 1 && self.w.is_air(x, y - 1, z - 1) {
+                    self.t.vertex_uv(var50, (y as f64), var44, var30, var32);
+                    self.t.vertex_uv(var50, (y as f64), var46, var30, var34);
+                    self.t.vertex_uv(var52, (y as f64), var46, var28, var34);
+                    self.t.vertex_uv(var52, (y as f64), var44, var28, var32);
+                    self.t.vertex_uv(var50, (y as f64), var46, var30, var32);
+                    self.t.vertex_uv(var50, (y as f64), var44, var30, var34);
+                    self.t.vertex_uv(var52, (y as f64), var44, var28, var34);
+                    self.t.vertex_uv(var52, (y as f64), var46, var28, var32);
+                }
+                if y > 1 && self.w.is_air(x, y - 1, z + 1) {
+                    self.t.vertex_uv(var50, (y as f64), var46, var28, var34);
+                    self.t.vertex_uv(var50, (y as f64), var48, var28, var36);
+                    self.t.vertex_uv(var52, (y as f64), var48, var30, var36);
+                    self.t.vertex_uv(var52, (y as f64), var46, var30, var34);
+                    self.t.vertex_uv(var50, (y as f64), var48, var28, var34);
+                    self.t.vertex_uv(var50, (y as f64), var46, var28, var36);
+                    self.t.vertex_uv(var52, (y as f64), var46, var30, var36);
+                    self.t.vertex_uv(var52, (y as f64), var48, var30, var34);
+                }
+            }
+        }
+        true
+    }
+
+    /// Render type 20, `func_35929_i`: vines on each attached side and under a ceiling.
+    #[allow(unused_parens, clippy::all)]
+    pub(super) fn render_block_vine(&mut self, id: u8, x: i32, y: i32, z: i32) -> bool {
+        let var6 = self.face_tex(self.texture_meta(id, 0, 0));
+        let var7 = 1.0f32;
+        let own = self.mixed(id, x, y, z);
+        self.t.set_brightness(own);
+        let (var9, var10, var11) = rgb(self.color_multiplier(id, x, y, z));
+        self.color(var7 * var9, var7 * var10, var7 * var11);
+        let var8 = (var6 & 15) << 4;
+        let var21 = var6 & 240;
+        let var22 = (var8 as f32 / 256.0f32) as f64;
+        let var12 = ((var8 as f32 + 15.99f32) / 256.0f32) as f64;
+        let var14 = (var21 as f32 / 256.0f32) as f64;
+        let var16 = ((var21 as f32 + 15.99f32) / 256.0f32) as f64;
+        let var18 = 0.05f32 as f64;
+        let var20 = self.w.meta(x, y, z);
+        if var20 & 2 != 0 {
+            self.t.vertex_uv((x as f64) + var18, ((y + 1) as f64), ((z + 1) as f64), var22, var14);
+            self.t.vertex_uv((x as f64) + var18, ((y + 0) as f64), ((z + 1) as f64), var22, var16);
+            self.t.vertex_uv((x as f64) + var18, ((y + 0) as f64), ((z + 0) as f64), var12, var16);
+            self.t.vertex_uv((x as f64) + var18, ((y + 1) as f64), ((z + 0) as f64), var12, var14);
+            self.t.vertex_uv((x as f64) + var18, ((y + 1) as f64), ((z + 0) as f64), var12, var14);
+            self.t.vertex_uv((x as f64) + var18, ((y + 0) as f64), ((z + 0) as f64), var12, var16);
+            self.t.vertex_uv((x as f64) + var18, ((y + 0) as f64), ((z + 1) as f64), var22, var16);
+            self.t.vertex_uv((x as f64) + var18, ((y + 1) as f64), ((z + 1) as f64), var22, var14);
+        }
+        if var20 & 8 != 0 {
+            self.t.vertex_uv(((x + 1) as f64) - var18, ((y + 0) as f64), ((z + 1) as f64), var12, var16);
+            self.t.vertex_uv(((x + 1) as f64) - var18, ((y + 1) as f64), ((z + 1) as f64), var12, var14);
+            self.t.vertex_uv(((x + 1) as f64) - var18, ((y + 1) as f64), ((z + 0) as f64), var22, var14);
+            self.t.vertex_uv(((x + 1) as f64) - var18, ((y + 0) as f64), ((z + 0) as f64), var22, var16);
+            self.t.vertex_uv(((x + 1) as f64) - var18, ((y + 0) as f64), ((z + 0) as f64), var22, var16);
+            self.t.vertex_uv(((x + 1) as f64) - var18, ((y + 1) as f64), ((z + 0) as f64), var22, var14);
+            self.t.vertex_uv(((x + 1) as f64) - var18, ((y + 1) as f64), ((z + 1) as f64), var12, var14);
+            self.t.vertex_uv(((x + 1) as f64) - var18, ((y + 0) as f64), ((z + 1) as f64), var12, var16);
+        }
+        if var20 & 4 != 0 {
+            self.t.vertex_uv(((x + 1) as f64), ((y + 0) as f64), (z as f64) + var18, var12, var16);
+            self.t.vertex_uv(((x + 1) as f64), ((y + 1) as f64), (z as f64) + var18, var12, var14);
+            self.t.vertex_uv(((x + 0) as f64), ((y + 1) as f64), (z as f64) + var18, var22, var14);
+            self.t.vertex_uv(((x + 0) as f64), ((y + 0) as f64), (z as f64) + var18, var22, var16);
+            self.t.vertex_uv(((x + 0) as f64), ((y + 0) as f64), (z as f64) + var18, var22, var16);
+            self.t.vertex_uv(((x + 0) as f64), ((y + 1) as f64), (z as f64) + var18, var22, var14);
+            self.t.vertex_uv(((x + 1) as f64), ((y + 1) as f64), (z as f64) + var18, var12, var14);
+            self.t.vertex_uv(((x + 1) as f64), ((y + 0) as f64), (z as f64) + var18, var12, var16);
+        }
+        if var20 & 1 != 0 {
+            self.t.vertex_uv(((x + 1) as f64), ((y + 1) as f64), ((z + 1) as f64) - var18, var22, var14);
+            self.t.vertex_uv(((x + 1) as f64), ((y + 0) as f64), ((z + 1) as f64) - var18, var22, var16);
+            self.t.vertex_uv(((x + 0) as f64), ((y + 0) as f64), ((z + 1) as f64) - var18, var12, var16);
+            self.t.vertex_uv(((x + 0) as f64), ((y + 1) as f64), ((z + 1) as f64) - var18, var12, var14);
+            self.t.vertex_uv(((x + 0) as f64), ((y + 1) as f64), ((z + 1) as f64) - var18, var12, var14);
+            self.t.vertex_uv(((x + 0) as f64), ((y + 0) as f64), ((z + 1) as f64) - var18, var12, var16);
+            self.t.vertex_uv(((x + 1) as f64), ((y + 0) as f64), ((z + 1) as f64) - var18, var22, var16);
+            self.t.vertex_uv(((x + 1) as f64), ((y + 1) as f64), ((z + 1) as f64) - var18, var22, var14);
+        }
+        if self.w.is_block_normal_cube(x, y + 1, z) {
+            self.t.vertex_uv(((x + 1) as f64), ((y + 1) as f64) - var18, ((z + 0) as f64), var22, var14);
+            self.t.vertex_uv(((x + 1) as f64), ((y + 1) as f64) - var18, ((z + 1) as f64), var22, var16);
+            self.t.vertex_uv(((x + 0) as f64), ((y + 1) as f64) - var18, ((z + 1) as f64), var12, var16);
+            self.t.vertex_uv(((x + 0) as f64), ((y + 1) as f64) - var18, ((z + 0) as f64), var12, var14);
+        }
+        true
+    }
+
+    /// Render type 19, `renderBlockCrops` in b1.8.1: pumpkin and melon stems, bent towards a
+    /// grown fruit.
+    pub(super) fn render_block_stem(&mut self, id: u8, x: i32, y: i32, z: i32) -> bool {
+        let own = self.mixed(id, x, y, z);
+        self.t.set_brightness(own);
+        let var7 = 1.0f32;
+        let (r, g, b) = self.tinted_rgb(self.color_multiplier(id, x, y, z));
+        self.color(var7 * r, var7 * g, var7 * b);
+        let meta = self.w.meta(x, y, z);
+        // BlockStem.setBlockBoundsBasedOnState: maxY = (meta * 2 + 2) / 16.
+        let max_y = ((meta * 2 + 2) as f32 / 16.0f32) as f64;
+        let fruit = if id == 104 { 86 } else { 103 };
+        let dir = if meta < 7 {
+            -1
+        } else if self.w.block(x - 1, y, z) == fruit {
+            0
+        } else if self.w.block(x + 1, y, z) == fruit {
+            1
+        } else if self.w.block(x, y, z - 1) == fruit {
+            2
+        } else if self.w.block(x, y, z + 1) == fruit {
+            3
+        } else {
+            -1
+        };
+        let (xf, yf, zf) = (x as f64, y as f64, z as f64);
+        if dir < 0 {
+            self.render_stem_straight(id, meta, max_y, xf, yf, zf);
+        } else {
+            self.render_stem_straight(id, meta, 0.5, xf, yf, zf);
+            self.render_stem_bent(id, meta, dir, max_y, xf, yf, zf);
+        }
+        true
+    }
+
+    /// `func_35928_a`: the straight stem, `height` tall.
+    fn render_stem_straight(&mut self, id: u8, meta: i32, height: f64, x: f64, y: f64, z: f64) {
+        let tex = self.face_tex(self.texture_meta(id, 0, meta));
+        let tu = (tex & 15) << 4;
+        let tv = tex & 240;
+        let u0 = (tu as f32 / 256.0f32) as f64;
+        let u1 = ((tu as f32 + 15.99f32) / 256.0f32) as f64;
+        let v0 = (tv as f32 / 256.0f32) as f64;
+        let v1 = (tv as f64 + 15.99f32 as f64 * height) / 256.0;
+        let x0 = x + 0.5 - 0.45f32 as f64;
+        let x1 = x + 0.5 + 0.45f32 as f64;
+        let z0 = z + 0.5 - 0.45f32 as f64;
+        let z1 = z + 0.5 + 0.45f32 as f64;
+        let t = &mut *self.t;
+        t.vertex_uv(x0, y + height, z0, u0, v0);
+        t.vertex_uv(x0, y + 0.0, z0, u0, v1);
+        t.vertex_uv(x1, y + 0.0, z1, u1, v1);
+        t.vertex_uv(x1, y + height, z1, u1, v0);
+        t.vertex_uv(x1, y + height, z1, u0, v0);
+        t.vertex_uv(x1, y + 0.0, z1, u0, v1);
+        t.vertex_uv(x0, y + 0.0, z0, u1, v1);
+        t.vertex_uv(x0, y + height, z0, u1, v0);
+        t.vertex_uv(x0, y + height, z1, u0, v0);
+        t.vertex_uv(x0, y + 0.0, z1, u0, v1);
+        t.vertex_uv(x1, y + 0.0, z0, u1, v1);
+        t.vertex_uv(x1, y + height, z0, u1, v0);
+        t.vertex_uv(x1, y + height, z0, u0, v0);
+        t.vertex_uv(x1, y + 0.0, z0, u0, v1);
+        t.vertex_uv(x0, y + 0.0, z1, u1, v1);
+        t.vertex_uv(x0, y + height, z1, u1, v0);
+    }
+
+    /// `func_35926_a`: the bent stem towards the fruit (texture one row below).
+    #[allow(clippy::too_many_arguments)]
+    fn render_stem_bent(&mut self, id: u8, meta: i32, dir: i32, height: f64, x: f64, y: f64, z: f64) {
+        let tex = if self.override_texture >= 0 { self.override_texture } else { self.texture_meta(id, 0, meta) + 16 };
+        let tu = (tex & 15) << 4;
+        let tv = tex & 240;
+        let mut u0 = (tu as f32 / 256.0f32) as f64;
+        let mut u1 = ((tu as f32 + 15.99f32) / 256.0f32) as f64;
+        let v0 = (tv as f32 / 256.0f32) as f64;
+        let v1 = (tv as f64 + 15.99f32 as f64 * height) / 256.0;
+        let x0 = x + 0.5 - 0.5;
+        let x1 = x + 0.5 + 0.5;
+        let z0 = z + 0.5 - 0.5;
+        let z1 = z + 0.5 + 0.5;
+        let xm = x + 0.5;
+        let zm = z + 0.5;
+        if (dir + 1) / 2 % 2 == 1 {
+            std::mem::swap(&mut u0, &mut u1);
+        }
+        let t = &mut *self.t;
+        if dir < 2 {
+            t.vertex_uv(x0, y + height, zm, u0, v0);
+            t.vertex_uv(x0, y + 0.0, zm, u0, v1);
+            t.vertex_uv(x1, y + 0.0, zm, u1, v1);
+            t.vertex_uv(x1, y + height, zm, u1, v0);
+            t.vertex_uv(x1, y + height, zm, u1, v0);
+            t.vertex_uv(x1, y + 0.0, zm, u1, v1);
+            t.vertex_uv(x0, y + 0.0, zm, u0, v1);
+            t.vertex_uv(x0, y + height, zm, u0, v0);
+        } else {
+            t.vertex_uv(xm, y + height, z1, u0, v0);
+            t.vertex_uv(xm, y + 0.0, z1, u0, v1);
+            t.vertex_uv(xm, y + 0.0, z0, u1, v1);
+            t.vertex_uv(xm, y + height, z0, u1, v0);
+            t.vertex_uv(xm, y + height, z0, u1, v0);
+            t.vertex_uv(xm, y + 0.0, z0, u1, v1);
+            t.vertex_uv(xm, y + 0.0, z1, u0, v1);
+            t.vertex_uv(xm, y + height, z1, u0, v0);
+        }
+    }
+
+    /// Render type 21, `func_35923_a`: fence gates (posts, and the closed or open bars).
+    #[allow(unused_assignments, unused_parens, unused_mut, clippy::all)]
+    pub(super) fn render_block_fence_gate(&mut self, id: u8, x: i32, y: i32, z: i32) -> bool {
+        let var6 = self.w.meta(x, y, z);
+        let var7 = var6 & 4 != 0;
+        let var8 = var6 & 3;
+        let mut var15: f32;
+        let mut var16: f32;
+        let mut var17: f32;
+        let mut var18: f32;
+        if var8 != 3 && var8 != 1 {
+            var15 = 0.0f32;
+            var16 = 2.0f32 / 16.0;
+            var17 = 7.0f32 / 16.0;
+            var18 = 9.0f32 / 16.0;
+            self.set_block_bounds(var15, 5.0f32 / 16.0, var17, var16, 1.0f32, var18);
+            self.render_standard_block_pub(id, x, y, z);
+            var15 = 14.0f32 / 16.0;
+            var16 = 1.0f32;
+            self.set_block_bounds(var15, 5.0f32 / 16.0, var17, var16, 1.0f32, var18);
+            self.render_standard_block_pub(id, x, y, z);
+        } else {
+            var15 = 7.0f32 / 16.0;
+            var16 = 9.0f32 / 16.0;
+            var17 = 0.0f32;
+            var18 = 2.0f32 / 16.0;
+            self.set_block_bounds(var15, 5.0f32 / 16.0, var17, var16, 1.0f32, var18);
+            self.render_standard_block_pub(id, x, y, z);
+            var17 = 14.0f32 / 16.0;
+            var18 = 1.0f32;
+            self.set_block_bounds(var15, 5.0f32 / 16.0, var17, var16, 1.0f32, var18);
+            self.render_standard_block_pub(id, x, y, z);
+        }
+        if !var7 {
+            if var8 != 3 && var8 != 1 {
+                var15 = 6.0f32 / 16.0;
+                var16 = 0.5f32;
+                var17 = 7.0f32 / 16.0;
+                var18 = 9.0f32 / 16.0;
+                self.set_block_bounds(var15, 6.0f32 / 16.0, var17, var16, 15.0f32 / 16.0, var18);
+                self.render_standard_block_pub(id, x, y, z);
+                var15 = 0.5f32;
+                var16 = 10.0f32 / 16.0;
+                self.set_block_bounds(var15, 6.0f32 / 16.0, var17, var16, 15.0f32 / 16.0, var18);
+                self.render_standard_block_pub(id, x, y, z);
+                var15 = 10.0f32 / 16.0;
+                var16 = 14.0f32 / 16.0;
+                self.set_block_bounds(var15, 6.0f32 / 16.0, var17, var16, 9.0f32 / 16.0, var18);
+                self.render_standard_block_pub(id, x, y, z);
+                self.set_block_bounds(var15, 12.0f32 / 16.0, var17, var16, 15.0f32 / 16.0, var18);
+                self.render_standard_block_pub(id, x, y, z);
+                var15 = 2.0f32 / 16.0;
+                var16 = 6.0f32 / 16.0;
+                self.set_block_bounds(var15, 6.0f32 / 16.0, var17, var16, 9.0f32 / 16.0, var18);
+                self.render_standard_block_pub(id, x, y, z);
+                self.set_block_bounds(var15, 12.0f32 / 16.0, var17, var16, 15.0f32 / 16.0, var18);
+                self.render_standard_block_pub(id, x, y, z);
+            } else {
+                var15 = 7.0f32 / 16.0;
+                var16 = 9.0f32 / 16.0;
+                var17 = 6.0f32 / 16.0;
+                var18 = 0.5f32;
+                self.set_block_bounds(var15, 6.0f32 / 16.0, var17, var16, 15.0f32 / 16.0, var18);
+                self.render_standard_block_pub(id, x, y, z);
+                var17 = 0.5f32;
+                var18 = 10.0f32 / 16.0;
+                self.set_block_bounds(var15, 6.0f32 / 16.0, var17, var16, 15.0f32 / 16.0, var18);
+                self.render_standard_block_pub(id, x, y, z);
+                var17 = 10.0f32 / 16.0;
+                var18 = 14.0f32 / 16.0;
+                self.set_block_bounds(var15, 6.0f32 / 16.0, var17, var16, 9.0f32 / 16.0, var18);
+                self.render_standard_block_pub(id, x, y, z);
+                self.set_block_bounds(var15, 12.0f32 / 16.0, var17, var16, 15.0f32 / 16.0, var18);
+                self.render_standard_block_pub(id, x, y, z);
+                var17 = 2.0f32 / 16.0;
+                var18 = 6.0f32 / 16.0;
+                self.set_block_bounds(var15, 6.0f32 / 16.0, var17, var16, 9.0f32 / 16.0, var18);
+                self.render_standard_block_pub(id, x, y, z);
+                self.set_block_bounds(var15, 12.0f32 / 16.0, var17, var16, 15.0f32 / 16.0, var18);
+                self.render_standard_block_pub(id, x, y, z);
+            }
+        } else if var8 == 3 {
+            self.set_block_bounds(13.0f32 / 16.0, 6.0f32 / 16.0, 0.0f32, 15.0f32 / 16.0, 15.0f32 / 16.0, 2.0f32 / 16.0);
+            self.render_standard_block_pub(id, x, y, z);
+            self.set_block_bounds(13.0f32 / 16.0, 6.0f32 / 16.0, 14.0f32 / 16.0, 15.0f32 / 16.0, 15.0f32 / 16.0, 1.0f32);
+            self.render_standard_block_pub(id, x, y, z);
+            self.set_block_bounds(9.0f32 / 16.0, 6.0f32 / 16.0, 0.0f32, 13.0f32 / 16.0, 9.0f32 / 16.0, 2.0f32 / 16.0);
+            self.render_standard_block_pub(id, x, y, z);
+            self.set_block_bounds(9.0f32 / 16.0, 6.0f32 / 16.0, 14.0f32 / 16.0, 13.0f32 / 16.0, 9.0f32 / 16.0, 1.0f32);
+            self.render_standard_block_pub(id, x, y, z);
+            self.set_block_bounds(9.0f32 / 16.0, 12.0f32 / 16.0, 0.0f32, 13.0f32 / 16.0, 15.0f32 / 16.0, 2.0f32 / 16.0);
+            self.render_standard_block_pub(id, x, y, z);
+            self.set_block_bounds(9.0f32 / 16.0, 12.0f32 / 16.0, 14.0f32 / 16.0, 13.0f32 / 16.0, 15.0f32 / 16.0, 1.0f32);
+            self.render_standard_block_pub(id, x, y, z);
+        } else if var8 == 1 {
+            self.set_block_bounds(1.0f32 / 16.0, 6.0f32 / 16.0, 0.0f32, 3.0f32 / 16.0, 15.0f32 / 16.0, 2.0f32 / 16.0);
+            self.render_standard_block_pub(id, x, y, z);
+            self.set_block_bounds(1.0f32 / 16.0, 6.0f32 / 16.0, 14.0f32 / 16.0, 3.0f32 / 16.0, 15.0f32 / 16.0, 1.0f32);
+            self.render_standard_block_pub(id, x, y, z);
+            self.set_block_bounds(3.0f32 / 16.0, 6.0f32 / 16.0, 0.0f32, 7.0f32 / 16.0, 9.0f32 / 16.0, 2.0f32 / 16.0);
+            self.render_standard_block_pub(id, x, y, z);
+            self.set_block_bounds(3.0f32 / 16.0, 6.0f32 / 16.0, 14.0f32 / 16.0, 7.0f32 / 16.0, 9.0f32 / 16.0, 1.0f32);
+            self.render_standard_block_pub(id, x, y, z);
+            self.set_block_bounds(3.0f32 / 16.0, 12.0f32 / 16.0, 0.0f32, 7.0f32 / 16.0, 15.0f32 / 16.0, 2.0f32 / 16.0);
+            self.render_standard_block_pub(id, x, y, z);
+            self.set_block_bounds(3.0f32 / 16.0, 12.0f32 / 16.0, 14.0f32 / 16.0, 7.0f32 / 16.0, 15.0f32 / 16.0, 1.0f32);
+            self.render_standard_block_pub(id, x, y, z);
+        } else if var8 == 0 {
+            self.set_block_bounds(0.0f32, 6.0f32 / 16.0, 13.0f32 / 16.0, 2.0f32 / 16.0, 15.0f32 / 16.0, 15.0f32 / 16.0);
+            self.render_standard_block_pub(id, x, y, z);
+            self.set_block_bounds(14.0f32 / 16.0, 6.0f32 / 16.0, 13.0f32 / 16.0, 1.0f32, 15.0f32 / 16.0, 15.0f32 / 16.0);
+            self.render_standard_block_pub(id, x, y, z);
+            self.set_block_bounds(0.0f32, 6.0f32 / 16.0, 9.0f32 / 16.0, 2.0f32 / 16.0, 9.0f32 / 16.0, 13.0f32 / 16.0);
+            self.render_standard_block_pub(id, x, y, z);
+            self.set_block_bounds(14.0f32 / 16.0, 6.0f32 / 16.0, 9.0f32 / 16.0, 1.0f32, 9.0f32 / 16.0, 13.0f32 / 16.0);
+            self.render_standard_block_pub(id, x, y, z);
+            self.set_block_bounds(0.0f32, 12.0f32 / 16.0, 9.0f32 / 16.0, 2.0f32 / 16.0, 15.0f32 / 16.0, 13.0f32 / 16.0);
+            self.render_standard_block_pub(id, x, y, z);
+            self.set_block_bounds(14.0f32 / 16.0, 12.0f32 / 16.0, 9.0f32 / 16.0, 1.0f32, 15.0f32 / 16.0, 13.0f32 / 16.0);
+            self.render_standard_block_pub(id, x, y, z);
+        } else if var8 == 2 {
+            self.set_block_bounds(0.0f32, 6.0f32 / 16.0, 1.0f32 / 16.0, 2.0f32 / 16.0, 15.0f32 / 16.0, 3.0f32 / 16.0);
+            self.render_standard_block_pub(id, x, y, z);
+            self.set_block_bounds(14.0f32 / 16.0, 6.0f32 / 16.0, 1.0f32 / 16.0, 1.0f32, 15.0f32 / 16.0, 3.0f32 / 16.0);
+            self.render_standard_block_pub(id, x, y, z);
+            self.set_block_bounds(0.0f32, 6.0f32 / 16.0, 3.0f32 / 16.0, 2.0f32 / 16.0, 9.0f32 / 16.0, 7.0f32 / 16.0);
+            self.render_standard_block_pub(id, x, y, z);
+            self.set_block_bounds(14.0f32 / 16.0, 6.0f32 / 16.0, 3.0f32 / 16.0, 1.0f32, 9.0f32 / 16.0, 7.0f32 / 16.0);
+            self.render_standard_block_pub(id, x, y, z);
+            self.set_block_bounds(0.0f32, 12.0f32 / 16.0, 3.0f32 / 16.0, 2.0f32 / 16.0, 15.0f32 / 16.0, 7.0f32 / 16.0);
+            self.render_standard_block_pub(id, x, y, z);
+            self.set_block_bounds(14.0f32 / 16.0, 12.0f32 / 16.0, 3.0f32 / 16.0, 1.0f32, 15.0f32 / 16.0, 7.0f32 / 16.0);
+            self.render_standard_block_pub(id, x, y, z);
         }
         self.set_block_bounds(0.0, 0.0, 0.0, 1.0, 1.0, 1.0);
         true
@@ -1474,18 +2152,18 @@ impl<'a, 'b> RenderBlocks<'a, 'b> {
 
     pub(super) fn render_block_door(&mut self, id: u8, x: i32, y: i32, z: i32) -> bool {
         let (cb, ct, cns, cew) = (0.5f32, 1.0f32, 0.8f32, 0.6f32);
-        let own = self.brightness(id, x, y, z);
-        let lit = Self::light_value_of(id) > 0;
+        let own = self.mixed(id, x, y, z);
         let meta = self.w.meta(x, y, z);
         let base = rprops(id).tex_index as i32;
         let b = self.b;
-        let pick = |l: f32, inside: bool| if lit { 1.0 } else if inside { own } else { l };
-        let l = pick(self.brightness(id, x, y - 1, z), b.min_y > 0.0);
-        self.color(cb * l, cb * l, cb * l);
+        let l = if b.min_y > 0.0 { own } else { self.mixed(id, x, y - 1, z) };
+        self.t.set_brightness(l);
+        self.color(cb, cb, cb);
         let t = door_texture(base, 0, meta);
         self.render_bottom_face(x as f64, y as f64, z as f64, t);
-        let l = pick(self.brightness(id, x, y + 1, z), b.max_y < 1.0);
-        self.color(ct * l, ct * l, ct * l);
+        let l = if b.max_y < 1.0 { own } else { self.mixed(id, x, y + 1, z) };
+        self.t.set_brightness(l);
+        self.color(ct, ct, ct);
         let t = door_texture(base, 1, meta);
         self.render_top_face(x as f64, y as f64, z as f64, t);
         for (side, (dx, dz), shade, inside) in [
@@ -1494,8 +2172,9 @@ impl<'a, 'b> RenderBlocks<'a, 'b> {
             (4, (-1, 0), cew, b.min_x > 0.0),
             (5, (1, 0), cew, b.max_x < 1.0),
         ] {
-            let l = pick(self.brightness(id, x + dx, y, z + dz), inside);
-            self.color(shade * l, shade * l, shade * l);
+            let l = if inside { own } else { self.mixed(id, x + dx, y, z + dz) };
+            self.t.set_brightness(l);
+            self.color(shade, shade, shade);
             let mut t = door_texture(base, side as i32, meta);
             if t < 0 {
                 self.flip_texture = true;

@@ -145,6 +145,61 @@ impl<'a> Access<'a> {
         (bs.temperature[0], bs.humidity[0])
     }
 
+    /// `ChunkCache.func_35454_a`: saved sky or block light, with y clamped to the world and
+    /// half slabs, farmland and stairs taking their brightest upper/side neighbour.
+    pub fn saved_light(&self, sky: bool, x: i32, mut y: i32, z: i32) -> i32 {
+        y = y.clamp(0, 127);
+        if !(x >= -30000000 && z >= -30000000 && x < 30000000 && z <= 30000000) {
+            return if sky { 15 } else { 0 };
+        }
+        let id = self.block(x, y, z);
+        if !matches!(id, 44 | 60 | 67 | 53) {
+            return self.saved_light_raw(sky, x, y, z);
+        }
+        let mut v = self.saved_light_raw(sky, x, y + 1, z);
+        for n in [
+            self.saved_light_raw(sky, x + 1, y, z),
+            self.saved_light_raw(sky, x - 1, y, z),
+            self.saved_light_raw(sky, x, y, z + 1),
+            self.saved_light_raw(sky, x, y, z - 1),
+        ] {
+            if n > v {
+                v = n;
+            }
+        }
+        v
+    }
+
+    /// `ChunkCache.func_35453_b`
+    fn saved_light_raw(&self, sky: bool, x: i32, mut y: i32, z: i32) -> i32 {
+        y = y.clamp(0, 127);
+        if !(x >= -30000000 && z >= -30000000 && x < 30000000 && z <= 30000000) {
+            return if sky { 15 } else { 0 };
+        }
+        match self.chunk(x, z) {
+            Some(c) if sky => c.sky_light.get(x & 15, y, z & 15),
+            Some(c) => c.block_light.get(x & 15, y, z & 15),
+            None => if sky { 15 } else { 0 },
+        }
+    }
+
+    /// `ChunkCache.func_35451_b` (getLightBrightnessForSkyBlocks): sky << 20 | block << 4,
+    /// block light raised to `min_block`.
+    pub fn mixed_brightness(&self, x: i32, y: i32, z: i32, min_block: i32) -> i32 {
+        let sky = self.saved_light(true, x, y, z);
+        let mut blk = self.saved_light(false, x, y, z);
+        if blk < min_block {
+            blk = min_block;
+        }
+        sky << 20 | blk << 4
+    }
+
+    /// `ChunkCache.isBlockNormalCube`: solid material and `renderAsNormalBlock`.
+    pub fn is_block_normal_cube(&self, x: i32, y: i32, z: i32) -> bool {
+        let id = self.block(x, y, z);
+        rprops(id).exists && worldgen::block::mat(material_of(id)).is_solid && rprops(id).normal
+    }
+
     pub fn is_air(&self, x: i32, y: i32, z: i32) -> bool {
         self.block(x, y, z) == block::AIR
     }
