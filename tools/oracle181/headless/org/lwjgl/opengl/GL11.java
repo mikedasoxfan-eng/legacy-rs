@@ -69,6 +69,8 @@ public final class GL11 {
     public static int fogMode;
     public static float[] clearColor={0,0,0,0};
     public static byte[] uploaded;
+    private static int textureName10=1;
+    public static void glGenTextures(IntBuffer names){for(int i=names.position();i<names.limit();i++)names.put(i,textureName10++);}
     public static void glCallLists(IntBuffer list){for(int i=list.position();i<list.limit();i++)RendererOracle.callList(list.get(i));}
     public static void glColor3f(float r,float g,float b){Oracle.recordSkyColor(r,g,b);RendererOracle.color3(r,g,b);}
     public static void glTexParameteri(int target,int pname,int value){}

@@ -16,6 +16,7 @@ pub mod keynames;
 pub mod lang;
 pub mod loading;
 pub mod panorama;
+mod panorama_matrix10;
 pub mod render;
 pub mod saves;
 pub mod screens;
@@ -24,6 +25,8 @@ pub mod shot;
 pub mod slot;
 pub mod stats;
 pub mod stats_file;
+pub mod statfile_check10;
+pub mod texture_check10;
 pub mod stats_check;
 pub mod utility_check;
 pub mod system;
@@ -80,19 +83,11 @@ pub const TEXTURES: &[&str] = &[
 
 /// A texture name without `RenderEngine`'s `%blur%` / `%clamp%` prefixes, and the flags.
 pub fn texture_options(name: &str) -> (&str, bool, bool) {
-    let mut n = name;
-    let (mut blur, mut clamp) = (false, false);
-    loop {
-        if let Some(r) = n.strip_prefix("%blur%") {
-            blur = true;
-            n = r;
-        } else if let Some(r) = n.strip_prefix("%clamp%") {
-            clamp = true;
-            n = r;
-        } else {
-            break;
-        }
-    }
+    // getTexture tests one prefix, with a dedicated Beta 1.8.1 blurclamp branch.
+    let (n, blur, clamp) = if let Some(n) = name.strip_prefix("%clamp%") { (n, false, true) }
+        else if let Some(n) = name.strip_prefix("%blur%") { (n, true, false) }
+        else if let Some(n) = name.strip_prefix("%blurclamp%") { (n, true, true) }
+        else { (name, false, false) };
     (n.trim_start_matches('/'), blur, clamp)
 }
 

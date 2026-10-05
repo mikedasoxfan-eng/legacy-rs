@@ -29,7 +29,9 @@ pub struct Syncher {
 
 impl std::fmt::Debug for Syncher {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("Syncher").field("unsent", &self.unsent[0]).finish()
+        f.debug_struct("Syncher")
+            .field("unsent", &self.unsent[0])
+            .finish()
     }
 }
 
@@ -69,7 +71,11 @@ impl Syncher {
         }
         let lower = user.to_lowercase();
         let file = |suffix: &str| stats.join(format!("stats_{lower}{suffix}"));
-        let unsent = [file("_unsent.dat"), file("_unsent.tmp"), file("_unsent.old")];
+        let unsent = [
+            file("_unsent.dat"),
+            file("_unsent.tmp"),
+            file("_unsent.old"),
+        ];
         let sent = [file(".dat"), file(".tmp"), file(".old")];
         if lower != user {
             for (suffix, to) in [
@@ -93,8 +99,19 @@ impl Syncher {
                 Some((p.next()?.trim().parse().ok()?, p.next()?.to_string()))
             })
             .collect();
-        let mut s = Syncher { unsent, sent, user: user.to_string(), guids, busy: 0, transfers: Arc::default() };
-        let loaded = if s.unsent[0].exists() { s.read_first(&s.unsent) } else { None };
+        let mut s = Syncher {
+            unsent,
+            sent,
+            user: user.to_string(),
+            guids,
+            busy: 0,
+            transfers: Arc::default(),
+        };
+        let loaded = if s.unsent[0].exists() {
+            s.read_first(&s.unsent)
+        } else {
+            None
+        };
         // func_27418_a: ThreadStatSyncherReceive reads the sent file.
         s.receive();
         (s, loaded)
@@ -102,12 +119,21 @@ impl Syncher {
 
     /// Parse one stats file (for the oracle check).
     pub fn read_file(path: &Path, map_txt: &str) -> Option<HashMap<i32, i32>> {
-        let guids = map_txt.lines().filter_map(|line| {
-            let (id, guid) = line.split_once(',')?;
-            Some((id.trim().parse().ok()?, guid.to_string()))
-        }).collect();
-        let s = Syncher { unsent: Default::default(), sent: Default::default(),
-            user: "Player".into(), guids, busy: 0, transfers: Arc::default() };
+        let guids = map_txt
+            .lines()
+            .filter_map(|line| {
+                let (id, guid) = line.split_once(',')?;
+                Some((id.trim().parse().ok()?, guid.to_string()))
+            })
+            .collect();
+        let s = Syncher {
+            unsent: Default::default(),
+            sent: Default::default(),
+            user: "Player".into(),
+            guids,
+            busy: 0,
+            transfers: Arc::default(),
+        };
         let text: String = std::fs::read_to_string(path).ok()?.lines().collect();
         s.parse(&text)
     }
@@ -131,19 +157,38 @@ impl Syncher {
 
     /// `StatFileWriter.func_27177_a`
     fn parse(&self, text: &str) -> Option<HashMap<i32, i32>> {
+        self.parse_checked(text).unwrap_or_else(|error| {
+            eprintln!("stats: {error}");
+            None
+        })
+    }
+
+    /// Static StatFileWriter parsing distinguishes syntax rejection (an empty map)
+    /// from unchecked schema/number exceptions. StatsSyncher catches the latter.
+    pub(crate) fn parse_checked(
+        &self,
+        text: &str,
+    ) -> Result<Option<HashMap<i32, i32>>, &'static str> {
         let root = match json::parse(text) {
             Some(j) => j,
             None => {
                 eprintln!("stats: invalid syntax");
-                return Some(HashMap::new());
+                return Ok(Some(HashMap::new()));
             }
         };
         let mut map = HashMap::new();
         let mut sum = String::new();
-        for change in root.get("stats-change")?.array()? {
-            let (k, v) = change.object()?.first()?;
-            let id: i32 = k.parse().ok()?;
-            let value: i32 = v.text()?.parse().ok()?;
+        let schema = "J_JsonNodeDoesNotMatchPathElementsException";
+        let changes = root
+            .get("stats-change")
+            .and_then(|v| v.array())
+            .ok_or(schema)?;
+        for change in changes {
+            let fields = change.object().ok_or("IllegalStateException")?;
+            let (k, v) = json::first_field(fields).ok_or("NoSuchElementException")?;
+            let id = json::integer(k).ok_or("NumberFormatException")?;
+            let value = json::integer(v.text().ok_or("IllegalStateException")?)
+                .ok_or("NumberFormatException")?;
             if !super::stats::is_registered(id) {
                 println!("{id} is not a valid stat");
                 continue;
@@ -154,42 +199,84 @@ impl Syncher {
             sum.push(',');
             map.insert(id, value);
         }
-        if Some(md5_hex("local", &sum).as_str()) != root.get("checksum").and_then(|c| c.text()) {
+        let checksum = root
+            .get("checksum")
+            .and_then(|c| c.string())
+            .ok_or(schema)?;
+        if md5_hex("local", &sum).encode_utf16().collect::<Vec<_>>() != checksum {
             println!("CHECKSUM MISMATCH");
-            return None;
+            return Ok(None);
         }
-        Some(map)
+        Ok(Some(map))
+    }
+
+    pub(crate) fn fixture(map_txt: &str) -> Self {
+        Self {
+            unsent: Default::default(),
+            sent: Default::default(),
+            user: "Player".into(),
+            guids: map_txt
+                .lines()
+                .filter_map(|l| {
+                    let (id, guid) = l.split_once(',')?;
+                    Some((id.parse().ok()?, guid.into()))
+                })
+                .collect(),
+            busy: 0,
+            transfers: Arc::default(),
+        }
     }
 
     fn guid(&self, id: i32) -> &str {
         self.guids.get(&id).map_or("null", |s| s.as_str())
     }
 
-    /// `StatFileWriter.func_27185_a(user, "local", map)`
-    fn format(&self, map: &HashMap<i32, i32>) -> String {
+    /// Serialize the supplied Map's iteration order; StatFileWriter does not
+    /// escape user/session strings or discard zero/null values.
+    pub(crate) fn format_entries(
+        &self,
+        user: Option<&str>,
+        session: Option<&str>,
+        entries: impl IntoIterator<Item = (i32, Option<i32>)>,
+    ) -> String {
         let mut out = String::from("{\r\n");
-        out.push_str("  \"user\":{\r\n");
-        out.push_str(&format!("    \"name\":\"{}\",\r\n", self.user));
-        out.push_str("    \"sessionid\":\"local\"\r\n");
-        out.push_str("  },\r\n");
+        if let (Some(user), Some(session)) = (user, session) {
+            out.push_str(&format!("  \"user\":{{\r\n    \"name\":\"{user}\",\r\n    \"sessionid\":\"{session}\"\r\n  }},\r\n"));
+        }
         out.push_str("  \"stats-change\":[");
-        let mut ids: Vec<_> = map.keys().copied().collect();
-        ids.sort_unstable();
         let mut sum = String::new();
-        for (i, id) in ids.iter().enumerate() {
-            if i > 0 {
+        let mut first = true;
+        for (id, value) in entries {
+            if !first {
                 out.push_str("},");
             }
-            out.push_str(&format!("\r\n    {{\"{id}\":{}", map[id]));
-            sum.push_str(&format!("{},{},", self.guid(*id), map[id]));
+            first = false;
+            let value = value.map_or_else(|| "null".to_string(), |n| n.to_string());
+            out.push_str(&format!("\r\n    {{\"{id}\":{value}"));
+            sum.push_str(&format!("{},{value},", self.guid(id)));
         }
-        if !ids.is_empty() {
+        if !first {
             out.push('}');
         }
         out.push_str("\r\n  ],\r\n");
-        out.push_str(&format!("  \"checksum\":\"{}\"\r\n", md5_hex("local", &sum)));
+        out.push_str(&format!(
+            "  \"checksum\":\"{}\"\r\n",
+            md5_hex(session.unwrap_or("null"), &sum)
+        ));
         out.push('}');
         out
+    }
+
+    /// File writes use the local session. The existing stat-map ordering policy
+    /// is still tracked separately from the literal serialization operation.
+    fn format(&self, map: &HashMap<i32, i32>) -> String {
+        let mut ids: Vec<_> = map.keys().copied().collect();
+        ids.sort_unstable();
+        self.format_entries(
+            Some(&self.user),
+            Some("local"),
+            ids.into_iter().map(|id| (id, Some(map[&id]))),
+        )
     }
 
     /// `func_27410_a`: write the .tmp, the .dat becomes the .old, the .tmp the .dat.
@@ -236,7 +323,10 @@ impl Syncher {
     /// `beginReceiveStats` / `ThreadStatSyncherReceive.run`.
     pub fn receive(&mut self) {
         let mut state = self.transfers.lock().unwrap();
-        assert!(!state.busy, "Can't get stats from server while StatsSyncher is busy!");
+        assert!(
+            !state.busy,
+            "Can't get stats from server while StatsSyncher is busy!"
+        );
         state.busy = true;
         self.busy = 100;
         let worker = self.clone();
@@ -255,7 +345,9 @@ impl Syncher {
     /// `syncStatsFileWithMap`: wait at most 29 times, then perform the final write.
     pub fn sync(&self, map: &HashMap<i32, i32>) {
         for _ in 0..29 {
-            if !self.transfers.lock().unwrap().busy { break; }
+            if !self.transfers.lock().unwrap().busy {
+                break;
+            }
             std::thread::sleep(std::time::Duration::from_millis(100));
         }
         self.transfers.lock().unwrap().busy = true;
@@ -271,7 +363,7 @@ impl Syncher {
     }
 
     /// The original fixture sets its private volatile mailboxes by reflection.
-    pub(crate) fn fixture_mailboxes(&mut self, sent: HashMap<i32,i32>, unsent: HashMap<i32,i32>) {
+    pub(crate) fn fixture_mailboxes(&mut self, sent: HashMap<i32, i32>, unsent: HashMap<i32, i32>) {
         self.wait_idle();
         let mut state = self.transfers.lock().unwrap();
         state.received = Some(sent);
@@ -295,17 +387,23 @@ fn md5_hex(salt: &str, text: &str) -> String {
     let digest = md5(format!("{salt}{text}").as_bytes());
     let hex: String = digest.iter().map(|b| format!("{b:02x}")).collect();
     let trimmed = hex.trim_start_matches('0');
-    if trimmed.is_empty() { "0".to_string() } else { trimmed.to_string() }
+    if trimmed.is_empty() {
+        "0".to_string()
+    } else {
+        trimmed.to_string()
+    }
 }
 
 /// RFC 1321.
 fn md5(data: &[u8]) -> [u8; 16] {
     const S: [u32; 64] = [
-        7, 12, 17, 22, 7, 12, 17, 22, 7, 12, 17, 22, 7, 12, 17, 22, 5, 9, 14, 20, 5, 9, 14, 20, 5, 9, 14, 20, 5, 9, 14,
-        20, 4, 11, 16, 23, 4, 11, 16, 23, 4, 11, 16, 23, 4, 11, 16, 23, 6, 10, 15, 21, 6, 10, 15, 21, 6, 10, 15, 21, 6,
-        10, 15, 21,
+        7, 12, 17, 22, 7, 12, 17, 22, 7, 12, 17, 22, 7, 12, 17, 22, 5, 9, 14, 20, 5, 9, 14, 20, 5,
+        9, 14, 20, 5, 9, 14, 20, 4, 11, 16, 23, 4, 11, 16, 23, 4, 11, 16, 23, 4, 11, 16, 23, 6, 10,
+        15, 21, 6, 10, 15, 21, 6, 10, 15, 21, 6, 10, 15, 21,
     ];
-    let k: Vec<u32> = (0..64).map(|i| ((i as f64 + 1.0).sin().abs() * 4294967296.0) as u32).collect();
+    let k: Vec<u32> = (0..64)
+        .map(|i| ((i as f64 + 1.0).sin().abs() * 4294967296.0) as u32)
+        .collect();
     let mut msg = data.to_vec();
     let bits = (data.len() as u64).wrapping_mul(8);
     msg.push(0x80);
@@ -313,9 +411,13 @@ fn md5(data: &[u8]) -> [u8; 16] {
         msg.push(0);
     }
     msg.extend_from_slice(&bits.to_le_bytes());
-    let (mut a0, mut b0, mut c0, mut d0) = (0x67452301u32, 0xefcdab89u32, 0x98badcfeu32, 0x10325476u32);
+    let (mut a0, mut b0, mut c0, mut d0) =
+        (0x67452301u32, 0xefcdab89u32, 0x98badcfeu32, 0x10325476u32);
     for chunk in msg.chunks_exact(64) {
-        let m: Vec<u32> = chunk.chunks_exact(4).map(|w| u32::from_le_bytes([w[0], w[1], w[2], w[3]])).collect();
+        let m: Vec<u32> = chunk
+            .chunks_exact(4)
+            .map(|w| u32::from_le_bytes([w[0], w[1], w[2], w[3]]))
+            .collect();
         let (mut a, mut b, mut c, mut d) = (a0, b0, c0, d0);
         for i in 0..64 {
             let (f, g) = match i / 16 {
@@ -342,50 +444,150 @@ fn md5(data: &[u8]) -> [u8; 16] {
     out
 }
 
-/// Just enough JSON for the stats file (`argo`'s JdomParser in the original).
+/// Argo's JdomParser preserves Java UTF-16 strings and numeric token text.
 mod json {
     pub enum Value {
-        Object(Vec<(String, Value)>),
+        Object(Vec<(Vec<u16>, Value)>),
         Array(Vec<Value>),
-        /// Strings and numbers both keep their text (`func_27216_b`).
-        Text(String),
+        String(Vec<u16>),
+        Number(Vec<u16>),
         Other,
     }
-
     impl Value {
         pub fn get(&self, key: &str) -> Option<&Value> {
-            self.object()?.iter().find(|(k, _)| k == key).map(|(_, v)| v)
+            let key: Vec<_> = key.encode_utf16().collect();
+            self.object()?
+                .iter()
+                .find(|(k, _)| *k == key)
+                .map(|(_, v)| v)
         }
-        pub fn object(&self) -> Option<&Vec<(String, Value)>> {
-            if let Value::Object(o) = self { Some(o) } else { None }
+        pub fn object(&self) -> Option<&[(Vec<u16>, Value)]> {
+            if let Self::Object(o) = self {
+                Some(o)
+            } else {
+                None
+            }
         }
-        pub fn array(&self) -> Option<&Vec<Value>> {
-            if let Value::Array(a) = self { Some(a) } else { None }
+        pub fn array(&self) -> Option<&[Value]> {
+            if let Self::Array(a) = self {
+                Some(a)
+            } else {
+                None
+            }
         }
-        pub fn text(&self) -> Option<&str> {
-            if let Value::Text(t) = self { Some(t) } else { None }
+        pub fn text(&self) -> Option<&[u16]> {
+            match self {
+                Self::String(t) | Self::Number(t) => Some(t),
+                _ => None,
+            }
+        }
+        pub fn string(&self) -> Option<&[u16]> {
+            if let Self::String(t) = self {
+                Some(t)
+            } else {
+                None
+            }
         }
     }
-
+    fn hash(key: &[u16]) -> i32 {
+        key.iter()
+            .fold(0i32, |h, c| h.wrapping_mul(31).wrapping_add(*c as i32))
+    }
+    fn order(fields: &[(Vec<u16>, Value)], copy: bool) -> Vec<usize> {
+        use worldgen::world::java_hash::JavaHashSet;
+        let mut set = if copy {
+            JavaHashSet::with_capacity((fields.len() as f32 / 0.75 + 1.0) as usize)
+        } else {
+            JavaHashSet::default()
+        };
+        let mut keys: Vec<_> = (0..fields.len()).collect();
+        keys.sort_by(|&a, &b| fields[a].0.cmp(&fields[b].0));
+        let mut ranks = vec![0; fields.len()];
+        for (rank, index) in keys.into_iter().enumerate() {
+            ranks[index] = rank as i32;
+        }
+        for (index, (key, _)) in fields.iter().enumerate() {
+            // Comparable J_JsonStringNode uses UTF-16 lexical order on equal
+            // hashes. Rank supplies exactly that ordering to the existing tree.
+            set.insert_with_identity(hash(key), ranks[index], index);
+        }
+        set.iter().collect()
+    }
+    /// J_JsonObject.getFields returns a second HashMap copy.
+    pub fn first_field(fields: &[(Vec<u16>, Value)]) -> Option<&(Vec<u16>, Value)> {
+        order(fields, true).first().map(|&i| &fields[i])
+    }
+    fn object(fields: Vec<(Vec<u16>, Value)>) -> Value {
+        // NodeList uses the default HashMap, then J_JsonObject copies it.
+        let initial = order(&fields, false);
+        let mut slots: Vec<_> = fields.into_iter().map(Some).collect();
+        let fields: Vec<_> = initial
+            .into_iter()
+            .map(|i| slots[i].take().unwrap())
+            .collect();
+        let copied = order(&fields, true);
+        let mut slots: Vec<_> = fields.into_iter().map(Some).collect();
+        Value::Object(
+            copied
+                .into_iter()
+                .map(|i| slots[i].take().unwrap())
+                .collect(),
+        )
+    }
+    /// Integer.parseInt accepts a sign and Java Character.digit decimal digits.
+    pub fn integer(text: &[u16]) -> Option<i32> {
+        let (negative, start) = match text.first()? {
+            45 => (true, 1),
+            43 => (false, 1),
+            _ => (false, 0),
+        };
+        if start == text.len() {
+            return None;
+        }
+        let mut n = 0i64;
+        for &c in &text[start..] {
+            let mut digit = None;
+            // BMP decimal-digit blocks supported by Java 8 Character (Unicode 6.2).
+            for zero in [
+                0x30, 0x660, 0x6f0, 0x7c0, 0x966, 0x9e6, 0xa66, 0xae6, 0xb66, 0xbe6, 0xc66, 0xce6,
+                0xd66, 0xe50, 0xed0, 0xf20, 0x1040, 0x1090, 0x17e0, 0x1810, 0x1946, 0x19d0, 0x1a80,
+                0x1a90, 0x1b50, 0x1bb0, 0x1c40, 0x1c50, 0xa620, 0xa8d0, 0xa900, 0xa9d0, 0xaa50,
+                0xabf0, 0xff10,
+            ] {
+                if c >= zero && c < zero + 10 {
+                    digit = Some((c - zero) as i64);
+                    break;
+                }
+            }
+            n = n.checked_mul(10)?.checked_add(digit?)?;
+            if n > if negative { 2147483648 } else { 2147483647 } {
+                return None;
+            }
+        }
+        Some(if negative { -n } else { n } as i32)
+    }
     pub fn parse(s: &str) -> Option<Value> {
-        let mut p = Parser { s: s.as_bytes(), i: 0 };
+        let data: Vec<_> = s.encode_utf16().collect();
+        // J_SajParser reads its first character before skipping whitespace.
+        if !matches!(data.first(), Some(91 | 123)) {
+            return None;
+        }
+        let mut p = Parser { s: &data, i: 0 };
         let v = p.value()?;
         p.ws();
-        (p.i == p.s.len()).then_some(v)
+        (p.i == data.len()).then_some(v)
     }
-
     struct Parser<'a> {
-        s: &'a [u8],
+        s: &'a [u16],
         i: usize,
     }
-
     impl Parser<'_> {
         fn ws(&mut self) {
-            while self.i < self.s.len() && matches!(self.s[self.i], b' ' | b'\t' | b'\r' | b'\n') {
+            while matches!(self.s.get(self.i), Some(9 | 10 | 13 | 32)) {
                 self.i += 1;
             }
         }
-        fn eat(&mut self, c: u8) -> bool {
+        fn eat(&mut self, c: u16) -> bool {
             self.ws();
             if self.s.get(self.i) == Some(&c) {
                 self.i += 1;
@@ -397,54 +599,55 @@ mod json {
         fn value(&mut self) -> Option<Value> {
             self.ws();
             match *self.s.get(self.i)? {
-                b'{' => {
+                123 => {
                     self.i += 1;
-                    let mut o = Vec::new();
-                    if self.eat(b'}') {
-                        return Some(Value::Object(o));
+                    let mut o: Vec<(Vec<u16>, Value)> = Vec::new();
+                    if self.eat(125) {
+                        return Some(object(o));
                     }
                     loop {
                         self.ws();
                         let k = self.string()?;
-                        if !self.eat(b':') {
+                        if !self.eat(58) {
                             return None;
                         }
-                        o.push((k, self.value()?));
-                        if self.eat(b'}') {
-                            return Some(Value::Object(o));
+                        let value = self.value()?;
+                        // J_JsonObjectNodeList.put: the last duplicate value wins.
+                        if let Some((_, old)) = o.iter_mut().find(|(key, _)| *key == k) {
+                            *old = value;
+                        } else {
+                            o.push((k, value));
                         }
-                        if !self.eat(b',') {
+                        if self.eat(125) {
+                            return Some(object(o));
+                        }
+                        if !self.eat(44) {
                             return None;
                         }
                     }
                 }
-                b'[' => {
+                91 => {
                     self.i += 1;
                     let mut a = Vec::new();
-                    if self.eat(b']') {
+                    if self.eat(93) {
                         return Some(Value::Array(a));
                     }
                     loop {
                         a.push(self.value()?);
-                        if self.eat(b']') {
+                        if self.eat(93) {
                             return Some(Value::Array(a));
                         }
-                        if !self.eat(b',') {
+                        if !self.eat(44) {
                             return None;
                         }
                     }
                 }
-                b'"' => self.string().map(Value::Text),
-                b'-' | b'0'..=b'9' => {
-                    let start = self.i;
-                    while self.i < self.s.len() && matches!(self.s[self.i], b'-' | b'+' | b'.' | b'e' | b'E' | b'0'..=b'9') {
-                        self.i += 1;
-                    }
-                    Some(Value::Text(String::from_utf8_lossy(&self.s[start..self.i]).into_owned()))
-                }
+                34 => self.string().map(Value::String),
+                45 | 48..=57 => self.number().map(Value::Number),
                 _ => {
                     for word in ["true", "false", "null"] {
-                        if self.s[self.i..].starts_with(word.as_bytes()) {
+                        let word: Vec<_> = word.encode_utf16().collect();
+                        if self.s[self.i..].starts_with(&word) {
                             self.i += word.len();
                             return Some(Value::Other);
                         }
@@ -453,8 +656,49 @@ mod json {
                 }
             }
         }
-        fn string(&mut self) -> Option<String> {
-            if self.s.get(self.i) != Some(&b'"') {
+        fn digits(&mut self) {
+            while matches!(self.s.get(self.i), Some(48..=57)) {
+                self.i += 1;
+            }
+        }
+        fn number(&mut self) -> Option<Vec<u16>> {
+            let start = self.i;
+            if self.s.get(self.i) == Some(&45) {
+                self.i += 1;
+            }
+            match self.s.get(self.i)? {
+                48 => self.i += 1,
+                49..=57 => self.digits(),
+                _ => return None,
+            }
+            if self.s.get(self.i) == Some(&46) {
+                self.i += 1;
+                if !matches!(self.s.get(self.i), Some(48..=57)) {
+                    return None;
+                }
+                self.digits();
+            }
+            // This Argo version's possibleExponent tests '.' or uppercase 'E';
+            // lowercase 'e' is rejected, and a second '.' becomes 'E' in token text.
+            let exponent = self.i;
+            if matches!(self.s.get(self.i), Some(46 | 69)) {
+                self.i += 1;
+                if matches!(self.s.get(self.i), Some(43 | 45)) {
+                    self.i += 1;
+                }
+                if !matches!(self.s.get(self.i), Some(48..=57)) {
+                    return None;
+                }
+                self.digits();
+            }
+            let mut out = self.s[start..self.i].to_vec();
+            if exponent < self.i {
+                out[exponent - start] = 69;
+            }
+            Some(out)
+        }
+        fn string(&mut self) -> Option<Vec<u16>> {
+            if self.s.get(self.i) != Some(&34) {
                 return None;
             }
             self.i += 1;
@@ -463,27 +707,46 @@ mod json {
                 let c = *self.s.get(self.i)?;
                 self.i += 1;
                 match c {
-                    b'"' => return String::from_utf8(out).ok(),
-                    b'\\' => {
+                    34 => return Some(out),
+                    92 => {
                         let e = *self.s.get(self.i)?;
                         self.i += 1;
-                        match e {
-                            b'n' => out.push(b'\n'),
-                            b't' => out.push(b'\t'),
-                            b'r' => out.push(b'\r'),
-                            b'b' => out.push(8),
-                            b'f' => out.push(12),
-                            b'u' => {
-                                let hex = std::str::from_utf8(self.s.get(self.i..self.i + 4)?).ok()?;
-                                let ch = char::from_u32(u32::from_str_radix(hex, 16).ok()?)?;
+                        out.push(match e {
+                            34 | 47 | 92 => e,
+                            110 => 10,
+                            116 => 9,
+                            114 => 13,
+                            98 => 8,
+                            102 => 12,
+                            117 => {
+                                let chars = self.s.get(self.i..self.i + 4)?;
+                                let (negative, start) = match chars[0] {
+                                    45 => (true, 1),
+                                    43 => (false, 1),
+                                    _ => (false, 0),
+                                };
+                                let mut n = 0u16;
+                                for &c in &chars[start..] {
+                                    let d = match c {
+                                        65..=70 => c - 65 + 10,
+                                        97..=102 => c - 97 + 10,
+                                        0xff21..=0xff26 => c - 0xff21 + 10,
+                                        0xff41..=0xff46 => c - 0xff41 + 10,
+                                        _ => integer(&[c])? as u16,
+                                    };
+                                    n = n * 16 + d;
+                                }
                                 self.i += 4;
-                                let mut buf = [0; 4];
-                                out.extend_from_slice(ch.encode_utf8(&mut buf).as_bytes());
+                                if negative {
+                                    n.wrapping_neg()
+                                } else {
+                                    n
+                                }
                             }
-                            other => out.push(other),
-                        }
+                            _ => return None,
+                        });
                     }
-                    _ => out.push(c),
+                    _ => out.push(c), // Vanilla accepts literal control characters.
                 }
             }
         }
@@ -495,6 +758,9 @@ mod tests {
     #[test]
     fn md5_matches_known_digests() {
         assert_eq!(super::md5_hex("", ""), "d41d8cd98f00b204e9800998ecf8427e");
-        assert_eq!(super::md5_hex("", "abc"), "900150983cd24fb0d6963f7d28e17f72");
+        assert_eq!(
+            super::md5_hex("", "abc"),
+            "900150983cd24fb0d6963f7d28e17f72"
+        );
     }
 }

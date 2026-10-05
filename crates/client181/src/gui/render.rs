@@ -84,6 +84,7 @@ pub struct GuiRenderer {
     samplers: [[wgpu::Sampler; 2]; 2],
     textures: Vec<GuiTexture>,
     white: GuiTexture,
+    panorama_faces: Option<([TexId;6],std::sync::Arc<[Image;6]>)>,
     vbuf: Option<(wgpu::Buffer, u64)>,
     pub(super) depth: Option<(wgpu::Texture, wgpu::TextureView, u32, u32)>,
     /// Multisampled color target, resolved into the real target after drawing.
@@ -235,6 +236,7 @@ impl GuiRenderer {
             samplers,
             textures: Vec::new(),
             white,
+            panorama_faces: None,
             vbuf: None,
             depth: None,
             msaa: None,
@@ -268,6 +270,7 @@ impl GuiRenderer {
 
     /// glTexImage2D may change the dimensions while retaining the texture name.
     pub fn replace_texture(&mut self, device: &wgpu::Device, queue: &wgpu::Queue, id: TexId, img: &Image, blur: bool, clamp: bool) {
+        if self.panorama_faces.as_ref().is_some_and(|(ids,_)|ids.contains(&id)){self.panorama_faces=None;}
         self.textures[id as usize] = make_texture(device, queue, &self.tex_layout, &self.samplers[blur as usize][clamp as usize], img);
     }
 
@@ -337,6 +340,30 @@ impl GuiRenderer {
         self.textures.pop();
     }
 
+    pub(super) fn blit_panorama_pixels(&mut self,device:&wgpu::Device,queue:&wgpu::Queue,target:&wgpu::TextureView,size:(u32,u32),pixels:Vec<u8>,viewport:Option<(f32,f32,f32,f32)>) {
+        let id=self.add_texture(device,queue,&Image {width:256,height:256,rgba:pixels});
+        let mut gl=Gl::new();gl.depth_test=false;gl.depth_mask=false;gl.alpha_test=false;gl.bind_texture(id);
+        gl.start_drawing_quads();
+        for (x,y,u,v) in [(-1.0,-1.0,0.0,0.0),(1.0,-1.0,1.0,0.0),(1.0,1.0,1.0,1.0),(-1.0,1.0,0.0,1.0)] {
+            gl.add_vertex_with_uv(x,y,0.0,u,if self.gl_orientation {v}else{1.0-v});
+        }
+        gl.draw();self.render_recorded(device,queue,target,size,&gl,None,false,viewport);self.textures.pop();
+    }
+    pub(super) fn panorama_face_pixels(&mut self,device:&wgpu::Device,queue:&wgpu::Queue,ids:[TexId;6])->std::sync::Arc<[Image;6]> {
+        if self.panorama_faces.as_ref().is_none_or(|(old,_)|*old!=ids){
+            let images=std::array::from_fn(|i|self.texture_pixels(device,queue,ids[i]));
+            self.panorama_faces=Some((ids,std::sync::Arc::new(images)));
+        }
+        self.panorama_faces.as_ref().unwrap().1.clone()
+    }
+    pub(super) fn samples_for_panorama(&self)->u32{self.samples}
+    pub(super) fn texture_pixels(&self, device:&wgpu::Device,queue:&wgpu::Queue,id:TexId)->Image {
+        let mut image=super::shot::read_back(device,queue,&self.textures[id as usize].texture);
+        // read_back presents a GL framebuffer top down; asset texels have top-down storage.
+        let row=image.width as usize*4;let mut pixels=Vec::with_capacity(image.rgba.len());
+        for y in (0..image.height as usize).rev(){pixels.extend_from_slice(&image.rgba[y*row..(y+1)*row]);}
+        image.rgba=pixels;image
+    }
     fn pipeline(&mut self, device: &wgpu::Device, key: PipeKey) -> &wgpu::RenderPipeline {
         let (format, shader, layout, samples) =
             (self.format, &self.shader, &self.layout, self.samples);

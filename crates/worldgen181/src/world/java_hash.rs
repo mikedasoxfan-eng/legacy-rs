@@ -51,6 +51,13 @@ fn spread(h: i32) -> i32 {
 }
 
 impl<K: PartialEq + Copy> JavaHashSet<K> {
+    /// HashMap(int initialCapacity), used by the GUI's Jdom object-map copies.
+    pub fn with_capacity(capacity: usize) -> Self {
+        let capacity = capacity.max(1).next_power_of_two();
+        Self { table: vec![NIL; capacity], threshold: (capacity as f32 * 0.75) as usize,
+            ..Self::default() }
+    }
+
     pub fn len(&self) -> usize {
         self.size
     }

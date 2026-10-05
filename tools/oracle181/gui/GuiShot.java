@@ -549,7 +549,11 @@ public class GuiShot {
                 save(name,org.lwjgl.opengl.EXTFramebufferObject.GL_COLOR_ATTACHMENT0_EXT);
             } else {
                 setMouseDown(down);
-                inner.drawScreen(mx, my, 0.0F);
+                if (System.getenv("GUI_PANORAMA_PROBE") != null && inner instanceof GuiMainMenu) {
+                    GuiPanoramaProbe10.draw(this,name);
+                } else {
+                    inner.drawScreen(mx, my, 0.0F);
+                }
                 save(name, org.lwjgl.opengl.EXTFramebufferObject.GL_COLOR_ATTACHMENT0_EXT);
             }
         }
