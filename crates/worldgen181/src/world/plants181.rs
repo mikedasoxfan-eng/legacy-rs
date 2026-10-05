@@ -4,6 +4,51 @@ use crate::block::*;
 
 const DIR: [(i32, i32); 4] = [(0, 1), (-1, 0), (0, -1), (1, 0)];
 
+/// BlockMushroom's bonemeal path restores both id and metadata on failure.
+pub fn grow_mushroom(w:&mut World,x:i32,y:i32,z:i32,rs:RandSel)->bool {
+    let id=w.get_block_id(x,y,z);
+    if !matches!(w.get_block_id(x,y-1,z),DIRT|GRASS) {return false;}
+    let meta=w.get_block_metadata(x,y,z);w.set_block(x,y,z,AIR);
+    if matches!(id,39|40) && big_mushroom(w,x,y,z,(id-39) as i32,rs) {true}
+    else {w.set_block_and_metadata(x,y,z,id,meta);false}
+}
+/// WorldGenBigMushroom. Even a fixed type consumes the initial nextInt(2).
+pub fn big_mushroom(w:&mut World,x:i32,y:i32,z:i32,kind:i32,rs:RandSel)->bool {
+    let mut chosen=w.rng(rs).next_int(2);if kind>=0 {chosen=kind;}
+    let height=w.rng(rs).next_int(3)+4;
+    if y<1 || y+height+1>128 {return false;}
+    let mut clear=true;
+    for by in y..=y+height+1 {
+        let radius=if by==y {0}else{3};
+        for bx in x-radius..=x+radius {if !clear {break;} for bz in z-radius..=z+radius {if !clear {break;}
+            if !(0..128).contains(&by) || !matches!(w.get_block_id(bx,by,bz),AIR|LEAVES) {clear=false;}
+        }}
+    }
+    if !clear || !mat(material_of(w.get_block_id(x,y,z))).ground_cover || !props(w.get_block_id(x,y-1,z)).opaque_cube {return false;}
+    w.set_block(x,y-1,z,DIRT);
+    let top=y+height;let start=if chosen==1 {top-3}else{top};
+    for by in start..=top {
+        let radius=if chosen==0 {3}else if by<top {2}else{1};
+        for bx in x-radius..=x+radius {for bz in z-radius..=z+radius {
+            let mut meta=5;
+            if bx==x-radius {meta-=1;}if bx==x+radius {meta+=1;}
+            if bz==z-radius {meta-=3;}if bz==z+radius {meta+=3;}
+            if chosen==0 || by<top {
+                if (bx==x-radius||bx==x+radius)&&(bz==z-radius||bz==z+radius) {continue;}
+                if bx==x-(radius-1)&&bz==z-radius || bx==x-radius&&bz==z-(radius-1) {meta=1;}
+                if bx==x+(radius-1)&&bz==z-radius || bx==x+radius&&bz==z-(radius-1) {meta=3;}
+                if bx==x-(radius-1)&&bz==z+radius || bx==x-radius&&bz==z+(radius-1) {meta=7;}
+                if bx==x+(radius-1)&&bz==z+radius || bx==x+radius&&bz==z+(radius-1) {meta=9;}
+            }
+            if meta==5&&by<top {meta=0;}
+            // Vanilla tests the base y here, not the current cap layer.
+            if (meta!=0||y>=top-1)&&!props(w.get_block_id(bx,by,bz)).opaque_cube {w.set_block_and_metadata(bx,by,bz,(99+chosen) as u8,meta);}
+        }}
+    }
+    for dy in 0..height {if !props(w.get_block_id(x,y+dy,z)).opaque_cube {w.set_block_and_metadata(x,y+dy,z,(99+chosen) as u8,10);}}
+    true
+}
+
 pub fn stem(w: &mut World, id: u8, x: i32, y: i32, z: i32, rs: RandSel) {
     behavior::check_flower(w, id, x, y, z);
     if w.get_block_light_value(x, y + 1, z) < 9 {
@@ -194,4 +239,9 @@ pub fn vine(w: &mut World, x: i32, y: i32, z: i32) {
             }
         }
     }
+}
+
+pub fn stem_direction(w:&mut World,id:u8,x:i32,y:i32,z:i32)->i32 {
+    if w.get_block_metadata(x,y,z)<7{return -1;}let fruit=if id==PUMPKIN_STEM {PUMPKIN}else{MELON};
+    for (k,(dx,dz)) in [(-1,0),(1,0),(0,-1),(0,1)].into_iter().enumerate(){if w.get_block_id(x+dx,y,z+dz)==fruit{return k as i32;}}-1
 }

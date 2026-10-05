@@ -36,6 +36,7 @@ pub mod scenario;
 pub mod stats_table;
 pub mod sign;
 pub mod storage;
+pub mod storage181;
 pub mod world;
 
 pub use biome::{Biome, BiomeSource};

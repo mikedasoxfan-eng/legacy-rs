@@ -1059,7 +1059,7 @@ fn world(w: &World, path: &str) -> ExitCode {
                         if id >= 0 {
                             *s = Some(worldgen::world::tile::ItemStack {
                                 id,
-                                count,
+                                count: count as i32,
                                 damage: dmg,
                             });
                         }

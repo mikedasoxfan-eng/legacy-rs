@@ -129,6 +129,7 @@ impl PlayerControllerSP {
         if removed && id == 46 && meta & 1 != 0 {
             w.ignite_tnt(x, y, z);
         }
+        if removed && id == 97 {w.silverfish_destroyed181(x,y,z);}
         let can = p.can_harvest(id);
         if let Some(s) = p.held_item() {
             let cost = if matches!(s.id, 267 | 268 | 272 | 276 | 283) {

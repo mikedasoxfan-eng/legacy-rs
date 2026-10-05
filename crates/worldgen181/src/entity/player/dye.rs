@@ -12,6 +12,10 @@ impl Entity {
             return false;
         }
         match w.get_block_id(x, y, z) {
+            39 | 40 => {
+                if crate::world::plants181::grow_mushroom(w,x,y,z,crate::world::RandSel::World) {stack.count-=1;}
+                true
+            }
             6 => {
                 // ItemDye: Block.sapling.growTree(world, x, y, z, world.rand)
                 crate::world::ticks_blocks::grow_tree(w, x, y, z, crate::world::RandSel::World);

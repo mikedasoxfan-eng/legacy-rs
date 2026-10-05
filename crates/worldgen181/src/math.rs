@@ -55,3 +55,13 @@ pub fn abs_int(v:i32)->i32 {if v>=0{v}else{v.wrapping_neg()}}
 pub fn next_int_inclusive(r:&mut crate::JavaRandom,min:i32,max:i32)->i32 {
     if min>=max{min}else{r.next_int(max.wrapping_sub(min).wrapping_add(1)).wrapping_add(min)}
 }
+pub fn sqrt_float(v:f32)->f32 {(v as f64).sqrt() as f32}
+pub fn sqrt_double(v:f64)->f32 {v.sqrt() as f32}
+pub fn abs_float(v:f32)->f32 {if v>=0.0 {v}else{-v}}
+pub fn abs_max(mut a:f64,mut b:f64)->f64 {
+    if a<0.0 {a=-a;}if b<0.0 {b=-b;}if a>b {a}else{b}
+}
+pub fn bucket_int(a:i32,b:i32)->i32 {
+    if a<0 {a.wrapping_neg().wrapping_sub(1).wrapping_div(b).wrapping_neg().wrapping_sub(1)}else{a.wrapping_div(b)}
+}
+pub fn string_null_or_empty(s:Option<&str>)->bool {s.is_none_or(str::is_empty)}

@@ -72,6 +72,15 @@ pub fn bytes(kind: &str) -> Vec<u8> {
         "teleporter" => teleporter(&mut o),
         "items" => items(&mut o),
         "actions" => actions(&mut o),
+        "mushrooms" => mushrooms(&mut o),
+        "chestlife" => chest_life(&mut o),
+        "math" => math_helpers(&mut o),
+        "storage" => storage_helpers(&mut o),
+        "visual" => block_visual(&mut o),
+        "colors" => block_colors(&mut o),
+        "spawn" => spawn_cases(&mut o),
+        "relocation" => relocation_cases(&mut o),
+        "silverfish" => silverfish(&mut o),
         "registry" => o.extend_from_slice(include_bytes!("../entity/player/registry.bin")),
         _ => panic!("unknown worldblocks181 suite {kind}"),
     };
@@ -776,4 +785,121 @@ pub fn regions_read181(path: &std::path::Path) -> Vec<u8> {
         }
     }
     o
+}
+
+
+fn mushrooms(o:&mut Vec<u8>) {
+    use crate::entity::{Entity,player::ItemStack};
+    for id in [39,40] {for config in 0..10 {for seed in 0..16 {
+        let mut w=fixture(true);let y=if config==7 {122}else if config==8 {123}else{64};
+        for x in 3..=13 {for z in 3..=13 {raw(&mut w,x,y-1,z,match config {1=>1,2=>60,3=>0,4=>2,_=>3},0);}}
+        raw(&mut w,8,y,8,id,5);
+        if config==5 {raw(&mut w,9,y+1,8,1,0);}
+        if config==6 {for yy in y+1..128.min(y+8) {raw(&mut w,9,yy,8,18,0);}}
+        w.rand.set_seed(seed);let mut p=Entity::player(&mut w,"Player");p.player_state_mut().unwrap().inventory.main[0]=Some(ItemStack::new(351,4,15));
+        o.push(p.use_on_block(&mut w,8,y,8,1) as u8);i(o,p.held_item().unwrap().count);l(o,w.rand.state() as i64);
+        for x in 3..=13 {for z in 3..=13 {for yy in y-1..=127.min(y+9) {o.push(w.get_block_id(x,yy,z));o.push(w.get_block_metadata(x,yy,z) as u8);}}}
+    }}}
+    for kind in -1..=1 {for seed in 0..32 {
+        let mut w=fixture(true);w.rand.set_seed(seed);o.push(super::plants181::big_mushroom(&mut w,8,64,8,kind,RandSel::World) as u8);l(o,w.rand.state() as i64);
+        for x in 4..=12 {for z in 4..=12 {for y in 63..=74 {o.push(w.get_block_id(x,y,z));o.push(w.get_block_metadata(x,y,z) as u8);}}}
+    }}
+}
+
+fn chest_stack(o:&mut Vec<u8>,s:Option<super::tile::ItemStack>) {o.push(s.is_some() as u8);if let Some(s)=s {i(o,s.id as i32);i(o,s.count);i(o,s.damage as i32);}}
+fn chest_cache(o:&mut Vec<u8>,w:&mut World,id:u64) {i(o,w.tile_metadata181(id));i(o,w.tile_block181(id).unwrap_or(0) as i32);o.push(w.tile_objects[&id].invalid as u8);o.push(w.chest_animations[&id].adjacency_checked as u8);}
+fn chest_life(o:&mut Vec<u8>) {
+    use super::tile::{TileEntity,ItemStack};
+    let mut w=fixture(true);raw(&mut w,8,64,8,54,3);let id=w.chest_id181(8,64,8).unwrap();let mut r=crate::JavaRandom::new(1729);
+    for n in 0..400 {let slot=r.next_int(36) as usize;let op=r.next_int(3);let amount=r.next_int(150)-30;
+        if op==0 {w.set_chest_stack181(id,slot,Some(ItemStack::new(if n%2==0 {1}else{260},amount,n)));}
+        if op==1 {let s=w.decrement_chest181(id,slot,amount);chest_stack(o,s);}
+        for k in 0..36 {chest_stack(o,w.chest_stack181(id,k));}chest_cache(o,&mut w,id);
+    }
+    let n=crate::storage::chunk_to_nbt(w.chunk(0,0),0);let c=crate::storage::chunk_from_nbt(&n).unwrap();
+    let TileEntity::Chest(items)=&c.tile_entities[&(8,64,8)] else{panic!()};i(o,27);for s in items.iter(){chest_stack(o,*s);}o.push((items.len()==27) as u8);
+    w.reset_tile_cache181(id);chest_cache(o,&mut w,id);raw(&mut w,8,64,8,1,7);chest_cache(o,&mut w,id);w.tile_inventory_changed181(id);chest_cache(o,&mut w,id);w.reset_tile_cache181(id);chest_cache(o,&mut w,id);
+    raw(&mut w,8,64,8,54,2);w.reset_tile_cache181(id);w.check_chest_adjacency181(id);chest_cache(o,&mut w,id);
+    w.set_block_metadata(8,64,8,19);chest_cache(o,&mut w,id);w.reset_tile_cache181(id);w.check_chest_adjacency181(id);w.tile_objects.get_mut(&id).unwrap().invalid=true;chest_cache(o,&mut w,id);w.tile_objects.get_mut(&id).unwrap().invalid=false;chest_cache(o,&mut w,id);
+}
+
+fn math_helpers(o:&mut Vec<u8>) {
+    use crate::math::*;
+    fn f(o:&mut Vec<u8>,v:f32){o.extend((if v.is_nan(){0x7fc00000}else{v.to_bits()}).to_le_bytes());}
+    fn d(o:&mut Vec<u8>,v:f64){o.extend((if v.is_nan(){0x7ff8000000000000}else{v.to_bits()}).to_le_bytes());}
+    let mut r=crate::JavaRandom::new(1729);
+    for _ in 0..20000 {
+        let a=f64::from_bits(r.next_long() as u64);let b=f32::from_bits(r.next_int_unbounded() as u32);let c=f64::from_bits(r.next_long() as u64);
+        for v in [sin(b),cos(b),sqrt_float(b),sqrt_double(a)] {f(o,v);}
+        i(o,floor_float(b));i(o,floor_double(a));l(o,floor_long(a));f(o,abs_float(b));d(o,abs_max(a,c));
+        let a=r.next_int_unbounded();let mut b=r.next_int(255)-127;if b==0{b=1;}i(o,abs_int(a));i(o,bucket_int(a,b));
+    }
+    for a in [i32::MIN,-32,-1,0,1,32,i32::MAX] {for b in [-32,-1,1,2,16,32,i32::MAX] {i(o,bucket_int(a,b));}}
+    for s in [None,Some(""),Some("a"),Some(" "),Some("\0")] {o.push(string_null_or_empty(s) as u8);}
+    for min in -20..=20 {for max in -20..=20 {let mut r=crate::JavaRandom::new((min*31+max) as i64);i(o,next_int_inclusive(&mut r,min,max));l(o,r.state() as i64);}}
+}
+
+fn storage_helpers(o:&mut Vec<u8>) {
+    use std::{fs,path::Path};use crate::storage181::*;
+    fn snap(o:&mut Vec<u8>,p:&Path) {let n=read_uncompressed(p).unwrap();o.push(n.is_some() as u8);if let Some(n)=n {i(o,n.int("value"));l(o,n.long("long"));i(o,n.string("text").len() as i32);let b=n.bytes("bytes").unwrap();i(o,b.len() as i32);o.extend(b);l(o,std::fs::metadata(p).unwrap().len() as i64);}}
+    let dir=Path::new("target/wb181-storage-rust");fs::create_dir_all(dir).unwrap();let p=dir.join("plain.dat");let tmp=dir.join("plain.dat_tmp");let _=fs::remove_file(&p);let _=fs::remove_file(&tmp);snap(o,&p);
+    for k in 0..32 {let mut n=Compound::new();n.put("value",Tag::Int(k*997-1000));n.put("long",Tag::Long(-123456789012345+k as i64));n.put("text",Tag::String(format!("plain NBT {k}")));n.put("bytes",Tag::ByteArray((0..k*127).map(|j|(j*31+k) as u8).collect()));
+        if k%2==0 {write_uncompressed(&p,&n).unwrap();}else{fs::write(&tmp,[]).unwrap();safe_write_uncompressed(&p,&n).unwrap();}snap(o,&p);o.push(tmp.exists() as u8);
+    }
+    let bad=dir.join("bad.dat");fs::write(&bad,[1,0,0,7]).unwrap();o.push(read_uncompressed(&bad).is_err() as u8);fs::remove_file(bad).unwrap();
+    let target=dir.join("nonempty");fs::create_dir_all(&target).unwrap();let child=target.join("child");fs::write(&child,[]).unwrap();o.push(safe_write_uncompressed(&target,&Compound::new()).is_err() as u8);o.push(target.exists() as u8);let tmp2=dir.join("nonempty_tmp");o.push(tmp2.exists() as u8);
+    fs::remove_file(child).unwrap();fs::remove_dir(target).unwrap();fs::remove_file(tmp2).unwrap();fs::remove_file(p).unwrap();let _=fs::remove_file(tmp);fs::remove_dir(dir).unwrap();
+}
+fn silverfish(o:&mut Vec<u8>) {
+    use crate::entity::EntitySeedSource;
+    for seed in 0..64 {
+        let mut w=fixture(true);w.entity_seed_source=EntitySeedSource::Deterministic(seed);w.math_random.set_seed(123);w.silverfish_destroyed181(8,64,8);i(o,w.entities.len() as i32);let e=w.entities.values().next().unwrap();
+        for v in [e.pos.x,e.pos.y,e.pos.z] {o.extend(v.to_le_bytes());}o.extend(e.width.to_le_bytes());o.extend(e.height.to_le_bytes());i(o,e.living.health);l(o,e.rand.state() as i64);l(o,w.math_random.state() as i64);
+        let events=w.drain_events();i(o,events.len() as i32);for e in events {if let super::events::WorldEvent::Particle{position:p,velocity:v,..}=e {for a in [p.x,p.y,p.z,v.x,v.y,v.z] {o.extend(a.to_le_bytes());}}else{panic!("non-particle")}}
+    }
+    for id in 0..=109 {o.push(matches!(id,1|4|98) as u8);i(o,match id {4=>1,98=>2,_=>0});}
+}
+
+
+fn block_colors(o:&mut Vec<u8>) {
+    use crate::block::{props,visual181::*};
+    let grass:Vec<_>=(0..65536).map(|k|(k*997)&0xffffff).collect();let foliage:Vec<_>=(0..65536).map(|k|(k*311+0x102030)&0xffffff).collect();
+    for id in 1..=109u8 {if !props(id).exists{continue;}for meta in 0..16 {i(o,render_color(id,meta,&grass));
+        for x in [-30000001,-17,-1,0,8,17,30000000] {for z in [-17,-1,0,8,17] {i(o,color_multiplier(id,meta as i32,x,64,z,&grass,&foliage,|x,z|((x.wrapping_mul(31).wrapping_add(z.wrapping_mul(17))&15) as f32/15.0,(x.wrapping_mul(7).wrapping_sub(z.wrapping_mul(11))&15) as f32/15.0)));}}
+    }}
+    let mut w=fixture(true);for id in [104,105] {for meta in 0..16 {for mask in 0..16 {raw(&mut w,8,64,8,id,meta);let fruit=if id==104 {86}else{103};for (k,(dx,dz)) in [(-1,0),(1,0),(0,-1),(0,1)].into_iter().enumerate(){raw(&mut w,8+dx,64,8+dz,if mask&(1<<k)!=0{fruit}else{0},0);}i(o,super::plants181::stem_direction(&mut w,id,8,64,8));}}}
+}
+
+fn spawn_grid(p:i32,x:i32,z:i32,w:i32,h:i32)->Vec<i32> {
+    (0..w*h).map(|k|match p {0=>0,1=>4,_=>x.wrapping_add(k%w).wrapping_mul(31).wrapping_add(z.wrapping_add(k/w).wrapping_mul(17))&7}).collect()
+}
+fn spawn_cases(o:&mut Vec<u8>) {
+    use super::spawn181::*;use crate::{JavaRandom,block};
+    for p in 0..3 {for seed in 0..32 {for radius in [0,1,4,17,256] {
+        let x=(-17i32-radius)>>2;let z=(8-radius)>>2;let width=((-17+radius)>>2)-x+1;let height=((8+radius)>>2)-z+1;
+        let mut r=JavaRandom::new(seed);let q=biome_position(-17,8,radius,&spawn_grid(p,x,z,width,height),&[4,6,5],&mut r);
+        o.push(q.is_some() as u8);if let Some((x,z))=q {i(o,x);i(o,z);}l(o,r.state());
+    }}}
+    for p in 0..3 {for seed in 0..16 {for mask in [0,15,255,-1] {
+        let q=initial_position(seed,&spawn_grid(p,-64,-64,129,129),|x,z|mask!=-1&&(x.wrapping_mul(3).wrapping_add(z.wrapping_mul(7))&mask)==0);
+        i(o,q.0);i(o,q.1);i(o,q.2);l(o,JavaRandom::new(123).state());o.push(0);
+    }}}
+    for dimension in 0..3 {for id in 0..110u8 {o.push(match dimension {0=>id==block::GRASS,1=>id!=0&&id!=7&&block::opaque_cube_lookup(id),_=>id!=0&&block::mat(block::material_of(id)).blocks_movement} as u8);}}
+}
+
+
+
+fn relocation_cases(o:&mut Vec<u8>) {
+    let mut storage=crate::storage::Storage::open(std::path::Path::new("tools/oracle181/out/wb181-relocation-java")).unwrap();
+    for k in 0..10 {let c=storage.load_chunk(k,0);o.push(c.is_some() as u8);if let Some(c)=c {i(o,c.x);i(o,c.z);o.extend(c.blocks.iter());o.extend(c.data.0.iter());o.extend(c.sky_light.0.iter());o.extend(c.block_light.0.iter());o.extend(c.height_map.iter());}}
+}
+
+
+fn block_visual(o:&mut Vec<u8>) {
+    use crate::block::visual181::*;let grass=vec![0;65536];
+    for fancy in [false,true] {for id in 0..=255u8 {
+        i(o,render_type(id));for side in 0..6{i(o,texture_from_side(id,side,fancy));}
+        for meta in 0..16 {i(o,render_color(id,meta,&grass));for side in 0..6{i(o,texture_result(id,side,meta,fancy).unwrap_or(i32::MIN));}}
+    }}
+    let stacks=creative_stacks();i(o,stacks.len() as i32);for s in stacks {i(o,s.id);i(o,s.count);i(o,s.damage);}
 }

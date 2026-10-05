@@ -12,6 +12,21 @@ pub struct ChestAnimation {
     pub ticks: i32,
 }
 impl World {
+    pub fn chest_stack181(&self,id:TileId,slot:usize)->Option<super::tile::ItemStack> {
+        let super::tile::TileEntity::Chest(items)=self.tile_object(id).unwrap() else{panic!("not a chest")};items[slot]
+    }
+    pub fn set_chest_stack181(&mut self,id:TileId,slot:usize,stack:Option<super::tile::ItemStack>) {
+        let mut tile=self.tile_object(id).unwrap().clone();
+        let super::tile::TileEntity::Chest(items)=&mut tile else{panic!("not a chest")};
+        items[slot]=stack.map(|mut s|{if s.count>64{s.count=64;}s});self.update_tile_object(id,tile);self.tile_inventory_changed181(id);
+    }
+    pub fn decrement_chest181(&mut self,id:TileId,slot:usize,amount:i32)->Option<super::tile::ItemStack> {
+        let mut tile=self.tile_object(id).unwrap().clone();
+        let super::tile::TileEntity::Chest(items)=&mut tile else{panic!("not a chest")};
+        let mut stack=items[slot]?;
+        let result=if stack.count<=amount {items[slot]=None;stack}else{stack.count-=amount;items[slot]=if stack.count==0{None}else{Some(stack)};super::tile::ItemStack::new(stack.id as i32,amount,stack.damage as i32)};
+        self.update_tile_object(id,tile);self.tile_inventory_changed181(id);Some(result)
+    }
     pub fn orient_chest181(&mut self, x: i32, y: i32, z: i32) {
         let n = self.get_block_id(x, y, z - 1);
         let s = self.get_block_id(x, y, z + 1);
@@ -105,10 +120,7 @@ impl World {
     }
     pub(crate) fn chest_neighbor181(&mut self, x: i32, y: i32, z: i32) {
         if let Some(id) = self.chest_id181(x, y, z) {
-            self.chest_animations
-                .entry(id)
-                .or_default()
-                .adjacency_checked = false;
+            self.reset_tile_cache181(id);
         }
     }
     pub fn check_chest_adjacency181(&mut self, id: TileId) {
@@ -134,10 +146,7 @@ impl World {
         self.chest_animations.get_mut(&id).unwrap().adjacent = adjacent;
         for k in [0, 3, 1, 2] {
             if let Some(other) = adjacent[k] {
-                self.chest_animations
-                    .entry(other)
-                    .or_default()
-                    .adjacency_checked = false;
+                self.reset_tile_cache181(other);
             }
         }
     }

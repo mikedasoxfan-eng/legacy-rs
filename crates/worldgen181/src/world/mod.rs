@@ -21,6 +21,7 @@ pub mod teleporter;
 pub mod redstone;
 pub mod rails;
 pub mod dimension;
+pub mod spawn181;
 pub mod tick;
 pub mod ticks_blocks;
 pub mod tile;
@@ -592,6 +593,13 @@ impl World {
         self.chunk_mut(x >> 4, z >> 4)
             .data
             .set(x & 15, y, z & 15, meta);
+        if crate::block::props(self.get_block_id(x,y,z)).container {
+            self.get_block_tile_entity(x,y,z);
+            if let Some(id)=self.chunk(x>>4,z>>4).tile_entity_ids.get(&(x&15,y,z&15)).copied() {
+                self.reset_tile_cache181(id);
+                self.tile_objects.get_mut(&id).unwrap().cached_metadata=meta;
+            }
+        }
         self.touch(x >> 4, z >> 4);
         true
     }

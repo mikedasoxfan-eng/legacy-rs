@@ -88,3 +88,12 @@ impl World {
         true
     }
 }
+
+impl crate::World {
+    pub fn silverfish_destroyed181(&mut self,x:i32,y:i32,z:i32) {
+        let mut e=crate::entity::Entity::living(self,"Silverfish").unwrap();
+        e.set_location_and_angles(x as f64+0.5,y as f64,z as f64+0.5,0.0,0.0);
+        let id=e.entity_id;self.entity_joined_world(e);
+        if let Some(mut e)=self.entities.remove(&id) {e.explosion_particle(self);self.entities.insert(id,e);}
+    }
+}

@@ -2,16 +2,26 @@ use super::registry;
 use crate::nbt::{Compound, Tag};
 
 /// Java's ItemStack uses signed ints, including malformed NBT counts and damage.
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug)]
 pub struct ItemStack {
+    /// Java object identity survives value copies used to borrow the inventory.
+    pub identity: u64,
     pub id: i32,
     pub count: i32,
     pub damage: i32,
     pub animations: i32,
 }
+impl PartialEq for ItemStack {
+    fn eq(&self,other:&Self)->bool {self.id==other.id&&self.count==other.count&&self.damage==other.damage&&self.animations==other.animations}
+}
+impl Eq for ItemStack {}
 impl ItemStack {
     pub fn new(id: i32, count: i32, damage: i32) -> Self {
         Self {
+            identity: {
+                static NEXT:std::sync::atomic::AtomicU64=std::sync::atomic::AtomicU64::new(1);
+                NEXT.fetch_add(1,std::sync::atomic::Ordering::Relaxed)
+            },
             id,
             count,
             damage,
