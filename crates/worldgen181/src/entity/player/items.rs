@@ -9,12 +9,7 @@ impl Entity {
             return false;
         };
         let original=stack;
-        let original_id = stack.id;
-        let used = self.item_use_on_block181(w, &mut stack, x, y, z, side);
-        // ItemStack.useItem: a successful onItemUse counts a use.
-        if used {
-            self.add_stat(stat::used(original_id), 1);
-        }
+        let used = stack.use_item181(self,w,[x,y,z],side).expect("ItemStack.useItem");
         if self.player_state().unwrap().capabilities.creative {stack.count=original.count;stack.damage=original.damage;}
         let inv = &mut self.player_state_mut().unwrap().inventory;
         inv.main[inv.current_item as usize] = if stack.count == 0 { None } else { Some(stack) };

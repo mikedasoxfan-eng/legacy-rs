@@ -30,6 +30,10 @@ pub fn can_place_at(w: &mut World, id: u8, x: i32, y: i32, z: i32, side: i32) ->
     let target=w.get_block_id(x,y,z);
     let base=target==0 || mat(material_of(target)).ground_cover;
     match id {
+        51 => crate::world::ticks_blocks::fire_can_place(w, x, y, z),
+        59 => base && w.get_block_id(x, y - 1, z) == TILLED_FIELD,
+        85 => w.get_block_id(x, y - 1, z) == 85
+            || (mat(w.get_block_material(x, y - 1, z)).is_solid && base),
         55 => w.is_block_normal_cube(x,y-1,z),
         96 => w.trapdoor_can_place_on_side181(x,y,z,side),
         VINE => crate::world::plants181::vine_can_place(w,x,y,z,side),
@@ -111,9 +115,15 @@ impl Entity {
         &mut self, w: &mut World, stack: &mut ItemStack,
         x: i32, y: i32, z: i32, side: i32,
     ) -> bool {
+        self.place_block_item_checked181(w, stack, x, y, z, side)
+            .expect("registered ItemBlock callback")
+    }
+    pub fn place_block_item_checked181(
+        &mut self, w: &mut World, stack: &mut ItemStack,
+        x: i32, y: i32, z: i32, side: i32,
+    ) -> Result<bool, crate::entity::item::ItemError> {
         let item=crate::entity::item_block::BlockItem::registered(stack.id);
         item.on_item_use(&mut LiveBlockItemContext {player:self,world:w,side:0},Some(stack),[x,y,z],side)
-            .expect("registered ItemBlock callback")
     }
     pub fn block_placed(&self, w: &mut World, id: u8, x: i32, y: i32, z: i32, side: i32) {
         let quarter = floor((self.yaw * 4.0 / 360.0) as f64 + 0.5) & 3;
@@ -277,9 +287,19 @@ impl crate::entity::item_block::BlockItemContext for LiveBlockItemContext<'_> {
         self.world
             .entities
             .insert(self.player.entity_id, self.player.clone());
-        let result = can_place(self.world, id as u8, p[0], p[1], p[2], side);
+        let result = (|| {
+            // World.canBlockBePlacedAt evaluates the candidate's collision
+            // callback before testing replacement or canPlaceBlockOnSide.
+            let existing = self.world.get_block_id(p[0], p[1], p[2]);
+            let collision = self.world.placement_collision_box181(id as u8, p[0], p[1], p[2])?;
+            if collision.is_some_and(|b| !self.world.check_if_aabb_is_clear(b)) {
+                return Ok(false);
+            }
+            Ok(id > 0 && matches!(existing, 0 | 8..=11 | 51 | 78 | VINE)
+                && can_place_at(self.world, id as u8, p[0], p[1], p[2], side))
+        })();
         self.world.entities.remove(&self.player.entity_id);
-        Ok(result)
+        result
     }
     fn block(&mut self, id: i32) -> Result<u8, crate::entity::item::ItemError> {
         Ok(id as u8)

@@ -503,6 +503,10 @@ bash "$root/tools/verify_entities10_181.sh" --built || fail=1
 # Round 10: title driver precision, callbacks, texture prefixes and stat schema.
 bash tools/verify_player_gui10_181.sh --built || fail=1
 # --- end player-gui ---
+# --- entities (b1.8.1) ---
+# Round 11: complete ItemBlock dependencies and ItemStack alias/NBT/delegation audit.
+bash "$root/tools/verify_entities11_181.sh" --built || fail=1
+# --- end entities ---
 
 pflush
 [ $fail -eq 0 ] && echo "ALL CASES EXACT" || echo "SOME CASES DIFFER"
