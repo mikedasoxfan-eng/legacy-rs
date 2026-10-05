@@ -1,15 +1,15 @@
 #!/usr/bin/env bash
-# Build (if needed) and run the Java oracle against Mojang's original b1.7.3 bytecode.
-# Usage: tools/oracle/oracle.sh <mode> [args...]   (see Oracle.java)
+# Build (if needed) and run the Java oracle against Mojang's original b1.8.1 bytecode.
+# Usage: tools/oracle181/oracle.sh <mode> [args...]   (see Oracle.java)
 set -euo pipefail
 here="$(cd "$(dirname "$0")" && pwd -W)"  # -W: Windows-style path for java/javac
 jar="$here/../retromcp-b181/minecraft/jars/deobfuscated.jar"
 # Client libraries (LWJGL etc.) are only needed so client classes can load; nothing opens a window.
 libs=$(find "$here/../retromcp-b181/libraries" -name '*.jar' ! -name '*sources*' ! -name '*natives*' 2>/dev/null | while read -r f; do printf ';%s' "$(cygpath -w "$f")"; done)
-[ -f "$jar" ] || { echo "missing $jar - run RetroMCP setup+decompile for b1.7.3 first" >&2; exit 1; }
+[ -f "$jar" ] || { echo "missing $jar - run RetroMCP setup+decompile for b1.8.1 first" >&2; exit 1; }
 mkdir -p "$here/build" "$here/out"
 if [ ! -f "$here/build/.compiled" ] || find "$here/src" "$here/headless" -name '*.java' -newer "$here/build/.compiled" -print -quit | grep -q .; then
-  javac -nowarn -cp "$jar$libs" -d "$here/build" "$here/src/net/minecraft/src/Oracle.java" "$here/src/net/minecraft/src/RendererOracle.java" "$here/src/net/minecraft/src/EntityOracle.java" "$here/src/net/minecraft/src/PlayerOracle.java" "$here/src/net/minecraft/src/ContainerOracle.java" "$here/src/net/minecraft/src/OracleHooks.java" "$here/src/net/minecraft/src/TeleportOracle.java" "$here/src/net/minecraft/src/ShowcaseOracle.java" "$here/src/net/minecraft/src/RedstoneOracle.java" "$here/src/net/minecraft/src/StatsOracle.java" "$here/src/net/minecraft/src/FirstPersonOracle.java" "$here/src/net/minecraft/src/VehicleOracle.java" "$here/src/net/minecraft/src/DecorationOracle.java" "$here/src/net/minecraft/src/PistonRendererOracle.java" "$here/src/net/minecraft/src/WorldEventOracle.java" "$here/src/net/minecraft/src/ParticleOracle.java" "$here/src/net/minecraft/src/SoundOracle.java" "$here"/headless/org/lwjgl/opengl/*.java
+  javac -nowarn -cp "$jar$libs" -d "$here/build" $(ls "$here"/src/net/minecraft/src/*.java | grep -v ModelShot.java) "$here"/headless/org/lwjgl/opengl/*.java
   touch "$here/build/.compiled"
 fi
 if [ ! -f "$here/build/net/minecraft/src/Explosion.class" ] || [ ! -f "$here/build/net/minecraft/src/Entity.class" ] || [ "$here/build_entity.py" -nt "$here/build/net/minecraft/src/Entity.class" ] || [ "$here/src/net/minecraft/src/OracleHooks.java" -nt "$here/build/net/minecraft/src/Entity.class" ]; then

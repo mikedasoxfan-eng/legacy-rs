@@ -31,12 +31,12 @@ use worker::WorldOptions;
 use worldgen::BiomeSource;
 
 const HELP: &str = "\
-beta-rs: Minecraft Beta 1.7.3 in Rust
+beta-rs: Minecraft Beta 1.8.1 in Rust
 
 Usage: beta [options]
 
 Without options the title screen opens, exactly like the original. Textures, sounds and fonts
-are read from your own installation (%APPDATA%\\.minecraft\\versions\\b1.7.3\\b1.7.3.jar).
+are read from your own installation (%APPDATA%\\.minecraft\\versions\\b1.8.1\\b1.8.1.jar).
 
 Options:
   --seed <number or text>        create and enter a world with this seed
@@ -360,11 +360,15 @@ fn mesh_check(a: &[String]) -> bool {
 
 /// The whole b1.8.1 program (`beta --mc b1.8.1`), with the process arguments.
 pub fn run() {
-    let args: Vec<String> = std::env::args().collect();
+    // beta.exe passes `--mc b1.8.1` through; drop it so positional modes see their usual layout.
+    let mut args: Vec<String> = std::env::args().collect();
+    if let Some(i) = args.iter().position(|a| a == "--mc") {
+        args.drain(i..(i + 2).min(args.len()));
+    }
     let _ = std::fs::create_dir_all(DATA_DIR);
     match args.get(1).map(String::as_str) {
         Some("--version" | "-V") => {
-            println!("beta-rs {} (Minecraft Beta 1.7.3)", env!("CARGO_PKG_VERSION"));
+            println!("beta-rs {} (Minecraft Beta 1.8.1)", env!("CARGO_PKG_VERSION"));
             return;
         }
         Some("--help" | "-h") => {

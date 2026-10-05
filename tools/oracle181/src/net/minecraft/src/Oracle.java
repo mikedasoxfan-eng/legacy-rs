@@ -244,8 +244,12 @@ public class Oracle {
         } else if (mode.equals("models")) {
             models(a[1]);
         } else {
-            System.err.println("bad mode; see Oracle.java header");
-            System.exit(2);
+            // b1.8.1 modes live in their own classes: mode "hunger" runs Mode_hunger.main(a),
+            // so new checks never touch this dispatch (no merge conflicts between workers).
+            Class<?> c;
+            try { c = Class.forName("net.minecraft.src.Mode_" + mode); }
+            catch (ClassNotFoundException e) { System.err.println("bad mode; see Oracle.java header"); System.exit(2); return; }
+            c.getMethod("main", String[].class).invoke(null, (Object) a);
         }
     }
 
