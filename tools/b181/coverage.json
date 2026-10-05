@@ -4894,6 +4894,14 @@
   "redstone: pistons_pulses",
   "moving piston renderer (original TileEntityRendererPiston vertex bits)"
  ],
+ "BlockPressurePlate": [
+  "redstone: repeaters",
+  "world-blocks b1.8.1: plates4"
+ ],
+ "BlockRedstoneRepeater": [
+  "redstone: repeaters",
+  "redstone: basic"
+ ],
  "BlockRedstoneWire": [
   "redstone: basic",
   "redstone: pistons_clock",
@@ -5088,6 +5096,9 @@
   "ticks: 2 3 -77 3000 2000 thunder 0 0",
   "ticks: forest fire, seed 6",
   "ticks: saplings growing, seed 6"
+ ],
+ "BlockTrapDoor": [
+  "redstone: repeaters"
  ],
  "BlockVine": [
   "world-blocks b1.8.1: plants",

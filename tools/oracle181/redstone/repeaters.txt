@@ -1,0 +1,48 @@
+# Repeaters (both facings, delays cycled by use), a repeater clock, a trapdoor on the line,
+# and a pressure plate standing on a fence (b1.8.1) that drops when the fence goes.
+place 2 64 10 1 0            # lever's block
+place 3 64 10 69 1           # lever on the block at x-1
+place 4 64 10 55 0
+place 5 64 10 93 1           # repeater, one facing
+place 6 64 10 55 0
+place 7 64 10 93 5           # repeater, same facing, delay 2
+place 8 64 10 55 0
+place 9 64 10 93 1
+place 10 64 10 55 0
+place 11 64 10 1 0           # block the line ends in
+place 12 64 10 96 0          # trapdoor hinged on that block
+place 5 64 12 55 0           # a small clock: two repeaters and wire in a loop
+place 6 64 12 93 1
+place 7 64 12 55 0
+place 7 64 13 55 0
+place 6 64 13 93 3
+place 5 64 13 55 0
+place 20 64 20 85 0          # fence
+place 20 65 20 72 0          # wooden pressure plate on the fence
+place 22 64 20 85 0
+place 22 65 20 70 0          # stone pressure plate on a fence
+tick 10
+use 5 64 10                  # delay +1
+use 5 64 10
+use 9 64 10
+tick 2
+use 3 64 10                  # lever on: the signal walks through the repeaters
+check 2 64 10 12 64 10 3
+tick 4
+check 2 64 10 12 64 10 3
+tick 20
+check 2 64 10 12 64 10 3
+use 3 64 10                  # lever off
+tick 30
+check 2 64 10 12 64 10 3
+place 5 64 11 75 5           # pulse the clock with a torch next to it
+tick 3
+remove 5 64 11
+tick 40
+check 4 64 11 8 64 14 5
+remove 20 64 20              # plate loses its fence
+remove 22 64 20
+tick 5
+check 19 64 19 23 66 21 2
+use 12 64 10                 # trapdoor by hand
+tick 5

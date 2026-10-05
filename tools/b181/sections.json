@@ -647,6 +647,7 @@
  "redstone: pistons_pull_failure": true,
  "redstone: pistons_pulses": true,
  "redstone: rails": true,
+ "redstone: repeaters": true,
  "redstone: tile_lifecycle": true,
  "remaining entity renderers and GUI item geometry": false,
  "renderer window sizes and Java negative-coordinate wrapping": true,
