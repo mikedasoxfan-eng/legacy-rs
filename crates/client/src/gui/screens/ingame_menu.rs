@@ -48,7 +48,11 @@ impl Screen for GuiIngameMenu {
     fn action_performed(&mut self, ui: &mut Ui, id: i32) {
         match id {
             0 => ui.display_child(|me| Box::new(super::options::GuiOptions::new(me))),
-            1 => ui.actions.push(Action::QuitWorld),
+            1 => {
+                // StatList.leaveGameStat ("Games quit")
+                ui.stats.add(1004, 1);
+                ui.actions.push(Action::QuitWorld);
+            }
             4 => ui.display(None),
             5 => ui.display(Some(Box::new(super::achievements::GuiAchievements::new()))),
             6 => ui.display_child(|me| Box::new(super::stats::GuiStats::new(me))),
