@@ -86,6 +86,9 @@ pub fn load() -> Result<Assets, String> {
         "misc/water.png",
         "misc/mapbg.png",
         "misc/mapicons.png",
+        "item/sign.png",
+        "art/kz.png",
+        "particles.png",
         "font/default.png",
     ]) {
         mobs.insert(name.to_owned(), read(name)?);

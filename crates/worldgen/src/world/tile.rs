@@ -21,6 +21,7 @@ impl ItemStack {
 pub enum TileEntity {
     Note(super::notes::Note),
     Piston(super::pistons::Piston),
+    Sign(crate::sign::Sign),
     Chest(Box<[Option<ItemStack>; 27]>),
     MobSpawner { mob: String, delay: i32 },
     Furnace(crate::container::tiles::Furnace),
@@ -32,6 +33,7 @@ impl TileEntity {
     pub fn for_block(id: u8) -> TileEntity {
         match id {
             25 => TileEntity::Note(Default::default()),
+            63 | 68 => TileEntity::Sign(Default::default()),
             crate::block::CHEST => TileEntity::Chest(Box::new([None; 27])),
             crate::block::MOB_SPAWNER => TileEntity::MobSpawner {
                 mob: "Pig".into(),

@@ -386,6 +386,13 @@ fn main() {
         println!("{}", if ok { "RENDERERS EXACT" } else { "RENDERERS DIFFER" });
         std::process::exit(if ok { 0 } else { 1 });
     }
+    if args.get(1).map(String::as_str)==Some("--fishrenderercheck") {std::process::exit(if render::entity::object_check::fish_check(&args[2]) {0}else{1});}
+    if args.get(1).map(String::as_str)==Some("--signrenderercheck") {
+        let ok=render::entity::object_check::sign_check(&args[2]);std::process::exit(if ok {0}else{1});
+    }
+    if args.get(1).map(String::as_str)==Some("--paintingrenderercheck") {
+        let ok=render::entity::object_check::painting_check(&args[2]);std::process::exit(if ok {0}else{1});
+    }
     if args.get(1).map(String::as_str) == Some("--modelcheck") {
         let ok = render::entity::check::model_check(args.get(2).expect("--modelcheck oracle-models.bin"));
         println!("{}", if ok { "MODELS EXACT" } else { "MODELS DIFFER" });

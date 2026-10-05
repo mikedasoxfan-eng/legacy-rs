@@ -37,7 +37,7 @@ pub struct FireballState {
 }
 impl Entity {
     pub fn can_be_collided_with(&self) -> bool {
-        matches!(self.kind, EntityKind::Fireball(..))
+        matches!(self.kind, EntityKind::Fireball(..) | EntityKind::Painting(..))
             || (!self.dead
                 && (self.kind.is_living()
                     || matches!(
@@ -109,6 +109,7 @@ impl Entity {
         if let EntityKind::Arrow(s) = &mut self.kind {
             s.ticks_ground = 0;
         }
+        if let EntityKind::Fish(s) = &mut self.kind { s.arrow.ticks_ground = 0; }
     }
     pub fn fireball(w: &mut World, pos: Vec3D, aim: Vec3D) -> Self {
         let mut e = Self::base(w, EntityKind::Fireball(Default::default()));

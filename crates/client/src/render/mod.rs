@@ -121,3 +121,7 @@ pub fn brightness_table() -> [f32; 16] {
     }
     t
 }
+pub mod sign;
+pub mod painting;
+
+pub mod fishing;

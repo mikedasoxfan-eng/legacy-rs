@@ -1045,6 +1045,10 @@ pub fn append_world(w: &World, out: &mut Vec<u8>) {
                     for v in [p.block_id as i32,p.block_data,p.facing,p.progress.to_bits() as i32,p.last_progress.to_bits() as i32] { i(out,v); }
                     out.push(p.extending as u8);out.push(p.render_head as u8);
                 }
+                crate::world::tile::TileEntity::Sign(sign) => {
+                    out.push(7);
+                    for s in &sign.text { i(out,s.len() as i32);out.extend_from_slice(s.as_bytes()); }
+                }
                 crate::world::tile::TileEntity::Chest(slots) => {
                     out.push(1);
                     for slot in slots.iter() {

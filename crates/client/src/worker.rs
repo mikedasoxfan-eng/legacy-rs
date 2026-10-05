@@ -15,6 +15,7 @@ use worldgen::world::server::PlayerManager;
 use worldgen::{BiomeSource, World};
 
 pub enum ToWorker {
+    EditSign { position:(i32,i32,i32), text:[String;4] },
     Camera {
         x: f64,
         y: f64,
@@ -125,6 +126,7 @@ pub enum Loading {
 }
 
 pub enum FromWorker {
+    Signs(Vec<crate::render::sign::Snapshot>),
     /// Ordered after old meshes, before meshes using the new settings.
     ResetMeshes,
     Ready {
@@ -407,6 +409,10 @@ fn run(opts: WorldOptions, col: Colorizers, mut video: VideoSettings, rx: Receiv
                         }
                     }
                 }
+                Ok(ToWorker::EditSign { position:(x,y,z), text }) => {
+                    if let Some(worldgen::world::tile::TileEntity::Sign(sign))=world.get_block_tile_entity(x,y,z) { sign.text=text; }
+                    if let Some(c)=world.chunks.get_mut(&(x>>4,z>>4)) {c.modified=true;}
+                }
                 Ok(ToWorker::Respawn) => {
                     // Minecraft.respawn(false, 0): out of the Nether first (it can't be
                     // respawned in), then a new player at the bed or the spawn point.
@@ -551,7 +557,10 @@ fn run(opts: WorldOptions, col: Colorizers, mut video: VideoSettings, rx: Receiv
                 .filter(|id| {
                     world.entities.get(id).is_some_and(|e| {
                         let (dx, dy, dz) = (e.pos.x - cam.0, e.pos.y - cam.1, e.pos.z - cam.2);
-                        dx * dx + dy * dy + dz * dz < 128.0 * 128.0
+                        let range = if matches!(e.kind, worldgen::entity::EntityKind::Fish(_)) {
+                            e.bounding_box.average_edge_length() * 4.0 * 64.0
+                        } else {128.0};
+                        dx * dx + dy * dy + dz * dz < range * range
                     })
                 })
                 .collect();
@@ -587,6 +596,9 @@ fn run(opts: WorldOptions, col: Colorizers, mut video: VideoSettings, rx: Receiv
                         }
                     }
                 }
+                for xyz in crate::render::painting::light_positions(&e) {
+                    let [x,y,z]=xyz;surfaces.push(crate::render::entity::effects::Surface{xyz,block:0,brightness:world.light_brightness_table[access.light_value(x,y,z) as usize]});
+                }
                 snapshot.push(crate::render::entity::effects::Snapshot {
                     entity: e,
                     brightness: b,
@@ -616,6 +628,16 @@ fn run(opts: WorldOptions, col: Colorizers, mut video: VideoSettings, rx: Receiv
                 }
             }
             let _=tx.send(FromWorker::BlockTiles {pistons,events:std::mem::take(&mut world.block_events)});
+            let mut signs=Vec::new();
+            for (x,y,z) in world.loaded_tile_entities.iter().filter(|id| !world.tile_objects[id].invalid).map(|id| world.tile_objects[id].position).collect::<Vec<_>>() {
+                let d=(x as f64+0.5-cam.0).powi(2)+(y as f64+0.5-cam.1).powi(2)+(z as f64+0.5-cam.2).powi(2);
+                if d>=4096.0 {continue;}
+                let sign=match world.get_block_tile_entity(x,y,z) {Some(worldgen::world::tile::TileEntity::Sign(s))=>s.clone(),_=>continue};
+                let block=world.get_block_id(x,y,z);let metadata=world.get_block_metadata(x,y,z);
+                let light=world.get_block_light_value(x,y,z);let brightness=world.light_brightness_table[light as usize];
+                signs.push(crate::render::sign::Snapshot{position:[x,y,z],block,metadata,sign,brightness});
+            }
+            let _=tx.send(FromWorker::Signs(signs));
             if let Some(id) = player {
                 let events = world.take_player_events(id);
                 // Block activations open their container right here on the world thread.

@@ -15,10 +15,7 @@ impl Default for Data {
         }
     }
 }
-pub const PALETTE: [u32; 14] = [
-    0, 8368696, 16247203, 10987431, 16711680, 10526975, 10987431, 31744, 16777215, 10791096,
-    12020271, 7368816, 4210943, 6837042,
-];
+pub use worldgen::maps::PALETTE;
 fn stereo([r, g, b]: [u32; 3]) -> [u32; 3] {
     [
         (r * 30 + g * 59 + b * 11) / 100,
@@ -165,6 +162,7 @@ pub fn saved(w: &worldgen::World, e: &worldgen::entity::Entity) -> Option<Data> 
         return None;
     }
     let label = format!("map_{}", item.damage);
+    if let Some(map)=w.maps.data.get(&item.damage) {return Some(Data{colors:map.colors.clone(),icons:map.icons.clone(),label});}
     let mut data = Data {
         label: label.clone(),
         ..Default::default()

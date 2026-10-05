@@ -44,6 +44,7 @@ pub fn on_block_added(w: &mut World, id: u8, x: i32, y: i32, z: i32) {
         return;
     }
     match id {
+        63 | 68 => w.set_block_tile_entity(x, y, z, TileEntity::for_block(id)),
         block::WATER_MOVING | block::LAVA_MOVING => {
             check_for_harden(w, id, x, y, z);
             if w.get_block_id(x, y, z) == id {
@@ -75,6 +76,7 @@ pub fn on_block_added(w: &mut World, id: u8, x: i32, y: i32, z: i32) {
 }
 
 pub fn on_block_removal(w: &mut World, id: u8, x: i32, y: i32, z: i32) {
+    if matches!(id, 63 | 68) { w.remove_block_tile_entity(x,y,z); return; }
     if crate::entity::player::block_hooks::removed(w, id, x, y, z) {
         return;
     }
@@ -133,6 +135,7 @@ pub fn on_block_removal(w: &mut World, id: u8, x: i32, y: i32, z: i32) {
 }
 
 pub fn on_neighbor_block_change(w: &mut World, id: u8, x: i32, y: i32, z: i32, _changed: u8) {
+    if matches!(id, 63 | 68) { crate::sign::neighbor(w,id,x,y,z); return; }
     if id != 26 && crate::entity::player::block_hooks::neighbor(w, id, x, y, z, _changed) {
         return;
     }
@@ -797,6 +800,7 @@ fn quantity_dropped(w: &mut World, id: u8) -> i32 {
 
 fn id_dropped(w: &mut World, id: u8, meta: i32) -> i32 {
     match id {
+        63 | 68 => 323,
         59 => {
             if meta == 7 {
                 296

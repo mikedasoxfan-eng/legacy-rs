@@ -108,7 +108,7 @@ public final class FirstPersonOracle {
         for(int id=0;id<Item.itemsList.length;id++)if(id==0||Item.itemsList[id]!=null) {
             for(int c=0;c<4;c++) {
                 World w=world();PlayerOracle.HeadlessPlayer p=player(w,c+1);setup(p);p.hurtTime=c==2?7:0;
-                out.i32(1);state(out,p);float t=new float[]{0,.25F,.75F,1}[c];f(out,t);settings(out,p,1);
+                if(id==346&&c>=2)p.fishEntity=new EntityFish(w);out.i32(p.fishEntity==null?1:10);state(out,p);float t=new float[]{0,.25F,.75F,1}[c];f(out,t);settings(out,p,1);
                 // Render hand itself (normal non-stereo first person).
                 p.mc.gameSettings.anaglyph=false;p.mc.gameSettings.thirdPersonView=false;p.mc.gameSettings.field_22273_E=false;
                 ItemStack item=id==0?null:new ItemStack(id,1,new int[]{0,1,3,15}[c]);out.i32(id);out.i32(item==null?0:item.getItemDamage());f(out,c*.23F);f(out,1-c*.19F);
@@ -139,7 +139,7 @@ public final class FirstPersonOracle {
             // Cancel large doubles before subtracting yOffset, as RenderManager
             // followed by RenderPlayer does. Reordering these loses low bits.
             if(c>=144){p.setPosition(p.posX,1099511627776.5,p.posZ);p.prevPosY=p.lastTickPosY=p.posY;}
-            out.i32(3);state(out,p);out.i32(p.ridingEntity==null?0:1);out.i32(c>=80?1:0);float t=new float[]{0,.25F,.75F,1}[c%4];f(out,t);out.i32(id);out.i32(c%16);for(ItemStack item:p.inventory.armorInventory)out.i32(item==null?0:item.itemID);out.i32(c%4);f(out,p.getEntityBrightness(t));
+            if(c>=80&&id==346)p.fishEntity=new EntityFish(w);out.i32(p.fishEntity==null?3:11);state(out,p);out.i32(p.ridingEntity==null?0:1);out.i32(c>=80?1:0);float t=new float[]{0,.25F,.75F,1}[c%4];f(out,t);out.i32(id);out.i32(c%16);for(ItemStack item:p.inventory.armorInventory)out.i32(item==null?0:item.itemID);out.i32(c%4);f(out,p.getEntityBrightness(t));
             double[] camera={-.5,c>=144?p.posY-(double)p.yOffset+.375:61.25,-3.75};for(double v:camera)d(out,v);
             start(p.getEntityBrightness(t));m.getEntityRenderObject(p).doRender(p,p.lastTickPosX+(p.posX-p.lastTickPosX)*t-camera[0],p.lastTickPosY+(p.posY-p.lastTickPosY)*t-camera[1],p.lastTickPosZ+(p.posZ-p.lastTickPosZ)*t-camera[2],0,t);stop();draws(out);n++;
         }

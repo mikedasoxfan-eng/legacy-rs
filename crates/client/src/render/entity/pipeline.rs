@@ -25,6 +25,7 @@ struct Draw {
 
 pub struct EntityPipeline {
     pub states: Vec<RenderState>,
+    line: wgpu::RenderPipeline,
     opaque: wgpu::RenderPipeline,
     alpha: wgpu::RenderPipeline,
     eyes: wgpu::RenderPipeline,
@@ -40,6 +41,9 @@ pub struct EntityPipeline {
     pub fog_view: Mat4,
     pub snapshots: Vec<super::effects::Snapshot>,
     pub pistons: Vec<crate::render::pistons::Snapshot>,
+    pub angler: Option<worldgen::entity::Entity>,
+    pub third_person: bool,
+    pub signs: Vec<crate::render::sign::Snapshot>,
     pub partial: f32,
     pub fancy: bool,
     pub view: [f32; 2],
@@ -118,7 +122,7 @@ impl EntityPipeline {
                         attributes: &wgpu::vertex_attr_array![0=>Float32x3,1=>Float32x2,2=>Float32x4],
                     })],
                 },
-                primitive: wgpu::PrimitiveState { cull_mode: None, ..Default::default() },
+                primitive: wgpu::PrimitiveState { topology: if label=="fishing line" {wgpu::PrimitiveTopology::LineStrip}else{wgpu::PrimitiveTopology::TriangleList}, cull_mode: None, ..Default::default() },
                 depth_stencil: Some(wgpu::DepthStencilState {
                     format: wgpu::TextureFormat::Depth32Float,
                     depth_write_enabled: Some(write),
@@ -138,6 +142,7 @@ impl EntityPipeline {
             })
         };
         use wgpu::CompareFunction::{Equal, LessEqual};
+        let line=make("fishing line",None,LessEqual,"fs_main",true);
         let opaque = make("entity opaque", None, LessEqual, "fs_test", true);
         let alpha =
             make("entity translucent slime", Some(wgpu::BlendState::ALPHA_BLENDING), LessEqual, "fs_test", true);
@@ -299,11 +304,15 @@ impl EntityPipeline {
             fog_view: Mat4::IDENTITY,
             snapshots: Vec::new(),
             pistons: Vec::new(),
+            angler: None,
+            third_person: false,
+            signs: Vec::new(),
             partial: 0.0,
             fancy: true,
             view: [0.0; 2],
             shadow,
             tnt_flash,
+            line,
             opaque,
             alpha,
             eyes,
@@ -380,6 +389,15 @@ impl EntityPipeline {
         let mut batches = living::scene_with_lighting(&self.states, camera, &mut self.normalize);
         for snapshot in &self.snapshots {
             let e = &snapshot.entity;
+            if let worldgen::entity::EntityKind::Fish(s)=&e.kind {
+                let owner=self.angler.as_ref().filter(|p|Some(p.entity_id)==s.arrow.owner).or_else(||self.snapshots.iter().find(|v|Some(v.entity.entity_id)==s.arrow.owner).map(|v|&v.entity));
+                let p=super::bridge::position(e,self.partial);let relative=std::array::from_fn(|i|p[i]-camera[i]);let g=crate::render::fishing::render(e,owner,relative,self.partial,snapshot.brightness,self.view,self.third_person);batches.extend(g.draws.iter().map(|d|d.batch()));
+            }
+            if matches!(e.kind,worldgen::entity::EntityKind::Painting(_)) {
+                let lights:Vec<_>=crate::render::painting::light_positions(e).iter().map(|p|snapshot.surfaces.iter().find(|s|s.xyz==*p&&s.block==0).map_or(snapshot.brightness,|s|s.brightness)).collect();
+                let p=super::bridge::position(e,self.partial);let relative=std::array::from_fn(|i|p[i]-camera[i] as f64);
+                let g=crate::render::painting::render(e,relative,&lights);batches.extend(g.draws.iter().map(|d|d.batch()));
+            }
             if let Some(s) = super::bridge::render_state(e, self.partial, snapshot.brightness) {
                 batches.extend(living::scene_with_lighting(&[s], camera, &mut self.normalize));
             } else if let Some(s) =
@@ -408,6 +426,11 @@ impl EntityPipeline {
         }
         batches.append(&mut self.extra);
         batches.extend(self.pistons.iter().filter(|p|p.visible(camera.to_array())).map(|p|p.batch(self.partial,camera.to_array())));
+        for s in &self.signs {
+            let relative=std::array::from_fn(|i|s.position[i] as f64-camera[i] as f64);
+            let g=crate::render::sign::render(&s.sign,s.block,s.metadata,relative,s.brightness);
+            batches.extend(g.draws.iter().map(|d|d.batch()));
+        }
         self.upload(device, queue, batches, view_proj, fog, far);
     }
 
@@ -468,6 +491,7 @@ impl EntityPipeline {
         rp.set_vertex_buffer(0, self.vertices.slice(..));
         for d in &self.draws {
             rp.set_pipeline(match d.pass {
+                Pass::Line => &self.line,
                 Pass::Opaque => &self.opaque,
                 Pass::Alpha => &self.alpha,
                 Pass::Eyes => &self.eyes,

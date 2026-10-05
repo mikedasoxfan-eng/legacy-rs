@@ -383,5 +383,6 @@ else
 fi
 rm -rf "$cv"
 
+bash "$root/tools/verify_decorations.sh" || fail=1
 [ $fail -eq 0 ] && echo "ALL CASES EXACT" || echo "SOME CASES DIFFER"
 exit $fail

@@ -14,6 +14,7 @@ impl World {
         command: ContainerCommand,
     ) -> Option<ContainerSnapshot> {
         self.entities.get(&player)?.player_state()?;
+        self.load_map_counts();
         let mut entity = self.entities.remove(&player)?;
         let mut session = self.container_sessions.remove(&player).unwrap_or_default();
         let p = &mut entity.player_state_mut()?.inventory;
@@ -101,6 +102,8 @@ impl World {
         for event in c.events.drain(..) {
             if let ContainerEvent::Drop(stack) = event {
                 e.drop_player_item(self, stack, false);
+            } else if let ContainerEvent::MapCreated{id}=event {
+                self.map_created(id,e);self.save_map_count();e.player_state_mut().unwrap().events.push(PlayerEvent::Container(event));
             } else {
                 e.player_state_mut()
                     .unwrap()

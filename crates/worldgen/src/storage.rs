@@ -475,6 +475,7 @@ pub fn chunk_to_nbt(c: &Chunk, world_time: i64) -> Compound {
         match te {
             TileEntity::Note(note)=> { t=note.to_nbt(x,y,z); },
             TileEntity::Piston(piston)=> { t=piston.to_nbt(x,y,z); },
+            TileEntity::Sign(sign) => { t = sign.to_nbt(x, y, z); }
             TileEntity::Chest(slots) => {
                 t.put("id", Tag::String("Chest".into()));
                 t.put("x", Tag::Int(x));
@@ -565,6 +566,7 @@ pub fn chunk_from_nbt_for_dimension(
         let Tag::Compound(t) = t else { continue };
         let (x, y, z) = (t.int("x"), t.int("y"), t.int("z"));
         let te = match t.string("id").as_str() {
+            "Sign" => TileEntity::Sign(crate::sign::Sign::from_nbt(t)),
             "Chest" => {
                 let mut slots = Box::new([None; 27]);
                 for it in t.list("Items") {

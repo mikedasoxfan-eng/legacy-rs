@@ -24,6 +24,26 @@ fn main() -> ExitCode {
     let a: Vec<String> = std::env::args().collect();
     let p = |i: usize| a[i].parse::<i64>().expect("number");
     match a.get(1).map(String::as_str) {
+        Some("mapfiles") => {
+            let java=std::fs::read(&a[2]).unwrap();let rust=worldgen::decoration_verify::map_files(std::path::Path::new(&format!("{}.save",a[2])),std::path::Path::new("target/map-rust-save"));verdict(java==rust)
+        }
+        Some("mapread") => {verdict(std::fs::read(&a[2]).unwrap()==std::fs::read(&a[3]).unwrap())}
+        Some("fishing") => {
+            let java=std::fs::read(&a[2]).unwrap();let rust=worldgen::decoration_verify::fishing();if java==rust {println!("EXACT MATCH: fishing 48000 ticks and events");ExitCode::SUCCESS}else{eprintln!("fishing differ at {:?}; {}/{} bytes",java.iter().zip(&rust).position(|(a,b)|a!=b),java.len(),rust.len());std::fs::write("target/fishing-rust.bin",rust).unwrap();ExitCode::FAILURE}
+        }
+        Some("maps") => {
+            let java=std::fs::read(&a[2]).unwrap();let rust=worldgen::decoration_verify::maps();
+            if java==rust {println!("EXACT MATCH: maps palette, terrain updates, markers, NBT and creation");ExitCode::SUCCESS} else {eprintln!("maps differ at {:?}; {}/{} bytes",java.iter().zip(&rust).position(|(a,b)|a!=b),java.len(),rust.len());std::fs::write("target/maps-rust.bin",rust).unwrap();ExitCode::FAILURE}
+        }
+        Some("paintings") => {
+            let java=std::fs::read(&a[2]).unwrap();let rust=worldgen::decoration_verify::paintings();
+            if java==rust {println!("EXACT MATCH: paintings selection, walls, overlaps, support ticks, damage, NBT");ExitCode::SUCCESS} else {eprintln!("paintings differ at {:?}; {}/{} bytes",java.iter().zip(&rust).position(|(a,b)|a!=b),java.len(),rust.len());std::fs::write("target/paintings-rust.bin",rust).unwrap();ExitCode::FAILURE}
+        }
+        Some("signs") => {
+            let java=std::fs::read(&a[2]).unwrap();let len=i32::from_le_bytes(java[..4].try_into().unwrap()) as usize;
+            let allowed=std::str::from_utf8(&java[4..4+len]).unwrap();let rust=worldgen::decoration_verify::signs(allowed);let java=&java[4+len..];
+            if java==rust {println!("EXACT MATCH: signs placement, supports, drops/RNG, editing, NBT");ExitCode::SUCCESS} else {eprintln!("signs differ at {:?}; {}/{} bytes",java.iter().zip(&rust).position(|(a,b)|a!=b),java.len(),rust.len());std::fs::write("target/signs-rust.bin",rust).unwrap();ExitCode::FAILURE}
+        }
         Some("musicevents") => {
             let java = std::fs::read(&a[2]).unwrap();
             let rust = worldgen::entity::verify::music_event_bytes();

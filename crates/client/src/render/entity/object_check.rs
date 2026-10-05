@@ -122,6 +122,26 @@ pub fn check(path: &str) -> bool {
     d.bad == 0
 }
 
+pub fn sign_check(path:&str)->bool {
+    let mut d=Input{data:std::fs::read(path).unwrap(),at:0,checks:0,bad:0};let n=d.u();
+    for case in 0..n {let block=d.u() as u8;let metadata=d.u() as i32;let edited=d.u() as i32;
+        let sign=worldgen::sign::Sign{text:["Hello!".into(),"012345678901234".into(),"a W i".into(),"".into()],line_being_edited:edited,editable:true};
+        let g=crate::render::sign::render(&sign,block,metadata,[-0.25,10.5,3.75],0.73);
+        assert_eq!(d.u() as usize,g.draws.len(),"sign {case} draw count");for (i,r) in g.draws.iter().enumerate(){d.draw(r,&format!("sign {case} draw {i}"));}
+    }
+    assert_eq!(d.at,d.data.len());println!("sign renderers: {} values, {} differences",d.checks,d.bad);d.bad==0
+}
+pub fn painting_check(path:&str)->bool {
+    let mut d=Input{data:std::fs::read(path).unwrap(),at:0,checks:0,bad:0};let n=d.u();let mut w=worldgen::decoration_verify::flat_world();
+    for case in 0..n {let art=d.u() as usize;let dir=d.u() as i32;
+        let mut e=worldgen::entity::Entity::painting_base(&mut w);if let worldgen::entity::EntityKind::Painting(s)=&mut e.kind{s.art=art;s.tile=[0,67,0];}e.set_painting_direction(dir);
+        let a=worldgen::entity::painting::ARTS[art];let lights:Vec<_>=(0..a.width/16*(a.height/16)).map(|_|d.f()).collect();
+        let g=crate::render::painting::render(&e,[-0.25,10.5,3.75],&lights);
+        assert_eq!(d.u() as usize,g.draws.len(),"painting {case} draw count");for (i,r) in g.draws.iter().enumerate(){d.draw(r,&format!("painting {case} draw {i}"));}
+    }
+    assert_eq!(d.at,d.data.len());println!("painting renderers: {} values, {} differences",d.checks,d.bad);d.bad==0
+}
+
 pub fn effects_check(path: &str) -> bool {
     use super::effects::Surface;
     let mut d = Input { data: std::fs::read(path).unwrap(), at: 0, checks: 0, bad: 0 };
@@ -233,4 +253,13 @@ pub fn living_check(path: &str) -> bool {
     assert_eq!(d.at, d.data.len());
     println!("living renderers: {n} cases, {} bit comparisons, {} differ", d.checks, d.bad);
     d.bad == 0
+}
+
+pub fn fish_check(path:&str)->bool {
+    let mut d=Input{data:std::fs::read(path).unwrap(),at:0,checks:0,bad:0};let n=d.u();let mut w=worldgen::decoration_verify::flat_world();let mut p=worldgen::entity::Entity::player(&mut w,"Player");let mut f=worldgen::entity::Entity::fish_base(&mut w);
+    f.prev_pos=worldgen::entity::Vec3D::new(-1.5,65.25,2.75);f.set_position(0.25,64.5,-0.75);p.prev_pos=worldgen::entity::Vec3D::new(1.5,66.25,3.75);p.set_position(-0.25,65.5,0.75);
+    for case in 0..n {let third=d.u()!=0;let yaw=d.f();let swing=d.f();let partial=d.f();p.prev_yaw=yaw-17.0;p.yaw=yaw;p.prev_pitch=-23.0;p.pitch=37.0;p.living.prev_render_yaw_offset=yaw+11.0;p.living.render_yaw_offset=yaw-7.0;p.living.prev_swing_progress=swing;p.living.swing_progress=(swing+0.2)%1.0;
+        let g=crate::render::fishing::render(&f,Some(&p),[-0.25,10.5,3.75],partial,0.73,[37.0,-17.0],third);assert_eq!(d.u() as usize,g.draws.len());assert_eq!(g.draws[1].mode,3);assert_eq!(g.draws[1].batch().vertices.len(),17);
+        for (i,r) in g.draws.iter().enumerate(){d.draw(r,&format!("fish {case} draw {i}"));}
+    }assert_eq!(d.at,d.data.len());println!("fish renderers: {} values, {} differences",d.checks,d.bad);d.bad==0
 }

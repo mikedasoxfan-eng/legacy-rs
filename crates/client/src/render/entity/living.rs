@@ -156,6 +156,7 @@ pub struct EntityVertex {
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Pass {
+    Line,
     Opaque,
     Alpha,
     Eyes,

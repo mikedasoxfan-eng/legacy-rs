@@ -128,6 +128,7 @@ impl Entity {
         self.pos.z = (self.bounding_box.min_z + self.bounding_box.max_z) / 2.0;
     }
     pub fn move_entity(&mut self, w: &mut World, mut dx: f64, mut dy: f64, mut dz: f64) {
+        if matches!(self.kind,super::EntityKind::Painting(_)) {if dx*dx+dy*dy+dz*dz>0.0{self.break_painting(w,false);}return;}
         if self.no_clip {
             self.bounding_box.offset(dx, dy, dz);
             self.sync_position_from_box();
@@ -366,7 +367,7 @@ impl Entity {
         }
     }
     pub fn can_trigger_walking(&self) -> bool {
-        self.kind.is_living() && !matches!(self.kind, EntityKind::Spider | EntityKind::Wolf(..))
+        matches!(self.kind, EntityKind::Fish(_)) || (self.kind.is_living() && !matches!(self.kind, EntityKind::Spider | EntityKind::Wolf(..)))
     }
     fn on_entity_walking(&mut self, w: &mut World, id: u8, x: i32, y: i32, z: i32) {
         if id == TILLED_FIELD && w.rand.next_int(4) == 0 {

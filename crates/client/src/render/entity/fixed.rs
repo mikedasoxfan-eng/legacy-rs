@@ -178,11 +178,16 @@ impl Draw {
                 12 => "__map",
                 13 => "misc/mapicons.png",
                 14 => "font/default.png",
+                15 => "item/sign.png",
+                16 => "art/kz.png",
+                17 => "particles.png",
                 20..=29 => super::player::ARMOR[(self.texture - 20) as usize],
                 _ => "__white",
             })
         };
-        let pass = if self.texture == 12 {
+        let pass = if self.mode == 3 {
+            Pass::Line
+        } else if self.texture == 12 {
             Pass::UntestedAlpha
         } else if self.depth == 514 {
             Pass::Overlay
@@ -236,6 +241,7 @@ impl Draw {
                 vertices.push(q[i]);
             }
         }
+        if self.mode==3 {vertices=verts;}
         Batch {
             texture,
             pass,

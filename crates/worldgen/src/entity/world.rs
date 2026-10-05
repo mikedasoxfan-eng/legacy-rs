@@ -172,6 +172,7 @@ impl World {
         for id in unloaded {
             if let Some(e) = self.entities.remove(&id) {
                 self.unfile_entity(&e);
+                if self.fish_has_owner_reference(&e) {self.entities.insert(id,e);}
             }
             self.loaded_entity_list.retain(|v| *v != id);
         }
@@ -209,7 +210,7 @@ impl World {
                 self.loaded_entity_list.remove(i);
                 // PlayerEntities and Minecraft.thePlayer keep the dead object
                 // until explicit removal/respawn, including its level.dat data.
-                if e.player_state().is_some() {
+                if e.player_state().is_some() || self.fish_has_owner_reference(&e) {
                     self.entities.insert(id, e);
                 }
             } else {

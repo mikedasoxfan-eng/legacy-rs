@@ -161,6 +161,12 @@ public class GuiShot {
                     else if (which.equals("achievements")) s = new GuiAchievements(mc.statFileWriter);
                     else if (which.equals("gameover")) s = new GuiGameOver();
                     else if (which.equals("stats")) s = new GuiStats(title, mc.statFileWriter);
+                    else if (which.equals("sign")) {
+                        TileEntitySign sign=new TileEntitySign();sign.worldObj=mc.theWorld;sign.xCoord=0;sign.yCoord=64;sign.zCoord=0;
+                        mc.theWorld.setBlockAndMetadata(0,64,0,Integer.parseInt(a[1]),Integer.parseInt(a[2]));
+                        TileEntityRenderer.instance.cacheActiveRenderInfo(mc.theWorld,mc.renderEngine,mc.fontRenderer,mc.thePlayer,0);
+                        s=new GuiEditSign(sign);
+                    }
                     else if (which.equals("inventory") || which.equals("crafting") || which.equals("chest") || which.equals("largechest") || which.equals("furnace") || which.equals("dispenser")) {
                         EntityPlayerSP p = mc.thePlayer;
                         p.inventory = new InventoryPlayer(p); p.inventorySlots = new ContainerPlayer(p.inventory);

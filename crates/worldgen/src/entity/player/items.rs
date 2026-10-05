@@ -10,6 +10,8 @@ impl Entity {
         };
         let original_id = stack.id;
         let used = match stack.id {
+            323 => self.place_sign(w, &mut stack, x, y, z, side),
+            321 => self.place_painting(w, &mut stack, x, y, z, side),
             2256 | 2257 => {
                 let used = w.insert_record(x, y, z, stack.id);
                 if used {
@@ -167,6 +169,8 @@ impl Entity {
             if stack.id == 282 {
                 stack = ItemStack::new(281, 1, 0);
             }
+        } else if stack.id == 346 {
+            self.use_fishing_rod(w,&mut stack);
         } else if stack.id == 261 {
             if self.player_state_mut().unwrap().inventory.consume(262) {
                 let pitch = 1.0 / (w.item_random.next_float() * 0.4 + 0.8);

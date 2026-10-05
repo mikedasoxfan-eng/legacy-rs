@@ -17,6 +17,7 @@ pub struct Snapshot {
 pub fn radius(e: &Entity) -> f32 {
     match e.kind {
         EntityKind::Item { .. } => 0.15,
+        EntityKind::Painting(..) | EntityKind::Fish(..) => 0.0,
         EntityKind::Arrow(_) | EntityKind::Fireball(_) | EntityKind::Lightning { .. } => 0.0,
         EntityKind::Pig { .. } | EntityKind::Sheep { .. } | EntityKind::Cow | EntityKind::Squid(_) => 0.7,
         EntityKind::Chicken { .. } => 0.3,
