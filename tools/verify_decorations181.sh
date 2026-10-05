@@ -16,11 +16,11 @@ cargo build --release -q --manifest-path "$root/Cargo.toml" -p worldgen181 -p cl
 "$oracle" signs signs.bin
 "$root/target/release/compare181" signs "$out/signs.bin"
 "$oracle" signrenderers sign-renderers.bin
-"$root/target/release/beta" --signrenderercheck "$out/sign-renderers.bin"
+beta --signrenderercheck "$out/sign-renderers.bin"
 "$oracle" paintings paintings.bin
 "$root/target/release/compare181" paintings "$out/paintings.bin"
 "$oracle" paintingrenderers painting-renderers.bin
-"$root/target/release/beta" --paintingrenderercheck "$out/painting-renderers.bin"
+beta --paintingrenderercheck "$out/painting-renderers.bin"
 "$oracle" maps maps.bin
 "$root/target/release/compare181" maps "$out/maps.bin"
 "$oracle" mapfiles mapfiles.bin
@@ -30,5 +30,5 @@ cargo build --release -q --manifest-path "$root/Cargo.toml" -p worldgen181 -p cl
 "$oracle" fishing fishing.bin
 "$root/target/release/compare181" fishing "$out/fishing.bin"
 "$oracle" fishrenderers fish-renderers.bin
-"$root/target/release/beta" --fishrenderercheck "$out/fish-renderers.bin"
+beta --fishrenderercheck "$out/fish-renderers.bin"
 echo "DECORATIONS EXACT"

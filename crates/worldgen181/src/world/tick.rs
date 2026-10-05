@@ -7,6 +7,25 @@ use crate::biome::Biome;
 use crate::block;
 use crate::math;
 
+// The JVM supplies otherwise unpinned identity hashes for colliding tree bins.
+// Only comparison replays install this stream; normal simulation uses local IDs.
+thread_local! {
+    static REPLAY_IDENTITIES: std::cell::RefCell<Option<std::vec::IntoIter<i32>>> = const { std::cell::RefCell::new(None) };
+}
+pub fn replay_chunk_identities181(identities: Vec<i32>) {
+    REPLAY_IDENTITIES.with(|stream| *stream.borrow_mut() = Some(identities.into_iter()));
+}
+pub fn finish_chunk_identity_replay181() {
+    REPLAY_IDENTITIES.with(|stream| {
+        if let Some(mut identities) = stream.borrow_mut().take() {
+            assert!(identities.next().is_none(), "unused chunk identity hashes");
+        }
+    });
+}
+fn replay_identity181() -> Option<i32> {
+    REPLAY_IDENTITIES.with(|stream| stream.borrow_mut().as_mut().map(|s| s.next().expect("chunk identity stream exhausted")))
+}
+
 pub use super::java_hash::JavaHashSet;
 
 /// `BiomeGenBase.getEnableSnow`
@@ -245,7 +264,12 @@ impl World {
             for dx in -9..=9 {
                 for dz in -9..=9 {
                     let (x, z) = (dx + cx, dz + cz);
-                    positions.insert(super::server::chunk_xz_to_int(x, z), (x, z));
+                    // ChunkCoordIntPair.hashCode in b1.8.1 folds the 64-bit key.
+                    if let Some(identity) = replay_identity181() {
+                        positions.insert_with_identity(x ^ z, identity, (x, z));
+                    } else {
+                        positions.insert(x ^ z, (x, z));
+                    }
                 }
             }
         }

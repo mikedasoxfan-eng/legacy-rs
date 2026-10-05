@@ -225,9 +225,24 @@ fn main() -> ExitCode {
             world(&w, &a[9])
         }
         Some("serverwalk") => {
+            let identities = std::fs::read(format!("{}.identities", a[7])).expect("server identity dump");
+            assert_eq!(identities.len() % 4, 0, "truncated server identity stream");
+            worldgen::world::tick::replay_chunk_identities181(identities.chunks_exact(4)
+                .map(|b| i32::from_be_bytes(b.try_into().unwrap())).collect());
+
             // seed wrand radius dir ticks java.bin: the server oracle's scripted walk.
             let dir = std::path::PathBuf::from(&a[5]);
-            let (mut w, _) = World::open(Some(&dir), p(2), p(3), true).expect("open");
+            // Pin item/drop RNGs before spawn search and population can create items.
+            // This fixture, like ServerOracle, always creates a fresh server world.
+            let mut w = World::new(p(2), p(3));
+            w.set_entity_determinism(100, 200, 0);
+            w.container_drop_random = std::array::from_fn(|i| worldgen::JavaRandom::new(700 + i as i64));
+            w.server = Some(Default::default());
+            w.storage = Some(worldgen::storage::Storage::open(&dir).expect("open server save"));
+            w.info.name = dir.file_name().unwrap().to_string_lossy().into_owned();
+            w.init_weather_and_light();
+            w.find_initial_spawn();
+            w.prepare_server_spawn_area();
             w.set_allowed_mob_spawns(false, false);
             let mut pm = worldgen::world::server::PlayerManager::new(p(4) as i32);
             let (sx, sz) = (w.spawn.0 as f64 + 0.5, w.spawn.2 as f64 + 0.5);
@@ -245,8 +260,16 @@ fn main() -> ExitCode {
             }
             pm.remove_player(&mut w);
             w.save_world(true);
+            worldgen::world::tick::finish_chunk_identity_replay181();
             println!("rust: {} chunks loaded at the end", w.chunks.len());
-            world(&w, &a[7])
+            let state = format!("time {}\nlcg {}\nsound {}\nrand {}\n",
+                w.world_time, w.update_lcg, w.sound_counter, w.rand.next_long());
+            let java = std::fs::read_to_string(format!("{}.txt", a[7])).expect("server state").replace('\r', "");
+            let result = world(&w, &a[7]);
+            if state == java { result } else {
+                eprintln!("server state differs:\n--- java\n{java}--- rust\n{state}");
+                ExitCode::FAILURE
+            }
         }
         Some("makesave") => {
             // Create a world in a save directory the way the viewer does (preload, then save).
@@ -643,6 +666,13 @@ rand {}
             world(&w, &a[9])
         }
         Some("ticks") => {
+            let identities = std::fs::read(format!("{}.identities", a[10])).expect("tick identity dump (use ticksintegration181 oracle)");
+            assert_eq!(identities.len() % 4, 0, "truncated identity stream");
+            worldgen::world::tick::replay_chunk_identities181(identities.chunks_exact(4)
+                .map(|b| i32::from_be_bytes(b.try_into().unwrap())).collect());
+            let frames = std::fs::read(format!("{}.frames", a[10])).expect("tick frame states");
+            assert_eq!(frames.len(), p(6) as usize * 24, "truncated tick frame states");
+
             let mut w = World::new(p(2), p(3));
             w.find_initial_spawn();
             w.preload_spawn_area();
@@ -691,11 +721,33 @@ rand {}
             w.set_entity_determinism(100, 200, 0);
             w.drain_events();
             let mut events = Vec::new();
-            for _ in 0..p(6) {
+            for frame in 0..p(6) {
                 w.tick();
                 w.drain_lighting();
                 worldgen::world::events::write_events(&w.drain_events(), &mut events);
+                let expected = &frames[frame as usize * 24..][..24];
+                let mut actual = Vec::with_capacity(24);
+                actual.extend_from_slice(&w.world_time.to_be_bytes());
+                actual.extend_from_slice(&w.update_lcg.to_be_bytes());
+                actual.extend_from_slice(&w.sound_counter.to_be_bytes());
+                actual.extend_from_slice(&w.rand.state().to_be_bytes());
+                if expected != actual {
+                    eprintln!("tick frame {} differs: java time={} lcg={} sound={} rand={}; rust time={} lcg={} sound={} rand={}",
+                        frame + 1, i64::from_be_bytes(expected[..8].try_into().unwrap()),
+                        i32::from_be_bytes(expected[8..12].try_into().unwrap()),
+                        i32::from_be_bytes(expected[12..16].try_into().unwrap()),
+                        i64::from_be_bytes(expected[16..24].try_into().unwrap()),
+                        w.world_time, w.update_lcg, w.sound_counter, w.rand.state());
+                    let mut dump = Vec::new();
+                    worldgen::entity::verify::append_world(&w, &mut dump);
+                    for (i, coordinate) in [w.spawn.0, w.spawn.1, w.spawn.2].iter().enumerate() {
+                        dump[8 + i * 4..12 + i * 4].copy_from_slice(&coordinate.to_le_bytes());
+                    }
+                    std::fs::write("target/tick-first-difference-rust.bin", dump).unwrap();
+                    return ExitCode::FAILURE;
+                }
             }
+            worldgen::world::tick::finish_chunk_identity_replay181();
             let java_events =
                 std::fs::read(format!("{}.events", a[10])).expect("read world events");
             let events_ok = events == java_events;
@@ -1021,10 +1073,15 @@ fn dump_chunk_list(data: &[u8]) -> Vec<(i32, i32)> {
                 1 => {
                     r.take(27 * 5);
                 }
-                _ => {
+                2 => {
                     let len = r.u8() as usize;
                     r.take(len);
                 }
+                3 => { r.take(3 * 5 + 4); }
+                4 => { r.take(9 * 5); }
+                5 => { r.take(2); }
+                6 => { r.take(5 * 4 + 2); }
+                tag => panic!("bad tile entity tag {tag}"),
             }
         }
     }

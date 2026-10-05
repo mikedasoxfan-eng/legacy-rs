@@ -9,6 +9,8 @@ pub struct TileObject {
     pub cached_block: Option<u8>,
     pub position: (i32, i32, i32),
     pub invalid: bool,
+    // World.field_34900_Q membership: removeAll after the current tile pass.
+    pub pending_unload: bool,
     // Attached objects live in Chunk.tile_entities for the inventory APIs. An
     // overwritten, deferred or unloaded object retains its own payload here.
     pub detached: Option<TileEntity>,
@@ -50,6 +52,7 @@ impl World {
                 cached_block: None,
                 position,
                 invalid: false,
+                pending_unload: false,
                 detached: Some(te),
             },
         );
@@ -210,6 +213,10 @@ impl World {
     }
     pub(crate) fn finish_tile_scan(&mut self) {
         self.scanning_tiles = false;
+        self.loaded_tile_entities.retain(|id| !self.tile_objects[id].pending_unload);
+        for object in self.tile_objects.values_mut() {
+            object.pending_unload = false;
+        }
         let pending = std::mem::take(&mut self.pending_tile_entities);
         for id in pending {
             if !self.tile_objects[&id].invalid {
