@@ -5,6 +5,15 @@ Design notes and verification coverage for each part of the port. The top-level
 which original classes it follows, how it is checked against the original bytecode, and the
 original quirks it keeps on purpose.
 
+## Versions
+
+| Document | Covers |
+|---|---|
+| [Beta 1.8.1](beta-1.8.1.md) | The Adventure Update port: layout, data folder, how progress is counted, the per-area reports |
+
+The subsystem notes below were written for Beta 1.7.3; the Beta 1.8.1 crates are ported
+forward from the same code and keep the same design.
+
 ## Subsystems
 
 | Document | Covers |
@@ -31,5 +40,6 @@ original quirks it keeps on purpose.
 ## Verification
 
 Every document's claims are backed by `tools/verify.sh` (the simulation and renderer inputs,
-bit for bit) and `tools/verify_gui.sh` (screens, pixel for pixel, against the real client).
+bit for bit) and `tools/verify_gui.sh` (screens, pixel for pixel, against the real client);
+for Beta 1.8.1, `tools/verify181.sh` and `tools/verify_gui181.sh`.
 See [How exact is exact?](../README.md#how-exact-is-exact) for how the oracle works.
