@@ -663,6 +663,7 @@
  "redstone: repeaters": true,
  "redstone: tile_lifecycle": true,
  "remaining entity renderers and GUI item geometry": true,
+ "render lists (RenderList: camera offset kept in double, near, far and at the border)": true,
  "renderer window sizes and Java negative-coordinate wrapping": true,
  "respawn: 3 1 bed": true,
  "respawn: 3 1 plain": true,

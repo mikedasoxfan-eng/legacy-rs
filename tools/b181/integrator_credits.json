@@ -87,5 +87,6 @@
  "WorldProvider",
  "WorldProviderHell",
  "WorldProviderSky",
- "PlayerControllerSP"
+ "PlayerControllerSP",
+ "RenderList"
 ]

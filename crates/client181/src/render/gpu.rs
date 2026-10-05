@@ -1030,8 +1030,8 @@ impl Gpu {
         let origins: Vec<[f32; 4]> = visible
             .iter()
             .map(|&(cx, cz)| {
-                let o = DVec3::new(cx as f64 * 16.0, 0.0, cz as f64 * 16.0) - cam;
-                [o.x as f32, o.y as f32, o.z as f32, 0.0]
+                let o = super::render_list::chunk_origin(cx * 16, 0, cz * 16, cam.to_array());
+                [o[0], o[1], o[2], 0.0]
             })
             .collect();
         if !origins.is_empty() {

@@ -14,6 +14,7 @@ pub mod item_fx;
 pub mod texture_check;
 pub mod particles;
 pub mod particle_check;
+pub mod render_list;
 pub mod gpu;
 pub mod map;
 pub mod player_view;
