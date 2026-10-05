@@ -12,3 +12,11 @@
 /screenshots/
 /texturepacks/
 options.txt
+/tools/retromcp-b181/
+/tools/oracle181/build/
+/tools/oracle181/build_try/
+/tools/oracle181/generated/
+/tools/oracle181/out/
+/tools/oracle181/server/build/
+/tools/oracle181/gui/build/
+/tools/oracle181/visual_build/

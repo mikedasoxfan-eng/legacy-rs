@@ -1,0 +1,242 @@
+properties
+# Moving collision/selection boxes for every facing and interpolation step.
+remove 0 90 0
+remove 1 90 0
+place 1 89 0 1 0
+remove 0 89 0
+remove 0 88 0
+remove 0 87 0
+place 0 89 0 35 5
+place 0 90 0 29 0
+place 1 90 0 69 5
+use 1 90 0
+boxes 0 90 0
+boxes 0 89 0
+boxes 0 88 0
+tick 1
+boxes 0 90 0
+boxes 0 89 0
+boxes 0 88 0
+tick 1
+boxes 0 90 0
+boxes 0 89 0
+boxes 0 88 0
+tick 1
+boxes 0 90 0
+boxes 0 89 0
+boxes 0 88 0
+tick 1
+use 1 90 0
+boxes 0 90 0
+boxes 0 89 0
+tick 1
+boxes 0 90 0
+boxes 0 89 0
+tick 1
+boxes 0 90 0
+boxes 0 89 0
+tick 1
+boxes 0 90 0
+boxes 0 89 0
+tick 1
+events
+remove 0 90 0
+remove 1 90 0
+place 1 89 0 1 0
+remove 0 91 0
+remove 0 92 0
+remove 0 93 0
+place 0 91 0 35 5
+place 0 90 0 29 1
+place 1 90 0 69 5
+use 1 90 0
+boxes 0 90 0
+boxes 0 91 0
+boxes 0 92 0
+tick 1
+boxes 0 90 0
+boxes 0 91 0
+boxes 0 92 0
+tick 1
+boxes 0 90 0
+boxes 0 91 0
+boxes 0 92 0
+tick 1
+boxes 0 90 0
+boxes 0 91 0
+boxes 0 92 0
+tick 1
+use 1 90 0
+boxes 0 90 0
+boxes 0 91 0
+tick 1
+boxes 0 90 0
+boxes 0 91 0
+tick 1
+boxes 0 90 0
+boxes 0 91 0
+tick 1
+boxes 0 90 0
+boxes 0 91 0
+tick 1
+events
+remove 0 90 0
+remove 1 90 0
+place 1 89 0 1 0
+remove 0 90 -1
+remove 0 90 -2
+remove 0 90 -3
+place 0 90 -1 35 5
+place 0 90 0 29 2
+place 1 90 0 69 5
+use 1 90 0
+boxes 0 90 0
+boxes 0 90 -1
+boxes 0 90 -2
+tick 1
+boxes 0 90 0
+boxes 0 90 -1
+boxes 0 90 -2
+tick 1
+boxes 0 90 0
+boxes 0 90 -1
+boxes 0 90 -2
+tick 1
+boxes 0 90 0
+boxes 0 90 -1
+boxes 0 90 -2
+tick 1
+use 1 90 0
+boxes 0 90 0
+boxes 0 90 -1
+tick 1
+boxes 0 90 0
+boxes 0 90 -1
+tick 1
+boxes 0 90 0
+boxes 0 90 -1
+tick 1
+boxes 0 90 0
+boxes 0 90 -1
+tick 1
+events
+remove 0 90 0
+remove 1 90 0
+place 1 89 0 1 0
+remove 0 90 1
+remove 0 90 2
+remove 0 90 3
+place 0 90 1 35 5
+place 0 90 0 29 3
+place 1 90 0 69 5
+use 1 90 0
+boxes 0 90 0
+boxes 0 90 1
+boxes 0 90 2
+tick 1
+boxes 0 90 0
+boxes 0 90 1
+boxes 0 90 2
+tick 1
+boxes 0 90 0
+boxes 0 90 1
+boxes 0 90 2
+tick 1
+boxes 0 90 0
+boxes 0 90 1
+boxes 0 90 2
+tick 1
+use 1 90 0
+boxes 0 90 0
+boxes 0 90 1
+tick 1
+boxes 0 90 0
+boxes 0 90 1
+tick 1
+boxes 0 90 0
+boxes 0 90 1
+tick 1
+boxes 0 90 0
+boxes 0 90 1
+tick 1
+events
+remove 0 90 0
+remove 0 90 1
+place 0 89 1 1 0
+remove -1 90 0
+remove -2 90 0
+remove -3 90 0
+place -1 90 0 35 5
+place 0 90 0 29 4
+place 0 90 1 69 5
+use 0 90 1
+boxes 0 90 0
+boxes -1 90 0
+boxes -2 90 0
+tick 1
+boxes 0 90 0
+boxes -1 90 0
+boxes -2 90 0
+tick 1
+boxes 0 90 0
+boxes -1 90 0
+boxes -2 90 0
+tick 1
+boxes 0 90 0
+boxes -1 90 0
+boxes -2 90 0
+tick 1
+use 0 90 1
+boxes 0 90 0
+boxes -1 90 0
+tick 1
+boxes 0 90 0
+boxes -1 90 0
+tick 1
+boxes 0 90 0
+boxes -1 90 0
+tick 1
+boxes 0 90 0
+boxes -1 90 0
+tick 1
+events
+remove 0 90 0
+remove 0 90 1
+place 0 89 1 1 0
+remove 1 90 0
+remove 2 90 0
+remove 3 90 0
+place 1 90 0 35 5
+place 0 90 0 29 5
+place 0 90 1 69 5
+use 0 90 1
+boxes 0 90 0
+boxes 1 90 0
+boxes 2 90 0
+tick 1
+boxes 0 90 0
+boxes 1 90 0
+boxes 2 90 0
+tick 1
+boxes 0 90 0
+boxes 1 90 0
+boxes 2 90 0
+tick 1
+boxes 0 90 0
+boxes 1 90 0
+boxes 2 90 0
+tick 1
+use 0 90 1
+boxes 0 90 0
+boxes 1 90 0
+tick 1
+boxes 0 90 0
+boxes 1 90 0
+tick 1
+boxes 0 90 0
+boxes 1 90 0
+tick 1
+boxes 0 90 0
+boxes 1 90 0
+tick 1
+events

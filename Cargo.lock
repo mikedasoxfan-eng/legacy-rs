@@ -288,6 +288,7 @@ version = "1.0.0"
 dependencies = [
  "bytemuck",
  "chrono",
+ "client181",
  "cpal",
  "glam",
  "lewton",
@@ -298,6 +299,24 @@ dependencies = [
  "winit",
  "winresource",
  "worldgen",
+ "zip",
+]
+
+[[package]]
+name = "client181"
+version = "1.0.0"
+dependencies = [
+ "bytemuck",
+ "chrono",
+ "cpal",
+ "glam",
+ "lewton",
+ "png",
+ "pollster",
+ "wgpu",
+ "windows-sys 0.61.2",
+ "winit",
+ "worldgen181",
  "zip",
 ]
 
@@ -2797,6 +2816,13 @@ checksum = "1ebf944e87a7c253233ad6766e082e3cd714b5d03812acc24c318f549614536e"
 
 [[package]]
 name = "worldgen"
+version = "1.0.0"
+dependencies = [
+ "flate2",
+]
+
+[[package]]
+name = "worldgen181"
 version = "1.0.0"
 dependencies = [
  "flate2",

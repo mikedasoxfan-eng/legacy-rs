@@ -1,0 +1,23 @@
+[package]
+name = "worldgen181"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+repository.workspace = true
+publish.workspace = true
+description = "Bit-exact port of the Minecraft Beta 1.8.1 simulation: world generation, ticking, entities, the player, saves"
+autobins = false
+
+[lib]
+name = "worldgen"
+
+[[bin]]
+name = "compare181"
+path = "src/bin/compare.rs"
+
+[[bin]]
+name = "container_compare181"
+path = "src/bin/container_compare.rs"
+
+[dependencies]
+flate2 = "1.1.10"

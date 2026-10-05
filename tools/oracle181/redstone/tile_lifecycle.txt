@@ -1,0 +1,154 @@
+# Original Java object-list lifecycle, including a rejected Chunk insertion.
+place 0 80 0 25 0
+place 1 80 0 25 0
+probe 0 80 0 0 1 80 0 25
+state
+scan
+state
+lookup 1 80 0
+lookup 1 80 0
+state
+scan
+state
+remove 0 80 0
+remove 1 80 0
+scan
+state
+place 0 80 0 25 0
+place 1 80 0 25 0
+probe 0 80 0 1 1 80 0 25
+state
+scan
+state
+lookup 1 80 0
+lookup 1 80 0
+state
+scan
+state
+remove 0 80 0
+remove 1 80 0
+scan
+state
+place 0 80 0 25 0
+place 1 80 0 25 0
+probe 0 80 0 2 1 80 0 25
+state
+scan
+state
+lookup 1 80 0
+lookup 1 80 0
+state
+scan
+state
+remove 0 80 0
+remove 1 80 0
+scan
+state
+place 0 80 0 25 0
+place 1 80 0 25 0
+probe 0 80 0 3 1 80 0 25
+state
+scan
+state
+lookup 1 80 0
+lookup 1 80 0
+state
+scan
+state
+remove 0 80 0
+remove 1 80 0
+scan
+state
+place 0 80 0 25 0
+place 1 80 0 25 0
+probe 0 80 0 4 1 80 0 25
+state
+scan
+state
+lookup 1 80 0
+lookup 1 80 0
+state
+scan
+state
+remove 0 80 0
+remove 1 80 0
+scan
+state
+place 1 80 0 1 0
+place 0 80 0 25 0
+probe 0 80 0 1 1 80 0 12
+scan
+state
+lookup 1 80 0
+state
+scan
+state
+remove 0 80 0
+remove 1 80 0
+place 2 80 0 25 0
+setnote 2 80 0 -128
+state
+reload 2 80 0
+state
+remove 2 80 0
+scan
+place 2 80 0 25 0
+setnote 2 80 0 -1
+state
+reload 2 80 0
+state
+remove 2 80 0
+scan
+place 2 80 0 25 0
+setnote 2 80 0 0
+state
+reload 2 80 0
+state
+remove 2 80 0
+scan
+place 2 80 0 25 0
+setnote 2 80 0 24
+state
+reload 2 80 0
+state
+remove 2 80 0
+scan
+place 2 80 0 25 0
+setnote 2 80 0 25
+state
+reload 2 80 0
+state
+remove 2 80 0
+scan
+place 2 80 0 25 0
+setnote 2 80 0 127
+state
+reload 2 80 0
+state
+remove 2 80 0
+scan
+place 2 80 0 25 0
+use 2 80 0
+chunkreload 0 0
+state
+scan
+state
+lookup 2 80 0
+lookup 2 80 0
+state
+scan
+state
+
+# Unload/load the same Chunk object, including duplicate invalid list entries.
+remove 2 80 0
+scan
+place 3 80 0 25 0
+use 3 80 0
+chunkcycle 0 0
+state
+scan
+state
+lookup 3 80 0
+state
+scan
+state

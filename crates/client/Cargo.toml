@@ -24,6 +24,7 @@ wgpu = "30.0.1"
 windows-sys = { version = "0.61", features = ["Win32_System_ProcessStatus", "Win32_System_SystemInformation", "Win32_System_Threading"] }
 winit = "0.30.13"
 worldgen = { path = "../worldgen" }
+client181 = { path = "../client181" }
 zip = { version = "8.6.0", default-features = false, features = ["deflate"] }
 
 [build-dependencies]

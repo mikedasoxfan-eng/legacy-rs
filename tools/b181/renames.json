@@ -1,0 +1,2758 @@
+{
+"Block": [
+"this",
+1
+],
+"Chunk": [
+"void",
+1
+],
+"Entity": [
+"DamageSource",
+16
+],
+"EntityLiving": [
+"Entity",
+1
+],
+"GL_BYTE": [
+"GL_UNSIGNED_BYTE",
+1
+],
+"GL_ONE_MINUS_SRC_ALPHA": [
+"GL_ONE",
+1
+],
+"GL_SRC_ALPHA": [
+"GL_ONE",
+1
+],
+"GuiTextField": [
+"GuiSlotServer",
+1
+],
+"HashMap": [
+"MCHash",
+4
+],
+"IOException": [
+"Exception",
+1
+],
+"Integer": [
+"Long",
+1
+],
+"Map": [
+"PlayerList",
+2
+],
+"Material": [
+"MaterialWeb",
+1
+],
+"NoiseGeneratorOctaves2": [
+"GenLayer",
+3
+],
+"Packet9Respawn": [
+"Packet43Experience",
+1
+],
+"TickUpdates": [
+"tickUpdates",
+2
+],
+"Vec3D": [
+"float",
+1
+],
+"blockBed": [
+"bed",
+7
+],
+"boatCurrentDamage": [
+"damageTaken",
+8
+],
+"boatRockDirection": [
+"forwardDirection",
+5
+],
+"boatTimeSinceHit": [
+"timeSinceHit",
+7
+],
+"builtSnow": [
+"craftedSnow",
+3
+],
+"burnTime": [
+"lastBurnTime",
+3
+],
+"byte": [
+"int",
+1
+],
+"cache": [
+"regionsByFilename",
+6
+],
+"cameraPitch": [
+"prevCameraPitch",
+2
+],
+"canBlockBeRainedOn": [
+"canLightningStrikeAt",
+8
+],
+"consumeInventoryItem": [
+"func_35157_d",
+1
+],
+"cookTime": [
+"lastCookTime",
+3
+],
+"corners": [
+"field_35978_r",
+8
+],
+"dimension": [
+"field_35249_d",
+3
+],
+"disableNeighborNotifyOnMetadataChange": [
+"setRequiresSelfNotify",
+47
+],
+"double": [
+"float",
+6
+],
+"drawDefaultBackground": [
+"close",
+1
+],
+"dyeColors": [
+"dyeColorNames",
+3
+],
+"exploder": [
+"field_35548_k",
+1
+],
+"false": [
+"true",
+1
+],
+"feather": [
+"field_35415_bn",
+1
+],
+"field_1019_F": [
+"cloudColour",
+7
+],
+"field_1053_F": [
+"entitySpawnQueue",
+6
+],
+"field_1055_D": [
+"entityHashSet",
+4
+],
+"field_1057_z": [
+"blocksToReceive",
+7
+],
+"field_1064_b": [
+"isInTestMode",
+2
+],
+"field_1072_e": [
+"curBlockZ",
+3
+],
+"field_1073_d": [
+"curBlockY",
+3
+],
+"field_1074_c": [
+"curBlockX",
+3
+],
+"field_1193_a": [
+"allOSes",
+6
+],
+"field_1201_b": [
+"posY",
+3
+],
+"field_1202_a": [
+"posX",
+3
+],
+"field_1203_g": [
+"worldClient",
+2
+],
+"field_1204_f": [
+"metadata",
+2
+],
+"field_1205_e": [
+"blockID",
+2
+],
+"field_1206_d": [
+"acceptCountdown",
+2
+],
+"field_1207_c": [
+"posZ",
+3
+],
+"field_1270_b": [
+"unusedCreeperHeadwear",
+3
+],
+"field_1353_d": [
+"chunkZ",
+5
+],
+"field_1354_c": [
+"chunkX",
+5
+],
+"field_15235_a": [
+"blockIndex",
+5
+],
+"field_1677_b": [
+"stepSoundVolume",
+3
+],
+"field_1678_a": [
+"stepSoundName",
+4
+],
+"field_1679_c": [
+"stepSoundPitch",
+3
+],
+"field_20028_b": [
+"shortWindowId",
+7
+],
+"field_20052_f": [
+"inGround",
+6
+],
+"field_20053_e": [
+"inTile",
+4
+],
+"field_20054_d": [
+"zTile",
+4
+],
+"field_20055_c": [
+"yTile",
+4
+],
+"field_20056_b": [
+"xTile",
+4
+],
+"field_20057_a": [
+"shake",
+6
+],
+"field_20082_i": [
+"allowedCharacters",
+2
+],
+"field_20121_g": [
+"crafters",
+5
+],
+"field_20123_d": [
+"inventoryItemStacks",
+4
+],
+"field_20125_a": [
+"lowerChestInventory",
+3
+],
+"field_20130_j": [
+"posZ",
+3
+],
+"field_20131_i": [
+"posY",
+3
+],
+"field_20132_h": [
+"posX",
+3
+],
+"field_20133_c": [
+"worldObj",
+4
+],
+"field_20914_E": [
+"entityList",
+6
+],
+"field_21031_b": [
+"blocksNeedingUpdate",
+10
+],
+"field_21048_b": [
+"metadata",
+4
+],
+"field_21065_a": [
+"noteParticleScale",
+3
+],
+"field_21104_b": [
+"inventoryWidth",
+4
+],
+"field_21149_a": [
+"tileEntityDispenser",
+3
+],
+"field_22023_b": [
+"repeaterState",
+4
+],
+"field_22024_a": [
+"repeaterTorchOffset",
+9
+],
+"field_22038_b": [
+"fowardMovement",
+3
+],
+"field_22039_a": [
+"strafeMovement",
+3
+],
+"field_22040_f": [
+"yawRotation",
+3
+],
+"field_22041_e": [
+"pitchRotation",
+3
+],
+"field_22042_d": [
+"isInJump",
+3
+],
+"field_22044_b": [
+"bedX",
+4
+],
+"field_22045_a": [
+"entityID",
+4
+],
+"field_22047_d": [
+"bedZ",
+4
+],
+"field_22048_c": [
+"bedY",
+4
+],
+"field_22065_l": [
+"recordIsPlaying",
+3
+],
+"field_22105_l": [
+"buttonText2",
+3
+],
+"field_22106_k": [
+"buttonText1",
+3
+],
+"field_22108_k": [
+"videoOptions",
+1
+],
+"field_22110_h": [
+"parentGuiScreen",
+3
+],
+"field_22111_h": [
+"field_35342_d",
+1
+],
+"field_22112_a": [
+"parentGuiScreen",
+4
+],
+"field_22113_i": [
+"worldName",
+4
+],
+"field_22114_h": [
+"theGuiTextField",
+10
+],
+"field_22131_a": [
+"parentGuiScreen",
+3
+],
+"field_22135_k": [
+"relevantOptions",
+1
+],
+"field_22167_e": [
+"field_35720_f",
+1
+],
+"field_22189_a": [
+"dataFilenamePattern",
+3
+],
+"field_22214_h": [
+"lastModified",
+2
+],
+"field_22217_e": [
+"chunkTimestamps",
+3
+],
+"field_22220_z": [
+"camRoll",
+3
+],
+"field_22221_y": [
+"prevDebugCamFOV",
+2
+],
+"field_22222_x": [
+"debugCamFOV",
+2
+],
+"field_22223_w": [
+"prevDebugCamPitch",
+3
+],
+"field_22224_v": [
+"debugCamPitch",
+3
+],
+"field_22225_u": [
+"prevDebugCamYaw",
+3
+],
+"field_22226_t": [
+"debugCamYaw",
+3
+],
+"field_22228_r": [
+"thirdPersonDistance",
+3
+],
+"field_22230_A": [
+"prevCamRoll",
+3
+],
+"field_22273_E": [
+"debugCamEnable",
+4
+],
+"field_22279_b": [
+"footInvisibleFaceRemap",
+1
+],
+"field_22283_b": [
+"chunkX",
+3
+],
+"field_22284_a": [
+"regionFile",
+3
+],
+"field_22285_c": [
+"chunkZ",
+3
+],
+"field_22325_b": [
+"xChunk",
+6
+],
+"field_22326_a": [
+"chunkFile",
+3
+],
+"field_22327_c": [
+"yChunk",
+6
+],
+"field_22333_Z": [
+"aoGrassXYZNCP",
+4
+],
+"field_22334_Y": [
+"aoGrassXYZPCP",
+5
+],
+"field_22335_X": [
+"aoGrassXYZNCN",
+3
+],
+"field_22336_W": [
+"aoGrassXYZCPP",
+5
+],
+"field_22337_V": [
+"aoGrassXYZNPC",
+4
+],
+"field_22338_U": [
+"aoGrassXYZPPC",
+5
+],
+"field_22339_T": [
+"aoGrassXYZCPN",
+4
+],
+"field_22352_G": [
+"field_35946_aj",
+6
+],
+"field_22353_F": [
+"aoLightValueScratchXZPP",
+11
+],
+"field_22354_E": [
+"aoLightValueScratchXZNP",
+10
+],
+"field_22355_ae": [
+"aoGrassXYZCNP",
+4
+],
+"field_22356_D": [
+"aoLightValueScratchXZPN",
+10
+],
+"field_22357_ad": [
+"aoGrassXYZNNC",
+3
+],
+"field_22358_C": [
+"aoLightValueScratchXZNN",
+9
+],
+"field_22359_ac": [
+"aoGrassXYZPNC",
+4
+],
+"field_22360_B": [
+"aoLightValueScratchXYZPPP",
+10
+],
+"field_22361_ab": [
+"aoGrassXYZCNN",
+3
+],
+"field_22362_A": [
+"aoLightValueScratchYZPP",
+6
+],
+"field_22363_aa": [
+"aoGrassXYZPCN",
+4
+],
+"field_22364_z": [
+"aoLightValueScratchXYPP",
+8
+],
+"field_22365_y": [
+"aoLightValueScratchXYZPPN",
+10
+],
+"field_22366_x": [
+"aoLightValueScratchYZPN",
+6
+],
+"field_22367_w": [
+"aoLightValueScratchXYZNPP",
+10
+],
+"field_22368_v": [
+"aoLightValueScratchXYNP",
+7
+],
+"field_22369_u": [
+"aoLightValueScratchXYZNPN",
+9
+],
+"field_22370_t": [
+"aoLightValueScratchXYZPNP",
+10
+],
+"field_22371_s": [
+"aoLightValueScratchXYPN",
+8
+],
+"field_22372_r": [
+"aoLightValueScratchXYZPNN",
+9
+],
+"field_22373_q": [
+"aoLightValueScratchYZNP",
+6
+],
+"field_22374_p": [
+"aoLightValueScratchYZNN",
+6
+],
+"field_22375_o": [
+"aoLightValueScratchXYZNNP",
+9
+],
+"field_22376_n": [
+"aoLightValueScratchXYNN",
+7
+],
+"field_22377_m": [
+"aoLightValueScratchXYZNNN",
+7
+],
+"field_22392_a": [
+"folderRegexPattern",
+2
+],
+"field_25019_b": [
+"bedState",
+4
+],
+"field_25020_a": [
+"bedChat",
+2
+],
+"field_25022_a": [
+"particleScaleOverTime",
+3
+],
+"field_25062_c": [
+"isEditable",
+2
+],
+"field_25083_f": [
+"achievementTime",
+4
+],
+"field_25084_e": [
+"achievementStatName",
+5
+],
+"field_25085_d": [
+"achievementGetLocalText",
+4
+],
+"field_25089_b": [
+"mc",
+3
+],
+"field_25090_a": [
+"particles",
+6
+],
+"field_25091_h": [
+"guiParticles",
+5
+],
+"field_25120_b": [
+"scaledHeightD",
+7
+],
+"field_25121_a": [
+"scaledWidthD",
+7
+],
+"field_25128_s": [
+"rand",
+1
+],
+"field_25129_r": [
+"prevTintAlpha",
+3
+],
+"field_25130_q": [
+"prevTintBlue",
+3
+],
+"field_25131_p": [
+"prevTintGreen",
+3
+],
+"field_25132_o": [
+"prevTintRed",
+3
+],
+"field_25133_n": [
+"tintAlpha",
+8
+],
+"field_25134_m": [
+"tintBlue",
+3
+],
+"field_25135_l": [
+"tintGreen",
+3
+],
+"field_25136_k": [
+"tintRed",
+3
+],
+"field_25137_j": [
+"timeLimit",
+3
+],
+"field_25138_i": [
+"timeTick",
+3
+],
+"field_25139_h": [
+"isDead",
+3
+],
+"field_25140_g": [
+"accelScale",
+3
+],
+"field_25141_f": [
+"velocityY",
+4
+],
+"field_25142_e": [
+"velocityX",
+3
+],
+"field_25143_d": [
+"prevPosY",
+3
+],
+"field_25144_c": [
+"prevPosX",
+3
+],
+"field_25145_b": [
+"posY",
+4
+],
+"field_25146_a": [
+"posX",
+4
+],
+"field_25158_z": [
+"objectCraftStats",
+13
+],
+"field_25164_E": [
+"itemStatsInitialized",
+4
+],
+"field_25166_D": [
+"blockStatsInitialized",
+4
+],
+"field_25169_C": [
+"oneShotStats",
+5
+],
+"field_25170_B": [
+"objectBreakStats",
+8
+],
+"field_25172_A": [
+"objectUseStats",
+12
+],
+"field_25185_d": [
+"objectMineStats",
+4
+],
+"field_26902_a": [
+"type",
+3
+],
+"field_26903_b": [
+"numberFormat",
+2
+],
+"field_26904_c": [
+"decimalFormat",
+2
+],
+"field_27017_a": [
+"snowDigParticleScale",
+3
+],
+"field_27019_p": [
+"currentFootSteps",
+3
+],
+"field_27028_b": [
+"lightningState",
+9
+],
+"field_27029_a": [
+"boltVertex",
+5
+],
+"field_27030_c": [
+"boltLivingTime",
+4
+],
+"field_27031_a": [
+"escapedString",
+3
+],
+"field_27050_f": [
+"holdingShift",
+4
+],
+"field_27051_b": [
+"amount",
+4
+],
+"field_27052_a": [
+"statisticId",
+4
+],
+"field_27053_b": [
+"posX",
+6
+],
+"field_27054_a": [
+"entityID",
+5
+],
+"field_27055_e": [
+"isLightningBolt",
+5
+],
+"field_27056_d": [
+"posZ",
+6
+],
+"field_27057_c": [
+"posY",
+6
+],
+"field_27061_b": [
+"childJsonNodeSelector",
+6
+],
+"field_27062_a": [
+"parentJsonNodeSelector",
+7
+],
+"field_27069_a": [
+"index",
+6
+],
+"field_27085_k": [
+"distanceStatType",
+10
+],
+"field_27086_j": [
+"timeStatType",
+2
+],
+"field_27087_i": [
+"simpleStatType",
+2
+],
+"field_27088_g": [
+"isIndependent",
+6
+],
+"field_27103_i": [
+"haveAchiement",
+4
+],
+"field_27113_p": [
+"guiMapY",
+9
+],
+"field_27114_o": [
+"guiMapX",
+9
+],
+"field_27117_l": [
+"mouseY",
+3
+],
+"field_27118_j": [
+"mouseX",
+3
+],
+"field_27119_i": [
+"achievementsPaneHeight",
+5
+],
+"field_27120_x": [
+"statFileWriter",
+12
+],
+"field_27121_a": [
+"achievementsPaneWidth",
+5
+],
+"field_27122_w": [
+"isMouseButtonDown",
+5
+],
+"field_27123_v": [
+"guiMapRight",
+5
+],
+"field_27124_u": [
+"guiMapBottom",
+5
+],
+"field_27125_t": [
+"guiMapLeft",
+5
+],
+"field_27126_s": [
+"guiMapTop",
+5
+],
+"field_27150_m": [
+"slotItem",
+5
+],
+"field_27151_l": [
+"slotGeneral",
+5
+],
+"field_27152_a": [
+"parentGui",
+3
+],
+"field_27153_j": [
+"renderItem",
+2
+],
+"field_27154_i": [
+"statsTitle",
+3
+],
+"field_27155_p": [
+"selectedSlot",
+7
+],
+"field_27156_o": [
+"statFileWriter",
+3
+],
+"field_27157_n": [
+"slotBlock",
+5
+],
+"field_27168_F": [
+"lastLightningBolt",
+9
+],
+"field_27190_b": [
+"row",
+3
+],
+"field_27191_a": [
+"column",
+3
+],
+"field_27221_a": [
+"elements",
+6
+],
+"field_27227_b": [
+"TRUE",
+2
+],
+"field_27228_a": [
+"NULL",
+2
+],
+"field_27229_d": [
+"jsonNodeType",
+3
+],
+"field_27230_c": [
+"FALSE",
+2
+],
+"field_27231_a": [
+"syncher",
+7
+],
+"field_27232_b": [
+"syncher",
+4
+],
+"field_27242_a": [
+"elementBuilders",
+3
+],
+"field_27282_b": [
+"numRows",
+4
+],
+"field_27292_a": [
+"fieldBuilder",
+3
+],
+"field_27294_a": [
+"nodeBuilder",
+3
+],
+"field_27296_a": [
+"nodeBuilder",
+3
+],
+"field_27298_b": [
+"slotStatsBlockGUI",
+8
+],
+"field_27299_a": [
+"statsGUI",
+2
+],
+"field_27308_a": [
+"nodeBuilder",
+3
+],
+"field_27341_a": [
+"enumJsonNodeTypeMappingArray",
+9
+],
+"field_27359_a": [
+"valueGetter",
+6
+],
+"field_27372_b": [
+"slotStatsItemGUI",
+8
+],
+"field_27373_a": [
+"statsGUI",
+2
+],
+"field_27428_k": [
+"theSession",
+3
+],
+"field_27429_j": [
+"oldFile",
+4
+],
+"field_27430_i": [
+"unsentOldFile",
+6
+],
+"field_27431_h": [
+"tempFile",
+4
+],
+"field_27432_g": [
+"unsentTempFile",
+6
+],
+"field_27433_f": [
+"dataFile",
+4
+],
+"field_27434_e": [
+"unsentDataFile",
+7
+],
+"field_27435_d": [
+"statFileWriter",
+4
+],
+"field_27438_a": [
+"isBusy",
+10
+],
+"field_28019_h": [
+"inData",
+5
+],
+"field_28032_t": [
+"requiresSelfNotify",
+3
+],
+"field_28048_a": [
+"field_35244_b",
+5
+],
+"field_28049_b": [
+"auxData",
+4
+],
+"field_28050_a": [
+"sfxID",
+4
+],
+"field_28051_e": [
+"posZ",
+4
+],
+"field_28052_d": [
+"posY",
+4
+],
+"field_28053_c": [
+"posX",
+4
+],
+"field_28054_b": [
+"uniqueID",
+5
+],
+"field_28055_a": [
+"itemID",
+4
+],
+"field_28056_c": [
+"itemData",
+7
+],
+"field_28066_g": [
+"worldObj",
+6
+],
+"field_28076_u": [
+"caveGen",
+2
+],
+"field_28077_t": [
+"stoneNoise",
+2
+],
+"field_28078_s": [
+"unusedGravelNoise",
+1
+],
+"field_28079_r": [
+"unusedSandNoise",
+1
+],
+"field_28081_p": [
+"worldObj",
+7
+],
+"field_28087_j": [
+"random",
+46
+],
+"field_28108_z": [
+"mapStorage",
+9
+],
+"field_28109_a": [
+"networkManager",
+5
+],
+"field_28118_b": [
+"mapStorage",
+2
+],
+"field_28131_f": [
+"mapItemRenderer",
+2
+],
+"field_28133_I": [
+"renderEndNanoTime",
+6
+],
+"field_28135_a": [
+"anaglyphEnable",
+5
+],
+"field_28146_a": [
+"mc",
+3
+],
+"field_28158_b": [
+"bufferedImage",
+4
+],
+"field_28159_a": [
+"intArray",
+5
+],
+"field_28160_d": [
+"fontRenderer",
+3
+],
+"field_28161_c": [
+"gameSettings",
+3
+],
+"field_28191_a": [
+"saveHandler",
+10
+],
+"field_30900_E": [
+"addedTileEntityList",
+7
+],
+"field_31002_bk": [
+"dyeColors",
+1
+],
+"field_31007_h": [
+"tileEntityInvalid",
+2
+],
+"field_31020_l": [
+"lastProgress",
+9
+],
+"field_31022_k": [
+"progress",
+9
+],
+"field_31024_i": [
+"extending",
+10
+],
+"field_31025_c": [
+"storedOrientation",
+10
+],
+"field_31048_b": [
+"ignoreUpdates",
+10
+],
+"field_31055_L": [
+"scanningTileEntities",
+6
+],
+"field_31056_b": [
+"offsetsXForSide",
+20
+],
+"field_31058_d": [
+"offsetsZForSide",
+20
+],
+"field_31059_c": [
+"offsetsYForSide",
+20
+],
+"field_31067_B": [
+"piston",
+4
+],
+"field_31068_A": [
+"web",
+2
+],
+"field_31082_l": [
+"uvRotateBottom",
+15
+],
+"field_31083_k": [
+"uvRotateTop",
+15
+],
+"field_31084_j": [
+"uvRotateNorth",
+15
+],
+"field_31085_i": [
+"uvRotateSouth",
+15
+],
+"field_31086_h": [
+"uvRotateWest",
+15
+],
+"field_31087_g": [
+"uvRotateEast",
+15
+],
+"field_31088_b": [
+"useInventoryTint",
+3
+],
+"field_320_a": [
+"spawnID",
+4
+],
+"field_4082_a": [
+"blockInstance",
+4
+],
+"field_4083_a": [
+"portalParticleScale",
+3
+],
+"field_4084_r": [
+"portalPosZ",
+3
+],
+"field_4085_q": [
+"portalPosY",
+3
+],
+"field_4086_p": [
+"portalPosX",
+3
+],
+"field_4161_q": [
+"gravelNoise",
+2
+],
+"field_4192_g": [
+"field_34901_d",
+1
+],
+"field_4193_f": [
+"field_34902_c",
+1
+],
+"field_4194_e": [
+"field_34903_b",
+1
+],
+"field_4232_a": [
+"random",
+2
+],
+"field_4262_q": [
+"unused",
+1
+],
+"field_468_a": [
+"glowing",
+3
+],
+"field_587_e": [
+"latestSoundID",
+5
+],
+"field_671_a": [
+"smokeParticleScale",
+3
+],
+"field_673_a": [
+"reddustParticleScale",
+3
+],
+"field_674_a": [
+"lavaParticleScale",
+3
+],
+"field_677_q": [
+"maxAge",
+4
+],
+"field_678_p": [
+"age",
+4
+],
+"field_695_c": [
+"tickCounter1",
+4
+],
+"field_774_f": [
+"cameraYaw",
+9
+],
+"field_775_e": [
+"prevCameraYaw",
+6
+],
+"field_868_o": [
+"leafNodes",
+9
+],
+"field_869_n": [
+"leafDistanceLimit",
+6
+],
+"field_870_m": [
+"heightLimitLimit",
+3
+],
+"field_871_l": [
+"trunkSize",
+2
+],
+"field_876_g": [
+"heightAttenuation",
+2
+],
+"field_878_e": [
+"heightLimit",
+15
+],
+"field_881_b": [
+"rand",
+5
+],
+"field_882_a": [
+"otherCoordPairs",
+7
+],
+"field_902_u": [
+"caveGenerator",
+2
+],
+"field_9242_w": [
+"playerModelBiped",
+1
+],
+"field_9328_R": [
+"cameraPitch",
+4
+],
+"field_9351_C": [
+"entityType",
+2
+],
+"field_9386_l": [
+"velocityZ",
+3
+],
+"field_9387_k": [
+"velocityY",
+3
+],
+"field_9388_j": [
+"velocityX",
+3
+],
+"field_9389_i": [
+"boatPitch",
+3
+],
+"field_9390_h": [
+"boatYaw",
+3
+],
+"field_9391_g": [
+"boatZ",
+3
+],
+"field_9392_f": [
+"boatY",
+3
+],
+"field_9393_e": [
+"boatX",
+3
+],
+"field_9395_l": [
+"ticksInAir",
+4
+],
+"field_9396_k": [
+"ticksAlive",
+4
+],
+"field_9397_j": [
+"shootingEntity",
+3
+],
+"field_9398_i": [
+"inGround",
+5
+],
+"field_9399_h": [
+"inTile",
+4
+],
+"field_9400_g": [
+"zTile",
+4
+],
+"field_9401_f": [
+"yTile",
+4
+],
+"field_9402_e": [
+"xTile",
+4
+],
+"field_9403_d": [
+"accelerationZ",
+5
+],
+"field_9404_c": [
+"accelerationY",
+5
+],
+"field_9405_b": [
+"accelerationX",
+5
+],
+"field_9406_a": [
+"shake",
+5
+],
+"field_9436_h": [
+"DIST_HASH_MAGIC",
+4
+],
+"field_9437_g": [
+"updateLCG",
+12
+],
+"field_948_f": [
+"allowUserInput",
+4
+],
+"findTopSolidBlock": [
+"func_35461_e",
+6
+],
+"float": [
+"int",
+5
+],
+"func_1003_g": [
+"relightBlock",
+4
+],
+"func_1024_c": [
+"generateSkylightMap",
+3
+],
+"func_1097_a": [
+"onItemDestroyedByUse",
+5
+],
+"func_1138_a": [
+"loadGzippedCompoundFromOutputStream",
+8
+],
+"func_1145_d": [
+"stepSoundDir2",
+7
+],
+"func_1204_c": [
+"stopRendering",
+2
+],
+"func_12245_a": [
+"handleExplosion",
+3
+],
+"func_1272_b": [
+"startThreads",
+1
+],
+"func_157_a": [
+"renderBoat",
+2
+],
+"func_167_c": [
+"renderSwingProgress",
+2
+],
+"func_170_d": [
+"handleRotationFloat",
+5
+],
+"func_20087_a": [
+"handleOpenWindow",
+3
+],
+"func_20088_a": [
+"handleSetSlot",
+3
+],
+"func_20089_a": [
+"handleContainerTransaction",
+3
+],
+"func_20090_a": [
+"handleCraftingProgress",
+3
+],
+"func_20091_a": [
+"handleWindowClick",
+2
+],
+"func_20092_a": [
+"handleCloseWindow",
+3
+],
+"func_20094_a": [
+"handleWindowItems",
+3
+],
+"func_20158_a": [
+"updateCraftingInventoryInfo",
+4
+],
+"func_20159_a": [
+"updateCraftingInventorySlot",
+2
+],
+"func_21030_a": [
+"calculateCurrentChanges",
+4
+],
+"func_21034_c": [
+"getBlockFromDye",
+4
+],
+"func_21035_d": [
+"getDyeFromBlock",
+2
+],
+"func_21103_b": [
+"getStackInRowAndColumn",
+3
+],
+"func_21146_a": [
+"handleEntityPainting",
+3
+],
+"func_21147_a": [
+"handleEntityAction",
+2
+],
+"func_21148_a": [
+"handleEntityMetadata",
+3
+],
+"func_22012_b": [
+"renderLivingAt",
+5
+],
+"func_22017_a": [
+"rotatePlayer",
+2
+],
+"func_22022_g": [
+"ignoreTick",
+4
+],
+"func_22150_b": [
+"checkSessionLock",
+4
+],
+"func_22173_b": [
+"getWorldInfo",
+8
+],
+"func_22185_a": [
+"handlePosition",
+2
+],
+"func_22186_a": [
+"handleSleep",
+3
+],
+"func_22192_a": [
+"clearRegionFileReferences",
+4
+],
+"func_22193_a": [
+"createOrLoadRegionFile",
+5
+],
+"func_22196_b": [
+"close",
+2
+],
+"func_22202_c": [
+"isChunkSaved",
+2
+],
+"func_22208_b": [
+"setChunkTimestamp",
+2
+],
+"func_22209_a": [
+"getSizeDelta",
+2
+],
+"func_22211_a": [
+"debug",
+4
+],
+"func_22321_c": [
+"getYChunk",
+2
+],
+"func_22322_a": [
+"compareChunks",
+2
+],
+"func_22323_b": [
+"getXChunk",
+2
+],
+"func_22324_a": [
+"getChunkFile",
+2
+],
+"func_22328_c": [
+"getPathEnd",
+2
+],
+"func_25026_x": [
+"getVerticalFaceSpeed",
+4
+],
+"func_25060_a": [
+"verifyRespawnCoordinates",
+2
+],
+"func_25067_a": [
+"isAchievement",
+3
+],
+"func_25087_a": [
+"draw",
+2
+],
+"func_25088_a": [
+"update",
+2
+],
+"func_25118_a": [
+"handleBedUpdate",
+3
+],
+"func_25125_a": [
+"update",
+2
+],
+"func_25126_b": [
+"setDead",
+2
+],
+"func_25127_a": [
+"preUpdate",
+2
+],
+"func_25153_a": [
+"initMinableStats",
+2
+],
+"func_25154_a": [
+"initBreakableStats",
+2
+],
+"func_25155_a": [
+"initUsableStats",
+3
+],
+"func_25157_c": [
+"initCraftableStats",
+3
+],
+"func_268_h": [
+"checkFlowerChange",
+3
+],
+"func_27002_a": [
+"doRenderLightningBolt",
+2
+],
+"func_27005_b": [
+"inheritRenderPass",
+3
+],
+"func_27021_X": [
+"despawnEntity",
+5
+],
+"func_27025_G": [
+"isPVPEnabled",
+2
+],
+"func_27058_a": [
+"matchsNode",
+9
+],
+"func_27059_b": [
+"applyTo",
+4
+],
+"func_27060_a": [
+"shortForm",
+8
+],
+"func_27063_c": [
+"typeSafeApplyTo",
+7
+],
+"func_27067_a": [
+"matchsNode_",
+2
+],
+"func_27068_b": [
+"typeSafeApplyTo_",
+2
+],
+"func_27074_a": [
+"matchsNode_",
+2
+],
+"func_27075_b": [
+"typeSafeApplyTo",
+2
+],
+"func_27081_j": [
+"getDecimalFormat",
+3
+],
+"func_27082_h": [
+"initIndependentStat",
+19
+],
+"func_27083_i": [
+"getNumberFormat",
+2
+],
+"func_27089_a": [
+"setIndependent",
+3
+],
+"func_27109_b": [
+"genAchievementBackground",
+2
+],
+"func_27127_n": [
+"getFontRenderer10",
+2
+],
+"func_27128_a": [
+"drawSprite",
+20
+],
+"func_27129_a": [
+"drawGradientRect",
+2
+],
+"func_27130_k": [
+"addHeaderButtons",
+2
+],
+"func_27131_o": [
+"getFontRenderer11",
+2
+],
+"func_27132_j": [
+"getFontRenderer6",
+2
+],
+"func_27133_h": [
+"getFontRenderer4",
+2
+],
+"func_27134_k": [
+"getFontRenderer7",
+2
+],
+"func_27135_b": [
+"drawGradientRect1",
+2
+],
+"func_27136_c": [
+"drawSprite",
+3
+],
+"func_27137_i": [
+"getFontRenderer5",
+2
+],
+"func_27138_c": [
+"drawItemSprite",
+2
+],
+"func_27139_l": [
+"getFontRenderer8",
+2
+],
+"func_27140_d": [
+"getFontRenderer2",
+2
+],
+"func_27141_a": [
+"getMinecraft",
+2
+],
+"func_27142_c": [
+"getStatsFileWriter",
+13
+],
+"func_27143_f": [
+"getMinecraft1",
+2
+],
+"func_27144_m": [
+"getFontRenderer9",
+2
+],
+"func_27145_b": [
+"getFontRenderer1",
+2
+],
+"func_27146_e": [
+"getFontRenderer3",
+2
+],
+"func_27147_a": [
+"drawButtonBackground",
+2
+],
+"func_27148_a": [
+"drawItemSprite",
+3
+],
+"func_27149_g": [
+"getMinecraft2",
+2
+],
+"func_27158_h": [
+"setRainStrength",
+3
+],
+"func_27160_B": [
+"getIsThundering",
+3
+],
+"func_27161_C": [
+"isRaining",
+5
+],
+"func_27162_g": [
+"getRainStrength",
+9
+],
+"func_27166_f": [
+"getWeightedThunderStrength",
+6
+],
+"func_27174_a": [
+"windowClick",
+3
+],
+"func_27181_b": [
+"canUnlockAchievement",
+7
+],
+"func_27192_a": [
+"format",
+5
+],
+"func_27213_a": [
+"getStringValue",
+2
+],
+"func_27214_c": [
+"getFields",
+10
+],
+"func_27215_d": [
+"getElements",
+8
+],
+"func_27216_b": [
+"getText",
+13
+],
+"func_27217_b": [
+"getArrayNode",
+2
+],
+"func_27218_a": [
+"getType",
+11
+],
+"func_27219_a": [
+"wrapExceptionsFor",
+3
+],
+"func_27220_a": [
+"asList",
+2
+],
+"func_27234_b": [
+"buildNode",
+12
+],
+"func_27240_a": [
+"withElement",
+2
+],
+"func_27241_a": [
+"build",
+2
+],
+"func_27245_a": [
+"handleStatistic",
+3
+],
+"func_27277_a": [
+"splitStringWidth",
+5
+],
+"func_27278_a": [
+"drawSplitString",
+5
+],
+"func_27280_a": [
+"slotClick",
+2
+],
+"func_27301_a": [
+"aJsonFieldBuilder",
+2
+],
+"func_27327_a": [
+"format",
+3
+],
+"func_27328_a": [
+"formatJsonNode",
+5
+],
+"func_27329_a": [
+"format",
+2
+],
+"func_27330_b": [
+"getRow",
+6
+],
+"func_27331_a": [
+"getColumn",
+6
+],
+"func_27333_c": [
+"read",
+14
+],
+"func_27355_a": [
+"with",
+3
+],
+"func_27356_a": [
+"matchs",
+2
+],
+"func_27357_b": [
+"getValue",
+5
+],
+"func_27358_a": [
+"shortForm",
+3
+],
+"func_27366_a": [
+"Parse",
+2
+],
+"func_27367_a": [
+"parse",
+2
+],
+"func_27414_e": [
+"getUnsentDataFile",
+2
+],
+"func_27416_a": [
+"setBusy",
+3
+],
+"func_27417_f": [
+"getUnsentTempFile",
+2
+],
+"func_27418_a": [
+"beginReceiveStats",
+2
+],
+"func_27419_g": [
+"getUnsentOldFile",
+2
+],
+"func_27424_a": [
+"beginSendStats",
+2
+],
+"func_27448_l": [
+"readNextNonWhitespaceChar",
+11
+],
+"func_27449_c": [
+"aFieldToken",
+3
+],
+"func_27450_k": [
+"hexadecimalNumber",
+2
+],
+"func_27451_b": [
+"nonNegativeNumberToken",
+2
+],
+"func_27453_b": [
+"objectString",
+3
+],
+"func_27454_g": [
+"possibleExponent",
+3
+],
+"func_27455_a": [
+"arrayString",
+3
+],
+"func_27456_e": [
+"digitString",
+4
+],
+"func_27457_j": [
+"escapedStringChar",
+2
+],
+"func_27458_d": [
+"digitToken",
+3
+],
+"func_27459_a": [
+"numberToken",
+2
+],
+"func_27460_c": [
+"nonZeroDigitToken",
+2
+],
+"func_27461_h": [
+"possibleSign",
+2
+],
+"func_27462_f": [
+"possibleFractionalComponent",
+3
+],
+"func_27464_d": [
+"aJsonValue",
+4
+],
+"func_28011_a": [
+"updateMapData",
+2
+],
+"func_28072_a": [
+"replaceBlocksForBiome",
+2
+],
+"func_28105_a": [
+"rayTraceBlocks_do_do",
+4
+],
+"func_28106_e": [
+"playAuxSFX",
+9
+],
+"func_28107_a": [
+"playAuxSFXAtEntity",
+8
+],
+"func_28115_a": [
+"handleAuxSFX",
+3
+],
+"func_28116_a": [
+"processItemData",
+3
+],
+"func_28136_a": [
+"playAuxSFX",
+3
+],
+"func_28147_a": [
+"getImageContents",
+2
+],
+"func_28148_b": [
+"getImageContentsAndAllocate",
+6
+],
+"func_28149_a": [
+"getTextureContents",
+4
+],
+"func_28150_a": [
+"createTextureFromBytes",
+2
+],
+"func_28157_a": [
+"renderMap",
+1
+],
+"func_28195_e": [
+"contract",
+5
+],
+"func_28196_a": [
+"clearBoundingBoxes",
+2
+],
+"func_28215_a": [
+"clearVectorList",
+2
+],
+"func_31004_j": [
+"validate",
+1
+],
+"func_31005_i": [
+"invalidate",
+4
+],
+"func_31006_g": [
+"isInvalid",
+3
+],
+"func_31011_l": [
+"clearPistonTileEntity",
+4
+],
+"func_31034_c": [
+"getTileEntityAtLocation",
+4
+],
+"func_31036_a": [
+"getNewTileEntity",
+5
+],
+"func_31039_c": [
+"determineOrientation",
+2
+],
+"func_31041_f": [
+"isIndirectlyPowered",
+2
+],
+"func_31043_h": [
+"updatePistonState",
+4
+],
+"func_31044_d": [
+"getOrientation",
+5
+],
+"func_31045_h": [
+"canExtend",
+2
+],
+"func_31047_i": [
+"tryExtend",
+2
+],
+"func_31054_a": [
+"addTileEntity",
+2
+],
+"func_31074_b": [
+"renderPistonBase",
+2
+],
+"func_31080_c": [
+"renderPistonExtension",
+2
+],
+"func_346_d": [
+"setAngles",
+2
+],
+"func_4011_a": [
+"doRenderFish",
+2
+],
+"func_4042_a": [
+"calculateVelocity",
+2
+],
+"func_4079_a": [
+"getSkyColor",
+2
+],
+"func_4106_b": [
+"placeInExistingPortal",
+3
+],
+"func_4107_a": [
+"placeInPortal",
+2
+],
+"func_4108_c": [
+"createPortal",
+2
+],
+"func_410_i": [
+"canStay",
+4
+],
+"func_4128_a": [
+"generateCaveNode",
+5
+],
+"func_4129_a": [
+"generateLargeCaveNode",
+2
+],
+"func_518_b": [
+"generateLeaves",
+2
+],
+"func_519_e": [
+"validTreeLocation",
+2
+],
+"func_520_a": [
+"generateLeafNode",
+2
+],
+"func_521_a": [
+"generateLeafNodeList",
+2
+],
+"func_522_a": [
+"placeBlockLine",
+6
+],
+"func_524_a": [
+"checkBlockLine",
+4
+],
+"func_525_d": [
+"generateLeafNodeBases",
+2
+],
+"func_527_c": [
+"leafNodeNeedsBase",
+2
+],
+"func_529_c": [
+"generateTrunk",
+2
+],
+"func_6241_m": [
+"debugInfoRenders",
+2
+],
+"func_6245_o": [
+"debugInfoEntities",
+2
+],
+"func_6254_a": [
+"sendClickBlockToController",
+1
+],
+"func_6255_d": [
+"preloadWorld",
+3
+],
+"func_6269_a": [
+"startMainThread1",
+2
+],
+"func_6274_a": [
+"scaledTessellator",
+2
+],
+"func_628_d": [
+"drawClouds",
+1
+],
+"func_632_b": [
+"unloadEntities",
+2
+],
+"func_636_a": [
+"addLoadedEntities",
+2
+],
+"func_6466_a": [
+"canMineBlock",
+2
+],
+"func_6497_a": [
+"handleAttachEntity",
+3
+],
+"func_6498_a": [
+"handleEntityVelocity",
+3
+],
+"func_656_j": [
+"dropOldChucks",
+2
+],
+"func_687_d": [
+"getDebugLoadedEntities",
+2
+],
+"func_698_b": [
+"updateTileEntityChunkAndDoNothing",
+1
+],
+"func_711_c": [
+"invalidateBlockReceiveRegion",
+4
+],
+"func_714_c": [
+"setBlockAndMetadataAndInvalidate",
+2
+],
+"func_851_a": [
+"getDistanceToCamera",
+2
+],
+"func_852_a": [
+"set",
+2
+],
+"func_867_a": [
+"generate",
+4
+],
+"func_868_a": [
+"recursiveGenerate",
+3
+],
+"func_887_a": [
+"renderSign",
+2
+],
+"func_888_a": [
+"setWorldAndChunkPosition",
+3
+],
+"func_889_a": [
+"setChunkPosition",
+4
+],
+"func_9425_a": [
+"setEntityState",
+5
+],
+"func_9447_a": [
+"handleEntityStatus",
+3
+],
+"func_9448_a": [
+"handleRespawn",
+2
+],
+"func_949_a": [
+"markBlocksForUpdate",
+3
+],
+"func_996_c": [
+"propagateSkylightOcclusion",
+4
+],
+"getBlockBrightness": [
+"func_35276_e",
+47
+],
+"getEntityBrightness": [
+"func_35115_a",
+1
+],
+"getIsTranslucent": [
+"getIsOpaque",
+2
+],
+"getPercentAir": [
+"getFluidHeightPercent",
+6
+],
+"getRaining": [
+"getIsRaining",
+6
+],
+"getTarget": [
+"getEntityToAttack",
+2
+],
+"getTemperature": [
+"func_35558_c",
+1
+],
+"getThundering": [
+"getIsThundering",
+6
+],
+"grassMaterial": [
+"grass",
+2
+],
+"handleSignUpdate": [
+"handleUpdateSign",
+3
+],
+"int": [
+"long",
+1
+],
+"isDamagable": [
+"isDamageable",
+2
+],
+"isFirstUpdate": [
+"firstUpdate",
+2
+],
+"isOpaque": [
+"isTranslucent",
+3
+],
+"isPowered": [
+"isExtended",
+7
+],
+"isSneaking": [
+"func_35117_Q",
+1
+],
+"isUsableByPlayer": [
+"canInteractWith",
+7
+],
+"itemBurnTime": [
+"lastItemBurnTime",
+3
+],
+"keySet": [
+"func_35860_b",
+1
+],
+"label110": [
+"label113",
+2
+],
+"label111": [
+"label112",
+2
+],
+"label130": [
+"label109",
+1
+],
+"label133": [
+"label112",
+2
+],
+"label231": [
+"label234",
+2
+],
+"label293": [
+"label296",
+2
+],
+"label53": [
+"label73",
+2
+],
+"lightingUpdatesCounter": [
+"spawnHostileMobs",
+1
+],
+"logo": [
+"crash_logo",
+1
+],
+"long": [
+"WorldSettings",
+3
+],
+"mapItem": [
+"map",
+3
+],
+"musicBlock": [
+"music",
+2
+],
+"onItemRightClick": [
+"func_35413_b",
+2
+],
+"owner": [
+"shootingEntity",
+4
+],
+"packetStats": [
+"totalPacketsCount",
+2
+],
+"playerToAttack": [
+"entityToAttack",
+25
+],
+"posZ": [
+"slotHeight",
+9
+],
+"prepareChunk": [
+"loadChunk",
+12
+],
+"private": [
+"protected",
+6
+],
+"protected": [
+"public",
+8
+],
+"public": [
+"protected",
+1
+],
+"readByte": [
+"readInt",
+1
+],
+"renderBlockFence": [
+"func_35925_a",
+1
+],
+"sand": [
+"grass",
+1
+],
+"setEntityFlag": [
+"setFlag",
+3
+],
+"setRaining": [
+"setIsRaining",
+5
+],
+"setTarget": [
+"setEntityToAttack",
+3
+],
+"setThundering": [
+"setIsThundering",
+3
+],
+"setWolfOwner": [
+"setOwner",
+3
+],
+"setWolfSitting": [
+"setIsSitting",
+7
+],
+"setWolfTamed": [
+"setIsTamed",
+3
+],
+"size": [
+"func_35576_a",
+2
+],
+"slots": [
+"inventorySlots",
+14
+],
+"spawnHostileMobs": [
+"spawnPeacefulMobs",
+1
+],
+"spawnRarityRate": [
+"field_35591_b",
+1
+],
+"stackSize": [
+"itemID",
+1
+],
+"this": [
+"DamageSource",
+1
+],
+"thrower": [
+"shootingEntity",
+4
+],
+"totalPacketsCount": [
+"packetStats",
+4
+],
+"true": [
+"false",
+1
+],
+"tundra": [
+"field_35485_c",
+1
+],
+"updateController": [
+"getBlockReachDistance",
+1
+],
+"updatePlayerActionState": [
+"updateEntityActionState",
+12
+],
+"void": [
+"boolean",
+2
+],
+"weightedAverageColor": [
+"alphaBlend",
+2
+],
+"wood": [
+"field_35437_a",
+1
+],
+"writeByte": [
+"writeInt",
+1
+],
+"www": [
+"session",
+1
+],
+"x": [
+"posX",
+33
+],
+"y": [
+"posY",
+24
+],
+"z": [
+"posZ",
+33
+]
+}

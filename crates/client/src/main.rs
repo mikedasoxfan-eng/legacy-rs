@@ -356,6 +356,17 @@ fn mesh_check(a: &[String]) -> bool {
 
 fn main() {
     let args: Vec<String> = std::env::args().collect();
+    // `--mc b1.8.1`: the Beta 1.8.1 program (its own simulation, client and data folder).
+    if let Some(i) = args.iter().position(|a| a == "--mc") {
+        match args.get(i + 1).map(String::as_str) {
+            Some("b1.8.1") => return client181::run(),
+            Some("b1.7.3") => {}
+            other => {
+                eprintln!("unknown --mc {other:?}: b1.7.3 or b1.8.1");
+                std::process::exit(2);
+            }
+        }
+    }
     match args.get(1).map(String::as_str) {
         Some("--version" | "-V") => {
             println!("beta-rs {} (Minecraft Beta 1.7.3)", env!("CARGO_PKG_VERSION"));

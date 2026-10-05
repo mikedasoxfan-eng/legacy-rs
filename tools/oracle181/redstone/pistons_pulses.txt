@@ -1,0 +1,313 @@
+# Pulses before completion, rapid toggles, re-power during retraction, save/load.
+remove 0 64 0
+remove 0 64 1
+remove 1 64 0
+remove 2 64 0
+remove 3 64 0
+place 1 64 0 1 0
+place 0 64 0 33 5
+place 0 64 1 69 5
+use 0 64 1
+tick 0
+state
+use 0 64 1
+state
+events
+check 0 64 0 3 64 0 3
+state
+use 0 64 1
+tick 1
+use 0 64 1
+state
+events
+tick 5
+state
+check 0 64 0 3 64 0
+remove 0 64 0
+remove 0 64 1
+remove 1 64 0
+remove 2 64 0
+remove 3 64 0
+place 1 64 0 1 0
+place 0 64 0 33 5
+place 0 64 1 69 5
+use 0 64 1
+tick 1
+state
+use 0 64 1
+state
+events
+check 0 64 0 3 64 0 3
+state
+use 0 64 1
+tick 1
+use 0 64 1
+state
+events
+tick 5
+state
+check 0 64 0 3 64 0
+remove 0 64 0
+remove 0 64 1
+remove 1 64 0
+remove 2 64 0
+remove 3 64 0
+place 1 64 0 1 0
+place 0 64 0 33 5
+place 0 64 1 69 5
+use 0 64 1
+tick 2
+state
+use 0 64 1
+state
+events
+check 0 64 0 3 64 0 3
+state
+use 0 64 1
+tick 1
+use 0 64 1
+state
+events
+tick 5
+state
+check 0 64 0 3 64 0
+remove 0 64 0
+remove 0 64 1
+remove 1 64 0
+remove 2 64 0
+remove 3 64 0
+place 1 64 0 1 0
+place 0 64 0 33 5
+place 0 64 1 69 5
+use 0 64 1
+tick 3
+state
+use 0 64 1
+state
+events
+check 0 64 0 3 64 0 3
+state
+use 0 64 1
+tick 1
+use 0 64 1
+state
+events
+tick 5
+state
+check 0 64 0 3 64 0
+remove 0 64 0
+remove 0 64 1
+remove 1 64 0
+remove 2 64 0
+place 1 64 0 35 3
+place 0 64 0 33 5
+place 0 64 1 69 5
+use 0 64 1
+tick 0
+reload 1 64 0
+reload 2 64 0
+state
+check 0 64 0 3 64 0 3
+state
+use 0 64 1
+reload 0 64 0
+state
+check 0 64 0 3 64 0 3
+state
+events
+remove 0 64 0
+remove 0 64 1
+remove 1 64 0
+remove 2 64 0
+place 1 64 0 35 3
+place 0 64 0 33 5
+place 0 64 1 69 5
+use 0 64 1
+tick 1
+reload 1 64 0
+reload 2 64 0
+state
+check 0 64 0 3 64 0 3
+state
+use 0 64 1
+reload 0 64 0
+state
+check 0 64 0 3 64 0 3
+state
+events
+remove 0 64 0
+remove 0 64 1
+remove 1 64 0
+remove 2 64 0
+place 1 64 0 35 3
+place 0 64 0 33 5
+place 0 64 1 69 5
+use 0 64 1
+tick 2
+reload 1 64 0
+reload 2 64 0
+state
+check 0 64 0 3 64 0 3
+state
+use 0 64 1
+reload 0 64 0
+state
+check 0 64 0 3 64 0 3
+state
+events
+remove 0 64 0
+remove 0 64 1
+remove 1 64 0
+remove 2 64 0
+remove 3 64 0
+place 1 64 0 1 0
+place 0 64 0 29 5
+place 0 64 1 69 5
+use 0 64 1
+tick 0
+state
+use 0 64 1
+state
+events
+check 0 64 0 3 64 0 3
+state
+use 0 64 1
+tick 1
+use 0 64 1
+state
+events
+tick 5
+state
+check 0 64 0 3 64 0
+remove 0 64 0
+remove 0 64 1
+remove 1 64 0
+remove 2 64 0
+remove 3 64 0
+place 1 64 0 1 0
+place 0 64 0 29 5
+place 0 64 1 69 5
+use 0 64 1
+tick 1
+state
+use 0 64 1
+state
+events
+check 0 64 0 3 64 0 3
+state
+use 0 64 1
+tick 1
+use 0 64 1
+state
+events
+tick 5
+state
+check 0 64 0 3 64 0
+remove 0 64 0
+remove 0 64 1
+remove 1 64 0
+remove 2 64 0
+remove 3 64 0
+place 1 64 0 1 0
+place 0 64 0 29 5
+place 0 64 1 69 5
+use 0 64 1
+tick 2
+state
+use 0 64 1
+state
+events
+check 0 64 0 3 64 0 3
+state
+use 0 64 1
+tick 1
+use 0 64 1
+state
+events
+tick 5
+state
+check 0 64 0 3 64 0
+remove 0 64 0
+remove 0 64 1
+remove 1 64 0
+remove 2 64 0
+remove 3 64 0
+place 1 64 0 1 0
+place 0 64 0 29 5
+place 0 64 1 69 5
+use 0 64 1
+tick 3
+state
+use 0 64 1
+state
+events
+check 0 64 0 3 64 0 3
+state
+use 0 64 1
+tick 1
+use 0 64 1
+state
+events
+tick 5
+state
+check 0 64 0 3 64 0
+remove 0 64 0
+remove 0 64 1
+remove 1 64 0
+remove 2 64 0
+place 1 64 0 35 3
+place 0 64 0 29 5
+place 0 64 1 69 5
+use 0 64 1
+tick 0
+reload 1 64 0
+reload 2 64 0
+state
+check 0 64 0 3 64 0 3
+state
+use 0 64 1
+reload 0 64 0
+state
+check 0 64 0 3 64 0 3
+state
+events
+remove 0 64 0
+remove 0 64 1
+remove 1 64 0
+remove 2 64 0
+place 1 64 0 35 3
+place 0 64 0 29 5
+place 0 64 1 69 5
+use 0 64 1
+tick 1
+reload 1 64 0
+reload 2 64 0
+state
+check 0 64 0 3 64 0 3
+state
+use 0 64 1
+reload 0 64 0
+state
+check 0 64 0 3 64 0 3
+state
+events
+remove 0 64 0
+remove 0 64 1
+remove 1 64 0
+remove 2 64 0
+place 1 64 0 35 3
+place 0 64 0 29 5
+place 0 64 1 69 5
+use 0 64 1
+tick 2
+reload 1 64 0
+reload 2 64 0
+state
+check 0 64 0 3 64 0 3
+state
+use 0 64 1
+reload 0 64 0
+state
+check 0 64 0 3 64 0 3
+state
+events

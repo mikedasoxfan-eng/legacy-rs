@@ -1,0 +1,185 @@
+# GUI scenes captured from both the original client and the port (tools/oracle/guishot.sh).
+saves ../out/guisaves
+millis 250
+mojang
+shot mojang
+splash Ported to Rust!
+open title
+mouse -1 -1
+shot title
+mouse 213 124
+shot title_hover_singleplayer
+mouse 160 184
+shot title_hover_options
+open options
+mouse 300 200
+shot options
+open video
+shot video
+open controls
+mouse 190 40
+shot controls
+open select
+mouse -1 -1
+shot select
+mouse 200 52
+down
+shot select_pressed
+up
+shot select_clicked
+mouse 213 225
+shot select_hover_rename
+open create
+update 3
+shot create
+key 30 97
+key 14 8
+key 31 115
+shot create_typed
+open rename World1
+update 7
+shot rename
+open texturepacks
+mouse 100 50
+shot texturepacks
+loading 42 Generating level|Building terrain
+shot loading
+loading -1 Loading level|
+shot loading_nobar
+# The in-game overlay over a real world (vignette, hotbar, crosshair, hearts).
+world 42
+clear 128
+hud health=20 prev=20 item=0 pos=0.5,120,0.5 brightness=1.0
+counter 0
+shot hud_full
+hud health=7 prev=7 item=3 pos=0.5,120,0.5 brightness=1.0
+shot hud_hurt
+hud health=3 prev=9 hearts_life=13 item=8 pos=0.5,120,0.5 brightness=1.0
+counter 17
+shot hud_low_flash
+hud health=12 prev=16 hearts_life=11 item=5 pos=0.5,120,0.5 brightness=1.0
+counter 3
+shot hud_flash
+# Wearing a carved pumpkin (renderPumpkinBlur).
+hud health=20 prev=20 hearts_life=0 item=0 pos=0.5,120,0.5 brightness=1.0 helmet=86
+counter 0
+shot hud_pumpkin
+hud health=20 prev=20 item=0 pos=0.5,120,0.5 brightness=1.0 helmet=-1
+# Achievements (fresh stats: only "Taking Inventory" can be unlocked), over the world.
+open achievements
+mouse -1 -1
+millis 250
+shot achievements
+millis 100
+mouse 240 140
+shot achievements_hover_locked
+mouse 201 115
+shot achievements_hover_open
+# The death screen (score 0) over the world.
+open gameover
+mouse -1 -1
+shot gameover
+mouse 213 140
+shot gameover_hover_respawn
+# Statistics: General, Blocks and Items lists with set counts; header tooltip, sorting, item
+# tooltips and dragging the scrollbar of a long list.
+statsreset
+stat 1000 3
+stat 1001 1
+stat 1100 72345
+stat 2000 123456
+stat 2001 789
+stat 2002 1500
+stat 2010 42
+stat 16777217 1234
+stat 16777233 64
+stat 16777220 9
+stat 16842810 3
+stat 16842802 16
+stat 16908289 5000
+stat 16908305 12
+stat 16908548 7
+stat 16843028 1
+stat 16974100 2
+stat 16908564 250
+stat 16908549 4
+stat 16843013 1
+open stats
+mouse -1 -1
+shot stats_general
+mouse 213 198
+click
+mouse -1 -1
+shot stats_blocks
+mouse 320 198
+click
+mouse -1 -1
+shot stats_items
+# Header tooltip, then click the "mined" column to sort, then hover an item.
+open stats
+mouse 213 198
+click
+mouse 311 55
+shot stats_blocks_hover_header
+down
+shot stats_blocks_sort_down
+up
+mouse 311 55
+shot stats_blocks_sorted
+mouse 155 75
+shot stats_blocks_hover_item
+# A long item list that scrolls.
+stat 16908544 1
+stat 16908545 38
+stat 16908546 75
+stat 16908547 112
+stat 16908548 149
+stat 16908549 186
+stat 16908550 223
+stat 16908551 260
+stat 16908552 297
+stat 16908553 334
+stat 16908554 371
+stat 16908555 408
+stat 16908556 445
+stat 16908557 482
+stat 16908558 519
+stat 16908559 556
+stat 16908560 593
+stat 16908561 630
+stat 16908562 667
+stat 16908563 704
+stat 16908564 741
+stat 16908565 778
+stat 16908566 815
+stat 16908567 852
+stat 16908568 889
+stat 16908569 926
+stat 16908570 963
+stat 16908571 1000
+stat 16908572 1037
+stat 16908573 1074
+stat 16974080 3
+stat 16974083 11
+open stats
+mouse 320 198
+click
+mouse -1 -1
+shot stats_items_long
+mouse 211 45
+down
+shot stats_items_sort_used
+up
+mouse 211 45
+shot stats_items_sorted
+mouse 155 95
+shot stats_items_hover_item
+# Drag the scrollbar down.
+mouse 341 50
+down
+shot stats_items_drag_start
+mouse 341 110
+shot stats_items_drag_mid
+up
+mouse -1 -1
+shot stats_items_scrolled

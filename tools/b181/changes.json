@@ -1,0 +1,5211 @@
+{
+ "classes": [
+  {
+   "class": "Achievement",
+   "package": "src",
+   "status": "changed",
+   "lines": 68,
+   "changed_lines": 5,
+   "area": "gui"
+  },
+  {
+   "class": "AchievementList",
+   "package": "src",
+   "status": "changed",
+   "lines": 32,
+   "changed_lines": 2,
+   "area": "gui"
+  },
+  {
+   "class": "AchievementMap",
+   "package": "src",
+   "status": "same",
+   "lines": 29,
+   "changed_lines": 0,
+   "area": "gui"
+  },
+  {
+   "class": "AxisAlignedBB",
+   "package": "src",
+   "status": "changed",
+   "lines": 279,
+   "changed_lines": 2,
+   "area": "entities"
+  },
+  {
+   "class": "BiomeCache",
+   "package": "src",
+   "status": "new",
+   "lines": 56,
+   "changed_lines": 56,
+   "area": "worldgen"
+  },
+  {
+   "class": "BiomeCacheBlock",
+   "package": "src",
+   "status": "new",
+   "lines": 30,
+   "changed_lines": 30,
+   "area": "worldgen"
+  },
+  {
+   "class": "BiomeDecorator",
+   "package": "src",
+   "status": "new",
+   "lines": 248,
+   "changed_lines": 248,
+   "area": "world"
+  },
+  {
+   "class": "BiomeGenBase",
+   "package": "src",
+   "status": "changed",
+   "lines": 117,
+   "changed_lines": 97,
+   "area": "worldgen"
+  },
+  {
+   "class": "BiomeGenDesert",
+   "package": "src",
+   "status": "changed",
+   "lines": 13,
+   "changed_lines": 10,
+   "area": "worldgen"
+  },
+  {
+   "class": "BiomeGenForest",
+   "package": "src",
+   "status": "changed",
+   "lines": 13,
+   "changed_lines": 6,
+   "area": "worldgen"
+  },
+  {
+   "class": "BiomeGenHell",
+   "package": "src",
+   "status": "changed",
+   "lines": 11,
+   "changed_lines": 4,
+   "area": "worldgen"
+  },
+  {
+   "class": "BiomeGenHills",
+   "package": "src",
+   "status": "new",
+   "lines": 6,
+   "changed_lines": 6,
+   "area": "worldgen"
+  },
+  {
+   "class": "BiomeGenOcean",
+   "package": "src",
+   "status": "new",
+   "lines": 7,
+   "changed_lines": 7,
+   "area": "worldgen"
+  },
+  {
+   "class": "BiomeGenPlains",
+   "package": "src",
+   "status": "new",
+   "lines": 9,
+   "changed_lines": 9,
+   "area": "worldgen"
+  },
+  {
+   "class": "BiomeGenRiver",
+   "package": "src",
+   "status": "new",
+   "lines": 7,
+   "changed_lines": 7,
+   "area": "worldgen"
+  },
+  {
+   "class": "BiomeGenSky",
+   "package": "src",
+   "status": "changed",
+   "lines": 13,
+   "changed_lines": 3,
+   "area": "worldgen"
+  },
+  {
+   "class": "BiomeGenSwamp",
+   "package": "src",
+   "status": "changed",
+   "lines": 16,
+   "changed_lines": 15,
+   "area": "worldgen"
+  },
+  {
+   "class": "BiomeGenTaiga",
+   "package": "src",
+   "status": "changed",
+   "lines": 13,
+   "changed_lines": 5,
+   "area": "worldgen"
+  },
+  {
+   "class": "Block",
+   "package": "src",
+   "status": "changed",
+   "lines": 507,
+   "changed_lines": 84,
+   "area": "blocks"
+  },
+  {
+   "class": "BlockBed",
+   "package": "src",
+   "status": "changed",
+   "lines": 160,
+   "changed_lines": 1,
+   "area": "blocks"
+  },
+  {
+   "class": "BlockBookshelf",
+   "package": "src",
+   "status": "same",
+   "lines": 13,
+   "changed_lines": 0,
+   "area": "blocks"
+  },
+  {
+   "class": "BlockBreakable",
+   "package": "src",
+   "status": "same",
+   "lines": 15,
+   "changed_lines": 0,
+   "area": "blocks"
+  },
+  {
+   "class": "BlockButton",
+   "package": "src",
+   "status": "same",
+   "lines": 190,
+   "changed_lines": 0,
+   "area": "blocks"
+  },
+  {
+   "class": "BlockCactus",
+   "package": "src",
+   "status": "changed",
+   "lines": 70,
+   "changed_lines": 1,
+   "area": "blocks"
+  },
+  {
+   "class": "BlockCake",
+   "package": "src",
+   "status": "changed",
+   "lines": 83,
+   "changed_lines": 2,
+   "area": "blocks"
+  },
+  {
+   "class": "BlockChest",
+   "package": "src",
+   "status": "changed",
+   "lines": 313,
+   "changed_lines": 204,
+   "area": "blocks"
+  },
+  {
+   "class": "BlockClay",
+   "package": "src",
+   "status": "same",
+   "lines": 13,
+   "changed_lines": 0,
+   "area": "blocks"
+  },
+  {
+   "class": "BlockCloth",
+   "package": "src",
+   "status": "changed",
+   "lines": 23,
+   "changed_lines": 2,
+   "area": "blocks"
+  },
+  {
+   "class": "BlockContainer",
+   "package": "src",
+   "status": "changed",
+   "lines": 27,
+   "changed_lines": 12,
+   "area": "blocks"
+  },
+  {
+   "class": "BlockCrops",
+   "package": "src",
+   "status": "same",
+   "lines": 95,
+   "changed_lines": 0,
+   "area": "blocks"
+  },
+  {
+   "class": "BlockDeadBush",
+   "package": "src",
+   "status": "same",
+   "lines": 18,
+   "changed_lines": 0,
+   "area": "blocks"
+  },
+  {
+   "class": "BlockDetectorRail",
+   "package": "src",
+   "status": "same",
+   "lines": 61,
+   "changed_lines": 0,
+   "area": "blocks"
+  },
+  {
+   "class": "BlockDirt",
+   "package": "src",
+   "status": "same",
+   "lines": 6,
+   "changed_lines": 0,
+   "area": "blocks"
+  },
+  {
+   "class": "BlockDispenser",
+   "package": "src",
+   "status": "changed",
+   "lines": 177,
+   "changed_lines": 88,
+   "area": "blocks"
+  },
+  {
+   "class": "BlockDoor",
+   "package": "src",
+   "status": "changed",
+   "lines": 162,
+   "changed_lines": 4,
+   "area": "blocks"
+  },
+  {
+   "class": "BlockFarmland",
+   "package": "src",
+   "status": "changed",
+   "lines": 76,
+   "changed_lines": 3,
+   "area": "blocks"
+  },
+  {
+   "class": "BlockFence",
+   "package": "src",
+   "status": "changed",
+   "lines": 25,
+   "changed_lines": 5,
+   "area": "blocks"
+  },
+  {
+   "class": "BlockFenceGate",
+   "package": "src",
+   "status": "new",
+   "lines": 47,
+   "changed_lines": 47,
+   "area": "blocks"
+  },
+  {
+   "class": "BlockFire",
+   "package": "src",
+   "status": "changed",
+   "lines": 216,
+   "changed_lines": 4,
+   "area": "blocks"
+  },
+  {
+   "class": "BlockFlower",
+   "package": "src",
+   "status": "changed",
+   "lines": 45,
+   "changed_lines": 3,
+   "area": "blocks"
+  },
+  {
+   "class": "BlockFlowing",
+   "package": "src",
+   "status": "same",
+   "lines": 219,
+   "changed_lines": 0,
+   "area": "blocks"
+  },
+  {
+   "class": "BlockFluid",
+   "package": "src",
+   "status": "changed",
+   "lines": 291,
+   "changed_lines": 95,
+   "area": "blocks"
+  },
+  {
+   "class": "BlockFurnace",
+   "package": "src",
+   "status": "changed",
+   "lines": 151,
+   "changed_lines": 38,
+   "area": "blocks"
+  },
+  {
+   "class": "BlockGlass",
+   "package": "src",
+   "status": "same",
+   "lines": 13,
+   "changed_lines": 0,
+   "area": "blocks"
+  },
+  {
+   "class": "BlockGlowStone",
+   "package": "src",
+   "status": "same",
+   "lines": 13,
+   "changed_lines": 0,
+   "area": "blocks"
+  },
+  {
+   "class": "BlockGrass",
+   "package": "src",
+   "status": "changed",
+   "lines": 56,
+   "changed_lines": 19,
+   "area": "blocks"
+  },
+  {
+   "class": "BlockGravel",
+   "package": "src",
+   "status": "same",
+   "lines": 10,
+   "changed_lines": 0,
+   "area": "blocks"
+  },
+  {
+   "class": "BlockIce",
+   "package": "src",
+   "status": "same",
+   "lines": 34,
+   "changed_lines": 0,
+   "area": "blocks"
+  },
+  {
+   "class": "BlockJukeBox",
+   "package": "src",
+   "status": "changed",
+   "lines": 61,
+   "changed_lines": 22,
+   "area": "blocks"
+  },
+  {
+   "class": "BlockLadder",
+   "package": "src",
+   "status": "same",
+   "lines": 93,
+   "changed_lines": 0,
+   "area": "blocks"
+  },
+  {
+   "class": "BlockLeaves",
+   "package": "src",
+   "status": "changed",
+   "lines": 161,
+   "changed_lines": 12,
+   "area": "blocks"
+  },
+  {
+   "class": "BlockLeavesBase",
+   "package": "src",
+   "status": "same",
+   "lines": 15,
+   "changed_lines": 0,
+   "area": "blocks"
+  },
+  {
+   "class": "BlockLever",
+   "package": "src",
+   "status": "same",
+   "lines": 166,
+   "changed_lines": 0,
+   "area": "blocks"
+  },
+  {
+   "class": "BlockLockedChest",
+   "package": "src",
+   "status": "same",
+   "lines": 43,
+   "changed_lines": 0,
+   "area": "blocks"
+  },
+  {
+   "class": "BlockLog",
+   "package": "src",
+   "status": "same",
+   "lines": 42,
+   "changed_lines": 0,
+   "area": "blocks"
+  },
+  {
+   "class": "BlockMelon",
+   "package": "src",
+   "status": "new",
+   "lines": 20,
+   "changed_lines": 20,
+   "area": "blocks"
+  },
+  {
+   "class": "BlockMobSpawner",
+   "package": "src",
+   "status": "changed",
+   "lines": 19,
+   "changed_lines": 1,
+   "area": "blocks"
+  },
+  {
+   "class": "BlockMushroom",
+   "package": "src",
+   "status": "changed",
+   "lines": 80,
+   "changed_lines": 67,
+   "area": "blocks"
+  },
+  {
+   "class": "BlockMushroomCap",
+   "package": "src",
+   "status": "new",
+   "lines": 22,
+   "changed_lines": 22,
+   "area": "blocks"
+  },
+  {
+   "class": "BlockNetherrack",
+   "package": "src",
+   "status": "same",
+   "lines": 6,
+   "changed_lines": 0,
+   "area": "blocks"
+  },
+  {
+   "class": "BlockNote",
+   "package": "src",
+   "status": "changed",
+   "lines": 62,
+   "changed_lines": 11,
+   "area": "blocks"
+  },
+  {
+   "class": "BlockObsidian",
+   "package": "src",
+   "status": "same",
+   "lines": 13,
+   "changed_lines": 0,
+   "area": "blocks"
+  },
+  {
+   "class": "BlockOre",
+   "package": "src",
+   "status": "same",
+   "lines": 16,
+   "changed_lines": 0,
+   "area": "blocks"
+  },
+  {
+   "class": "BlockOreStorage",
+   "package": "src",
+   "status": "same",
+   "lines": 10,
+   "changed_lines": 0,
+   "area": "blocks"
+  },
+  {
+   "class": "BlockPane",
+   "package": "src",
+   "status": "new",
+   "lines": 92,
+   "changed_lines": 92,
+   "area": "blocks"
+  },
+  {
+   "class": "BlockPistonBase",
+   "package": "src",
+   "status": "changed",
+   "lines": 288,
+   "changed_lines": 81,
+   "area": "blocks"
+  },
+  {
+   "class": "BlockPistonExtension",
+   "package": "src",
+   "status": "changed",
+   "lines": 130,
+   "changed_lines": 7,
+   "area": "blocks"
+  },
+  {
+   "class": "BlockPistonMoving",
+   "package": "src",
+   "status": "changed",
+   "lines": 117,
+   "changed_lines": 20,
+   "area": "blocks"
+  },
+  {
+   "class": "BlockPortal",
+   "package": "src",
+   "status": "same",
+   "lines": 150,
+   "changed_lines": 0,
+   "area": "blocks"
+  },
+  {
+   "class": "BlockPressurePlate",
+   "package": "src",
+   "status": "changed",
+   "lines": 124,
+   "changed_lines": 2,
+   "area": "blocks"
+  },
+  {
+   "class": "BlockPumpkin",
+   "package": "src",
+   "status": "same",
+   "lines": 37,
+   "changed_lines": 0,
+   "area": "blocks"
+  },
+  {
+   "class": "BlockRail",
+   "package": "src",
+   "status": "same",
+   "lines": 208,
+   "changed_lines": 0,
+   "area": "blocks"
+  },
+  {
+   "class": "BlockRedstoneOre",
+   "package": "src",
+   "status": "changed",
+   "lines": 79,
+   "changed_lines": 3,
+   "area": "blocks"
+  },
+  {
+   "class": "BlockRedstoneRepeater",
+   "package": "src",
+   "status": "changed",
+   "lines": 160,
+   "changed_lines": 13,
+   "area": "blocks"
+  },
+  {
+   "class": "BlockRedstoneTorch",
+   "package": "src",
+   "status": "same",
+   "lines": 126,
+   "changed_lines": 0,
+   "area": "blocks"
+  },
+  {
+   "class": "BlockRedstoneWire",
+   "package": "src",
+   "status": "changed",
+   "lines": 311,
+   "changed_lines": 15,
+   "area": "blocks"
+  },
+  {
+   "class": "BlockReed",
+   "package": "src",
+   "status": "changed",
+   "lines": 58,
+   "changed_lines": 1,
+   "area": "blocks"
+  },
+  {
+   "class": "BlockSand",
+   "package": "src",
+   "status": "same",
+   "lines": 48,
+   "changed_lines": 0,
+   "area": "blocks"
+  },
+  {
+   "class": "BlockSandStone",
+   "package": "src",
+   "status": "same",
+   "lines": 9,
+   "changed_lines": 0,
+   "area": "blocks"
+  },
+  {
+   "class": "BlockSapling",
+   "package": "src",
+   "status": "same",
+   "lines": 47,
+   "changed_lines": 0,
+   "area": "blocks"
+  },
+  {
+   "class": "BlockSign",
+   "package": "src",
+   "status": "changed",
+   "lines": 92,
+   "changed_lines": 1,
+   "area": "blocks"
+  },
+  {
+   "class": "BlockSilverfish",
+   "package": "src",
+   "status": "new",
+   "lines": 32,
+   "changed_lines": 32,
+   "area": "blocks"
+  },
+  {
+   "class": "BlockSnow",
+   "package": "src",
+   "status": "same",
+   "lines": 67,
+   "changed_lines": 0,
+   "area": "blocks"
+  },
+  {
+   "class": "BlockSnowBlock",
+   "package": "src",
+   "status": "changed",
+   "lines": 20,
+   "changed_lines": 1,
+   "area": "blocks"
+  },
+  {
+   "class": "BlockSoulSand",
+   "package": "src",
+   "status": "same",
+   "lines": 14,
+   "changed_lines": 0,
+   "area": "blocks"
+  },
+  {
+   "class": "BlockSponge",
+   "package": "src",
+   "status": "same",
+   "lines": 28,
+   "changed_lines": 0,
+   "area": "blocks"
+  },
+  {
+   "class": "BlockStairs",
+   "package": "src",
+   "status": "changed",
+   "lines": 145,
+   "changed_lines": 10,
+   "area": "blocks"
+  },
+  {
+   "class": "BlockStationary",
+   "package": "src",
+   "status": "same",
+   "lines": 47,
+   "changed_lines": 0,
+   "area": "blocks"
+  },
+  {
+   "class": "BlockStem",
+   "package": "src",
+   "status": "new",
+   "lines": 155,
+   "changed_lines": 155,
+   "area": "blocks"
+  },
+  {
+   "class": "BlockStep",
+   "package": "src",
+   "status": "changed",
+   "lines": 55,
+   "changed_lines": 2,
+   "area": "blocks"
+  },
+  {
+   "class": "BlockStone",
+   "package": "src",
+   "status": "same",
+   "lines": 10,
+   "changed_lines": 0,
+   "area": "blocks"
+  },
+  {
+   "class": "BlockStoneBrick",
+   "package": "src",
+   "status": "new",
+   "lines": 19,
+   "changed_lines": 19,
+   "area": "blocks"
+  },
+  {
+   "class": "BlockTNT",
+   "package": "src",
+   "status": "same",
+   "lines": 51,
+   "changed_lines": 0,
+   "area": "blocks"
+  },
+  {
+   "class": "BlockTallGrass",
+   "package": "src",
+   "status": "changed",
+   "lines": 46,
+   "changed_lines": 26,
+   "area": "blocks"
+  },
+  {
+   "class": "BlockTorch",
+   "package": "src",
+   "status": "same",
+   "lines": 140,
+   "changed_lines": 0,
+   "area": "blocks"
+  },
+  {
+   "class": "BlockTrapDoor",
+   "package": "src",
+   "status": "changed",
+   "lines": 147,
+   "changed_lines": 2,
+   "area": "blocks"
+  },
+  {
+   "class": "BlockVine",
+   "package": "src",
+   "status": "new",
+   "lines": 262,
+   "changed_lines": 262,
+   "area": "blocks"
+  },
+  {
+   "class": "BlockWeb",
+   "package": "src",
+   "status": "changed",
+   "lines": 25,
+   "changed_lines": 2,
+   "area": "blocks"
+  },
+  {
+   "class": "BlockWorkbench",
+   "package": "src",
+   "status": "same",
+   "lines": 18,
+   "changed_lines": 0,
+   "area": "blocks"
+  },
+  {
+   "class": "ChatAllowedCharacters",
+   "package": "src",
+   "status": "same",
+   "lines": 26,
+   "changed_lines": 0,
+   "area": "gui"
+  },
+  {
+   "class": "ChatLine",
+   "package": "src",
+   "status": "same",
+   "lines": 9,
+   "changed_lines": 0,
+   "area": "gui"
+  },
+  {
+   "class": "ChestItemRenderHelper",
+   "package": "src",
+   "status": "new",
+   "lines": 8,
+   "changed_lines": 8,
+   "area": "world"
+  },
+  {
+   "class": "Chunk",
+   "package": "src",
+   "status": "changed",
+   "lines": 705,
+   "changed_lines": 335,
+   "area": "world"
+  },
+  {
+   "class": "ChunkBlockMap",
+   "package": "src",
+   "status": "same",
+   "lines": 22,
+   "changed_lines": 0,
+   "area": "world"
+  },
+  {
+   "class": "ChunkCache",
+   "package": "src",
+   "status": "changed",
+   "lines": 209,
+   "changed_lines": 138,
+   "area": "world"
+  },
+  {
+   "class": "ChunkCoordIntPair",
+   "package": "src",
+   "status": "changed",
+   "lines": 24,
+   "changed_lines": 8,
+   "area": "worldgen"
+  },
+  {
+   "class": "ChunkCoordinates",
+   "package": "src",
+   "status": "changed",
+   "lines": 41,
+   "changed_lines": 15,
+   "area": "entities"
+  },
+  {
+   "class": "ChunkFile",
+   "package": "src",
+   "status": "changed",
+   "lines": 42,
+   "changed_lines": 21,
+   "area": "world"
+  },
+  {
+   "class": "ChunkFilePattern",
+   "package": "src",
+   "status": "changed",
+   "lines": 17,
+   "changed_lines": 2,
+   "area": "world"
+  },
+  {
+   "class": "ChunkFolderPattern",
+   "package": "src",
+   "status": "changed",
+   "lines": 21,
+   "changed_lines": 2,
+   "area": "world"
+  },
+  {
+   "class": "ChunkLoader",
+   "package": "src",
+   "status": "changed",
+   "lines": 191,
+   "changed_lines": 21,
+   "area": "world"
+  },
+  {
+   "class": "ChunkPosition",
+   "package": "src",
+   "status": "same",
+   "lines": 22,
+   "changed_lines": 0,
+   "area": "entities"
+  },
+  {
+   "class": "ChunkProvider",
+   "package": "src",
+   "status": "changed",
+   "lines": 171,
+   "changed_lines": 81,
+   "area": "worldgen"
+  },
+  {
+   "class": "ChunkProviderGenerate",
+   "package": "src",
+   "status": "changed",
+   "lines": 350,
+   "changed_lines": 520,
+   "area": "worldgen"
+  },
+  {
+   "class": "ChunkProviderHell",
+   "package": "src",
+   "status": "changed",
+   "lines": 352,
+   "changed_lines": 60,
+   "area": "worldgen"
+  },
+  {
+   "class": "ChunkProviderLoadOrGenerate",
+   "package": "src",
+   "status": "changed",
+   "lines": 172,
+   "changed_lines": 16,
+   "area": "worldgen"
+  },
+  {
+   "class": "ChunkProviderSky",
+   "package": "src",
+   "status": "changed",
+   "lines": 473,
+   "changed_lines": 349,
+   "area": "worldgen"
+  },
+  {
+   "class": "ClippingHelper",
+   "package": "src",
+   "status": "same",
+   "lines": 15,
+   "changed_lines": 0,
+   "area": "rendering"
+  },
+  {
+   "class": "ClippingHelperImpl",
+   "package": "src",
+   "status": "same",
+   "lines": 77,
+   "changed_lines": 0,
+   "area": "rendering"
+  },
+  {
+   "class": "CodecMus",
+   "package": "src",
+   "status": "same",
+   "lines": 9,
+   "changed_lines": 0,
+   "area": "rendering"
+  },
+  {
+   "class": "ColorizerFoliage",
+   "package": "src",
+   "status": "same",
+   "lines": 22,
+   "changed_lines": 0,
+   "area": "rendering"
+  },
+  {
+   "class": "ColorizerGrass",
+   "package": "src",
+   "status": "same",
+   "lines": 13,
+   "changed_lines": 0,
+   "area": "rendering"
+  },
+  {
+   "class": "ColorizerWater",
+   "package": "src",
+   "status": "same",
+   "lines": 7,
+   "changed_lines": 0,
+   "area": "rendering"
+  },
+  {
+   "class": "ComponentMineshaftCorridor",
+   "package": "src",
+   "status": "new",
+   "lines": 177,
+   "changed_lines": 177,
+   "area": "worldgen"
+  },
+  {
+   "class": "ComponentMineshaftCross",
+   "package": "src",
+   "status": "new",
+   "lines": 100,
+   "changed_lines": 100,
+   "area": "worldgen"
+  },
+  {
+   "class": "ComponentMineshaftRoom",
+   "package": "src",
+   "status": "new",
+   "lines": 81,
+   "changed_lines": 81,
+   "area": "worldgen"
+  },
+  {
+   "class": "ComponentMineshaftStairs",
+   "package": "src",
+   "status": "new",
+   "lines": 59,
+   "changed_lines": 59,
+   "area": "worldgen"
+  },
+  {
+   "class": "ComponentStronghold",
+   "package": "src",
+   "status": "new",
+   "lines": 110,
+   "changed_lines": 110,
+   "area": "worldgen"
+  },
+  {
+   "class": "ComponentStrongholdCorridor",
+   "package": "src",
+   "status": "new",
+   "lines": 57,
+   "changed_lines": 57,
+   "area": "worldgen"
+  },
+  {
+   "class": "ComponentStrongholdCrossing",
+   "package": "src",
+   "status": "new",
+   "lines": 75,
+   "changed_lines": 75,
+   "area": "worldgen"
+  },
+  {
+   "class": "ComponentStrongholdLeftTurn",
+   "package": "src",
+   "status": "new",
+   "lines": 37,
+   "changed_lines": 37,
+   "area": "worldgen"
+  },
+  {
+   "class": "ComponentStrongholdLibrary",
+   "package": "src",
+   "status": "new",
+   "lines": 115,
+   "changed_lines": 115,
+   "area": "worldgen"
+  },
+  {
+   "class": "ComponentStrongholdPrison",
+   "package": "src",
+   "status": "new",
+   "lines": 41,
+   "changed_lines": 41,
+   "area": "worldgen"
+  },
+  {
+   "class": "ComponentStrongholdRightTurn",
+   "package": "src",
+   "status": "new",
+   "lines": 29,
+   "changed_lines": 29,
+   "area": "worldgen"
+  },
+  {
+   "class": "ComponentStrongholdRoomCrossing",
+   "package": "src",
+   "status": "new",
+   "lines": 107,
+   "changed_lines": 107,
+   "area": "worldgen"
+  },
+  {
+   "class": "ComponentStrongholdStairs",
+   "package": "src",
+   "status": "new",
+   "lines": 64,
+   "changed_lines": 64,
+   "area": "worldgen"
+  },
+  {
+   "class": "ComponentStrongholdStairs2",
+   "package": "src",
+   "status": "new",
+   "lines": 10,
+   "changed_lines": 10,
+   "area": "worldgen"
+  },
+  {
+   "class": "ComponentStrongholdStairsStraight",
+   "package": "src",
+   "status": "new",
+   "lines": 40,
+   "changed_lines": 40,
+   "area": "worldgen"
+  },
+  {
+   "class": "ComponentStrongholdStraight",
+   "package": "src",
+   "status": "new",
+   "lines": 49,
+   "changed_lines": 49,
+   "area": "worldgen"
+  },
+  {
+   "class": "ComponentVillage",
+   "package": "src",
+   "status": "new",
+   "lines": 58,
+   "changed_lines": 58,
+   "area": "worldgen"
+  },
+  {
+   "class": "ComponentVillageChurch",
+   "package": "src",
+   "status": "new",
+   "lines": 90,
+   "changed_lines": 90,
+   "area": "worldgen"
+  },
+  {
+   "class": "ComponentVillageField",
+   "package": "src",
+   "status": "new",
+   "lines": 56,
+   "changed_lines": 56,
+   "area": "worldgen"
+  },
+  {
+   "class": "ComponentVillageField2",
+   "package": "src",
+   "status": "new",
+   "lines": 48,
+   "changed_lines": 48,
+   "area": "worldgen"
+  },
+  {
+   "class": "ComponentVillageHall",
+   "package": "src",
+   "status": "new",
+   "lines": 95,
+   "changed_lines": 95,
+   "area": "worldgen"
+  },
+  {
+   "class": "ComponentVillageHouse1",
+   "package": "src",
+   "status": "new",
+   "lines": 99,
+   "changed_lines": 99,
+   "area": "worldgen"
+  },
+  {
+   "class": "ComponentVillageHouse2",
+   "package": "src",
+   "status": "new",
+   "lines": 74,
+   "changed_lines": 74,
+   "area": "worldgen"
+  },
+  {
+   "class": "ComponentVillageHouse3",
+   "package": "src",
+   "status": "new",
+   "lines": 126,
+   "changed_lines": 126,
+   "area": "worldgen"
+  },
+  {
+   "class": "ComponentVillageHouse4_Garden",
+   "package": "src",
+   "status": "new",
+   "lines": 94,
+   "changed_lines": 94,
+   "area": "worldgen"
+  },
+  {
+   "class": "ComponentVillagePathGen",
+   "package": "src",
+   "status": "new",
+   "lines": 81,
+   "changed_lines": 81,
+   "area": "worldgen"
+  },
+  {
+   "class": "ComponentVillageRoadPiece",
+   "package": "src",
+   "status": "new",
+   "lines": 6,
+   "changed_lines": 6,
+   "area": "worldgen"
+  },
+  {
+   "class": "ComponentVillageStartPiece",
+   "package": "src",
+   "status": "new",
+   "lines": 20,
+   "changed_lines": 20,
+   "area": "worldgen"
+  },
+  {
+   "class": "ComponentVillageTorch",
+   "package": "src",
+   "status": "new",
+   "lines": 36,
+   "changed_lines": 36,
+   "area": "worldgen"
+  },
+  {
+   "class": "ComponentVillageWell",
+   "package": "src",
+   "status": "new",
+   "lines": 59,
+   "changed_lines": 59,
+   "area": "worldgen"
+  },
+  {
+   "class": "ComponentVillageWoodHut",
+   "package": "src",
+   "status": "new",
+   "lines": 75,
+   "changed_lines": 75,
+   "area": "worldgen"
+  },
+  {
+   "class": "CompressedStreamTools",
+   "package": "src",
+   "status": "changed",
+   "lines": 81,
+   "changed_lines": 50,
+   "area": "world"
+  },
+  {
+   "class": "Container",
+   "package": "src",
+   "status": "changed",
+   "lines": 227,
+   "changed_lines": 97,
+   "area": "gui"
+  },
+  {
+   "class": "ContainerChest",
+   "package": "src",
+   "status": "changed",
+   "lines": 54,
+   "changed_lines": 21,
+   "area": "gui"
+  },
+  {
+   "class": "ContainerCreative",
+   "package": "src",
+   "status": "new",
+   "lines": 71,
+   "changed_lines": 71,
+   "area": "gui"
+  },
+  {
+   "class": "ContainerDispenser",
+   "package": "src",
+   "status": "changed",
+   "lines": 50,
+   "changed_lines": 34,
+   "area": "gui"
+  },
+  {
+   "class": "ContainerFurnace",
+   "package": "src",
+   "status": "changed",
+   "lines": 87,
+   "changed_lines": 27,
+   "area": "gui"
+  },
+  {
+   "class": "ContainerPlayer",
+   "package": "src",
+   "status": "changed",
+   "lines": 84,
+   "changed_lines": 13,
+   "area": "gui"
+  },
+  {
+   "class": "ContainerWorkbench",
+   "package": "src",
+   "status": "changed",
+   "lines": 82,
+   "changed_lines": 23,
+   "area": "gui"
+  },
+  {
+   "class": "CraftingManager",
+   "package": "src",
+   "status": "changed",
+   "lines": 161,
+   "changed_lines": 7,
+   "area": "gui"
+  },
+  {
+   "class": "DamageSource",
+   "package": "src",
+   "status": "new",
+   "lines": 61,
+   "changed_lines": 61,
+   "area": "entities"
+  },
+  {
+   "class": "DataWatcher",
+   "package": "src",
+   "status": "changed",
+   "lines": 154,
+   "changed_lines": 3,
+   "area": "entities"
+  },
+  {
+   "class": "EffectRenderer",
+   "package": "src",
+   "status": "changed",
+   "lines": 143,
+   "changed_lines": 14,
+   "area": "rendering"
+  },
+  {
+   "class": "Empty1",
+   "package": "src",
+   "status": "same",
+   "lines": 3,
+   "changed_lines": 0,
+   "area": "world"
+  },
+  {
+   "class": "Empty2",
+   "package": "src",
+   "status": "same",
+   "lines": 3,
+   "changed_lines": 0,
+   "area": "world"
+  },
+  {
+   "class": "EmptyChunk",
+   "package": "src",
+   "status": "changed",
+   "lines": 93,
+   "changed_lines": 1,
+   "area": "world"
+  },
+  {
+   "class": "Entity",
+   "package": "src",
+   "status": "changed",
+   "lines": 985,
+   "changed_lines": 91,
+   "area": "entities"
+  },
+  {
+   "class": "EntityAnimal",
+   "package": "src",
+   "status": "changed",
+   "lines": 34,
+   "changed_lines": 13,
+   "area": "entities"
+  },
+  {
+   "class": "EntityArrow",
+   "package": "src",
+   "status": "changed",
+   "lines": 256,
+   "changed_lines": 41,
+   "area": "entities"
+  },
+  {
+   "class": "EntityAuraFX",
+   "package": "src",
+   "status": "new",
+   "lines": 30,
+   "changed_lines": 30,
+   "area": "rendering"
+  },
+  {
+   "class": "EntityBoat",
+   "package": "src",
+   "status": "changed",
+   "lines": 291,
+   "changed_lines": 42,
+   "area": "entities"
+  },
+  {
+   "class": "EntityBubbleFX",
+   "package": "src",
+   "status": "same",
+   "lines": 32,
+   "changed_lines": 0,
+   "area": "rendering"
+  },
+  {
+   "class": "EntityCaveSpider",
+   "package": "src",
+   "status": "new",
+   "lines": 31,
+   "changed_lines": 31,
+   "area": "entities"
+  },
+  {
+   "class": "EntityChicken",
+   "package": "src",
+   "status": "changed",
+   "lines": 73,
+   "changed_lines": 16,
+   "area": "entities"
+  },
+  {
+   "class": "EntityCloudFX",
+   "package": "src",
+   "status": "new",
+   "lines": 55,
+   "changed_lines": 55,
+   "area": "rendering"
+  },
+  {
+   "class": "EntityCow",
+   "package": "src",
+   "status": "changed",
+   "lines": 53,
+   "changed_lines": 20,
+   "area": "entities"
+  },
+  {
+   "class": "EntityCreature",
+   "package": "src",
+   "status": "changed",
+   "lines": 161,
+   "changed_lines": 40,
+   "area": "entities"
+  },
+  {
+   "class": "EntityCreeper",
+   "package": "src",
+   "status": "changed",
+   "lines": 117,
+   "changed_lines": 3,
+   "area": "entities"
+  },
+  {
+   "class": "EntityCrit2FX",
+   "package": "src",
+   "status": "new",
+   "lines": 34,
+   "changed_lines": 34,
+   "area": "rendering"
+  },
+  {
+   "class": "EntityCritFX",
+   "package": "src",
+   "status": "new",
+   "lines": 59,
+   "changed_lines": 59,
+   "area": "rendering"
+  },
+  {
+   "class": "EntityDamageSource",
+   "package": "src",
+   "status": "new",
+   "lines": 11,
+   "changed_lines": 11,
+   "area": "entities"
+  },
+  {
+   "class": "EntityDamageSourceIndirect",
+   "package": "src",
+   "status": "new",
+   "lines": 11,
+   "changed_lines": 11,
+   "area": "entities"
+  },
+  {
+   "class": "EntityDiggingFX",
+   "package": "src",
+   "status": "changed",
+   "lines": 42,
+   "changed_lines": 7,
+   "area": "rendering"
+  },
+  {
+   "class": "EntityEgg",
+   "package": "src",
+   "status": "changed",
+   "lines": 211,
+   "changed_lines": 26,
+   "area": "entities"
+  },
+  {
+   "class": "EntityEnderman",
+   "package": "src",
+   "status": "new",
+   "lines": 275,
+   "changed_lines": 275,
+   "area": "entities"
+  },
+  {
+   "class": "EntityExplodeFX",
+   "package": "src",
+   "status": "same",
+   "lines": 33,
+   "changed_lines": 0,
+   "area": "rendering"
+  },
+  {
+   "class": "EntityFX",
+   "package": "src",
+   "status": "changed",
+   "lines": 92,
+   "changed_lines": 1,
+   "area": "rendering"
+  },
+  {
+   "class": "EntityFallingSand",
+   "package": "src",
+   "status": "same",
+   "lines": 75,
+   "changed_lines": 0,
+   "area": "entities"
+  },
+  {
+   "class": "EntityFireball",
+   "package": "src",
+   "status": "changed",
+   "lines": 191,
+   "changed_lines": 53,
+   "area": "entities"
+  },
+  {
+   "class": "EntityFish",
+   "package": "src",
+   "status": "changed",
+   "lines": 335,
+   "changed_lines": 4,
+   "area": "entities"
+  },
+  {
+   "class": "EntityFlameFX",
+   "package": "src",
+   "status": "changed",
+   "lines": 67,
+   "changed_lines": 21,
+   "area": "rendering"
+  },
+  {
+   "class": "EntityFlying",
+   "package": "src",
+   "status": "changed",
+   "lines": 58,
+   "changed_lines": 1,
+   "area": "entities"
+  },
+  {
+   "class": "EntityFootStepFX",
+   "package": "src",
+   "status": "changed",
+   "lines": 49,
+   "changed_lines": 3,
+   "area": "rendering"
+  },
+  {
+   "class": "EntityGhast",
+   "package": "src",
+   "status": "changed",
+   "lines": 136,
+   "changed_lines": 3,
+   "area": "entities"
+  },
+  {
+   "class": "EntityGiantZombie",
+   "package": "src",
+   "status": "same",
+   "lines": 15,
+   "changed_lines": 0,
+   "area": "entities"
+  },
+  {
+   "class": "EntityHeartFX",
+   "package": "src",
+   "status": "changed",
+   "lines": 51,
+   "changed_lines": 3,
+   "area": "rendering"
+  },
+  {
+   "class": "EntityHugeExplodeFX",
+   "package": "src",
+   "status": "new",
+   "lines": 26,
+   "changed_lines": 26,
+   "area": "rendering"
+  },
+  {
+   "class": "EntityItem",
+   "package": "src",
+   "status": "changed",
+   "lines": 113,
+   "changed_lines": 7,
+   "area": "entities"
+  },
+  {
+   "class": "EntityLargeExplodeFX",
+   "package": "src",
+   "status": "new",
+   "lines": 58,
+   "changed_lines": 58,
+   "area": "rendering"
+  },
+  {
+   "class": "EntityLavaFX",
+   "package": "src",
+   "status": "changed",
+   "lines": 59,
+   "changed_lines": 19,
+   "area": "rendering"
+  },
+  {
+   "class": "EntityLightningBolt",
+   "package": "src",
+   "status": "changed",
+   "lines": 73,
+   "changed_lines": 16,
+   "area": "entities"
+  },
+  {
+   "class": "EntityList",
+   "package": "src",
+   "status": "changed",
+   "lines": 95,
+   "changed_lines": 6,
+   "area": "entities"
+  },
+  {
+   "class": "EntityLiving",
+   "package": "src",
+   "status": "changed",
+   "lines": 871,
+   "changed_lines": 237,
+   "area": "entities"
+  },
+  {
+   "class": "EntityMinecart",
+   "package": "src",
+   "status": "changed",
+   "lines": 709,
+   "changed_lines": 8,
+   "area": "entities"
+  },
+  {
+   "class": "EntityMob",
+   "package": "src",
+   "status": "changed",
+   "lines": 76,
+   "changed_lines": 13,
+   "area": "entities"
+  },
+  {
+   "class": "EntityNoteFX",
+   "package": "src",
+   "status": "changed",
+   "lines": 54,
+   "changed_lines": 3,
+   "area": "rendering"
+  },
+  {
+   "class": "EntityPainting",
+   "package": "src",
+   "status": "changed",
+   "lines": 210,
+   "changed_lines": 8,
+   "area": "entities"
+  },
+  {
+   "class": "EntityPickupFX",
+   "package": "src",
+   "status": "changed",
+   "lines": 52,
+   "changed_lines": 14,
+   "area": "rendering"
+  },
+  {
+   "class": "EntityPig",
+   "package": "src",
+   "status": "same",
+   "lines": 63,
+   "changed_lines": 0,
+   "area": "entities"
+  },
+  {
+   "class": "EntityPigZombie",
+   "package": "src",
+   "status": "changed",
+   "lines": 73,
+   "changed_lines": 12,
+   "area": "entities"
+  },
+  {
+   "class": "EntityPlayer",
+   "package": "src",
+   "status": "changed",
+   "lines": 923,
+   "changed_lines": 407,
+   "area": "player"
+  },
+  {
+   "class": "EntityPlayerSP",
+   "package": "src",
+   "status": "changed",
+   "lines": 303,
+   "changed_lines": 183,
+   "area": "player"
+  },
+  {
+   "class": "EntityPortalFX",
+   "package": "src",
+   "status": "changed",
+   "lines": 67,
+   "changed_lines": 27,
+   "area": "rendering"
+  },
+  {
+   "class": "EntityRainFX",
+   "package": "src",
+   "status": "changed",
+   "lines": 46,
+   "changed_lines": 1,
+   "area": "rendering"
+  },
+  {
+   "class": "EntityReddustFX",
+   "package": "src",
+   "status": "changed",
+   "lines": 58,
+   "changed_lines": 3,
+   "area": "rendering"
+  },
+  {
+   "class": "EntityRenderer",
+   "package": "src",
+   "status": "changed",
+   "lines": 1087,
+   "changed_lines": 695,
+   "area": "rendering"
+  },
+  {
+   "class": "EntitySheep",
+   "package": "src",
+   "status": "changed",
+   "lines": 80,
+   "changed_lines": 5,
+   "area": "entities"
+  },
+  {
+   "class": "EntitySilverfish",
+   "package": "src",
+   "status": "new",
+   "lines": 105,
+   "changed_lines": 105,
+   "area": "entities"
+  },
+  {
+   "class": "EntitySkeleton",
+   "package": "src",
+   "status": "changed",
+   "lines": 80,
+   "changed_lines": 29,
+   "area": "entities"
+  },
+  {
+   "class": "EntitySlime",
+   "package": "src",
+   "status": "changed",
+   "lines": 117,
+   "changed_lines": 4,
+   "area": "entities"
+  },
+  {
+   "class": "EntitySlimeFX",
+   "package": "src",
+   "status": "changed",
+   "lines": 38,
+   "changed_lines": 11,
+   "area": "rendering"
+  },
+  {
+   "class": "EntitySmokeFX",
+   "package": "src",
+   "status": "changed",
+   "lines": 56,
+   "changed_lines": 3,
+   "area": "rendering"
+  },
+  {
+   "class": "EntitySnowShovelFX",
+   "package": "src",
+   "status": "changed",
+   "lines": 52,
+   "changed_lines": 3,
+   "area": "rendering"
+  },
+  {
+   "class": "EntitySnowball",
+   "package": "src",
+   "status": "changed",
+   "lines": 200,
+   "changed_lines": 5,
+   "area": "entities"
+  },
+  {
+   "class": "EntitySorter",
+   "package": "src",
+   "status": "same",
+   "lines": 24,
+   "changed_lines": 0,
+   "area": "rendering"
+  },
+  {
+   "class": "EntitySpider",
+   "package": "src",
+   "status": "changed",
+   "lines": 69,
+   "changed_lines": 8,
+   "area": "entities"
+  },
+  {
+   "class": "EntitySplashFX",
+   "package": "src",
+   "status": "same",
+   "lines": 13,
+   "changed_lines": 0,
+   "area": "rendering"
+  },
+  {
+   "class": "EntitySquid",
+   "package": "src",
+   "status": "changed",
+   "lines": 118,
+   "changed_lines": 5,
+   "area": "entities"
+  },
+  {
+   "class": "EntitySuspendFX",
+   "package": "src",
+   "status": "new",
+   "lines": 28,
+   "changed_lines": 28,
+   "area": "rendering"
+  },
+  {
+   "class": "EntityTNTPrimed",
+   "package": "src",
+   "status": "same",
+   "lines": 69,
+   "changed_lines": 0,
+   "area": "entities"
+  },
+  {
+   "class": "EntityWaterMob",
+   "package": "src",
+   "status": "changed",
+   "lines": 24,
+   "changed_lines": 5,
+   "area": "entities"
+  },
+  {
+   "class": "EntityWeatherEffect",
+   "package": "src",
+   "status": "same",
+   "lines": 6,
+   "changed_lines": 0,
+   "area": "entities"
+  },
+  {
+   "class": "EntityWolf",
+   "package": "src",
+   "status": "changed",
+   "lines": 381,
+   "changed_lines": 46,
+   "area": "entities"
+  },
+  {
+   "class": "EntityXPOrb",
+   "package": "src",
+   "status": "new",
+   "lines": 143,
+   "changed_lines": 143,
+   "area": "entities"
+  },
+  {
+   "class": "EntityZombie",
+   "package": "src",
+   "status": "changed",
+   "lines": 30,
+   "changed_lines": 2,
+   "area": "entities"
+  },
+  {
+   "class": "EnumAction",
+   "package": "src",
+   "status": "new",
+   "lines": 7,
+   "changed_lines": 7,
+   "area": "world"
+  },
+  {
+   "class": "EnumArt",
+   "package": "src",
+   "status": "same",
+   "lines": 41,
+   "changed_lines": 0,
+   "area": "blocks"
+  },
+  {
+   "class": "EnumCreatureType",
+   "package": "src",
+   "status": "same",
+   "lines": 28,
+   "changed_lines": 0,
+   "area": "entities"
+  },
+  {
+   "class": "EnumDoor",
+   "package": "src",
+   "status": "new",
+   "lines": 7,
+   "changed_lines": 7,
+   "area": "worldgen"
+  },
+  {
+   "class": "EnumDoorHelper",
+   "package": "src",
+   "status": "new",
+   "lines": 22,
+   "changed_lines": 22,
+   "area": "world"
+  },
+  {
+   "class": "EnumMobType",
+   "package": "src",
+   "status": "same",
+   "lines": 6,
+   "changed_lines": 0,
+   "area": "entities"
+  },
+  {
+   "class": "EnumMovingObjectType",
+   "package": "src",
+   "status": "same",
+   "lines": 5,
+   "changed_lines": 0,
+   "area": "entities"
+  },
+  {
+   "class": "EnumOptions",
+   "package": "src",
+   "status": "changed",
+   "lines": 49,
+   "changed_lines": 2,
+   "area": "gui"
+  },
+  {
+   "class": "EnumOptionsMappingHelper",
+   "package": "src",
+   "status": "same",
+   "lines": 26,
+   "changed_lines": 0,
+   "area": "gui"
+  },
+  {
+   "class": "EnumSkyBlock",
+   "package": "src",
+   "status": "same",
+   "lines": 9,
+   "changed_lines": 0,
+   "area": "world"
+  },
+  {
+   "class": "EnumStatus",
+   "package": "src",
+   "status": "same",
+   "lines": 8,
+   "changed_lines": 0,
+   "area": "player"
+  },
+  {
+   "class": "EnumToolMaterial",
+   "package": "src",
+   "status": "same",
+   "lines": 30,
+   "changed_lines": 0,
+   "area": "blocks"
+  },
+  {
+   "class": "Explosion",
+   "package": "src",
+   "status": "changed",
+   "lines": 150,
+   "changed_lines": 2,
+   "area": "entities"
+  },
+  {
+   "class": "FontRenderer",
+   "package": "src",
+   "status": "changed",
+   "lines": 238,
+   "changed_lines": 5,
+   "area": "gui"
+  },
+  {
+   "class": "FoodStats",
+   "package": "src",
+   "status": "new",
+   "lines": 79,
+   "changed_lines": 79,
+   "area": "player"
+  },
+  {
+   "class": "Frustrum",
+   "package": "src",
+   "status": "same",
+   "lines": 18,
+   "changed_lines": 0,
+   "area": "rendering"
+  },
+  {
+   "class": "FurnaceRecipes",
+   "package": "src",
+   "status": "changed",
+   "lines": 33,
+   "changed_lines": 2,
+   "area": "gui"
+  },
+  {
+   "class": "GLAllocation",
+   "package": "src",
+   "status": "same",
+   "lines": 55,
+   "changed_lines": 0,
+   "area": "rendering"
+  },
+  {
+   "class": "GameSettings",
+   "package": "src",
+   "status": "changed",
+   "lines": 275,
+   "changed_lines": 32,
+   "area": "gui"
+  },
+  {
+   "class": "GenLayer",
+   "package": "src",
+   "status": "new",
+   "lines": 93,
+   "changed_lines": 93,
+   "area": "worldgen"
+  },
+  {
+   "class": "GenLayerDownfall",
+   "package": "src",
+   "status": "new",
+   "lines": 15,
+   "changed_lines": 15,
+   "area": "worldgen"
+  },
+  {
+   "class": "GenLayerDownfallMix",
+   "package": "src",
+   "status": "new",
+   "lines": 20,
+   "changed_lines": 20,
+   "area": "worldgen"
+  },
+  {
+   "class": "GenLayerIsland",
+   "package": "src",
+   "status": "new",
+   "lines": 35,
+   "changed_lines": 35,
+   "area": "worldgen"
+  },
+  {
+   "class": "GenLayerRiver",
+   "package": "src",
+   "status": "new",
+   "lines": 34,
+   "changed_lines": 34,
+   "area": "worldgen"
+  },
+  {
+   "class": "GenLayerRiverInit",
+   "package": "src",
+   "status": "new",
+   "lines": 18,
+   "changed_lines": 18,
+   "area": "worldgen"
+  },
+  {
+   "class": "GenLayerRiverMix",
+   "package": "src",
+   "status": "new",
+   "lines": 28,
+   "changed_lines": 28,
+   "area": "worldgen"
+  },
+  {
+   "class": "GenLayerSmooth",
+   "package": "src",
+   "status": "new",
+   "lines": 41,
+   "changed_lines": 41,
+   "area": "worldgen"
+  },
+  {
+   "class": "GenLayerSmoothZoom",
+   "package": "src",
+   "status": "new",
+   "lines": 48,
+   "changed_lines": 48,
+   "area": "worldgen"
+  },
+  {
+   "class": "GenLayerTemperature",
+   "package": "src",
+   "status": "new",
+   "lines": 15,
+   "changed_lines": 15,
+   "area": "worldgen"
+  },
+  {
+   "class": "GenLayerTemperatureMix",
+   "package": "src",
+   "status": "new",
+   "lines": 20,
+   "changed_lines": 20,
+   "area": "worldgen"
+  },
+  {
+   "class": "GenLayerVillageLandscape",
+   "package": "src",
+   "status": "new",
+   "lines": 19,
+   "changed_lines": 19,
+   "area": "worldgen"
+  },
+  {
+   "class": "GenLayerZoom",
+   "package": "src",
+   "status": "new",
+   "lines": 87,
+   "changed_lines": 87,
+   "area": "worldgen"
+  },
+  {
+   "class": "GenLayerZoomFuzzy",
+   "package": "src",
+   "status": "new",
+   "lines": 46,
+   "changed_lines": 46,
+   "area": "worldgen"
+  },
+  {
+   "class": "GenLayerZoomVoronoi",
+   "package": "src",
+   "status": "new",
+   "lines": 68,
+   "changed_lines": 68,
+   "area": "worldgen"
+  },
+  {
+   "class": "Gui",
+   "package": "src",
+   "status": "same",
+   "lines": 96,
+   "changed_lines": 0,
+   "area": "gui"
+  },
+  {
+   "class": "GuiAchievement",
+   "package": "src",
+   "status": "changed",
+   "lines": 101,
+   "changed_lines": 45,
+   "area": "gui"
+  },
+  {
+   "class": "GuiAchievements",
+   "package": "src",
+   "status": "changed",
+   "lines": 297,
+   "changed_lines": 74,
+   "area": "gui"
+  },
+  {
+   "class": "GuiButton",
+   "package": "src",
+   "status": "changed",
+   "lines": 63,
+   "changed_lines": 1,
+   "area": "gui"
+  },
+  {
+   "class": "GuiChat",
+   "package": "src",
+   "status": "changed",
+   "lines": 58,
+   "changed_lines": 2,
+   "area": "gui"
+  },
+  {
+   "class": "GuiChest",
+   "package": "src",
+   "status": "changed",
+   "lines": 30,
+   "changed_lines": 1,
+   "area": "gui"
+  },
+  {
+   "class": "GuiConflictWarning",
+   "package": "src",
+   "status": "same",
+   "lines": 27,
+   "changed_lines": 0,
+   "area": "gui"
+  },
+  {
+   "class": "GuiContainer",
+   "package": "src",
+   "status": "changed",
+   "lines": 165,
+   "changed_lines": 51,
+   "area": "gui"
+  },
+  {
+   "class": "GuiContainerCreative",
+   "package": "src",
+   "status": "new",
+   "lines": 157,
+   "changed_lines": 157,
+   "area": "gui"
+  },
+  {
+   "class": "GuiControls",
+   "package": "src",
+   "status": "changed",
+   "lines": 76,
+   "changed_lines": 29,
+   "area": "gui"
+  },
+  {
+   "class": "GuiCrafting",
+   "package": "src",
+   "status": "changed",
+   "lines": 22,
+   "changed_lines": 1,
+   "area": "gui"
+  },
+  {
+   "class": "GuiCreateWorld",
+   "package": "src",
+   "status": "changed",
+   "lines": 185,
+   "changed_lines": 94,
+   "area": "gui"
+  },
+  {
+   "class": "GuiDispenser",
+   "package": "src",
+   "status": "same",
+   "lines": 19,
+   "changed_lines": 0,
+   "area": "gui"
+  },
+  {
+   "class": "GuiEditSign",
+   "package": "src",
+   "status": "same",
+   "lines": 85,
+   "changed_lines": 0,
+   "area": "gui"
+  },
+  {
+   "class": "GuiErrorScreen",
+   "package": "src",
+   "status": "same",
+   "lines": 25,
+   "changed_lines": 0,
+   "area": "gui"
+  },
+  {
+   "class": "GuiFurnace",
+   "package": "src",
+   "status": "same",
+   "lines": 28,
+   "changed_lines": 0,
+   "area": "gui"
+  },
+  {
+   "class": "GuiGameOver",
+   "package": "src",
+   "status": "same",
+   "lines": 38,
+   "changed_lines": 0,
+   "area": "gui"
+  },
+  {
+   "class": "GuiIngame",
+   "package": "src",
+   "status": "changed",
+   "lines": 485,
+   "changed_lines": 321,
+   "area": "gui"
+  },
+  {
+   "class": "GuiIngameMenu",
+   "package": "src",
+   "status": "same",
+   "lines": 57,
+   "changed_lines": 0,
+   "area": "gui"
+  },
+  {
+   "class": "GuiInventory",
+   "package": "src",
+   "status": "changed",
+   "lines": 75,
+   "changed_lines": 14,
+   "area": "gui"
+  },
+  {
+   "class": "GuiMainMenu",
+   "package": "src",
+   "status": "changed",
+   "lines": 237,
+   "changed_lines": 149,
+   "area": "gui"
+  },
+  {
+   "class": "GuiOptions",
+   "package": "src",
+   "status": "changed",
+   "lines": 55,
+   "changed_lines": 2,
+   "area": "gui"
+  },
+  {
+   "class": "GuiParticle",
+   "package": "src",
+   "status": "changed",
+   "lines": 36,
+   "changed_lines": 20,
+   "area": "gui"
+  },
+  {
+   "class": "GuiRenameWorld",
+   "package": "src",
+   "status": "changed",
+   "lines": 60,
+   "changed_lines": 17,
+   "area": "gui"
+  },
+  {
+   "class": "GuiSavingLevelString",
+   "package": "src",
+   "status": "new",
+   "lines": 8,
+   "changed_lines": 8,
+   "area": "gui"
+  },
+  {
+   "class": "GuiScreen",
+   "package": "src",
+   "status": "changed",
+   "lines": 140,
+   "changed_lines": 3,
+   "area": "gui"
+  },
+  {
+   "class": "GuiSelectWorld",
+   "package": "src",
+   "status": "changed",
+   "lines": 156,
+   "changed_lines": 18,
+   "area": "gui"
+  },
+  {
+   "class": "GuiSlider",
+   "package": "src",
+   "status": "same",
+   "lines": 54,
+   "changed_lines": 0,
+   "area": "gui"
+  },
+  {
+   "class": "GuiSlot",
+   "package": "src",
+   "status": "changed",
+   "lines": 284,
+   "changed_lines": 13,
+   "area": "gui"
+  },
+  {
+   "class": "GuiSlotStats",
+   "package": "src",
+   "status": "changed",
+   "lines": 152,
+   "changed_lines": 18,
+   "area": "gui"
+  },
+  {
+   "class": "GuiSlotStatsBlock",
+   "package": "src",
+   "status": "changed",
+   "lines": 57,
+   "changed_lines": 13,
+   "area": "gui"
+  },
+  {
+   "class": "GuiSlotStatsGeneral",
+   "package": "src",
+   "status": "changed",
+   "lines": 29,
+   "changed_lines": 4,
+   "area": "gui"
+  },
+  {
+   "class": "GuiSlotStatsItem",
+   "package": "src",
+   "status": "changed",
+   "lines": 57,
+   "changed_lines": 12,
+   "area": "gui"
+  },
+  {
+   "class": "GuiSmallButton",
+   "package": "src",
+   "status": "same",
+   "lines": 18,
+   "changed_lines": 0,
+   "area": "gui"
+  },
+  {
+   "class": "GuiStats",
+   "package": "src",
+   "status": "changed",
+   "lines": 150,
+   "changed_lines": 57,
+   "area": "gui"
+  },
+  {
+   "class": "GuiTextField",
+   "package": "src",
+   "status": "same",
+   "lines": 81,
+   "changed_lines": 0,
+   "area": "gui"
+  },
+  {
+   "class": "GuiTexturePackSlot",
+   "package": "src",
+   "status": "changed",
+   "lines": 49,
+   "changed_lines": 9,
+   "area": "gui"
+  },
+  {
+   "class": "GuiTexturePacks",
+   "package": "src",
+   "status": "changed",
+   "lines": 97,
+   "changed_lines": 8,
+   "area": "gui"
+  },
+  {
+   "class": "GuiUnused",
+   "package": "src",
+   "status": "same",
+   "lines": 15,
+   "changed_lines": 0,
+   "area": "gui"
+  },
+  {
+   "class": "GuiVideoSettings",
+   "package": "src",
+   "status": "changed",
+   "lines": 52,
+   "changed_lines": 13,
+   "area": "gui"
+  },
+  {
+   "class": "GuiWorldSlot",
+   "package": "src",
+   "status": "changed",
+   "lines": 51,
+   "changed_lines": 2,
+   "area": "gui"
+  },
+  {
+   "class": "GuiYesNo",
+   "package": "src",
+   "status": "changed",
+   "lines": 30,
+   "changed_lines": 6,
+   "area": "gui"
+  },
+  {
+   "class": "IBlockAccess",
+   "package": "src",
+   "status": "changed",
+   "lines": 15,
+   "changed_lines": 6,
+   "area": "world"
+  },
+  {
+   "class": "ICamera",
+   "package": "src",
+   "status": "same",
+   "lines": 5,
+   "changed_lines": 0,
+   "area": "rendering"
+  },
+  {
+   "class": "IChunkLoader",
+   "package": "src",
+   "status": "same",
+   "lines": 9,
+   "changed_lines": 0,
+   "area": "world"
+  },
+  {
+   "class": "IChunkProvider",
+   "package": "src",
+   "status": "changed",
+   "lines": 11,
+   "changed_lines": 1,
+   "area": "world"
+  },
+  {
+   "class": "ICrafting",
+   "package": "src",
+   "status": "changed",
+   "lines": 5,
+   "changed_lines": 2,
+   "area": "gui"
+  },
+  {
+   "class": "IInvBasic",
+   "package": "src",
+   "status": "same",
+   "lines": 4,
+   "changed_lines": 0,
+   "area": "gui"
+  },
+  {
+   "class": "IInventory",
+   "package": "src",
+   "status": "changed",
+   "lines": 13,
+   "changed_lines": 4,
+   "area": "gui"
+  },
+  {
+   "class": "IMob",
+   "package": "src",
+   "status": "same",
+   "lines": 3,
+   "changed_lines": 0,
+   "area": "entities"
+  },
+  {
+   "class": "IProgressUpdate",
+   "package": "src",
+   "status": "same",
+   "lines": 6,
+   "changed_lines": 0,
+   "area": "world"
+  },
+  {
+   "class": "IRecipe",
+   "package": "src",
+   "status": "same",
+   "lines": 7,
+   "changed_lines": 0,
+   "area": "gui"
+  },
+  {
+   "class": "ISaveFormat",
+   "package": "src",
+   "status": "changed",
+   "lines": 13,
+   "changed_lines": 1,
+   "area": "world"
+  },
+  {
+   "class": "ISaveHandler",
+   "package": "src",
+   "status": "changed",
+   "lines": 11,
+   "changed_lines": 1,
+   "area": "world"
+  },
+  {
+   "class": "IStatStringFormat",
+   "package": "src",
+   "status": "same",
+   "lines": 4,
+   "changed_lines": 0,
+   "area": "world"
+  },
+  {
+   "class": "IStatType",
+   "package": "src",
+   "status": "changed",
+   "lines": 4,
+   "changed_lines": 1,
+   "area": "world"
+  },
+  {
+   "class": "IWorldAccess",
+   "package": "src",
+   "status": "changed",
+   "lines": 12,
+   "changed_lines": 3,
+   "area": "world"
+  },
+  {
+   "class": "ImageBuffer",
+   "package": "src",
+   "status": "same",
+   "lines": 5,
+   "changed_lines": 0,
+   "area": "rendering"
+  },
+  {
+   "class": "IntCache",
+   "package": "src",
+   "status": "new",
+   "lines": 52,
+   "changed_lines": 52,
+   "area": "worldgen"
+  },
+  {
+   "class": "InventoryBasic",
+   "package": "src",
+   "status": "changed",
+   "lines": 66,
+   "changed_lines": 6,
+   "area": "gui"
+  },
+  {
+   "class": "InventoryCraftResult",
+   "package": "src",
+   "status": "changed",
+   "lines": 37,
+   "changed_lines": 6,
+   "area": "gui"
+  },
+  {
+   "class": "InventoryCrafting",
+   "package": "src",
+   "status": "changed",
+   "lines": 65,
+   "changed_lines": 11,
+   "area": "gui"
+  },
+  {
+   "class": "InventoryLargeChest",
+   "package": "src",
+   "status": "changed",
+   "lines": 54,
+   "changed_lines": 18,
+   "area": "gui"
+  },
+  {
+   "class": "InventoryPlayer",
+   "package": "src",
+   "status": "changed",
+   "lines": 316,
+   "changed_lines": 14,
+   "area": "player"
+  },
+  {
+   "class": "Item",
+   "package": "src",
+   "status": "changed",
+   "lines": 258,
+   "changed_lines": 35,
+   "area": "blocks"
+  },
+  {
+   "class": "ItemArmor",
+   "package": "src",
+   "status": "same",
+   "lines": 18,
+   "changed_lines": 0,
+   "area": "blocks"
+  },
+  {
+   "class": "ItemAxe",
+   "package": "src",
+   "status": "same",
+   "lines": 7,
+   "changed_lines": 0,
+   "area": "blocks"
+  },
+  {
+   "class": "ItemBed",
+   "package": "src",
+   "status": "changed",
+   "lines": 41,
+   "changed_lines": 10,
+   "area": "blocks"
+  },
+  {
+   "class": "ItemBlock",
+   "package": "src",
+   "status": "changed",
+   "lines": 66,
+   "changed_lines": 31,
+   "area": "blocks"
+  },
+  {
+   "class": "ItemBoat",
+   "package": "src",
+   "status": "same",
+   "lines": 42,
+   "changed_lines": 0,
+   "area": "blocks"
+  },
+  {
+   "class": "ItemBow",
+   "package": "src",
+   "status": "changed",
+   "lines": 44,
+   "changed_lines": 44,
+   "area": "blocks"
+  },
+  {
+   "class": "ItemBucket",
+   "package": "src",
+   "status": "changed",
+   "lines": 94,
+   "changed_lines": 13,
+   "area": "blocks"
+  },
+  {
+   "class": "ItemCloth",
+   "package": "src",
+   "status": "changed",
+   "lines": 17,
+   "changed_lines": 2,
+   "area": "blocks"
+  },
+  {
+   "class": "ItemCoal",
+   "package": "src",
+   "status": "same",
+   "lines": 11,
+   "changed_lines": 0,
+   "area": "blocks"
+  },
+  {
+   "class": "ItemDoor",
+   "package": "src",
+   "status": "changed",
+   "lines": 70,
+   "changed_lines": 97,
+   "area": "blocks"
+  },
+  {
+   "class": "ItemDye",
+   "package": "src",
+   "status": "changed",
+   "lines": 93,
+   "changed_lines": 96,
+   "area": "blocks"
+  },
+  {
+   "class": "ItemEgg",
+   "package": "src",
+   "status": "same",
+   "lines": 15,
+   "changed_lines": 0,
+   "area": "blocks"
+  },
+  {
+   "class": "ItemFishingRod",
+   "package": "src",
+   "status": "same",
+   "lines": 28,
+   "changed_lines": 0,
+   "area": "blocks"
+  },
+  {
+   "class": "ItemFlintAndSteel",
+   "package": "src",
+   "status": "changed",
+   "lines": 39,
+   "changed_lines": 14,
+   "area": "blocks"
+  },
+  {
+   "class": "ItemFood",
+   "package": "src",
+   "status": "changed",
+   "lines": 65,
+   "changed_lines": 61,
+   "area": "blocks"
+  },
+  {
+   "class": "ItemHoe",
+   "package": "src",
+   "status": "changed",
+   "lines": 32,
+   "changed_lines": 16,
+   "area": "blocks"
+  },
+  {
+   "class": "ItemLeaves",
+   "package": "src",
+   "status": "changed",
+   "lines": 17,
+   "changed_lines": 1,
+   "area": "blocks"
+  },
+  {
+   "class": "ItemLog",
+   "package": "src",
+   "status": "changed",
+   "lines": 16,
+   "changed_lines": 5,
+   "area": "blocks"
+  },
+  {
+   "class": "ItemMap",
+   "package": "src",
+   "status": "changed",
+   "lines": 204,
+   "changed_lines": 2,
+   "area": "blocks"
+  },
+  {
+   "class": "ItemMapBase",
+   "package": "src",
+   "status": "same",
+   "lines": 6,
+   "changed_lines": 0,
+   "area": "blocks"
+  },
+  {
+   "class": "ItemMinecart",
+   "package": "src",
+   "status": "same",
+   "lines": 21,
+   "changed_lines": 0,
+   "area": "blocks"
+  },
+  {
+   "class": "ItemPainting",
+   "package": "src",
+   "status": "changed",
+   "lines": 36,
+   "changed_lines": 13,
+   "area": "blocks"
+  },
+  {
+   "class": "ItemPickaxe",
+   "package": "src",
+   "status": "same",
+   "lines": 10,
+   "changed_lines": 0,
+   "area": "blocks"
+  },
+  {
+   "class": "ItemPiston",
+   "package": "src",
+   "status": "same",
+   "lines": 9,
+   "changed_lines": 0,
+   "area": "blocks"
+  },
+  {
+   "class": "ItemRecord",
+   "package": "src",
+   "status": "changed",
+   "lines": 23,
+   "changed_lines": 1,
+   "area": "blocks"
+  },
+  {
+   "class": "ItemRedstone",
+   "package": "src",
+   "status": "changed",
+   "lines": 40,
+   "changed_lines": 11,
+   "area": "blocks"
+  },
+  {
+   "class": "ItemReed",
+   "package": "src",
+   "status": "changed",
+   "lines": 51,
+   "changed_lines": 17,
+   "area": "blocks"
+  },
+  {
+   "class": "ItemRenderer",
+   "package": "src",
+   "status": "changed",
+   "lines": 481,
+   "changed_lines": 156,
+   "area": "rendering"
+  },
+  {
+   "class": "ItemSaddle",
+   "package": "src",
+   "status": "same",
+   "lines": 20,
+   "changed_lines": 0,
+   "area": "blocks"
+  },
+  {
+   "class": "ItemSapling",
+   "package": "src",
+   "status": "same",
+   "lines": 14,
+   "changed_lines": 0,
+   "area": "blocks"
+  },
+  {
+   "class": "ItemSeeds",
+   "package": "src",
+   "status": "changed",
+   "lines": 24,
+   "changed_lines": 3,
+   "area": "blocks"
+  },
+  {
+   "class": "ItemShears",
+   "package": "src",
+   "status": "changed",
+   "lines": 22,
+   "changed_lines": 6,
+   "area": "blocks"
+  },
+  {
+   "class": "ItemSign",
+   "package": "src",
+   "status": "changed",
+   "lines": 48,
+   "changed_lines": 8,
+   "area": "blocks"
+  },
+  {
+   "class": "ItemSlab",
+   "package": "src",
+   "status": "changed",
+   "lines": 21,
+   "changed_lines": 6,
+   "area": "blocks"
+  },
+  {
+   "class": "ItemSnowball",
+   "package": "src",
+   "status": "same",
+   "lines": 15,
+   "changed_lines": 0,
+   "area": "blocks"
+  },
+  {
+   "class": "ItemSoup",
+   "package": "src",
+   "status": "changed",
+   "lines": 11,
+   "changed_lines": 3,
+   "area": "blocks"
+  },
+  {
+   "class": "ItemSpade",
+   "package": "src",
+   "status": "same",
+   "lines": 10,
+   "changed_lines": 0,
+   "area": "blocks"
+  },
+  {
+   "class": "ItemStack",
+   "package": "src",
+   "status": "changed",
+   "lines": 184,
+   "changed_lines": 30,
+   "area": "blocks"
+  },
+  {
+   "class": "ItemSword",
+   "package": "src",
+   "status": "changed",
+   "lines": 40,
+   "changed_lines": 13,
+   "area": "blocks"
+  },
+  {
+   "class": "ItemTool",
+   "package": "src",
+   "status": "same",
+   "lines": 38,
+   "changed_lines": 0,
+   "area": "blocks"
+  },
+  {
+   "class": "ItemVine",
+   "package": "src",
+   "status": "new",
+   "lines": 20,
+   "changed_lines": 20,
+   "area": "blocks"
+  },
+  {
+   "class": "KeyBinding",
+   "package": "src",
+   "status": "changed",
+   "lines": 57,
+   "changed_lines": 61,
+   "area": "gui"
+  },
+  {
+   "class": "LayerIsland",
+   "package": "src",
+   "status": "new",
+   "lines": 19,
+   "changed_lines": 19,
+   "area": "world"
+  },
+  {
+   "class": "LoadingScreenRenderer",
+   "package": "src",
+   "status": "changed",
+   "lines": 112,
+   "changed_lines": 2,
+   "area": "gui"
+  },
+  {
+   "class": "MCHash",
+   "package": "src",
+   "status": "changed",
+   "lines": 129,
+   "changed_lines": 26,
+   "area": "world"
+  },
+  {
+   "class": "MCHashEntry",
+   "package": "src",
+   "status": "same",
+   "lines": 42,
+   "changed_lines": 0,
+   "area": "world"
+  },
+  {
+   "class": "MD5String",
+   "package": "src",
+   "status": "same",
+   "lines": 20,
+   "changed_lines": 0,
+   "area": "world"
+  },
+  {
+   "class": "MapColor",
+   "package": "src",
+   "status": "same",
+   "lines": 25,
+   "changed_lines": 0,
+   "area": "blocks"
+  },
+  {
+   "class": "MapCoord",
+   "package": "src",
+   "status": "same",
+   "lines": 15,
+   "changed_lines": 0,
+   "area": "blocks"
+  },
+  {
+   "class": "MapData",
+   "package": "src",
+   "status": "same",
+   "lines": 126,
+   "changed_lines": 0,
+   "area": "blocks"
+  },
+  {
+   "class": "MapDataBase",
+   "package": "src",
+   "status": "same",
+   "lines": 19,
+   "changed_lines": 0,
+   "area": "blocks"
+  },
+  {
+   "class": "MapGenBase",
+   "package": "src",
+   "status": "changed",
+   "lines": 24,
+   "changed_lines": 10,
+   "area": "worldgen"
+  },
+  {
+   "class": "MapGenCaves",
+   "package": "src",
+   "status": "changed",
+   "lines": 175,
+   "changed_lines": 144,
+   "area": "worldgen"
+  },
+  {
+   "class": "MapGenCavesHell",
+   "package": "src",
+   "status": "changed",
+   "lines": 158,
+   "changed_lines": 31,
+   "area": "worldgen"
+  },
+  {
+   "class": "MapGenMineshaft",
+   "package": "src",
+   "status": "new",
+   "lines": 9,
+   "changed_lines": 9,
+   "area": "worldgen"
+  },
+  {
+   "class": "MapGenRavine",
+   "package": "src",
+   "status": "new",
+   "lines": 164,
+   "changed_lines": 164,
+   "area": "worldgen"
+  },
+  {
+   "class": "MapGenStronghold",
+   "package": "src",
+   "status": "new",
+   "lines": 48,
+   "changed_lines": 48,
+   "area": "worldgen"
+  },
+  {
+   "class": "MapGenStructure",
+   "package": "src",
+   "status": "new",
+   "lines": 35,
+   "changed_lines": 35,
+   "area": "worldgen"
+  },
+  {
+   "class": "MapGenVillage",
+   "package": "src",
+   "status": "new",
+   "lines": 36,
+   "changed_lines": 36,
+   "area": "worldgen"
+  },
+  {
+   "class": "MapInfo",
+   "package": "src",
+   "status": "same",
+   "lines": 21,
+   "changed_lines": 0,
+   "area": "world"
+  },
+  {
+   "class": "MapItemRenderer",
+   "package": "src",
+   "status": "changed",
+   "lines": 90,
+   "changed_lines": 15,
+   "area": "rendering"
+  },
+  {
+   "class": "MapStorage",
+   "package": "src",
+   "status": "changed",
+   "lines": 146,
+   "changed_lines": 11,
+   "area": "world"
+  },
+  {
+   "class": "Material",
+   "package": "src",
+   "status": "changed",
+   "lines": 92,
+   "changed_lines": 12,
+   "area": "blocks"
+  },
+  {
+   "class": "MaterialLiquid",
+   "package": "src",
+   "status": "same",
+   "lines": 17,
+   "changed_lines": 0,
+   "area": "blocks"
+  },
+  {
+   "class": "MaterialLogic",
+   "package": "src",
+   "status": "same",
+   "lines": 15,
+   "changed_lines": 0,
+   "area": "blocks"
+  },
+  {
+   "class": "MaterialPortal",
+   "package": "src",
+   "status": "same",
+   "lines": 15,
+   "changed_lines": 0,
+   "area": "blocks"
+  },
+  {
+   "class": "MaterialTransparent",
+   "package": "src",
+   "status": "same",
+   "lines": 16,
+   "changed_lines": 0,
+   "area": "blocks"
+  },
+  {
+   "class": "MaterialWeb",
+   "package": "src",
+   "status": "new",
+   "lines": 9,
+   "changed_lines": 9,
+   "area": "blocks"
+  },
+  {
+   "class": "MathHelper",
+   "package": "src",
+   "status": "changed",
+   "lines": 58,
+   "changed_lines": 15,
+   "area": "world"
+  },
+  {
+   "class": "McRegionChunkLoader",
+   "package": "src",
+   "status": "same",
+   "lines": 58,
+   "changed_lines": 0,
+   "area": "world"
+  },
+  {
+   "class": "MinecraftError",
+   "package": "src",
+   "status": "same",
+   "lines": 3,
+   "changed_lines": 0,
+   "area": "world"
+  },
+  {
+   "class": "MinecraftException",
+   "package": "src",
+   "status": "same",
+   "lines": 6,
+   "changed_lines": 0,
+   "area": "world"
+  },
+  {
+   "class": "ModelBase",
+   "package": "src",
+   "status": "changed",
+   "lines": 18,
+   "changed_lines": 10,
+   "area": "rendering"
+  },
+  {
+   "class": "ModelBed",
+   "package": "src",
+   "status": "changed",
+   "lines": 11,
+   "changed_lines": 7,
+   "area": "rendering"
+  },
+  {
+   "class": "ModelBiped",
+   "package": "src",
+   "status": "changed",
+   "lines": 146,
+   "changed_lines": 18,
+   "area": "rendering"
+  },
+  {
+   "class": "ModelBoat",
+   "package": "src",
+   "status": "changed",
+   "lines": 36,
+   "changed_lines": 8,
+   "area": "rendering"
+  },
+  {
+   "class": "ModelChest",
+   "package": "src",
+   "status": "new",
+   "lines": 28,
+   "changed_lines": 28,
+   "area": "rendering"
+  },
+  {
+   "class": "ModelChicken",
+   "package": "src",
+   "status": "changed",
+   "lines": 62,
+   "changed_lines": 18,
+   "area": "rendering"
+  },
+  {
+   "class": "ModelCow",
+   "package": "src",
+   "status": "changed",
+   "lines": 46,
+   "changed_lines": 10,
+   "area": "rendering"
+  },
+  {
+   "class": "ModelCreeper",
+   "package": "src",
+   "status": "changed",
+   "lines": 54,
+   "changed_lines": 18,
+   "area": "rendering"
+  },
+  {
+   "class": "ModelEnderman",
+   "package": "src",
+   "status": "new",
+   "lines": 93,
+   "changed_lines": 93,
+   "area": "rendering"
+  },
+  {
+   "class": "ModelGhast",
+   "package": "src",
+   "status": "changed",
+   "lines": 35,
+   "changed_lines": 7,
+   "area": "rendering"
+  },
+  {
+   "class": "ModelLargeChest",
+   "package": "src",
+   "status": "new",
+   "lines": 20,
+   "changed_lines": 20,
+   "area": "rendering"
+  },
+  {
+   "class": "ModelMinecart",
+   "package": "src",
+   "status": "changed",
+   "lines": 41,
+   "changed_lines": 10,
+   "area": "rendering"
+  },
+  {
+   "class": "ModelPig",
+   "package": "src",
+   "status": "changed",
+   "lines": 21,
+   "changed_lines": 16,
+   "area": "rendering"
+  },
+  {
+   "class": "ModelQuadruped",
+   "package": "src",
+   "status": "changed",
+   "lines": 46,
+   "changed_lines": 14,
+   "area": "rendering"
+  },
+  {
+   "class": "ModelRenderer",
+   "package": "src",
+   "status": "changed",
+   "lines": 193,
+   "changed_lines": 49,
+   "area": "rendering"
+  },
+  {
+   "class": "ModelSheep1",
+   "package": "src",
+   "status": "changed",
+   "lines": 25,
+   "changed_lines": 6,
+   "area": "rendering"
+  },
+  {
+   "class": "ModelSheep2",
+   "package": "src",
+   "status": "changed",
+   "lines": 12,
+   "changed_lines": 2,
+   "area": "rendering"
+  },
+  {
+   "class": "ModelSilverfish",
+   "package": "src",
+   "status": "new",
+   "lines": 54,
+   "changed_lines": 54,
+   "area": "rendering"
+  },
+  {
+   "class": "ModelSkeleton",
+   "package": "src",
+   "status": "changed",
+   "lines": 37,
+   "changed_lines": 22,
+   "area": "rendering"
+  },
+  {
+   "class": "ModelSlime",
+   "package": "src",
+   "status": "changed",
+   "lines": 32,
+   "changed_lines": 11,
+   "area": "rendering"
+  },
+  {
+   "class": "ModelSpider",
+   "package": "src",
+   "status": "changed",
+   "lines": 112,
+   "changed_lines": 24,
+   "area": "rendering"
+  },
+  {
+   "class": "ModelSquid",
+   "package": "src",
+   "status": "changed",
+   "lines": 35,
+   "changed_lines": 7,
+   "area": "rendering"
+  },
+  {
+   "class": "ModelWolf",
+   "package": "src",
+   "status": "changed",
+   "lines": 129,
+   "changed_lines": 25,
+   "area": "rendering"
+  },
+  {
+   "class": "ModelZombie",
+   "package": "src",
+   "status": "same",
+   "lines": 20,
+   "changed_lines": 0,
+   "area": "rendering"
+  },
+  {
+   "class": "MouseFilter",
+   "package": "src",
+   "status": "same",
+   "lines": 16,
+   "changed_lines": 0,
+   "area": "world"
+  },
+  {
+   "class": "MouseHelper",
+   "package": "src",
+   "status": "same",
+   "lines": 38,
+   "changed_lines": 0,
+   "area": "rendering"
+  },
+  {
+   "class": "MovementInput",
+   "package": "src",
+   "status": "changed",
+   "lines": 10,
+   "changed_lines": 6,
+   "area": "player"
+  },
+  {
+   "class": "MovementInputFromOptions",
+   "package": "src",
+   "status": "changed",
+   "lines": 29,
+   "changed_lines": 46,
+   "area": "player"
+  },
+  {
+   "class": "MovingObjectPosition",
+   "package": "src",
+   "status": "same",
+   "lines": 23,
+   "changed_lines": 0,
+   "area": "entities"
+  },
+  {
+   "class": "MusInputStream",
+   "package": "src",
+   "status": "same",
+   "lines": 30,
+   "changed_lines": 0,
+   "area": "rendering"
+  },
+  {
+   "class": "NBTBase",
+   "package": "src",
+   "status": "same",
+   "lines": 91,
+   "changed_lines": 0,
+   "area": "world"
+  },
+  {
+   "class": "NBTTagByte",
+   "package": "src",
+   "status": "same",
+   "lines": 24,
+   "changed_lines": 0,
+   "area": "world"
+  },
+  {
+   "class": "NBTTagByteArray",
+   "package": "src",
+   "status": "same",
+   "lines": 27,
+   "changed_lines": 0,
+   "area": "world"
+  },
+  {
+   "class": "NBTTagCompound",
+   "package": "src",
+   "status": "same",
+   "lines": 107,
+   "changed_lines": 0,
+   "area": "world"
+  },
+  {
+   "class": "NBTTagDouble",
+   "package": "src",
+   "status": "same",
+   "lines": 24,
+   "changed_lines": 0,
+   "area": "world"
+  },
+  {
+   "class": "NBTTagEnd",
+   "package": "src",
+   "status": "same",
+   "lines": 16,
+   "changed_lines": 0,
+   "area": "world"
+  },
+  {
+   "class": "NBTTagFloat",
+   "package": "src",
+   "status": "same",
+   "lines": 24,
+   "changed_lines": 0,
+   "area": "world"
+  },
+  {
+   "class": "NBTTagInt",
+   "package": "src",
+   "status": "same",
+   "lines": 24,
+   "changed_lines": 0,
+   "area": "world"
+  },
+  {
+   "class": "NBTTagList",
+   "package": "src",
+   "status": "same",
+   "lines": 48,
+   "changed_lines": 0,
+   "area": "world"
+  },
+  {
+   "class": "NBTTagLong",
+   "package": "src",
+   "status": "same",
+   "lines": 24,
+   "changed_lines": 0,
+   "area": "world"
+  },
+  {
+   "class": "NBTTagShort",
+   "package": "src",
+   "status": "same",
+   "lines": 24,
+   "changed_lines": 0,
+   "area": "world"
+  },
+  {
+   "class": "NBTTagString",
+   "package": "src",
+   "status": "same",
+   "lines": 27,
+   "changed_lines": 0,
+   "area": "world"
+  },
+  {
+   "class": "NextTickListEntry",
+   "package": "src",
+   "status": "changed",
+   "lines": 37,
+   "changed_lines": 1,
+   "area": "world"
+  },
+  {
+   "class": "NibbleArray",
+   "package": "src",
+   "status": "changed",
+   "lines": 35,
+   "changed_lines": 10,
+   "area": "world"
+  },
+  {
+   "class": "NoiseGenerator",
+   "package": "src",
+   "status": "same",
+   "lines": 3,
+   "changed_lines": 0,
+   "area": "worldgen"
+  },
+  {
+   "class": "NoiseGeneratorOctaves",
+   "package": "src",
+   "status": "changed",
+   "lines": 51,
+   "changed_lines": 20,
+   "area": "worldgen"
+  },
+  {
+   "class": "NoiseGeneratorPerlin",
+   "package": "src",
+   "status": "changed",
+   "lines": 192,
+   "changed_lines": 5,
+   "area": "worldgen"
+  },
+  {
+   "class": "OpenGlCapsChecker",
+   "package": "src",
+   "status": "same",
+   "lines": 8,
+   "changed_lines": 0,
+   "area": "rendering"
+  },
+  {
+   "class": "Particle",
+   "package": "src",
+   "status": "changed",
+   "lines": 50,
+   "changed_lines": 41,
+   "area": "world"
+  },
+  {
+   "class": "Path",
+   "package": "src",
+   "status": "same",
+   "lines": 99,
+   "changed_lines": 0,
+   "area": "entities"
+  },
+  {
+   "class": "PathEntity",
+   "package": "src",
+   "status": "changed",
+   "lines": 25,
+   "changed_lines": 1,
+   "area": "entities"
+  },
+  {
+   "class": "PathPoint",
+   "package": "src",
+   "status": "same",
+   "lines": 45,
+   "changed_lines": 0,
+   "area": "entities"
+  },
+  {
+   "class": "Pathfinder",
+   "package": "src",
+   "status": "same",
+   "lines": 173,
+   "changed_lines": 0,
+   "area": "entities"
+  },
+  {
+   "class": "PistonBlockTextures",
+   "package": "src",
+   "status": "changed",
+   "lines": 7,
+   "changed_lines": 3,
+   "area": "blocks"
+  },
+  {
+   "class": "PlayerCapabilities",
+   "package": "src",
+   "status": "new",
+   "lines": 7,
+   "changed_lines": 7,
+   "area": "player"
+  },
+  {
+   "class": "PlayerController",
+   "package": "src",
+   "status": "changed",
+   "lines": 91,
+   "changed_lines": 65,
+   "area": "player"
+  },
+  {
+   "class": "PlayerControllerSP",
+   "package": "src",
+   "status": "changed",
+   "lines": 120,
+   "changed_lines": 47,
+   "area": "player"
+  },
+  {
+   "class": "PlayerControllerTest",
+   "package": "src",
+   "status": "changed",
+   "lines": 78,
+   "changed_lines": 73,
+   "area": "player"
+  },
+  {
+   "class": "PlayerList",
+   "package": "src",
+   "status": "new",
+   "lines": 119,
+   "changed_lines": 119,
+   "area": "world"
+  },
+  {
+   "class": "PlayerListEntry",
+   "package": "src",
+   "status": "new",
+   "lines": 42,
+   "changed_lines": 42,
+   "area": "world"
+  },
+  {
+   "class": "PositionTextureVertex",
+   "package": "src",
+   "status": "same",
+   "lines": 22,
+   "changed_lines": 0,
+   "area": "world"
+  },
+  {
+   "class": "Potion",
+   "package": "src",
+   "status": "new",
+   "lines": 71,
+   "changed_lines": 71,
+   "area": "entities"
+  },
+  {
+   "class": "PotionEffect",
+   "package": "src",
+   "status": "new",
+   "lines": 49,
+   "changed_lines": 49,
+   "area": "entities"
+  },
+  {
+   "class": "PotionHealth",
+   "package": "src",
+   "status": "new",
+   "lines": 9,
+   "changed_lines": 9,
+   "area": "entities"
+  },
+  {
+   "class": "RailLogic",
+   "package": "src",
+   "status": "same",
+   "lines": 289,
+   "changed_lines": 0,
+   "area": "world"
+  },
+  {
+   "class": "RecipeSorter",
+   "package": "src",
+   "status": "same",
+   "lines": 14,
+   "changed_lines": 0,
+   "area": "gui"
+  },
+  {
+   "class": "RecipesArmor",
+   "package": "src",
+   "status": "same",
+   "lines": 14,
+   "changed_lines": 0,
+   "area": "gui"
+  },
+  {
+   "class": "RecipesCrafting",
+   "package": "src",
+   "status": "changed",
+   "lines": 12,
+   "changed_lines": 3,
+   "area": "gui"
+  },
+  {
+   "class": "RecipesDyes",
+   "package": "src",
+   "status": "changed",
+   "lines": 23,
+   "changed_lines": 1,
+   "area": "gui"
+  },
+  {
+   "class": "RecipesFood",
+   "package": "src",
+   "status": "changed",
+   "lines": 10,
+   "changed_lines": 2,
+   "area": "gui"
+  },
+  {
+   "class": "RecipesIngots",
+   "package": "src",
+   "status": "same",
+   "lines": 12,
+   "changed_lines": 0,
+   "area": "gui"
+  },
+  {
+   "class": "RecipesTools",
+   "package": "src",
+   "status": "same",
+   "lines": 15,
+   "changed_lines": 0,
+   "area": "gui"
+  },
+  {
+   "class": "RecipesWeapons",
+   "package": "src",
+   "status": "same",
+   "lines": 16,
+   "changed_lines": 0,
+   "area": "gui"
+  },
+  {
+   "class": "RedstoneUpdateInfo",
+   "package": "src",
+   "status": "same",
+   "lines": 13,
+   "changed_lines": 0,
+   "area": "world"
+  },
+  {
+   "class": "RegionFile",
+   "package": "src",
+   "status": "changed",
+   "lines": 234,
+   "changed_lines": 14,
+   "area": "world"
+  },
+  {
+   "class": "RegionFileCache",
+   "package": "src",
+   "status": "changed",
+   "lines": 61,
+   "changed_lines": 14,
+   "area": "world"
+  },
+  {
+   "class": "RegionFileChunkBuffer",
+   "package": "src",
+   "status": "changed",
+   "lines": 16,
+   "changed_lines": 7,
+   "area": "world"
+  },
+  {
+   "class": "Render",
+   "package": "src",
+   "status": "changed",
+   "lines": 235,
+   "changed_lines": 6,
+   "area": "rendering"
+  },
+  {
+   "class": "RenderArrow",
+   "package": "src",
+   "status": "changed",
+   "lines": 61,
+   "changed_lines": 69,
+   "area": "rendering"
+  },
+  {
+   "class": "RenderBiped",
+   "package": "src",
+   "status": "changed",
+   "lines": 49,
+   "changed_lines": 8,
+   "area": "rendering"
+  },
+  {
+   "class": "RenderBlocks",
+   "package": "src",
+   "status": "changed",
+   "lines": 4138,
+   "changed_lines": 2409,
+   "area": "rendering"
+  },
+  {
+   "class": "RenderBoat",
+   "package": "src",
+   "status": "changed",
+   "lines": 33,
+   "changed_lines": 6,
+   "area": "rendering"
+  },
+  {
+   "class": "RenderChicken",
+   "package": "src",
+   "status": "changed",
+   "lines": 23,
+   "changed_lines": 1,
+   "area": "rendering"
+  },
+  {
+   "class": "RenderCow",
+   "package": "src",
+   "status": "same",
+   "lines": 15,
+   "changed_lines": 0,
+   "area": "rendering"
+  },
+  {
+   "class": "RenderCreeper",
+   "package": "src",
+   "status": "changed",
+   "lines": 85,
+   "changed_lines": 1,
+   "area": "rendering"
+  },
+  {
+   "class": "RenderEnderman",
+   "package": "src",
+   "status": "new",
+   "lines": 79,
+   "changed_lines": 79,
+   "area": "rendering"
+  },
+  {
+   "class": "RenderEngine",
+   "package": "src",
+   "status": "changed",
+   "lines": 489,
+   "changed_lines": 34,
+   "area": "gui"
+  },
+  {
+   "class": "RenderEntity",
+   "package": "src",
+   "status": "same",
+   "lines": 9,
+   "changed_lines": 0,
+   "area": "rendering"
+  },
+  {
+   "class": "RenderFallingSand",
+   "package": "src",
+   "status": "same",
+   "lines": 22,
+   "changed_lines": 0,
+   "area": "rendering"
+  },
+  {
+   "class": "RenderFireball",
+   "package": "src",
+   "status": "same",
+   "lines": 36,
+   "changed_lines": 0,
+   "area": "rendering"
+  },
+  {
+   "class": "RenderFish",
+   "package": "src",
+   "status": "changed",
+   "lines": 77,
+   "changed_lines": 2,
+   "area": "rendering"
+  },
+  {
+   "class": "RenderGhast",
+   "package": "src",
+   "status": "same",
+   "lines": 21,
+   "changed_lines": 0,
+   "area": "rendering"
+  },
+  {
+   "class": "RenderGiantZombie",
+   "package": "src",
+   "status": "same",
+   "lines": 15,
+   "changed_lines": 0,
+   "area": "rendering"
+  },
+  {
+   "class": "RenderGlobal",
+   "package": "src",
+   "status": "changed",
+   "lines": 1313,
+   "changed_lines": 347,
+   "area": "rendering"
+  },
+  {
+   "class": "RenderHelper",
+   "package": "src",
+   "status": "same",
+   "lines": 43,
+   "changed_lines": 0,
+   "area": "rendering"
+  },
+  {
+   "class": "RenderItem",
+   "package": "src",
+   "status": "changed",
+   "lines": 206,
+   "changed_lines": 16,
+   "area": "rendering"
+  },
+  {
+   "class": "RenderLightningBolt",
+   "package": "src",
+   "status": "changed",
+   "lines": 87,
+   "changed_lines": 4,
+   "area": "rendering"
+  },
+  {
+   "class": "RenderList",
+   "package": "src",
+   "status": "changed",
+   "lines": 51,
+   "changed_lines": 7,
+   "area": "rendering"
+  },
+  {
+   "class": "RenderLiving",
+   "package": "src",
+   "status": "changed",
+   "lines": 229,
+   "changed_lines": 62,
+   "area": "rendering"
+  },
+  {
+   "class": "RenderManager",
+   "package": "src",
+   "status": "changed",
+   "lines": 128,
+   "changed_lines": 14,
+   "area": "rendering"
+  },
+  {
+   "class": "RenderMinecart",
+   "package": "src",
+   "status": "changed",
+   "lines": 74,
+   "changed_lines": 13,
+   "area": "rendering"
+  },
+  {
+   "class": "RenderPainting",
+   "package": "src",
+   "status": "same",
+   "lines": 107,
+   "changed_lines": 0,
+   "area": "rendering"
+  },
+  {
+   "class": "RenderPig",
+   "package": "src",
+   "status": "same",
+   "lines": 14,
+   "changed_lines": 0,
+   "area": "rendering"
+  },
+  {
+   "class": "RenderPlayer",
+   "package": "src",
+   "status": "changed",
+   "lines": 253,
+   "changed_lines": 16,
+   "area": "rendering"
+  },
+  {
+   "class": "RenderSheep",
+   "package": "src",
+   "status": "changed",
+   "lines": 22,
+   "changed_lines": 1,
+   "area": "rendering"
+  },
+  {
+   "class": "RenderSilverfish",
+   "package": "src",
+   "status": "new",
+   "lines": 34,
+   "changed_lines": 34,
+   "area": "rendering"
+  },
+  {
+   "class": "RenderSlime",
+   "package": "src",
+   "status": "same",
+   "lines": 37,
+   "changed_lines": 0,
+   "area": "rendering"
+  },
+  {
+   "class": "RenderSnowball",
+   "package": "src",
+   "status": "same",
+   "lines": 35,
+   "changed_lines": 0,
+   "area": "rendering"
+  },
+  {
+   "class": "RenderSorter",
+   "package": "src",
+   "status": "same",
+   "lines": 24,
+   "changed_lines": 0,
+   "area": "rendering"
+  },
+  {
+   "class": "RenderSpider",
+   "package": "src",
+   "status": "changed",
+   "lines": 46,
+   "changed_lines": 18,
+   "area": "rendering"
+  },
+  {
+   "class": "RenderSquid",
+   "package": "src",
+   "status": "changed",
+   "lines": 40,
+   "changed_lines": 1,
+   "area": "rendering"
+  },
+  {
+   "class": "RenderTNTPrimed",
+   "package": "src",
+   "status": "same",
+   "lines": 45,
+   "changed_lines": 0,
+   "area": "rendering"
+  },
+  {
+   "class": "RenderWolf",
+   "package": "src",
+   "status": "changed",
+   "lines": 26,
+   "changed_lines": 1,
+   "area": "rendering"
+  },
+  {
+   "class": "RenderXPOrb",
+   "package": "src",
+   "status": "new",
+   "lines": 49,
+   "changed_lines": 49,
+   "area": "rendering"
+  },
+  {
+   "class": "SaveConverterMcRegion",
+   "package": "src",
+   "status": "changed",
+   "lines": 147,
+   "changed_lines": 11,
+   "area": "world"
+  },
+  {
+   "class": "SaveFormatComparator",
+   "package": "src",
+   "status": "changed",
+   "lines": 41,
+   "changed_lines": 8,
+   "area": "world"
+  },
+  {
+   "class": "SaveFormatOld",
+   "package": "src",
+   "status": "changed",
+   "lines": 101,
+   "changed_lines": 6,
+   "area": "world"
+  },
+  {
+   "class": "SaveHandler",
+   "package": "src",
+   "status": "changed",
+   "lines": 144,
+   "changed_lines": 3,
+   "area": "world"
+  },
+  {
+   "class": "SaveOldDir",
+   "package": "src",
+   "status": "same",
+   "lines": 22,
+   "changed_lines": 0,
+   "area": "world"
+  },
+  {
+   "class": "ScaledResolution",
+   "package": "src",
+   "status": "changed",
+   "lines": 30,
+   "changed_lines": 6,
+   "area": "gui"
+  },
+  {
+   "class": "ScreenShotHelper",
+   "package": "src",
+   "status": "changed",
+   "lines": 70,
+   "changed_lines": 54,
+   "area": "rendering"
+  },
+  {
+   "class": "Session",
+   "package": "src",
+   "status": "same",
+   "lines": 43,
+   "changed_lines": 0,
+   "area": "world"
+  },
+  {
+   "class": "ShapedRecipes",
+   "package": "src",
+   "status": "changed",
+   "lines": 66,
+   "changed_lines": 1,
+   "area": "gui"
+  },
+  {
+   "class": "ShapelessRecipes",
+   "package": "src",
+   "status": "changed",
+   "lines": 45,
+   "changed_lines": 1,
+   "area": "gui"
+  },
+  {
+   "class": "SignModel",
+   "package": "src",
+   "status": "changed",
+   "lines": 14,
+   "changed_lines": 4,
+   "area": "world"
+  },
+  {
+   "class": "Slot",
+   "package": "src",
+   "status": "changed",
+   "lines": 42,
+   "changed_lines": 1,
+   "area": "gui"
+  },
+  {
+   "class": "SlotArmor",
+   "package": "src",
+   "status": "same",
+   "lines": 16,
+   "changed_lines": 0,
+   "area": "gui"
+  },
+  {
+   "class": "SlotCrafting",
+   "package": "src",
+   "status": "same",
+   "lines": 42,
+   "changed_lines": 0,
+   "area": "gui"
+  },
+  {
+   "class": "SlotFurnace",
+   "package": "src",
+   "status": "same",
+   "lines": 21,
+   "changed_lines": 0,
+   "area": "gui"
+  },
+  {
+   "class": "SorterStatsBlock",
+   "package": "src",
+   "status": "changed",
+   "lines": 43,
+   "changed_lines": 14,
+   "area": "world"
+  },
+  {
+   "class": "SorterStatsItem",
+   "package": "src",
+   "status": "changed",
+   "lines": 43,
+   "changed_lines": 16,
+   "area": "world"
+  },
+  {
+   "class": "SoundManager",
+   "package": "src",
+   "status": "changed",
+   "lines": 167,
+   "changed_lines": 5,
+   "area": "rendering"
+  },
+  {
+   "class": "SoundPool",
+   "package": "src",
+   "status": "same",
+   "lines": 45,
+   "changed_lines": 0,
+   "area": "rendering"
+  },
+  {
+   "class": "SoundPoolEntry",
+   "package": "src",
+   "status": "same",
+   "lines": 10,
+   "changed_lines": 0,
+   "area": "rendering"
+  },
+  {
+   "class": "SpawnListEntry",
+   "package": "src",
+   "status": "changed",
+   "lines": 12,
+   "changed_lines": 7,
+   "area": "worldgen"
+  },
+  {
+   "class": "SpawnerAnimals",
+   "package": "src",
+   "status": "changed",
+   "lines": 251,
+   "changed_lines": 183,
+   "area": "entities"
+  },
+  {
+   "class": "StatBase",
+   "package": "src",
+   "status": "changed",
+   "lines": 54,
+   "changed_lines": 21,
+   "area": "gui"
+  },
+  {
+   "class": "StatBasic",
+   "package": "src",
+   "status": "same",
+   "lines": 14,
+   "changed_lines": 0,
+   "area": "gui"
+  },
+  {
+   "class": "StatCollector",
+   "package": "src",
+   "status": "same",
+   "lines": 10,
+   "changed_lines": 0,
+   "area": "gui"
+  },
+  {
+   "class": "StatCrafting",
+   "package": "src",
+   "status": "same",
+   "lines": 11,
+   "changed_lines": 0,
+   "area": "gui"
+  },
+  {
+   "class": "StatFileWriter",
+   "package": "src",
+   "status": "changed",
+   "lines": 165,
+   "changed_lines": 8,
+   "area": "gui"
+  },
+  {
+   "class": "StatList",
+   "package": "src",
+   "status": "changed",
+   "lines": 154,
+   "changed_lines": 47,
+   "area": "gui"
+  },
+  {
+   "class": "StatStringFormatKeyInv",
+   "package": "src",
+   "status": "same",
+   "lines": 12,
+   "changed_lines": 0,
+   "area": "gui"
+  },
+  {
+   "class": "StatTypeDistance",
+   "package": "src",
+   "status": "changed",
+   "lines": 8,
+   "changed_lines": 2,
+   "area": "gui"
+  },
+  {
+   "class": "StatTypeSimple",
+   "package": "src",
+   "status": "changed",
+   "lines": 6,
+   "changed_lines": 2,
+   "area": "gui"
+  },
+  {
+   "class": "StatTypeTime",
+   "package": "src",
+   "status": "changed",
+   "lines": 11,
+   "changed_lines": 2,
+   "area": "gui"
+  },
+  {
+   "class": "StatsSyncher",
+   "package": "src",
+   "status": "changed",
+   "lines": 188,
+   "changed_lines": 51,
+   "area": "gui"
+  },
+  {
+   "class": "StepSound",
+   "package": "src",
+   "status": "changed",
+   "lines": 23,
+   "changed_lines": 11,
+   "area": "blocks"
+  },
+  {
+   "class": "StepSoundSand",
+   "package": "src",
+   "status": "same",
+   "lines": 9,
+   "changed_lines": 0,
+   "area": "blocks"
+  },
+  {
+   "class": "StepSoundStone",
+   "package": "src",
+   "status": "same",
+   "lines": 9,
+   "changed_lines": 0,
+   "area": "blocks"
+  },
+  {
+   "class": "StringTranslate",
+   "package": "src",
+   "status": "same",
+   "lines": 28,
+   "changed_lines": 0,
+   "area": "gui"
+  },
+  {
+   "class": "StructureBoundingBox",
+   "package": "src",
+   "status": "new",
+   "lines": 89,
+   "changed_lines": 89,
+   "area": "worldgen"
+  },
+  {
+   "class": "StructureComponent",
+   "package": "src",
+   "status": "new",
+   "lines": 384,
+   "changed_lines": 384,
+   "area": "worldgen"
+  },
+  {
+   "class": "StructureMineshaftPieces",
+   "package": "src",
+   "status": "new",
+   "lines": 47,
+   "changed_lines": 47,
+   "area": "worldgen"
+  },
+  {
+   "class": "StructureMineshaftStart",
+   "package": "src",
+   "status": "new",
+   "lines": 11,
+   "changed_lines": 11,
+   "area": "worldgen"
+  },
+  {
+   "class": "StructurePieceBlockSelector",
+   "package": "src",
+   "status": "new",
+   "lines": 13,
+   "changed_lines": 13,
+   "area": "worldgen"
+  },
+  {
+   "class": "StructurePieceTreasure",
+   "package": "src",
+   "status": "new",
+   "lines": 14,
+   "changed_lines": 14,
+   "area": "worldgen"
+  },
+  {
+   "class": "StructureStart",
+   "package": "src",
+   "status": "new",
+   "lines": 46,
+   "changed_lines": 46,
+   "area": "worldgen"
+  },
+  {
+   "class": "StructureStrongholdPieceWeight",
+   "package": "src",
+   "status": "new",
+   "lines": 18,
+   "changed_lines": 18,
+   "area": "worldgen"
+  },
+  {
+   "class": "StructureStrongholdPieceWeight2",
+   "package": "src",
+   "status": "new",
+   "lines": 9,
+   "changed_lines": 9,
+   "area": "worldgen"
+  },
+  {
+   "class": "StructureStrongholdPieces",
+   "package": "src",
+   "status": "new",
+   "lines": 113,
+   "changed_lines": 113,
+   "area": "worldgen"
+  },
+  {
+   "class": "StructureStrongholdStart",
+   "package": "src",
+   "status": "new",
+   "lines": 19,
+   "changed_lines": 19,
+   "area": "worldgen"
+  },
+  {
+   "class": "StructureStrongholdStones",
+   "package": "src",
+   "status": "new",
+   "lines": 28,
+   "changed_lines": 28,
+   "area": "worldgen"
+  },
+  {
+   "class": "StructureVillagePieceWeight",
+   "package": "src",
+   "status": "new",
+   "lines": 18,
+   "changed_lines": 18,
+   "area": "worldgen"
+  },
+  {
+   "class": "StructureVillagePieces",
+   "package": "src",
+   "status": "new",
+   "lines": 150,
+   "changed_lines": 150,
+   "area": "worldgen"
+  },
+  {
+   "class": "StructureVillageStart",
+   "package": "src",
+   "status": "new",
+   "lines": 42,
+   "changed_lines": 42,
+   "area": "worldgen"
+  },
+  {
+   "class": "Teleporter",
+   "package": "src",
+   "status": "changed",
+   "lines": 230,
+   "changed_lines": 23,
+   "area": "world"
+  },
+  {
+   "class": "TerrainTextureManager",
+   "package": "src",
+   "status": "changed",
+   "lines": 203,
+   "changed_lines": 149,
+   "area": "rendering"
+  },
+  {
+   "class": "Tessellator",
+   "package": "src",
+   "status": "changed",
+   "lines": 298,
+   "changed_lines": 47,
+   "area": "rendering"
+  },
+  {
+   "class": "TextureCompassFX",
+   "package": "src",
+   "status": "changed",
+   "lines": 124,
+   "changed_lines": 2,
+   "area": "rendering"
+  },
+  {
+   "class": "TextureFX",
+   "package": "src",
+   "status": "same",
+   "lines": 22,
+   "changed_lines": 0,
+   "area": "rendering"
+  },
+  {
+   "class": "TextureFlamesFX",
+   "package": "src",
+   "status": "same",
+   "lines": 64,
+   "changed_lines": 0,
+   "area": "rendering"
+  },
+  {
+   "class": "TextureLavaFX",
+   "package": "src",
+   "status": "same",
+   "lines": 69,
+   "changed_lines": 0,
+   "area": "rendering"
+  },
+  {
+   "class": "TextureLavaFlowFX",
+   "package": "src",
+   "status": "same",
+   "lines": 72,
+   "changed_lines": 0,
+   "area": "rendering"
+  },
+  {
+   "class": "TexturePackBase",
+   "package": "src",
+   "status": "same",
+   "lines": 23,
+   "changed_lines": 0,
+   "area": "gui"
+  },
+  {
+   "class": "TexturePackCustom",
+   "package": "src",
+   "status": "same",
+   "lines": 101,
+   "changed_lines": 0,
+   "area": "gui"
+  },
+  {
+   "class": "TexturePackDefault",
+   "package": "src",
+   "status": "same",
+   "lines": 34,
+   "changed_lines": 0,
+   "area": "gui"
+  },
+  {
+   "class": "TexturePackList",
+   "package": "src",
+   "status": "same",
+   "lines": 86,
+   "changed_lines": 0,
+   "area": "gui"
+  },
+  {
+   "class": "TexturePortalFX",
+   "package": "src",
+   "status": "same",
+   "lines": 73,
+   "changed_lines": 0,
+   "area": "rendering"
+  },
+  {
+   "class": "TextureWatchFX",
+   "package": "src",
+   "status": "same",
+   "lines": 84,
+   "changed_lines": 0,
+   "area": "rendering"
+  },
+  {
+   "class": "TextureWaterFX",
+   "package": "src",
+   "status": "same",
+   "lines": 71,
+   "changed_lines": 0,
+   "area": "rendering"
+  },
+  {
+   "class": "TextureWaterFlowFX",
+   "package": "src",
+   "status": "same",
+   "lines": 72,
+   "changed_lines": 0,
+   "area": "rendering"
+  },
+  {
+   "class": "TexturedQuad",
+   "package": "src",
+   "status": "changed",
+   "lines": 44,
+   "changed_lines": 7,
+   "area": "world"
+  },
+  {
+   "class": "ThreadStatSyncherReceive",
+   "package": "src",
+   "status": "changed",
+   "lines": 20,
+   "changed_lines": 7,
+   "area": "world"
+  },
+  {
+   "class": "ThreadStatSyncherSend",
+   "package": "src",
+   "status": "changed",
+   "lines": 19,
+   "changed_lines": 4,
+   "area": "world"
+  },
+  {
+   "class": "TileEntity",
+   "package": "src",
+   "status": "changed",
+   "lines": 106,
+   "changed_lines": 29,
+   "area": "blocks"
+  },
+  {
+   "class": "TileEntityChest",
+   "package": "src",
+   "status": "changed",
+   "lines": 181,
+   "changed_lines": 136,
+   "area": "blocks"
+  },
+  {
+   "class": "TileEntityChestRenderer",
+   "package": "src",
+   "status": "new",
+   "lines": 82,
+   "changed_lines": 82,
+   "area": "rendering"
+  },
+  {
+   "class": "TileEntityDispenser",
+   "package": "src",
+   "status": "changed",
+   "lines": 91,
+   "changed_lines": 7,
+   "area": "blocks"
+  },
+  {
+   "class": "TileEntityFurnace",
+   "package": "src",
+   "status": "changed",
+   "lines": 160,
+   "changed_lines": 7,
+   "area": "blocks"
+  },
+  {
+   "class": "TileEntityMobSpawner",
+   "package": "src",
+   "status": "same",
+   "lines": 85,
+   "changed_lines": 0,
+   "area": "blocks"
+  },
+  {
+   "class": "TileEntityMobSpawnerRenderer",
+   "package": "src",
+   "status": "same",
+   "lines": 31,
+   "changed_lines": 0,
+   "area": "rendering"
+  },
+  {
+   "class": "TileEntityNote",
+   "package": "src",
+   "status": "same",
+   "lines": 42,
+   "changed_lines": 0,
+   "area": "blocks"
+  },
+  {
+   "class": "TileEntityPiston",
+   "package": "src",
+   "status": "changed",
+   "lines": 118,
+   "changed_lines": 33,
+   "area": "blocks"
+  },
+  {
+   "class": "TileEntityRecordPlayer",
+   "package": "src",
+   "status": "same",
+   "lines": 14,
+   "changed_lines": 0,
+   "area": "blocks"
+  },
+  {
+   "class": "TileEntityRenderer",
+   "package": "src",
+   "status": "changed",
+   "lines": 90,
+   "changed_lines": 8,
+   "area": "rendering"
+  },
+  {
+   "class": "TileEntityRendererPiston",
+   "package": "src",
+   "status": "same",
+   "lines": 45,
+   "changed_lines": 0,
+   "area": "blocks"
+  },
+  {
+   "class": "TileEntitySign",
+   "package": "src",
+   "status": "changed",
+   "lines": 23,
+   "changed_lines": 2,
+   "area": "blocks"
+  },
+  {
+   "class": "TileEntitySignRenderer",
+   "package": "src",
+   "status": "changed",
+   "lines": 60,
+   "changed_lines": 1,
+   "area": "rendering"
+  },
+  {
+   "class": "TileEntitySpecialRenderer",
+   "package": "src",
+   "status": "changed",
+   "lines": 19,
+   "changed_lines": 4,
+   "area": "rendering"
+  },
+  {
+   "class": "Timer",
+   "package": "src",
+   "status": "changed",
+   "lines": 57,
+   "changed_lines": 1,
+   "area": "rendering"
+  },
+  {
+   "class": "Vec3D",
+   "package": "src",
+   "status": "changed",
+   "lines": 139,
+   "changed_lines": 5,
+   "area": "entities"
+  },
+  {
+   "class": "WatchableObject",
+   "package": "src",
+   "status": "same",
+   "lines": 28,
+   "changed_lines": 0,
+   "area": "entities"
+  },
+  {
+   "class": "WeightedRandom",
+   "package": "src",
+   "status": "new",
+   "lines": 64,
+   "changed_lines": 64,
+   "area": "world"
+  },
+  {
+   "class": "WeightedRandomChoice",
+   "package": "src",
+   "status": "new",
+   "lines": 7,
+   "changed_lines": 7,
+   "area": "world"
+  },
+  {
+   "class": "World",
+   "package": "src",
+   "status": "changed",
+   "lines": 2313,
+   "changed_lines": 706,
+   "area": "world"
+  },
+  {
+   "class": "WorldBlockPositionType",
+   "package": "src",
+   "status": "changed",
+   "lines": 19,
+   "changed_lines": 14,
+   "area": "world"
+  },
+  {
+   "class": "WorldChunkManager",
+   "package": "src",
+   "status": "changed",
+   "lines": 152,
+   "changed_lines": 195,
+   "area": "worldgen"
+  },
+  {
+   "class": "WorldChunkManagerHell",
+   "package": "src",
+   "status": "changed",
+   "lines": 57,
+   "changed_lines": 37,
+   "area": "worldgen"
+  },
+  {
+   "class": "WorldGenBigMushroom",
+   "package": "src",
+   "status": "new",
+   "lines": 130,
+   "changed_lines": 130,
+   "area": "worldgen"
+  },
+  {
+   "class": "WorldGenBigTree",
+   "package": "src",
+   "status": "changed",
+   "lines": 302,
+   "changed_lines": 69,
+   "area": "worldgen"
+  },
+  {
+   "class": "WorldGenCactus",
+   "package": "src",
+   "status": "same",
+   "lines": 20,
+   "changed_lines": 0,
+   "area": "worldgen"
+  },
+  {
+   "class": "WorldGenClay",
+   "package": "src",
+   "status": "changed",
+   "lines": 32,
+   "changed_lines": 32,
+   "area": "worldgen"
+  },
+  {
+   "class": "WorldGenDeadBush",
+   "package": "src",
+   "status": "same",
+   "lines": 26,
+   "changed_lines": 0,
+   "area": "worldgen"
+  },
+  {
+   "class": "WorldGenDungeons",
+   "package": "src",
+   "status": "changed",
+   "lines": 102,
+   "changed_lines": 6,
+   "area": "worldgen"
+  },
+  {
+   "class": "WorldGenFire",
+   "package": "src",
+   "status": "same",
+   "lines": 15,
+   "changed_lines": 0,
+   "area": "worldgen"
+  },
+  {
+   "class": "WorldGenFlowers",
+   "package": "src",
+   "status": "same",
+   "lines": 19,
+   "changed_lines": 0,
+   "area": "worldgen"
+  },
+  {
+   "class": "WorldGenForest",
+   "package": "src",
+   "status": "changed",
+   "lines": 75,
+   "changed_lines": 72,
+   "area": "worldgen"
+  },
+  {
+   "class": "WorldGenGlowStone1",
+   "package": "src",
+   "status": "same",
+   "lines": 49,
+   "changed_lines": 0,
+   "area": "worldgen"
+  },
+  {
+   "class": "WorldGenGlowStone2",
+   "package": "src",
+   "status": "same",
+   "lines": 49,
+   "changed_lines": 0,
+   "area": "worldgen"
+  },
+  {
+   "class": "WorldGenHellLava",
+   "package": "src",
+   "status": "same",
+   "lines": 55,
+   "changed_lines": 0,
+   "area": "worldgen"
+  },
+  {
+   "class": "WorldGenLakes",
+   "package": "src",
+   "status": "changed",
+   "lines": 88,
+   "changed_lines": 5,
+   "area": "worldgen"
+  },
+  {
+   "class": "WorldGenLiquids",
+   "package": "src",
+   "status": "same",
+   "lines": 51,
+   "changed_lines": 0,
+   "area": "worldgen"
+  },
+  {
+   "class": "WorldGenMinable",
+   "package": "src",
+   "status": "changed",
+   "lines": 50,
+   "changed_lines": 2,
+   "area": "worldgen"
+  },
+  {
+   "class": "WorldGenPumpkin",
+   "package": "src",
+   "status": "same",
+   "lines": 15,
+   "changed_lines": 0,
+   "area": "worldgen"
+  },
+  {
+   "class": "WorldGenReed",
+   "package": "src",
+   "status": "same",
+   "lines": 20,
+   "changed_lines": 0,
+   "area": "worldgen"
+  },
+  {
+   "class": "WorldGenSand",
+   "package": "src",
+   "status": "new",
+   "lines": 33,
+   "changed_lines": 33,
+   "area": "worldgen"
+  },
+  {
+   "class": "WorldGenSwamp",
+   "package": "src",
+   "status": "new",
+   "lines": 119,
+   "changed_lines": 119,
+   "area": "worldgen"
+  },
+  {
+   "class": "WorldGenTaiga1",
+   "package": "src",
+   "status": "changed",
+   "lines": 81,
+   "changed_lines": 74,
+   "area": "worldgen"
+  },
+  {
+   "class": "WorldGenTaiga2",
+   "package": "src",
+   "status": "changed",
+   "lines": 91,
+   "changed_lines": 90,
+   "area": "worldgen"
+  },
+  {
+   "class": "WorldGenTallGrass",
+   "package": "src",
+   "status": "same",
+   "lines": 28,
+   "changed_lines": 0,
+   "area": "worldgen"
+  },
+  {
+   "class": "WorldGenTrees",
+   "package": "src",
+   "status": "changed",
+   "lines": 75,
+   "changed_lines": 72,
+   "area": "worldgen"
+  },
+  {
+   "class": "WorldGenerator",
+   "package": "src",
+   "status": "same",
+   "lines": 7,
+   "changed_lines": 0,
+   "area": "worldgen"
+  },
+  {
+   "class": "WorldInfo",
+   "package": "src",
+   "status": "changed",
+   "lines": 202,
+   "changed_lines": 30,
+   "area": "world"
+  },
+  {
+   "class": "WorldProvider",
+   "package": "src",
+   "status": "changed",
+   "lines": 93,
+   "changed_lines": 5,
+   "area": "world"
+  },
+  {
+   "class": "WorldProviderHell",
+   "package": "src",
+   "status": "changed",
+   "lines": 33,
+   "changed_lines": 1,
+   "area": "world"
+  },
+  {
+   "class": "WorldProviderSky",
+   "package": "src",
+   "status": "changed",
+   "lines": 43,
+   "changed_lines": 1,
+   "area": "world"
+  },
+  {
+   "class": "WorldProviderSurface",
+   "package": "src",
+   "status": "same",
+   "lines": 3,
+   "changed_lines": 0,
+   "area": "world"
+  },
+  {
+   "class": "WorldRenderer",
+   "package": "src",
+   "status": "changed",
+   "lines": 192,
+   "changed_lines": 5,
+   "area": "rendering"
+  },
+  {
+   "class": "WorldSettings",
+   "package": "src",
+   "status": "new",
+   "lines": 20,
+   "changed_lines": 20,
+   "area": "player"
+  },
+  {
+   "class": "Minecraft",
+   "package": "client",
+   "status": "changed",
+   "lines": 1351,
+   "changed_lines": 390,
+   "area": "world"
+  }
+ ],
+ "removed": [
+  "BiomeGenRainforest",
+  "ItemCookie",
+  "MetadataChunkBlock",
+  "NoiseGenerator2",
+  "NoiseGeneratorOctaves2"
+ ]
+}
