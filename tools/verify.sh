@@ -362,5 +362,22 @@ popd >/dev/null
 [ $sf_ok -eq 1 ] && echo "STATS FILE EXACT: written and read by both, checksum rejection and unknown ids" || fail=1
 rm -rf "$sf"
 
+# ---- converting a pre-McRegion (Alpha) save: the original's SaveConverterMcRegion and the port's
+# on two copies of the same world; progress steps, level.dat and every chunk's data must match.
+echo "== world conversion from the old chunk-file format"
+cv="$out/convert"; rm -rf "$cv"; mkdir -p "$cv"
+"$cmp" makesave 42 1 "$cv/src" >/dev/null
+python "$root/tools/oracle/make_alpha_world.py" "$cv/src" "$cv/javaw" >/dev/null
+python "$root/tools/oracle/make_alpha_world.py" "$cv/src" "$cv/rustw" >/dev/null
+j=$("$oracle" convertworld "$(cygpath -w "$cv")" javaw | grep -E '^(old|progress) ')
+r=$("$cmp" convertworld "$cv" rustw | grep -E '^(old|progress) ')
+if c=$(python "$root/tools/oracle/compare_regions.py" "$cv/javaw" "$cv/rustw") && [ "$j" = "$r" ] \
+   && ! ls "$cv/rustw" | grep -qE '^[0-9a-z]{1,2}$' && [ ! -e "$cv/rustw/DIM-1" ]; then
+  echo "CONVERSION EXACT: $(echo "$c" | head -1), $(echo "$r" | grep -c progress) progress steps"
+else
+  echo "conversion differs: $c"; [ "$j" = "$r" ] || echo "progress: java [$(echo $j)] rust [$(echo $r)]"; fail=1
+fi
+rm -rf "$cv"
+
 [ $fail -eq 0 ] && echo "ALL CASES EXACT" || echo "SOME CASES DIFFER"
 exit $fail

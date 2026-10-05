@@ -254,6 +254,12 @@ fn run(opts: WorldOptions, col: Colorizers, mut video: VideoSettings, rx: Receiv
         };
         let _ = tx.send(FromWorker::Loading(msg));
     };
+    // Minecraft.startWorld: a world from before McRegion is converted first.
+    if let Some(dir) = opts.dir.as_deref() {
+        if worldgen::convert::is_old_map_format(dir) {
+            worldgen::convert::convert_map_format(dir, &mut progress);
+        }
+    }
     let opened = World::open_with(
         opts.dir.as_deref(),
         opts.seed,

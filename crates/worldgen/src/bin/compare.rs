@@ -217,6 +217,18 @@ fn main() -> ExitCode {
             WORLD_ONLY.store(true, std::sync::atomic::Ordering::Relaxed);
             world(&w, &a[4])
         }
+        Some("convertworld") => {
+            // The port's SaveConverterMcRegion: prints every progress step like the oracle.
+            let dir = std::path::Path::new(&a[2]).join(&a[3]);
+            println!("old {}", worldgen::convert::is_old_map_format(&dir));
+            let mut log = |step: worldgen::scenario::LoadStep| match step {
+                worldgen::scenario::LoadStep::Progress(n) => println!("progress {n}"),
+                _ => {}
+            };
+            worldgen::convert::convert_map_format(&dir, &mut log);
+            println!("old {}", worldgen::convert::is_old_map_format(&dir));
+            ExitCode::SUCCESS
+        }
         Some("savecheck") => {
             // Load every chunk listed in the dump from a save directory, compare (saves keep
             // no scheduled ticks or pending light updates, so those are skipped).

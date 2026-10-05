@@ -163,6 +163,11 @@ impl RegionFile {
         })
     }
 
+    /// `func_22202_c`: the chunk has a slot in this region.
+    pub fn has_chunk(&self, x: i32, z: i32) -> bool {
+        (0..32).contains(&x) && (0..32).contains(&z) && self.offsets[(x + z * 32) as usize] != 0
+    }
+
     /// `getChunkDataInputStream`, decompressed. `None` if absent or unreadable.
     pub fn read_chunk(&mut self, x: i32, z: i32) -> Option<Vec<u8>> {
         if !(0..32).contains(&x) || !(0..32).contains(&z) {
@@ -329,6 +334,20 @@ impl Storage {
         std::fs::read(self.dir.join("session.lock"))
             .map(|b| b.len() == 8 && i64::from_be_bytes(b[..8].try_into().unwrap()) == self.session)
             .unwrap_or(false)
+    }
+
+    /// `SaveFormatOld.func_22173_b`: level.dat (or level.dat_old) without opening the save.
+    pub fn read_level(dir: &Path) -> Option<LevelInfo> {
+        for name in ["level.dat", "level.dat_old"] {
+            if let Ok(bytes) = std::fs::read(dir.join(name)) {
+                if let Ok(root) = nbt::read_gzip(&bytes) {
+                    if let Some(data) = root.compound("Data") {
+                        return Some(LevelInfo::from_nbt(data));
+                    }
+                }
+            }
+        }
+        None
     }
 
     pub fn load_level(&self) -> Option<LevelInfo> {
