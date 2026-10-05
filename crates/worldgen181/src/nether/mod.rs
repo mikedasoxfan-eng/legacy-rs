@@ -79,12 +79,24 @@ impl NetherGenerator {
 
     /// `provideChunk`
     pub fn generate(&mut self, cx: i32, cz: i32) -> RawChunk {
-        self.rand.set_seed((cx as i64).wrapping_mul(341873128712).wrapping_add((cz as i64).wrapping_mul(132897987541)));
-        let mut blocks: Box<[u8; CHUNK_VOLUME]> = vec![0u8; CHUNK_VOLUME].into_boxed_slice().try_into().unwrap();
+        self.rand.set_seed(
+            (cx as i64)
+                .wrapping_mul(341873128712)
+                .wrapping_add((cz as i64).wrapping_mul(132897987541)),
+        );
+        let mut blocks: Box<[u8; CHUNK_VOLUME]> = vec![0u8; CHUNK_VOLUME]
+            .into_boxed_slice()
+            .try_into()
+            .unwrap();
         self.terrain(cx, cz, &mut blocks[..]);
         self.surface(cx, cz, &mut blocks[..]);
         self.caves.carve(self.seed, cx, cz, &mut blocks[..]);
-        RawChunk { x: cx, z: cz, blocks, biomes: vec![Biome::Hell; 256] }
+        RawChunk {
+            x: cx,
+            z: cz,
+            blocks,
+            biomes: vec![Biome::Hell; 256],
+        }
     }
 
     /// `func_4059_a`: trilinear upsample of a 5x17x5 density grid into netherrack/lava.
@@ -95,7 +107,15 @@ impl NetherGenerator {
         let sy = 17usize;
         let sz = (cell + 1) as usize;
         let mut density = std::mem::take(&mut self.density);
-        self.density_field(&mut density, cx * cell, 0, cz * cell, sx as i32, sy as i32, sz as i32);
+        self.density_field(
+            &mut density,
+            cx * cell,
+            0,
+            cz * cell,
+            sx as i32,
+            sy as i32,
+            sz as i32,
+        );
 
         let d = |x: usize, z: usize, y: usize| density[(x * sz + z) * sy + y];
         for i in 0..cell as usize {
@@ -150,14 +170,45 @@ impl NetherGenerator {
 
     /// `func_4057_a`. Even the unused scale/depth calculations follow Java's order.
     #[allow(clippy::too_many_arguments, unused_variables, unused_assignments)]
-    fn density_field(&mut self, out: &mut Vec<f64>, x: i32, y: i32, z: i32, sx: i32, sy: i32, sz: i32) {
+    fn density_field(
+        &mut self,
+        out: &mut Vec<f64>,
+        x: i32,
+        y: i32,
+        z: i32,
+        sx: i32,
+        sy: i32,
+        sz: i32,
+    ) {
         if out.is_empty() {
             *out = vec![0.0; (sx * sy * sz) as usize];
         }
         let h_scale = 684.412;
         let v_scale = 2053.236;
-        self.scale.generate(&mut self.scale_noise, x as f64, y as f64, z as f64, sx, 1, sz, 1.0, 0.0, 1.0);
-        self.depth.generate(&mut self.depth_noise, x as f64, y as f64, z as f64, sx, 1, sz, 100.0, 0.0, 100.0);
+        self.scale.generate(
+            &mut self.scale_noise,
+            x as f64,
+            y as f64,
+            z as f64,
+            sx,
+            1,
+            sz,
+            1.0,
+            0.0,
+            1.0,
+        );
+        self.depth.generate(
+            &mut self.depth_noise,
+            x as f64,
+            y as f64,
+            z as f64,
+            sx,
+            1,
+            sz,
+            100.0,
+            0.0,
+            100.0,
+        );
         self.main.generate(
             &mut self.main_noise,
             x as f64,
@@ -198,7 +249,8 @@ impl NetherGenerator {
         let mut i2 = 0usize;
         let mut falloff = vec![0.0; sy as usize];
         for iy in 0..sy {
-            falloff[iy as usize] = jmath::java_cos(iy as f64 * std::f64::consts::PI * 6.0 / sy as f64) * 2.0;
+            falloff[iy as usize] =
+                jmath::java_cos(iy as f64 * std::f64::consts::PI * 6.0 / sy as f64) * 2.0;
             let mut edge = iy as f64;
             if iy > sy / 2 {
                 edge = (sy - 1 - iy) as f64;
@@ -274,11 +326,22 @@ impl NetherGenerator {
     fn surface(&mut self, cx: i32, cz: i32, blocks: &mut [u8]) {
         let sea_level = 64i32;
         let s = 1.0 / 32.0;
-        self.surface.generate(&mut self.sand_noise, (cx * 16) as f64, (cz * 16) as f64, 0.0, 16, 16, 1, s, s, 1.0);
+        self.surface.generate(
+            &mut self.sand_noise,
+            (cx * 16) as f64,
+            (cz * 16) as f64,
+            0.0,
+            16,
+            16,
+            1,
+            s,
+            s,
+            1.0,
+        );
         self.surface.generate(
             &mut self.gravel_noise,
             (cx * 16) as f64,
-            109.0134,
+            109.0,
             (cz * 16) as f64,
             16,
             1,
@@ -305,7 +368,9 @@ impl NetherGenerator {
             for b in 0..16usize {
                 let sand = self.sand_noise[a + b * 16] + self.rand.next_double() * 0.2 > 0.0;
                 let gravel = self.gravel_noise[a + b * 16] + self.rand.next_double() * 0.2 > 0.0;
-                let depth = (self.stone_noise[a + b * 16] / 3.0 + 3.0 + self.rand.next_double() * 0.25) as i32;
+                let depth = (self.stone_noise[a + b * 16] / 3.0
+                    + 3.0
+                    + self.rand.next_double() * 0.25) as i32;
                 let mut run = -1i32;
                 let mut top = block::NETHERRACK;
                 let mut filler = block::NETHERRACK;

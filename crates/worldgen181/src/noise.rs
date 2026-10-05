@@ -81,7 +81,12 @@ impl PerlinNoise {
         let y_coord = rand.next_double() * 256.0;
         let z_coord = rand.next_double() * 256.0;
         let perm = shuffled_perm(rand);
-        PerlinNoise { perm, x_coord, y_coord, z_coord }
+        PerlinNoise {
+            perm,
+            x_coord,
+            y_coord,
+            z_coord,
+        }
     }
 
     #[inline]
@@ -116,13 +121,29 @@ impl PerlinNoise {
             w,
             lerp(
                 v,
-                lerp(u, grad(self.p(aa), x, y, z), grad(self.p(ba), x - 1.0, y, z)),
-                lerp(u, grad(self.p(ab), x, y - 1.0, z), grad(self.p(bb), x - 1.0, y - 1.0, z)),
+                lerp(
+                    u,
+                    grad(self.p(aa), x, y, z),
+                    grad(self.p(ba), x - 1.0, y, z),
+                ),
+                lerp(
+                    u,
+                    grad(self.p(ab), x, y - 1.0, z),
+                    grad(self.p(bb), x - 1.0, y - 1.0, z),
+                ),
             ),
             lerp(
                 v,
-                lerp(u, grad(self.p(aa + 1), x, y, z - 1.0), grad(self.p(ba + 1), x - 1.0, y, z - 1.0)),
-                lerp(u, grad(self.p(ab + 1), x, y - 1.0, z - 1.0), grad(self.p(bb + 1), x - 1.0, y - 1.0, z - 1.0)),
+                lerp(
+                    u,
+                    grad(self.p(aa + 1), x, y, z - 1.0),
+                    grad(self.p(ba + 1), x - 1.0, y, z - 1.0),
+                ),
+                lerp(
+                    u,
+                    grad(self.p(ab + 1), x, y - 1.0, z - 1.0),
+                    grad(self.p(bb + 1), x - 1.0, y - 1.0, z - 1.0),
+                ),
             ),
         )
     }
@@ -153,13 +174,13 @@ impl PerlinNoise {
         let mut idx = 0usize;
         if size_y == 1 {
             for ix in 0..size_x {
-                let mut x = (x0 + ix as f64) * scale_x + self.x_coord;
+                let mut x = x0 + ix as f64 * scale_x + self.x_coord;
                 let xi = floor_i(x);
                 let xc = xi & 255;
                 x -= xi as f64;
                 let u = fade(x);
                 for iz in 0..size_z {
-                    let mut z = (z0 + iz as f64) * scale_z + self.z_coord;
+                    let mut z = z0 + iz as f64 * scale_z + self.z_coord;
                     let zi = floor_i(z);
                     let zc = zi & 255;
                     z -= zi as f64;
@@ -168,8 +189,16 @@ impl PerlinNoise {
                     let aa = self.p(a) + zc;
                     let b = self.p(xc + 1);
                     let ba = self.p(b) + zc;
-                    let n0 = lerp(u, grad2(self.p(aa), x, z), grad(self.p(ba), x - 1.0, 0.0, z));
-                    let n1 = lerp(u, grad(self.p(aa + 1), x, 0.0, z - 1.0), grad(self.p(ba + 1), x - 1.0, 0.0, z - 1.0));
+                    let n0 = lerp(
+                        u,
+                        grad2(self.p(aa), x, z),
+                        grad(self.p(ba), x - 1.0, 0.0, z),
+                    );
+                    let n1 = lerp(
+                        u,
+                        grad(self.p(aa + 1), x, 0.0, z - 1.0),
+                        grad(self.p(ba + 1), x - 1.0, 0.0, z - 1.0),
+                    );
                     let n = lerp(w, n0, n1);
                     out[idx] += n * inv;
                     idx += 1;
@@ -179,19 +208,19 @@ impl PerlinNoise {
             let mut last_yc = -1;
             let (mut c0, mut c1, mut c2, mut c3) = (0.0, 0.0, 0.0, 0.0);
             for ix in 0..size_x {
-                let mut x = (x0 + ix as f64) * scale_x + self.x_coord;
+                let mut x = x0 + ix as f64 * scale_x + self.x_coord;
                 let xi = floor_i(x);
                 let xc = xi & 255;
                 x -= xi as f64;
                 let u = fade(x);
                 for iz in 0..size_z {
-                    let mut z = (z0 + iz as f64) * scale_z + self.z_coord;
+                    let mut z = z0 + iz as f64 * scale_z + self.z_coord;
                     let zi = floor_i(z);
                     let zc = zi & 255;
                     z -= zi as f64;
                     let w = fade(z);
                     for iy in 0..size_y {
-                        let mut y = (y0 + iy as f64) * scale_y + self.y_coord;
+                        let mut y = y0 + iy as f64 * scale_y + self.y_coord;
                         let yi = floor_i(y);
                         let yc = yi & 255;
                         y -= yi as f64;
@@ -206,10 +235,26 @@ impl PerlinNoise {
                             let b = self.p(xc + 1) + yc;
                             let ba = self.p(b) + zc;
                             let bb = self.p(b + 1) + zc;
-                            c0 = lerp(u, grad(self.p(aa), x, y, z), grad(self.p(ba), x - 1.0, y, z));
-                            c1 = lerp(u, grad(self.p(ab), x, y - 1.0, z), grad(self.p(bb), x - 1.0, y - 1.0, z));
-                            c2 = lerp(u, grad(self.p(aa + 1), x, y, z - 1.0), grad(self.p(ba + 1), x - 1.0, y, z - 1.0));
-                            c3 = lerp(u, grad(self.p(ab + 1), x, y - 1.0, z - 1.0), grad(self.p(bb + 1), x - 1.0, y - 1.0, z - 1.0));
+                            c0 = lerp(
+                                u,
+                                grad(self.p(aa), x, y, z),
+                                grad(self.p(ba), x - 1.0, y, z),
+                            );
+                            c1 = lerp(
+                                u,
+                                grad(self.p(ab), x, y - 1.0, z),
+                                grad(self.p(bb), x - 1.0, y - 1.0, z),
+                            );
+                            c2 = lerp(
+                                u,
+                                grad(self.p(aa + 1), x, y, z - 1.0),
+                                grad(self.p(ba + 1), x - 1.0, y, z - 1.0),
+                            );
+                            c3 = lerp(
+                                u,
+                                grad(self.p(ab + 1), x, y - 1.0, z - 1.0),
+                                grad(self.p(bb + 1), x - 1.0, y - 1.0, z - 1.0),
+                            );
                         }
                         let n0 = lerp(v, c0, c1);
                         let n1 = lerp(v, c2, c3);
@@ -230,7 +275,9 @@ pub struct OctavePerlin {
 
 impl OctavePerlin {
     pub fn new(rand: &mut JavaRandom, count: usize) -> Self {
-        OctavePerlin { octaves: (0..count).map(|_| PerlinNoise::new(rand)).collect() }
+        OctavePerlin {
+            octaves: (0..count).map(|_| PerlinNoise::new(rand)).collect(),
+        }
     }
 
     /// `func_806_a(x, z)`
@@ -266,15 +313,48 @@ impl OctavePerlin {
         }
         let mut amp = 1.0;
         for o in &self.octaves {
-            o.add_region(buf, x, y, z, size_x, size_y, size_z, scale_x * amp, scale_y * amp, scale_z * amp, amp);
+            let mut ox = x * amp * scale_x;
+            let oy = y * amp * scale_y;
+            let mut oz = z * amp * scale_z;
+            let ix = ox.floor() as i64;
+            let iz = oz.floor() as i64;
+            ox -= ix as f64;
+            oz -= iz as f64;
+            ox += (ix % 16777216) as f64;
+            oz += (iz % 16777216) as f64;
+            o.add_region(
+                buf,
+                ox,
+                oy,
+                oz,
+                size_x,
+                size_y,
+                size_z,
+                scale_x * amp,
+                scale_y * amp,
+                scale_z * amp,
+                amp,
+            );
             amp /= 2.0;
         }
     }
 
     /// `func_4109_a`: the flat (y = 10) variant. The last argument is ignored in the original too.
     #[allow(clippy::too_many_arguments)]
-    pub fn generate_2d(&self, buf: &mut Vec<f64>, x: i32, z: i32, size_x: i32, size_z: i32, scale_x: f64, scale_z: f64, _unused: f64) {
-        self.generate(buf, x as f64, 10.0, z as f64, size_x, 1, size_z, scale_x, 1.0, scale_z);
+    pub fn generate_2d(
+        &self,
+        buf: &mut Vec<f64>,
+        x: i32,
+        z: i32,
+        size_x: i32,
+        size_z: i32,
+        scale_x: f64,
+        scale_z: f64,
+        _unused: f64,
+    ) {
+        self.generate(
+            buf, x as f64, 10.0, z as f64, size_x, 1, size_z, scale_x, 1.0, scale_z,
+        );
     }
 }
 
@@ -321,20 +401,35 @@ impl SimplexNoise {
         let y_coord = rand.next_double() * 256.0;
         let z_coord = rand.next_double() * 256.0;
         let perm = shuffled_perm(rand);
-        SimplexNoise { perm, x_coord, y_coord, z_coord }
+        SimplexNoise {
+            perm,
+            x_coord,
+            y_coord,
+            z_coord,
+        }
     }
 
     /// `func_4157_a`
     #[allow(clippy::too_many_arguments)]
-    pub fn add_region(&self, out: &mut [f64], x0: f64, z0: f64, size_x: i32, size_z: i32, scale_x: f64, scale_z: f64, amplitude: f64) {
+    pub fn add_region(
+        &self,
+        out: &mut [f64],
+        x0: f64,
+        z0: f64,
+        size_x: i32,
+        size_z: i32,
+        scale_x: f64,
+        scale_z: f64,
+        amplitude: f64,
+    ) {
         let f2 = 0.5 * (3.0f64.sqrt() - 1.0);
         let g2 = (3.0 - 3.0f64.sqrt()) / 6.0;
         let p = |i: i32| self.perm[i as usize];
         let mut idx = 0usize;
         for ix in 0..size_x {
-            let x = (x0 + ix as f64) * scale_x + self.x_coord;
+            let x = x0 + ix as f64 * scale_x + self.x_coord;
             for iz in 0..size_z {
-                let y = (z0 + iz as f64) * scale_z + self.y_coord;
+                let y = z0 + iz as f64 * scale_z + self.y_coord;
                 let s = (x + y) * f2;
                 let i = wrap(x + s);
                 let j = wrap(y + s);
@@ -386,12 +481,24 @@ pub struct OctaveSimplex {
 
 impl OctaveSimplex {
     pub fn new(rand: &mut JavaRandom, count: usize) -> Self {
-        OctaveSimplex { octaves: (0..count).map(|_| SimplexNoise::new(rand)).collect() }
+        OctaveSimplex {
+            octaves: (0..count).map(|_| SimplexNoise::new(rand)).collect(),
+        }
     }
 
     /// `func_4112_a`
     #[allow(clippy::too_many_arguments)]
-    pub fn generate(&self, buf: &mut Vec<f64>, x: f64, z: f64, size_x: i32, size_z: i32, scale_x: f64, scale_z: f64, freq_mul: f64) {
+    pub fn generate(
+        &self,
+        buf: &mut Vec<f64>,
+        x: f64,
+        z: f64,
+        size_x: i32,
+        size_z: i32,
+        scale_x: f64,
+        scale_z: f64,
+        freq_mul: f64,
+    ) {
         self.generate_with(buf, x, z, size_x, size_z, scale_x, scale_z, freq_mul, 0.5);
     }
 
@@ -420,7 +527,16 @@ impl OctaveSimplex {
         let mut amp = 1.0;
         let mut freq = 1.0;
         for o in &self.octaves {
-            o.add_region(buf, x, z, size_x, size_z, scale_x * freq, scale_z * freq, 0.55 / amp);
+            o.add_region(
+                buf,
+                x,
+                z,
+                size_x,
+                size_z,
+                scale_x * freq,
+                scale_z * freq,
+                0.55 / amp,
+            );
             freq *= freq_mul;
             amp *= amp_mul;
         }

@@ -11,16 +11,12 @@ pub use super::java_hash::JavaHashSet;
 
 /// `BiomeGenBase.getEnableSnow`
 fn biome_snows(b: Biome) -> bool {
-    matches!(b, Biome::Taiga | Biome::IceDesert | Biome::Tundra)
+    b.enable_snow()
 }
 
 /// `BiomeGenBase.canSpawnLightningBolt`: rain falls (not snow).
 fn biome_rains(b: Biome) -> bool {
-    !biome_snows(b)
-        && !matches!(
-            b,
-            Biome::Desert | Biome::IceDesert | Biome::Hell | Biome::Sky
-        )
+    !b.enable_snow() && b.enable_rain()
 }
 
 /// `WorldProvider.calculateCelestialAngle`
@@ -195,6 +191,7 @@ impl World {
 
     /// `World.tick` (no sleeping players or mob spawning yet).
     pub fn tick(&mut self) {
+        self.terrain.biome_source.cleanup_cache();
         self.update_weather();
         self.tick_sleeping_players();
         self.perform_spawning(self.spawn_hostile_mobs, self.spawn_peaceful_mobs);
