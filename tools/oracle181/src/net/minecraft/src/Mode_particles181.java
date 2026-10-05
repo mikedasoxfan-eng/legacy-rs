@@ -35,6 +35,7 @@ public final class Mode_particles181 {
             if(x==-1&&z<0)EntityOracle.rawBlock(w,x,64,z,30,0);
             if(x==1&&z<0)EntityOracle.rawBlock(w,x,63,z,88,0);
         }
+        Mode_entities181.Player player=new Mode_entities181.Player(w);player.setPosition(.5,64.1,1.5);w.playerEntities.add(player);
         RenderEngine engine=(RenderEngine)Oracle.allocate(RenderEngine.class);HashMap<String,Integer> textures=new HashMap<>();textures.put("/misc/footprint.png",3);Oracle.setField(engine,"textureMap",textures);Oracle.setField(engine,"texturePack",Oracle.allocate(TexturePackList.class));
         Field convert=Tessellator.class.getDeclaredField("convertQuadsToTriangles");convert.setAccessible(true);convert.setBoolean(null,false);
         Field raw=Tessellator.class.getDeclaredField("rawBuffer");raw.setAccessible(true);

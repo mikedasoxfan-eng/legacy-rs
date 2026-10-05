@@ -62,8 +62,8 @@ impl Entity {
             p.xp_pickup_cooldown=2; let value=s.value;
             let pitch=0.5*((self.rand.next_float()-self.rand.next_float())*0.7+1.0);
             w.play_sound_at_entity(self,"random.pop",0.2,pitch);
-            player.add_experience(value);
             if let Some(p)=player.player_state_mut() {p.events.push(super::player::PlayerEvent::Pickup{entity:self.entity_id,count:1,source:Box::new(self.clone())});}
+            player.add_experience(value);
             self.dead=true;
         }
     }

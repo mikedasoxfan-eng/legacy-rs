@@ -44,7 +44,7 @@ pub struct Column {
     pub meta: [u8; 128],
     pub brightness: [f32; 129],
 }
-#[derive(Default)]
+#[derive(Clone, Default)]
 pub struct Snapshot {
     pub columns: Vec<Column>,
 }

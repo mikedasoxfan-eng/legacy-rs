@@ -186,6 +186,7 @@ pub struct Batch {
 
 /// All jar resources used by the models, including the powered creeper pass.
 pub const TEXTURES: &[&str] = &[
+    "mob/enderman.png", "mob/enderman_eyes.png", "mob/cavespider.png", "mob/silverfish.png", "item/xporb.png",
     "gui/items.png",
     "terrain.png",
     "item/arrows.png",

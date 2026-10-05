@@ -487,9 +487,9 @@ impl Model {
         self.parts.insert("head".into(), ModelRenderer::new(0, 0));
         self["head"].add_box(-4.0f32, -8.0f32, -4.0f32, 8, 8, 8, var1);
         self["head"].set_rotation_point(0.0f32, var2 as f32, 0.0f32);
-        self.parts.insert("field_1270_b".into(), ModelRenderer::new(32, 0));
-        self["field_1270_b"].add_box(-4.0f32, -8.0f32, -4.0f32, 8, 8, 8, var1 + 0.5f32);
-        self["field_1270_b"].set_rotation_point(0.0f32, var2 as f32, 0.0f32);
+        self.parts.insert("unusedCreeperHeadwear".into(), ModelRenderer::new(32, 0));
+        self["unusedCreeperHeadwear"].add_box(-4.0f32, -8.0f32, -4.0f32, 8, 8, 8, var1 + 0.5f32);
+        self["unusedCreeperHeadwear"].set_rotation_point(0.0f32, var2 as f32, 0.0f32);
         self.parts.insert("body".into(), ModelRenderer::new(16, 16));
         self["body"].add_box(-4.0f32, 0.0f32, -2.0f32, 8, 12, 4, var1);
         self["body"].set_rotation_point(0.0f32, var2 as f32, 0.0f32);

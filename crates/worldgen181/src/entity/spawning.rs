@@ -368,7 +368,9 @@ impl World {
                     if self.is_block_normal_cube(px,y-1,pz) && !self.is_block_normal_cube(px,y,pz) && !mat(self.get_block_material(px,y,pz)).is_liquid && !self.is_block_normal_cube(px,y+1,pz) {
                         let mut entity=Entity::living(self,entry.0).unwrap();
                         entity.set_location_and_angles((px as f32+0.5) as f64,y as f32 as f64,(pz as f32+0.5) as f64,random.next_float()*360.0,0.0);
-                        self.entity_joined_world(entity);spawned=true;
+                        let id=entity.entity_id;self.entity_joined_world(entity);
+                        if entry.0=="Sheep" {let n=self.rand.next_int(100);let color=if n<5{15}else if n<10{7}else if n<15{8}else if n<18{12}else if self.rand.next_int(500)==0{6}else{0};if let Some(e)=self.entities.get_mut(&id){if let EntityKind::Sheep{fleece_color,..}=&mut e.kind{*fleece_color=color;}}}
+                        spawned=true;
                     }
                     px+=random.next_int(5)-random.next_int(5);pz+=random.next_int(5)-random.next_int(5);
                     // The Z range incorrectly uses width in the original, even for rectangular areas.

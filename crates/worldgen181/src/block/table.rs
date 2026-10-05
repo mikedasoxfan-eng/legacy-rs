@@ -162,11 +162,11 @@ pub const BLOCKS: [BlockProps; 256] = [
     BlockProps { exists: true, material: 3, light_opacity: 0, light_value: 0, opaque_cube: false, normal_render: false, container: false, ticks: false, tick_rate: 10, name: "tile.trapdoor" }, // 96
     BlockProps { exists: true, material: 22, light_opacity: 255, light_value: 0, opaque_cube: true, normal_render: true, container: false, ticks: false, tick_rate: 10, name: "tile.monsterStoneEgg" }, // 97
     BlockProps { exists: true, material: 4, light_opacity: 255, light_value: 0, opaque_cube: true, normal_render: true, container: false, ticks: false, tick_rate: 10, name: "tile.stonebricksmooth" }, // 98
-    BlockProps::NONE, // 99
-    BlockProps::NONE, // 100
+    BlockProps { exists: true, material: 3, light_opacity: 255, light_value: 0, opaque_cube: true, normal_render: true, container: false, ticks: false, tick_rate: 10, name: "tile.mushroom" }, // 99
+    BlockProps { exists: true, material: 3, light_opacity: 255, light_value: 0, opaque_cube: true, normal_render: true, container: false, ticks: false, tick_rate: 10, name: "tile.mushroom" }, // 100
     BlockProps::NONE, // 101
     BlockProps::NONE, // 102
-    BlockProps::NONE, // 103
+    BlockProps { exists: true, material: 23, light_opacity: 255, light_value: 0, opaque_cube: true, normal_render: true, container: false, ticks: false, tick_rate: 10, name: "tile.melon" }, // 103
     BlockProps::NONE, // 104
     BlockProps::NONE, // 105
     BlockProps::NONE, // 106

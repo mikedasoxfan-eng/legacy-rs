@@ -183,6 +183,7 @@ impl Draw {
                 17 => "particles.png",
                 18 => "item/cart.png",
                 19 => "item/boat.png",
+                30 => "item/xporb.png",
                 20..=29 => super::player::ARMOR[(self.texture - 20) as usize],
                 _ => "__white",
             })

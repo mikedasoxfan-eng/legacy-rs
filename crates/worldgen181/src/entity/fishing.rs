@@ -198,7 +198,7 @@ impl Entity {
             match hit {
                 Hit::Entity { id, .. } => {
                     if let Some(mut target) = w.entities.remove(&id) {
-                        if target.attack(w, s.arrow.owner, 0) {
+                        if target.attack_from(w,super::damage::DamageSource::indirect(super::damage::DamageKind::Thrown,self.entity_id,s.arrow.owner),0) {
                             s.hooked = Some(id);
                         }
                         w.entities.insert(id, target);

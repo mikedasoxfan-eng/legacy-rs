@@ -86,6 +86,7 @@ pub struct Particle {
     pub rand: JavaRandom,
     pub pickup: Option<Box<worldgen::entity::Entity>>,
     pub target: i32,
+    pub cloud_player: Option<[f64;5]>,
 }
 impl Particle {
     pub fn new(
@@ -164,6 +165,7 @@ impl Particle {
             rand: r,
             pickup: None,
             target: 0,
+            cloud_player: None,
         };
         match kind {
             Kind::Crit | Kind::MagicCrit | Kind::Cloud => {
@@ -428,6 +430,10 @@ impl Particle {
         for v in &mut self.motion {
             *v *= friction as f64;
         }
+        if self.kind==Kind::Cloud {if let Some(player)=self.cloud_player {
+            let distance=(0..3).map(|i|(self.pos[i]-player[i]).powi(2)).sum::<f64>();
+            if distance<4.0 && self.pos[1]>player[3] {self.pos[1]+=(player[3]-self.pos[1])*0.2;self.motion[1]+=(player[4]-self.motion[1])*0.2;let half=(self.width/2.0) as f64;self.bounds=[self.pos[0]-half,self.pos[1]-self.y_offset as f64,self.pos[2]-half,self.pos[0]+half,self.pos[1]-self.y_offset as f64+self.height as f64,self.pos[2]+half];}
+        }}
         if self.kind == Kind::Bubble {
             if material(terrain, self.pos) != worldgen::block::MAT_WATER {
                 self.dead = true;
@@ -608,6 +614,8 @@ fn material(s: &Snapshot, pos: [f64; 3]) -> u8 {
 
 pub struct EffectRenderer {
     pub layers: [Vec<Particle>; 4],
+    pub creation_terrain: Snapshot,
+    pub cloud_player: Option<[f64;5]>,
     pub math_random: JavaRandom,
     pub next_seed: i64,
     pub rand: JavaRandom,
@@ -617,6 +625,8 @@ impl EffectRenderer {
     pub fn new(seed: i64) -> Self {
         Self {
             layers: std::array::from_fn(|_| Vec::new()),
+            creation_terrain: Snapshot::default(),
+            cloud_player: None,
             math_random: JavaRandom::new(seed),
             next_seed: seed.wrapping_add(1),
             rand: JavaRandom::new(seed.wrapping_add(2)),
@@ -648,7 +658,7 @@ impl EffectRenderer {
             self.next_seed = self.next_seed.wrapping_add(1);
             seed
         };
-        Particle::new(kind, p, v, &mut self.math_random, seed)
+        let mut p=Particle::new_in(kind,p,v,&mut self.math_random,seed,&self.creation_terrain);p.cloud_player=self.cloud_player;p
     }
     pub fn add(&mut self, p: Particle) {
         let l = &mut self.layers[p.layer()];
@@ -673,6 +683,7 @@ impl EffectRenderer {
         for layer in 0..4 {
             let mut index = 0;
             while index < self.layers[layer].len() {
+                self.layers[layer][index].cloud_player=self.cloud_player;
                 let smoke = self.layers[layer][index].tick(s, &mut self.math_random);
                 let dead = self.layers[layer][index].dead;
                 if let Some((p, v)) = smoke {

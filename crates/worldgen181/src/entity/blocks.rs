@@ -37,7 +37,7 @@ impl World {
         }
     }
     pub fn block_collision_box(&mut self, id: u8, x: i32, y: i32, z: i32) -> Option<BB> {
-        if matches!(id,97|98) {return Some(BB::new(x as f64,y as f64,z as f64,(x+1) as f64,(y+1) as f64,(z+1) as f64));}
+        if matches!(id,97|98|99|100|103) {return Some(BB::new(x as f64,y as f64,z as f64,(x+1) as f64,(y+1) as f64,(z+1) as f64));}
         if !props(id).exists {
             return None;
         }

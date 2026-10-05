@@ -90,6 +90,7 @@ pub fn check(path: &str) -> bool {
             1 => ObjectKind::Falling { block: id as u8, light },
             2 => ObjectKind::Tnt { fuse },
             3 => ObjectKind::Arrow { yaw, pitch, shake, visible: true },
+            8 => ObjectKind::XPOrb {value:id as i32,ticks:age},
             4 => ObjectKind::Sprite { icon: 14, scale: 2.0 },
             5 => ObjectKind::Sprite { icon: 14, scale: 0.5 },
             6 | 7 => ObjectKind::Item { item: worldgen::world::tile::ItemStack { id, count, damage }, age, hover },

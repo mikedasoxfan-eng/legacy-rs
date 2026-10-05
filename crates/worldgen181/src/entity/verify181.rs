@@ -52,12 +52,35 @@ pub fn rules()->Vec<u8>{
     let n=e.to_nbt().unwrap();i(&mut o,n.short("carried") as i32);i(&mut o,n.short("carriedData") as i32);e.read_existing_nbt(&mut w,&n).unwrap();
     if let EntityKind::Enderman(s)=&e.kind{i(&mut o,s.carried as i32);i(&mut o,s.carried_data as i32);}
     for bi in 0..10 {for cat in 0..3 {let list=super::spawning::spawn_list181(bi,cat);i(&mut o,list.len() as i32);for (name,weight,min,max) in list{text(&mut o,name);i(&mut o,weight);i(&mut o,min);i(&mut o,max);}}}
+    let mut w=world();let mut player=Entity::player(&mut w,"Player");
+    for value in [1,3,7,17,37,73,149,307,617,1237,2477,10000,-2] {for delay in [0,1] {for cooldown in [0,1] {
+        let mut orb=Entity::xp_orb(&mut w,Vec3D::new(-3.5,68.0,4.5),value);
+        if let EntityKind::XPOrb(state)=&mut orb.kind{state.pickup_delay=delay;}
+        player.player_state_mut().unwrap().xp_pickup_cooldown=cooldown;
+        orb.pickup_xp_orb(&mut w,&mut player);let p=player.player_state().unwrap();
+        for v in [p.experience,p.experience_level,p.total_experience,p.xp_pickup_cooldown]{i(&mut o,v);}o.push(orb.dead as u8);l(&mut o,orb.rand.state());crate::world::events::write_events(&w.drain_events(),&mut o);
+    }}}
     o
 }
+pub fn population()->Vec<u8> {
+    let mut out=vec![];
+    for biome in 0..10 {for seed in 4096..4128 {
+        let mut w=world();let mut random=crate::JavaRandom::new(seed);
+        w.spawn_population_animals(biome,-8,-7,16,12,&mut random);
+        l(&mut out,random.state());l(&mut out,w.rand.state());l(&mut out,w.math_random.state());i(&mut out,w.loaded_entity_list.len() as i32);
+        for id in &w.loaded_entity_list {let e=&w.entities[id];text(&mut out,e.kind.name());for v in [e.pos.x,e.pos.y,e.pos.z]{d(&mut out,v);}f(&mut out,e.yaw);l(&mut out,e.rand.state());if let EntityKind::Sheep{fleece_color,..}=e.kind{i(&mut out,fleece_color as i32);}}
+    }}out
+}
 pub fn replay(kind:&str,ticks:i32)->Vec<u8>{
-    if kind=="rules"{return rules();}
+    if kind=="rules"{return rules();}if kind=="population"{return population();}
     let mut w=world();let mut e=match kind {
-        "XPOrb"=>Entity::xp_orb(&mut w,Vec3D::new(-3.5,68.0,4.5),149),
+        "XPOrb" | "attract"=>Entity::xp_orb(&mut w,Vec3D::new(-3.5,68.0,4.5),149),
+        "Boat"=>Entity::boat(&mut w,-3.5,68.0,4.5),
+        "Minecart"=>Entity::minecart(&mut w,-3.5,68.0,4.5,0),
+        "Item"=>Entity::item(&mut w,-3.5,68.0,4.5,crate::world::tile::ItemStack::new(263,1,0)),
+        "Fireball"=>Entity::fireball(&mut w,Vec3D::new(-3.5,68.0,4.5),Vec3D::new(0.4,0.2,1.0)),
+        "Snowball"|"Egg"=>{let mut e=Entity::throwable_at(&mut w,-3.5,68.0,4.5,kind=="Egg");e.set_arrow_heading(0.4,0.2,1.0,1.5,1.0);e},
+        "Lightning"=>Entity::lightning(&mut w,-3.5,64.0,4.5),
         "Arrow"=>{let mut e=Entity::arrow(&mut w,-3.5,68.0,4.5);e.set_arrow_heading(0.4,0.2,1.0,1.5,1.0);if let EntityKind::Arrow(s)=&mut e.kind{s.critical=true;}e},
         _=>{let mut e=Entity::living(&mut w,if kind.starts_with("kill-"){&kind[5..]}else if kind=="poison"{"Zombie"}else if kind=="teleport"||kind=="carry"{"Enderman"}else if kind=="allies"{"Silverfish"}else if kind=="potions"||kind=="damage"{"Pig"}else{kind}).unwrap();e.set_location_and_angles(-3.5,64.0,4.5,35.0,0.0);e},
     };
@@ -65,7 +88,7 @@ pub fn replay(kind:&str,ticks:i32)->Vec<u8>{
     if kind=="carry" {for x in -8..=8 {for z in -8..=8 {w.chunks.get_mut(&(x>>4,z>>4)).unwrap().blocks[idx(x&15,64,z&15)]=37;}}}
     if kind=="allies" {for x in -7..=7 {for z in -7..=7 {w.chunks.get_mut(&(x>>4,z>>4)).unwrap().blocks[idx(x&15,63,z&15)]=97;}}}
     let mut killer=None;
-    if kind.starts_with("kill-") {let mut p=Entity::player(&mut w,"Player");p.entity_id=10000;p.set_position(0.5,65.62,0.5);w.players.push((0.5,65.62,0.5));w.player_entities.push(Some(10000));w.entities.insert(10000,p);killer=Some(10000);}
+    if kind.starts_with("kill-")||kind=="attract" {let mut p=Entity::player(&mut w,"Player");p.entity_id=10000;p.set_position(0.5,65.62,0.5);w.players.push((0.5,65.62,0.5));w.player_entities.push(Some(10000));w.entities.insert(10000,p);killer=Some(10000);}
     if kind=="poison"||kind=="allies" {let mut spider=Entity::living(&mut w,"CaveSpider").unwrap();spider.set_position(-3.5,64.0,3.5);w.entities.insert(spider.entity_id,spider.clone());if e.attack_from(&mut w,DamageSource::entity(DamageKind::Mob,Some(spider.entity_id)),2)&&kind=="poison"{e.add_potion_effect(PotionEffect::new(19,140,0));}}
     let mut out=vec![];state(&mut w,&e,&mut out);
     for t in 0..ticks {

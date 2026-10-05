@@ -137,6 +137,7 @@ pub fn check(path: &str) -> bool {
         };
         let mut m = JavaRandom::new(mathseed);
         let mut p = Particle::new_in(kind, pos, velocity, &mut m, seed,&s);
+        if id==20 {p.cloud_player=Some([0.5,64.1,1.5,64.1-1.62f32 as f64,0.0]);}
         if id == 16 && case % 8 == 7 {
             p.multiply_velocity(0.2);
             p.multiply_scale(0.6);

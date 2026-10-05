@@ -299,7 +299,7 @@ impl Entity {
             self.living.attack_time = n.short("AttackTime") as i32;
         }
         if n.has("ActiveEffects") {
-            for effect in n.list("ActiveEffects") { if let Tag::Compound(n)=effect {self.add_potion_effect(super::potion::PotionEffect::new(n.byte("Id") as i32,n.int("Duration"),n.byte("Amplifier") as i32));} }
+            for effect in n.list("ActiveEffects") { if let Tag::Compound(n)=effect {let effect=super::potion::PotionEffect::new(n.byte("Id") as i32,n.int("Duration"),n.byte("Amplifier") as i32);if let Some(old)=self.living.effects.iter_mut().find(|e|e.id==effect.id){*old=effect;}else{self.living.effects.push(effect);if self.living.effects.len()>self.living.effect_capacity*3/4{self.living.effect_capacity*=2;}}} }
         }
         match &mut self.kind {
             EntityKind::XPOrb(s) => {s.health=n.short("Health") as i32 & 255;s.age=n.short("Age") as i32;s.value=n.short("Value") as i32;}

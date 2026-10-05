@@ -15,6 +15,9 @@ public final class Mode_entities181 {
         for(Object c0:((EntityOracle.FlatProvider)w.chunkProvider).chunks.values()) {Chunk c=(Chunk)c0;Arrays.fill(c.skylightMap.data,(byte)255);Arrays.fill(c.heightMap,(byte)64);}
         w.difficultySetting=2;w.skylightSubtracted=11;w.worldInfo.setWorldTime(18000);
         WorldEventOracle.attach(w);
+        w.addWorldAccess((IWorldAccess)Proxy.newProxyInstance(Mode_entities181.class.getClassLoader(),new Class[]{IWorldAccess.class},(proxy,method,args)->{
+            if(method.getName().equals("playAuxSFX")){ByteArrayOutputStream b=new ByteArrayOutputStream();DataOutputStream o=new DataOutputStream(b);o.writeByte(3);for(int j=1;j<=5;j++)i(o,(Integer)args[j]);WorldEventOracle.events.get(w).add(b.toByteArray());}return null;
+        }));
         Field id=Entity.class.getDeclaredField("nextEntityID");id.setAccessible(true);id.setInt(null,0);
         OracleHooks.reset(100);EntityOracle.mathRandom().setSeed(200);w.rand.setSeed(300);
         return w;
@@ -52,21 +55,41 @@ public final class Mode_entities181 {
         for(int v=-2;v<10000;v++){EntityXPOrb orb=new EntityXPOrb(w,0,0,0,v);i(o,EntityXPOrb.func_35121_b(v));i(o,orb.func_35120_i());}
         e.func_35177_b(35);e.func_35181_c(7);NBTTagCompound n=new NBTTagCompound();e.writeEntityToNBT(n);i(o,n.getShort("carried"));i(o,n.getShort("carriedData"));e.readEntityFromNBT(n);i(o,e.func_35176_r());i(o,e.func_35180_s());
         for(int bi=0;bi<10;bi++)for(EnumCreatureType cat:EnumCreatureType.values()){List list=BiomeGenBase.field_35486_a[bi].getSpawnableList(cat);i(o,list.size());for(Object a:list){SpawnListEntry s=(SpawnListEntry)a;WorldEventOracle.text(o,s.entityClass.getSimpleName().substring(6));i(o,s.field_35590_d);i(o,s.field_35591_b);i(o,s.field_35592_c);}}
+        w=world();Player player=new Player(w);
+        for(int value:new int[]{1,3,7,17,37,73,149,307,617,1237,2477,10000,-2})for(int delay:new int[]{0,1})for(int cooldown:new int[]{0,1}) {
+            EntityXPOrb orb=new EntityXPOrb(w,-3.5,68,4.5,value);orb.field_35126_c=delay;player.field_35214_aG=cooldown;orb.onCollideWithPlayer(player);
+            for(int v:new int[]{player.field_35211_aX,player.field_35210_aY,player.field_35209_aZ,player.field_35214_aG})i(o,v);o.writeBoolean(orb.isDead);l(o,EntityOracle.rngState(orb.rand));WorldEventOracle.snapshot(w,o);
+        }
+
+    }
+    static void population(DataOutputStream o)throws Exception {
+        for(int biome=0;biome<10;biome++)for(long seed=4096;seed<4128;seed++) {
+            World w=world();Random random=new Random(seed);SpawnerAnimals.func_35957_a(w,BiomeGenBase.field_35486_a[biome],-8,-7,16,12,random);
+            l(o,EntityOracle.rngState(random));l(o,EntityOracle.rngState(w.rand));l(o,EntityOracle.rngState(EntityOracle.mathRandom()));i(o,w.loadedEntityList.size());
+            for(Object obj:w.loadedEntityList){Entity e=(Entity)obj;WorldEventOracle.text(o,EntityList.getEntityString(e));d(o,e.posX);d(o,e.posY);d(o,e.posZ);f(o,e.rotationYaw);l(o,EntityOracle.rngState(e.rand));if(e instanceof EntitySheep)i(o,((EntitySheep)e).getFleeceColor());}
+        }
     }
     public static void main(String[] a)throws Exception {
         String kind=a[1];int ticks=Integer.parseInt(a[2]);
         try(DataOutputStream o=new DataOutputStream(new BufferedOutputStream(new FileOutputStream(a[3])))) {
-            if(kind.equals("rules")){rules(o);return;}
+            if(kind.equals("rules")){rules(o);return;}if(kind.equals("population")){population(o);return;}
             World w=world();
             Entity e;
-            if(kind.equals("XPOrb"))e=new EntityXPOrb(w,-3.5,68,4.5,149);
+            if(kind.equals("XPOrb")||kind.equals("attract"))e=new EntityXPOrb(w,-3.5,68,4.5,149);
+            else if(kind.equals("Boat"))e=new EntityBoat(w,-3.5,68,4.5);
+            else if(kind.equals("Minecart"))e=new EntityMinecart(w,-3.5,68,4.5,0);
+            else if(kind.equals("Item"))e=new EntityItem(w,-3.5,68,4.5,new ItemStack(263,1,0));
+            else if(kind.equals("Fireball"))e=new EntityFireball(w,-3.5,68,4.5,.4,.2,1);
+            else if(kind.equals("Snowball")){EntitySnowball a1=new EntitySnowball(w,-3.5,68,4.5);a1.setSnowballHeading(.4,.2,1,1.5F,1);e=a1;}
+            else if(kind.equals("Egg")){EntityEgg a1=new EntityEgg(w,-3.5,68,4.5);a1.setEggHeading(.4,.2,1,1.5F,1);e=a1;}
+            else if(kind.equals("Lightning"))e=new EntityLightningBolt(w,-3.5,64,4.5);
             else if(kind.equals("Arrow")){EntityArrow arrow=new EntityArrow(w,-3.5,68,4.5);arrow.setArrowHeading(0.4,0.2,1,1.5F,1);arrow.field_35140_d=true;e=arrow;}
             else {String name=kind.startsWith("kill-")?kind.substring(5):kind.equals("poison")?"Zombie":kind.equals("teleport")||kind.equals("carry")?"Enderman":kind.equals("allies")?"Silverfish":kind.equals("potions")||kind.equals("damage")?"Pig":kind;e=EntityList.createEntityInWorld(name,w);e.setLocationAndAngles(-3.5,64,4.5,35,0);}
             if(kind.equals("carry"))for(int x=-8;x<=8;x++)for(int z=-8;z<=8;z++)EntityOracle.rawBlock(w,x,64,z,37,0);
             if(kind.equals("allies"))for(int x=-7;x<=7;x++)for(int z=-7;z<=7;z++)EntityOracle.rawBlock(w,x,63,z,97,0);
             if(kind.equals("potions")){EntityLiving mob=(EntityLiving)e;mob.health=8;for(int[] p:new int[][]{{1,80,1},{2,120,0},{10,150,0},{19,180,0},{6,3,0},{7,2,0}})mob.func_35165_a(new PotionEffect(p[0],p[1],p[2]));}
             EntityPlayer killer=null;
-            if(kind.startsWith("kill-")){killer=new Player(w);killer.entityId=10000;killer.setPosition(0.5,65.62,0.5);w.playerEntities.add(killer);}
+            if(kind.startsWith("kill-")||kind.equals("attract")){killer=new Player(w);killer.entityId=10000;killer.setPosition(0.5,65.62,0.5);w.playerEntities.add(killer);}
             if(kind.equals("poison")){EntityCaveSpider spider=new EntityCaveSpider(w);spider.setPosition(-3.5,64,3.5);spider.func_35175_b(e);}
             if(kind.equals("allies")){EntityCaveSpider spider=new EntityCaveSpider(w);spider.setPosition(-3.5,64,3.5);e.attackEntityFrom(DamageSource.func_35525_a(spider),2);}
             state(w,e,o);
