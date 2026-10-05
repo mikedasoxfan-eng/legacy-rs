@@ -276,12 +276,13 @@ fn run(opts: WorldOptions, mut col: Colorizers, mut video: VideoSettings, rx: Re
             worldgen::convert::convert_map_format(dir, &mut progress);
         }
     }
-    let opened = World::open_with(
+    let opened = World::open_with_settings(
         opts.dir.as_deref(),
         opts.seed,
         opts.world_rand,
         opts.server,
         opts.name.as_deref(),
+        opts.settings,
         &mut progress,
     );
     let (mut world, is_new) = match opened {
@@ -291,12 +292,6 @@ fn run(opts: WorldOptions, mut col: Colorizers, mut video: VideoSettings, rx: Re
             return;
         }
     };
-    if is_new {
-        if let Some(settings) = opts.settings {
-            world.info.game_type = settings.game_mode;
-            world.info.map_features = settings.map_features;
-        }
-    }
     if let Some(w) = opts.weather {
         world.info.raining = w.rain > 0.0;
         world.info.thundering = w.thunder > 0.0;

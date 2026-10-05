@@ -491,6 +491,8 @@ pub fn run() {
         }
         return;
     }
+    if args.get(1).map(String::as_str)==Some("--guiutilitycheck"){std::process::exit(if gui::utility_check::check(&args[2]) {0}else{1});}
+    if args.get(1).map(String::as_str)==Some("--statsynccheck"){std::process::exit(if gui::stats_check::check(std::path::Path::new(&args[2])) {0}else{1});}
     if args.get(1).map(String::as_str)==Some("--playerguicheck"){std::process::exit(if gui::player_check::check(&args[2]) {0}else{1});}
     if args.get(1).map(String::as_str) == Some("--guishot") {
         let script = args.get(2).expect("--guishot script.txt outdir");

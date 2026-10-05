@@ -4,6 +4,14 @@
 
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
+use std::sync::{Arc, Mutex};
+
+#[derive(Default, Debug)]
+struct Transfers {
+    busy: bool,
+    received: Option<HashMap<i32, i32>>,
+    unsent: Option<HashMap<i32, i32>>,
+}
 
 pub struct Syncher {
     /// `field_27434_e`, `field_27432_g`, `field_27430_i`: the unsent file and its .tmp/.old.
@@ -16,7 +24,7 @@ pub struct Syncher {
     /// `field_27427_l`: ticks until the next periodic write.
     busy: i32,
     /// `field_27437_b`: the sent file's stats, merged into the totals on the next tick.
-    received: Option<HashMap<i32, i32>>,
+    transfers: Arc<Mutex<Transfers>>,
 }
 
 impl std::fmt::Debug for Syncher {
@@ -33,7 +41,7 @@ impl Clone for Syncher {
             user: self.user.clone(),
             guids: self.guids.clone(),
             busy: self.busy,
-            received: self.received.clone(),
+            transfers: self.transfers.clone(),
         }
     }
 }
@@ -85,21 +93,21 @@ impl Syncher {
                 Some((p.next()?.trim().parse().ok()?, p.next()?.to_string()))
             })
             .collect();
-        let mut s = Syncher { unsent, sent, user: user.to_string(), guids, busy: 0, received: None };
+        let mut s = Syncher { unsent, sent, user: user.to_string(), guids, busy: 0, transfers: Arc::default() };
         let loaded = if s.unsent[0].exists() { s.read_first(&s.unsent) } else { None };
         // func_27418_a: ThreadStatSyncherReceive reads the sent file.
-        s.busy = 100;
-        if s.sent[0].exists() {
-            s.received = s.read_first(&s.sent);
-        }
+        s.receive();
         (s, loaded)
     }
 
     /// Parse one stats file (for the oracle check).
     pub fn read_file(path: &Path, map_txt: &str) -> Option<HashMap<i32, i32>> {
-        let dir = std::env::temp_dir().join(format!("beta-stats-{}", std::process::id()));
-        let (s, _) = Syncher::open(&dir, "Player", map_txt);
-        let _ = std::fs::remove_dir_all(&dir);
+        let guids = map_txt.lines().filter_map(|line| {
+            let (id, guid) = line.split_once(',')?;
+            Some((id.trim().parse().ok()?, guid.to_string()))
+        }).collect();
+        let s = Syncher { unsent: Default::default(), sent: Default::default(),
+            user: "Player".into(), guids, busy: 0, transfers: Arc::default() };
         let text: String = std::fs::read_to_string(path).ok()?.lines().collect();
         s.parse(&text)
     }
@@ -186,7 +194,11 @@ impl Syncher {
 
     /// `func_27410_a`: write the .tmp, the .dat becomes the .old, the .tmp the .dat.
     pub fn write(&self, map: &HashMap<i32, i32>) {
-        let [dat, tmp, old] = &self.unsent;
+        self.write_files(map, &self.unsent);
+    }
+
+    fn write_files(&self, map: &HashMap<i32, i32>, files: &[PathBuf; 3]) {
+        let [dat, tmp, old] = files;
         if let Err(e) = std::fs::write(tmp, self.format(map)) {
             eprintln!("stats: {e}");
             return;
@@ -202,21 +214,69 @@ impl Syncher {
 
     /// `func_27420_b`: ready for a periodic write.
     pub fn ready(&self) -> bool {
-        self.busy <= 0
+        let state = self.transfers.lock().unwrap();
+        self.busy <= 0 && !state.busy && state.unsent.is_none()
     }
 
     /// `func_27424_a`: the periodic write (ThreadStatSyncherSend).
     pub fn send(&mut self, map: &HashMap<i32, i32>) {
+        let mut state = self.transfers.lock().unwrap();
+        assert!(!state.busy, "Can't save stats while StatsSyncher is busy!");
+        state.busy = true;
         self.busy = 100;
+        let worker = self.clone();
+        let map = map.clone();
+        drop(state);
+        std::thread::spawn(move || {
+            worker.write(&map);
+            worker.transfers.lock().unwrap().busy = false;
+        });
+    }
+
+    /// `beginReceiveStats` / `ThreadStatSyncherReceive.run`.
+    pub fn receive(&mut self) {
+        let mut state = self.transfers.lock().unwrap();
+        assert!(!state.busy, "Can't get stats from server while StatsSyncher is busy!");
+        state.busy = true;
+        self.busy = 100;
+        let worker = self.clone();
+        drop(state);
+        std::thread::spawn(move || {
+            let received = worker.transfers.lock().unwrap().received.clone();
+            if let Some(map) = received {
+                worker.write_files(&map, &worker.sent);
+            } else if worker.sent[0].exists() {
+                worker.transfers.lock().unwrap().received = worker.read_first(&worker.sent);
+            }
+            worker.transfers.lock().unwrap().busy = false;
+        });
+    }
+
+    /// `syncStatsFileWithMap`: wait at most 29 times, then perform the final write.
+    pub fn sync(&self, map: &HashMap<i32, i32>) {
+        for _ in 0..29 {
+            if !self.transfers.lock().unwrap().busy { break; }
+            std::thread::sleep(std::time::Duration::from_millis(100));
+        }
+        self.transfers.lock().unwrap().busy = true;
         self.write(map);
+        self.transfers.lock().unwrap().busy = false;
+    }
+
+    /// Deterministic fixture barrier; gameplay uses the original tick/ready protocol.
+    pub(crate) fn wait_idle(&self) {
+        while self.transfers.lock().unwrap().busy {
+            std::thread::sleep(std::time::Duration::from_millis(1));
+        }
     }
 
     /// `func_27425_c`: count down, and hand over the sent file's stats once.
-    pub fn tick(&mut self) -> Option<HashMap<i32, i32>> {
+    pub fn tick(&mut self) -> (Option<HashMap<i32, i32>>, Option<HashMap<i32, i32>>) {
         if self.busy > 0 {
             self.busy -= 1;
         }
-        self.received.take()
+        let mut state = self.transfers.lock().unwrap();
+        (state.unsent.take(), state.received.take())
     }
 }
 

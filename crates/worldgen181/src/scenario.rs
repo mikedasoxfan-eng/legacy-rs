@@ -121,12 +121,26 @@ impl World {
         new_name: Option<&str>,
         progress: &mut dyn FnMut(LoadStep),
     ) -> std::io::Result<(World, bool)> {
+        Self::open_with_settings(dir, seed, world_rand_seed, server, new_name, None, progress)
+    }
+
+    /// New-world settings must be visible to the provider during spawn search
+    /// and preload. An existing level keeps its saved settings.
+    pub fn open_with_settings(
+        dir: Option<&std::path::Path>,
+        seed: i64,
+        world_rand_seed: i64,
+        server: bool,
+        new_name: Option<&str>,
+        settings: Option<crate::entity::player::food::WorldSettings>,
+        progress: &mut dyn FnMut(LoadStep),
+    ) -> std::io::Result<(World, bool)> {
         let storage = match dir {
             Some(d) => Some(crate::storage::Storage::open(d)?),
             None => None,
         };
         let existing = storage.as_ref().and_then(|s| s.load_level());
-        let seed = existing.as_ref().map_or(seed, |i| i.seed);
+        let seed = existing.as_ref().map_or(settings.map_or(seed, |s| s.seed), |i| i.seed);
         // World's constructor: a player saved in the Nether reopens it (WorldInfo.getDimension).
         let dimension = existing.as_ref().and_then(|i|crate::world::Dimension::from_id(i.dimension())).unwrap_or(crate::world::Dimension::Overworld);
         let mut w = World::with_dimension(seed, world_rand_seed, dimension);
@@ -147,6 +161,10 @@ impl World {
             w.info = info;
             w.init_weather_and_light();
         } else {
+            if let Some(settings) = settings {
+                w.info.game_type = settings.game_mode;
+                w.info.map_features = settings.map_features;
+            }
             if let Some(d) = dir {
                 w.info.name = d.file_name().map(|n| n.to_string_lossy().into_owned()).unwrap_or_else(|| "world".into());
             }

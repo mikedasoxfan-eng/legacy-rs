@@ -74,8 +74,8 @@ impl Stats {
         if let Some(map) = loaded {
             s.dirty = true;
             for (id, n) in map {
-                *s.unsent.entry(id).or_insert(0) += n;
-                *s.total.entry(id).or_insert(0) += n;
+                Self::increment(&mut s.unsent, id, n);
+                Self::increment(&mut s.total, id, n);
             }
         }
         s
@@ -85,17 +85,24 @@ impl Stats {
         self.total.get(&id).copied().unwrap_or(0)
     }
 
+    pub(crate) fn contains(&self, id: i32) -> bool { self.total.contains_key(&id) }
+
     /// `readStat`
     pub fn add(&mut self, id: i32, n: i32) {
-        *self.unsent.entry(id).or_insert(0) += n;
-        *self.total.entry(id).or_insert(0) += n;
+        Self::increment(&mut self.unsent, id, n);
+        Self::increment(&mut self.total, id, n);
         self.dirty = true;
+    }
+
+    fn increment(map: &mut HashMap<i32, i32>, id: i32, n: i32) {
+        let value = map.entry(id).or_insert(0);
+        *value = value.wrapping_add(n);
     }
 
     /// `syncStats`: write the file now (screen changes, world changes, quitting).
     pub fn sync(&mut self) {
         if let Some(f) = &self.file {
-            f.write(&self.unsent);
+            f.sync(&self.unsent);
         }
     }
 
@@ -106,10 +113,15 @@ impl Stats {
             f.send(&self.unsent);
         }
         // func_27180_b: the sent file's stats plus what is still unsent.
-        if let Some(sent) = f.tick() {
+        let (unsent, sent) = f.tick();
+        if let Some(map) = unsent {
+            self.dirty = true;
+            for (id, n) in map { Self::increment(&mut self.unsent, id, n); }
+        }
+        if let Some(sent) = sent {
             for (id, n) in sent {
                 let unsent = self.unsent.get(&id).copied().unwrap_or(0);
-                self.total.insert(id, n + unsent);
+                self.total.insert(id, n.wrapping_add(unsent));
             }
         }
     }
@@ -123,6 +135,13 @@ impl Stats {
     pub fn can_unlock(&self, i: usize) -> bool {
         ACHIEVEMENTS[i].parent.is_none_or(|p| self.unlocked(p))
     }
+
+    pub(crate) fn wait_idle(&self) {
+        if let Some(file) = &self.file { file.wait_idle(); }
+    }
+
+    pub(crate) fn unsent_snapshot(&self) -> &HashMap<i32, i32> { &self.unsent }
+    pub(crate) fn ready(&self) -> bool { self.file.as_ref().is_some_and(|f| f.ready()) }
 }
 
 /// `StatList.func_27361_a(id) != null`: the stat ids the original registers.

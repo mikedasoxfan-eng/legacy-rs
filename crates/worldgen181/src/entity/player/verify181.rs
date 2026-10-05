@@ -57,6 +57,9 @@ pub fn replay(kind:&str,ticks:i32)->Vec<u8> {
         if kind=="damage"&&t%5==0 {p.attack_from(&mut w,DamageSource::new(if t%10==0 {DamageKind::Starve}else {DamageKind::Cactus}),5);}
         if kind=="creativevoid"&&t==0 {p.set_creative(true);p.attack_from(&mut w,DamageSource::new(DamageKind::OutOfWorld),4);}
         if kind=="speed"&&t==0 {p.add_potion_effect(PotionEffect::new(1,80,1));}
+        if kind=="haste"&&t%100==0 {p.add_potion_effect(PotionEffect::new(3,80,t/100%8));}
+        if kind=="fatigue"&&t%100==0 {p.add_potion_effect(PotionEffect::new(4,80,t/100%4));}
+        if kind=="nausea"&&t==0 {p.add_potion_effect(PotionEffect::new(9,300,0));}
         if kind=="creativedamage" {
             p.set_creative(true);
             if t%5==0 {p.attack_from(&mut w,DamageSource::new(if t%10==0 {DamageKind::Starve}else {DamageKind::Cactus}),5);}

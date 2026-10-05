@@ -14,6 +14,8 @@ cargo build --release -q -p worldgen181 -p client || exit 1
 fail=0
 echo "== player-gui b1.8.1: whole-player ticks"
 bash tools/verify_playertick181.sh --built || fail=1
+echo "== player-gui b1.8.1: statistics synchronization"
+bash tools/verify_statsync181.sh --built || fail=1
 echo "== player-gui b1.8.1: PlayerList hash table"
 bash tools/oracle181/oracle.sh playerlist181 playerlist181-java.bin && target/release/playerlist181 target/playerlist181-rust.bin tools/oracle181/out/playerlist181-java.bin || fail=1
 for mode in playercore creative; do

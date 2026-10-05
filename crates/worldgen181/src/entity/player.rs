@@ -354,8 +354,9 @@ impl Entity {
         self.prev_yaw += self.yaw - old_yaw;
     }
     pub fn swing_item(&mut self) {
+        let duration = self.player_swing_duration();
         if let Some(s) = self.player_state_mut() {
-            if !s.is_swinging || s.swing_ticks>=3 || s.swing_ticks<0 {
+            if !s.is_swinging || s.swing_ticks>=duration/2 || s.swing_ticks<0 {
                 s.swing_ticks = -1;s.is_swinging = true;
             }
         }
@@ -367,6 +368,7 @@ impl Entity {
         }
     }
     pub(super) fn player_action(&mut self) {
+        let duration = self.player_swing_duration();
         let (yaw, pitch) = (self.yaw, self.pitch);
         let s = self.player_state_mut().unwrap();
         s.prev_render_arm_yaw = s.render_arm_yaw;
@@ -375,14 +377,14 @@ impl Entity {
         s.render_arm_yaw = (s.render_arm_yaw as f64 + (yaw - s.render_arm_yaw) as f64 * 0.5) as f32;
         if s.is_swinging {
             s.swing_ticks += 1;
-            if s.swing_ticks >= 6 {
+            if s.swing_ticks >= duration {
                 s.swing_ticks = 0;
                 s.is_swinging = false;
             }
         } else {
             s.swing_ticks = 0;
         }
-        let swing = s.swing_ticks as f32 / 6.0;
+        let swing = s.swing_ticks as f32 / duration as f32;
         let (mut strafe, mut forward) = s.input.movement();
         if s.item_in_use.is_some() { strafe *= 0.2; forward *= 0.2; }
         let jump = s.input.jump;
@@ -403,6 +405,7 @@ impl Entity {
         if self.player_state().unwrap().in_portal && self.riding.is_some() {
             self.mount_entity(w, None);
         }
+        let confused = self.potion_effect(9).is_some_and(|effect| effect.duration > 60);
         let s = self.player_state_mut().unwrap();
         s.prev_time_in_portal = s.time_in_portal;
         let mut sounds = Vec::new();
@@ -418,6 +421,9 @@ impl Entity {
                 s.events.push(PlayerEvent::ChangeDimension);
             }
             s.in_portal = false;
+        } else if confused {
+            s.time_in_portal += 2.0f32 / 3.0 * 0.01;
+            if s.time_in_portal > 1.0 { s.time_in_portal = 1.0; }
         } else {
             if s.time_in_portal > 0.0 {
                 s.time_in_portal -= 0.05;

@@ -45,3 +45,7 @@ path = "src/bin/playertick181.rs"
 [[bin]]
 name = "playerlist181"
 path = "src/bin/playerlist181.rs"
+
+[[bin]]
+name = "playercombat181"
+path = "src/bin/playercombat181.rs"
