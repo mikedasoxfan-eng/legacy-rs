@@ -6,6 +6,8 @@ import java.lang.reflect.*;
 
 /** Vehicle replays execute the original EntityMinecart/Boat and World bytecode. */
 public final class VehicleOracle {
+    /** b1.8.1's EntityPlayerSP asks the player controller every tick (creative flying). */
+    static PlayerOracle.HeadlessPlayer vplayer(World w)throws Exception {PlayerOracle.HeadlessPlayer p=PlayerOracle.player(w);p.mc.playerController=new PlayerControllerSP(p.mc);return p;}
     static boolean recordStats;
     static final ArrayList<int[]> stats=new ArrayList<>();
     static void stat(StatBase stat,int count) {
@@ -57,7 +59,7 @@ public final class VehicleOracle {
         EntityBoat b=new EntityBoat(w,1.2,65,18);b.motionX=-0.2;w.entityJoinedWorld(b);
     }
     static void riding(World w) throws Exception {
-        PlayerOracle.HeadlessPlayer p=PlayerOracle.player(w);p.setLocationAndAngles(-15.5,64,0.5,0,0);w.entityJoinedWorld(p);
+        PlayerOracle.HeadlessPlayer p=vplayer(w);p.setLocationAndAngles(-15.5,64,0.5,0,0);w.entityJoinedWorld(p);
         for(int x=-20;x<=8;x++)raw(w,x,64,0,x==0?28:66,1);
         raw(w,8,64,0,66,7);for(int z=1;z<=25;z++)raw(w,8,64,z,66,0);
         EntityMinecart c=cart(w,-15.5,64,0.5,0,0.38,0);c.interact(p);
@@ -68,7 +70,7 @@ public final class VehicleOracle {
         EntityPig pig=new EntityPig(w);pig.setSaddled(true);pig.setLocationAndAngles(-5.5,64,5.5,0,0);w.entityJoinedWorld(pig);
     }
     static void placing(World w) throws Exception {
-        PlayerOracle.HeadlessPlayer p=PlayerOracle.player(w);p.setLocationAndAngles(.5,66,.5,0,90);w.entityJoinedWorld(p);
+        PlayerOracle.HeadlessPlayer p=vplayer(w);p.setLocationAndAngles(.5,66,.5,0,90);w.entityJoinedWorld(p);
         for(int x=-8;x<=8;x++){raw(w,x,64,8,66,1);raw(w,x,64,0,9,0);}
     }
     static void longrail(World w) throws Exception {
@@ -77,7 +79,7 @@ public final class VehicleOracle {
             byte[] blocks=new byte[32768];for(int bx=0;bx<16;bx++)for(int bz=0;bz<16;bz++)blocks[(bx<<11)|(bz<<7)|63]=1;
             Chunk c=new Chunk(w,blocks,x,z);c.isTerrainPopulated=true;c.isChunkLoaded=true;f.chunks.put(f.key(x,z),c);
         }
-        PlayerOracle.HeadlessPlayer p=PlayerOracle.player(w);p.setLocationAndAngles(-35.5,64,0.5,0,0);w.entityJoinedWorld(p);
+        PlayerOracle.HeadlessPlayer p=vplayer(w);p.setLocationAndAngles(-35.5,64,0.5,0,0);w.entityJoinedWorld(p);
         for(int x=-40;x<=1100;x++)raw(w,x,64,0,x==0?28:27,x==0?1:9);
         EntityMinecart c=cart(w,-35.5,64,0.5,0,0.38,0);c.interact(p);
     }
@@ -104,7 +106,7 @@ public final class VehicleOracle {
         for(Entity e:vehicles){EntityOracle.i(o,e.entityId);nbt(e,o);}
     }
     static void inventory(String path) throws Exception {
-        World w=fixture();EntityMinecart c=cart(w,.5,64,.5,1,0,0);EntityPlayer p=PlayerOracle.player(w);Random r=new Random(1729);
+        World w=fixture();EntityMinecart c=cart(w,.5,64,.5,1,0,0);EntityPlayer p=vplayer(w);Random r=new Random(1729);
         int[] items={1,35,263,264,267,280,351,332,5,61,54,328};
         try(DataOutputStream o=new DataOutputStream(new BufferedOutputStream(new FileOutputStream(path)))) {
             o.write("B173VIN1".getBytes("UTF-8"));EntityOracle.i(o,10000);
@@ -162,7 +164,7 @@ public final class VehicleOracle {
                 if((scene.equals("nbt")||scene.equals("ridingnbt"))&&t%25==24) {
                     ArrayList<NBTTagCompound> tags=new ArrayList<>();for(Object a:w.loadedEntityList){NBTTagCompound n=new NBTTagCompound();if(a instanceof EntityPlayer){((Entity)a).writeToNBT(n);n.setString("id","Player");tags.add(n);}else if(((Entity)a).addEntityID(n))tags.add(n);}
                     w.loadedEntityList.clear();w.playerEntities.clear();for(Chunk c:((EntityOracle.FlatProvider)w.chunkProvider).chunks.values())for(List list:c.entities)list.clear();
-                    for(NBTTagCompound n:tags) {Entity e;if(n.getString("id").equals("Player")){e=PlayerOracle.player(w);e.readFromNBT(n);}else e=EntityList.createEntityFromNBT(n,w);w.entityJoinedWorld(e);}
+                    for(NBTTagCompound n:tags) {Entity e;if(n.getString("id").equals("Player")){e=vplayer(w);e.readFromNBT(n);}else e=EntityList.createEntityFromNBT(n,w);w.entityJoinedWorld(e);}
                 }
                 EntityOracle.snapshot(w,o);extra(w,o);
             }

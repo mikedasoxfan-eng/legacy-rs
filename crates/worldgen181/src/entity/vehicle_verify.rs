@@ -273,28 +273,10 @@ fn extra(w: &mut World, o: &mut Vec<u8>) {
     }
 }
 fn nbt_bytes(e: &Entity, o: &mut Vec<u8>) {
-    use crate::nbt::{Compound, Tag};
-    fn sort(n: &mut Compound) {
-        n.0.sort_by(|a, b| a.0.cmp(&b.0));
-        for (_, t) in &mut n.0 {
-            walk(t);
-        }
-    }
-    fn walk(t: &mut Tag) {
-        match t {
-            Tag::Compound(n) => sort(n),
-            Tag::List(_, items) => {
-                for item in items {
-                    walk(item);
-                }
-            }
-            _ => {}
-        }
-    }
-    let mut n = e.to_nbt().unwrap();
-    sort(&mut n);
+    // The oracle writes compounds in sorted-name order (PlayerOracle.canonical).
+    let n = e.to_nbt().unwrap();
     let mut bytes = Vec::new();
-    crate::nbt::write_root(&mut bytes, &n).unwrap();
+    crate::nbt::write_root_canonical(&mut bytes, &n).unwrap();
     o.extend_from_slice(&(bytes.len() as i32).to_le_bytes());
     o.extend(bytes);
 }
