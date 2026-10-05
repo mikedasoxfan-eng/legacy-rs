@@ -20,7 +20,7 @@ pub fn render_state(e: &Entity, partial: f32, brightness: f32) -> Option<RenderS
         EntityKind::Spider => MobKind::Spider,
         EntityKind::CaveSpider => MobKind::CaveSpider,
         EntityKind::Enderman(..) => MobKind::Enderman,
-        EntityKind::Silverfish{..} => MobKind::Silverfish,
+        EntityKind::Silverfish { .. } => MobKind::Silverfish,
         EntityKind::Creeper { .. } => MobKind::Creeper,
         EntityKind::Pig { .. } => MobKind::Pig,
         EntityKind::Sheep { .. } => MobKind::Sheep,
@@ -52,16 +52,23 @@ pub fn render_state(e: &Entity, partial: f32, brightness: f32) -> Option<RenderS
     s.death_time = l.death_time;
     s.brightness = brightness;
     s.spider_eye_brightness = brightness;
-    if let EntityKind::Enderman(state)=&e.kind {s.carrying=state.carried>0;s.screaming=state.screaming;}
+    if let EntityKind::Enderman(state) = &e.kind {
+        s.carrying = state.carried > 0;
+        s.screaming = state.screaming;
+    }
     s.riding = e.riding.is_some();
     s.sneak = e.sneaking;
     match &e.kind {
         EntityKind::Ghast(g) => {
-            s.ghast_attack = g.prev_attack_counter as f32 + (g.attack_counter - g.prev_attack_counter) as f32 * partial;
+            s.ghast_attack = g.prev_attack_counter as f32
+                + (g.attack_counter - g.prev_attack_counter) as f32 * partial;
             s.ghast_attacking = g.attacking;
         }
         EntityKind::Pig { saddled } => s.saddled = *saddled,
-        EntityKind::Sheep { sheared, fleece_color } => {
+        EntityKind::Sheep {
+            sheared,
+            fleece_color,
+        } => {
             s.sheared = *sheared;
             s.fleece_color = *fleece_color as usize & 15;
         }
@@ -69,11 +76,22 @@ pub fn render_state(e: &Entity, partial: f32, brightness: f32) -> Option<RenderS
             s.creeper_flash = e.creeper_flash(partial);
             s.powered = *powered;
         }
-        EntityKind::Slime { size, squish, prev_squish, .. } => {
+        EntityKind::Slime {
+            size,
+            squish,
+            prev_squish,
+            ..
+        } => {
             s.slime_size = *size;
             s.slime_squish = lerp(*prev_squish, *squish, partial);
         }
-        EntityKind::Chicken { flap, prev_flap, flap_amount, prev_flap_amount, .. } => {
+        EntityKind::Chicken {
+            flap,
+            prev_flap,
+            flap_amount,
+            prev_flap_amount,
+            ..
+        } => {
             s.chicken_flap = lerp(*prev_flap, *flap, partial);
             s.chicken_flap_amount = lerp(*prev_flap_amount, *flap_amount, partial);
         }
@@ -103,22 +121,45 @@ pub fn render_state(e: &Entity, partial: f32, brightness: f32) -> Option<RenderS
 pub fn lightning(e: &Entity) -> Option<crate::render::weather::Lightning> {
     match e.kind {
         EntityKind::Lightning { state, seed, .. } if state >= 0 => {
-            Some(crate::render::weather::Lightning { pos: [e.pos.x, e.pos.y, e.pos.z], bolt_vertex: seed })
+            Some(crate::render::weather::Lightning {
+                pos: [e.pos.x, e.pos.y, e.pos.z],
+                bolt_vertex: seed,
+            })
         }
         _ => None,
     }
 }
 
 /// Object render inputs; the worker supplies neighbourhood brightness for falling blocks.
-pub fn object_state(e: &Entity, partial: f32, brightness: f32, light: [f32; 7]) -> Option<super::objects::ObjectState> {
+pub fn object_state(
+    e: &Entity,
+    partial: f32,
+    brightness: f32,
+    light: [f32; 7],
+) -> Option<super::objects::ObjectState> {
     use super::objects::{ObjectKind, ObjectState};
     let kind = match &e.kind {
-        EntityKind::XPOrb(state)=>ObjectKind::XPOrb{value:state.value,ticks:state.ticks},
-        EntityKind::Boat(..) | EntityKind::Minecart(..) => ObjectKind::Vehicle(super::vehicles::state(e,partial)?),
-        EntityKind::Item { item, age, hover_start, .. } => {
-            ObjectKind::Item { item: item.clone(), age: *age, hover: *hover_start }
+        EntityKind::XPOrb(state) => ObjectKind::XPOrb {
+            value: state.value,
+            ticks: state.ticks,
+        },
+        EntityKind::Boat(..) | EntityKind::Minecart(..) => {
+            ObjectKind::Vehicle(super::vehicles::state(e, partial)?)
         }
-        EntityKind::FallingSand { block, .. } => ObjectKind::Falling { block: *block, light },
+        EntityKind::Item {
+            item,
+            age,
+            hover_start,
+            ..
+        } => ObjectKind::Item {
+            item: item.clone(),
+            age: *age,
+            hover: *hover_start,
+        },
+        EntityKind::FallingSand { block, .. } => ObjectKind::Falling {
+            block: *block,
+            light,
+        },
         EntityKind::Tnt { fuse } => ObjectKind::Tnt { fuse: *fuse },
         EntityKind::Arrow(a) => ObjectKind::Arrow {
             yaw: lerp(e.prev_yaw, e.yaw, partial),
@@ -126,10 +167,18 @@ pub fn object_state(e: &Entity, partial: f32, brightness: f32, light: [f32; 7]) 
             shake: a.shake,
             visible: e.prev_yaw != 0.0 || e.prev_pitch != 0.0,
         },
-        EntityKind::Fireball(_) => ObjectKind::Sprite { icon: 14, scale: 2.0 },
+        EntityKind::Fireball(_) => ObjectKind::Sprite {
+            icon: 14,
+            scale: 2.0,
+        },
         _ => return None,
     };
-    Some(ObjectState { kind, position: position(e, partial), partial, brightness })
+    Some(ObjectState {
+        kind,
+        position: position(e, partial),
+        partial,
+        brightness,
+    })
 }
 pub fn position(e: &Entity, partial: f32) -> [f64; 3] {
     let p = partial as f64;

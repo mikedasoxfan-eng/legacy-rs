@@ -90,7 +90,10 @@ impl Effects {
             .collector
             .as_ref()
             .map_or(view, |e| [e.pos.x, e.pos.y, e.pos.z]);
-        self.renderer.cloud_player=self.collector.as_ref().map(|p|[p.pos.x,p.pos.y,p.pos.z,p.bounding_box.min_y,p.motion.y]);
+        self.renderer.cloud_player = self
+            .collector
+            .as_ref()
+            .map(|p| [p.pos.x, p.pos.y, p.pos.z, p.bounding_box.min_y, p.motion.y]);
         self.renderer.tick(&self.terrain, view);
     }
     pub fn vertices(
@@ -295,7 +298,7 @@ impl Effects {
         mut snd: Option<&mut SoundManager>,
     ) {
         self.terrain = terrain;
-        self.renderer.creation_terrain=self.terrain.clone();
+        self.renderer.creation_terrain = self.terrain.clone();
         let view = self
             .collector
             .as_ref()

@@ -18,7 +18,10 @@ impl Entity {
         if self.dead
             || matches!(
                 self.kind,
-                EntityKind::Fireball(..) | EntityKind::Egg(..) | EntityKind::Lightning { .. } | EntityKind::Fish(..)
+                EntityKind::Fireball(..)
+                    | EntityKind::Egg(..)
+                    | EntityKind::Lightning { .. }
+                    | EntityKind::Fish(..)
             )
         {
             return None;
@@ -66,30 +69,66 @@ impl Entity {
             }
         }
         if !self.living.effects.is_empty() && self.kind.is_living() {
-            let effects = self.living.effects.iter().map(|e| { let mut n=Compound::new(); n.put("Id",Tag::Byte(e.id as i8));n.put("Amplifier",Tag::Byte(e.amplifier as i8));n.put("Duration",Tag::Int(e.duration));Tag::Compound(n) }).collect();
-            n.put("ActiveEffects",Tag::List(10,effects));
+            let effects = self
+                .living
+                .effects
+                .iter()
+                .map(|e| {
+                    let mut n = Compound::new();
+                    n.put("Id", Tag::Byte(e.id as i8));
+                    n.put("Amplifier", Tag::Byte(e.amplifier as i8));
+                    n.put("Duration", Tag::Int(e.duration));
+                    Tag::Compound(n)
+                })
+                .collect();
+            n.put("ActiveEffects", Tag::List(10, effects));
         }
         match &self.kind {
-            EntityKind::XPOrb(s) => {n.put("Health",Tag::Short(s.health as i8 as i16));n.put("Age",Tag::Short(s.age as i16));n.put("Value",Tag::Short(s.value as i16));}
-            EntityKind::Enderman(s) => {n.put("carried",Tag::Short(s.carried as i16));n.put("carriedData",Tag::Short(s.carried_data as i16));}
+            EntityKind::XPOrb(s) => {
+                n.put("Health", Tag::Short(s.health as i8 as i16));
+                n.put("Age", Tag::Short(s.age as i16));
+                n.put("Value", Tag::Short(s.value as i16));
+            }
+            EntityKind::Enderman(s) => {
+                n.put("carried", Tag::Short(s.carried as i16));
+                n.put("carriedData", Tag::Short(s.carried_data as i16));
+            }
 
             EntityKind::Painting(s) => {
-                n.put("Dir",Tag::Byte(s.direction as i8));n.put("Motive",Tag::String(super::painting::ARTS[s.art].title.into()));
-                for (key,v) in ["TileX","TileY","TileZ"].into_iter().zip(s.tile){n.put(key,Tag::Int(v));}
+                n.put("Dir", Tag::Byte(s.direction as i8));
+                n.put(
+                    "Motive",
+                    Tag::String(super::painting::ARTS[s.art].title.into()),
+                );
+                for (key, v) in ["TileX", "TileY", "TileZ"].into_iter().zip(s.tile) {
+                    n.put(key, Tag::Int(v));
+                }
             }
             EntityKind::Minecart(s) => {
-                n.put("Type",Tag::Int(s.cart_type));
-                if s.cart_type==2 {
-                    n.put("PushX",Tag::Double(s.push_x)); n.put("PushZ",Tag::Double(s.push_z));
-                    n.put("Fuel",Tag::Short(s.fuel as i16));
-                } else if s.cart_type==1 {
-                    let items:Vec<_>=s.items.iter().enumerate().filter_map(|(slot,item)| {
-                        let item=item.as_ref()?; let mut n=Compound::new();
-                        n.put("Slot",Tag::Byte(slot as i8)); n.put("id",Tag::Short(item.id as i16));
-                        n.put("Count",Tag::Byte(item.count as i8)); n.put("Damage",Tag::Short(item.damage as i16));
-                        Some(Tag::Compound(n))
-                    }).collect();
-                    n.put("Items",Tag::List(if items.is_empty() {1} else {10},items));
+                n.put("Type", Tag::Int(s.cart_type));
+                if s.cart_type == 2 {
+                    n.put("PushX", Tag::Double(s.push_x));
+                    n.put("PushZ", Tag::Double(s.push_z));
+                    n.put("Fuel", Tag::Short(s.fuel as i16));
+                } else if s.cart_type == 1 {
+                    let items: Vec<_> = s
+                        .items
+                        .iter()
+                        .enumerate()
+                        .filter_map(|(slot, item)| {
+                            let item = item.as_ref()?;
+                            let mut n = Compound::new();
+                            n.put("Slot", Tag::Byte(slot as i8));
+                            n.put("id", Tag::Short(item.id as i16));
+                            n.put("Count", Tag::Byte(item.count as i8));
+                            n.put("Damage", Tag::Short(item.damage as i16));
+                            Some(Tag::Compound(n))
+                        })
+                        .collect();
+                    n.put(
+                        "Items",
+                        Tag::List(if items.is_empty() { 1 } else { 10 }, items),
+                    );
                 }
             }
             EntityKind::Item {
@@ -299,24 +338,59 @@ impl Entity {
             self.living.attack_time = n.short("AttackTime") as i32;
         }
         if n.has("ActiveEffects") {
-            for effect in n.list("ActiveEffects") { if let Tag::Compound(n)=effect {let effect=super::potion::PotionEffect::new(n.byte("Id") as i32,n.int("Duration"),n.byte("Amplifier") as i32);if let Some(old)=self.living.effects.iter_mut().find(|e|e.id==effect.id){*old=effect;}else{self.living.effects.push(effect);if self.living.effects.len()>self.living.effect_capacity*3/4{self.living.effect_capacity*=2;}}} }
+            for effect in n.list("ActiveEffects") {
+                if let Tag::Compound(n) = effect {
+                    let effect = super::potion::PotionEffect::new(
+                        n.byte("Id") as i32,
+                        n.int("Duration"),
+                        n.byte("Amplifier") as i32,
+                    );
+                    if let Some(old) = self.living.effects.iter_mut().find(|e| e.id == effect.id) {
+                        *old = effect;
+                    } else {
+                        self.living.effects.push(effect);
+                        if self.living.effects.len() > self.living.effect_capacity * 3 / 4 {
+                            self.living.effect_capacity *= 2;
+                        }
+                    }
+                }
+            }
         }
         match &mut self.kind {
-            EntityKind::XPOrb(s) => {s.health=n.short("Health") as i32 & 255;s.age=n.short("Age") as i32;s.value=n.short("Value") as i32;}
-            EntityKind::Enderman(s) => {s.carried=n.short("carried") as i8;s.carried_data=n.short("carryingData") as i8;}
+            EntityKind::XPOrb(s) => {
+                s.health = n.short("Health") as i32 & 255;
+                s.age = n.short("Age") as i32;
+                s.value = n.short("Value") as i32;
+            }
+            EntityKind::Enderman(s) => {
+                s.carried = n.short("carried") as i8;
+                s.carried_data = n.short("carryingData") as i8;
+            }
 
             EntityKind::Minecart(s) => {
-                s.cart_type=n.int("Type");
-                if s.cart_type==2 {
-                    s.push_x=match n.get("PushX") { Some(Tag::Double(x))=>*x,_=>0.0 };
-                    s.push_z=match n.get("PushZ") { Some(Tag::Double(x))=>*x,_=>0.0 };
-                    s.fuel=n.short("Fuel") as i32;
-                } else if s.cart_type==1 {
-                    s.items=vec![None;27];
+                s.cart_type = n.int("Type");
+                if s.cart_type == 2 {
+                    s.push_x = match n.get("PushX") {
+                        Some(Tag::Double(x)) => *x,
+                        _ => 0.0,
+                    };
+                    s.push_z = match n.get("PushZ") {
+                        Some(Tag::Double(x)) => *x,
+                        _ => 0.0,
+                    };
+                    s.fuel = n.short("Fuel") as i32;
+                } else if s.cart_type == 1 {
+                    s.items = vec![None; 27];
                     for item in n.list("Items") {
-                        if let Tag::Compound(item)=item {
-                            let slot=item.byte("Slot") as u8 as usize;
-                            if slot<27 { s.items[slot]=Some(super::player::ItemStack::new(item.short("id") as i32,item.byte("Count") as i32,item.short("Damage") as i32)); }
+                        if let Tag::Compound(item) = item {
+                            let slot = item.byte("Slot") as u8 as usize;
+                            if slot < 27 {
+                                s.items[slot] = Some(super::player::ItemStack::new(
+                                    item.short("id") as i32,
+                                    item.byte("Count") as i32,
+                                    item.short("Damage") as i32,
+                                ));
+                            }
                         }
                     }
                 }
@@ -368,9 +442,15 @@ impl Entity {
         if matches!(self.kind, EntityKind::Player(..)) {
             self.read_player_tags(w, n);
         }
-        if let EntityKind::Painting(s)=&mut self.kind {
-            s.direction=n.byte("Dir") as i32;s.tile=[n.int("TileX"),n.int("TileY"),n.int("TileZ")];
-            s.art=super::painting::ARTS.iter().position(|a|a.title==n.string("Motive")).unwrap_or(0);let direction=s.direction;self.set_painting_direction(direction);
+        if let EntityKind::Painting(s) = &mut self.kind {
+            s.direction = n.byte("Dir") as i32;
+            s.tile = [n.int("TileX"), n.int("TileY"), n.int("TileZ")];
+            s.art = super::painting::ARTS
+                .iter()
+                .position(|a| a.title == n.string("Motive"))
+                .unwrap_or(0);
+            let direction = s.direction;
+            self.set_painting_direction(direction);
         }
         Some(())
     }
@@ -450,13 +530,22 @@ impl World {
             } else {
                 let te = self.chunk_mut(cx, cz).tile_entities.remove(&key).unwrap();
                 let id = self.new_tile_object((cx * 16 + x, y, cz * 16 + z), te);
-                let te = self.tile_objects.get_mut(&id).unwrap().detached.take().unwrap();
+                let te = self
+                    .tile_objects
+                    .get_mut(&id)
+                    .unwrap()
+                    .detached
+                    .take()
+                    .unwrap();
                 self.chunk_mut(cx, cz).tile_entities.insert(key, te);
                 self.chunk_mut(cx, cz).tile_entity_ids.insert(key, id);
                 id
             };
-            if self.scanning_tiles { self.pending_tile_entities.push(id); }
-            else { self.loaded_tile_entities.push(id); }
+            if self.scanning_tiles {
+                self.pending_tile_entities.push(id);
+            } else {
+                self.loaded_tile_entities.push(id);
+            }
         }
     }
     pub(crate) fn chunk_entity_nbt(&self, cx: i32, cz: i32) -> Vec<Tag> {

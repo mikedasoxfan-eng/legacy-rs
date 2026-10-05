@@ -86,7 +86,7 @@ pub struct Particle {
     pub rand: JavaRandom,
     pub pickup: Option<Box<worldgen::entity::Entity>>,
     pub target: i32,
-    pub cloud_player: Option<[f64;5]>,
+    pub cloud_player: Option<[f64; 5]>,
 }
 impl Particle {
     pub fn new(
@@ -96,15 +96,27 @@ impl Particle {
         math_rand: &mut JavaRandom,
         seed: i64,
     ) -> Self {
-        Self::new_in(kind,pos,velocity,math_rand,seed,&Snapshot::default())
+        Self::new_in(kind, pos, velocity, math_rand, seed, &Snapshot::default())
     }
-    pub fn new_in(kind:Kind, mut pos:[f64;3], velocity:[f64;3], math_rand:&mut JavaRandom,seed:i64,terrain:&Snapshot)->Self {
-        if kind == Kind::Suspend { pos[1]-=0.125; }
+    pub fn new_in(
+        kind: Kind,
+        mut pos: [f64; 3],
+        velocity: [f64; 3],
+        math_rand: &mut JavaRandom,
+        seed: i64,
+        terrain: &Snapshot,
+    ) -> Self {
+        if kind == Kind::Suspend {
+            pos[1] -= 0.125;
+        }
         let m = math_rand;
         let mut r = JavaRandom::new(seed);
         let input = if matches!(
             kind,
-            Kind::Crit | Kind::MagicCrit | Kind::Cloud | Kind::Smoke
+            Kind::Crit
+                | Kind::MagicCrit
+                | Kind::Cloud
+                | Kind::Smoke
                 | Kind::LargeSmoke
                 | Kind::RedDust
                 | Kind::Note
@@ -169,15 +181,47 @@ impl Particle {
         };
         match kind {
             Kind::Crit | Kind::MagicCrit | Kind::Cloud => {
-                for i in 0..3 {p.motion[i]*=0.1f32 as f64;p.motion[i]+=velocity[i]*if kind==Kind::Cloud{1.0}else{0.4};}
-                p.color=[if kind==Kind::Cloud {1.0-(m.next_double()*0.3f32 as f64) as f32} else {(m.next_double()*0.3f32 as f64+0.6f32 as f64) as f32};3];
-                p.scale*=12.0/16.0;p.scale*=if kind==Kind::Cloud {2.5}else{1.0};
-                p.max_age=if kind==Kind::Cloud {(8.0/(m.next_double()*0.8+0.3)) as i32}else{(6.0/(m.next_double()*0.8+0.6)) as i32};
-                if kind==Kind::Cloud {p.max_age=(p.max_age as f32*2.5) as i32;}else{p.texture=65;}
+                for i in 0..3 {
+                    p.motion[i] *= 0.1f32 as f64;
+                    p.motion[i] += velocity[i] * if kind == Kind::Cloud { 1.0 } else { 0.4 };
+                }
+                p.color = [if kind == Kind::Cloud {
+                    1.0 - (m.next_double() * 0.3f32 as f64) as f32
+                } else {
+                    (m.next_double() * 0.3f32 as f64 + 0.6f32 as f64) as f32
+                }; 3];
+                p.scale *= 12.0 / 16.0;
+                p.scale *= if kind == Kind::Cloud { 2.5 } else { 1.0 };
+                p.max_age = if kind == Kind::Cloud {
+                    (8.0 / (m.next_double() * 0.8 + 0.3)) as i32
+                } else {
+                    (6.0 / (m.next_double() * 0.8 + 0.6)) as i32
+                };
+                if kind == Kind::Cloud {
+                    p.max_age = (p.max_age as f32 * 2.5) as i32;
+                } else {
+                    p.texture = 65;
+                }
             }
             Kind::Aura | Kind::Suspend => {
-                if kind==Kind::Aura {p.color=[p.rand.next_float()*0.1+0.2;3];p.width=0.02;p.height=0.02;p.scale*=p.rand.next_float()*0.6+0.5;for v in &mut p.motion {*v*=0.02f32 as f64;}p.max_age=(20.0/(m.next_double()*0.8+0.2)) as i32;p.no_clip=true;}
-                else {p.color=[0.4,0.4,0.7];p.width=0.01;p.height=0.01;p.scale*=p.rand.next_float()*0.6+0.2;p.motion=velocity.map(|v|v*0.0);p.max_age=(16.0/(m.next_double()*0.8+0.2)) as i32;}
+                if kind == Kind::Aura {
+                    p.color = [p.rand.next_float() * 0.1 + 0.2; 3];
+                    p.width = 0.02;
+                    p.height = 0.02;
+                    p.scale *= p.rand.next_float() * 0.6 + 0.5;
+                    for v in &mut p.motion {
+                        *v *= 0.02f32 as f64;
+                    }
+                    p.max_age = (20.0 / (m.next_double() * 0.8 + 0.2)) as i32;
+                    p.no_clip = true;
+                } else {
+                    p.color = [0.4, 0.4, 0.7];
+                    p.width = 0.01;
+                    p.height = 0.01;
+                    p.scale *= p.rand.next_float() * 0.6 + 0.2;
+                    p.motion = velocity.map(|v| v * 0.0);
+                    p.max_age = (16.0 / (m.next_double() * 0.8 + 0.2)) as i32;
+                }
             }
 
             Kind::Smoke | Kind::LargeSmoke | Kind::SnowShovel => {
@@ -306,7 +350,11 @@ impl Particle {
                 p.scale /= 2.0;
             }
             Kind::Digging { block, metadata } => {
-                p.texture = if block==2 {2} else {rprops(block).textures[(metadata & 15) as usize][0] as i32};
+                p.texture = if block == 2 {
+                    2
+                } else {
+                    rprops(block).textures[(metadata & 15) as usize][0] as i32
+                };
                 p.gravity = 1.0;
                 p.color = [0.6; 3];
                 p.scale /= 2.0;
@@ -317,7 +365,14 @@ impl Particle {
             Kind::Pickup | Kind::Base => {}
         }
         p.original_scale = p.scale;
-        if matches!(kind,Kind::Crit|Kind::MagicCrit) {p.tick(terrain,m);if kind==Kind::MagicCrit {p.color[0]*=0.3;p.color[1]*=0.8;p.texture+=1;}}
+        if matches!(kind, Kind::Crit | Kind::MagicCrit) {
+            p.tick(terrain, m);
+            if kind == Kind::MagicCrit {
+                p.color[0] *= 0.3;
+                p.color[1] *= 0.8;
+                p.texture += 1;
+            }
+        }
         p
     }
     pub fn layer(&self) -> usize {
@@ -369,16 +424,38 @@ impl Particle {
             self.age += 1;
             return None;
         }
-        if matches!(self.kind,Kind::Aura|Kind::Suspend) {
-            self.on_ground=move_particle(self,terrain);
-            if self.kind==Kind::Aura {for v in &mut self.motion {*v*=0.99;}}else if material(terrain,self.pos)!=worldgen::block::MAT_WATER {self.dead=true;}
-            if self.max_age<=0 {self.dead=true;}self.max_age-=1;return None;
+        if matches!(self.kind, Kind::Aura | Kind::Suspend) {
+            self.on_ground = move_particle(self, terrain);
+            if self.kind == Kind::Aura {
+                for v in &mut self.motion {
+                    *v *= 0.99;
+                }
+            } else if material(terrain, self.pos) != worldgen::block::MAT_WATER {
+                self.dead = true;
+            }
+            if self.max_age <= 0 {
+                self.dead = true;
+            }
+            self.max_age -= 1;
+            return None;
         }
-        if matches!(self.kind,Kind::Crit|Kind::MagicCrit) {
-            if self.age>=self.max_age {self.dead=true;}self.age+=1;
-            self.on_ground=move_particle(self,terrain);self.color[1]=(self.color[1] as f64*0.96) as f32;self.color[2]=(self.color[2] as f64*0.9) as f32;
-            for v in &mut self.motion {*v*=0.7f32 as f64;}self.motion[1]-=0.02f32 as f64;
-            if self.on_ground {self.motion[0]*=0.7f32 as f64;self.motion[2]*=0.7f32 as f64;}return None;
+        if matches!(self.kind, Kind::Crit | Kind::MagicCrit) {
+            if self.age >= self.max_age {
+                self.dead = true;
+            }
+            self.age += 1;
+            self.on_ground = move_particle(self, terrain);
+            self.color[1] = (self.color[1] as f64 * 0.96) as f32;
+            self.color[2] = (self.color[2] as f64 * 0.9) as f32;
+            for v in &mut self.motion {
+                *v *= 0.7f32 as f64;
+            }
+            self.motion[1] -= 0.02f32 as f64;
+            if self.on_ground {
+                self.motion[0] *= 0.7f32 as f64;
+                self.motion[2] *= 0.7f32 as f64;
+            }
+            return None;
         }
         if !matches!(self.kind, Kind::Rain | Kind::Splash | Kind::Bubble) {
             if self.age >= self.max_age {
@@ -388,7 +465,12 @@ impl Particle {
         }
         if matches!(
             self.kind,
-            Kind::Cloud | Kind::Smoke | Kind::LargeSmoke | Kind::Explode | Kind::RedDust | Kind::SnowShovel
+            Kind::Cloud
+                | Kind::Smoke
+                | Kind::LargeSmoke
+                | Kind::Explode
+                | Kind::RedDust
+                | Kind::SnowShovel
         ) {
             self.texture = 7 - self.age * 8 / self.max_age;
         }
@@ -430,10 +512,26 @@ impl Particle {
         for v in &mut self.motion {
             *v *= friction as f64;
         }
-        if self.kind==Kind::Cloud {if let Some(player)=self.cloud_player {
-            let distance=(0..3).map(|i|(self.pos[i]-player[i]).powi(2)).sum::<f64>();
-            if distance<4.0 && self.pos[1]>player[3] {self.pos[1]+=(player[3]-self.pos[1])*0.2;self.motion[1]+=(player[4]-self.motion[1])*0.2;let half=(self.width/2.0) as f64;self.bounds=[self.pos[0]-half,self.pos[1]-self.y_offset as f64,self.pos[2]-half,self.pos[0]+half,self.pos[1]-self.y_offset as f64+self.height as f64,self.pos[2]+half];}
-        }}
+        if self.kind == Kind::Cloud {
+            if let Some(player) = self.cloud_player {
+                let distance = (0..3)
+                    .map(|i| (self.pos[i] - player[i]).powi(2))
+                    .sum::<f64>();
+                if distance < 4.0 && self.pos[1] > player[3] {
+                    self.pos[1] += (player[3] - self.pos[1]) * 0.2;
+                    self.motion[1] += (player[4] - self.motion[1]) * 0.2;
+                    let half = (self.width / 2.0) as f64;
+                    self.bounds = [
+                        self.pos[0] - half,
+                        self.pos[1] - self.y_offset as f64,
+                        self.pos[2] - half,
+                        self.pos[0] + half,
+                        self.pos[1] - self.y_offset as f64 + self.height as f64,
+                        self.pos[2] + half,
+                    ];
+                }
+            }
+        }
         if self.kind == Kind::Bubble {
             if material(terrain, self.pos) != worldgen::block::MAT_WATER {
                 self.dead = true;
@@ -511,7 +609,10 @@ impl Particle {
         }
         let t = (self.age as f32 + partial) / self.max_age as f32;
         match self.kind {
-            Kind::Crit | Kind::MagicCrit | Kind::Cloud | Kind::Smoke
+            Kind::Crit
+            | Kind::MagicCrit
+            | Kind::Cloud
+            | Kind::Smoke
             | Kind::LargeSmoke
             | Kind::RedDust
             | Kind::Note
@@ -615,7 +716,7 @@ fn material(s: &Snapshot, pos: [f64; 3]) -> u8 {
 pub struct EffectRenderer {
     pub layers: [Vec<Particle>; 4],
     pub creation_terrain: Snapshot,
-    pub cloud_player: Option<[f64;5]>,
+    pub cloud_player: Option<[f64; 5]>,
     pub math_random: JavaRandom,
     pub next_seed: i64,
     pub rand: JavaRandom,
@@ -658,7 +759,16 @@ impl EffectRenderer {
             self.next_seed = self.next_seed.wrapping_add(1);
             seed
         };
-        let mut p=Particle::new_in(kind,p,v,&mut self.math_random,seed,&self.creation_terrain);p.cloud_player=self.cloud_player;p
+        let mut p = Particle::new_in(
+            kind,
+            p,
+            v,
+            &mut self.math_random,
+            seed,
+            &self.creation_terrain,
+        );
+        p.cloud_player = self.cloud_player;
+        p
     }
     pub fn add(&mut self, p: Particle) {
         let l = &mut self.layers[p.layer()];
@@ -683,7 +793,7 @@ impl EffectRenderer {
         for layer in 0..4 {
             let mut index = 0;
             while index < self.layers[layer].len() {
-                self.layers[layer][index].cloud_player=self.cloud_player;
+                self.layers[layer][index].cloud_player = self.cloud_player;
                 let smoke = self.layers[layer][index].tick(s, &mut self.math_random);
                 let dead = self.layers[layer][index].dead;
                 if let Some((p, v)) = smoke {

@@ -52,7 +52,9 @@ impl Entity {
                 }
             }
         }
-        if matches!(self.kind,EntityKind::Silverfish { .. }) { self.living.render_yaw_offset=self.yaw; }
+        if matches!(self.kind, EntityKind::Silverfish { .. }) {
+            self.living.render_yaw_offset = self.yaw;
+        }
         self.update_living(w);
         self.wolf_update(w);
         if self.kind.is_mob() && w.difficulty == 0 {
@@ -97,8 +99,12 @@ impl Entity {
                 None
             };
         }
-        if matches!(self.kind,EntityKind::Enderman(..)) {return self.enderman_find_target(w);}
-        if matches!(self.kind,EntityKind::Silverfish { .. }) {return w.closest_player(self.pos,8.0).map(Target::Player);}
+        if matches!(self.kind, EntityKind::Enderman(..)) {
+            return self.enderman_find_target(w);
+        }
+        if matches!(self.kind, EntityKind::Silverfish { .. }) {
+            return w.closest_player(self.pos, 8.0).map(Target::Player);
+        }
         if !self.kind.is_mob() {
             return None;
         }
@@ -205,7 +211,15 @@ impl Entity {
                 return;
             }
         }
-        if self.kind.is_mob() && self.living.attack_time <= 0 && distance < if matches!(self.kind,EntityKind::Silverfish { .. }) {1.2} else {2.0} {
+        if self.kind.is_mob()
+            && self.living.attack_time <= 0
+            && distance
+                < if matches!(self.kind, EntityKind::Silverfish { .. }) {
+                    1.2
+                } else {
+                    2.0
+                }
+        {
             if let Some((p, _, _)) = self.target_position(w, target) {
                 let (min, max) = match target {
                     Target::Player(_) => w
@@ -232,10 +246,33 @@ impl Entity {
                     if let Some(id) = w.target_entity_id(target) {
                         if let Some(mut e) = w.entities.remove(&id) {
                             w.entities.insert(self.entity_id, self.clone());
-                            let hit = e.attack_from(w, super::damage::DamageSource::entity(super::damage::DamageKind::Mob,Some(self.entity_id)), damage);
-                            if hit && e.kind.is_living() && matches!(self.kind,EntityKind::CaveSpider) && w.difficulty>1 {
-                                let seconds=if w.difficulty==2 {7} else if w.difficulty==3 {15} else {0};
-                                if seconds>0 {e.add_potion_effect(super::potion::PotionEffect::new(super::potion::POISON,seconds*20,0));}
+                            let hit = e.attack_from(
+                                w,
+                                super::damage::DamageSource::entity(
+                                    super::damage::DamageKind::Mob,
+                                    Some(self.entity_id),
+                                ),
+                                damage,
+                            );
+                            if hit
+                                && e.kind.is_living()
+                                && matches!(self.kind, EntityKind::CaveSpider)
+                                && w.difficulty > 1
+                            {
+                                let seconds = if w.difficulty == 2 {
+                                    7
+                                } else if w.difficulty == 3 {
+                                    15
+                                } else {
+                                    0
+                                };
+                                if seconds > 0 {
+                                    e.add_potion_effect(super::potion::PotionEffect::new(
+                                        super::potion::POISON,
+                                        seconds * 20,
+                                        0,
+                                    ));
+                                }
                             }
                             w.entities.remove(&self.entity_id);
                             w.entities.insert(id, e);

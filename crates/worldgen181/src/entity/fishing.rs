@@ -1,13 +1,13 @@
 //! EntityFish and ItemFishingRod. Tile coordinates deliberately stay -1 on impact.
 use super::{
-    AxisAlignedBB as BB, Entity, EntityKind, MovingObjectPosition as Hit, Vec3D,
-    projectile::ArrowState,
+    projectile::ArrowState, AxisAlignedBB as BB, Entity, EntityKind, MovingObjectPosition as Hit,
+    Vec3D,
 };
 use crate::{
-    World,
     block::MAT_WATER,
     entity::player::ItemStack,
-    math::{self, PI_F32 as PI, floor_double as floor},
+    math::{self, floor_double as floor, PI_F32 as PI},
+    World,
 };
 #[derive(Clone, Debug, Default)]
 pub struct FishState {
@@ -198,7 +198,15 @@ impl Entity {
             match hit {
                 Hit::Entity { id, .. } => {
                     if let Some(mut target) = w.entities.remove(&id) {
-                        if target.attack_from(w,super::damage::DamageSource::indirect(super::damage::DamageKind::Thrown,self.entity_id,s.arrow.owner),0) {
+                        if target.attack_from(
+                            w,
+                            super::damage::DamageSource::indirect(
+                                super::damage::DamageKind::Thrown,
+                                self.entity_id,
+                                s.arrow.owner,
+                            ),
+                            0,
+                        ) {
                             s.hooked = Some(id);
                         }
                         w.entities.insert(id, target);

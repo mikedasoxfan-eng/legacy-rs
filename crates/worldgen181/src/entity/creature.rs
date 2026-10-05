@@ -56,7 +56,14 @@ impl Entity {
         }
     }
     pub fn despawn(&mut self, w: &World) {
-        if matches!(self.kind, EntityKind::Pig { .. } | EntityKind::Sheep { .. } | EntityKind::Cow | EntityKind::Chicken { .. } | EntityKind::Wolf(..)) {
+        if matches!(
+            self.kind,
+            EntityKind::Pig { .. }
+                | EntityKind::Sheep { .. }
+                | EntityKind::Cow
+                | EntityKind::Chicken { .. }
+                | EntityKind::Wolf(..)
+        ) {
             return;
         }
         if let Some(i) = w.closest_player(self.pos, -1.0) {
@@ -123,7 +130,9 @@ impl Entity {
         }
     }
     pub fn block_path_weight(&self, w: &mut World, x: i32, y: i32, z: i32) -> f32 {
-        if matches!(self.kind,EntityKind::Silverfish { .. }) && w.get_block_id(x,y-1,z)==1 { return 10.0; }
+        if matches!(self.kind, EntityKind::Silverfish { .. }) && w.get_block_id(x, y - 1, z) == 1 {
+            return 10.0;
+        }
         if self.kind.is_mob() {
             return if matches!(self.kind, EntityKind::Giant) {
                 w.get_light_brightness(x, y, z) - 0.5
@@ -155,7 +164,9 @@ impl Entity {
         }
     }
     pub(super) fn creature_action_state(&mut self, w: &mut World) {
-        if self.living.flee_ticks > 0 { self.living.flee_ticks -= 1; }
+        if self.living.flee_ticks > 0 {
+            self.living.flee_ticks -= 1;
+        }
         self.living.has_attacked =
             matches!(&self.kind,EntityKind::Wolf(s) if s.flags&1!=0||s.shake_active);
         if self.living.target.is_none() {

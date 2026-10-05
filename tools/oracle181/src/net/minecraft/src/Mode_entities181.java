@@ -84,16 +84,17 @@ public final class Mode_entities181 {
             else if(kind.equals("Egg")){EntityEgg a1=new EntityEgg(w,-3.5,68,4.5);a1.setEggHeading(.4,.2,1,1.5F,1);e=a1;}
             else if(kind.equals("Lightning"))e=new EntityLightningBolt(w,-3.5,64,4.5);
             else if(kind.equals("Arrow")){EntityArrow arrow=new EntityArrow(w,-3.5,68,4.5);arrow.setArrowHeading(0.4,0.2,1,1.5F,1);arrow.field_35140_d=true;e=arrow;}
-            else {String name=kind.startsWith("kill-")?kind.substring(5):kind.equals("poison")?"Zombie":kind.equals("teleport")||kind.equals("carry")?"Enderman":kind.equals("allies")?"Silverfish":kind.equals("potions")||kind.equals("damage")?"Pig":kind;e=EntityList.createEntityInWorld(name,w);e.setLocationAndAngles(-3.5,64,4.5,35,0);}
+            else {String name=kind.startsWith("kill-")?kind.substring(5):kind.equals("poison")?"Zombie":kind.equals("teleport")||kind.equals("carry")||kind.equals("indirect")||kind.startsWith("stare")?"Enderman":kind.equals("allies")?"Silverfish":kind.equals("potions")||kind.equals("damage")?"Pig":kind;e=EntityList.createEntityInWorld(name,w);e.setLocationAndAngles(-3.5,64,4.5,35,0);}
             if(kind.equals("carry"))for(int x=-8;x<=8;x++)for(int z=-8;z<=8;z++)EntityOracle.rawBlock(w,x,64,z,37,0);
             if(kind.equals("allies"))for(int x=-7;x<=7;x++)for(int z=-7;z<=7;z++)EntityOracle.rawBlock(w,x,63,z,97,0);
             if(kind.equals("potions")){EntityLiving mob=(EntityLiving)e;mob.health=8;for(int[] p:new int[][]{{1,80,1},{2,120,0},{10,150,0},{19,180,0},{6,3,0},{7,2,0}})mob.func_35165_a(new PotionEffect(p[0],p[1],p[2]));}
             EntityPlayer killer=null;
-            if(kind.startsWith("kill-")||kind.equals("attract")){killer=new Player(w);killer.entityId=10000;killer.setPosition(0.5,65.62,0.5);w.playerEntities.add(killer);}
+            if(kind.startsWith("kill-")||kind.equals("attract")||kind.startsWith("stare")){killer=new Player(w);killer.entityId=10000;killer.setPosition(0.5,65.62,0.5);if(kind.startsWith("stare")){killer.rotationYaw=45;killer.rotationPitch=0.5F;if(kind.equals("starepumpkin"))killer.inventory.armorInventory[3]=new ItemStack(86,1,0);}w.playerEntities.add(killer);}
             if(kind.equals("poison")){EntityCaveSpider spider=new EntityCaveSpider(w);spider.setPosition(-3.5,64,3.5);spider.func_35175_b(e);}
             if(kind.equals("allies")){EntityCaveSpider spider=new EntityCaveSpider(w);spider.setPosition(-3.5,64,3.5);e.attackEntityFrom(DamageSource.func_35525_a(spider),2);}
             state(w,e,o);
             for(int t=0;t<ticks;t++) {
+                if(kind.equals("indirect")&&t==0)o.writeBoolean(e.attackEntityFrom(DamageSource.func_35535_a(new EntityArrow(w),null),4));
                 if(kind.startsWith("kill-") && t==0)e.attackEntityFrom(DamageSource.func_35527_a(killer),1000);
                 if(kind.equals("teleport") && t%25==0)o.writeBoolean(((EntityEnderman)e).func_35179_a_(t==25?1000:-4.5,70.75,5.5));
                 if(kind.equals("damage") && t%40==0)e.attackEntityFrom(DamageSource.field_35547_j,3);

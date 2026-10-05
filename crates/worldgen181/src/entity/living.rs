@@ -234,9 +234,21 @@ impl Entity {
             _ => {}
         }
         match e.kind {
-            EntityKind::CaveSpider => { e.width = 0.7; e.height = 0.5; }
-            EntityKind::Enderman(..) => { e.width = 0.6; e.height = 2.9; e.step_height = 1.0; e.living.move_speed = 0.2; }
-            EntityKind::Silverfish { .. } => { e.width = 0.3; e.height = 0.7; e.living.move_speed = 0.6; }
+            EntityKind::CaveSpider => {
+                e.width = 0.7;
+                e.height = 0.5;
+            }
+            EntityKind::Enderman(..) => {
+                e.width = 0.6;
+                e.height = 2.9;
+                e.step_height = 1.0;
+                e.living.move_speed = 0.2;
+            }
+            EntityKind::Silverfish { .. } => {
+                e.width = 0.3;
+                e.height = 0.7;
+                e.living.move_speed = 0.6;
+            }
             EntityKind::Slime { size, .. } => e.living.experience_value = size,
             _ => {}
         }
@@ -306,7 +318,11 @@ impl Entity {
             }
         }
         if !self.dead && self.living.health > 0 && self.inside_opaque_block(w) {
-            self.attack_from(w, super::damage::DamageSource::new(super::damage::DamageKind::InWall), 1);
+            self.attack_from(
+                w,
+                super::damage::DamageSource::new(super::damage::DamageKind::InWall),
+                1,
+            );
         }
         if self.immune_to_fire {
             self.fire = 0;
@@ -330,7 +346,11 @@ impl Entity {
                         self.motion,
                     );
                 }
-                self.attack_from(w, super::damage::DamageSource::new(super::damage::DamageKind::Drown), 2);
+                self.attack_from(
+                    w,
+                    super::damage::DamageSource::new(super::damage::DamageKind::Drown),
+                    2,
+                );
             }
             self.fire = 0;
         } else {
@@ -349,14 +369,37 @@ impl Entity {
             self.living.death_time += 1;
             if self.living.death_time > 20 {
                 if self.living.recently_hit > 0 || self.player_state().is_some() {
-                    let mut xp = if let Some(p) = self.player_state() { p.total_experience >> 1 } else if matches!(self.kind, EntityKind::Pig { .. } | EntityKind::Sheep { .. } | EntityKind::Cow | EntityKind::Chicken { .. } | EntityKind::Wolf(..) | EntityKind::Squid(..)) { 1 + w.rand.next_int(3) } else { self.living.experience_value };
-                    while xp > 0 { let value = super::xp::split_xp(xp); xp -= value; let orb = Self::xp_orb(w, self.pos, value); w.entity_joined_world(orb); }
+                    let mut xp = if let Some(p) = self.player_state() {
+                        p.total_experience >> 1
+                    } else if matches!(
+                        self.kind,
+                        EntityKind::Pig { .. }
+                            | EntityKind::Sheep { .. }
+                            | EntityKind::Cow
+                            | EntityKind::Chicken { .. }
+                            | EntityKind::Wolf(..)
+                            | EntityKind::Squid(..)
+                    ) {
+                        1 + w.rand.next_int(3)
+                    } else {
+                        self.living.experience_value
+                    };
+                    while xp > 0 {
+                        let value = super::xp::split_xp(xp);
+                        xp -= value;
+                        let orb = Self::xp_orb(w, self.pos, value);
+                        w.entity_joined_world(orb);
+                    }
                 }
                 self.set_dead(w);
                 self.death_particles(w);
             }
         }
-        if self.living.recently_hit > 0 { self.living.recently_hit -= 1; } else { self.living.attacking_player = None; }
+        if self.living.recently_hit > 0 {
+            self.living.recently_hit -= 1;
+        } else {
+            self.living.attacking_player = None;
+        }
         self.tick_potion_effects(w);
         self.living.prev_walk_phase = self.living.walk_phase;
         self.living.prev_render_yaw_offset = self.living.render_yaw_offset;
@@ -400,9 +443,13 @@ impl Entity {
         }
         self.living_entity_update(w);
         if self.living.arrows_stuck > 0 {
-            if self.living.arrow_timer <= 0 { self.living.arrow_timer = 60; }
+            if self.living.arrow_timer <= 0 {
+                self.living.arrow_timer = 60;
+            }
             self.living.arrow_timer -= 1;
-            if self.living.arrow_timer <= 0 { self.living.arrows_stuck -= 1; }
+            if self.living.arrow_timer <= 0 {
+                self.living.arrows_stuck -= 1;
+            }
         }
 
         self.living_update(w);
@@ -480,7 +527,10 @@ impl Entity {
                 EntityKind::Ghast(..) => self.ghast_action(w),
                 EntityKind::Squid(..) => self.squid_action_state(w),
                 EntityKind::Slime { .. } => self.slime_action_state(w),
-                _ => { self.creature_action_state(w); self.silverfish_after_action(w); },
+                _ => {
+                    self.creature_action_state(w);
+                    self.silverfish_after_action(w);
+                }
             }
         }
         if self.living.health > 0 && matches!(self.kind, EntityKind::Wolf(..)) {
@@ -595,7 +645,11 @@ impl Entity {
         if self.player_state().is_some() {
             let before = self.pos;
             self.living_move_entity_with_heading(w, strafe, forward);
-            let d = (self.pos.x - before.x, self.pos.y - before.y, self.pos.z - before.z);
+            let d = (
+                self.pos.x - before.x,
+                self.pos.y - before.y,
+                self.pos.z - before.z,
+            );
             self.add_movement_stat(w, d.0, d.1, d.2);
         } else {
             self.living_move_entity_with_heading(w, strafe, forward);
@@ -639,7 +693,11 @@ impl Entity {
             self.move_flying(
                 strafe,
                 forward,
-                if self.on_ground { self.living.ground_acceleration * accel } else { self.living.air_acceleration },
+                if self.on_ground {
+                    self.living.ground_acceleration * accel
+                } else {
+                    self.living.air_acceleration
+                },
             );
             let friction = self.ground_friction(w);
             if self.is_on_ladder(w) {
@@ -726,10 +784,20 @@ impl Entity {
         }
         self.living.attacked_at_yaw = 0.0;
         if let Some(id) = attacker {
-            if id < 0 || w.entities.get(&id).is_some_and(|e| e.player_state().is_some()) {
-                self.living.recently_hit = 60; self.living.attacking_player = Some(id);
-            } else if w.entities.get(&id).is_some_and(|e| matches!(&e.kind, EntityKind::Wolf(s) if s.flags & 4 != 0)) {
-                self.living.recently_hit = 60; self.living.attacking_player = None;
+            if id < 0
+                || w.entities
+                    .get(&id)
+                    .is_some_and(|e| e.player_state().is_some())
+            {
+                self.living.recently_hit = 60;
+                self.living.attacking_player = Some(id);
+            } else if w
+                .entities
+                .get(&id)
+                .is_some_and(|e| matches!(&e.kind, EntityKind::Wolf(s) if s.flags & 4 != 0))
+            {
+                self.living.recently_hit = 60;
+                self.living.attacking_player = None;
             }
         }
         if fresh {
@@ -779,7 +847,10 @@ impl Entity {
         }
         if self.living.health <= 0 {
             self.living.dying = true;
-            if let Some(mut a) = attacker.filter(|&id| id >= 0).and_then(|id| w.entities.remove(&id)) {
+            if let Some(mut a) = attacker
+                .filter(|&id| id >= 0)
+                .and_then(|id| w.entities.remove(&id))
+            {
                 if let Some(s) = a.player_state_mut() {
                     // addToPlayerScore (scoreValue is 0 for every mob in Beta)
                     s.score += 0;
@@ -840,14 +911,20 @@ impl Entity {
         }
         if matches!(self.kind, EntityKind::Cow) {
             let n = self.rand.next_int(3);
-            for _ in 0..n { self.drop_item(w, 334, 1, 0, 0.0); }
+            for _ in 0..n {
+                self.drop_item(w, 334, 1, 0, 0.0);
+            }
             let n = self.rand.next_int(3) + 1;
-            for _ in 0..n { self.drop_item(w, if self.fire > 0 { 364 } else { 363 }, 1, 0, 0.0); }
+            for _ in 0..n {
+                self.drop_item(w, if self.fire > 0 { 364 } else { 363 }, 1, 0, 0.0);
+            }
             return;
         }
         if matches!(self.kind, EntityKind::Chicken { .. }) {
             let n = self.rand.next_int(3);
-            for _ in 0..n { self.drop_item(w, 288, 1, 0, 0.0); }
+            for _ in 0..n {
+                self.drop_item(w, 288, 1, 0, 0.0);
+            }
             self.drop_item(w, if self.fire > 0 { 366 } else { 365 }, 1, 0, 0.0);
             return;
         }
@@ -870,7 +947,13 @@ impl Entity {
             _ => 0,
         };
         if id > 0 {
-            let n = self.rand.next_int(if matches!(self.kind, EntityKind::Enderman(..)) { 2 } else { 3 });
+            let n = self
+                .rand
+                .next_int(if matches!(self.kind, EntityKind::Enderman(..)) {
+                    2
+                } else {
+                    3
+                });
             for _ in 0..n {
                 self.drop_item(w, id, 1, 0, 0.0);
             }

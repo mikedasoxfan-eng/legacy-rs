@@ -17,7 +17,9 @@ impl Entity {
             EntityKind::Chicken { .. } => "mob.chicken",
             EntityKind::Zombie | EntityKind::Enderman(..) => "mob.zombie",
             EntityKind::Skeleton => "mob.skeleton",
-            EntityKind::Spider | EntityKind::CaveSpider | EntityKind::Silverfish { .. } => "mob.spider",
+            EntityKind::Spider | EntityKind::CaveSpider | EntityKind::Silverfish { .. } => {
+                "mob.spider"
+            }
             EntityKind::PigZombie { .. } => "mob.zombiepig.zpig",
             EntityKind::Ghast(..) => "mob.ghast.moan",
             EntityKind::Wolf(s) => {

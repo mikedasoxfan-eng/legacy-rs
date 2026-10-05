@@ -15,7 +15,7 @@ out="$root/tools/oracle181/out"
 cmp="$root/target/release/entity_compare181.exe"
 beta="$root/target/release/beta.exe"
 fail=0
-for spec in "rules 0" "population 0" "carry 500" "allies 40" "attract 100" "Boat 100" "Minecart 100" "Item 100" "Lightning 20" "Snowball 30" "Egg 30" "Fireball 20" "Enderman 100" "teleport 40" "CaveSpider 100" "Silverfish 100" "XPOrb 100" "Arrow 100" "Pig 100" "Cow 100" "Chicken 100" "Sheep 100" "Wolf 100" "Zombie 100" "Skeleton 100" "Spider 100" "Creeper 100" "PigZombie 100" "Ghast 100" "Squid 100" "Slime 100" "potions 100" "damage 100" "poison 40" "kill-Cow 40" "kill-Chicken 40" "kill-Sheep 40" "kill-Zombie 40" "kill-Enderman 40"; do
+for spec in "rules 0" "indirect 20" "stare 10" "starepumpkin 10" "population 0" "carry 500" "allies 40" "attract 100" "Boat 100" "Minecart 100" "Item 100" "Lightning 20" "Snowball 30" "Egg 30" "Fireball 20" "Enderman 100" "teleport 40" "CaveSpider 100" "Silverfish 100" "XPOrb 100" "Arrow 100" "Pig 100" "Cow 100" "Chicken 100" "Sheep 100" "Wolf 100" "Zombie 100" "Skeleton 100" "Spider 100" "Creeper 100" "PigZombie 100" "Ghast 100" "Squid 100" "Slime 100" "potions 100" "damage 100" "poison 40" "kill-Cow 40" "kill-Chicken 40" "kill-Sheep 40" "kill-Zombie 40" "kill-Enderman 40"; do
   read -r kind ticks <<< "$spec"
   if "$oracle" entities181 "$kind" "$ticks" "entity181_${kind}.bin" && "$cmp" "$kind" "$ticks" "$out/entity181_${kind}.bin"; then :; else fail=1; fi
 done

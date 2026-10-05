@@ -27,18 +27,34 @@ impl Entity {
             || w.can_block_be_rained_on(floor(self.pos.x), floor(self.pos.y), floor(self.pos.z))
     }
     pub fn on_entity_update(&mut self, w: &mut World) {
-        if self.riding.and_then(|id|w.entities.get(&id)).is_some_and(|p|p.dead) {self.riding=None;}
+        if self
+            .riding
+            .and_then(|id| w.entities.get(&id))
+            .is_some_and(|p| p.dead)
+        {
+            self.riding = None;
+        }
         self.ticks_existed = self.ticks_existed.wrapping_add(1);
         self.prev_distance_walked = self.distance_walked;
         self.prev_pos = self.pos;
         self.prev_yaw = self.yaw;
         self.prev_pitch = self.pitch;
         if self.sprinting {
-            let x=floor(self.pos.x);let y=floor(self.pos.y-0.2f32 as f64-self.y_offset as f64);let z=floor(self.pos.z);
-            let block=w.get_block_id(x,y,z);
-            if block>0 {
-                let p=Vec3D::new(self.pos.x+(self.rand.next_float() as f64-0.5)*self.width as f64,self.bounding_box.min_y+0.1,self.pos.z+(self.rand.next_float() as f64-0.5)*self.width as f64);
-                w.spawn_particle(&format!("tilecrack_{block}"),p,Vec3D::new(-self.motion.x*4.0,1.5,-self.motion.z*4.0));
+            let x = floor(self.pos.x);
+            let y = floor(self.pos.y - 0.2f32 as f64 - self.y_offset as f64);
+            let z = floor(self.pos.z);
+            let block = w.get_block_id(x, y, z);
+            if block > 0 {
+                let p = Vec3D::new(
+                    self.pos.x + (self.rand.next_float() as f64 - 0.5) * self.width as f64,
+                    self.bounding_box.min_y + 0.1,
+                    self.pos.z + (self.rand.next_float() as f64 - 0.5) * self.width as f64,
+                );
+                w.spawn_particle(
+                    &format!("tilecrack_{block}"),
+                    p,
+                    Vec3D::new(-self.motion.x * 4.0, 1.5, -self.motion.z * 4.0),
+                );
             }
         }
         if self.handle_water_movement(w) {
@@ -98,18 +114,30 @@ impl Entity {
                 }
             } else {
                 if self.fire % 20 == 0 {
-                    self.attack_from(w,super::damage::DamageSource::new(super::damage::DamageKind::OnFire),1);
+                    self.attack_from(
+                        w,
+                        super::damage::DamageSource::new(super::damage::DamageKind::OnFire),
+                        1,
+                    );
                 }
                 self.fire -= 1;
             }
         }
         if self.handle_lava_movement(w) && !self.immune_to_fire {
-            self.attack_from(w,super::damage::DamageSource::new(super::damage::DamageKind::Lava),4);
+            self.attack_from(
+                w,
+                super::damage::DamageSource::new(super::damage::DamageKind::Lava),
+                4,
+            );
             self.fire = 600;
         }
         if self.pos.y < -64.0 {
             if self.kind.is_living() {
-                self.attack_from(w,super::damage::DamageSource::new(super::damage::DamageKind::OutOfWorld),4);
+                self.attack_from(
+                    w,
+                    super::damage::DamageSource::new(super::damage::DamageKind::OutOfWorld),
+                    4,
+                );
             } else {
                 self.set_entity_dead(w);
             }
@@ -137,7 +165,12 @@ impl Entity {
         self.pos.z = (self.bounding_box.min_z + self.bounding_box.max_z) / 2.0;
     }
     pub fn move_entity(&mut self, w: &mut World, mut dx: f64, mut dy: f64, mut dz: f64) {
-        if matches!(self.kind,super::EntityKind::Painting(_)) {if dx*dx+dy*dy+dz*dz>0.0{self.break_painting(w,false);}return;}
+        if matches!(self.kind, super::EntityKind::Painting(_)) {
+            if dx * dx + dy * dy + dz * dz > 0.0 {
+                self.break_painting(w, false);
+            }
+            return;
+        }
         if self.no_clip {
             self.bounding_box.offset(dx, dy, dz);
             self.sync_position_from_box();
@@ -358,7 +391,11 @@ impl Entity {
         let wet = self.is_wet(w);
         if w.is_bounding_box_burning(self.bounding_box.contract(0.001, 0.001, 0.001)) {
             if !self.immune_to_fire {
-                self.attack_from(w, super::damage::DamageSource::new(super::damage::DamageKind::InFire), 1);
+                self.attack_from(
+                    w,
+                    super::damage::DamageSource::new(super::damage::DamageKind::InFire),
+                    1,
+                );
             }
             if !wet {
                 self.fire += 1;
@@ -376,7 +413,15 @@ impl Entity {
         }
     }
     pub fn can_trigger_walking(&self) -> bool {
-        matches!(self.kind, EntityKind::Fish(_)) || (self.kind.is_living() && !matches!(self.kind, EntityKind::Spider | EntityKind::CaveSpider | EntityKind::Silverfish { .. } | EntityKind::Wolf(..)))
+        matches!(self.kind, EntityKind::Fish(_))
+            || (self.kind.is_living()
+                && !matches!(
+                    self.kind,
+                    EntityKind::Spider
+                        | EntityKind::CaveSpider
+                        | EntityKind::Silverfish { .. }
+                        | EntityKind::Wolf(..)
+                ))
     }
     fn on_entity_walking(&mut self, w: &mut World, id: u8, x: i32, y: i32, z: i32) {
         if id == TILLED_FIELD && w.rand.next_int(4) == 0 {
@@ -392,18 +437,24 @@ impl Entity {
     fn on_entity_collided_with_block(&mut self, w: &mut World, id: u8, x: i32, y: i32, z: i32) {
         match id {
             28 => {
-                if w.get_block_metadata(x,y,z)&8==0 {
-                    w.entities.insert(self.entity_id,self.clone());
-                    w.update_detector_rail(x,y,z);
+                if w.get_block_metadata(x, y, z) & 8 == 0 {
+                    w.entities.insert(self.entity_id, self.clone());
+                    w.update_detector_rail(x, y, z);
                     w.entities.remove(&self.entity_id);
                 }
             }
             PORTAL => self.set_in_portal(),
             CACTUS => {
-                self.attack_from(w, super::damage::DamageSource::new(super::damage::DamageKind::Cactus), 1);
+                self.attack_from(
+                    w,
+                    super::damage::DamageSource::new(super::damage::DamageKind::Cactus),
+                    1,
+                );
             }
             WEB => {
-                if !matches!(self.kind, EntityKind::Spider | EntityKind::CaveSpider) { self.in_web = true; }
+                if !matches!(self.kind, EntityKind::Spider | EntityKind::CaveSpider) {
+                    self.in_web = true;
+                }
             }
             SOUL_SAND => {
                 self.motion.x *= 0.4;
@@ -466,7 +517,10 @@ impl Entity {
     /// the fall to the rider, `EntityLiving` takes damage, `EntityPig` gives its rider "When
     /// Pigs Fly"; chickens and ghasts ignore falls (rider included).
     pub fn fall(&mut self, w: &mut World, distance: f32) {
-        if matches!(self.kind, EntityKind::Ghast(..) | EntityKind::Chicken { .. }) {
+        if matches!(
+            self.kind,
+            EntityKind::Ghast(..) | EntityKind::Chicken { .. }
+        ) {
             return;
         }
         if self.player_state().is_some() && distance >= 2.0 {
@@ -483,7 +537,11 @@ impl Entity {
         if self.kind.is_living() {
             let damage = (distance - 3.0).ceil() as i32;
             if damage > 0 {
-                self.attack_from(w, super::damage::DamageSource::new(super::damage::DamageKind::Fall), damage);
+                self.attack_from(
+                    w,
+                    super::damage::DamageSource::new(super::damage::DamageKind::Fall),
+                    damage,
+                );
                 let id = w.get_block_id(
                     floor(self.pos.x),
                     floor(self.pos.y - 0.2f32 as f64 - self.y_offset as f64),

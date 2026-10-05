@@ -1,8 +1,8 @@
 //! The original snowball and egg methods share all arithmetic except hatching.
 use crate::{
-    World,
-    entity::{Entity, EntityKind, MovingObjectPosition as Hit, Vec3D, projectile::ArrowState},
+    entity::{projectile::ArrowState, Entity, EntityKind, MovingObjectPosition as Hit, Vec3D},
     math::{self, PI_F32 as PI},
+    World,
 };
 impl Entity {
     pub fn throwable_at(w: &mut World, x: f64, y: f64, z: f64, egg: bool) -> Self {
@@ -121,7 +121,15 @@ impl Entity {
         if let Some(hit) = hit {
             if let Hit::Entity { id, .. } = hit {
                 if let Some(mut e) = w.entities.remove(&id) {
-                    e.attack_from(w,crate::entity::damage::DamageSource::indirect(crate::entity::damage::DamageKind::Thrown,self.entity_id,s.owner),0);
+                    e.attack_from(
+                        w,
+                        crate::entity::damage::DamageSource::indirect(
+                            crate::entity::damage::DamageKind::Thrown,
+                            self.entity_id,
+                            s.owner,
+                        ),
+                        0,
+                    );
                     w.entities.insert(id, e);
                 }
             }

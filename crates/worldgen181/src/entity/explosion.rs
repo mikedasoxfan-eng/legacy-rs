@@ -137,7 +137,7 @@ impl World {
         }
         let pitch = (1.0 + (self.rand.next_float() - self.rand.next_float()) * 0.2) * 0.7;
         self.play_sound("random.explode", pos, 4.0, pitch);
-        self.spawn_particle("hugeexplosion",pos,Vec3D::default());
+        self.spawn_particle("hugeexplosion", pos, Vec3D::default());
         for &(x, y, z) in destroyed_blocks.iter().rev() {
             let id = self.get_block_id(x, y, z);
             let p = Vec3D::new(

@@ -17,16 +17,29 @@ pub struct TexturedQuad {
 }
 
 impl TexturedQuad {
-    fn new(mut vertices: [PositionTextureVertex; 4], u0: i32, v0: i32, u1: i32, v1: i32, texture: [f32;2]) -> Self {
+    fn new(
+        mut vertices: [PositionTextureVertex; 4],
+        u0: i32,
+        v0: i32,
+        u1: i32,
+        v1: i32,
+        texture: [f32; 2],
+    ) -> Self {
         // The 0.1 texel inset is present in Beta; later versions removed it.
         let u0 = u0 as f32 / texture[0] + 0.1 / texture[0];
         let u1 = u1 as f32 / texture[0] - 0.1 / texture[0];
         let v0 = v0 as f32 / texture[1] + 0.1 / texture[1];
         let v1 = v1 as f32 / texture[1] - 0.1 / texture[1];
-        for (v, uv) in vertices.iter_mut().zip([[u1, v0], [u0, v0], [u0, v1], [u1, v1]]) {
+        for (v, uv) in vertices
+            .iter_mut()
+            .zip([[u1, v0], [u0, v0], [u0, v1], [u1, v1]])
+        {
             v.uv = uv;
         }
-        Self { vertices, invert_normal: false }
+        Self {
+            vertices,
+            invert_normal: false,
+        }
     }
 
     /// `TexturedQuad.draw`: Vec3D.subtract subtracts *this* from its argument.
@@ -49,7 +62,7 @@ impl TexturedQuad {
 
 #[derive(Clone, Debug)]
 pub struct ModelRenderer {
-    pub texture_size: [f32;2],
+    pub texture_size: [f32; 2],
     pub corners: [PositionTextureVertex; 8],
     pub faces: Vec<TexturedQuad>,
     texture_offset: [i32; 2],
@@ -70,8 +83,11 @@ pub struct ModelRenderer {
 impl ModelRenderer {
     pub fn new(u: i32, v: i32) -> Self {
         Self {
-            texture_size: [64.0,32.0],
-            corners: [PositionTextureVertex { pos: [0.0; 3], uv: [0.0; 2] }; 8],
+            texture_size: [64.0, 32.0],
+            corners: [PositionTextureVertex {
+                pos: [0.0; 3],
+                uv: [0.0; 2],
+            }; 8],
             faces: Vec::new(),
             texture_offset: [u, v],
             rotation_point_x: 0.0,
@@ -89,7 +105,16 @@ impl ModelRenderer {
 
     /// `ModelRenderer.addBox`: replaces the box, including its original face order.
     #[allow(clippy::too_many_arguments)]
-    pub fn add_box(&mut self, mut x: f32, mut y: f32, mut z: f32, w: i32, h: i32, d: i32, inflate: f32) {
+    pub fn add_box(
+        &mut self,
+        mut x: f32,
+        mut y: f32,
+        mut z: f32,
+        w: i32,
+        h: i32,
+        d: i32,
+        inflate: f32,
+    ) {
         let mut x1 = x + w as f32;
         let mut y1 = y + h as f32;
         let mut z1 = z + d as f32;
@@ -102,7 +127,16 @@ impl ModelRenderer {
         if self.mirror {
             std::mem::swap(&mut x, &mut x1);
         }
-        let pts = [[x, y, z], [x1, y, z], [x1, y1, z], [x, y1, z], [x, y, z1], [x1, y, z1], [x1, y1, z1], [x, y1, z1]];
+        let pts = [
+            [x, y, z],
+            [x1, y, z],
+            [x1, y1, z],
+            [x, y1, z],
+            [x, y, z1],
+            [x1, y, z1],
+            [x1, y1, z1],
+            [x, y1, z1],
+        ];
         self.corners = std::array::from_fn(|i| PositionTextureVertex {
             // Vec3D's constructor canonicalizes negative zero.
             pos: pts[i].map(|p| if p == 0.0 { 0.0 } else { p as f64 }),
@@ -115,12 +149,25 @@ impl ModelRenderer {
             ([5, 4, 0, 1], u + d, v, u + d + w, v + d),
             ([2, 3, 7, 6], u + d + w, v, u + d + w + w, v + d),
             ([1, 0, 3, 2], u + d, v + d, u + d + w, v + d + h),
-            ([4, 5, 6, 7], u + d + w + d, v + d, u + d + w + d + w, v + d + h),
+            (
+                [4, 5, 6, 7],
+                u + d + w + d,
+                v + d,
+                u + d + w + d + w,
+                v + d + h,
+            ),
         ];
         self.faces = specs
             .into_iter()
             .map(|(idx, u0, v0, u1, v1)| {
-                let mut q = TexturedQuad::new(idx.map(|i| self.corners[i]), u0, v0, u1, v1, self.texture_size);
+                let mut q = TexturedQuad::new(
+                    idx.map(|i| self.corners[i]),
+                    u0,
+                    v0,
+                    u1,
+                    v1,
+                    self.texture_size,
+                );
                 if self.mirror {
                     q.vertices.reverse();
                 }

@@ -80,13 +80,22 @@ impl Fixed {
         self.ops = self.stack.pop().expect("matrix stack");
     }
     pub fn translate(&mut self, x: f32, y: f32, z: f32) {
-        self.ops.push(Op { code: 0, args: [x, y, z, 0.0] });
+        self.ops.push(Op {
+            code: 0,
+            args: [x, y, z, 0.0],
+        });
     }
     pub fn scale(&mut self, x: f32, y: f32, z: f32) {
-        self.ops.push(Op { code: 1, args: [x, y, z, 0.0] });
+        self.ops.push(Op {
+            code: 1,
+            args: [x, y, z, 0.0],
+        });
     }
     pub fn rotate(&mut self, a: f32, x: f32, y: f32, z: f32) {
-        self.ops.push(Op { code: 2, args: [a, x, y, z] });
+        self.ops.push(Op {
+            code: 2,
+            args: [a, x, y, z],
+        });
     }
     pub fn enable(&mut self, bit: u32, on: bool) {
         if on {
@@ -105,7 +114,9 @@ impl Fixed {
         self.vertex_normal = Some(living::pack_normal(Vec3::new(x, y, z)));
     }
     pub fn color(&mut self, c: [f32; 4]) {
-        self.vertex_color = Some(u32::from_le_bytes(c.map(|x| ((x * 255.0) as i32).clamp(0, 255) as u8)));
+        self.vertex_color = Some(u32::from_le_bytes(
+            c.map(|x| ((x * 255.0) as i32).clamp(0, 255) as u8),
+        ));
     }
     pub fn vertex(&mut self, p: [f64; 3], uv: [f64; 2]) {
         self.textured = true;
@@ -244,7 +255,9 @@ impl Draw {
                 vertices.push(q[i]);
             }
         }
-        if self.mode==3 {vertices=verts;}
+        if self.mode == 3 {
+            vertices = verts;
+        }
         Batch {
             texture,
             pass,
