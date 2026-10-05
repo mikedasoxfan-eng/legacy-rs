@@ -200,6 +200,8 @@ pub struct App {
     exit_after_save: bool,
     /// The world thread dropped the world over a session-lock conflict.
     session_conflict: bool,
+    /// `mcDataDir`: options.txt, saves/, stats/, screenshots/.
+    data_dir: std::path::PathBuf,
     tx: Option<std::sync::mpsc::Sender<ToWorker>>,
     rx: Option<std::sync::mpsc::Receiver<FromWorker>>,
     worker: Option<std::thread::JoinHandle<()>>,
@@ -289,6 +291,7 @@ impl App {
             loading: None,
             exit_after_save: false,
             session_conflict: false,
+            data_dir: std::path::PathBuf::new(),
             tx: None,
             rx: None,
             worker: None,
@@ -1584,13 +1587,17 @@ impl App {
             let _ = assets::save_png(img, &dir.join(format!("{name}.png")));
         }
         if let Some(img) = shot.filter(|_| flow_shot.is_none()) {
-            let path = self.opts.shot.clone().unwrap_or_else(|| {
-                let t = std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_secs();
-                format!("screenshot-{t}.png").into()
-            });
-            match assets::save_png(&img, &path) {
-                Ok(()) => eprintln!("saved {}", path.display()),
-                Err(e) => eprintln!("screenshot failed: {e}"),
+            if let Some(path) = self.opts.shot.clone() {
+                match assets::save_png(&img, &path) {
+                    Ok(()) => eprintln!("saved {}", path.display()),
+                    Err(e) => eprintln!("screenshot failed: {e}"),
+                }
+            } else {
+                // F2: ScreenShotHelper.saveScreenshot, reported in the chat area.
+                let message = save_screenshot(&self.data_dir, &img);
+                if let Some(g) = &self.gui {
+                    self.ingame.add_chat_message(&g.ui, message);
+                }
             }
             if want_shot {
                 self.shutdown(el);
@@ -1671,6 +1678,7 @@ impl ApplicationHandler for App {
             None => self.opts.options_dir.clone().unwrap_or_else(|| std::env::current_dir().unwrap_or_default()),
         };
         let settings = gui::settings::GameSettings::load(&data_dir);
+        self.data_dir = data_dir.clone();
         let stat_map = assets::Jar::open().and_then(|mut j| j.text("achievement/map.txt")).unwrap_or_default();
         gpu.apply_video(VideoSettings::from(&settings));
         let splash_seed =
@@ -1860,5 +1868,25 @@ pub(crate) fn play_world_sound(
     let d = DVec3::from_array(pos) - view;
     if d.length_squared() < (range * range) as f64 {
         snd.play_sound(name, [pos[0] as f32, pos[1] as f32, pos[2] as f32], volume, pitch);
+    }
+}
+
+/// `ScreenShotHelper.saveScreenshot`: `screenshots/<yyyy-MM-dd_HH.mm.ss>[_n].png` in the data
+/// directory; the message goes to the chat area.
+fn save_screenshot(dir: &std::path::Path, img: &render::gpu::Image) -> String {
+    let folder = dir.join("screenshots");
+    let _ = std::fs::create_dir(&folder);
+    let stamp = chrono::Local::now().format("%Y-%m-%d_%H.%M.%S").to_string();
+    let mut n = 1;
+    loop {
+        let name = if n == 1 { format!("{stamp}.png") } else { format!("{stamp}_{n}.png") };
+        let path = folder.join(&name);
+        if !path.exists() {
+            return match assets::save_png(img, &path) {
+                Ok(()) => format!("Saved screenshot as {name}"),
+                Err(e) => format!("Failed to save: {e}"),
+            };
+        }
+        n += 1;
     }
 }

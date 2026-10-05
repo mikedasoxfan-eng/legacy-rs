@@ -103,6 +103,7 @@ fn key_code(name: &str) -> Option<KeyCode> {
         "Tab" => Tab,
         "Enter" => Enter,
         "F1" => F1,
+        "F2" => F2,
         "F3" => F3,
         "F5" => F5,
         _ => {
