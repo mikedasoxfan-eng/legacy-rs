@@ -483,6 +483,9 @@ bash tools/verify_player_gui8_181.sh --built || fail=1
 # --- entities (b1.8.1) ---
 bash "$root/tools/verify_entities8_181.sh" --built || fail=1
 # --- end entities ---
+# --- terrain (b1.8.1 integration round 6) ---
+bash "$root/tools/verify_drawtrace181.sh" || fail=1
+# --- end terrain ---
 pflush
 [ $fail -eq 0 ] && echo "ALL CASES EXACT" || echo "SOME CASES DIFFER"
 exit $fail

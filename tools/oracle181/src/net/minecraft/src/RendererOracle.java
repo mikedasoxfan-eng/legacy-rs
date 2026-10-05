@@ -24,7 +24,7 @@ public final class RendererOracle {
         if(on)flags|=bit;else flags&=~bit;
     }
     static Field field(String n) throws Exception {Field f=Tessellator.class.getDeclaredField(n);f.setAccessible(true);return f;}
-    static class Raw {int n,mask,mode;int[] data;float[] command;Raw(int n,int mask,int[] data,int mode){this.n=n;this.mask=mask;this.data=data;this.mode=mode;}}
+    static class Raw {int n,mask,mode;boolean packedLight;int[] data;float[] command;Raw(int n,int mask,int[] data,int mode){this.n=n;this.mask=mask;this.data=data;this.mode=mode;}}
     static Map<Integer,ArrayList<Raw>> lists=new HashMap<Integer,ArrayList<Raw>>();
     static int compiling=0,nextList=1;
     public static boolean isCompiling(){return compiling!=0;}
@@ -40,10 +40,12 @@ public final class RendererOracle {
             boolean color=field("hasColor").getBoolean(t),normalArray=field("hasNormals").getBoolean(t),uv=field("hasTexture").getBoolean(t);
             int[] raw=(int[])field("rawBuffer").get(t);
             Raw r=new Raw(n,(color?64:0)|(normalArray?128:0)|(uv?512:0),Arrays.copyOf(raw,n*8),mode);
+            r.packedLight=field("field_35838_p").getBoolean(t);
             if(pistonCapture){pistonRaw=r;}else if(compiling!=0)lists.get(compiling).add(r);else emit(r);
         }catch(Exception e){throw new RuntimeException(e);}
     }
     static void emit(Raw r) {
+        Mode_drawtrace181.emitted(r);
         FirstPersonOracle.recordMode(r.mode);
         FirstPersonOracle.recordMatrix();
         draws.i32(GL11.texture);for(float f:GL11.color)Oracle.modelFloat(draws,f);
@@ -72,6 +74,7 @@ public final class RendererOracle {
         Oracle.setField(m.renderEngine,"urlToImageDataMap",new HashMap());Oracle.setField(m.renderEngine,"textureMap",textures);Oracle.setField(m.renderEngine,"texturePack",Oracle.allocate(TexturePackList.class));
         // In the game RenderGlobal.renderEntities caches the engine in TileEntityRenderer every frame.
         TileEntityRenderer.instance.renderEngine=m.renderEngine;
+        Mode_renderintegration181.manager(m);
         return m;
     }
     static void writeCase(Oracle.DataOut out,int kind,Entity e,Render renderer,RenderManager manager,int id,int number,int damage,int age,float hover,int fuse,int shake,float partial) throws Exception {

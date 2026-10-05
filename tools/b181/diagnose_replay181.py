@@ -1,6 +1,6 @@
 """Locate the first differing field in inherited EntityOracle/PlayerOracle dumps.
 
-Usage: python tools/b181/diagnose_replay181.py entities|player|containers scenario ticks java.bin rust.bin
+Usage: python tools/b181/diagnose_replay181.py entities|player|containers|vehicles scenario ticks java.bin rust.bin
 Reads the existing fixture format; does not change simulation or oracle output.
 """
 import struct
@@ -68,6 +68,7 @@ class Replay:
     def entity(self, frame, index):
         self.context = f'frame {frame}, entity {index}'
         eid = self.i('id'); kind = self.utf('kind')
+        if kind == 'Minecart' and eid < 16: self.vehicle_carts.append(eid)
         self.context = f'frame {frame}, {kind} id {eid}'
         self.fields('<d', 'posX posY posZ motionX motionY motionZ prevPosX prevPosY prevPosZ lastTickPosX lastTickPosY lastTickPosZ boxMinX boxMinY boxMinZ boxMaxX boxMaxY boxMaxZ')
         self.fields('<f', 'yaw pitch prevYaw prevPitch fallDistance ySize distanceWalked')
@@ -127,6 +128,7 @@ class Replay:
             else: raise ValueError(f'bad event {tag}')
 
     def snapshot(self, frame):
+        self.vehicle_carts = []
         self.context = f'frame {frame}'
         for index in range(self.i('entityCount')): self.entity(frame, index)
         self.context = f'frame {frame}, world'
@@ -138,6 +140,21 @@ class Replay:
         self.events(frame)
 
     def extras(self, mode, scenario, frame):
+        if mode == 'vehicles':
+            for eid in sorted(self.vehicle_carts):
+                for offset in range(5):
+                    self.context = f'frame {frame}, Minecart id {eid}, rail sample {offset}'
+                    if self.b('present'): self.fields('<d', 'x y z')
+            self.context = f'frame {frame}, vehicle stats'
+            for stat in range(self.i('count')): self.fields('<i', f'stat{stat}.id stat{stat}.amount')
+            self.context = f'frame {frame}, saved vehicles'
+            for vehicle in range(self.i('count')):
+                eid = self.i('id'); size = self.i('nbtLength')
+                self.context = f'frame {frame}, saved vehicle id {eid}'
+                end = self.offset + size
+                self.nbt(self.b('rootType'), self.utf('rootName'))
+                if self.offset != end: raise ValueError('vehicle NBT length mismatch')
+            return
         if mode == 'containers':
             self.context = f'frame {frame}, furnaces'
             for furnace in range(12):
@@ -160,6 +177,25 @@ class Replay:
                 if tag == 1: self.i('hitEntity')
                 elif tag == 0: self.fields('<i', 'hitX hitY hitZ hitSide'); self.fields('<d', 'hitVecX hitVecY hitVecZ')
 
+    def nbt(self, kind, name):
+        if kind in {1, 2, 3, 4, 5, 6}:
+            self.field(name, {1: '>b', 2: '>h', 3: '>i', 4: '>q', 5: '>f', 6: '>d'}[kind])
+        elif kind == 7:
+            self.bytes(name, self.field(name + '.length', '>i'))
+        elif kind == 8:
+            self.utf(name)
+        elif kind == 9:
+            element = self.b(name + '.elementType')
+            for i in range(self.field(name + '.length', '>i')): self.nbt(element, f'{name}[{i}]')
+        elif kind == 10:
+            while True:
+                element = self.b(name + '.tagType')
+                if element == 0: break
+                child = self.utf(name + '.tagName')
+                self.nbt(element, f'{name}.{child}' if name else child)
+        else:
+            raise ValueError(f'unknown Beta NBT tag {kind}')
+
 
 def main():
     mode, scenario, ticks, java, rust = sys.argv[1:]
@@ -167,6 +203,8 @@ def main():
     if replay.java == replay.rust:
         print('EXACT'); return
     try:
+        if mode == 'vehicles':
+            replay.bytes('vehicle header', 8); replay.i('ticks')
         for frame in range(int(ticks) + 1):
             replay.snapshot(frame); replay.extras(mode, scenario, frame)
         print(f'byte {replay.difference} in final world dump (starts at {replay.offset})')

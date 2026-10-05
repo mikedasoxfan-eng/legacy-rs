@@ -13,16 +13,24 @@ fi
 beta() { "$root/target/release/beta" --mc b1.8.1 "$@"; }
 cd "$root"
 if [ "${1:-}" != --built ]; then cargo build --release -q -p worldgen181 -p client || exit 1; fi
-fail=0
 oracle=tools/oracle181/oracle.sh
+fail=0
 for scene in rails train boats riding nbt longrail ridingnbt placing; do
   file="vehicles_${scene}.bin"
   echo "== vehicles181: $scene"
-  "$oracle" vehicles "$scene" 240 "$file" >/dev/null && target/release/compare181 vehicles "$scene" 240 "tools/oracle181/out/$file" || { echo "DIFFERS: vehicles $scene"; fail=1; }
+  if "$oracle" vehicles "$scene" 240 "$file" >"tools/oracle181/out/$file.log" 2>&1; then
+    target/release/compare181 vehicles "$scene" 240 "tools/oracle181/out/$file" || { echo "DIFFERS: vehicles $scene"; fail=1; }
+  else
+    cat "tools/oracle181/out/$file.log"; echo "ORACLE FAILED: vehicles $scene"; fail=1
+  fi
 done
 echo "== vehicles181: inventory"
-"$oracle" vehicleinventory vehicleinventory.bin >/dev/null && target/release/compare181 vehicleinventory tools/oracle181/out/vehicleinventory.bin || { echo "DIFFERS: vehicles inventory"; fail=1; }
+if "$oracle" vehicleinventory vehicleinventory.bin >tools/oracle181/out/vehicleinventory.bin.log 2>&1; then
+  target/release/compare181 vehicleinventory tools/oracle181/out/vehicleinventory.bin || { echo "DIFFERS: vehicles inventory"; fail=1; }
+else
+  cat tools/oracle181/out/vehicleinventory.bin.log; echo "ORACLE FAILED: vehicle inventory"; fail=1
+fi
 echo "== vehicles181: renderers"
-"$oracle" vehiclerenderers vehicles-renderers.bin >/dev/null && target/release/beta --mc b1.8.1 --vehiclerenderercheck tools/oracle181/out/vehicles-renderers.bin || { echo "DIFFERS: vehicles renderers"; fail=1; }
-[ $fail -eq 0 ] && echo "VEHICLES ALL CASES EXACT"
+"$oracle" renderintegration181 vehiclerenderers vehicles-renderers.bin && target/release/beta --mc b1.8.1 --vehiclerenderercheck tools/oracle181/out/vehicles-renderers.bin || { echo "DIFFERS: vehicles renderers"; fail=1; }
+[ $fail -eq 0 ] && echo "VEHICLES ALL CASES EXACT" || echo "VEHICLE CASES DIFFER"
 exit $fail
