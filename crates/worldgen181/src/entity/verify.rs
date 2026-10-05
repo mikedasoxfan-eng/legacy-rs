@@ -1049,6 +1049,11 @@ pub fn append_world(w: &World, out: &mut Vec<u8>) {
                 i(out, v);
             }
             match &c.tile_entities[&(x, y, z)] {
+                // Shared Oracle.worldBytes also rejects RecordPlayer tiles.
+                // Their original-bytecode persistence is covered by record4.
+                crate::world::tile::TileEntity::RecordPlayer { .. } => {
+                    panic!("shared worldBytes does not encode RecordPlayer")
+                }
                 crate::world::tile::TileEntity::Note(n)=> {
                     out.push(5); out.push(n.note as u8); out.push(n.powered as u8);
                 }

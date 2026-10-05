@@ -131,7 +131,17 @@ impl PlayerControllerSP {
         }
         if removed && id == 97 {w.silverfish_destroyed181(x,y,z);}
         let can = p.can_harvest(id);
-        if let Some(s) = p.held_item() {
+        p.destroy_held_block181(id);
+        if removed && can {
+            p.harvest_block(w, id, x, y, z, meta);
+        }
+        removed
+    }
+}
+impl Entity {
+    /// ItemStack.onDestroyBlock: delegate durability, then count successful item hooks.
+    pub fn destroy_held_block181(&mut self,id:u8) {
+        if let Some(s) = self.held_item() {
             let cost = if matches!(s.id, 267 | 268 | 272 | 276 | 283) {
                 2
             } else if matches!(s.id,256..=258|269..=271|273..=275|277..=279|284..=286)
@@ -141,19 +151,13 @@ impl PlayerControllerSP {
             } else {
                 0
             };
-            p.damage_held(cost);
+            if cost > 0 {self.damage_held(cost);}
             // ItemStack.onDestroyBlock: ItemTool and ItemSword report a use.
-            if matches!(s.id, 267 | 268 | 272 | 276 | 283 | 256..=258 | 269..=271 | 273..=275 | 277..=279 | 284..=286) {
-                p.add_stat(super::stat::used(s.id), 1);
+            if (s.id == 359 && matches!(id,18|30|31|106)) || matches!(s.id, 267 | 268 | 272 | 276 | 283 | 256..=258 | 269..=271 | 273..=275 | 277..=279 | 284..=286) {
+                self.add_stat(super::stat::used(s.id), 1);
             }
         }
-        if removed && can {
-            p.harvest_block(w, id, x, y, z, meta);
-        }
-        removed
     }
-}
-impl Entity {
     pub fn held_item(&self) -> Option<ItemStack> {
         self.player_state()?.inventory.held()
     }
@@ -215,7 +219,7 @@ impl Entity {
         if id != 78 {
             self.add_stat(super::stat::mine(id as i32), 1);
         }
-        if matches!(id,18|106) && self.held_item().is_some_and(|s| s.id == 359) {
+        if matches!(id,18|31|106) && self.held_item().is_some_and(|s| s.id == 359) {
             super::block_hooks::drop_stack(w, x, y, z, ItemStack::new(id as i32, 1, if id==18 {meta & 3}else{meta}));
         } else if id == 78 {
             super::block_hooks::drop_stack(w, x, y, z, ItemStack::new(332, 1, 0));

@@ -26,9 +26,10 @@ impl<'a> ChunkCache181<'a> {
         let (x, z) = ((x >> 4) - self.min_x, (z >> 4) - self.min_z);
         x >= 0 && x < self.width && z >= 0 && z < self.depth
     }
-    fn indexed(&self, x: i32, z: i32) -> &super::chunk::Chunk {
+    fn indexed(&self, x: i32, z: i32) -> Option<&super::chunk::Chunk> {
         assert!(self.contains(x, z), "ChunkCache array index out of bounds");
-        self.world.chunk(x >> 4, z >> 4)
+        // The server provider's missing coordinate is its EmptyChunk reference.
+        self.world.chunks.get(&(x >> 4, z >> 4)).map(|c|c.as_ref())
     }
     pub fn block_id(&self, x: i32, y: i32, z: i32) -> u8 {
         if !(0..128).contains(&y) || !self.contains(x, z) { return 0; }
@@ -36,7 +37,7 @@ impl<'a> ChunkCache181<'a> {
     }
     pub fn metadata(&self, x: i32, y: i32, z: i32) -> i32 {
         if !(0..128).contains(&y) { return 0; }
-        self.indexed(x, z).data.get(x & 15, y, z & 15)
+        self.indexed(x, z).map_or(0,|c|c.data.get(x & 15, y, z & 15))
     }
     pub fn tile_entity(&mut self, x: i32, y: i32, z: i32) -> Option<&mut super::tile::TileEntity> {
         assert!(self.contains(x, z), "ChunkCache array index out of bounds");
@@ -62,11 +63,11 @@ impl<'a> ChunkCache181<'a> {
         }
         if y < 0 { return 0; }
         if y >= 128 { return (15 - self.world.skylight_subtracted).max(0); }
-        self.indexed(x, z).block_light_value(x & 15, y, z & 15, self.world.skylight_subtracted)
+        self.indexed(x, z).map_or(0,|c|c.block_light_value(x & 15, y, z & 15, self.world.skylight_subtracted))
     }
     pub fn saved_light_raw(&self, kind: LightKind, x: i32, y: i32, z: i32) -> i32 {
         if !Self::in_bounds(x, z) { return kind.default_value(); }
-        self.indexed(x, z).saved_light(kind, x & 15, y.clamp(0,127), z & 15)
+        self.indexed(x, z).map_or(0,|c|c.saved_light(kind, x & 15, y.clamp(0,127), z & 15))
     }
     pub fn saved_light(&self, kind: LightKind, x: i32, y: i32, z: i32) -> i32 {
         let y = y.clamp(0,127);

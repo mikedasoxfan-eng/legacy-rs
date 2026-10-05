@@ -210,12 +210,12 @@ pub fn write_events(events: &[WorldEvent], out: &mut Vec<u8>) {
 pub fn step_sound(id: u8) -> (&'static str, f32, f32) {
     match id {
         5 | 17 | 47 | 50 | 51 | 53 | 54 | 58 | 63 | 64 | 65 | 68 | 69 | 72 | 75 | 76 | 85 | 86
-        | 91 | 93 | 94 | 95 | 96 => ("step.wood", 1.0, 1.0),
-        2 | 6 | 18 | 19 | 31 | 32 | 37 | 38 | 39 | 40 | 46 | 59 | 83 => ("step.grass", 1.0, 1.0),
+        | 91 | 93 | 94 | 95 | 96 | 99 | 100 | 103 | 104 | 105 | 107 => ("step.wood", 1.0, 1.0),
+        2 | 6 | 18 | 19 | 31 | 32 | 37 | 38 | 39 | 40 | 46 | 59 | 83 | 106 => ("step.grass", 1.0, 1.0),
         3 | 13 | 60 | 82 => ("step.gravel", 1.0, 1.0),
         12 | 88 => ("step.sand", 1.0, 1.0),
         35 | 78 | 80 | 81 | 92 => ("step.cloth", 1.0, 1.0),
-        27 | 28 | 41 | 42 | 52 | 57 | 66 | 71 => ("step.stone", 1.0, 1.5),
+        27 | 28 | 41 | 42 | 52 | 57 | 66 | 71 | 101 => ("step.stone", 1.0, 1.5),
         _ => ("step.stone", 1.0, 1.0),
     }
 }
@@ -225,7 +225,7 @@ pub fn break_sound(id: u8) -> (&'static str, f32, f32) {
     let (name, v, p) = step_sound(id);
     (
         match id {
-            20 | 79 | 89 | 90 => "random.glass",
+            20 | 79 | 89 | 90 | 102 => "random.glass",
             12 | 88 => "step.gravel",
             _ => name,
         },

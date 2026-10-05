@@ -5,7 +5,6 @@
 use crate::nbt::{self, Compound, Tag};
 use crate::world::chunk::{Chunk, Nibbles};
 use crate::world::tile::{ItemStack, TileEntity};
-use std::collections::HashMap;
 use std::fs::{File, OpenOptions};
 use std::io::{self, Read, Seek, SeekFrom, Write};
 use std::path::{Path, PathBuf};
@@ -304,7 +303,6 @@ pub struct Storage {
     /// Where `region/` lives: the save directory, or `DIM-1` for the Nether
     /// (`SaveOldDir.getChunkLoader`).
     chunk_dir: PathBuf,
-    regions: HashMap<(i32, i32), RegionFile>,
     session: i64,
 }
 
@@ -327,7 +325,6 @@ impl Storage {
         Ok(Storage {
             dir: dir.to_path_buf(),
             chunk_dir: dir.to_path_buf(),
-            regions: HashMap::new(),
             session,
         })
     }
@@ -337,7 +334,7 @@ impl Storage {
     pub fn for_dimension(&self, dimension: crate::world::Dimension) -> io::Result<Storage> {
         let chunk_dir = if dimension.is_hell_world() { self.dir.join("DIM-1") } else { self.dir.clone() };
         std::fs::create_dir_all(&chunk_dir)?;
-        Ok(Storage { dir: self.dir.clone(), chunk_dir, regions: HashMap::new(), session: self.session })
+        Ok(Storage { dir: self.dir.clone(), chunk_dir, session: self.session })
     }
 
     /// `checkSessionLock`: someone else opened this world since we did.
@@ -386,22 +383,6 @@ impl Storage {
         Ok(())
     }
 
-    fn region(&mut self, cx: i32, cz: i32) -> io::Result<&mut RegionFile> {
-        let key = (cx >> 5, cz >> 5);
-        if !self.regions.contains_key(&key) {
-            if self.regions.len() >= 256 {
-                self.regions.clear();
-            }
-            std::fs::create_dir_all(self.chunk_dir.join("region"))?;
-            let path = self
-                .chunk_dir
-                .join("region")
-                .join(format!("r.{}.{}.mcr", key.0, key.1));
-            self.regions.insert(key, RegionFile::open(&path)?);
-        }
-        Ok(self.regions.get_mut(&key).unwrap())
-    }
-
     /// `McRegionChunkLoader.loadChunk`
     pub fn load_chunk(&mut self, cx: i32, cz: i32) -> Option<Chunk> {
         self.load_chunk_for_dimension(cx, cz, crate::world::Dimension::Overworld)
@@ -414,7 +395,7 @@ impl Storage {
         cz: i32,
         dimension: crate::world::Dimension,
     ) -> Option<Chunk> {
-        let raw = self.region(cx, cz).ok()?.read_chunk(cx & 31, cz & 31)?;
+        let raw = crate::region_cache181::read_chunk(&self.chunk_dir,cx,cz).ok()??;
         let root = nbt::read_root(&mut &raw[..]).ok()?;
         let level = match root.compound("Level") {
             Some(l) if l.has("Blocks") => l.clone(),
@@ -451,13 +432,14 @@ impl Storage {
         let mut z = flate2::write::ZlibEncoder::new(Vec::new(), flate2::Compression::default());
         z.write_all(&raw)?;
         let compressed = z.finish()?;
-        let r = self.region(c.x, c.z)?;
-        r.write_chunk(c.x & 31, c.z & 31, &compressed)?;
-        Ok(r.take_size_delta() as i64)
+        crate::region_cache181::with_region(&self.chunk_dir,c.x,c.z,|r| {
+            r.write_chunk(c.x&31,c.z&31,&compressed)?;
+            Ok(r.take_size_delta() as i64)
+        })
     }
 
     /// Release cached RegionFiles (SaveConverterMcRegion.flushCache).
-    pub fn flush_region_cache(&mut self) { self.regions.clear(); }
+    pub fn flush_region_cache(&mut self) { crate::region_cache181::clear(); }
 
     pub fn data_file(&self, name: &str) -> PathBuf { self.dir.join("data").join(format!("{name}.dat")) }
 }
@@ -495,6 +477,10 @@ pub fn chunk_to_nbt(c: &Chunk, world_time: i64) -> Compound {
         let mut t = Compound::new();
         let (x, y, z) = (c.x * 16 + k.0, k.1, c.z * 16 + k.2);
         match te {
+            TileEntity::RecordPlayer { record } => {
+                t = crate::world::notes::tile_nbt("RecordPlayer", x, y, z);
+                if *record > 0 { t.put("Record", Tag::Int(*record)); }
+            }
             TileEntity::Note(note)=> { t=note.to_nbt(x,y,z); },
             TileEntity::Piston(piston)=> { t=piston.to_nbt(x,y,z); },
             TileEntity::Sign(sign) => { t = sign.to_nbt(x, y, z); }
@@ -574,6 +560,7 @@ pub fn chunk_from_nbt_for_dimension(
         let Tag::Compound(t) = t else { continue };
         let (x, y, z) = (t.int("x"), t.int("y"), t.int("z"));
         let te = match t.string("id").as_str() {
+            "RecordPlayer" => TileEntity::RecordPlayer { record: t.int("Record") },
             "Sign" => TileEntity::Sign(crate::sign::Sign::from_nbt(t)),
             "Chest" => {
                 let mut slots = Box::new([None; 27]);

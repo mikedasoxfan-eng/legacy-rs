@@ -8,7 +8,7 @@ impl Entity {
         y: i32,
         z: i32,
     ) -> bool {
-        if stack.damage != 15 {
+        if !self.can_edit_block181(x,y,z) || stack.damage != 15 {
             return false;
         }
         match w.get_block_id(x, y, z) {

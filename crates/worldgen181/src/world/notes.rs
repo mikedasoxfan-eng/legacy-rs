@@ -118,8 +118,8 @@ impl World {
     pub fn activate_note(&mut self, x: i32, y: i32, z: i32) {
         if let Some(TileEntity::Note(n)) = self.get_block_tile_entity(x, y, z) {
             n.note = (n.note + 1) % 25;
+            self.mark_container_dirty(x, z);
+            self.trigger_note(x, y, z);
         }
-        self.mark_container_dirty(x, z);
-        self.trigger_note(x, y, z);
     }
 }

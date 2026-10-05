@@ -18,7 +18,7 @@ fn fire_rates(id: u8) -> (i32, i32) {
         block::LOG => (5, 5),
         block::LEAVES => (30, 60),
         47 => (30, 20), // bookshelf
-        TNT => (15, 100),
+        TNT | block::VINE => (15, 100),
         block::TALL_GRASS => (60, 100),
         35 => (30, 60), // cloth
         _ => (0, 0),

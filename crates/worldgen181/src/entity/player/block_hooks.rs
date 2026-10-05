@@ -255,7 +255,7 @@ pub fn neighbor(w: &mut World, id: u8, x: i32, y: i32, z: i32, changed: u8) -> b
         };
         let valid = w.is_block_normal_cube(x + dx, y + dy, z + dz)
             || (id == 50 && orientation == 5 && w.get_block_id(x, y - 1, z) == 85)
-            || orientation == 0;
+            || (orientation == 0 && id != 65);
         if !valid {
             crate::world::behavior::drop_block_as_item(w, id, x, y, z, m);
             w.set_block_with_notify(x, y, z, 0);
@@ -360,24 +360,6 @@ pub fn repeater_input(w: &mut World, x: i32, y: i32, z: i32, m: i32) -> bool {
         || (w.get_block_id(x + dx, y, z + dz) == 55 && w.get_block_metadata(x + dx, y, z + dz) > 0)
 }
 pub fn ensure_container(w: &mut World, id: u8, x: i32, y: i32, z: i32) {
-    // Jukeboxes keep their tile data as NBT ("RecordPlayer").
-    if id == 84 {
-        if w.chunk(x >> 4, z >> 4)
-            .raw_tile_entities
-            .iter()
-            .any(|n| n.int("x") == x && n.int("y") == y && n.int("z") == z)
-        {
-            return;
-        }
-        let mut n = crate::nbt::Compound::new();
-        n.put("id", crate::nbt::Tag::String("RecordPlayer".into()));
-        for (key, v) in [("x", x), ("y", y), ("z", z)] {
-            n.put(key, crate::nbt::Tag::Int(v));
-        }
-        n.put("Record", crate::nbt::Tag::Int(0));
-        w.chunk_mut(x >> 4, z >> 4).raw_tile_entities.push(n);
-        return;
-    }
     if w.chunk(x >> 4, z >> 4)
         .tile_entities
         .contains_key(&(x & 15, y, z & 15))

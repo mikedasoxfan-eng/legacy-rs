@@ -1,36 +1,50 @@
 //! BlockJukeBox: records (note blocks are in notes.rs).
 use crate::{
     entity::{Entity, EntityKind},
-    nbt::{Compound, Tag},
-    world::tile::ItemStack,
+    world::tile::{ItemStack, TileEntity},
     World,
 };
 impl World {
-    fn music_tile(&mut self, x: i32, y: i32, z: i32, id: u8) -> &mut Compound {
-        crate::entity::player::block_hooks::ensure_container(self, id, x, y, z);
-        self.chunk_mut(x >> 4, z >> 4)
-            .raw_tile_entities
-            .iter_mut()
-            .find(|n| n.int("x") == x && n.int("y") == y && n.int("z") == z)
-            .unwrap()
-    }
     pub fn insert_record(&mut self, x: i32, y: i32, z: i32, record: i32) -> bool {
         if self.get_block_id(x, y, z) != 84 || self.get_block_metadata(x, y, z) != 0 {
             return false;
         }
-        self.music_tile(x, y, z, 84).put("Record", Tag::Int(record));
-        self.set_block_metadata_with_notify(x, y, z, 1);
+        if let Some(TileEntity::RecordPlayer { record: stored }) =
+            self.get_block_tile_entity(x, y, z)
+        {
+            *stored = record;
+            if let Some(&tile) =
+                self.chunk(x >> 4, z >> 4)
+                    .tile_entity_ids
+                    .get(&(x & 15, y, z & 15))
+            {
+                self.tile_inventory_changed181(tile);
+            }
+            self.set_block_metadata_with_notify(x, y, z, 1);
+        }
         self.auxiliary_effect(1005, (x, y, z), record);
         true
     }
     pub fn eject_record(&mut self, x: i32, y: i32, z: i32) {
-        let record = self.music_tile(x, y, z, 84).int("Record");
+        let Some(TileEntity::RecordPlayer { record }) = self.get_block_tile_entity(x, y, z) else {
+            return;
+        };
+        let record = *record;
         if record == 0 {
             return;
         }
         self.auxiliary_effect(1005, (x, y, z), 0);
         self.play_record(None, (x, y, z));
-        self.music_tile(x, y, z, 84).put("Record", Tag::Int(0));
+        if let Some(TileEntity::RecordPlayer { record }) = self.get_block_tile_entity(x, y, z) {
+            *record = 0;
+        }
+        if let Some(&tile) = self
+            .chunk(x >> 4, z >> 4)
+            .tile_entity_ids
+            .get(&(x & 15, y, z & 15))
+        {
+            self.tile_inventory_changed181(tile);
+        }
         self.set_block_metadata_with_notify(x, y, z, 0);
         let s = 0.7f32;
         let ox = (self.rand.next_float() * s) as f64 + (1.0 - s) as f64 * 0.5;

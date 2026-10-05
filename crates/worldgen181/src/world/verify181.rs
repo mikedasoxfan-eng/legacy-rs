@@ -1,4 +1,5 @@
 //! Focused original-bytecode replays for the world-blocks port.
+mod round4;
 use super::{
     behavior,
     chunk::{idx, Chunk},
@@ -61,6 +62,22 @@ fn fixture(bright: bool) -> World {
 pub fn bytes(kind: &str) -> Vec<u8> {
     let mut o = Vec::new();
     match kind {
+        "placement4" => round4::placement(&mut o),
+        "fire4" => round4::fire(&mut o),
+        "harvest4" => round4::harvest(&mut o),
+        "regioncache4" => round4::region_cache(&mut o),
+        "oldformat4" => round4::old_format(&mut o),
+        "sounds4" => round4::sounds(&mut o),
+        "emptycache4" => round4::empty_cache(&mut o),
+        "plates4" => round4::plates(&mut o),
+        "shears4" => round4::shears(&mut o),
+        "placepred4" => round4::placement_predicates(&mut o),
+        "growth4" => round4::growth(&mut o),
+        "doors4" => round4::doors(&mut o),
+        "furnace4" => round4::furnaces(&mut o),
+        "dispenser4" => round4::dispensers(&mut o),
+        "activation4" => round4::activation(&mut o),
+        "record4" => round4::records(&mut o),
         "plants" => plants(&mut o),
         "geometry" => geometry(&mut o),
         "drops" => drops(&mut o),
