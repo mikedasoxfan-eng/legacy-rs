@@ -54,8 +54,11 @@ impl<K: PartialEq + Copy> JavaHashSet<K> {
     /// HashMap(int initialCapacity), used by the GUI's Jdom object-map copies.
     pub fn with_capacity(capacity: usize) -> Self {
         let capacity = capacity.max(1).next_power_of_two();
-        Self { table: vec![NIL; capacity], threshold: (capacity as f32 * 0.75) as usize,
-            ..Self::default() }
+        Self {
+            table: vec![NIL; capacity],
+            threshold: (capacity as f32 * 0.75) as usize,
+            ..Self::default()
+        }
     }
 
     pub fn len(&self) -> usize {
@@ -144,6 +147,238 @@ impl<K: PartialEq + Copy> JavaHashSet<K> {
     }
 
     /// `HashMap.clear`: empties the buckets but keeps the table size.
+    /// HashSet.remove / HashMap.removeNode, used by RenderEngine's dynamic keys.
+    /// Existing world callers retain their unchanged add/iterate behavior.
+    pub fn remove(&mut self, hash_code: i32, key: K) -> bool {
+        if self.table.is_empty() {
+            return false;
+        }
+        let hash = spread(hash_code);
+        let index = hash as usize & (self.table.len() - 1);
+        let mut previous = NIL;
+        let mut node = self.table[index];
+        while node != NIL {
+            if self.n(node).hash == hash && self.n(node).key == key {
+                if self.n(node).tree {
+                    self.remove_tree_node(node, index);
+                } else if previous == NIL {
+                    self.table[index] = self.n(node).next;
+                } else {
+                    self.m(previous).next = self.n(node).next;
+                }
+                self.size -= 1;
+                return true;
+            }
+            previous = node;
+            node = self.n(node).next;
+        }
+        false
+    }
+
+    fn remove_tree_node(&mut self, p: u32, index: usize) {
+        let mut root = self.table[index];
+        let succ = self.n(p).next;
+        let pred = self.n(p).prev;
+        if pred == NIL {
+            self.table[index] = succ;
+        } else {
+            self.m(pred).next = succ;
+        }
+        if succ != NIL {
+            self.m(succ).prev = pred;
+        }
+        let first = self.table[index];
+        if first == NIL {
+            return;
+        }
+        while self.n(root).parent != NIL {
+            root = self.n(root).parent;
+        }
+        let rl = self.n(root).left;
+        if self.n(root).right == NIL || rl == NIL || self.n(rl).left == NIL {
+            self.table[index] = self.untreeify(first);
+            return;
+        }
+        let pl = self.n(p).left;
+        let pr = self.n(p).right;
+        let replacement;
+        if pl != NIL && pr != NIL {
+            let mut successor = pr;
+            while self.n(successor).left != NIL {
+                successor = self.n(successor).left;
+            }
+            let color = self.n(successor).red;
+            self.m(successor).red = self.n(p).red;
+            self.m(p).red = color;
+            let sr = self.n(successor).right;
+            let pp = self.n(p).parent;
+            if successor == pr {
+                self.m(p).parent = successor;
+                self.m(successor).right = p;
+            } else {
+                let sp = self.n(successor).parent;
+                self.m(p).parent = sp;
+                if sp != NIL {
+                    if successor == self.n(sp).left {
+                        self.m(sp).left = p;
+                    } else {
+                        self.m(sp).right = p;
+                    }
+                }
+                self.m(successor).right = pr;
+                self.m(pr).parent = successor;
+            }
+            self.m(p).left = NIL;
+            self.m(p).right = sr;
+            if sr != NIL {
+                self.m(sr).parent = p;
+            }
+            self.m(successor).left = pl;
+            self.m(pl).parent = successor;
+            self.m(successor).parent = pp;
+            if pp == NIL {
+                root = successor;
+            } else if p == self.n(pp).left {
+                self.m(pp).left = successor;
+            } else {
+                self.m(pp).right = successor;
+            }
+            replacement = if sr != NIL { sr } else { p };
+        } else {
+            replacement = if pl != NIL {
+                pl
+            } else if pr != NIL {
+                pr
+            } else {
+                p
+            };
+        }
+        if replacement != p {
+            let pp = self.n(p).parent;
+            self.m(replacement).parent = pp;
+            if pp == NIL {
+                root = replacement;
+                self.m(root).red = false;
+            } else if p == self.n(pp).left {
+                self.m(pp).left = replacement;
+            } else {
+                self.m(pp).right = replacement;
+            }
+            self.m(p).left = NIL;
+            self.m(p).right = NIL;
+            self.m(p).parent = NIL;
+        }
+        let r = if self.n(p).red {
+            root
+        } else {
+            self.balance_deletion(root, replacement)
+        };
+        if replacement == p {
+            let pp = self.n(p).parent;
+            self.m(p).parent = NIL;
+            if pp != NIL {
+                if p == self.n(pp).left {
+                    self.m(pp).left = NIL;
+                } else if p == self.n(pp).right {
+                    self.m(pp).right = NIL;
+                }
+            }
+        }
+        self.move_root_to_front(r);
+    }
+
+    fn balance_deletion(&mut self, mut root: u32, mut x: u32) -> u32 {
+        loop {
+            if x == NIL || x == root {
+                return root;
+            }
+            let mut xp = self.n(x).parent;
+            if xp == NIL {
+                self.m(x).red = false;
+                return x;
+            }
+            if self.n(x).red {
+                self.m(x).red = false;
+                return root;
+            }
+            let left = self.n(xp).left == x;
+            let mut sibling = if left {
+                self.n(xp).right
+            } else {
+                self.n(xp).left
+            };
+            if sibling != NIL && self.n(sibling).red {
+                self.m(sibling).red = false;
+                self.m(xp).red = true;
+                root = if left {
+                    self.rotate_left(root, xp)
+                } else {
+                    self.rotate_right(root, xp)
+                };
+                xp = self.n(x).parent;
+                sibling = if xp == NIL {
+                    NIL
+                } else if left {
+                    self.n(xp).right
+                } else {
+                    self.n(xp).left
+                };
+            }
+            if sibling == NIL {
+                x = xp;
+                continue;
+            }
+            let sl = self.n(sibling).left;
+            let sr = self.n(sibling).right;
+            if (sl == NIL || !self.n(sl).red) && (sr == NIL || !self.n(sr).red) {
+                self.m(sibling).red = true;
+                x = xp;
+                continue;
+            }
+            let outer = if left { sr } else { sl };
+            let inner = if left { sl } else { sr };
+            if outer == NIL || !self.n(outer).red {
+                if inner != NIL {
+                    self.m(inner).red = false;
+                }
+                self.m(sibling).red = true;
+                root = if left {
+                    self.rotate_right(root, sibling)
+                } else {
+                    self.rotate_left(root, sibling)
+                };
+                xp = self.n(x).parent;
+                sibling = if xp == NIL {
+                    NIL
+                } else if left {
+                    self.n(xp).right
+                } else {
+                    self.n(xp).left
+                };
+            }
+            if sibling != NIL {
+                self.m(sibling).red = xp != NIL && self.n(xp).red;
+                let outer = if left {
+                    self.n(sibling).right
+                } else {
+                    self.n(sibling).left
+                };
+                if outer != NIL {
+                    self.m(outer).red = false;
+                }
+            }
+            if xp != NIL {
+                self.m(xp).red = false;
+                root = if left {
+                    self.rotate_left(root, xp)
+                } else {
+                    self.rotate_right(root, xp)
+                };
+            }
+            x = root;
+        }
+    }
+
     pub fn clear(&mut self) {
         if !self.table.is_empty() && self.size > 0 {
             self.size = 0;

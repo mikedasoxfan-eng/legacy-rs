@@ -52,12 +52,23 @@ impl Syncher {
     /// `new StatFileWriter(session, dir)` + `new StatsSyncher`: returns the syncher and the
     /// unsent stats to add (`func_27179_a`), and starts the "receive" of the sent file.
     pub fn open(dir: &Path, user: &str, map_txt: &str) -> (Syncher, Option<HashMap<i32, i32>>) {
+        Self::open_checked(dir, Some(user), map_txt).unwrap_or_else(|e| panic!("{e}"))
+    }
+
+    /// Checked Java constructor boundary. mkdir/rename failures are ignored,
+    /// but a null listFiles result or session username aborts construction.
+    pub(crate) fn open_checked(
+        dir: &Path,
+        user: Option<&str>,
+        map_txt: &str,
+    ) -> Result<(Syncher, Option<HashMap<i32, i32>>), &'static str> {
         let stats = dir.join("stats");
         if !stats.exists() {
             let _ = std::fs::create_dir(&stats);
         }
         // Old clients kept the files in the data directory itself.
-        if let Ok(list) = std::fs::read_dir(dir) {
+        {
+            let list = std::fs::read_dir(dir).map_err(|_| "NullPointerException")?;
             for e in list.flatten() {
                 let name = e.file_name().to_string_lossy().into_owned();
                 if name.starts_with("stats_") && name.ends_with(".dat") {
@@ -69,6 +80,7 @@ impl Syncher {
                 }
             }
         }
+        let user = user.ok_or("NullPointerException")?;
         let lower = user.to_lowercase();
         let file = |suffix: &str| stats.join(format!("stats_{lower}{suffix}"));
         let unsent = [
@@ -114,7 +126,7 @@ impl Syncher {
         };
         // func_27418_a: ThreadStatSyncherReceive reads the sent file.
         s.receive();
-        (s, loaded)
+        Ok((s, loaded))
     }
 
     /// Parse one stats file (for the oracle check).
@@ -134,7 +146,7 @@ impl Syncher {
             busy: 0,
             transfers: Arc::default(),
         };
-        let text: String = std::fs::read_to_string(path).ok()?.lines().collect();
+        let text: String = decode_file(&std::fs::read(path).ok()?);
         s.parse(&text)
     }
 
@@ -151,13 +163,21 @@ impl Syncher {
             return None;
         };
         // BufferedReader.readLine joined without the line breaks.
-        let text: String = std::fs::read_to_string(f).ok()?.lines().collect();
+        let text: String = decode_file(&std::fs::read(f).ok()?);
         self.parse(&text)
     }
 
     /// `StatFileWriter.func_27177_a`
     fn parse(&self, text: &str) -> Option<HashMap<i32, i32>> {
         self.parse_checked(text).unwrap_or_else(|error| {
+            // Argo never returns for EOF in an unclosed string. Preserve that
+            // liveness bug at the file boundary; the checked API reports it so
+            // the oracle can observe it without exhausting either process.
+            if error == "Nonterminating" {
+                loop {
+                    std::thread::park();
+                }
+            }
             eprintln!("stats: {error}");
             None
         })
@@ -169,7 +189,14 @@ impl Syncher {
         &self,
         text: &str,
     ) -> Result<Option<HashMap<i32, i32>>, &'static str> {
-        let root = match json::parse(text) {
+        self.parse_units_checked(&text.encode_utf16().collect::<Vec<_>>())
+    }
+
+    pub(crate) fn parse_units_checked(
+        &self,
+        text: &[u16],
+    ) -> Result<Option<HashMap<i32, i32>>, &'static str> {
+        let root = match json::parse(text)? {
             Some(j) => j,
             None => {
                 eprintln!("stats: invalid syntax");
@@ -203,7 +230,11 @@ impl Syncher {
             .get("checksum")
             .and_then(|c| c.string())
             .ok_or(schema)?;
-        if md5_hex("local", &sum).encode_utf16().collect::<Vec<_>>() != checksum {
+        if md5_checked("local", &sum)?
+            .encode_utf16()
+            .collect::<Vec<_>>()
+            != checksum
+        {
             println!("CHECKSUM MISMATCH");
             return Ok(None);
         }
@@ -239,36 +270,64 @@ impl Syncher {
         session: Option<&str>,
         entries: impl IntoIterator<Item = (i32, Option<i32>)>,
     ) -> String {
-        let mut out = String::from("{\r\n");
-        if let (Some(user), Some(session)) = (user, session) {
-            out.push_str(&format!("  \"user\":{{\r\n    \"name\":\"{user}\",\r\n    \"sessionid\":\"{session}\"\r\n  }},\r\n"));
+        let user = user.map(|s| s.encode_utf16().collect::<Vec<_>>());
+        let session = session.map(|s| s.encode_utf16().collect::<Vec<_>>());
+        let out = self
+            .format_units(user.as_deref(), session.as_deref(), entries)
+            .unwrap_or_else(|e| panic!("{e}"));
+        String::from_utf16(&out).expect("Rust strings contain valid UTF-16")
+    }
+
+    pub(crate) fn format_units(
+        &self,
+        user: Option<&[u16]>,
+        session: Option<&[u16]>,
+        entries: impl IntoIterator<Item = (i32, Option<i32>)>,
+    ) -> Result<Vec<u16>, &'static str> {
+        fn append(out: &mut Vec<u16>, s: &str) {
+            out.extend(s.encode_utf16());
         }
-        out.push_str("  \"stats-change\":[");
+        let mut out = Vec::new();
+        append(&mut out, "{\r\n");
+        if let (Some(user), Some(session)) = (user, session) {
+            append(&mut out, "  \"user\":{\r\n    \"name\":\"");
+            out.extend(user);
+            append(&mut out, "\",\r\n    \"sessionid\":\"");
+            out.extend(session);
+            append(&mut out, "\"\r\n  },\r\n");
+        }
+        append(&mut out, "  \"stats-change\":[");
         let mut sum = String::new();
         let mut first = true;
         for (id, value) in entries {
             if !first {
-                out.push_str("},");
+                append(&mut out, "},");
             }
             first = false;
             let value = value.map_or_else(|| "null".to_string(), |n| n.to_string());
-            out.push_str(&format!("\r\n    {{\"{id}\":{value}"));
+            append(&mut out, &format!("\r\n    {{\"{id}\":{value}"));
             sum.push_str(&format!("{},{value},", self.guid(id)));
         }
         if !first {
-            out.push('}');
+            append(&mut out, "}");
         }
-        out.push_str("\r\n  ],\r\n");
-        out.push_str(&format!(
-            "  \"checksum\":\"{}\"\r\n",
-            md5_hex(session.unwrap_or("null"), &sum)
-        ));
-        out.push('}');
-        out
+        let mut checksum =
+            session.map_or_else(|| "null".encode_utf16().collect::<Vec<_>>(), |s| s.to_vec());
+        checksum.extend(sum.encode_utf16());
+        append(
+            &mut out,
+            &format!(
+                "\r\n  ],\r\n  \"checksum\":\"{}\"\r\n}}",
+                md5_units(&checksum)?
+            ),
+        );
+        Ok(out)
     }
 
-    /// File writes use the local session. The existing stat-map ordering policy
-    /// is still tracked separately from the literal serialization operation.
+    /// File writes use the local session. Vanilla's StatBase keys inherit JVM
+    /// identity hashes, so its iteration input varies between original JVMs.
+    /// Sorted IDs select a reproducible local input; format_entries is byte
+    /// identical when supplied the original iteration order (statfile10_181).
     fn format(&self, map: &HashMap<i32, i32>) -> String {
         let mut ids: Vec<_> = map.keys().copied().collect();
         ids.sort_unstable();
@@ -286,7 +345,7 @@ impl Syncher {
 
     fn write_files(&self, map: &HashMap<i32, i32>, files: &[PathBuf; 3]) {
         let [dat, tmp, old] = files;
-        if let Err(e) = std::fs::write(tmp, self.format(map)) {
+        if let Err(e) = std::fs::write(tmp, encode_file(&self.format(map))) {
             eprintln!("stats: {e}");
             return;
         }
@@ -384,13 +443,55 @@ impl Syncher {
 
 /// `MD5String(salt).func_27369_a(text)`: `new BigInteger(1, md5).toString(16)`.
 fn md5_hex(salt: &str, text: &str) -> String {
-    let digest = md5(format!("{salt}{text}").as_bytes());
+    md5_checked(salt, text).unwrap_or_else(|e| panic!("{e}"))
+}
+
+pub(crate) fn encode_file(text: &str) -> Vec<u8> {
+    encode_units(&text.encode_utf16().collect::<Vec<_>>())
+}
+
+pub(crate) fn encode_units(text: &[u16]) -> Vec<u8> {
+    let mut out = Vec::new();
+    for c in char::decode_utf16(text.iter().copied()).map(|c| c.unwrap_or('\u{fffd}')) {
+        // Java's windows-1252 encoder replaces one surrogate pair with one '?'.
+        let byte = (0..=255)
+            .find(|&b| {
+                b != 0x81
+                    && b != 0x8d
+                    && b != 0x8f
+                    && b != 0x90
+                    && b != 0x9d
+                    && crate::texture_packs::windows_1252(&[b]).chars().next() == Some(c)
+            })
+            .unwrap_or(b'?');
+        out.push(byte);
+    }
+    out
+}
+
+pub(crate) fn decode_file(bytes: &[u8]) -> String {
+    // BufferedReader.readLine removes CR, LF and CRLF (also a trailing CR).
+    crate::texture_packs::windows_1252(bytes).replace(['\r', '\n'], "")
+}
+
+pub(crate) fn md5_checked(salt: &str, text: &str) -> Result<String, &'static str> {
+    md5_units(&format!("{salt}{text}").encode_utf16().collect::<Vec<_>>())
+}
+
+pub(crate) fn md5_units(joined: &[u16]) -> Result<String, &'static str> {
+    let bytes = encode_units(joined);
+    let count = joined.len();
+    // MD5String supplies String.length rather than the encoded byte count.
+    if count > bytes.len() {
+        return Err("IllegalArgumentException");
+    }
+    let digest = md5(&bytes[..count]);
     let hex: String = digest.iter().map(|b| format!("{b:02x}")).collect();
     let trimmed = hex.trim_start_matches('0');
     if trimmed.is_empty() {
-        "0".to_string()
+        Ok("0".to_string())
     } else {
-        trimmed.to_string()
+        Ok(trimmed.to_string())
     }
 }
 
@@ -566,20 +667,27 @@ mod json {
         }
         Some(if negative { -n } else { n } as i32)
     }
-    pub fn parse(s: &str) -> Option<Value> {
-        let data: Vec<_> = s.encode_utf16().collect();
+    pub fn parse(data: &[u16]) -> Result<Option<Value>, &'static str> {
         // J_SajParser reads its first character before skipping whitespace.
         if !matches!(data.first(), Some(91 | 123)) {
-            return None;
+            return Ok(None);
         }
-        let mut p = Parser { s: &data, i: 0 };
-        let v = p.value()?;
+        let mut p = Parser {
+            s: data,
+            i: 0,
+            failure: None,
+        };
+        let v = p.value();
+        if let Some(e) = p.failure {
+            return Err(e);
+        }
         p.ws();
-        (p.i == data.len()).then_some(v)
+        Ok(v.filter(|_| p.i == data.len()))
     }
     struct Parser<'a> {
         s: &'a [u16],
         i: usize,
+        failure: Option<&'static str>,
     }
     impl Parser<'_> {
         fn ws(&mut self) {
@@ -704,7 +812,10 @@ mod json {
             self.i += 1;
             let mut out = Vec::new();
             loop {
-                let c = *self.s.get(self.i)?;
+                let Some(&c) = self.s.get(self.i) else {
+                    self.failure = Some("Nonterminating");
+                    return None;
+                };
                 self.i += 1;
                 match c {
                     34 => return Some(out),
@@ -719,6 +830,10 @@ mod json {
                             98 => 8,
                             102 => 12,
                             117 => {
+                                if self.i == self.s.len() {
+                                    self.failure = Some("StringIndexOutOfBoundsException");
+                                    return None;
+                                }
                                 let chars = self.s.get(self.i..self.i + 4)?;
                                 let (negative, start) = match chars[0] {
                                     45 => (true, 1),

@@ -520,8 +520,10 @@ pub fn run() {
     if args.get(1).map(String::as_str)==Some("--generalstatscheck"){std::process::exit(if gui::screens::stats::check_general(&args[2]) {0}else{1});}
     if args.get(1).map(String::as_str)==Some("--keyregistrycheck"){std::process::exit(if gui::settings::check_key_registry(&args[2]) {0}else{1});}
     if args.get(1).map(String::as_str)==Some("--guiutilitycheck"){std::process::exit(if gui::utility_check::check(&args[2]) {0}else{1});}
+    if args.get(1).map(String::as_str)==Some("--renderengine11check"){std::process::exit(if gui::texture_check11::check(&args[2]) {0}else{1});}
     if args.get(1).map(String::as_str)==Some("--renderengine10check"){std::process::exit(if gui::texture_check10::check(&args[2]) {0}else{1});}
     if args.get(1).map(String::as_str)==Some("--mainmenu10check"){std::process::exit(if gui::screens::main_menu::check(&args[2]) {0}else{1});}
+    if args.get(1).map(String::as_str)==Some("--statfile11check"){std::process::exit(if gui::statfile_check11::check(&args[2]) {0}else{1});}
     if args.get(1).map(String::as_str)==Some("--statfile10check"){std::process::exit(if gui::statfile_check10::check(&args[2]) {0}else{1});}
     if args.get(1).map(String::as_str)==Some("--statsynccheck"){std::process::exit(if gui::stats_check::check(std::path::Path::new(&args[2])) {0}else{1});}
     if args.get(1).map(String::as_str)==Some("--playerguicheck"){std::process::exit(if gui::player_check::check(&args[2]) {0}else{1});}

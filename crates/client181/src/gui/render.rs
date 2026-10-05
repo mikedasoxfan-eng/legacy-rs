@@ -65,6 +65,7 @@ struct GuiTexture {
 
 pub struct GuiRenderer {
     pub(super) format: wgpu::TextureFormat,
+    pub engine: super::render_engine::Engine,
     /// Multisample count (the driver may force MSAA on the original's GL window).
     samples: u32,
     /// Rasterize bottom-up like an OpenGL framebuffer (the image comes out upside down).
@@ -221,6 +222,7 @@ impl GuiRenderer {
             },
         );
         GuiRenderer {
+            engine: Default::default(),
             format,
             samples,
             gl_orientation: false,
@@ -262,10 +264,37 @@ impl GuiRenderer {
         blur: bool,
         clamp: bool,
     ) -> TexId {
-        let s = &self.samplers[blur as usize][clamp as usize];
-        let t = make_texture(device, queue, &self.tex_layout, s, img);
-        self.textures.push(t);
-        (self.textures.len() - 1) as TexId
+        let previous = (self.engine.blur, self.engine.clamp);
+        self.engine.blur = blur;
+        self.engine.clamp = clamp;
+        let image = std::sync::Arc::new(std::sync::Mutex::new(Image { width: img.width, height: img.height, rgba: img.rgba.clone() }));
+        let result = self.with_engine(device, queue, |engine, backend| engine.allocate(backend, image));
+        (self.engine.blur, self.engine.clamp) = previous;
+        result.unwrap_or_else(|e| panic!("{e}")) as TexId
+    }
+
+    fn with_engine<T>(&mut self, device: &wgpu::Device, queue: &wgpu::Queue,
+        call: impl FnOnce(&mut super::render_engine::Engine, &mut UploadAdapter<'_>) -> T) -> T {
+        let mut engine = std::mem::take(&mut self.engine);
+        let mut backend = UploadAdapter { renderer: self, device, queue };
+        let result = call(&mut engine, &mut backend);
+        self.engine = engine;
+        result
+    }
+
+    pub fn named_texture(&mut self, device: &wgpu::Device, queue: &wgpu::Queue, name: &str,
+        missing: &Image, read: impl FnMut(&str, bool, bool) -> Result<Option<Image>, super::render_engine::Error>)
+        -> Result<TexId, super::render_engine::Error> {
+        self.with_engine(device, queue, |engine, backend| engine.get_texture(backend, name, missing, read)).map(|id| id as TexId)
+    }
+
+    pub fn refresh_engine(&mut self, device: &wgpu::Device, queue: &wgpu::Queue, missing: &Image,
+        read: impl FnMut(&str, bool, bool) -> Result<Option<Image>, super::render_engine::Error>) -> Result<(), super::render_engine::Error> {
+        self.with_engine(device, queue, |engine, backend| engine.refresh(backend, missing, read))
+    }
+
+    pub fn delete_texture(&mut self, device: &wgpu::Device, queue: &wgpu::Queue, id: TexId) {
+        self.with_engine(device, queue, |engine, backend| engine.delete(backend, id as i32));
     }
 
     /// glTexImage2D may change the dimensions while retaining the texture name.
@@ -331,6 +360,16 @@ impl GuiRenderer {
         let msaa = self.msaa.take();
         let format = std::mem::replace(&mut self.format, wgpu::TextureFormat::Rgba8Unorm);
         let orientation = std::mem::replace(&mut self.gl_orientation, true);
+        // GuiMainMenu's blur callback sets GL_LINEAR on the snapshot every
+        // pass, including after RenderEngine refresh restored GL_NEAREST.
+        let destination_view = self.textures[destination as usize].texture.create_view(&Default::default());
+        self.textures[destination as usize].bind = device.create_bind_group(&wgpu::BindGroupDescriptor {
+            label: Some("panorama snapshot linear"), layout: &self.tex_layout,
+            entries: &[
+                wgpu::BindGroupEntry { binding: 0, resource: wgpu::BindingResource::TextureView(&destination_view) },
+                wgpu::BindGroupEntry { binding: 1, resource: wgpu::BindingResource::Sampler(&self.samplers[1][0]) },
+            ],
+        });
         let view = self.texture_view(destination);
         self.render_recorded(device, queue, &view, (256,256), &copy, None, true, None);
         self.gl_orientation = orientation;
@@ -341,7 +380,10 @@ impl GuiRenderer {
     }
 
     pub(super) fn blit_panorama_pixels(&mut self,device:&wgpu::Device,queue:&wgpu::Queue,target:&wgpu::TextureView,size:(u32,u32),pixels:Vec<u8>,viewport:Option<(f32,f32,f32,f32)>) {
-        let id=self.add_texture(device,queue,&Image {width:256,height:256,rgba:pixels});
+        // A frame-local native transfer is not a RenderEngine dynamic image.
+        let id = self.textures.len() as TexId;
+        self.textures.push(make_texture(device, queue, &self.tex_layout, &self.sampler,
+            &Image { width: 256, height: 256, rgba: pixels }));
         let mut gl=Gl::new();gl.depth_test=false;gl.depth_mask=false;gl.alpha_test=false;gl.bind_texture(id);
         gl.start_drawing_quads();
         for (x,y,u,v) in [(-1.0,-1.0,0.0,0.0),(1.0,-1.0,1.0,0.0),(1.0,1.0,1.0,1.0),(-1.0,1.0,0.0,1.0)] {
@@ -654,6 +696,7 @@ fn make_texture(
 }
 
 fn write(queue: &wgpu::Queue, tex: &wgpu::Texture, img: &Image) {
+    assert!(img.rgba.len() <= 16_777_216, "BufferOverflowException");
     queue.write_texture(
         wgpu::TexelCopyTextureInfo {
             texture: tex,
@@ -679,4 +722,25 @@ pub(crate) fn write_tile(queue: &wgpu::Queue, texture: &wgpu::Texture, icon: u32
     if texture.width() < icon%16*16+16 || texture.height() < icon/16*16+16 { return; }
     queue.write_texture(wgpu::TexelCopyTextureInfo { texture, mip_level: 0, origin: wgpu::Origin3d { x: icon%16*16, y: icon/16*16, z: 0 }, aspect: wgpu::TextureAspect::All },
         image, wgpu::TexelCopyBufferLayout { offset: 0, bytes_per_row: Some(64), rows_per_image: Some(16) }, wgpu::Extent3d { width: 16, height: 16, depth_or_array_layers: 1 });
+}
+
+/// GL storage adapter; the same Engine transactions drive gameplay and the oracle.
+struct UploadAdapter<'a> { renderer: &'a mut GuiRenderer, device: &'a wgpu::Device, queue: &'a wgpu::Queue }
+impl super::render_engine::Backend for UploadAdapter<'_> {
+    fn allocate(&mut self) -> i32 {
+        let image = Image { width: 1, height: 1, rgba: vec![0,0,0,255] };
+        let t = make_texture(self.device, self.queue, &self.renderer.tex_layout, &self.renderer.sampler, &image);
+        self.renderer.textures.push(t);
+        (self.renderer.textures.len()-1) as i32
+    }
+    fn setup(&mut self, image: &Image, id: i32, blur: bool, clamp: bool) -> Result<(), super::render_engine::Error> {
+        self.renderer.replace_texture(self.device, self.queue, id as TexId, image, blur, clamp);
+        Ok(())
+    }
+    fn delete(&mut self, id: i32) {
+        if id >= 0 && (id as usize) < self.renderer.textures.len() {
+            self.renderer.replace_texture(self.device, self.queue, id as TexId,
+                &Image { width: 1, height: 1, rgba: vec![0,0,0,255] }, false, false);
+        }
+    }
 }

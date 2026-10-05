@@ -74,6 +74,8 @@ public final class GL11 {
     public static void glCallLists(IntBuffer list){for(int i=list.position();i<list.limit();i++)RendererOracle.callList(list.get(i));}
     public static void glColor3f(float r,float g,float b){Oracle.recordSkyColor(r,g,b);RendererOracle.color3(r,g,b);}
     public static void glTexParameteri(int target,int pname,int value){}
+    public static void glTexImage2D(int target,int level,int internal,int width,int height,int border,int format,int type,ByteBuffer bytes){uploaded=new byte[bytes.remaining()];bytes.duplicate().get(uploaded);}
+    public static void glDeleteTextures(IntBuffer names){}
     public static void glTexSubImage2D(int target,int level,int x,int y,int width,int height,int format,int type,ByteBuffer bytes){uploaded=new byte[bytes.remaining()];bytes.duplicate().get(uploaded);}
     public static int glGenLists(int n){return RendererOracle.genLists(n);}
     public static void glNewList(int id,int mode){RendererOracle.newList(id);}
