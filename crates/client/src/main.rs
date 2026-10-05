@@ -14,7 +14,9 @@
 //!          --world-rand <n>  --at x,y,z,yaw,pitch  --shot <file.png>
 
 mod app;
+mod screenshot;
 mod assets;
+mod texture_packs;
 mod gui;
 mod playscript;
 mod render;
@@ -248,6 +250,7 @@ fn mesh_check(a: &[String]) -> bool {
     let mut video = render::video::VideoSettings::default();
     video.fancy = a.get(5).map(String::as_str) != Some("fast");
     video.ao = a.get(6).map(String::as_str) != Some("off");
+    video.anaglyph = a.iter().any(|s| s == "anaglyph");
     // `nether` after the graphics and AO words: the same preload in the Nether.
     let nether = a.get(7).map(String::as_str) == Some("nether");
     let showcase = a.get(7).and_then(|s| s.strip_prefix("showcase="));
@@ -329,6 +332,10 @@ fn mesh_check(a: &[String]) -> bool {
 
 fn main() {
     let args: Vec<String> = std::env::args().collect();
+    if args.get(1).map(String::as_str) == Some("--skydrawcheck") {
+        render::video_check::sky_draw(&args[2]);
+        return;
+    }
     if args.get(1).map(String::as_str) == Some("--cloudcheck") {
         render::video_check::clouds(&args);
         return;
@@ -370,6 +377,12 @@ fn main() {
         let ok = render::entity::object_check::effects_check(args.get(2).expect("--effectcheck oracle-effects.bin"));
         println!("{}", if ok { "EFFECTS EXACT" } else { "EFFECTS DIFFER" });
         std::process::exit(if ok { 0 } else { 1 });
+    }
+    if args.get(1).map(String::as_str) == Some("--texturecheck") {
+        match render::texture_check::check(args.get(2).expect("--texturecheck oracle.bin")) {
+            Ok(()) => return,
+            Err(e) => { eprintln!("{e}"); std::process::exit(1); }
+        }
     }
     if args.get(1).map(String::as_str) == Some("--firstpersoncheck") {
         let ok =

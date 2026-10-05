@@ -7,7 +7,8 @@ import java.awt.Frame;
 import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
+import java.io.InputStreamReader;
+import java.io.FileInputStream;
 import java.io.DataOutputStream;
 import java.io.BufferedOutputStream;
 import java.io.FileOutputStream;
@@ -131,6 +132,32 @@ public class GuiShot {
                 String[] a = rest.isEmpty() ? new String[0] : rest.trim().split("\\s+");
                 if (cmd.equals("saves")) {
                     // The client lists <data dir>/saves; the script's folder is copied there.
+                } else if (cmd.equals("packs")) {
+                    mc.texturePackList = new TexturePackList(mc, new File(scriptDir, rest));
+                    Field packs = RenderEngine.class.getDeclaredField("texturePack");
+                    packs.setAccessible(true); packs.set(mc.renderEngine, mc.texturePackList);
+                } else if (cmd.equals("pack")) {
+                    mc.texturePackList.updateAvaliableTexturePacks();
+                    boolean found = false;
+                    for (Object obj : mc.texturePackList.availableTexturePacks()) {
+                        TexturePackBase pack = (TexturePackBase)obj;
+                        if (pack.texturePackFileName.equals(rest)) { mc.texturePackList.setTexturePack(pack); found = true; break; }
+                    }
+                    if (!found) throw new IllegalArgumentException("pack missing " + rest);
+                    mc.renderEngine.refreshTextures();
+                } else if (cmd.equals("fontstart")) {
+                    mc.gameSettings.anaglyph=rest.equals("on");
+                    mc.fontRenderer=new FontRenderer(mc.gameSettings,"/font/default.png",mc.renderEngine);
+                    mc.renderEngine.refreshTextures();
+                } else if (cmd.equals("message")) {
+                    mc.ingameGUI.addChatMessage(rest);
+                } else if (cmd.equals("anaglyph")) {
+                    mc.gameSettings.anaglyph = rest.equals("on");
+                    mc.renderEngine.refreshTextures();
+                } else if (cmd.equals("texturecheck")) {
+                    textureCheck(rest);
+                } else if (cmd.equals("sessionless")) {
+                    mc.session = null;
                 } else if (cmd.equals("millis")) {
                     millis = Long.parseLong(rest.trim());
                 } else if (cmd.equals("splash")) {
@@ -150,7 +177,8 @@ public class GuiShot {
                     setSplash(title);
                     GuiScreen s;
                     String which = a[0];
-                    if (which.equals("title")) s = title;
+                    if (which.equals("chat")) s = new GuiChat();
+                    else if (which.equals("title")) s = title;
                     else if (which.equals("options")) s = new GuiOptions(title, mc.gameSettings);
                     else if (which.equals("video")) s = new GuiVideoSettings(title, mc.gameSettings);
                     else if (which.equals("controls")) s = new GuiControls(title, mc.gameSettings);
@@ -261,6 +289,70 @@ public class GuiShot {
             }
             System.out.println("java: done");
             Runtime.getRuntime().halt(0);
+        }
+
+        void textureCheck(String name) throws Exception {
+            boolean old = mc.gameSettings.anaglyph;
+            mc.gameSettings.anaglyph = true;
+            BufferedImage image = new BufferedImage(256,256,BufferedImage.TYPE_INT_ARGB);
+            int tex = mc.renderEngine.allocateAndSetupTexture(image);
+            ByteBuffer pixels = BufferUtils.createByteBuffer(256*256*4);
+            byte[] bytes = new byte[256*256*4];
+            DataOutputStream data = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(new File(out,name))));
+            data.writeInt(0x54504658);
+            for(int r=0;r<256;r++) {
+                for(int g=0;g<256;g++)for(int b=0;b<256;b++) image.setRGB(b,g,((r^g^b)<<24)|(r<<16)|(g<<8)|b);
+                mc.renderEngine.setupTexture(image,tex);
+                GL11.glBindTexture(GL11.GL_TEXTURE_2D,tex);
+                pixels.clear(); GL11.glGetTexImage(GL11.GL_TEXTURE_2D,0,GL11.GL_RGBA,GL11.GL_UNSIGNED_BYTE,pixels);
+                pixels.get(bytes); data.write(bytes);
+            }
+            mc.renderEngine.deleteTexture(tex);
+            // The two deterministic item animations: real constructors and onTick bytecode.
+            World world = mc.theWorld; EntityPlayerSP player = mc.thePlayer;
+            mc.theWorld=null;mc.thePlayer=null;
+            TextureCompassFX compass=new TextureCompassFX(mc);TextureWatchFX watch=new TextureWatchFX(mc);
+            compass.onTick();watch.onTick();
+            mc.theWorld=world;mc.thePlayer=player;
+            ChunkCoordinates spawn=world.getSpawnPoint();
+            data.writeInt(spawn.x);data.writeInt(spawn.y);data.writeInt(spawn.z);
+            Field randomField=Class.forName("java.lang.Math$RandomNumberGeneratorHolder").getDeclaredField("randomNumberGenerator");
+            randomField.setAccessible(true);((java.util.Random)randomField.get(null)).setSeed(888L);
+            for(int i=0;i<1000;i++) {
+                boolean ana=i%3==0;
+                double x=i*1.125-600.0,z=(i%79)*3.75-150.0;
+                float yaw=(float)(i*37.125-720.0);
+                world.setWorldTime(i*93L);player.posX=x;player.posZ=z;player.rotationYaw=yaw;
+                data.writeDouble(x);data.writeDouble(z);data.writeFloat(yaw);data.writeFloat(world.getCelestialAngle(1.0F));data.writeBoolean(ana);int mode=i%5;data.writeInt(mode);
+                world.worldProvider.isNether=mode==1;
+                mc.theWorld=mode==2||mode==4?null:world;mc.thePlayer=mode==3||mode==4?null:player;
+                compass.anaglyphEnabled=watch.anaglyphEnabled=ana;compass.onTick();watch.onTick();
+                data.write(compass.imageData);data.write(watch.imageData);
+            }
+            mc.theWorld=world;mc.thePlayer=player;world.worldProvider.isNether=false;
+            ((java.util.Random)randomField.get(null)).setSeed(12345L);
+            TextureFX[] effects={new TextureLavaFX(),new TextureWaterFX(),new TexturePortalFX(),new TextureWaterFlowFX(),new TextureLavaFlowFX(),new TextureFlamesFX(0),new TextureFlamesFX(1)};
+            for(int tick=0;tick<400;tick++)for(TextureFX effect:effects) {
+                effect.anaglyphEnabled=tick%3==0;effect.onTick();data.write(effect.imageData);
+            }
+            // Actual GL color masking, masked clears and destination-alpha blending.
+            bindFbo();GL11.glViewport(0,0,mc.displayWidth,mc.displayHeight);
+            GL11.glMatrixMode(GL11.GL_PROJECTION);GL11.glLoadIdentity();GL11.glMatrixMode(GL11.GL_MODELVIEW);GL11.glLoadIdentity();
+            GL11.glDisable(GL11.GL_TEXTURE_2D);GL11.glDisable(GL11.GL_LIGHTING);GL11.glDisable(GL11.GL_FOG);GL11.glDisable(GL11.GL_DEPTH_TEST);GL11.glDisable(GL11.GL_CULL_FACE);
+            ByteBuffer pixel=BufferUtils.createByteBuffer(4);byte[] rgba=new byte[4];
+            data.writeInt(80);
+            for(int c=0;c<80;c++) {
+                int mask=c%5;float alpha=(c/5)%2,sourceAlpha=(c/10)%2==0?0.5F:1.0F;
+                float r=(c/20)%2,g=(c/40)%2,b=1.0F-r;
+                GL11.glColorMask(true,true,true,true);GL11.glClearColor(0,1,1,alpha);GL11.glClear(GL11.GL_COLOR_BUFFER_BIT);
+                GL11.glColorMask(mask==0||mask==2||mask==4,mask==0||mask==1||mask==3,mask==0||mask==1||mask==3,mask==0||mask>=3);
+                GL11.glClearColor(r,g,b,1);GL11.glClear(GL11.GL_COLOR_BUFFER_BIT);
+                GL11.glEnable(GL11.GL_BLEND);GL11.glBlendFunc(GL11.GL_SRC_ALPHA,GL11.GL_DST_ALPHA);GL11.glColor4f(1,0,1,sourceAlpha);
+                GL11.glBegin(GL11.GL_QUADS);GL11.glVertex3f(-1,-1,0);GL11.glVertex3f(1,-1,0);GL11.glVertex3f(1,1,0);GL11.glVertex3f(-1,1,0);GL11.glEnd();
+                pixel.clear();GL11.glReadPixels(mc.displayWidth/2,mc.displayHeight/2,1,1,GL11.GL_RGBA,GL11.GL_UNSIGNED_BYTE,pixel);pixel.get(rgba);data.write(rgba);
+            }
+            GL11.glColorMask(true,true,true,true);GL11.glDisable(GL11.GL_BLEND);unbindFbo();
+            data.close();mc.gameSettings.anaglyph=old;
         }
 
         void setSplash(GuiMainMenu m) throws Exception {
@@ -399,7 +491,7 @@ public class GuiShot {
         scriptDir = scriptFile.getAbsoluteFile().getParentFile();
         out = new File(args[1]);
         out.mkdirs();
-        try (BufferedReader r = new BufferedReader(new FileReader(scriptFile))) {
+        try (BufferedReader r = new BufferedReader(new InputStreamReader(new FileInputStream(scriptFile), "UTF-8"))) {
             for (String l; (l = r.readLine()) != null; ) script.add(l);
         }
         Field dir = Minecraft.class.getDeclaredField("minecraftDir");

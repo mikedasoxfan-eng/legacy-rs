@@ -32,4 +32,12 @@ EOF
 bash "$root/tools/oracle/guishot.sh" "$scenes" "$java_containers" > "$root/target/containers-gui-java.log" 2>&1 || true
 GUI_MSAA=1 "$root/target/release/beta" --guishot "$scenes" "$rust_containers" >/dev/null || fail=1
 python "$root/tools/oracle/compare_gui_strict.py" "$scenes" "$java_containers" "$rust_containers" "$root/shots/containers_diff" || fail=1
+python "$root/tools/oracle/gui/make_pack.py" "$root/tools/oracle/out/packmc" || exit 1
+scenes="$root/tools/oracle/gui/feature-scenes.txt"
+java_features="$root/tools/oracle/out/features_gui_java"
+rust_features="$root/shots/features"
+bash "$root/tools/oracle/guishot.sh" "$scenes" "$java_features" > "$root/target/features-gui-java.log" 2>&1 || fail=1
+GUI_MSAA=1 "$root/target/release/beta" --guishot "$scenes" "$rust_features" > "$root/target/features-gui-rust.log" 2>&1 || fail=1
+python "$root/tools/oracle/compare_gui_strict.py" "$scenes" "$java_features" "$rust_features" "$root/shots/features_diff" || fail=1
+"$root/target/release/beta" --texturecheck "$java_features/texture-fx.bin" || fail=1
 exit $fail

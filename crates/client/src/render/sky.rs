@@ -390,3 +390,22 @@ pub fn fancy_clouds(cam_x: f64, cam_y: f64, cam_z: f64, offset: f32, color: [f32
     let _ = color_now;
     out
 }
+
+/// RenderGlobal.renderSky: convert the center only; the transparent rim keeps raw RGB.
+pub fn sunrise_fan(angle: f32, anaglyph: bool) -> Option<Vec<super::Vertex>> {
+    let c = sunrise_colors(angle)?;
+    let rgb = if anaglyph { super::stereo_color([c[0], c[1], c[2]]) } else { [c[0], c[1], c[2]] };
+    let rgba = |rgb: [f32; 3], alpha: f32| [rgb[0],rgb[1],rgb[2],alpha].map(|v| ((v*255.0f32) as i32).clamp(0,255) as u8);
+    let center = super::Vertex { pos: [0.0,100.0,0.0], uv: [0.0;2], color: rgba(rgb,c[3]) };
+    let mut rim=Vec::new();
+    for i in 0..=16 {
+        let a=i as f32 * PI_F * 2.0 / 16.0;
+        let (s,co)=(math::sin(a),math::cos(a));
+        rim.push(super::Vertex { pos: [s*120.0,co*120.0,-co*40.0*c[3]],uv:[0.0;2],color:rgba([c[0],c[1],c[2]],0.0) });
+    }
+    let mut fan=Vec::new();
+    for i in 0..16 { fan.extend_from_slice(&[center,rim[i],rim[i+1]]); }
+    // Tessellator.addVertex adds its double translation before narrowing to float.
+    for v in &mut fan { v.pos = v.pos.map(|c| (c as f64 + 0.0) as f32); }
+    Some(fan)
+}

@@ -25,16 +25,16 @@ struct Draw {
 
 pub struct EntityPipeline {
     pub states: Vec<RenderState>,
-    opaque: wgpu::RenderPipeline,
-    alpha: wgpu::RenderPipeline,
-    eyes: wgpu::RenderPipeline,
-    additive: wgpu::RenderPipeline,
-    overlay: wgpu::RenderPipeline,
-    shadow: wgpu::RenderPipeline,
-    tnt_flash: wgpu::RenderPipeline,
-    damage: wgpu::RenderPipeline,
-    untested: wgpu::RenderPipeline,
-    untested_alpha: wgpu::RenderPipeline,
+    opaque: crate::render::color_mask::Pipelines,
+    alpha: crate::render::color_mask::Pipelines,
+    eyes: crate::render::color_mask::Pipelines,
+    additive: crate::render::color_mask::Pipelines,
+    overlay: crate::render::color_mask::Pipelines,
+    shadow: crate::render::color_mask::Pipelines,
+    tnt_flash: crate::render::color_mask::Pipelines,
+    damage: crate::render::color_mask::Pipelines,
+    untested: crate::render::color_mask::Pipelines,
+    untested_alpha: crate::render::color_mask::Pipelines,
     pub extra: Vec<Batch>,
     pub fog_override: Option<[f32; 3]>,
     pub fog_view: Mat4,
@@ -44,7 +44,11 @@ pub struct EntityPipeline {
     pub view: [f32; 2],
     uniforms: wgpu::Buffer,
     frame_bind: wgpu::BindGroup,
+    texture_layout: wgpu::BindGroupLayout,
+    sampler: wgpu::Sampler,
+    shadow_sampler: wgpu::Sampler,
     textures: HashMap<String, wgpu::BindGroup>,
+    items_tex: Option<wgpu::Texture>,
     terrain_tex: Option<wgpu::Texture>,
     map_tex: Option<wgpu::Texture>,
     vertices: wgpu::Buffer,
@@ -104,7 +108,7 @@ impl EntityPipeline {
             source: wgpu::ShaderSource::Wgsl(include_str!("shader.wgsl").into()),
         });
         let make = |label, blend, depth, fragment, write| {
-            device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
+            crate::render::color_mask::Pipelines::new(|mask| device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
                 label: Some(label),
                 layout: Some(&layout),
                 vertex: wgpu::VertexState {
@@ -130,11 +134,11 @@ impl EntityPipeline {
                     module: &shader,
                     entry_point: Some(fragment),
                     compilation_options: Default::default(),
-                    targets: &[Some(wgpu::ColorTargetState { format, blend, write_mask: wgpu::ColorWrites::ALL })],
+                    targets: &[Some(wgpu::ColorTargetState { format, blend, write_mask: mask })],
                 }),
                 multiview_mask: None,
                 cache: None,
-            })
+            }))
         };
         use wgpu::CompareFunction::{Equal, LessEqual};
         let opaque = make("entity opaque", None, LessEqual, "fs_test", true);
@@ -235,6 +239,7 @@ impl EntityPipeline {
         let white = Image { width: 1, height: 1, rgba: vec![255; 4] };
         let mut textures = HashMap::new();
         let mut terrain_tex = None;
+        let mut items_tex = None;
         let mut map_tex = None;
         let mut upload = |name: &str, img: &Image| {
             let tex = device.create_texture_with_data(
@@ -252,6 +257,7 @@ impl EntityPipeline {
                 wgpu::util::TextureDataOrder::LayerMajor,
                 &img.rgba,
             );
+            if name == "gui/items.png" { items_tex = Some(tex.clone()); }
             if name == "terrain.png" {
                 terrain_tex = Some(tex.clone());
             }
@@ -309,7 +315,11 @@ impl EntityPipeline {
             overlay,
             uniforms,
             frame_bind,
+            texture_layout,
+            sampler,
+            shadow_sampler,
             textures,
+            items_tex,
             terrain_tex,
             map_tex,
             vertices,
@@ -319,7 +329,30 @@ impl EntityPipeline {
         }
     }
 
+    pub fn replace_texture(&mut self, device: &wgpu::Device, queue: &wgpu::Queue, name: &str, img: &Image) {
+        let tex = device.create_texture_with_data(queue, &wgpu::TextureDescriptor {
+            label: Some(name), size: wgpu::Extent3d { width: img.width, height: img.height, depth_or_array_layers: 1 },
+            mip_level_count: 1, sample_count: 1, dimension: wgpu::TextureDimension::D2,
+            format: wgpu::TextureFormat::Rgba8Unorm, usage: wgpu::TextureUsages::TEXTURE_BINDING | wgpu::TextureUsages::COPY_DST, view_formats: &[],
+        }, wgpu::util::TextureDataOrder::LayerMajor, &img.rgba);
+        if name == "gui/items.png" { self.items_tex = Some(tex.clone()); }
+        if name == "terrain.png" { self.terrain_tex = Some(tex.clone()); }
+        if name == "__map" { self.map_tex = Some(tex.clone()); }
+        let view = tex.create_view(&Default::default());
+        self.textures.insert(name.into(), device.create_bind_group(&wgpu::BindGroupDescriptor {
+            label: Some(name), layout: &self.texture_layout, entries: &[
+                wgpu::BindGroupEntry { binding: 0, resource: wgpu::BindingResource::TextureView(&view) },
+                wgpu::BindGroupEntry { binding: 1, resource: wgpu::BindingResource::Sampler(if name == "misc/shadow.png" { &self.shadow_sampler } else { &self.sampler }) },
+            ],
+        }));
+    }
+
     /// RenderEngine.updateDynamicTextures also updates the terrain atlas bound by entities.
+    pub fn update_items(&self, queue: &wgpu::Queue, fx: &crate::render::item_fx::ItemFx) {
+        if let Some(texture) = &self.items_tex {
+            for (i, icon) in crate::render::item_fx::ICONS.into_iter().enumerate() { crate::gui::render::write_tile(queue, texture, icon, &fx.images[i]); }
+        }
+    }
     pub fn update_map(&self, queue: &wgpu::Queue, image: &Image) {
         if let Some(texture) = &self.map_tex {
             queue.write_texture(
@@ -457,14 +490,15 @@ impl EntityPipeline {
         }
     }
 
-    pub fn draw(&self, rp: &mut wgpu::RenderPass<'_>) {
+    pub fn draw(&self, rp: &mut wgpu::RenderPass<'_>) { self.draw_masked(rp, 0); }
+    pub fn draw_masked(&self, rp: &mut wgpu::RenderPass<'_>, mask: usize) {
         if self.draws.is_empty() {
             return;
         }
         rp.set_bind_group(0, &self.frame_bind, &[]);
         rp.set_vertex_buffer(0, self.vertices.slice(..));
         for d in &self.draws {
-            rp.set_pipeline(match d.pass {
+            rp.set_pipeline((match d.pass {
                 Pass::Opaque => &self.opaque,
                 Pass::Alpha => &self.alpha,
                 Pass::Eyes => &self.eyes,
@@ -475,7 +509,7 @@ impl EntityPipeline {
                 Pass::Damage => &self.damage,
                 Pass::Untested => &self.untested,
                 Pass::UntestedAlpha => &self.untested_alpha,
-            });
+            }).get(mask));
             rp.set_bind_group(1, &self.textures[&d.texture], &[]);
             rp.draw(d.range.clone(), 0..1);
         }

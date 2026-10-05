@@ -47,7 +47,7 @@ impl VideoSettings {
     }
 
     pub fn remesh(self, previous: Self) -> bool {
-        self.distance != previous.distance || self.fancy != previous.fancy || self.ao != previous.ao
+        self.distance != previous.distance || self.fancy != previous.fancy || self.ao != previous.ao || self.anaglyph != previous.anaglyph
     }
 
     /// `EntityRenderer.updateRenderer`: brightness at the view entity's position.

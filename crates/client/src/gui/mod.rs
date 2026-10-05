@@ -38,6 +38,7 @@ pub const TEXTURES: &[&str] = &[
     "title/mclogo.png",
     "title/mojang.png",
     "pack.png",
+    "gui/unknown_pack.png",
     "terrain.png",
     "%blur%/misc/vignette.png",
     "achievement/bg.png",
@@ -127,12 +128,15 @@ pub enum Action {
     Shutdown,
     /// Settings changed (render distance, graphics...): the game should re-read them.
     SettingsChanged,
+    RefreshTextures,
     /// `thePlayer.respawnPlayer()`
     Respawn,
 }
 
 /// The parts of `Minecraft` the GUI code reaches into.
 pub struct Ui {
+    pub packs: crate::texture_packs::TexturePackList,
+    pub pack_icons: Vec<TexId>,
     pub gl: Gl,
     pub font: FontRenderer,
     pub textures: HashMap<String, TexId>,
@@ -481,6 +485,8 @@ pub trait Screen {
     fn action_performed(&mut self, _ui: &mut Ui, _id: i32) {}
 
     fn on_gui_closed(&mut self, _ui: &mut Ui) {}
+
+    fn is_chat(&self) -> bool { false }
 
     fn does_gui_pause_game(&self) -> bool {
         true

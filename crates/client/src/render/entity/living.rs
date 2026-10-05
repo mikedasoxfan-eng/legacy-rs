@@ -168,6 +168,7 @@ pub enum Pass {
     UntestedAlpha,
 }
 
+#[derive(Clone)]
 pub struct Batch {
     /// `None` is GL_TEXTURE_2D disabled (hurt/flash), represented by a white texel.
     pub texture: Option<&'static str>,

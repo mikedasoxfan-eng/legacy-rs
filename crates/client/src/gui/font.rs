@@ -15,6 +15,10 @@ pub struct FontRenderer {
 
 impl FontRenderer {
     pub fn new(img: &Image, texture: TexId, font_txt: &str) -> FontRenderer {
+        Self::new_with_anaglyph(img, texture, font_txt, false)
+    }
+
+    pub fn new_with_anaglyph(img: &Image, texture: TexId, font_txt: &str, anaglyph: bool) -> FontRenderer {
         let w = img.width as usize;
         // BufferedImage.getRGB & 255 = blue channel.
         let blue = |x: usize, y: usize| img.rgba[(y * w + x) * 4 + 2] as i32;
@@ -43,6 +47,10 @@ impl FontRenderer {
             let mut b = (i as i32 & 1) * 170 + base;
             if i == 6 {
                 r += 85;
+            }
+            if anaglyph {
+                let [ar,ag,ab] = [(r * 30 + g * 59 + b * 11) / 100, (r * 30 + g * 70) / 100, (r * 30 + b * 70) / 100];
+                r = ar; g = ag; b = ab;
             }
             if i >= 16 {
                 r /= 4;

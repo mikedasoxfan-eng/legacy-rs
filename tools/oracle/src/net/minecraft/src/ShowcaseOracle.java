@@ -47,8 +47,9 @@ class ShowcaseOracle {
         return cs;
     }
 
-    static void run(String layout, String out, boolean fancy, boolean ao) throws Exception {
+    static void run(String layout, String out, boolean fancy, boolean ao, boolean anaglyph) throws Exception {
         Oracle.meshSetup(fancy, ao);
+        EntityRenderer.field_28135_a = anaglyph;
         World w = Oracle.newWorld(0);
         int[] cs = build(w, layout);
         Block.leaves.setGraphicsLevel(fancy);
