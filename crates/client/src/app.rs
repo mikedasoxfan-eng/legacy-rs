@@ -198,6 +198,8 @@ pub struct App {
     loading: Option<gui::loading::LoadingScreen>,
     /// After the world thread has saved: quit the program (true) or go to the title (false).
     exit_after_save: bool,
+    /// The world thread dropped the world over a session-lock conflict.
+    session_conflict: bool,
     tx: Option<std::sync::mpsc::Sender<ToWorker>>,
     rx: Option<std::sync::mpsc::Receiver<FromWorker>>,
     worker: Option<std::thread::JoinHandle<()>>,
@@ -286,6 +288,7 @@ impl App {
             col: None,
             loading: None,
             exit_after_save: false,
+            session_conflict: false,
             tx: None,
             rx: None,
             worker: None,
@@ -463,8 +466,12 @@ impl App {
         if let Some(gui) = &mut self.gui {
             gui.ui.world_open = false;
             let mut acts = Vec::new();
-            let menu = gui.main_menu();
-            gui.display_gui_screen(Some(menu), &mut acts);
+            let screen: Box<dyn gui::Screen> = if std::mem::take(&mut self.session_conflict) {
+                Box::new(gui::screens::conflict::GuiConflictWarning::new())
+            } else {
+                gui.main_menu()
+            };
+            gui.display_gui_screen(Some(screen), &mut acts);
         }
     }
 
@@ -1171,6 +1178,10 @@ impl App {
                             }
                         }
                         if let Some(g) = &mut self.gui {
+                            // EntityPlayerSP.onLivingUpdate: the inventory hint until it is taken.
+                            if !g.ui.stats.unlocked(0) {
+                                g.toast.queue_information(&g.ui, 0);
+                            }
                             g.ui.player_dead = hud.health <= 0;
                             g.ui.player_score = score;
                             // Minecraft.runTick: no screen and a dead player shows GuiGameOver.
@@ -1240,6 +1251,11 @@ impl App {
                     }
                     Ok(FromWorker::Idle) => self.idle = true,
                     Ok(FromWorker::Saved) => {
+                        closed = true;
+                        break;
+                    }
+                    Ok(FromWorker::SessionConflict) => {
+                        self.session_conflict = true;
                         closed = true;
                         break;
                     }

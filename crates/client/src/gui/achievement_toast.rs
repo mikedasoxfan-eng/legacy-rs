@@ -13,6 +13,8 @@ pub struct AchievementToast {
     achievement: Option<usize>,
     /// `field_25083_f`: when it was queued (ms), 0 when idle.
     start: i64,
+    /// `field_27103_i`: an information box (the inventory hint) instead of "Achievement get!".
+    information: bool,
 }
 
 impl AchievementToast {
@@ -22,6 +24,17 @@ impl AchievementToast {
         self.text = ui.translate(&format!("achievement.{}", ACHIEVEMENTS[index].key));
         self.start = ui.millis;
         self.achievement = Some(index);
+        self.information = false;
+    }
+
+    /// `queueAchievementInformation`: queued every tick until the achievement is taken, so
+    /// the box stays fully shown.
+    pub fn queue_information(&mut self, ui: &Ui, index: usize) {
+        self.title = ui.translate(&format!("achievement.{}", ACHIEVEMENTS[index].key));
+        self.text = super::screens::achievements::description(ui, index);
+        self.start = ui.millis - 2500;
+        self.achievement = Some(index);
+        self.information = true;
     }
 
     /// `updateAchievementWindow`, drawn after everything else each frame.
@@ -31,7 +44,7 @@ impl AchievementToast {
             return;
         }
         let t = (ui.millis - self.start) as f64 / 3000.0;
-        if !(0.0..=1.0).contains(&t) {
+        if !self.information && !(0.0..=1.0).contains(&t) {
             self.start = 0;
             return;
         }
@@ -58,8 +71,12 @@ impl AchievementToast {
         ui.gl.bind_texture(bg);
         ui.draw_textured_modal_rect(x, y, 96, 202, 160, 32);
         let (title, text) = (self.title.clone(), self.text.clone());
-        ui.draw_string(&title, x + 30, y + 7, -256);
-        ui.draw_string(&text, x + 30, y + 18, -1);
+        if self.information {
+            ui.font.draw_split_string(&mut ui.gl, &text, x + 30, y + 7, 120, -1);
+        } else {
+            ui.draw_string(&title, x + 30, y + 7, -256);
+            ui.draw_string(&text, x + 30, y + 18, -1);
+        }
         // glRotatef(180, 1, 0, 0); enableStandardItemLighting; GL_RESCALE_NORMAL
         gui_item::set_gui_light_rotation(180.0);
         gui_item::set_gui_rescale_normal(true);

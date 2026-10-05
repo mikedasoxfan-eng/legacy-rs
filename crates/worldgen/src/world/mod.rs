@@ -171,6 +171,9 @@ pub struct World {
     pub mod_count: u64,
     /// Save directory; `None` keeps everything in memory.
     pub storage: Option<crate::storage::Storage>,
+    /// `checkSessionLock` failed (MinecraftException): another program opened this save.
+    /// Nothing more is written; the client drops the world.
+    pub session_conflict: bool,
     /// `WorldInfo` fields the world doesn't otherwise track (name, weather, saved player).
     pub info: crate::storage::LevelInfo,
     /// `ChunkProvider.chunkList`: loaded chunks in load order (`saveChunks` walks it).
@@ -281,6 +284,7 @@ impl World {
             falling_sand: Vec::new(),
             mod_count: 0,
             storage: None,
+            session_conflict: false,
             info: crate::storage::LevelInfo::new(seed, "world"),
             chunk_list: Vec::new(),
             server: None,
@@ -1110,8 +1114,9 @@ impl World {
         }
         let info = self.level_info();
         if let Some(s) = &self.storage {
-            if !s.session_ok() {
+            if self.session_conflict || !s.session_ok() {
                 eprintln!("Failed to check session lock, aborting save");
+                self.session_conflict = true;
                 return;
             }
             if let Err(e) = s.save_level(&info) {
@@ -1124,7 +1129,9 @@ impl World {
     pub fn save_world(&mut self, all: bool) {
         if self.storage.is_some() {
             self.save_level();
-            self.save_chunks(all);
+            if !self.session_conflict {
+                self.save_chunks(all);
+            }
         }
     }
 

@@ -210,13 +210,7 @@ impl GuiAchievements {
             let tx = mx + 12;
             let ty = my - 4;
             if ui.stats.can_unlock(i) {
-                let mut desc = ui.translate(&format!("achievement.{}.desc", a.key));
-                if i == 0 {
-                    // StatStringFormatKeyInv: the inventory key's name.
-                    let code = ui.settings.key_bindings[7].code;
-                    let key = crate::gui::keynames::KEY_NAMES.get(code as usize).copied().flatten().unwrap_or("");
-                    desc = desc.replace("%1$s", key);
-                }
+                let desc = description(ui, i);
                 let width = ui.string_width(&name).max(120);
                 let mut height = ui.font.split_string_height(&desc, width);
                 if ui.stats.unlocked(i) {
@@ -333,4 +327,16 @@ impl Screen for GuiAchievements {
         ui.font.draw_string(&mut ui.gl, "Achievements", px + 15, py + 5, 4210752);
         ui.gl.depth_test = true;
     }
+}
+
+/// `Achievement.getDescription`: "Taking Inventory" names the inventory key
+/// (`StatStringFormatKeyInv`).
+pub fn description(ui: &Ui, i: usize) -> String {
+    let mut desc = ui.translate(&format!("achievement.{}.desc", ACHIEVEMENTS[i].key));
+    if i == 0 {
+        let code = ui.settings.key_bindings[7].code;
+        let key = crate::gui::keynames::KEY_NAMES.get(code as usize).copied().flatten().unwrap_or("");
+        desc = desc.replace("%1$s", key);
+    }
+    desc
 }

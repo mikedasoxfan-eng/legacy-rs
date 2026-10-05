@@ -181,6 +181,16 @@ public class Oracle {
             TeleportOracle.respawn(Long.parseLong(a[1]), Long.parseLong(a[2]), a[3], a[4]);
         } else if (mode.equals("statlist")) {
             StatsOracle.run(a[1]);
+        } else if (mode.equals("convertworld")) {
+            // SaveConverterMcRegion on a pre-McRegion save: prints every progress step.
+            SaveConverterMcRegion c = new SaveConverterMcRegion(new java.io.File(a[1]));
+            System.out.println("old " + c.isOldMapFormat(a[2]));
+            c.convertMapFormat(a[2], new IProgressUpdate() {
+                public void func_594_b(String t) { System.out.println("title " + t); }
+                public void displayLoadingString(String t) { System.out.println("text " + t); }
+                public void setLoadingProgress(int n) { System.out.println("progress " + n); }
+            });
+            System.out.println("old " + c.isOldMapFormat(a[2]));
         } else if (mode.equals("statsfile")) {
             StatsOracle.file(a[1], a[2]);
         } else if (mode.equals("pistonrender")) {
