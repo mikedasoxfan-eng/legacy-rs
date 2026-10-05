@@ -30,11 +30,13 @@ pub fn can_place(w: &mut World, id: u8, x: i32, y: i32, z: i32, side: i32) -> bo
     can_place_at(w, id, x, y, z, side)
 }
 pub fn can_place_at(w: &mut World, id: u8, x: i32, y: i32, z: i32, side: i32) -> bool {
+    let target=w.get_block_id(x,y,z);
+    let base=target==0 || mat(material_of(target)).ground_cover;
     match id {
         VINE => crate::world::plants181::vine_can_place(w,x,y,z,side),
         FENCE_GATE => mat(w.get_block_material(x,y-1,z)).is_solid
             && (w.get_block_id(x,y,z)==0 || mat(w.get_block_material(x,y,z)).ground_cover),
-        PUMPKIN_STEM | MELON_STEM => w.get_block_id(x,y-1,z)==TILLED_FIELD,
+        PUMPKIN_STEM | MELON_STEM => base && w.get_block_id(x,y-1,z)==TILLED_FIELD,
         34 | 36 => false,
         50 | 75 | 76 => {
             w.is_block_normal_cube(x - 1, y, z)
@@ -71,15 +73,17 @@ pub fn can_place_at(w: &mut World, id: u8, x: i32, y: i32, z: i32, side: i32) ->
         64 | 71 => {
             y < 127
                 && w.is_block_normal_cube(x, y - 1, z)
-                && matches!(w.get_block_id(x, y, z), 0 | 78)
-                && matches!(w.get_block_id(x, y + 1, z), 0 | 78)
+                && base
+                && {let above=w.get_block_id(x,y+1,z);above==0 || mat(material_of(above)).ground_cover}
         }
-        86 | 91 | 70 | 72 | 93 | 94 => w.is_block_normal_cube(x, y - 1, z),
+        70 | 72 => w.is_block_normal_cube(x,y-1,z) || w.get_block_id(x,y-1,z)==85,
+        86 | 91 => base && w.is_block_normal_cube(x,y-1,z),
+        27 | 28 | 66 | 93 | 94 => w.is_block_normal_cube(x, y - 1, z),
         92 => mat(w.get_block_material(x, y - 1, z)).is_solid,
-        6 | 31 | 37 | 38 => matches!(w.get_block_id(x, y - 1, z), 2 | 3 | 60),
-        32 => w.get_block_id(x, y - 1, z) == 12,
-        39 | 40 => opaque_cube_lookup(w.get_block_id(x, y - 1, z)),
-        81 => crate::world::behavior::cactus_can_stay(w, x, y, z),
+        6 | 31 | 37 | 38 => base && matches!(w.get_block_id(x, y - 1, z), 2 | 3 | 60),
+        32 => base && w.get_block_id(x, y - 1, z) == 12,
+        39 | 40 => base && opaque_cube_lookup(w.get_block_id(x,y-1,z)),
+        81 => base && crate::world::behavior::cactus_can_stay(w, x, y, z),
         83 => crate::world::behavior::reed_can_place(w, x, y, z),
         78 => crate::world::behavior::snow_can_place(w, x, y, z),
         54 => {
@@ -96,10 +100,12 @@ pub fn can_place_at(w: &mut World, id: u8, x: i32, y: i32, z: i32, side: i32) ->
             }
             neighbors <= 1
         }
-        _ => true,
+        _ => base,
     }
 }
 impl Entity {
+    /// EntityPlayer.func_35190_e: Beta 1.8.1's singleplayer base implementation.
+    pub fn can_edit_block181(&self, _x: i32, _y: i32, _z: i32) -> bool { true }
     /// ItemBlock.onItemUse; the player must be visible in World for placement collisions.
     pub fn place_block_item(
         &mut self,
@@ -118,6 +124,7 @@ impl Entity {
         if stack.count == 0 {
             return false;
         }
+        if !self.can_edit_block181(x,y,z) { return false; }
         let id = stack.id as u8;
         if y == 127 && mat(material_of(id)).is_solid {
             return false;
@@ -223,7 +230,7 @@ impl Entity {
         }
         let y = y + 1;
         let id = if stack.id == 324 { 64 } else { 71 };
-        if !can_place_at(w, id, x, y, z, side) {
+        if !self.can_edit_block181(x,y,z) || !self.can_edit_block181(x,y+1,z) || !can_place_at(w, id, x, y, z, side) {
             return false;
         }
         let mut dir = floor(((self.yaw + 180.0) * 4.0 / 360.0) as f64 - 0.5) & 3;
@@ -263,7 +270,8 @@ impl Entity {
         let y = y + 1;
         let dir = floor((self.yaw * 4.0 / 360.0) as f64 + 0.5) & 3;
         let (dx, dz) = [(0, 1), (-1, 0), (0, -1), (1, 0)][dir as usize];
-        if w.get_block_id(x, y, z) != 0
+        if !self.can_edit_block181(x,y,z) || !self.can_edit_block181(x+dx,y,z+dz)
+            || w.get_block_id(x, y, z) != 0
             || w.get_block_id(x + dx, y, z + dz) != 0
             || !w.is_block_normal_cube(x, y - 1, z)
             || !w.is_block_normal_cube(x + dx, y - 1, z + dz)

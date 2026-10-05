@@ -222,7 +222,7 @@ pub fn on_neighbor_block_change(w: &mut World, id: u8, x: i32, y: i32, z: i32, _
             }
         }
         70 | 72 => {
-            if !w.is_block_normal_cube(x, y - 1, z) {
+            if !w.is_block_normal_cube(x, y - 1, z) && w.get_block_id(x,y-1,z)!=85 {
                 let m = w.get_block_metadata(x, y, z);
                 drop_block_as_item(w, id, x, y, z, m);
                 w.set_block_with_notify(x, y, z, 0);

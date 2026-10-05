@@ -44,3 +44,6 @@ pub use biome::{Biome, BiomeSource};
 pub use overworld::{OverworldGenerator, RawChunk};
 pub use random::JavaRandom;
 pub use world::World;
+
+pub mod region_cache181;
+pub mod save_format_old181;

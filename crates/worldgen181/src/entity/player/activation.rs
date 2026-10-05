@@ -72,8 +72,8 @@ impl Entity {
                 true
             }
             58 | 61 | 62 | 23 => {
-                if id != 58 {
-                    w.get_block_tile_entity(x, y, z);
+                if id != 58 && w.get_block_tile_entity(x,y,z).is_none() {
+                    return true;
                 }
                 self.player_state_mut()
                     .unwrap()
@@ -85,7 +85,7 @@ impl Entity {
                 true
             }
             54 => {
-                w.get_block_tile_entity(x, y, z);
+                if w.get_block_tile_entity(x,y,z).is_none() {return true;}
                 let mut blocked = w.is_block_normal_cube(x, y + 1, z);
                 for (dx, dz) in [(-1, 0), (1, 0), (0, -1), (0, 1)] {
                     if w.get_block_id(x + dx, y, z + dz) == 54

@@ -19,6 +19,7 @@ impl ItemStack {
 
 #[derive(Clone, Debug, PartialEq)]
 pub enum TileEntity {
+    RecordPlayer { record: i32 },
     Note(super::notes::Note),
     Piston(super::pistons::Piston),
     Sign(crate::sign::Sign),
@@ -33,6 +34,7 @@ impl TileEntity {
     /// `BlockContainer.getBlockEntity()` for the given container block.
     pub fn for_block(id: u8) -> TileEntity {
         match id {
+            84 => TileEntity::RecordPlayer { record: 0 },
             25 => TileEntity::Note(Default::default()),
             63 | 68 => TileEntity::Sign(Default::default()),
             crate::block::CHEST => TileEntity::Chest(Box::new([None; 36])),

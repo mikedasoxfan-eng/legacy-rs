@@ -10,9 +10,21 @@ impl Entity {
         };
         let original=stack;
         let original_id = stack.id;
-        let used = match stack.id {
-            323 => self.place_sign(w, &mut stack, x, y, z, side),
-            321 => self.place_painting(w, &mut stack, x, y, z, side),
+        let used = self.item_use_on_block181(w, &mut stack, x, y, z, side);
+        // ItemStack.useItem: a successful onItemUse counts a use.
+        if used {
+            self.add_stat(stat::used(original_id), 1);
+        }
+        if self.player_state().unwrap().capabilities.creative {stack.count=original.count;stack.damage=original.damage;}
+        let inv = &mut self.player_state_mut().unwrap().inventory;
+        inv.main[inv.current_item as usize] = if stack.count <= 0 { None } else { Some(stack) };
+        used
+    }
+    /// Item.onItemUse, before ItemStack's statistics and the controller's creative restore.
+    pub fn item_use_on_block181(&mut self, w: &mut World, stack: &mut ItemStack, x: i32, y: i32, z: i32, side: i32) -> bool {
+        match stack.id {
+            323 => self.place_sign(w, stack, x, y, z, side),
+            321 => self.place_painting(w, stack, x, y, z, side),
             2256 | 2257 => {
                 let used = w.insert_record(x, y, z, stack.id);
                 if used {
@@ -20,10 +32,10 @@ impl Entity {
                 }
                 used
             }
-            1..=255 => self.place_block_item(w, &mut stack, x, y, z, side),
-            324 | 330 => self.place_door(w, &mut stack, x, y, z, side),
-            355 => self.place_bed(w, &mut stack, x, y, z, side),
-            351 => self.dye_block(w, &mut stack, x, y, z),
+            1..=255 => self.place_block_item(w, stack, x, y, z, side),
+            324 | 330 => self.place_door(w, stack, x, y, z, side),
+            355 => self.place_bed(w, stack, x, y, z, side),
+            351 => self.dye_block(w, stack, x, y, z),
             328 | 342 | 343 => {
                 if matches!(w.get_block_id(x, y, z), 27 | 28 | 66) {
                     let vehicle = match stack.id {
@@ -53,6 +65,7 @@ impl Entity {
             }
             259 => {
                 let (x, y, z) = super::placement::offset(x, y, z, side);
+                if !self.can_edit_block181(x, y, z) { return false; }
                 if w.get_block_id(x, y, z) == 0 {
                     let pitch = w.item_random.next_float() * 0.4 + 0.8;
                     w.play_sound(
@@ -69,6 +82,7 @@ impl Entity {
                 true
             }
             290..=294 => {
+                if !self.can_edit_block181(x, y, z) { return false; }
                 let id = w.get_block_id(x, y, z);
                 if (side == 0 || w.get_block_id(x, y + 1, z) != 0 || id != 2) && id != 3 {
                     false
@@ -93,13 +107,24 @@ impl Entity {
             }
             // ItemSeeds: wheat, pumpkin and melon seeds plant their crop or stem on farmland.
             295 | 361 | 362 => {
-                if side == 1 && w.get_block_id(x, y, z) == 60 && w.get_block_id(x, y + 1, z) == 0 {
+                if side == 1 && self.can_edit_block181(x,y,z) && self.can_edit_block181(x,y+1,z) && w.get_block_id(x, y, z) == 60 && w.get_block_id(x, y + 1, z) == 0 {
                     w.set_block_with_notify(x, y + 1, z, match stack.id { 361 => 104, 362 => 105, _ => 59 });
                     stack.count -= 1;
                     true
                 } else {
                     false
                 }
+            }
+            331 => {
+                let snow = w.get_block_id(x, y, z) == SNOW;
+                let (x, y, z) = if snow { (x, y, z) } else { super::placement::offset(x, y, z, side) };
+                if !snow && w.get_block_id(x, y, z) != AIR { return false; }
+                if !self.can_edit_block181(x, y, z) { return false; }
+                if w.is_block_normal_cube(x, y - 1, z) {
+                    stack.count = stack.count.wrapping_sub(1);
+                    w.set_block_with_notify(x, y, z, 55);
+                }
+                true
             }
             338 | 354 | 356 => {
                 let block = match stack.id {
@@ -112,19 +137,19 @@ impl Entity {
                 } else {
                     side
                 };
-                let (x, y, z) = if w.get_block_id(x, y, z) == 78 {
+                let (x, y, z) = if matches!(w.get_block_id(x, y, z), 78 | VINE) {
                     (x, y, z)
                 } else {
                     super::placement::offset(x, y, z, side)
                 };
-                if stack.count == 0 {
+                if !self.can_edit_block181(x,y,z) || stack.count == 0 {
                     false
                 } else {
                     w.entities.insert(self.entity_id, self.clone());
                     let place = super::placement::can_place(w, block, x, y, z, side);
                     w.entities.remove(&self.entity_id);
                     if place && w.set_block_with_notify(x, y, z, block) {
-                        self.block_placed(w, block, x, y, z, side);
+                        if w.get_block_id(x, y, z) == block { self.block_placed(w, block, x, y, z, side); }
                         let (name, volume, pitch) = crate::world::events::step_sound(block);
                         w.play_sound(
                             name,
@@ -142,15 +167,7 @@ impl Entity {
                 }
             }
             _ => false,
-        };
-        // ItemStack.useItem: a successful onItemUse counts a use.
-        if used {
-            self.add_stat(stat::used(original_id), 1);
         }
-        if self.player_state().unwrap().capabilities.creative {stack.count=original.count;stack.damage=original.damage;}
-        let inv = &mut self.player_state_mut().unwrap().inventory;
-        inv.main[inv.current_item as usize] = if stack.count <= 0 { None } else { Some(stack) };
-        used
     }
     pub fn use_item(&mut self, w: &mut World) -> bool {
         let Some(mut stack) = self.held_item() else {
@@ -261,7 +278,7 @@ impl Entity {
                         } else {
                             w.set_block_and_metadata_with_notify(x, y, z, full as u8, 0);
                         }
-                        stack = ItemStack::new(325, 1, 0);
+                        if !self.player_state().unwrap().capabilities.creative { stack = ItemStack::new(325, 1, 0); }
                     }
                 }
             }
