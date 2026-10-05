@@ -192,6 +192,11 @@ pub struct PaintingState {
     pub direction: i32,
     pub tile: [i32; 3],
     pub art: usize,
+    /// The World-only constructor leaves Java's art reference null.
+    pub art_initialized: bool,
+}
+impl PaintingState {
+    pub fn art_or_null(&self)->Option<&'static Art>{self.art_initialized.then(||&ARTS[self.art])}
 }
 impl Entity {
     pub fn painting_base(w: &mut World) -> Self {
@@ -210,6 +215,7 @@ impl Entity {
         for art in 0..ARTS.len() {
             if let EntityKind::Painting(s) = &mut e.kind {
                 s.art = art;
+                s.art_initialized = true;
             }
             e.set_painting_direction(direction);
             if e.painting_valid_surface(w) {
@@ -220,6 +226,7 @@ impl Entity {
             let art = fitting[e.rand.next_int(fitting.len() as i32) as usize];
             if let EntityKind::Painting(s) = &mut e.kind {
                 s.art = art;
+                s.art_initialized = true;
             }
         }
         e.set_painting_direction(direction);

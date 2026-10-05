@@ -55,7 +55,7 @@ pub fn attack_damage(id: i32) -> i32 {
 pub enum ItemUseAction {#[default] None=0,Eat=1,Block=2,Bow=3}
 pub fn use_action(id:i32)->ItemUseAction {
     match id {260|282|297|319|320|322|349|350|357|360|363..=367=>ItemUseAction::Eat,
-        267|268|272|276|283=>ItemUseAction::Block,261=>ItemUseAction::Bow,_=>ItemUseAction::None}
+        267|268|272|276|283=>ItemUseAction::Block,261=>ItemUseAction::Bow,_=>crate::entity::item::Item::defaults(id).use_action(None)}
 }
 pub fn use_duration(id:i32)->i32 {match use_action(id){ItemUseAction::Eat=>32,ItemUseAction::Block|ItemUseAction::Bow=>72000,ItemUseAction::None=>0}}
 /// ItemBow's release calculation; None means the shot is too weak to fire.
@@ -72,7 +72,7 @@ pub fn placed_block_metadata(id: i32, damage: i32) -> i32 {
         6 | 17 | 31 | 35 | 44 | 98 | 106 => damage,
         18 => damage | 4,
         29 | 33 => 7,
-        _ => 0,
+        _ => crate::entity::item::Item::defaults(id).placed_metadata(damage),
     }
 }
 

@@ -108,50 +108,12 @@ impl Entity {
     pub fn can_edit_block181(&self, _x: i32, _y: i32, _z: i32) -> bool { true }
     /// ItemBlock.onItemUse; the player must be visible in World for placement collisions.
     pub fn place_block_item(
-        &mut self,
-        w: &mut World,
-        stack: &mut ItemStack,
-        mut x: i32,
-        mut y: i32,
-        mut z: i32,
-        mut side: i32,
+        &mut self, w: &mut World, stack: &mut ItemStack,
+        x: i32, y: i32, z: i32, side: i32,
     ) -> bool {
-        if w.get_block_id(x, y, z) == 78 {
-            side = 0;
-        } else if w.get_block_id(x,y,z) != VINE {
-            (x, y, z) = offset(x, y, z, side);
-        }
-        if stack.count == 0 {
-            return false;
-        }
-        if !self.can_edit_block181(x,y,z) { return false; }
-        let id = stack.id as u8;
-        if y == 127 && mat(material_of(id)).is_solid {
-            return false;
-        }
-        w.entities.insert(self.entity_id, self.clone());
-        let place = can_place(w, id, x, y, z, side);
-        w.entities.remove(&self.entity_id);
-        if !place {
-            return false;
-        }
-        let meta = super::registry::placed_block_metadata(id as i32, stack.damage);
-        if w.set_block_and_metadata_with_notify(x, y, z, id, meta) {
-            if w.get_block_id(x,y,z)==id {self.block_placed(w, id, x, y, z, side);}
-            let (name, volume, pitch) = crate::world::events::step_sound(id);
-            w.play_sound(
-                name,
-                Vec3D::new(
-                    (x as f32 + 0.5) as f64,
-                    (y as f32 + 0.5) as f64,
-                    (z as f32 + 0.5) as f64,
-                ),
-                (volume + 1.0) / 2.0,
-                pitch * 0.8,
-            );
-            stack.count = stack.count.wrapping_sub(1);
-        }
-        true
+        let item=crate::entity::item_block::BlockItem::registered(stack.id);
+        item.on_item_use(&mut LiveBlockItemContext {player:self,world:w,side:0},Some(stack),[x,y,z],side)
+            .expect("registered ItemBlock callback")
     }
     pub fn block_placed(&self, w: &mut World, id: u8, x: i32, y: i32, z: i32, side: i32) {
         let quarter = floor((self.yaw * 4.0 / 360.0) as f64 + 0.5) & 3;
@@ -283,4 +245,86 @@ pub fn place_door181(w: &mut World, x: i32, y: i32, z: i32, mut dir: i32, id: u8
         w.editing_blocks = false;
         w.notify_blocks_of_neighbor_change(x, y, z, id);
         w.notify_blocks_of_neighbor_change(x, y + 1, z, id);
+}
+
+/// ItemBlock's ordered class dispatch borrows the pre-existing world callbacks.
+struct LiveBlockItemContext<'a> {
+    player: &'a mut Entity,
+    world: &'a mut World,
+    side: i32,
+}
+impl crate::entity::item_block::BlockItemContext for LiveBlockItemContext<'_> {
+    type Block = u8;
+    fn get_block_id(&mut self, p: [i32; 3]) -> Result<i32, crate::entity::item::ItemError> {
+        Ok(self.world.get_block_id(p[0], p[1], p[2]) as i32)
+    }
+    fn can_edit(
+        &mut self,
+        p: [i32; 3],
+        _stack: &mut ItemStack,
+    ) -> Result<bool, crate::entity::item::ItemError> {
+        Ok(self.player.can_edit_block181(p[0], p[1], p[2]))
+    }
+    fn solid(&mut self, id: i32) -> Result<bool, crate::entity::item::ItemError> {
+        Ok(mat(material_of(id as u8)).is_solid)
+    }
+    fn can_place(
+        &mut self,
+        id: i32,
+        p: [i32; 3],
+        side: i32,
+    ) -> Result<bool, crate::entity::item::ItemError> {
+        self.world
+            .entities
+            .insert(self.player.entity_id, self.player.clone());
+        let result = can_place(self.world, id as u8, p[0], p[1], p[2], side);
+        self.world.entities.remove(&self.player.entity_id);
+        Ok(result)
+    }
+    fn block(&mut self, id: i32) -> Result<u8, crate::entity::item::ItemError> {
+        Ok(id as u8)
+    }
+    fn placed_metadata(
+        &mut self,
+        id: i32,
+        damage: i32,
+    ) -> Result<i32, crate::entity::item::ItemError> {
+        Ok(super::registry::placed_block_metadata(id, damage))
+    }
+    fn set_block(
+        &mut self,
+        id: i32,
+        p: [i32; 3],
+        meta: i32,
+    ) -> Result<bool, crate::entity::item::ItemError> {
+        Ok(self
+            .world
+            .set_block_and_metadata_with_notify(p[0], p[1], p[2], id as u8, meta))
+    }
+    fn on_placed(
+        &mut self,
+        _id: u8,
+        _p: [i32; 3],
+        side: i32,
+    ) -> Result<(), crate::entity::item::ItemError> {
+        self.side = side;
+        Ok(())
+    }
+    fn on_placed_by(&mut self, id: u8, p: [i32; 3]) -> Result<(), crate::entity::item::ItemError> {
+        // Existing helper combines the two vanilla block callbacks.
+        // Remembering the side is handled below by the context's on_placed.
+        self.player
+            .block_placed(self.world, id, p[0], p[1], p[2], self.side);
+        Ok(())
+    }
+    fn sound(&mut self, id: u8, p: [f64; 3]) -> Result<(), crate::entity::item::ItemError> {
+        let (name, volume, pitch) = crate::world::events::step_sound(id);
+        self.world.play_sound(
+            name,
+            Vec3D::new(p[0], p[1], p[2]),
+            (volume + 1.0) / 2.0,
+            pitch * 0.8,
+        );
+        Ok(())
+    }
 }

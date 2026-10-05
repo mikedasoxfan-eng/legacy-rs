@@ -16,6 +16,10 @@ pub mod fishing;
 pub mod geometry;
 pub mod hostile;
 pub mod living;
+pub mod item;
+pub mod item_block;
+pub mod factory_nbt;
+pub mod round10_verify181;
 pub mod mobs181;
 pub mod nbt;
 pub mod network;
@@ -229,6 +233,9 @@ impl EntityKind {
 
 #[derive(Clone, Debug)]
 pub struct Entity {
+    /// EntityItem(World) leaves its stack reference null; normal dropped items
+    /// and valid NBT loads supply a stack without changing ItemStack identity.
+    pub dropped_stack_present: bool,
     pub data_watcher: data_watcher::DataWatcher,
     pub living: living::LivingState,
     pub network: network::NetworkState,
@@ -338,6 +345,7 @@ impl Entity {
         let id = w.next_entity_id;
         w.next_entity_id = id.wrapping_add(1);
         let mut e = Self {
+            dropped_stack_present: false,
             data_watcher: Default::default(),
             living: Default::default(),
             network: Default::default(),
@@ -397,6 +405,10 @@ impl Entity {
         e.init_data_watcher();
         e
     }
+    pub fn dropped_item_stack(&self) -> Option<&ItemStack> {
+        if !self.dropped_stack_present { return None; }
+        if let EntityKind::Item {item, ..}=&self.kind {Some(item)} else {None}
+    }
     pub fn item(w: &mut World, x: f64, y: f64, z: f64, item: ItemStack) -> Self {
         // The hover initializer runs after Entity's constructor and before the body.
         let mut e = Self::base(
@@ -411,6 +423,7 @@ impl Entity {
             },
         );
         let hover = (w.math_random.next_double() * std::f64::consts::PI * 2.0) as f32;
+        e.dropped_stack_present = true;
         if let EntityKind::Item { hover_start, .. } = &mut e.kind {
             *hover_start = hover;
         }

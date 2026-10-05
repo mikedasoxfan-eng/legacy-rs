@@ -168,9 +168,7 @@ impl Entity {
         Some(n)
     }
     pub fn from_nbt(w: &mut World, n: &Compound) -> Option<Self> {
-        let mut e = super::registry::create(w, &n.string("id"))?;
-        e.read_existing_nbt(w, n)?;
-        Some(e)
+        super::registry::create_from_nbt_checked(w,Some(n)).ok().flatten()
     }
     pub(in crate::entity) fn read_existing_nbt(
         &mut self,
@@ -180,6 +178,7 @@ impl Entity {
         fn doubles(n: &Compound, key: &str) -> Option<Vec<f64>> {
             n.list(key)
                 .iter()
+                .take(3)
                 .map(|t| {
                     if let Tag::Double(v) = t {
                         Some(*v)
@@ -197,6 +196,7 @@ impl Entity {
         let rotation: Vec<_> = n
             .list("Rotation")
             .iter()
+            .take(2)
             .filter_map(|t| {
                 if let Tag::Float(v) = t {
                     Some(*v)
@@ -251,7 +251,7 @@ impl Entity {
             self.living.death_time = n.short("DeathTime") as i32;
             self.living.attack_time = n.short("AttackTime") as i32;
         }
-        if n.has("ActiveEffects") {
+        if self.kind.is_living() && n.has("ActiveEffects") {
             for effect in n.list("ActiveEffects") {
                 if let Tag::Compound(n) = effect {
                     let effect = super::potion::PotionEffect::new(
@@ -299,11 +299,7 @@ impl Entity {
                         if let Tag::Compound(item) = item {
                             let slot = item.byte("Slot") as u8 as usize;
                             if slot < 27 {
-                                s.items[slot] = Some(super::player::ItemStack::new(
-                                    item.short("id") as i32,
-                                    item.byte("Count") as i32,
-                                    item.short("Damage") as i32,
-                                ));
+                                s.items[slot] = super::player::ItemStack::try_from_nbt181(item);
                             }
                         }
                     }
@@ -312,7 +308,8 @@ impl Entity {
             EntityKind::Item {
                 item, age, health, ..
             } => {
-                let i = n.compound("Item")?;
+                let empty=Compound::new();
+                let i = n.compound("Item").unwrap_or(&empty);
                 *item = ItemStack::new(
                     i.short("id") as i32,
                     i.byte("Count") as i32,
@@ -320,6 +317,8 @@ impl Entity {
                 );
                 *age = n.short("Age") as i32;
                 *health = n.short("Health") as i32 & 255;
+                self.dropped_stack_present=super::player::registry::item(item.id as i32).is_some();
+                if !self.dropped_stack_present {self.dead=true;}
             }
             EntityKind::FallingSand { block, .. } => *block = n.byte("Tile") as u8,
             EntityKind::Tnt { fuse } => *fuse = n.byte("Fuse") as i32,
@@ -351,12 +350,13 @@ impl Entity {
             _ => {}
         }
         if matches!(self.kind, EntityKind::Slime { .. }) {
-            self.set_slime_size(n.int("Size") + 1);
+            self.set_slime_size(n.int("Size").wrapping_add(1));
         }
         if matches!(self.kind, EntityKind::Player(..)) {
             self.read_player_tags(w, n);
         }
         if let EntityKind::Painting(s) = &mut self.kind {
+            s.art_initialized = true;
             s.direction = n.byte("Dir") as i32;
             s.tile = [n.int("TileX"), n.int("TileY"), n.int("TileZ")];
             s.art = super::painting::ARTS
