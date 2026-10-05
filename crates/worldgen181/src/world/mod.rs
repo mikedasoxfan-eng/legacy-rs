@@ -263,6 +263,8 @@ pub struct World {
     pub item_random: JavaRandom,
     pub next_entity_id: i32,
     pub difficulty: i32,
+    /// World.multiplayerWorld: remote simulation guards in entity callbacks.
+    pub multiplayer_world: bool,
     pub spawn_hostile_mobs: bool,
     pub spawn_peaceful_mobs: bool,
     pub block_bounds: [crate::entity::AxisAlignedBB; 256],
@@ -375,6 +377,7 @@ impl World {
             ),
             next_entity_id: 0,
             difficulty: 2,
+            multiplayer_world: false,
             spawn_hostile_mobs: true,
             spawn_peaceful_mobs: true,
             block_bounds: crate::entity::block_table::INITIAL_BOUNDS,

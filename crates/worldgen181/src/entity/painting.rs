@@ -325,7 +325,7 @@ impl Entity {
         };
         let check = s.check_counter == 100;
         s.check_counter += 1;
-        if check {
+        if check && !w.multiplayer_world {
             s.check_counter = 0;
             if !self.painting_valid_surface(w) {
                 self.break_painting(w, false);
@@ -349,7 +349,7 @@ impl Entity {
     /// Entity.addVelocity, overridden by EntityPainting even when already dead.
     pub fn add_velocity(&mut self, w: &mut World, x: f64, y: f64, z: f64) {
         if matches!(self.kind, EntityKind::Painting(_)) {
-            if x * x + y * y + z * z > 0.0 {
+            if !w.multiplayer_world && x * x + y * y + z * z > 0.0 {
                 self.break_painting(w, false);
             }
             return;

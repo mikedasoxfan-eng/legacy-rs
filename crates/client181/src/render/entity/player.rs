@@ -70,6 +70,14 @@ impl Renderer {
         brightness: f32,
         bed: i32,
     ) -> Fixed {
+        self.render_lit(e, t, camera, brightness, brightness, bed, true)
+    }
+    /// RenderManager's white primary color and RenderLiving's scalar hurt tint
+    /// are distinct inputs in b1.8.1.
+    pub fn render_lit(
+        &mut self, e: &Entity, t: f32, camera: [f64; 3], brightness: f32,
+        overlay_brightness: f32, bed: i32, local_player: bool,
+    ) -> Fixed {
         let mut g = Fixed::new(brightness);
         let p = e.player_state().expect("player");
         let held = p.inventory.held();
@@ -115,7 +123,7 @@ impl Renderer {
         g.push();
         g.translate(
             (pos[0] - camera[0] + off.x) as f32,
-            (pos[1] - camera[1] - e.y_offset as f64 + off.y) as f32,
+            (pos[1] - camera[1] - e.y_offset as f64 + off.y - if e.sneaking && !local_player {0.125} else {0.0}) as f32,
             (pos[2] - camera[2] + off.z) as f32,
         );
         if sleeping {
@@ -138,6 +146,7 @@ impl Renderer {
         for pass in 0..4 {
             self.armor_pass(&mut g, e, pass, pose);
         }
+        super::raw_living181::embedded_arrows(&mut g, &self.main, e.entity_id, e.living.arrows_stuck, t);
         if let Some(helmet) = p.inventory.armor[3].filter(|s| s.id < 256) {
             g.push();
             special::part(&mut g, &self.main["bipedHead"], true);
@@ -164,6 +173,9 @@ impl Renderer {
                     g.rotate(180.0, 0.0, 0.0, 1.0);
                     g.translate(0.0, -0.125, 0.0);
                 }
+                if p.item_use_ticks > 0 && matches!(item.id,267|268|272|276|283) {
+                    g.translate(0.05, 0.0, -0.1);g.rotate(-60.0,0.0,1.0,0.0);g.rotate(-20.0,1.0,0.0,0.0);
+                }
                 g.translate(0.0, 0.1875, 0.0);
                 g.scale(0.625, -0.625, 0.625);
                 g.rotate(-100.0, 1.0, 0.0, 0.0);
@@ -184,10 +196,10 @@ impl Renderer {
             g.src = 770;
             g.dst = 771;
             g.depth = 514;
-            g.material = [brightness, 0.0, 0.0, 0.4];
+            g.material = [overlay_brightness, 0.0, 0.0, 0.4];
             special::model(&mut g, &self.main);
             for pass in 0..4 {
-                g.material = [brightness, 0.0, 0.0, 0.4];
+                g.material = [overlay_brightness, 0.0, 0.0, 0.4];
                 self.armor_pass(&mut g, e, pass, pose);
             }
             g.depth = 515;

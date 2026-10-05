@@ -489,3 +489,44 @@ pub fn emitter_check(path: &str) -> bool {
     assert_eq!(r.at,r.data.len());
     println!("particle emitters: {cases} cases, {bad} differences");bad==0
 }
+
+pub fn lifecycle_check(path: &str) -> bool {
+    use super::particles::EffectRenderer;
+    let mut expected = Reader { data: std::fs::read(path).unwrap(), at: 0 };
+    let mut renderer = EffectRenderer::new(0);
+    renderer.next_seed = 100;
+    renderer.math_random.set_seed(200);
+    let terrain = Snapshot::default();
+    let mut cases = 0;
+    fn snapshot(r: &EffectRenderer, d: &mut Reader) {
+        for layer in &r.layers {
+            assert_eq!(d.i() as usize, layer.len(), "particle layer size");
+            for p in layer {
+                assert_eq!(d.d().to_bits(), p.pos[0].to_bits(), "particle insertion/tick order");
+                assert_eq!(d.i(), p.age, "particle age");
+                assert_eq!(d.bytes::<1>()[0] != 0, p.dead, "particle dead flag");
+                assert_eq!(d.l(), p.rand.state(), "particle RNG");
+            }
+        }
+        assert_eq!(d.i() as usize, r.len(), "statistics excludes lit layer");
+        assert_eq!(d.l(), r.math_random.state(), "Math.random");
+    }
+    for _cycle in 0..3 {
+        for layer in 0..4 {
+            for j in 0..4003 {
+                let kind = [Kind::Base, Kind::Digging { block: 1, metadata: 0 }, Kind::Snowball, Kind::Footstep][layer];
+                let mut p = renderer.create(kind, [0.0,85.0,0.0], [0.0;3]);
+                p.pos[0] = j as f64 * 0.001;
+                p.max_age = j % 4;
+                p.dead = j % 7 == 0;
+                renderer.add(p);
+            }
+        }
+        snapshot(&renderer, &mut expected); cases += 1;
+        for _ in 0..5 { renderer.tick(&terrain, [0.0,85.0,0.0]); snapshot(&renderer, &mut expected); cases += 1; }
+        renderer.clear(); snapshot(&renderer, &mut expected); cases += 1;
+    }
+    assert_eq!(expected.at, expected.data.len());
+    println!("EXACT: EffectRenderer lifecycle, {cases} snapshots, 48,036 insertions across four layers");
+    true
+}

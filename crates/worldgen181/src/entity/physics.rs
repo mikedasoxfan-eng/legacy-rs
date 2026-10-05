@@ -106,7 +106,8 @@ impl Entity {
         } else {
             self.in_water = false;
         }
-        if self.fire > 0 {
+        if w.multiplayer_world { self.fire = 0; }
+        else if self.fire > 0 {
             if self.immune_to_fire {
                 self.fire -= 4;
                 if self.fire < 0 {
@@ -166,7 +167,7 @@ impl Entity {
     }
     pub fn move_entity(&mut self, w: &mut World, mut dx: f64, mut dy: f64, mut dz: f64) {
         if matches!(self.kind, super::EntityKind::Painting(_)) {
-            if dx * dx + dy * dy + dz * dz > 0.0 {
+            if !w.multiplayer_world && dx * dx + dy * dy + dz * dz > 0.0 {
                 self.break_painting(w, false);
             }
             return;

@@ -33,6 +33,12 @@ impl Entity {
         {
             *prev_ignition = *ignition;
         }
+        if w.multiplayer_world {
+            if let EntityKind::Creeper { ignition, state, .. } = self.kind {
+                if state > 0 && ignition == 0 { w.play_sound_at_entity(self,"random.fuse",1.0,0.5); }
+                if let EntityKind::Creeper { ignition, state, .. } = &mut self.kind { *ignition=(*ignition+*state).clamp(0,30); }
+            }
+        }
         if let EntityKind::PigZombie { sound_delay, .. } = &mut self.kind {
             self.living.move_speed = if self.living.target.is_some() {
                 0.95
@@ -78,7 +84,7 @@ impl Entity {
         if matches!(
             self.kind,
             EntityKind::Zombie | EntityKind::Skeleton | EntityKind::PigZombie { .. }
-        ) && w.skylight_subtracted < 4
+        ) && !w.multiplayer_world && w.skylight_subtracted < 4
         {
             let light = self.brightness(w);
             if light > 0.5
@@ -128,6 +134,7 @@ impl Entity {
             ignition, state, ..
         } = &mut self.kind
         {
+            if w.multiplayer_world { return; }
             if visible && ((*state <= 0 && distance < 3.0) || (*state > 0 && distance < 7.0)) {
                 if *ignition == 0 {
                     w.play_sound(

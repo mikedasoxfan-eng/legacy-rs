@@ -522,7 +522,7 @@ impl EntityPipeline {
             if let Some(mut s) = super::bridge::render_state(e, self.partial, snapshot.brightness) {
                 s.overlay_brightness = overlay_brightness;
                 if s.kind == living::MobKind::Enderman && s.screaming { s.scream_jitter = [self.enderman_random.gaussian()*0.02,self.enderman_random.gaussian()*0.02]; }
-                if matches!(s.kind,living::MobKind::Enderman|living::MobKind::Silverfish|living::MobKind::Spider|living::MobKind::CaveSpider|living::MobKind::Zombie|living::MobKind::Skeleton|living::MobKind::Pig|living::MobKind::Cow|living::MobKind::Sheep|living::MobKind::Chicken|living::MobKind::Squid|living::MobKind::Wolf|living::MobKind::Creeper) {
+                {
                     let g=super::raw_living181::render(&s,camera.to_array(),self.normalize);
                     explicit_lights=super::raw_living181::packed_brightnesses(&g.draws,snapshot.light.unwrap_or(NO_LIGHTMAP) as i32).into_iter().map(|v|v as u32).collect();
                     batches.extend(g.draws.iter().map(|d| {
@@ -530,7 +530,8 @@ impl EntityPipeline {
                         if d.texture==58 && d.flags & 8 != 0 {for vertex in &mut batch.vertices {vertex.uv[0]+=s.age*0.01;vertex.uv[1]+=s.age*0.01;}}
                         batch
                     }));
-                } else { batches.extend(living::scene_with_lighting(&[s], camera, &mut self.normalize)); }
+                    if s.kind == living::MobKind::Slime { self.normalize = true; }
+                }
             } else if let Some(mut s) =
                 super::bridge::object_state(e, self.partial, snapshot.brightness, snapshot.falling_light)
             {

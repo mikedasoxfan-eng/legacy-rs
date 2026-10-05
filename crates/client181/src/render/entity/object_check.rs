@@ -504,7 +504,7 @@ pub fn new_living_check(path:&str)->bool {
  use super::living::{MobKind,RenderState};
  let mut d=Input{data:std::fs::read(path).unwrap(),at:0,checks:0,bad:0};let n=d.u();
  for case in 0..n {let kind=d.u();let c=d.u() as i32;let arrows=d.u() as i32;let partial=d.f();let brightness=d.f();let packed=d.u() as i32;
-  let mut s=RenderState::new(match kind {0=>MobKind::Enderman,1=>MobKind::Silverfish,2=>MobKind::Spider,3=>MobKind::CaveSpider,4=>MobKind::Zombie,5=>MobKind::Skeleton,6=>MobKind::Pig,7=>MobKind::Cow,8=>MobKind::Sheep,9=>MobKind::Chicken,10=>MobKind::Squid,11=>MobKind::Wolf,_=>MobKind::Creeper});
+  let mut s=RenderState::new(match kind {0=>MobKind::Enderman,1=>MobKind::Silverfish,2=>MobKind::Spider,3=>MobKind::CaveSpider,4=>MobKind::Zombie,5=>MobKind::Skeleton,6=>MobKind::Pig,7=>MobKind::Cow,8=>MobKind::Sheep,9=>MobKind::Chicken,10=>MobKind::Squid,11=>MobKind::Wolf,12=>MobKind::Creeper,13=>MobKind::Ghast,14=>MobKind::PigZombie,15=>MobKind::Giant,16=>MobKind::Slime,_=>panic!("unknown mob kind {kind}")});
   s.entity_id=c*337;s.arrow_count=arrows;s.partial=partial;s.brightness=1.0;s.overlay_brightness=brightness;s.position=[-0.25,10.5,3.75];
   s.body_yaw=-33.0+(17.0 - -33.0)*partial;s.yaw=-75.0+(35.0 - -75.0)*partial;s.pitch=25.0+(-12.0-25.0)*partial;
   s.limb_amount=0.2+(0.9-0.2)*partial;s.limb_swing=3.75-0.9*(1.0-partial);s.age=(c*127) as f32+partial;s.attack=0.15+(0.65-0.15)*partial;
@@ -514,6 +514,7 @@ pub fn new_living_check(path:&str)->bool {
   s.chicken_flap=0.2+(1.9-0.2)*partial;s.chicken_flap_amount=0.15+(0.8-0.15)*partial;
   s.squid_pitch=-17.0+(35.0 - -17.0)*partial;s.squid_yaw=12.0+(-45.0-12.0)*partial;s.tentacle_angle=0.3+(1.1-0.3)*partial;
   s.wolf.angry=c%8&2!=0;s.wolf.sitting=c%8&1!=0;s.wolf_tamed=c%8&4!=0;s.wolf_health=c+4;s.wolf.interested=[0.2,0.8];s.wolf.shake=[0.1,0.6];s.powered=c&1!=0;s.creeper_flash=(c as f32+3.0*partial)/28.0;
+  s.ghast_attack=(c-5) as f32+10.0*partial;s.ghast_attacking=c%2!=0;s.slime_size=1<<(c%3);s.slime_squish=0.2+(0.8-0.2)*partial;
   let g=super::raw_living181::render(&s,[0.0;3],c>=8);assert_eq!(d.u() as usize,g.draws.len(),"new living {case} draw count");for (i,r) in g.draws.iter().enumerate(){d.draw(r,&format!("new living {case} draw {i}"));}
   let lights=super::raw_living181::packed_brightnesses(&g.draws,packed);assert_eq!(d.u() as usize,lights.len());for (i,v) in lights.into_iter().enumerate(){d.eq(v as u32,&format!("new living {case} light {i}"));}
  }
@@ -525,6 +526,23 @@ pub fn bed_check(path:&str)->bool {
  for table in [&X[..],&Z[..],&HEAD_INVISIBLE_FACE[..],&FACE_DIRECTION[..],&FOOT_INVISIBLE_FACE_REMAP[..],&NEXT[..],&PREVIOUS[..]] {for v in table {d.eq(*v as u32,"ModelBed table");}}
  for table in BED_DIRECTION {for v in table {d.eq(v as u32,"ModelBed direction");}}
  assert_eq!(d.at,d.data.len());println!("ModelBed: {} values, {} differences",d.checks,d.bad);d.bad==0
+}
+
+pub fn player_living_check(path: &str) -> bool {
+    use worldgen::entity::{Entity, EntityKind, player::ItemStack};
+    let mut d=Input{data:std::fs::read(path).unwrap(),at:0,checks:0,bad:0};let count=d.u();
+    let mut renderer=super::player::Renderer::default();let mut w=worldgen::entity::verify181::world();
+    for case in 0..count {
+        let c=d.u() as i32;let material=d.u() as i32;let id=d.u() as i32;let arrows=d.u() as i32;let using=d.u()!=0;let partial=d.f();let brightness=d.f();
+        let mut e=Entity::player(&mut w,"Player");e.entity_id=c*337;e.living.arrows_stuck=arrows;e.set_position(-0.25,10.5,3.75);e.last_tick_pos=e.pos;
+        e.living.prev_render_yaw_offset=-33.0;e.living.render_yaw_offset=17.0;e.prev_yaw=-75.0;e.yaw=35.0;e.prev_pitch=25.0;e.pitch=-12.0;
+        e.living.prev_limb_amount=0.2;e.living.limb_amount=0.9;e.living.limb_swing=3.75;e.ticks_existed=c*127;e.living.prev_swing_progress=0.15;e.living.swing_progress=0.65;
+        e.living.hurt_time=if c%4==1 {3}else{0};e.living.death_time=if c%4==2 {c}else{0};e.sneaking=c%3==0;e.riding=if c%2!=0 {Some(100000)}else{None};
+        let p=e.player_state_mut().unwrap();p.inventory.main[0]=Some(ItemStack::new(id,1,0));for j in 0..4 {p.inventory.armor[j]=if material==5 {None}else{Some(ItemStack::new(298+material*4+3-j as i32,1,0))};}p.item_use_ticks=if using {20}else{0};
+        let g=renderer.render_lit(&e,partial,[0.0;3],1.0,brightness,0,false);assert_eq!(d.u() as usize,g.draws.len(),"player {case} draw count");for (i,r) in g.draws.iter().enumerate(){d.draw(r,&format!("player {case} draw {i}"));}
+        assert!(matches!(e.kind,EntityKind::Player(..)));
+    }
+    assert_eq!(d.at,d.data.len());println!("player renderers: {count} cases, {} values, {} differences",d.checks,d.bad);d.bad==0
 }
 
 pub fn arrow_check(path:&str)->bool {

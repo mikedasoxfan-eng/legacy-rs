@@ -324,7 +324,7 @@ impl Entity {
                 1,
             );
         }
-        if self.immune_to_fire {
+        if self.immune_to_fire || w.multiplayer_world {
             self.fire = 0;
         }
         if !self.dead
@@ -511,6 +511,7 @@ impl Entity {
         self.slime_after_update(w, was_on_ground);
     }
     fn living_update(&mut self, w: &mut World) {
+        self.interpolate_network(w, true);
         if matches!(self.kind, EntityKind::Player(..)) {
             self.player_before_living(w);
         }
@@ -521,7 +522,7 @@ impl Entity {
             self.living.move_strafing = 0.0;
             self.living.move_forward = 0.0;
             self.living.random_yaw_velocity = 0.0;
-        } else {
+        } else if !self.network.multiplayer_entity {
             match self.kind {
                 EntityKind::Player(..) => self.player_action(),
                 EntityKind::Ghast(..) => self.ghast_action(w),
@@ -758,6 +759,7 @@ impl Entity {
         }
     }
     pub fn is_on_ladder(&self, w: &mut World) -> bool {
+        if matches!(self.kind, EntityKind::Ghast(..)) { return false; }
         if matches!(self.kind, EntityKind::Spider | EntityKind::CaveSpider) {
             return self.collided_horizontally;
         }
@@ -773,6 +775,7 @@ impl Entity {
         source: super::damage::DamageSource,
         damage: i32,
     ) -> bool {
+        if w.multiplayer_world { return false; }
         let attacker = source.attacker;
         self.living.entity_age = 0;
         if self.living.health <= 0 {
