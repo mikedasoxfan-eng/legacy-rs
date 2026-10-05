@@ -38,7 +38,7 @@ impl Input {
     fn compare(&mut self, j: u32, r: u32, name: &str) {
         self.checks += 1;
         if j != r {
-            if self.bad < 40 {
+            if self.bad < 40 || std::env::var("FP_SHOW").is_ok_and(|f| self.label.contains(&f)) {
                 eprintln!("{} {name}: java {j:08x}, rust {r:08x}", self.label);
             }
             self.bad += 1;

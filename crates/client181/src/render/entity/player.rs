@@ -146,7 +146,7 @@ impl Renderer {
                 g.rotate(180.0, 0.0, 1.0, 0.0);
                 g.scale(0.625, -0.625, 0.625);
             }
-            first_person::item(&mut g, helmet, brightness, false);
+            first_person::item(&mut g, helmet, 1.0, false); // b1.8.1 renderItem: brightness 1, lit by the lightmap
             g.pop();
         }
         if let Some(mut item) = held {
@@ -175,7 +175,7 @@ impl Renderer {
                 g.rotate(-90.0, 1.0, 0.0, 0.0);
                 g.rotate(20.0, 0.0, 0.0, 1.0);
             }
-            first_person::item(&mut g, item, brightness, false);
+            first_person::item(&mut g, item, 1.0, false); // b1.8.1 renderItem: brightness 1, lit by the lightmap
             g.pop();
         }
         if l.hurt_time > 0 || l.death_time > 0 {
