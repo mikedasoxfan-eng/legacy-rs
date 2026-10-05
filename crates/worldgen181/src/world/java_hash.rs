@@ -25,6 +25,7 @@ struct Node<K> {
     red: bool,
 }
 
+#[derive(Clone)]
 pub struct JavaHashSet<K> {
     nodes: Vec<Node<K>>,
     table: Vec<u32>,

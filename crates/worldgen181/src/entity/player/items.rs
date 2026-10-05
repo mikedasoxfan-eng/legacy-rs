@@ -26,9 +26,15 @@ impl Entity {
             323 => self.place_sign(w, stack, x, y, z, side),
             321 => self.place_painting(w, stack, x, y, z, side),
             2256 | 2257 => {
+                if w.get_block_id(x, y, z) != 84 || w.get_block_metadata(x, y, z) != 0 {
+                    return false;
+                }
+                if w.multiplayer_world {
+                    return true;
+                }
                 let used = w.insert_record(x, y, z, stack.id);
                 if used {
-                    stack.count -= 1;
+                    stack.count = stack.count.wrapping_sub(1);
                 }
                 used
             }

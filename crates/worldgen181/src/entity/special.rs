@@ -499,10 +499,12 @@ impl Entity {
             if self.in_water {
                 s.flags &= !1;
             }
-            s.watched_health = self.living.health;
+            if !w.multiplayer_world {
+                s.watched_health = self.living.health;
+            }
         }
     }
-    fn follow_owner(&mut self, w: &mut World, target: Vec3D, distance: f32) {
+    pub(super) fn follow_owner(&mut self, w: &mut World, target: Vec3D, distance: f32) {
         let path = w.entity_path(self, target, 16.0, 16.0);
         if path.is_none() && distance > 12.0 {
             let x = floor(target.x) - 2;
@@ -516,9 +518,9 @@ impl Entity {
                         && !w.is_block_normal_cube(x + dx, y + 1, z + dz)
                     {
                         self.set_location_and_angles(
-                            (x + dx) as f32 as f64 + 0.5,
+                            ((x + dx) as f32 + 0.5) as f64,
                             y as f64,
-                            (z + dz) as f32 as f64 + 0.5,
+                            ((z + dz) as f32 + 0.5) as f64,
                             self.yaw,
                             self.pitch,
                         );
@@ -553,14 +555,25 @@ impl Entity {
                     if s.flags & 4 == 0 {
                         id == 352
                     } else {
-                        matches!(id, 319 | 320)
+                        matches!(id, 319 | 320 | 363 | 364 | 365 | 366 | 367)
                     }
                 });
-            if s.shaking && !s.shake_active && self.living.path.is_none() && self.on_ground {
+            if !self.network.multiplayer_entity && s.shaking && !s.shake_active && self.living.path.is_none() && self.on_ground {
                 s.shake_active = true;
                 s.shake_time = 0.0;
                 s.prev_shake_time = 0.0;
             }
+        }
+    }
+    pub(super) fn wolf_hearts_or_smoke(&mut self, w: &mut World, hearts: bool) {
+        for _ in 0..7 {
+            let velocity = Vec3D::new(self.rand.next_gaussian() * 0.02,
+                self.rand.next_gaussian() * 0.02, self.rand.next_gaussian() * 0.02);
+            let position = Vec3D::new(
+                self.pos.x + (self.rand.next_float() * self.width * 2.0) as f64 - self.width as f64,
+                self.pos.y + 0.5 + (self.rand.next_float() * self.height) as f64,
+                self.pos.z + (self.rand.next_float() * self.width * 2.0) as f64 - self.width as f64);
+            w.spawn_particle(if hearts { "heart" } else { "smoke" }, position, velocity);
         }
     }
     pub(super) fn wolf_update(&mut self, w: &mut World) {

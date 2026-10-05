@@ -1,6 +1,6 @@
 //! Bytecode fixtures for DataWatcher and ChunkCoordinates.
 use super::data_watcher::*;
-use std::{rc::Rc, cell::RefCell};
+use std::{sync::{Arc, Mutex}};
 fn i(o:&mut Vec<u8>,n:i32){o.extend(n.to_le_bytes());}
 fn text(o:&mut Vec<u8>,s:&str){i(o,s.len() as i32);o.extend(s.as_bytes());}
 fn value(kind:i32,n:i32)->Value {
@@ -8,7 +8,7 @@ fn value(kind:i32,n:i32)->Value {
   0=>Value::Byte(n.wrapping_mul(17) as i8),1=>Value::Short(n.wrapping_mul(1009) as i16),2=>Value::Int(n.wrapping_mul(123456789)),
   3=>Value::Float([0.0,-0.0,f32::NAN,f32::INFINITY,-1.25][n.rem_euclid(5) as usize]),
   4=>{let mut s=vec![65,0,0xd83d,0xde00,0xd800];s.extend(n.to_string().encode_utf16());Value::String(s)},
-  5=>Value::Item(Rc::new(RefCell::new(WatchItem{id:35,count:n.wrapping_mul(17),damage:n.wrapping_mul(1009) as i16 as i32}))),
+  5=>Value::Item(Arc::new(Mutex::new(WatchItem{id:35,count:n.wrapping_mul(17),damage:n.wrapping_mul(1009) as i16 as i32}))),
   _=>Value::Coordinates(ChunkCoordinates{x:n.wrapping_mul(123456789),y:n-17,z:n.wrapping_neg().wrapping_mul(1009)})
  }
 }

@@ -45,6 +45,7 @@ pub struct RenderState {
     pub ghast_attack: f32,
     pub ghast_attacking: bool,
     pub held_item: Option<super::equipped::HeldSprite>,
+    pub held_stack: Option<worldgen::entity::player::ItemStack>,
     pub kind: MobKind,
     pub position: [f64; 3],
     pub yaw: f32,
@@ -101,6 +102,7 @@ impl RenderState {
             screaming: false,
             ghast_attack: 0.0,
             ghast_attacking: false,
+            held_stack: None,
             held_item: if kind == MobKind::Skeleton {
                 Some(super::equipped::HeldSprite::BOW)
             } else if kind == MobKind::PigZombie {

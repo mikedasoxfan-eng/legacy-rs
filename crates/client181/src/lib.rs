@@ -525,6 +525,7 @@ pub fn run() {
     }
     if args.get(1).map(String::as_str) == Some("--arrowcheck") {std::process::exit(if render::entity::object_check::arrow_check(&args[2]) {0}else{1});}
     if args.get(1).map(String::as_str) == Some("--bedmodelcheck") {std::process::exit(if render::entity::object_check::bed_check(&args[2]) {0}else{1});}
+    if args.get(1).map(String::as_str) == Some("--particlefactorycheck") { std::process::exit(if render::particle_check::factory_check(&args[2]) {0}else{1}); }
     if args.get(1).map(String::as_str) == Some("--effectlifecyclecheck") { std::process::exit(if render::particle_check::lifecycle_check(&args[2]) {0}else{1}); }
     if args.get(1).map(String::as_str) == Some("--playerlivingcheck") { std::process::exit(if render::entity::object_check::player_living_check(&args[2]) {0}else{1}); }
     if args.get(1).map(String::as_str) == Some("--newlivingcheck") { std::process::exit(if render::entity::object_check::new_living_check(&args[2]) {0}else{1}); }

@@ -54,7 +54,7 @@ impl Kind {
             "snowshovel" => Self::SnowShovel,
             "footstep" => Self::Footstep,
             "crit" => Self::Crit,
-            "magicCrit" => Self::MagicCrit,
+
             "cloud" => Self::Cloud,
             "townaura" | "depthsuspend" => Self::Aura,
             "suspended" => Self::Suspend,
@@ -879,16 +879,40 @@ impl EffectRenderer {
         l.push(p);
     }
     pub fn spawn(&mut self, name: &str, p: [f64; 3], v: [f64; 3], view: [f64; 3]) {
-        let distance = (0..3)
-            .map(|i| (view[i] - p[i]) * (view[i] - p[i]))
-            .sum::<f64>();
-        // Original bytecode rejects with dcmpl/ifgt; NaN therefore passes.
-        if matches!(name, "largeexplode" | "hugeexplosion") || !(distance > 16.0 * 16.0) {
-            if let Some(kind) = Kind::named(name) {
-                let p = self.create(kind, p, v);
-                self.add(p);
-            }
+        self.try_spawn(name, p, v, view).expect("Invalid particle factory input");
+    }
+    /// RenderGlobal's named factory feeding EffectRenderer. Parsing happens only
+    /// after the original distance guard; large explosions bypass that guard.
+    pub fn try_spawn(&mut self, name: &str, p: [f64; 3], v: [f64; 3], view: [f64; 3]) -> Result<(), &'static str> {
+        let dx = view[0] - p[0];
+        let dy = view[1] - p[1];
+        let dz = view[2] - p[2];
+        let distance = dx * dx + dy * dy + dz * dz;
+        if matches!(name, "largeexplode" | "hugeexplosion") {
+            let particle = self.create(Kind::named(name).unwrap(), p, v);
+            self.add(particle);
+            return Ok(());
         }
+        if distance > 16.0 * 16.0 { return Ok(()); }
+        if let Some(suffix) = name.strip_prefix("iconcrack_") {
+            let id = suffix.parse::<i32>().map_err(|_| "NumberFormatException")?;
+            if !(0..32000).contains(&id) { return Err("ArrayIndexOutOfBoundsException"); }
+            if worldgen::entity::player::registry::item(id).is_none() { let _ = self.create(Kind::Snowball, p, [0.0; 3]); return Err("NullPointerException"); }
+            let mut particle = self.create(Kind::Snowball, p, [0.0; 3]);
+            particle.texture = super::entity::item_table::properties(id as i16, 0).0;
+            for axis in 0..3 { particle.motion[axis] = particle.motion[axis] * 0.1f32 as f64 + v[axis]; }
+            self.add(particle);
+        } else if let Some(suffix) = name.strip_prefix("tilecrack_") {
+            let id = suffix.parse::<i32>().map_err(|_| "NumberFormatException")?;
+            if !(0..256).contains(&id) { return Err("ArrayIndexOutOfBoundsException"); }
+            if worldgen::entity::player::registry::item(id).is_none() { let _ = self.create(Kind::Base, p, v); return Err("NullPointerException"); }
+            let particle = self.create(Kind::Digging { block: id as u8, metadata: 0 }, p, v);
+            self.add(particle);
+        } else if let Some(kind) = Kind::named(name) {
+            let particle = self.create(kind, p, v);
+            self.add(particle);
+        }
+        Ok(())
     }
     pub fn tick(&mut self, s: &Snapshot, view: [f64; 3]) {
         for layer in 0..4 {

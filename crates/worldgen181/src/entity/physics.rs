@@ -34,6 +34,9 @@ impl Entity {
         {
             self.riding = None;
         }
+        let (sneaking, sprinting) = (self.sneaking, self.sprinting);
+        self.set_entity_flag(1, sneaking);
+        self.set_entity_flag(3, sprinting);
         self.ticks_existed = self.ticks_existed.wrapping_add(1);
         self.prev_distance_walked = self.distance_walked;
         self.prev_pos = self.pos;
@@ -142,6 +145,10 @@ impl Entity {
             } else {
                 self.set_entity_dead(w);
             }
+        }
+        if !w.multiplayer_world {
+            self.set_entity_flag(0, self.fire > 0);
+            self.set_entity_flag(2, self.riding.is_some());
         }
         self.first_update = false;
     }

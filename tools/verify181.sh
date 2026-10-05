@@ -439,5 +439,8 @@ bash "$root/tools/verify_entities3_181.sh" --built || fail=1
 # --- entities (b1.8.1) ---
 bash "$root/tools/verify_entities4_181.sh" --built || fail=1
 # --- end entities ---
+# --- entities (b1.8.1) ---
+bash "$root/tools/verify_entities5_181.sh" --built || fail=1
+# --- end entities ---
 [ $fail -eq 0 ] && echo "ALL CASES EXACT" || echo "SOME CASES DIFFER"
 exit $fail

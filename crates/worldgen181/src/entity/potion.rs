@@ -84,7 +84,7 @@ impl super::Entity {
                 }
                 effect.duration -= 1;
             }
-            if effect.duration > 0 {
+            if effect.duration > 0 || w.multiplayer_world {
                 self.living.effects.push(effect);
             }
         }

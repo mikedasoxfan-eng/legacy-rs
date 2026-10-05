@@ -510,7 +510,7 @@ impl Entity {
         self.living.walk_phase += phase;
         self.slime_after_update(w, was_on_ground);
     }
-    fn living_update(&mut self, w: &mut World) {
+    pub(super) fn living_update(&mut self, w: &mut World) {
         self.interpolate_network(w, true);
         if matches!(self.kind, EntityKind::Player(..)) {
             self.player_before_living(w);
@@ -534,7 +534,7 @@ impl Entity {
                 }
             }
         }
-        if self.living.health > 0 && matches!(self.kind, EntityKind::Wolf(..)) {
+        if self.living.health > 0 && !self.network.multiplayer_entity && matches!(self.kind, EntityKind::Wolf(..)) {
             self.wolf_after_action(w);
         }
         let water = self.is_in_water_query(w);
@@ -643,6 +643,8 @@ impl Entity {
             other.motion.x += x;
             other.motion.y += 0.0;
             other.motion.z += z;
+            self.velocity_changed = true;
+            other.velocity_changed = true;
         }
     }
     pub fn move_entity_with_heading(&mut self, w: &mut World, strafe: f32, forward: f32) {
@@ -863,6 +865,13 @@ impl Entity {
             }
         }
         if self.living.health <= 0 {
+            self.on_living_death(w, source);
+        }
+        true
+    }
+    /// EntityLiving.onDeath, shared by damage and incoming status packets.
+    pub fn on_living_death(&mut self, w: &mut World, source: super::damage::DamageSource) {
+        let attacker = source.attacker;
             self.living.dying = true;
             if let Some(mut a) = attacker
                 .filter(|&id| id >= 0)
@@ -884,7 +893,7 @@ impl Entity {
                 }
                 w.entities.insert(a.entity_id, a);
             }
-            self.drop_few_items(w);
+            if !w.multiplayer_world { self.drop_few_items(w); }
             if matches!(self.kind, EntityKind::Player(..)) {
                 self.player_death(w, attacker);
             }
@@ -899,8 +908,52 @@ impl Entity {
             // Vanilla's Skeleton sniper achievement is unreachable in this build:
             // DamageSource.func_35526_e delegates to func_35532_a, so both
             // accessors return the owner. One entity cannot be Arrow and Player.
+    }
+    pub fn perform_hurt_animation(&mut self) {
+        if matches!(self.kind, EntityKind::Boat(..) | EntityKind::Minecart(..)) {
+            self.perform_vehicle_hurt_animation();
+        } else if self.kind.is_living() {
+            self.living.hurt_time = 10;
+            self.living.max_hurt_time = 10;
+            self.living.attacked_at_yaw = 0.0;
         }
-        true
+    }
+    pub fn handle_health_update(&mut self, w: &mut World, status: i8) {
+        if matches!(self.kind, EntityKind::Wolf(..)) {
+            match status {
+                6 | 7 => { self.wolf_hearts_or_smoke(w, status == 7); return; }
+                8 => {
+                    if let EntityKind::Wolf(s) = &mut self.kind {
+                        s.shake_active = true;
+                        s.shake_time = 0.0;
+                        s.prev_shake_time = 0.0;
+                    }
+                    return;
+                }
+                _ => {}
+            }
+        }
+        if !self.kind.is_living() { return; }
+        let source = super::damage::DamageSource::new(super::damage::DamageKind::Generic);
+        if status == 2 {
+            self.living.limb_amount = 1.5;
+            self.living.hearts_life = self.living.hearts_halves_life;
+            self.perform_hurt_animation();
+            self.play_health_sound(w, false);
+            self.attack_from(w, source, 0);
+        } else if status == 3 {
+            self.play_health_sound(w, true);
+            self.living.health = 0;
+            self.on_living_death(w, source);
+        }
+    }
+    fn play_health_sound(&mut self, w: &mut World, death: bool) {
+        let pitch = (self.rand.next_float() - self.rand.next_float()) * 0.2 + 1.0;
+        if matches!(self.kind, EntityKind::Squid(..)) {
+            w.play_null_sound_at_entity(self, self.sound_volume(), pitch);
+        } else {
+            w.play_sound_at_entity(self, self.damage_sound(death), self.sound_volume(), pitch);
+        }
     }
     pub fn drop_few_items(&mut self, w: &mut World) {
         if matches!(self.kind, EntityKind::Squid(..)) {

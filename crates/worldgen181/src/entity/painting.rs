@@ -370,6 +370,9 @@ impl Entity {
         if side == 0 || side == 1 {
             return false;
         }
+        if !self.can_edit_block181(x, y, z) {
+            return false;
+        }
         let direction = match side {
             4 => 1,
             3 => 2,
@@ -378,8 +381,10 @@ impl Entity {
         };
         let e = Self::painting(w, x, y, z, direction);
         if e.painting_valid_surface(w) {
-            w.entity_joined_world(e);
-            stack.count -= 1;
+            if !w.multiplayer_world {
+                w.entity_joined_world(e);
+            }
+            stack.count = stack.count.wrapping_sub(1);
         }
         true
     }

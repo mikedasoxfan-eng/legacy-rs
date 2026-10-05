@@ -1,6 +1,17 @@
 use super::*;
 use crate::entity::{living::Target, AxisAlignedBB};
 impl Entity {
+    /// ItemDye.saddleEntity: its signed stack decrement happens even on clients.
+    pub fn dye_sheep(&mut self, stack: &mut ItemStack) {
+        if let EntityKind::Sheep { sheared, fleece_color } = &mut self.kind {
+            let color = (!stack.damage & 15) as u8;
+            if !*sheared && *fleece_color != color {
+                *fleece_color = color;
+                stack.count = stack.count.wrapping_sub(1);
+                self.sync_mob_watcher();
+            }
+        }
+    }
     pub fn attack_with_item(&mut self, w: &mut World, id: i32) {
         let Some(mut target) = w.entities.remove(&id) else {
             return;
@@ -78,7 +89,7 @@ impl Entity {
                 .ridden_by
                 .and_then(|r| w.entities.get(&r))
                 .is_some_and(|r| r.player_state().is_some() && r.entity_id != self.entity_id);
-            if !occupied {
+            if !occupied && !w.multiplayer_world {
                 w.entities.insert(id, target.clone());
                 self.mount_entity(w, Some(id));
                 target = w.entities.remove(&id).unwrap();
@@ -87,14 +98,19 @@ impl Entity {
         }
         if let EntityKind::Minecart(s) = &mut target.kind {
             if s.cart_type == 1 {
-                self.player_state_mut()
+                if !w.multiplayer_world { self.player_state_mut()
                     .unwrap()
                     .events
-                    .push(PlayerEvent::OpenVehicleInventory { entity: id });
+                    .push(PlayerEvent::OpenVehicleInventory { entity: id }); }
                 handled = true;
             } else if s.cart_type == 2 {
                 if held.is_some_and(|s| s.id == 263) {
-                    self.consume_held();
+                    let inv = &mut self.player_state_mut().unwrap().inventory;
+                    let slot = inv.current_item as usize;
+                    if let Some(stack) = &mut inv.main[slot] {
+                        stack.count = stack.count.wrapping_sub(1);
+                        if stack.count == 0 { inv.main[slot] = None; }
+                    }
                     s.fuel = s.fuel.wrapping_add(1200);
                 }
                 s.push_x = target.pos.x - self.pos.x;
@@ -142,6 +158,7 @@ impl Entity {
             if s.flags & 4 == 0 {
                 if held.is_some_and(|s| s.id == 352) && s.flags & 2 == 0 {
                     self.consume_held();
+                    if !w.multiplayer_world {
                     let tamed = target.rand.next_int(3) == 0;
                     if tamed {
                         s.flags |= 5;
@@ -164,6 +181,7 @@ impl Entity {
                         );
                         w.spawn_particle(if tamed { "heart" } else { "smoke" }, p, v);
                     }
+                    }
                     handled = true;
                 }
             } else if held.is_some_and(|s| matches!(s.id, 319 | 320 | 363 | 364 | 365 | 366 | 367))
@@ -182,9 +200,11 @@ impl Entity {
                 .owner
                 .eq_ignore_ascii_case(&self.player_state().unwrap().username)
             {
-                s.flags ^= 1;
-                target.living.is_jumping = false;
-                target.living.path = None;
+                if !w.multiplayer_world {
+                    s.flags ^= 1;
+                    target.living.is_jumping = false;
+                    target.living.path = None;
+                }
                 handled = true;
             }
         }
@@ -194,21 +214,20 @@ impl Entity {
                     self.saddle(&mut target);
                 }
                 if stack.id == 351 {
-                    if let EntityKind::Sheep {
-                        sheared,
-                        fleece_color,
-                    } = &mut target.kind
-                    {
-                        let color = (!stack.damage & 15) as u8;
-                        if !*sheared && *fleece_color != color {
-                            *fleece_color = color;
-                            self.consume_held();
-                        }
+                    let mut dyed = stack;
+                    target.dye_sheep(&mut dyed);
+                    let inv = &mut self.player_state_mut().unwrap().inventory;
+                    if target.kind.is_living() {
+                        inv.main[inv.current_item as usize] = if dyed.count <= 0 { None } else { Some(dyed) };
                     }
                 }
             }
         }
+        target.sync_mob_watcher();
         w.entities.insert(id, target);
+        if w.entities.contains_key(&self.entity_id) {
+            w.entities.insert(self.entity_id, self.clone());
+        }
         handled
     }
     pub(super) fn alert_wolves(&self, w: &mut World, target: &Entity, attack: bool) {
