@@ -1,3 +1,46 @@
+# Beta 1.8.1 entities - round 7 report
+
+Round 7 completes **eight Item classes**: ItemBed, ItemSign, ItemSlab, ItemCloth, ItemLeaves, ItemLog, ItemVine and ItemBucket. The per-class table below is authoritative. The remaining backlog is not finished. Multiplayer watcher synchronization, remote interpolation, labels, ears and capes remain outside the assigned scope.
+
+## Round 7 changes and original-bytecode proof
+
+`tools/verify_entities7_181.sh --built` is added in a final delimited entities block in `tools/verify181.sh`. Its new Mode classes execute original Beta 1.8.1 bytecode with Mojang Java 8u51. Original Java sources, shared oracle fixtures/recorders and protected Beta 1.7.3 paths are unchanged.
+
+| Check | Coverage | Result |
+|---|---|---|
+| beditem7 | Eight support/obstruction/material scenes, eight height and face values, six orientations, five signed counts, server/client, overlapping entity; both bed cells and ordered world events | EXACT, 30,720 cases, 16,005,120 bytes |
+| signitem7 | Same placement boundaries; tile-null vs editor callback, text/editable state, invalid face/height, signed consumption and entity overlap | EXACT, 30,720 cases, 16,039,920 bytes |
+| metadata7 | Slab/cloth/leaves/log/stone-brick/tall-grass/vine, every signed-short damage and nine additional full-int values, both graphics states; constructor properties, icons, colors, placement metadata and slab/cloth names | EXACT, 917,630 rows, 16,804,181 bytes |
+| metaplace7 | Seven registered subclass items, six replacement/collision scenes, six heights, eight faces, negative/zero/overflow stack counts and signed metadata | EXACT, 2,016 cases, 529,120 bytes |
+| logconstructor7 | Four independent placement Blocks, two custom texture Blocks plus null, 15 signed damages; captured Block/side/input, overflow result and exception | EXACT, 180 cases, 7,140 bytes |
+| vineconstructor7 | Two custom Blocks, both subtype flags, five arbitrary color results, 15 signed damages; texture/color callback order and captured Block/inputs | EXACT, 300 cases, 14,700 bytes |
+| buckethit7 | Four buckets, null/block/cow/pig hits, eight target blocks, three metadata values, eight faces, three interpolation/count configs, creative/server/client/Nether; callback writes, return identity, events and RNGs | EXACT, 73,728 cases, 17,525,376 bytes |
+| bucketray7 | Four buckets, eight target blocks, three metadata values, five yaws, four pitches, creative and both dimensions; actual original World ray tracing and writes | EXACT, 7,680 cases, 2,349,744 bytes |
+
+Beds and signs now decrement with Java wrapping arithmetic. ItemSign uses the existing base player edit API and preserves vanilla's success/consumption after out-of-height World writes fail; the previous extra height rejection is removed. The sign tile/editor code itself is unchanged. ItemBlock now gets subclass placement metadata through the existing registry API, fixing tall-grass metadata retention. Literal signed icon overrides replace nibble-indexed sampling for the audited subclasses; slab names clamp only their suffix index, while icons preserve invalid metadata. Log and vine callback adapters retain their constructor-held Block and full signed input. Registered tall-grass inventory color uses the original jar palette value already present in the client table; the generalized vine color API accepts the Block's supplied color, verified with arbitrary signed colors.
+
+ItemBucket's existing right-click branch now calls the literal item callback in `entity/player/bucket.rs`, before the existing inventory/controller policy. It preserves float/double interpolation (including cancellation), uses the player's computed eye position for Nether fizz, retains same-object returns for creative placement, and exposes the original cow-hit branch. There is no player tick/hunger/XP or inventory identity rewrite. The singleplayer base permission APIs return true as in Java.
+
+The controlled bucket fixture overrides only the two World write callbacks and records their arguments and ignored failure results; Rust supplies the same callbacks through the item API. This isolates ItemBucket's code from world-block ownership. The separate real-ray matrix executes original World writes and is EXACT. An exploratory full-write client case exposes the existing stationary-liquid neighbor callback mismatch (Java retains block 9 while Rust changes it to 8). That world-block client callback is not changed or credited here.
+
+The broader existing `playerintegration181 bucket 100` replay has an inherited mismatch at byte 72,867. To check whether this round introduced it, the original committed bucket branch was temporarily built and compared with the new branch: both complete Rust recordings are identical (4,146,957 bytes), and both first differ from Java at the same byte. The final source was restored immediately. Evidence is in `target/entities7-player-bucket-baseline-check.log`; no player integration code or recording fixture was changed to mask this gap.
+
+## Round 7 validation and remaining work
+
+The required `cargo build --release -p worldgen181 -p client` passed on the restored final source (`target/entities7-final-build.log`, 1m 09s). All eight new checks passed, ending `ENTITIES7 ALL FOCUSED CASES EXACT` (`target/entities7-final-verify.log`). All six regression suites finished with their EXACT summaries: `verify_entities181.sh --built`, `verify_entities3_181.sh --built`, `verify_entities4_181.sh --built`, `verify_entities5_181.sh --built`, `verify_entities6_181.sh --built` and `verify_world_blocks181.sh --built`. Individual logs are `target/entities7-final-<script-name>.log`; the combined progress log is `target/entities7-final-regressions.log`. Shell syntax and `git diff --check` pass. The approximately one-hour full `tools/verify181.sh` remains for integration after merge, as required by the task. No interactive GPU validation was performed.
+
+All eight new checks also passed in a post-build rerun (`target/entities7-postbuild-verify.log`). The existing `signs` section is EXACT for placement/support/drop RNG, 2,000 edits and NBT (`target/entities7-postbuild-checks.log`). The added round-7 block is the only new section in `tools/verify181.sh`; existing modes/recorders were not rewritten.
+
+The existing `pickuprenderers` and `pickuprenderersfast` sections remain DIFFER: each records 684 cases, 10,224 draws, 693,000 comparisons and 60,588 differences, beginning with color/normal values on stone and also including arrows. Rebuilding with the pre-round committed item table produced identical complete diagnostics and exit status for both modes (`target/entities7-pickup-baseline-check.log`, with separate current/baseline mode logs). Thus this round introduces no pickup-rendering regression and does not claim that dependency fixed. The final item table was restored byte-for-byte and the required release build passed again (`target/entities7-restored-final-build.log`, 37.14s).
+
+Remaining Not done classes: SpawnerAnimals, EntityList, EffectRenderer, RenderManager, TileEntityRenderer, TileEntitySpecialRenderer, Item, ItemBlock, ItemStack and ItemMap. Their existing per-class gaps are unchanged: live terrain population and allocation-dependent spawning; nullable/malformed entity constructors; complete renderer class/cache/dispatch and tile null/cache/dispatch; lit particle ordering/runtime GPU light; the base Item/ItemStack complete lifecycle/alias/delegation audit; broad ItemBlock callbacks (including sponge/malformed moving piston); full ItemMap update/packet/inherited audit. Integrator-owned terrain population, world tile dispatch/lid simulation, world lightmap/range/live drawing remain untouched. The inherited broad renderers dependency failure is not claimed fixed.
+
+Commit preparation: `target/commit-b181-entities7.sh` stages explicit round-7 files and commits with the requested author and co-author trailers. It is not executed because this sandbox makes .git read-only.
+
+Source audit diffs for all 18 starting backlog classes are recorded as `target/entities7-<Class>.diff`. The eight Done classes have the original-bytecode proof listed above; the other ten remain Not done. Protected b1.7.3 and original Java paths, shared oracle fixtures, terrain, world-block implementations, player tick/GUI, first-person, weather and live tile drawing remain untouched.
+
+## Preserved round 6 report
+
 # Beta 1.8.1 entities - round 6 report
 
 Round 6 completes EntityLiving, RenderLiving, RenderPlayer, ItemDye and ItemDoor within the integrator's singleplayer scope. Entity retains the integrator's existing Done credit. The entire backlog is **not finished**. Multiplayer watcher synchronization, server-driven interpolation, labels, ears and capes are excluded by the task's explicit scope ruling. The per-class table below is authoritative; earlier reports describe historical scope and gaps.
@@ -305,16 +348,16 @@ The integrator retains world tile dispatch/lid simulation, terrain population an
 | Item | Not done | registry/actions/use/useticks retained; complete inherited lifecycle and exceptional/edit behavior remains with player integration. |
 | ItemBlock | Not done | Height and stack-count fixes locally ported; broad blockitem6 probe stops at unported sponge onBlockAdded (world-blocks), and moving-piston malformed-tile paths need World exception fidelity. placement4/placepred4 retained. Final limited blockbasic6 result is recorded above; complete every-block matrix remains. |
 | ItemStack | Not done | Nullable NBT and use identity proofs retained; full alias mutation, delegation and load/exception audit remains. |
-| ItemVine | Not done | Existing placement/geometry/items/registry retained; full metadata and target boundaries remain. |
-| ItemBucket | Not done | Creative-preservation fix retained; ray trace, Nether, collection/milk and permission boundaries remain. |
+| ItemVine | Done | Full new-class audit; vineconstructor7 EXACT for 300 custom Block texture/color callbacks, both subtype flags and signed inputs. metadata7 covers tall grass/vines across every signed-short/full-int damage, and metaplace7 verifies inherited placements with their literal metadata. |
+| ItemBucket | Done | Full class diff audit; buckethit7 EXACT for 73,728 controlled-hit cases recording literal World write requests/results, stack identity, ray arithmetic, all faces, creative/client/Nether, source metadata, cow/non-cow/null hits and both RNGs/events. bucketray7 EXACT for 7,680 real World ray/placement cases. Singleplayer base World.canMineBlock/EntityPlayer.canEdit return true; unrelated remote liquid callbacks are not claimed fixed. |
 | ItemPainting | Done | paintingitem5 EXACT, 597,564 bytes: all six faces plus invalid faces, server/client, three support scenes, height boundaries and signed/overflow stack counts; existing EntityPainting proof retained. Calls existing base player edit API. |
-| ItemBed | Not done | Existing paired edit/placement proof retained; complete paired-cell height/collision boundaries remain. |
-| ItemSign | Not done | Placement proof retained; edit/NBT/entity/editor callback boundaries remain. |
-| ItemSlab | Not done | Placement and held-render metadata proof retained; invalid-damage icon/name and complete inherited audit remain. |
-| ItemLog | Not done | Placement/held-render for logs and stone brick retained; generalized constructor block/metadata proof remains. |
-| ItemCloth | Not done | Placement/held-render retained; name/icon conversion across signed metadata remains. |
+| ItemBed | Done | Full class diff audit; beditem7 EXACT: 30,720 server/client cases, eight support/obstruction scenes, eight heights and faces, six yaws, signed/overflow counts and overlapping entities. Both paired edit calls use the existing base-player API; failed World writes still consume the stack. |
+| ItemSign | Done | Full class diff audit; signitem7 EXACT: 30,720 placements with material/replacement, invalid face/height, rotation, entity overlap, signed counts, tile-null and editor-callback/text/editable-state coverage. Original out-of-height success/consumption and wrapping decrement restored. |
+| ItemSlab | Done | Full class diff audit; metadata7 EXACT for every signed-short damage plus full-int boundaries, both graphics states, literal icons and clamped name suffixes. metaplace7 verifies inherited placement/replacement/collision/height/count behavior. |
+| ItemLog | Done | Full class diff audit; logconstructor7 EXACT for 180 constructor-held Block/null/delegation cases independent of placement Block, including signed overflow callback inputs and null-reference exception. metadata7 covers both registered blocks (log and stone brick); metaplace7 covers inherited placement. |
+| ItemCloth | Done | Full class diff audit; metadata7 EXACT for signed damage-to-dye conversion, icons/names, constructor properties and placement metadata. metaplace7 verifies inherited callbacks, including malformed counts. |
 | ItemMap | Not done | Existing maps check retained; complete update/packet/inherited audit remains. |
-| ItemLeaves | Not done | Placement damage-or-4 and held-render proof retained; all signed metadata colors/icons/inherited audit remains. |
+| ItemLeaves | Done | Full class diff audit; metadata7 EXACT for all signed-short/full-int boundaries, fancy/fast icons, pine/birch/default colors and damage-or-4 placement. metaplace7 verifies inherited callbacks. |
 | ItemRecord | Done | recorditem5 EXACT, 435,672 bytes: both records, server/client, air/stone/jukebox, metadata 0/1/15, signed/overflow counts and side boundaries. record4/null-tile and musicevents proofs retained; original no-edit-check behavior preserved. |
 
 The current round-6 commit script is `target/commit-b181-entities6.sh`; it stages the explicit changed-file list with author logiu, the requested email and both co-author trailers. No git commit was issued.

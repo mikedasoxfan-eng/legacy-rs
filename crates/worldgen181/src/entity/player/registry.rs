@@ -64,3 +64,80 @@ pub fn bow_charge(remaining:i32)->Option<f32>{
     f=(f*f+f*2.0f32)/3.0f32;
     if (f as f64)<0.1f64 {None}else{if f>1.0{f=1.0;}Some(f)}
 }
+
+/// Metadata overrides on the registered ItemBlock subclasses. Keep the full
+/// signed ItemStack damage until World writes its metadata nibble.
+pub fn placed_block_metadata(id: i32, damage: i32) -> i32 {
+    match id {
+        6 | 17 | 31 | 35 | 44 | 98 | 106 => damage,
+        18 => damage | 4,
+        29 | 33 => 7,
+        _ => 0,
+    }
+}
+
+/// The fixed-block ItemSlab, ItemCloth and ItemLeaves icon/color overrides.
+/// None means the existing item/block renderer supplies the property.
+pub fn block_item_properties(id: i32, damage: i32, fancy: bool) -> Option<(i32, u32)> {
+    Some(match id {
+        31 | 106 => {
+            let item=VineItem::new(id as u8,id==31);
+            (item.icon(damage,|block,side,damage| {
+                debug_assert_eq!(side,0);
+                if block==106 {143} else {match damage {0=>55,2=>56,_=>39}}
+            }),item.color(|block|if block==106 {4764952} else {0xff7cbd6bu32 as i32}) as u32)
+        },
+        17 | 98 => {
+            let item=LogItem::new(Some(id as u8));
+            (item.icon(damage,|block,side,damage| {
+                debug_assert_eq!(side,2);
+                match block {17=>match damage {1=>116,2=>117,_=>20},98=>match damage {1=>100,2=>101,_=>54},_=>unreachable!()}
+            }).unwrap(),0xffffff)
+        },
+        44 => (match damage {0=>5,1=>192,2=>4,3=>16,4=>7,5=>54,_=>6}, 0xffffff),
+        35 => {
+            let meta = !damage & 15;
+            let icon = if meta==0 {64} else {let inverted=!(meta&15);113+((inverted&8)>>3)+(inverted&7)*16};
+            (icon,0xffffff)
+        },
+        18 => (52 + if damage&3==1 {80} else {0} + if fancy {0} else {1},
+            if damage&1==1 {6396257} else if damage&2==2 {8431445} else {4764952}),
+        _ => return None,
+    })
+}
+
+/// ItemLog stores the constructor's Block reference, rather than always using
+/// Block.wood. The base ItemBlock continues to own its placement block.
+#[derive(Clone, Copy, Debug)]
+pub struct LogItem { pub texture_block: Option<u8> }
+impl LogItem {
+    pub fn new(texture_block: Option<u8>) -> Self { Self {texture_block} }
+    pub fn icon(&self, damage: i32, mut texture: impl FnMut(u8,i32,i32)->i32) -> Result<i32,&'static str> {
+        let block=self.texture_block.ok_or("NullPointerException")?;
+        Ok(texture(block,2,damage))
+    }
+    pub fn placed_metadata(&self, damage: i32) -> i32 { damage }
+}
+
+/// ItemVine captures its placement Block and asks that same object for texture
+/// and inventory color. The subtype constructor flag is independent of damage.
+#[derive(Clone, Copy, Debug)]
+pub struct VineItem { pub block: u8, pub subtypes: bool }
+impl VineItem {
+    pub fn new(block: u8, subtypes: bool) -> Self { Self {block,subtypes} }
+    pub fn icon(&self, damage: i32, mut texture: impl FnMut(u8,i32,i32)->i32) -> i32 {texture(self.block,0,damage)}
+    pub fn color(&self, mut block_color: impl FnMut(u8)->i32) -> i32 {block_color(self.block)}
+    pub fn placed_metadata(&self, damage: i32) -> i32 {damage}
+}
+/// ItemSlab clamps its name index (but not its icon index); ItemCloth uses
+/// BlockCloth.getBlockFromDye, including signed and oversized damage.
+pub fn block_item_name(id: i32, damage: i32) -> Option<String> {
+    match id {
+        44 => {
+            let names=["stone","sand","wood","cobble","brick","smoothStoneBrick"];
+            Some(format!("tile.stoneSlab.{}",names.get(damage as usize).unwrap_or(&names[0])))
+        },
+        35 => Some(format!("tile.cloth.{}",super::dye::DYE_COLOR_NAMES[(!damage&15) as usize])),
+        _ => None,
+    }
+}

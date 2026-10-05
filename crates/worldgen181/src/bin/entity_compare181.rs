@@ -7,6 +7,7 @@ fn main() {
     }
     let expected = fs::read(&a[3]).unwrap();
     let actual = match a[1].as_str() {
+        "beditem7" | "signitem7" | "metadata7" | "buckethit7" | "bucketray7" | "logconstructor7" | "vineconstructor7" => worldgen::entity::round7_verify181::replay(&a[1]),
         "blockitem6" => worldgen::entity::round6_verify181::block_items_replay(&expected),
         "spawninputs6" => worldgen::entity::round6_verify181::spawn_inputs_replay(&expected),
         "livingdamage6" | "living6" | "livingnbt6" | "sleep6" | "dyeproperties6" | "dyeblocks6" | "doorhelper6" | "dooritem6" => worldgen::entity::round6_verify181::replay(&a[1]),

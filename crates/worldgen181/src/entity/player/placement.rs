@@ -132,12 +132,7 @@ impl Entity {
         if !place {
             return false;
         }
-        let meta = match id {
-            29 | 33 => 7,
-            6 | 17 | 35 | 44 | STONE_BRICK | VINE => stack.damage,
-            18 => stack.damage | 4,
-            _ => 0,
-        };
+        let meta = super::registry::placed_block_metadata(id as i32, stack.damage);
         if w.set_block_and_metadata_with_notify(x, y, z, id, meta) {
             if w.get_block_id(x,y,z)==id {self.block_placed(w, id, x, y, z, side);}
             let (name, volume, pitch) = crate::world::events::step_sound(id);
@@ -247,7 +242,7 @@ impl Entity {
         if side != 1 {
             return false;
         }
-        let y = y + 1;
+        let y = y.wrapping_add(1);
         let dir = floor((self.yaw * 4.0 / 360.0) as f64 + 0.5) & 3;
         let (dx, dz) = [(0, 1), (-1, 0), (0, -1), (1, 0)][dir as usize];
         if !self.can_edit_block181(x,y,z) || !self.can_edit_block181(x+dx,y,z+dz)
@@ -260,7 +255,7 @@ impl Entity {
         }
         w.set_block_and_metadata_with_notify(x, y, z, 26, dir);
         w.set_block_and_metadata_with_notify(x + dx, y, z + dz, 26, dir + 8);
-        stack.count -= 1;
+        stack.count = stack.count.wrapping_sub(1);
         true
     }
 }
