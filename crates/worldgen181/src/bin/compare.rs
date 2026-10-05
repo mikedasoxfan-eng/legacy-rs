@@ -565,6 +565,10 @@ rand {}
                     "chunkreload" => {
                         let n=worldgen::storage::chunk_to_nbt(w.chunk(v[0],v[1]),w.world_time);
                         w.unload_chunk_entities(v[0],v[1]);
+                        // This fixture replaces the provider's chunk reference.
+                        // Retained update-list tiles keep the discarded chunk's
+                        // payload, just as in the production unload path.
+                        w.detach_unloaded_chunk_tiles181(v[0],v[1]);
                         let mut c=worldgen::storage::chunk_from_nbt(&n).unwrap();c.loaded=true;
                         w.chunks.insert((v[0],v[1]),Box::new(c));w.load_chunk_entities(v[0],v[1]);
                     }

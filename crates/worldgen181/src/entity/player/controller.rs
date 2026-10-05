@@ -226,7 +226,7 @@ impl Entity {
         }
     }
     pub fn block_clicked(&mut self, w: &mut World, id: u8, x: i32, y: i32, z: i32) {
-        if id==25 { w.trigger_note(x,y,z); }
+        if id==25 && !w.multiplayer_world { w.trigger_note(x,y,z); }
         if matches!(id, 64 | 71 | 69 | 77 | 96) {
             self.activate_block(w, x, y, z);
         }
@@ -248,7 +248,9 @@ impl Entity {
             super::block_hooks::drop_stack(w, x, y, z, ItemStack::new(332, 1, 0));
             self.add_stat(super::stat::mine(78), 1);
         } else {
-            self.add_exhaustion(0.025);
+            // EntityPlayer.addExhaustion skips remote worlds; this block-owned
+            // callback already has the World needed to preserve that guard.
+            if !w.multiplayer_world { self.add_exhaustion(0.025); }
             crate::world::behavior::drop_block_as_item(w, id, x, y, z, meta);
         }
         if id == 79 {

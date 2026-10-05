@@ -116,9 +116,11 @@ impl World {
         }
     }
     pub fn activate_note(&mut self, x: i32, y: i32, z: i32) {
+        if self.multiplayer_world { return; }
         if let Some(TileEntity::Note(n)) = self.get_block_tile_entity(x, y, z) {
-            n.note = (n.note + 1) % 25;
-            self.mark_container_dirty(x, z);
+            n.note = ((n.note as i32 + 1) % 25) as i8;
+            let id=self.chunk(x>>4,z>>4).tile_entity_ids[&(x&15,y,z&15)];
+            self.tile_inventory_changed181(id);
             self.trigger_note(x, y, z);
         }
     }

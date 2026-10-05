@@ -3,6 +3,73 @@ use super::World;
 use crate::{block::*, entity::AxisAlignedBB as BB};
 
 impl World {
+    /// Button/lever neighbor callbacks first check all attachment candidates,
+    /// then only the original enumerated metadata orientations.
+    pub fn attached_control_neighbor181(&mut self,id:u8,x:i32,y:i32,z:i32) {
+        let sides=[(-1,0,0),(1,0,0),(0,0,-1),(0,0,1),(0,-1,0)];
+        let count=if id==69{5}else{4};
+        // canPlaceBlockAt short-circuits, then the neighbor callback repeats all
+        // four horizontal queries (and two floor queries for a lever).
+        let can_attach=sides[..count].iter().any(|&(dx,dy,dz)|self.is_block_normal_cube(x+dx,y+dy,z+dz));
+        let meta=self.get_block_metadata(x,y,z);
+        let orientation=meta&7;
+        let mut unsupported=!can_attach;
+        if can_attach {
+            for (k,&(dx,dy,dz)) in sides[..4].iter().enumerate() {
+                unsupported |= !self.is_block_normal_cube(x+dx,y+dy,z+dz) && orientation==k as i32+1;
+            }
+            if id==69 {
+                unsupported |= !self.is_block_normal_cube(x,y-1,z) && orientation==5;
+                unsupported |= !self.is_block_normal_cube(x,y-1,z) && orientation==6;
+            }
+        }
+        if unsupported {
+            super::behavior::drop_block_as_item(self,id,x,y,z,meta);
+            self.set_block_with_notify(x,y,z,0);
+        }
+    }
+    /// BlockStep.onBlockAdded runs for both slab instances, including double slabs.
+    pub fn slab_added181(&mut self,x:i32,y:i32,z:i32) {
+        let below=self.get_block_id(x,y-1,z);
+        let meta=self.get_block_metadata(x,y,z);
+        if meta==self.get_block_metadata(x,y-1,z) && below==44 {
+            self.set_block_with_notify(x,y,z,0);
+            self.set_block_and_metadata_with_notify(x,y-1,z,43,meta);
+        }
+    }
+    /// BlockTrapDoor.onPoweredBlockChange.
+    pub fn trapdoor_powered181(&mut self,x:i32,y:i32,z:i32,powered:bool) {
+        let meta=self.get_block_metadata(x,y,z);
+        if (meta&4!=0)!=powered {
+            self.set_block_metadata_with_notify(x,y,z,meta^4);
+            self.auxiliary_effect(1003,(x,y,z),0);
+        }
+    }
+    /// BlockDoor.onPoweredBlockChange recurses from the upper half and emits one sound.
+    pub fn door_powered181(&mut self,id:u8,x:i32,y:i32,z:i32,powered:bool) {
+        let meta=self.get_block_metadata(x,y,z);
+        if meta&8!=0 {
+            if self.get_block_id(x,y-1,z)==id { self.door_powered181(id,x,y-1,z,powered); }
+        } else if (meta&4!=0)!=powered {
+            if self.get_block_id(x,y+1,z)==id { self.set_block_metadata_with_notify(x,y+1,z,(meta^4)+8); }
+            self.set_block_metadata_with_notify(x,y,z,meta^4);
+            self.auxiliary_effect(1003,(x,y,z),0);
+        }
+    }
+    /// BlockTrapDoor.onNeighborBlockChange continues checking power after removal.
+    pub fn trapdoor_neighbor181(&mut self,x:i32,y:i32,z:i32,changed:u8) {
+        if self.multiplayer_world { return; }
+        let meta=self.get_block_metadata(x,y,z);
+        let (dx,dz)=[(0,1),(0,-1),(1,0),(-1,0)][(meta&3) as usize];
+        if !self.is_block_normal_cube(x+dx,y,z+dz) {
+            self.set_block_with_notify(x,y,z,0);
+            super::behavior::drop_block_as_item(self,96,x,y,z,meta);
+        }
+        if changed>0 && crate::entity::block_hooks::provides_power(changed) {
+            let powered=self.is_block_indirectly_getting_powered(x,y,z);
+            self.trapdoor_powered181(x,y,z,powered);
+        }
+    }
     /// BlockFence.func_35303_f: gates join fences in the new renderer.
     pub fn fence_connects181(&mut self, x: i32, y: i32, z: i32) -> bool {
         matches!(self.get_block_id(x, y, z), 85 | 107)

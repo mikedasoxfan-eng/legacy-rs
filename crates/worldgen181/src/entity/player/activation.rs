@@ -72,6 +72,7 @@ impl Entity {
                 true
             }
             58 | 61 | 62 | 23 => {
+                if id == 23 && w.multiplayer_world { return true; }
                 if id != 58 && w.get_block_tile_entity(x,y,z).is_none() {
                     return true;
                 }

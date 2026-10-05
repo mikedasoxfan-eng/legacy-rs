@@ -40,6 +40,7 @@ fn tick_rate(id: u8) -> i32 {
 // ---------------------------------------------------------------- dispatch
 
 pub fn on_block_added(w: &mut World, id: u8, x: i32, y: i32, z: i32) {
+    if matches!(id,43|44) { w.slab_added181(x,y,z); return; }
     // Structure placement reaches BlockTorch with metadata zero and no support.
     if id == 50 { w.torch_added(id,x,y,z); return; }
     if crate::entity::player::block_hooks::added(w, id, x, y, z) {
@@ -67,7 +68,7 @@ pub fn on_block_added(w: &mut World, id: u8, x: i32, y: i32, z: i32) {
         66 | 27 | 28 => w.rail_added(x, y, z),
         75 | 76 => w.redstone_torch_added(id, x, y, z),
         29 | 33 => {
-            if w.get_block_tile_entity(x,y,z).is_none() { w.piston_update(id,x,y,z); }
+            if !w.multiplayer_world && w.get_block_tile_entity(x,y,z).is_none() { w.piston_update(id,x,y,z); }
         }
         34 | 36 => {}
         block::CHEST => w.chest_added181(x,y,z),
@@ -138,6 +139,9 @@ pub fn on_block_removal(w: &mut World, id: u8, x: i32, y: i32, z: i32) {
 }
 
 pub fn on_neighbor_block_change(w: &mut World, id: u8, x: i32, y: i32, z: i32, _changed: u8) {
+    if matches!(id,69|77) {w.attached_control_neighbor181(id,x,y,z); return;}
+    if id == 19 { return; } // BlockSponge inherits the empty neighbor callback.
+    if id == 96 { w.trapdoor_neighbor181(x,y,z,_changed); return; }
     if id == 50 { w.torch_neighbor_change(id,x,y,z); return; }
     if id == 106 { crate::features181::vine_neighbor(w,x,y,z); return; }
     if matches!(id, 63 | 68) { crate::sign::neighbor(w,id,x,y,z); return; }
@@ -311,7 +315,7 @@ fn warn_once(id: u8, hook: &str) {
 fn assert_plain(id: u8, hook: &str) {
     let plain = matches!(
         id,
-        97..=109 | block::STONE
+        45 | 57 | 95 | 97..=109 | block::STONE
             | block::FENCE
             | block::STAIRS_WOOD
             | block::STAIRS_COBBLESTONE
@@ -813,6 +817,7 @@ fn quantity_dropped(w: &mut World, id: u8) -> i32 {
 
 fn id_dropped(w: &mut World, id: u8, meta: i32) -> i32 {
     match id {
+        55 => ITEM_REDSTONE,
         63 | 68 => 323,
         59 => {
             if meta == 7 {
@@ -900,6 +905,8 @@ pub fn drop_block_with_chance(
     meta: i32,
     chance: f32,
 ) {
+    if w.multiplayer_world { return; }
+    if id==26 && meta&8!=0 { return; } // BlockBed skips the base drop method for its head.
     if matches!(id, 53 | 67 | 108 | 109) {
         let model=match id {53=>5,67=>4,108=>45,_=>98};
         drop_block_with_chance(w,model,x,y,z,meta,chance);
@@ -913,7 +920,8 @@ pub fn drop_block_with_chance(
     }
     let n = quantity_dropped(w, id);
     for _ in 0..n {
-        if w.rand.next_float() <= chance {
+        // Java's skip comparison lets NaN chances through.
+        if !(w.rand.next_float() > chance) {
             let item = id_dropped(w, id, meta);
             if item > 0 {
                 let damage = match id {

@@ -61,14 +61,7 @@ pub fn added(w: &mut World, id: u8, x: i32, y: i32, z: i32) -> bool {
         return true;
     }
     if matches!(id, 43 | 44) {
-        if id == 44
-            && w.get_block_id(x, y - 1, z) == 44
-            && w.get_block_metadata(x, y, z) == w.get_block_metadata(x, y - 1, z)
-        {
-            let m = w.get_block_metadata(x, y, z);
-            w.set_block_with_notify(x, y, z, 0);
-            w.set_block_and_metadata_with_notify(x, y - 1, z, 43, m);
-        }
+        w.slab_added181(x,y,z);
         return true;
     }
     if id == 50 {
@@ -98,7 +91,15 @@ pub fn added(w: &mut World, id: u8, x: i32, y: i32, z: i32) -> bool {
         return true;
     }
     if matches!(id, 23 | 61 | 62) {
-        ensure_container(w, id, x, y, z);
+        if id == 23 {
+            // BlockContainer.onBlockAdded installs a fresh factory tile while
+            // retaining the previous object's validity and loaded-list entry.
+            w.set_block_tile_entity(x,y,z,crate::world::tile::TileEntity::for_block(id));
+            w.dispenser_random.insert((x,y,z),crate::JavaRandom::new(crate::entity::EntitySeedSource::Time.next_seed()));
+        } else { ensure_container(w, id, x, y, z); }
+        // BlockDispenser creates its tile on either side, but only the server
+        // chooses the initial direction.
+        if id == 23 && w.multiplayer_world { return true; }
         let north = opaque_cube_lookup(w.get_block_id(x, y, z - 1));
         let south = opaque_cube_lookup(w.get_block_id(x, y, z + 1));
         let west = opaque_cube_lookup(w.get_block_id(x - 1, y, z));
@@ -177,19 +178,7 @@ pub fn neighbor(w: &mut World, id: u8, x: i32, y: i32, z: i32, changed: u8) -> b
         return true;
     }
     if id == 96 {
-        let m = w.get_block_metadata(x, y, z);
-        let (dx, dz) = [(0, 1), (0, -1), (1, 0), (-1, 0)][(m & 3) as usize];
-        if !w.is_block_normal_cube(x + dx, y, z + dz) {
-            w.set_block_with_notify(x, y, z, 0);
-            crate::world::behavior::drop_block_as_item(w, id, x, y, z, m);
-        }
-        if changed > 0 && crate::entity::block_hooks::provides_power(changed) {
-            let powered = w.is_block_indirectly_getting_powered(x, y, z);
-            if (w.get_block_metadata(x, y, z) & 4 != 0) != powered {
-                let m = w.get_block_metadata(x, y, z);
-                w.set_block_metadata_with_notify(x, y, z, m ^ 4);
-            }
-        }
+        w.trapdoor_neighbor181(x,y,z,changed);
         return true;
     }
     if id == 59 {
@@ -219,21 +208,17 @@ pub fn neighbor(w: &mut World, id: u8, x: i32, y: i32, z: i32, changed: u8) -> b
                 }
             }
             if removed {
-                crate::world::behavior::drop_block_as_item(w, id, x, y, z, m);
+                if !w.multiplayer_world { crate::world::behavior::drop_block_as_item(w, id, x, y, z, m); }
             } else if changed > 0 && crate::entity::block_hooks::provides_power(changed) {
                 let powered = w.is_block_indirectly_getting_powered(x, y, z)
                     || w.is_block_indirectly_getting_powered(x, y + 1, z);
-                if (m & 4 != 0) != powered {
-                    if w.get_block_id(x, y + 1, z) == id {
-                        w.set_block_metadata_with_notify(x, y + 1, z, (m ^ 4) + 8);
-                    }
-                    w.set_block_metadata_with_notify(x, y, z, m ^ 4);
-                }
+                w.door_powered181(id,x,y,z,powered);
             }
         }
         return true;
     }
     if matches!(id, 50 | 65 | 69 | 77) {
+        if matches!(id,69|77) {w.attached_control_neighbor181(id,x,y,z);return true;}
         let m = w.get_block_metadata(x, y, z);
         let orientation = m & 7;
         let (dx, dy, dz) = if id == 65 {
