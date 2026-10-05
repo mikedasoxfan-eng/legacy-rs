@@ -137,7 +137,7 @@
  "chunk provider scan seed 3257840388504953787": true,
  "chunk provider scan seed 42": true,
  "chunk provider scan seed 9223372036854775807": true,
- "container clicks, recipes, furnace and dispenser world replay": false,
+ "container clicks, recipes, furnace and dispenser world replay": true,
  "decorations181: fishing": true,
  "decorations181: fishing line renderer": true,
  "decorations181: map files": true,
