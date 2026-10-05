@@ -40,7 +40,7 @@ def exact_sections(log):
         elif cur is not None and re.match(rb'^([A-Z0-9 .()-]*CASES[A-Z ]*(EXACT|DIFFER)|exit [0-9]+)[ \t\r]*$', line):
             cur = None  # the suite's own summary line, not part of the last section
         elif cur is not None:
-            if re.search(rb'\b0 (of \d+ \w+ |\w+ )?(differ|mismatch|failed)|test result: ok', line):
+            if re.search(rb'\b0 (of \d+ )?(\w+ ){0,3}(differ|mismatch|failed)|test result: ok', line):
                 out[cur][1] += 1
             elif b'warning:' in line or line.startswith(b'  ') and b'(' in line and b';' in line:
                 continue  # javac warnings and the source lines they quote

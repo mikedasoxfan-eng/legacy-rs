@@ -1,7 +1,11 @@
 [
  "BlockCactus",
  "BlockChest",
+ "BlockFire",
  "BlockFlower",
+ "BlockFluid",
+ "BlockGrass",
+ "BlockLeaves",
  "BlockMobSpawner",
  "BlockNote",
  "BlockPistonBase",
@@ -11,6 +15,7 @@
  "BlockReed",
  "BlockSign",
  "BlockSnowBlock",
+ "BlockTallGrass",
  "BlockVine",
  "Chunk",
  "ChunkCache",
@@ -61,6 +66,8 @@
  "TileEntitySign",
  "TileEntitySignRenderer",
  "TileEntitySpecialRenderer",
+ "World",
  "WorldProvider",
+ "WorldProviderHell",
  "WorldProviderSky"
 ]
