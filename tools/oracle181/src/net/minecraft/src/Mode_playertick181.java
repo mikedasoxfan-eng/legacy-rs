@@ -29,10 +29,7 @@ public final class Mode_playertick181 {
     }
     public static void main(String[] a)throws Exception {
         String kind=a[1];int ticks=Integer.parseInt(a[2]);World w=Mode_entities181.world();
-        // Mode_entities181 adds a second auxiliary-only recorder; this player
-        // harness already uses WorldEventOracle's complete IWorldAccess stream.
-        Field accesses=World.class.getDeclaredField("worldAccesses");accesses.setAccessible(true);
-        List listeners=(List)accesses.get(w);listeners.remove(listeners.size()-1);
+        // Mode_entities181.world() now attaches only WorldEventOracle's recorder.
         Item.itemRand.setSeed(600);
         PlayerOracle.HeadlessPlayer p=PlayerOracle.player(w);p.mc.gameSettings=new GameSettings();
         p.mc.playerController=new PlayerControllerSP(p.mc);
