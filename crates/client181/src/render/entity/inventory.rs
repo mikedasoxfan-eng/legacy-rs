@@ -164,7 +164,7 @@ pub fn inventory(gl: &mut Fixed, id: u8, meta: i32, brightness: f32, tint: bool)
     if id==54 {
         gl.enable(2, true);
         crate::gui::screens::chest_item::append(gl);
-        gl.enable(2, false);
+        // RenderBlocks reenables RESCALE_NORMAL after the chest helper returns.
         return;
     }
     if tint {

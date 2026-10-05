@@ -8,7 +8,7 @@ public final class Mode_entitybranches181 {
  static final class PinnedSpawnSet extends HashSet<ChunkCoordIntPair> {
   final sun.misc.Unsafe unsafe;
   PinnedSpawnSet()throws Exception{java.lang.reflect.Field f=sun.misc.Unsafe.class.getDeclaredField("theUnsafe");f.setAccessible(true);unsafe=(sun.misc.Unsafe)f.get(null);}
-  public boolean add(ChunkCoordIntPair p){int hash=(((p.chunkXPos&0x7fff)<<16)|(p.chunkZPos&0xffff))+1;hash&=0x7fffffff;unsafe.putLong(p,0L,1L|((long)hash<<8));return super.add(p);}
+  public boolean add(ChunkCoordIntPair p){int hash=(((p.chunkXPos&0x7fff)<<16)|(p.chunkZPos&0xffff))+1;hash=Math.max(1,hash&0x7fffffff);unsafe.putLong(p,0L,1L|((long)hash<<8));return super.add(p);}
  }
  static void i(DataOutputStream o,int n)throws Exception{EntityOracle.i(o,n);}
  static void d(DataOutputStream o,double n)throws Exception{EntityOracle.d(o,n);}
@@ -79,6 +79,7 @@ public final class Mode_entitybranches181 {
  static void spawnorder(DataOutputStream o)throws Exception {
   PinnedSpawnSet set=new PinnedSpawnSet();
   for(int t=0;t<3;t++) {set.clear();for(int x=-8;x<=8;x++)for(int z=-8;z<=8;z++)set.add(new ChunkCoordIntPair(x,z));
+   for(int x=8;x>=-8;x--)for(int z=8;z>=-8;z--)o.writeBoolean(set.add(new ChunkCoordIntPair(x,z)));i(o,set.size());
    for(ChunkCoordIntPair p:set){i(o,p.chunkXPos);i(o,p.chunkZPos);i(o,System.identityHashCode(p));}
   }
  }

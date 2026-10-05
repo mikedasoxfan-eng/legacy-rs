@@ -420,5 +420,8 @@ bash "$root/tools/verify_entities181.sh" || fail=1
 echo "== player/gui: hunger, experience, FOV, creative catalog, options, keys and pixels"
 bash "$root/tools/verify_player_gui181.sh" || fail=1
 # --- end player-gui ---
+# --- entities (b1.8.1) ---
+bash "$root/tools/verify_entities3_181.sh" --built || fail=1
+# --- end entities ---
 [ $fail -eq 0 ] && echo "ALL CASES EXACT" || echo "SOME CASES DIFFER"
 exit $fail

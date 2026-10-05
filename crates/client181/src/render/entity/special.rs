@@ -28,7 +28,11 @@ pub(crate) fn part(g: &mut Fixed, p: &ModelRenderer, post: bool) {
         g.push();
     }
     if rotated || moved {
-        g.translate(p.rotation_point_x * 0.0625, p.rotation_point_y * 0.0625, p.rotation_point_z * 0.0625);
+        g.translate(
+            p.rotation_point_x * 0.0625,
+            p.rotation_point_y * 0.0625,
+            p.rotation_point_z * 0.0625,
+        );
     }
     if rotated {
         angles(g, p);
@@ -39,20 +43,61 @@ pub(crate) fn part(g: &mut Fixed, p: &ModelRenderer, post: bool) {
             let n = face.normal();
             g.set_normal(n.x, n.y, n.z);
             for v in &face.vertices {
-                g.vertex(v.pos.map(|x| (x as f32 * 0.0625) as f64), v.uv.map(|x| x as f64));
+                g.vertex(
+                    v.pos.map(|x| (x as f32 * 0.0625) as f64),
+                    v.uv.map(|x| x as f64),
+                );
             }
             g.end();
         }
         if rotated {
             g.pop();
         } else if moved {
-            g.translate(-p.rotation_point_x * 0.0625, -p.rotation_point_y * 0.0625, -p.rotation_point_z * 0.0625);
+            g.translate(
+                -p.rotation_point_x * 0.0625,
+                -p.rotation_point_y * 0.0625,
+                -p.rotation_point_z * 0.0625,
+            );
         }
     }
 }
 pub(crate) fn model(g: &mut Fixed, m: &Model) {
-    for (p, _) in m.render_parts() {
-        part(g, p, false);
+    for (p, with_rotation) in m.render_parts() {
+        if with_rotation {
+            if p.hidden || !p.show_model {
+                continue;
+            }
+            g.push();
+            g.translate(
+                p.rotation_point_x * 0.0625,
+                p.rotation_point_y * 0.0625,
+                p.rotation_point_z * 0.0625,
+            );
+            for (angle, axis) in [
+                (p.rotate_angle_y, [0.0, 1.0, 0.0]),
+                (p.rotate_angle_x, [1.0, 0.0, 0.0]),
+                (p.rotate_angle_z, [0.0, 0.0, 1.0]),
+            ] {
+                if angle != 0.0 {
+                    g.rotate(angle * (180.0 / PI_F32), axis[0], axis[1], axis[2]);
+                }
+            }
+            for face in &p.faces {
+                g.begin();
+                let n = face.normal();
+                g.set_normal(n.x, n.y, n.z);
+                for v in &face.vertices {
+                    g.vertex(
+                        v.pos.map(|x| (x as f32 * 0.0625) as f64),
+                        v.uv.map(|x| x as f64),
+                    );
+                }
+                g.end();
+            }
+            g.pop();
+        } else {
+            part(g, p, false);
+        }
     }
 }
 pub fn render(s: &RenderState, camera: [f64; 3], normalize: bool) -> Fixed {
@@ -63,7 +108,14 @@ pub fn render(s: &RenderState, camera: [f64; 3], normalize: bool) -> Fixed {
     let mut m = Model::new(super::living::model_kind(s.kind));
     m.on_ground = s.attack;
     m.is_riding = s.riding;
-    let pose = [s.limb_swing, s.limb_amount.min(1.0), s.age, s.yaw - s.body_yaw, s.pitch, 0.0625];
+    let pose = [
+        s.limb_swing,
+        s.limb_amount.min(1.0),
+        s.age,
+        s.yaw - s.body_yaw,
+        s.pitch,
+        0.0625,
+    ];
     m.set_rotation_angles(pose);
     g.push();
     g.translate(
@@ -154,17 +206,35 @@ pub(crate) fn sprite(g: &mut Fixed, icon: i32, terrain: bool) {
     g.begin();
     g.set_normal(0.0, 0.0, 1.0);
     g.quad(
-        [[0.0, 0.0, 0.0], [1.0, 0.0, 0.0], [1.0, 1.0, 0.0], [0.0, 1.0, 0.0]],
+        [
+            [0.0, 0.0, 0.0],
+            [1.0, 0.0, 0.0],
+            [1.0, 1.0, 0.0],
+            [0.0, 1.0, 0.0],
+        ],
         [[u1, v1], [u0, v1], [u0, v0], [u1, v0]],
     );
     g.end();
     g.begin();
     g.set_normal(0.0, 0.0, -1.0);
-    g.quad([[0.0, 1.0, -t], [1.0, 1.0, -t], [1.0, 0.0, -t], [0.0, 0.0, -t]], [[u1, v0], [u0, v0], [u0, v1], [u1, v1]]);
+    g.quad(
+        [
+            [0.0, 1.0, -t],
+            [1.0, 1.0, -t],
+            [1.0, 0.0, -t],
+            [0.0, 0.0, -t],
+        ],
+        [[u1, v0], [u0, v0], [u0, v1], [u1, v1]],
+    );
     g.end();
     for side in 0..4 {
         g.begin();
-        let n = [[-1.0, 0.0, 0.0], [1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, -1.0, 0.0]][side];
+        let n = [
+            [-1.0, 0.0, 0.0],
+            [1.0, 0.0, 0.0],
+            [0.0, 1.0, 0.0],
+            [0.0, -1.0, 0.0],
+        ][side];
         g.set_normal(n[0], n[1], n[2]);
         for i in 0..16 {
             let f = i as f32 / 16.0;

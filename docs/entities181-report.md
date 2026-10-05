@@ -1,8 +1,37 @@
-# Beta 1.8.1 entities ? round 2 report
+# Beta 1.8.1 entities - round 3 report
 
-Round 2 substantially extends the port but does **not** finish the entire assigned area. The per-class table distinguishes completed behavior with original-bytecode proof from remaining work. A finite fixture is evidence for the states it exercises, not exhaustive proof of all Minecraft states. No b1.7.3 sources, verification scripts, or original decompiled sources were edited.
+Round 3 makes substantial progress within the requested hour; the whole assigned area is **not finished**. The table below keeps every class and identifies remaining work. No b1.7.3 code, verification scripts, original decompiled sources, player/GUI logic, or terrain generation was edited.
 
-## Verification
+## Round 3 changes and verification
+
+The release build passes. `tools/verify_entities181.sh --built` reports `ENTITIES181 ALL FOCUSED CASES EXACT` in `target/entities3-final-verify.log`; this preserves the original 42 simulation fixtures, all 11 extra death fixtures, combat, explosion, API, model, particle, chest, arrow, vehicle and new-mob checks. The merged comparison executable had lost its API/combat/explosion dispatch; round 3 restores it. Player names in entity-list recordings now follow EntityList's null mapping. Storage-cart rendering preserves the original chest helper's RESCALE_NORMAL state; all 1,741,710 vehicle values are EXACT again.
+
+`tools/verify_entities3_181.sh --built` is added in a delimited block at the end of `tools/verify181.sh`, before its final result/exit. Its original-bytecode checks are recorded in `target/entities3-new-final-verify.log`:
+
+| Check | Coverage | Exact result |
+|---|---|---|
+| slimebranches | 8 sizes including signed-byte boundaries, 3 health states, death/splits, children, XP and RNG | 17,292 bytes |
+| skeletonbranches | 3 cooldowns, 5 distances and 3 initial yaws; aiming, arrow constructors/heading, cooldown and events | 17,550 bytes |
+| wolfbranches | 12 seeds, 5 watcher flag states, 10 held-item choices and 3 health states; feeding, taming, owner case matching and sitting | 641,922 bytes |
+| vehiclebranches | Boat and all 3 cart types, 7 damage values including overflow, alive/dead, 3 repeated hits; inventory drops and RNG | 52,576 bytes |
+| fireballbranches | 4 damage-source kinds, 4 yaws, 5 pitches; owner/null dispatch and deflection vectors | 19,040 bytes |
+| spawnorder | 289 colliding chunk keys; treeification, resizing, duplicate additions, 3 clear/reinsert cycles | 11,283 bytes |
+| spawnbranches | 4 scenarios (hostile, two passive repeats, aquatic), 16 seeds each, 2 spawning calls; counts, all entities, sheep colors and both RNGs | 22,504,828 bytes |
+| factorybranches | Numeric IDs -1 through 100, string creation, abstract/missing mappings, constructors and initialized NBT reloads | 22,989 bytes |
+| modelregistry3_181 | 23 models, now including Minecart, Boat and Sign; constructor geometry, registration and random parts | 90,896 comparisons |
+| generaliving181 | 432 Zombie/Skeleton/Pig/Cow/Sheep/Chicken/Squid/Wolf/Creeper traces, embedded arrows, bow, fleece/saddle/power passes, hurt/death, lightmap coordinates | 3,551,652 values |
+| signrenderers | 160 standing/wall metadata and edited-line cases | 521,440 values |
+| fishrenderers | 120 first/third-person, swing, yaw and partial-tick cases | 22,920 values |
+
+Natural spawning now uses the b1.8.1 biome IDs and counts only loaded entities of the original creature category, excluding players from the animal cap. Java 8 ChunkCoordIntPair hashes collide (`x ^ z`), and HashMap tree bins use **VM identity hashes** to order equal-hash objects. The oracle pins those otherwise nondeterministic mark-word identities on the required HotSpot 8u51, leaving original SpawnerAnimals/HashMap bytecode intact. Rust accepts identities through `perform_spawning_with_identity`; normal calls use the same stable coordinate identities. EXACT here means equal under those pinned inputs, not identical traversal to every unmodified JVM allocation history. The only shared world API change is `world/java_hash.rs`: an identity-aware insertion operation and equal-hash tree ordering. Existing unique-hash insertion remains available.
+
+The nine general mob renderers are connected to the entity GPU pipeline using the verified raw traces and per-entity packed light. This corrects b1.8.1 white primary color, scalar hurt brightness, wolf rotation order, the removed wolf shaking tint, the skeleton bow transform, embedded arrows, sheep fleece and charged-creeper passes. Charged-creeper UV scrolling is applied when constructing GPU batches; that texture-matrix step is not recorded by the existing GL harness. No interactive GPU screenshot check was run. Generic player/slime/ghast rendering and arbitrary equipped block/item branches still need work.
+
+EntityList factories now share the registry constructor path with NBT loading rather than maintaining a second constructor switch. The factory fixture initializes Item contents and Painting art before writing NBT. Rust still represents those original nullable constructor fields with default values; uninitialized Item/Painting serialization is not proved equivalent. EntityList therefore remains **Not done**.
+
+Changed-class diffs under `target/entities2-audits/` and the original b1.8.1 bodies were reviewed for Wolf, Slime, Skeleton, vehicle/model/sign changes and the nine living renderer callbacks. The skeleton sniper condition uses two virtual accessors that both return the projectile owner in this build; the unreachable ordinary-game achievement bug is preserved. A dedicated achievement trace remains outstanding. No full `verify181.sh` run was attempted; the integrator should run it after merging.
+
+## Preserved round 2 verification
 
 The release build passed. `tools/verify_entities181.sh`, invoked by the existing final entities block of `tools/verify181.sh`, preserves all 42 original simulation fixtures and the geometry/model/particle/XP renderer checks. Round 2 adds 11 death/XP replays, typed API checks, combat, explosions, particles, chests, arrows, model registration, bed tables and new mob render traces. The final run is recorded in `target/entities2-final-verify.log`.
 
@@ -34,20 +63,20 @@ Full general `renderers`/`livingrenderers`, GUI scenes and the approximately one
 |---|---|---|
 | EntityEnderman | Done | entities181: Enderman, carry, teleport; rules checks carry eligibility and NBT typo. Indirect and initial stare/pumpkin fixtures are EXACT; sustained target acquisition needs broader coverage. |
 | EntityLiving | Not done | combat181 EXACT: 16 mobs x 6 sources x 3 invulnerability timers x 4 damages x 3 attacks. All 16 mob death/XP fixtures pass. Player armor/blocking/creative interactions and complete network APIs remain. |
-| SpawnerAnimals | Not done | Partial: all biome spawn lists and population algorithm implemented; rules and population EXACT (320 biome/seed fixtures). Natural spawner still adapts the old biome enum; population entry point is not connected to terrain generation. |
+| SpawnerAnimals | Not done | spawnbranches and spawnorder EXACT; biome adapter, loaded creature counts and colliding chunk-set order fixed. Population/rules checks remain EXACT. Terrain population hookup and sleep spawning remain. |
 | EntityXPOrb | Done | entities181: XPOrb, attract, rules (split/texture thresholds, pickup XP/cooldown/sound); xprender181 separately verifies rendering. |
 | EntitySilverfish | Done | entities181: Silverfish and allies (burrowing and timed emergence, block/event/RNG records). |
 | Entity | Not done | Packed and scalar brightness now EXACT in entityapi181 light (1,800 combinations, 14,400 bytes), including out-of-bounds XP bonus; 53 simulation replays pass. Persistent typed watchers/network synchronization remain unwired. |
 | Potion | Done | entities181: rules (all 19 IDs, readiness matrix), potions and poison. |
 | DamageSource | Done | entities181: rules covers source names, armor bypass, creative damage, exhaustion; damage and death fixtures exercise dispatch. |
-| EntityFireball | Not done | Partial: source-aware impact and flight fixture EXACT. Remaining entity-hit/explosion trace proof. |
+| EntityFireball | Not done | Fireball flight and fireballbranches EXACT: direct/indirect/null source deflection vectors. Dedicated target impact, ghast ownership and block-affecting explosion checks remain. |
 | PotionEffect | Done | entities181: rules (merge combinations), potions (effect application, tick/removal order). |
-| EntityWolf | Not done | Wolf, kill-Wolf and the combat matrix EXACT. Fixed wild wolf retaliation to match world membership. Food/bone/owner/taming interaction matrix remains. |
-| EntityBoat | Not done | Boat replay EXACT. Full changed-class source audit and vehicle-specific damage/interaction verification remain. |
+| EntityWolf | Not done | Wolf, kill-Wolf, combat and wolfbranches EXACT; all feeding/bone/owner/sitting branches covered. Player-follow/teleport/leap and group-retaliation matrices still need targeted proof. |
+| EntityBoat | Not done | Boat and vehiclebranches EXACT, including repeated damage, overflow, dead state and destruction drops. Multiplayer interpolation/velocity API and interaction matrix remain. |
 | EntityArrow | Done | entities181: Arrow (critical flight, gravity, particles, block impacts, RNG). Entity-hit damage branches need broader fixture coverage. |
 | EntityCreature | Done | Changed-class audit plus animal/hostile replays, damage and combat181 EXACT: flee timer/path selection/speed, double path arithmetic, target accessors. |
 | EntityCaveSpider | Done | entities181: CaveSpider and poison (attack poisons the victim). |
-| EntitySkeleton | Not done | Arrow aiming/speed/cooldown updated; Skeleton movement replay EXACT. Shooter/target combat oracle fixture remains. |
+| EntitySkeleton | Not done | Skeleton, kill-Skeleton, combat and skeletonbranches EXACT; speed/aim/cooldown and all distance branches. Vanilla unreachable sniper condition preserved; dedicated achievement/daylight/server-client guard traces remain. |
 | EntityEgg | Done | entities181: Egg (motion, collisions and thrown damage source). |
 | EntityCow | Done | entities181: Cow and kill-Cow (movement and new beef drops). |
 | EntityChicken | Done | entities181: Chicken and kill-Chicken (movement and chicken drops). |
@@ -59,18 +88,18 @@ Full general `renderers`/`livingrenderers`, GUI scenes and the approximately one
 | EntityDamageSource | Done | entities181: rules, poison, allies, kill-* exercise entity attribution. |
 | EntityDamageSourceIndirect | Done | entities181: rules plus indirect Enderman projectile fixture; vanilla owner accessor behavior preserved. |
 | PotionHealth | Done | entities181: rules and potions (instant health/harm shift behavior). |
-| EntityMinecart | Not done | Minecart replay EXACT. Full vehicle-specific changed-class verification remains. |
+| EntityMinecart | Not done | Minecart and vehiclebranches EXACT; all cart types, inventory drops, repeated damage and overflow. Multiplayer interpolation and full interaction/collision matrix remain. |
 | EntityPainting | Not done | DamageSource adapter added; decoration-specific oracle proof remains. |
 | EntitySpider | Done | entities181: Spider and CaveSpider (shared movement, climbing and collision behavior). |
 | EntityItem | Done | entities181: Item; shared entity state/RNG checks. |
-| EntityList | Not done | Exact original numeric/name/class table, including abstract Mob/Monster and unregistered player/projectile types: entityapi181 registry, 1,631 bytes. General constructor-by-ID and registry NBT factory remain. |
+| EntityList | Not done | Registry table plus numeric/string factories and initialized NBT replays are EXACT in registry/factorybranches. Original nullable Item payload/Painting art constructor states and malformed-NBT exception behavior remain. |
 | EntitySheep | Done | entities181: Sheep and kill-Sheep; population records initialization color/RNG. |
 | EntitySnowball | Done | entities181: Snowball (motion, collisions and thrown damage source). |
 | EntitySquid | Done | Changed-class audit plus Squid, kill-Squid and combat181 EXACT; aquatic movement, null sounds, ink drops and XP hooks. |
 | EntityWaterMob | Done | Changed-class audit: abstract base plus new XP hook. Squid and kill-Squid EXACT, including XP RNG and emitted orbs. |
 | Vec3D | Done | entitygeometry: 10,000 cases; new dot-product use covered by Enderman targeting fixture. |
 | EntityFish | Not done | Thrown DamageSource adapter added; fishing hook oracle proof remains. |
-| EntitySlime | Not done | Slime movement replay EXACT; XP size hook present. Full size/death/split oracle matrix remains. |
+| EntitySlime | Done | Changed-class audit; Slime, kill-Slime, combat and slimebranches EXACT, including size XP, byte wrapping, nonzero/zero death health, child constructors/sizes/positions and RNG. |
 | DataWatcher | Done | entityapi181 watchers: 69,853 bytes EXACT. All seven types, UTF-16/surrogates, NaN/signed-zero equality, ItemStack identity, negative IDs, HashMap order, update/apply-list flags, wire round trips and invalid headers. Entity network integration remains separate. |
 | EntityCreeper | Not done | Creeper movement replay EXACT; explosion/damage branches need dedicated verification. |
 | EntityGhast | Not done | Ghast movement replay EXACT; attack/explosion behavior needs dedicated verification. |
@@ -83,7 +112,7 @@ Full general `renderers`/`livingrenderers`, GUI scenes and the approximately one
 | TileEntityChestRenderer | Done | chests181: 4,097 cases, 1,372,320 values EXACT; single/double chest adjacency, metadata, lid interpolation/cubic easing, GL states and vertices. World tile dispatcher/lid simulation hookup remains a dependency. |
 | RenderEnderman | Done | newliving181: normal/eye/hurt/death draws, carrying, screaming/jitter, embedded arrows and every captured lightmap coordinate EXACT. Runtime persistent Gaussian RNG and additive eye passes wired. |
 | RenderArrow | Done | arrows181: 1,024 cases covering zero rotation, shake, partial ticks and both crit flags; newliving181 also verifies embedded arrows. Removed obsolete first-rotation visibility guard. |
-| RenderLiving | Not done | newliving181 EXACT for Enderman/Silverfish/Spider/CaveSpider (192 cases, 3,390,450 values). Embedded-arrow implementation supplied; remaining mob/player raw renderer and embedded-arrow integrations remain. |
+| RenderLiving | Not done | newliving181 and generaliving181 EXACT: 624 traces across 13 mob types, embedded arrows, overlays and per-draw packed light. Player/slime/ghast integration, general equipped blocks/items and labels remain. |
 | EntityCritFX | Done | particles181: constructors, 202 successive state/vertex frames per variant; 184 cases total, 594,688 vertices, zero differing fields. Packed world lightmap integration is a separate remaining dependency. |
 | EntityLargeExplodeFX | Done | particles2_181 EXACT: state/RNG, atlas animation/vertices, terminal frames and literal packed brightness 61680. |
 | EntityCloudFX | Done | particles181: constructors, 202 successive state/vertex frames per variant; 184 cases total, 594,688 vertices, zero differing fields. Packed world lightmap integration is a separate remaining dependency. |
@@ -116,12 +145,12 @@ Full general `renderers`/`livingrenderers`, GUI scenes and the approximately one
 | RenderMinecart | Done | vehiclerenders181: 408 cases, 17,784 draws and 1,741,710 values EXACT; rail transforms, storage chest model/offset, furnace contents and hit rocking. |
 | EntitySlimeFX | Done | particles181: constructors, 202 successive state/vertex frames per variant; 184 cases total, 594,688 vertices, zero differing fields. Packed world lightmap integration is a separate remaining dependency. |
 | ModelSlime | Done | models181: constructor geometry, UVs, successive animation poses and bitwise vertex/part values; 208 poses, 293,376 comparisons across the suite. |
-| ModelBase | Done | modelregistry181: 20 model kinds, registration order and 256 random selections each, 79,194 raw-bit comparisons EXACT. |
+| ModelBase | Done | modelregistry181 and modelregistry3_181: 23 model kinds including vehicles/sign, registration order and 256 random selections each, 90,896 comparisons in the expanded suite EXACT. |
 | ModelCow | Done | models181: constructor geometry, UVs, successive animation poses and bitwise vertex/part values; 208 poses, 293,376 comparisons across the suite. |
-| ModelMinecart | Not done | Geometry/animation/render traces EXACT in vehiclerenders181; unified ModelBase registration/random-part API for vehicle models remains. |
+| ModelMinecart | Done | Unified ModelBase constructor/registration/random-part API: modelregistry3_181 EXACT. Animated body and storage/furnace render traces: vehiclerenders181 EXACT. |
 | ChestItemRenderHelper | Done | chests181 includes original item helper draw, ignored metadata/brightness arguments and default chest model. |
-| ModelBoat | Not done | Geometry/render traces EXACT in vehiclerenders181; unified ModelBase registration/random-part API for vehicle models remains. |
-| RenderBiped | Not done | No complete b1.8.1 changed-class port and dedicated EXACT check completed; inherited implementation remains. |
+| ModelBoat | Done | Unified ModelBase constructor/registration/random-part API: modelregistry3_181 EXACT; vehiclerenders181 body/hit transforms EXACT. |
+| RenderBiped | Not done | Zombie/Skeleton model, bow transforms, overlays, arrows and packed-light traces EXACT in generaliving181. Full arbitrary equipped block/item branches and general biped integration remain. |
 | TileEntityRenderer | Not done | No complete b1.8.1 changed-class port and dedicated EXACT check completed; inherited implementation remains. |
 | EntityDiggingFX | Done | particles181: constructors, 202 successive state/vertex frames per variant; 184 cases total, 594,688 vertices, zero differing fields. Packed world lightmap integration is a separate remaining dependency. |
 | ModelBed | Done | bedmodel181: all 54 direction/remapping table entries EXACT. Tables supplied to the world-render owner. |
@@ -132,7 +161,7 @@ Full general `renderers`/`livingrenderers`, GUI scenes and the approximately one
 | Render | Not done | No complete b1.8.1 changed-class port and dedicated EXACT check completed; inherited implementation remains. |
 | RenderBoat | Done | vehiclerenders181: body transforms, hit rocking and model draw traces EXACT. |
 | RenderLightningBolt | Not done | No complete b1.8.1 changed-class port and dedicated EXACT check completed; inherited implementation remains. |
-| SignModel | Not done | No complete b1.8.1 changed-class port and dedicated EXACT check completed; inherited implementation remains. |
+| SignModel | Done | Now extends the shared ModelBase representation, with original board/stick registration. modelregistry3_181 and 160 signrenderers cases EXACT. |
 | TileEntitySpecialRenderer | Not done | No complete b1.8.1 changed-class port and dedicated EXACT check completed; inherited implementation remains. |
 | EntityFootStepFX | Done | particles181: constructors, 202 successive state/vertex frames per variant; 184 cases total, 594,688 vertices, zero differing fields. Packed world lightmap integration is a separate remaining dependency. |
 | EntityHeartFX | Done | particles181: constructors, 202 successive state/vertex frames per variant; 184 cases total, 594,688 vertices, zero differing fields. Packed world lightmap integration is a separate remaining dependency. |
@@ -141,24 +170,20 @@ Full general `renderers`/`livingrenderers`, GUI scenes and the approximately one
 | EntitySmokeFX | Done | particles181: constructors, 202 successive state/vertex frames per variant; 184 cases total, 594,688 vertices, zero differing fields. Packed world lightmap integration is a separate remaining dependency. |
 | EntitySnowShovelFX | Done | particles181: constructors, 202 successive state/vertex frames per variant; 184 cases total, 594,688 vertices, zero differing fields. Packed world lightmap integration is a separate remaining dependency. |
 | ModelSheep2 | Done | models181: constructor geometry, UVs, successive animation poses and bitwise vertex/part values; 208 poses, 293,376 comparisons across the suite. |
-| RenderFish | Not done | No complete b1.8.1 changed-class port and dedicated EXACT check completed; inherited implementation remains. |
+| RenderFish | Done | Changed-class audit; fishrenderers EXACT: 120 first/third-person, yaw, swing and partial-tick cases, 22,920 raw-bit values. |
 | EntityFX | Done | particles181: constructors, 202 successive state/vertex frames per variant; 184 cases total, 594,688 vertices, zero differing fields. Packed world lightmap integration is a separate remaining dependency. |
 | EntityRainFX | Done | particles181: constructors, 202 successive state/vertex frames per variant; 184 cases total, 594,688 vertices, zero differing fields. Packed world lightmap integration is a separate remaining dependency. |
-| RenderChicken | Not done | No complete b1.8.1 changed-class port and dedicated EXACT check completed; inherited implementation remains. |
-| RenderCreeper | Not done | No complete b1.8.1 changed-class port and dedicated EXACT check completed; inherited implementation remains. |
-| RenderSheep | Not done | No complete b1.8.1 changed-class port and dedicated EXACT check completed; inherited implementation remains. |
-| RenderSquid | Not done | No complete b1.8.1 changed-class port and dedicated EXACT check completed; inherited implementation remains. |
-| RenderWolf | Not done | No complete b1.8.1 changed-class port and dedicated EXACT check completed; inherited implementation remains. |
-| TileEntitySignRenderer | Not done | No complete b1.8.1 changed-class port and dedicated EXACT check completed; inherited implementation remains. |
+| RenderChicken | Done | Original flap interpolation and handleRotationFloat callback, normal/hurt/death draws, embedded arrows and packed-light traces EXACT in generaliving181. |
+| RenderCreeper | Done | Original flash scale/color, powered inflated model, additive blend/lighting transitions, arrows and overlays EXACT in generaliving181. Runtime texture-matrix scrolling supplied in GPU batches. |
+| RenderSheep | Done | Original white primary color/fleece callback, fleece colors, sheared states, hurt/death inherited passes, embedded arrows and packed-light traces EXACT in generaliving181. |
+| RenderSquid | Done | Original interpolated pitch/yaw/tentacle callbacks, corpse transform, overlays, embedded arrows and packed-light traces EXACT in generaliving181. |
+| RenderWolf | Done | Original sitting/angry/tamed/health texture and tail inputs, interest/shake pose, Y/X/Z renderWithRotation order, overlays, arrows and packed-light traces EXACT in generaliving181. Removed obsolete shaking tint. |
+| TileEntitySignRenderer | Done | Changed-class audit; double-position inputs, board/stick geometry and standing/wall/text transforms EXACT in signrenderers, 160 cases and 521,440 values. World/tile lightmap dispatch remains with its owner. |
 
 ## Integration and remaining work
 
-`Entity::packed_brightness`, particle packed-brightness APIs and weather snapshots supply original packed light values. The existing entity GPU pipeline now uses the new mob renderer traces, persistent Enderman Gaussian jitter, additive eye blending and hurt-eye overlays; light transitions are preserved for embedded arrows and carried blocks. Ordinary particle GPU lightmap upload remains the integrator's work. `EffectRenderer::lightmapped_vertices` supplies the values for that integration; large-explosion lit geometry and texture assets are available.
+Unfinished classes remain explicit in the table. Highest priorities are Entity/EntityLiving networking and player-aware armor/damage, terrain population and sleep spawning, vehicle networking/interactions, lightning/fireball/ghast impact and ignition, PigZombie retaliation, painting/fishing gameplay, and block destruction/drop/ignition in Explosion. Renderer work remains for full RenderLiving/RenderPlayer/RenderBiped/RenderManager/Render/RenderLightningBolt, tile dispatch and EffectRenderer lifecycle/factory/layer eviction.
 
-The chest renderer and item helper are callable and exact; storage minecart and inventory rendering now call the chest helper. The current chest tile representation stores inventory only; world dispatch and lid/open-count animation must be connected by the tile/container/world-render owners. ModelBed tables are likewise supplied without rewriting RenderBlocks. Typed DataWatcher exists as a standalone original-wire implementation; entity-owned watchers and network synchronization are still needed. EntityList's exact table does not substitute for complete constructor/NBT factories.
+The particle packed-light API and large-explosion assets remain available to the world-render owner. Chest lid/open-count and world tile dispatch remain dependencies on their owners. No parallel terrain, block, GUI or player implementation was added.
 
-Remaining gameplay priorities are full player-aware damage/armor behavior, wolf interactions, natural spawning/terrain hookup, vehicle interaction/damage, skeleton shooting/achievement traces, lightning ignition, fireball/ghast hits, slime splitting, painting/fishing interactions and block-affecting explosions. Remaining renderer priorities are the complete general living/player/equipped-item/lightmap traces, sign/tile dispatch and full EffectRenderer lifecycle/factory behavior. The table preserves every unfinished class instead of promoting it from a narrow fixture alone.
-
-Changed-class b1.7.3/b1.8.1 diffs were generated under `target/entities2-audits/`; these use the supplied renames and contain some decompiler/name noise (notably the supplied posZ rename). Detailed reviews were used for watcher/coordinate/model registration, chest/new mob/arrow rendering, particles and the animal/creature/mob/aquatic base changes. Larger unfinished classes still require complete audit and branch-specific tests.
-
-`target/commit-b181-entities2.sh` stages an explicit file list and uses the requested author identity and both co-author trailers. No commit was issued.
+`target/commit-b181-entities3.sh` stages an explicit file list and uses the requested author identity and both co-author trailers. No git commit was issued by this task.

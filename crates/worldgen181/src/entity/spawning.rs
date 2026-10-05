@@ -1,5 +1,8 @@
 use super::{AxisAlignedBB as BB, Entity, EntityKind, Vec3D};
 use crate::{biome::Biome, block::*, math::floor_double as floor, JavaRandom, World};
+pub(crate) fn spawn_identity(x: i32, z: i32) -> i32 {
+    ((((x as u32 & 0x7fff) << 16 | (z as u32 & 0xffff)).wrapping_add(1) & 0x7fffffff) as i32).max(1)
+}
 impl Entity {
     pub fn get_can_spawn_here(&mut self, w: &mut World) -> bool {
         let (x, y, z) = (
@@ -128,7 +131,14 @@ fn category(kind: &EntityKind) -> i32 {
         0
     } else if matches!(kind, EntityKind::Squid(..)) {
         2
-    } else if kind.is_living() {
+    } else if matches!(
+        kind,
+        EntityKind::Pig { .. }
+            | EntityKind::Sheep { .. }
+            | EntityKind::Cow
+            | EntityKind::Chicken { .. }
+            | EntityKind::Wolf(..)
+    ) {
         1
     } else {
         -1
@@ -139,11 +149,14 @@ impl World {
         self.perform_spawning_with_identity(hostile, peaceful, |x, z| {
             // Identity hashes are a VM-dependent input, just like clock-seeded RNG.
             // Stable per-coordinate identities keep the port's traversal repeatable.
-            (((x as u32 & 0x7fff) << 16 | (z as u32 & 0xffff)).wrapping_add(1) & 0x7fffffff) as i32
+            spawn_identity(x, z)
         })
     }
     pub fn perform_spawning_with_identity(
-        &mut self, hostile: bool, peaceful: bool, mut identity: impl FnMut(i32, i32) -> i32,
+        &mut self,
+        hostile: bool,
+        peaceful: bool,
+        mut identity: impl FnMut(i32, i32) -> i32,
     ) -> i32 {
         if !hostile && !peaceful {
             return 0;
@@ -166,8 +179,9 @@ impl World {
                 continue;
             }
             let count = self
-                .entities
-                .values()
+                .loaded_entity_list
+                .iter()
+                .filter_map(|id| self.entities.get(id))
                 .filter(|e| category(&e.kind) == cat)
                 .count();
             let max = match cat {

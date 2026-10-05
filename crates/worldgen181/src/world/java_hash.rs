@@ -34,7 +34,12 @@ pub struct JavaHashSet<K> {
 
 impl<K: PartialEq + Copy> Default for JavaHashSet<K> {
     fn default() -> Self {
-        JavaHashSet { nodes: Vec::new(), table: Vec::new(), size: 0, threshold: 0 }
+        JavaHashSet {
+            nodes: Vec::new(),
+            table: Vec::new(),
+            size: 0,
+            threshold: 0,
+        }
     }
 }
 
@@ -64,7 +69,18 @@ impl<K: PartialEq + Copy> JavaHashSet<K> {
     }
 
     fn new_node(&mut self, hash: i32, identity: i32, key: K, next: u32) -> u32 {
-        self.nodes.push(Node { hash, identity, key, next, tree: false, parent: NIL, left: NIL, right: NIL, prev: NIL, red: false });
+        self.nodes.push(Node {
+            hash,
+            identity,
+            key,
+            next,
+            tree: false,
+            parent: NIL,
+            left: NIL,
+            right: NIL,
+            prev: NIL,
+            red: false,
+        });
         (self.nodes.len() - 1) as u32
     }
 
@@ -145,7 +161,11 @@ impl<K: PartialEq + Copy> JavaHashSet<K> {
 
     fn resize(&mut self) {
         let old_cap = self.table.len();
-        let (new_cap, new_thr) = if old_cap > 0 { (old_cap << 1, self.threshold << 1) } else { (16, 12) };
+        let (new_cap, new_thr) = if old_cap > 0 {
+            (old_cap << 1, self.threshold << 1)
+        } else {
+            (16, 12)
+        };
         self.threshold = new_thr;
         let old = std::mem::replace(&mut self.table, vec![NIL; new_cap]);
         for (j, &e) in old.iter().enumerate() {
@@ -235,7 +255,11 @@ impl<K: PartialEq + Copy> JavaHashSet<K> {
                     let ph = self.n(p).hash;
                     let left = ph > h || (ph == h && self.n(x).identity <= self.n(p).identity);
                     let xp = p;
-                    p = if left { self.n(p).left } else { self.n(p).right };
+                    p = if left {
+                        self.n(p).left
+                    } else {
+                        self.n(p).right
+                    };
                     if p == NIL {
                         self.m(x).parent = xp;
                         if left {
@@ -289,7 +313,11 @@ impl<K: PartialEq + Copy> JavaHashSet<K> {
             let ph = self.n(p).hash;
             let left = ph > h || (ph == h && identity <= self.n(p).identity);
             let xp = p;
-            p = if left { self.n(p).left } else { self.n(p).right };
+            p = if left {
+                self.n(p).left
+            } else {
+                self.n(p).right
+            };
             if p == NIL {
                 let xpn = self.n(xp).next;
                 let x = self.new_node(h, identity, key, xpn);
