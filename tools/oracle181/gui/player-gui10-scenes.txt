@@ -1,0 +1,36 @@
+sessionless
+millis 250
+splash Ported to Rust!
+mouse -1 -1
+open title
+repeatstate off
+update 0
+shot b181_title10_0
+open title
+repeatstate off
+update 1
+shot b181_title10_1
+open title
+repeatstate off
+update 7
+shot b181_title10_7
+open title
+repeatstate off
+update 37
+shot b181_title10_37
+open title
+repeatstate off
+update 100
+shot b181_title10_100
+open title
+repeatstate off
+update 400
+shot b181_title10_400
+open title
+repeatstate off
+update 999
+shot b181_title10_999
+open title
+repeatstate off
+update 2000
+shot b181_title10_2000

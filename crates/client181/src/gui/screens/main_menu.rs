@@ -4,6 +4,10 @@ use crate::gui::widgets::GuiButton;
 use crate::gui::{Action, Screen, ScreenBase, Ui};
 use worldgen::math::{self, PI_F32};
 
+#[path = "main_menu_check10.rs"]
+mod check10;
+pub use check10::check;
+
 pub struct GuiMainMenu {
     base: ScreenBase,
     update_counter: f32,
@@ -19,32 +23,37 @@ impl GuiMainMenu {
         } else {
             loop {
                 let splash = &ui.splashes[rand.next_int(ui.splashes.len() as i32) as usize];
-                let hash = splash.encode_utf16().fold(0i32, |h, c| h.wrapping_mul(31).wrapping_add(c as i32));
-                if hash != 125780783 { break splash.clone(); }
+                let hash = splash
+                    .encode_utf16()
+                    .fold(0i32, |h, c| h.wrapping_mul(31).wrapping_add(c as i32));
+                if hash != 125780783 {
+                    break splash.clone();
+                }
             }
         };
-        GuiMainMenu { base: ScreenBase::default(), update_counter: 0.0, splash_text, panorama_ticks: 0 }
+        GuiMainMenu {
+            base: ScreenBase::default(),
+            update_counter: 0.0,
+            splash_text,
+            panorama_ticks: 0,
+        }
     }
 
     pub fn with_splash(splash: &str) -> GuiMainMenu {
-        GuiMainMenu { base: ScreenBase::default(), update_counter: 0.0, splash_text: splash.to_string(), panorama_ticks: 0 }
+        GuiMainMenu {
+            base: ScreenBase::default(),
+            update_counter: 0.0,
+            splash_text: splash.to_string(),
+            panorama_ticks: 0,
+        }
     }
 }
 
-/// Today's (month, day) from the system clock (UTC).
+/// Calendar.getInstance uses the system's local time zone.
 fn month_day() -> (u32, u32) {
-    let secs = std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).map_or(0, |d| d.as_secs()) as i64;
-    let days = secs.div_euclid(86400);
-    // Civil-from-days (Howard Hinnant).
-    let z = days + 719468;
-    let era = z.div_euclid(146097);
-    let doe = z - era * 146097;
-    let yoe = (doe - doe / 1460 + doe / 36524 - doe / 146096) / 365;
-    let doy = doe - (365 * yoe + yoe / 4 - yoe / 100);
-    let mp = (5 * doy + 2) / 153;
-    let d = (doy - (153 * mp + 2) / 5 + 1) as u32;
-    let m = if mp < 10 { mp + 3 } else { mp - 9 } as u32;
-    (m, d)
+    use chrono::Datelike;
+    let date = chrono::Local::now();
+    (date.month(), date.day())
 }
 
 impl Screen for GuiMainMenu {
@@ -56,7 +65,9 @@ impl Screen for GuiMainMenu {
         true
     }
 
-    fn does_gui_pause_game(&self) -> bool { false }
+    fn does_gui_pause_game(&self) -> bool {
+        false
+    }
 
     fn update_screen(&mut self, _ui: &mut Ui) {
         self.update_counter += 1.0;
@@ -78,14 +89,43 @@ impl Screen for GuiMainMenu {
         let (w, h) = (self.base.width, self.base.height);
         let y = h / 4 + 48;
         let b = &mut self.base.buttons;
-        b.push(GuiButton::new(1, w / 2 - 100, y, ui.translate("menu.singleplayer")));
+        b.push(GuiButton::new(
+            1,
+            w / 2 - 100,
+            y,
+            ui.translate("menu.singleplayer"),
+        ));
         let mut mp = GuiButton::new(2, w / 2 - 100, y + 24, ui.translate("menu.multiplayer"));
-        b.push(GuiButton::new(3, w / 2 - 100, y + 48, ui.translate("menu.mods")));
+        b.push(GuiButton::new(
+            3,
+            w / 2 - 100,
+            y + 48,
+            ui.translate("menu.mods"),
+        ));
         if ui.hide_quit_button {
-            b.push(GuiButton::new(0, w / 2 - 100, y + 72, ui.translate("menu.options")));
+            b.push(GuiButton::new(
+                0,
+                w / 2 - 100,
+                y + 72,
+                ui.translate("menu.options"),
+            ));
         } else {
-            b.push(GuiButton::sized(0, w / 2 - 100, y + 72 + 12, 98, 20, ui.translate("menu.options")));
-            b.push(GuiButton::sized(4, w / 2 + 2, y + 72 + 12, 98, 20, ui.translate("menu.quit")));
+            b.push(GuiButton::sized(
+                0,
+                w / 2 - 100,
+                y + 72 + 12,
+                98,
+                20,
+                ui.translate("menu.options"),
+            ));
+            b.push(GuiButton::sized(
+                4,
+                w / 2 + 2,
+                y + 72 + 12,
+                98,
+                20,
+                ui.translate("menu.quit"),
+            ));
         }
         // Singleplayer only: there is no session to join servers with (mc.session == null).
         mp.enabled = false;
@@ -119,7 +159,8 @@ impl Screen for GuiMainMenu {
         ui.gl.push_matrix();
         ui.gl.translatef((w / 2 + 90) as f32, 70.0, 0.0);
         ui.gl.rotatef(-20.0, 0.0, 0.0, 1.0);
-        let mut s = 1.8f32 - (math::sin((ui.millis % 1000) as f32 / 1000.0 * PI_F32 * 2.0) * 0.1).abs();
+        let mut s =
+            1.8f32 - (math::sin((ui.millis % 1000) as f32 / 1000.0 * PI_F32 * 2.0) * 0.1).abs();
         s = s * 100.0 / (ui.string_width(&self.splash_text) + 32) as f32;
         ui.gl.scalef(s, s, s);
         let splash = self.splash_text.clone();

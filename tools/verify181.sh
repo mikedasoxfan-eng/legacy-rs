@@ -499,6 +499,11 @@ bash "$root/tools/verify_minecraft181.sh" --built || fail=1
 # --- entities (b1.8.1) ---
 bash "$root/tools/verify_entities10_181.sh" --built || fail=1
 # --- end entities ---
+# --- player-gui (b1.8.1) ---
+# Round 10: title driver precision, callbacks, texture prefixes and stat schema.
+bash tools/verify_player_gui10_181.sh --built || fail=1
+# --- end player-gui ---
+
 pflush
 [ $fail -eq 0 ] && echo "ALL CASES EXACT" || echo "SOME CASES DIFFER"
 exit $fail
