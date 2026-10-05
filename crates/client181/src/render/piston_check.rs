@@ -33,7 +33,7 @@ pub fn check(path: &str) -> bool {
         data: std::fs::read(path).expect("piston renderer dump"),
         at: 8,
     };
-    assert_eq!(&input.data[..8], b"B173PST1");
+    assert_eq!(&input.data[..8], b"B181PST1");
     let count = input.u();
     let assets = crate::assets::load().expect("Minecraft assets");
     let col = Colorizers {
@@ -99,6 +99,7 @@ pub fn check(path: &str) -> bool {
                 input.u(),
                 input.u(),
                 input.u(),
+                input.u(),
             ];
             if let Some(r) = verts.get(v) {
                 let actual = [
@@ -108,8 +109,9 @@ pub fn check(path: &str) -> bool {
                     r.uv[0].to_bits(),
                     r.uv[1].to_bits(),
                     u32::from_le_bytes(r.color),
+                    r.light,
                 ];
-                for k in 0..6 {
+                for k in 0..7 {
                     words += 1;
                     if actual[k] != expected[k] {
                         if bad < 10 {

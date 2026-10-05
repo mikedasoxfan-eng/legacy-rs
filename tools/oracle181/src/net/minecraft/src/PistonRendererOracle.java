@@ -6,7 +6,7 @@ import java.util.*;
 /** Execute the original TileEntityRendererPiston, recording its Tessellator bits. */
 class PistonRendererOracle {
     static void run(String out)throws Exception {
-        Oracle.DataOut o=new Oracle.DataOut();o.bytes("B173PST1".getBytes("US-ASCII"));
+        Oracle.DataOut o=new Oracle.DataOut();o.bytes("B181PST1".getBytes("US-ASCII"));
         int count=0;
         Oracle.DataOut cases=new Oracle.DataOut();
         for(boolean ao:new boolean[]{false,true})for(boolean fancy:new boolean[]{false,true}) {
@@ -44,8 +44,9 @@ class PistonRendererOracle {
                     renderer.func_31070_a(p,pos[0],pos[1],pos[2],partial);
                     RendererOracle.pistonCapture=false;
                     RendererOracle.Raw raw=RendererOracle.pistonRaw;
-                    cases.i32(raw==null?0:raw.n/6*4);
-                    if(raw!=null)for(int q=0;q<raw.n/6;q++)for(int v:new int[]{0,1,2,5})for(int f=0;f<6;f++)cases.i32(raw.data[(q*6+v)*8+f]);
+                    // b1.8.1 draws quads (no triangle conversion) with a packed lightmap brightness.
+                    cases.i32(raw==null?0:raw.n);
+                    if(raw!=null)for(int v=0;v<raw.n;v++){for(int f=0;f<6;f++)cases.i32(raw.data[v*8+f]);cases.i32(raw.data[v*8+7]);}
                     count++;
                 }
             }

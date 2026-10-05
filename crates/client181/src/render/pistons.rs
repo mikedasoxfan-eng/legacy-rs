@@ -96,11 +96,13 @@ impl Snapshot {
         let d: [f64; 3] = std::array::from_fn(|i| self.position[i] as f64 + 0.5 - camera[i]);
         d[0] * d[0] + d[1] * d[1] + d[2] * d[2] < 4096.0
     }
-    pub fn batch(&self, partial: f32, camera: [f64; 3]) -> super::entity::living::Batch {
+    /// The GPU batch (quads split for drawing) and each vertex's lightmap brightness.
+    pub fn batch(&self, partial: f32, camera: [f64; 3]) -> (super::entity::living::Batch, Vec<u32>) {
         use super::entity::living::{Batch, EntityVertex, Pass};
         let render_position = std::array::from_fn(|i| self.position[i] as f64 - camera[i]);
         let quads = self.vertices(partial, render_position);
         let mut vertices = Vec::with_capacity(quads.len() / 4 * 6);
+        let mut lights = Vec::with_capacity(quads.len() / 4 * 6);
         for quad in quads.chunks_exact(4) {
             for i in [0, 1, 2, 0, 2, 3] {
                 let v = quad[i];
@@ -109,13 +111,15 @@ impl Snapshot {
                     uv: v.uv,
                     color: v.color.map(|c| c as f32 / 255.0),
                 });
+                lights.push(v.light);
             }
         }
-        Batch {
+        let batch = Batch {
             texture: Some("terrain.png"),
             pass: Pass::Alpha,
             vertices,
-        }
+        };
+        (batch, lights)
     }
 }
 fn append(out: &mut Vec<Vertex>, mesh: &Geometry, translation: [f64; 3]) {

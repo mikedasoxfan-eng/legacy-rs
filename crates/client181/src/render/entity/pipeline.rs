@@ -45,6 +45,8 @@ pub struct EntityPipeline {
     pub angler: Option<worldgen::entity::Entity>,
     pub third_person: bool,
     pub signs: Vec<crate::render::sign::Snapshot>,
+    /// Batches whose vertices carry their own lightmap brightness (batch index, per vertex).
+    vertex_lights: Vec<(usize, Vec<u32>)>,
     pub chests: Vec<super::chest::Tile>,
     pub partial: f32,
     pub fancy: bool,
@@ -387,6 +389,7 @@ impl EntityPipeline {
             angler: None,
             third_person: false,
             signs: Vec::new(),
+            vertex_lights: Vec::new(),
             chests: Vec::new(),
             partial: 0.0,
             fancy: true,
@@ -559,8 +562,14 @@ impl EntityPipeline {
         }
         lights.resize(batches.len(), NO_LIGHTMAP);
         batches.append(&mut self.extra);
-        batches.extend(self.pistons.iter().filter(|p|p.visible(camera.to_array())).map(|p|p.batch(self.partial,camera.to_array())));
         lights.resize(batches.len(), NO_LIGHTMAP);
+        // Moving pistons: RenderBlocks geometry with per-vertex lightmap brightness.
+        for p in self.pistons.iter().filter(|p|p.visible(camera.to_array())) {
+            let (b, l) = p.batch(self.partial, camera.to_array());
+            self.vertex_lights.push((batches.len(), l));
+            batches.push(b);
+            lights.push(NO_LIGHTMAP);
+        }
         for s in &self.signs {
             let relative=std::array::from_fn(|i|s.position[i] as f64-camera[i] as f64);
             let g=crate::render::sign::render(&s.sign,s.block,s.metadata,relative,s.brightness);
@@ -635,10 +644,14 @@ impl EntityPipeline {
         self.draws.clear();
         let mut all = Vec::new();
         let mut light_of = Vec::new();
+        let mut per_vertex: std::collections::HashMap<usize, Vec<u32>> = std::mem::take(&mut self.vertex_lights).into_iter().collect();
         for (i, b) in batches.into_iter().enumerate() {
             let start = all.len() as u32;
             all.extend_from_slice(&b.vertices);
-            light_of.resize(all.len(), batch_lights.get(i).copied().unwrap_or(NO_LIGHTMAP));
+            match per_vertex.remove(&i) {
+                Some(l) if l.len() == b.vertices.len() => light_of.extend(l),
+                _ => light_of.resize(all.len(), batch_lights.get(i).copied().unwrap_or(NO_LIGHTMAP)),
+            }
             self.draws.push(Draw {
                 range: start..all.len() as u32,
                 texture: b.texture.unwrap_or("__white").into(),
