@@ -1,6 +1,7 @@
 //! Generated from original Beta Item methods by oracle itemtable.
 pub fn properties(id:i16,damage:i16)->(i32,u32,i32) {
  let d=damage as i32;
+ if let Some((icon,color))=worldgen::entity::player::registry::block_item_properties(id as i32,d,true) {return (icon,color,0);}
  match id {
  1 => { let row = [(1,0x00ffffffu32,0),(1,0x00ffffffu32,0),(1,0x00ffffffu32,0),(1,0x00ffffffu32,0),(1,0x00ffffffu32,0),(1,0x00ffffffu32,0),(1,0x00ffffffu32,0),(1,0x00ffffffu32,0),(1,0x00ffffffu32,0),(1,0x00ffffffu32,0),(1,0x00ffffffu32,0),(1,0x00ffffffu32,0),(1,0x00ffffffu32,0),(1,0x00ffffffu32,0),(1,0x00ffffffu32,0),(1,0x00ffffffu32,0),][(d&15) as usize]; row },
  2 => { let row = [(3,0x00ffffffu32,0),(3,0x00ffffffu32,0),(3,0x00ffffffu32,0),(3,0x00ffffffu32,0),(3,0x00ffffffu32,0),(3,0x00ffffffu32,0),(3,0x00ffffffu32,0),(3,0x00ffffffu32,0),(3,0x00ffffffu32,0),(3,0x00ffffffu32,0),(3,0x00ffffffu32,0),(3,0x00ffffffu32,0),(3,0x00ffffffu32,0),(3,0x00ffffffu32,0),(3,0x00ffffffu32,0),(3,0x00ffffffu32,0),][(d&15) as usize]; row },

@@ -473,6 +473,9 @@ bash "$root/tools/verify_entities6_181.sh" --built || fail=1
 # --- player-gui (b1.8.1), round 7 ---
 bash tools/verify_player_gui7_181.sh --built || fail=1
 # --- end player-gui ---
+# --- entities (b1.8.1) ---
+bash "$root/tools/verify_entities7_181.sh" --built || fail=1
+# --- end entities ---
 pflush
 [ $fail -eq 0 ] && echo "ALL CASES EXACT" || echo "SOME CASES DIFFER"
 exit $fail

@@ -2,6 +2,7 @@
 pub mod activation;
 pub mod api;
 pub mod block_hooks;
+pub mod bucket;
 pub mod controller;
 pub mod dye;
 pub mod food;

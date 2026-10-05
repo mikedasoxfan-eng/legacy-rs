@@ -239,55 +239,7 @@ impl Entity {
                 335 => -1,
                 _ => 0,
             };
-            let start = Vec3D::new(
-                self.prev_pos.x + (self.pos.x - self.prev_pos.x),
-                self.prev_pos.y + (self.pos.y - self.prev_pos.y) + 1.62 - self.y_offset as f64,
-                self.prev_pos.z + (self.pos.z - self.prev_pos.z),
-            );
-            let look = self.look(1.0);
-            if let Some(MovingObjectPosition::Block { x, y, z, side, .. }) = w
-                .ray_trace_blocks_options(
-                    start,
-                    start.add(look.x * 5.0, look.y * 5.0, look.z * 5.0),
-                    full == 0,
-                    false,
-                )
-            {
-                if full == 0 {
-                    let mat = w.get_block_material(x, y, z);
-                    if matches!(mat, MAT_WATER | MAT_LAVA) && w.get_block_metadata(x, y, z) == 0 {
-                        w.set_block_with_notify(x, y, z, 0);
-                        stack = ItemStack::new(if mat == MAT_WATER { 326 } else { 327 }, 1, 0);
-                    }
-                } else if full < 0 {
-                    stack = ItemStack::new(325, 1, 0);
-                } else {
-                    let (x, y, z) = super::placement::offset(x, y, z, side);
-                    if w.get_block_id(x, y, z) == 0 || !mat(w.get_block_material(x, y, z)).is_solid
-                    {
-                        if w.dimension.is_hell_world() && full == 8 {
-                            let pitch = 2.6 + (w.rand.next_float() - w.rand.next_float()) * 0.8;
-                            w.play_sound(
-                                "random.fizz",
-                                Vec3D::new(x as f64 + 0.5, y as f64 + 0.5, z as f64 + 0.5),
-                                0.5,
-                                pitch,
-                            );
-                            for _ in 0..8 {
-                                let p = Vec3D::new(
-                                    x as f64 + w.math_random.next_double(),
-                                    y as f64 + w.math_random.next_double(),
-                                    z as f64 + w.math_random.next_double(),
-                                );
-                                w.spawn_particle("largesmoke", p, Vec3D::default());
-                            }
-                        } else {
-                            w.set_block_and_metadata_with_notify(x, y, z, full as u8, 0);
-                        }
-                        if !self.player_state().unwrap().capabilities.creative { stack = ItemStack::new(325, 1, 0); }
-                    }
-                }
-            }
+            stack = self.bucket_right_click181(w, stack, full);
         }
         let changed = !stack.same_object(original) || stack.count != original.count;
         let inv = &mut self.player_state_mut().unwrap().inventory;

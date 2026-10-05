@@ -119,7 +119,7 @@ impl Entity {
         }
         let (x, y, z) = crate::entity::player::placement::offset(x, y, z, side);
         // ItemSign calls Block.canPlaceBlockAt, without ItemBlock's entity collision test.
-        if !(0..128).contains(&y) {
+        if !self.can_edit_block181(x, y, z) {
             return false;
         }
         let existing = w.get_block_id(x, y, z);
@@ -135,7 +135,7 @@ impl Entity {
             (68, side)
         };
         w.set_block_and_metadata_with_notify(x, y, z, id, meta);
-        stack.count -= 1;
+        stack.count = stack.count.wrapping_sub(1);
         if let Some(TileEntity::Sign(sign)) = w.get_block_tile_entity(x, y, z) {
             let sign = sign.clone();
             self.player_state_mut()
