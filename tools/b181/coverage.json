@@ -1,1 +1,12 @@
-{}
+{
+ "WorldInfo": ["world-blocks b1.8.1: saves"],
+ "Teleporter": ["world-blocks b1.8.1: teleporter"],
+ "RegionFile": ["world-blocks b1.8.1: region cross-read"],
+ "RegionFileChunkBuffer": ["world-blocks b1.8.1: region cross-read"],
+ "NibbleArray": ["world-blocks b1.8.1: helpers"],
+ "EnumAction": ["world-blocks b1.8.1: actions"],
+ "Material": ["world-blocks b1.8.1: definitions", "world-blocks b1.8.1: registry"],
+ "MaterialWeb": ["world-blocks b1.8.1: definitions"],
+ "BlockFence": ["world-blocks b1.8.1: geometry", "all Beta block collision/selection states (10000 cases)"],
+ "BlockFarmland": ["world-blocks b1.8.1: plants"]
+}

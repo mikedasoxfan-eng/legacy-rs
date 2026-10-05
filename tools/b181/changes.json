@@ -4609,14 +4609,6 @@
    "area": "world"
   },
   {
-   "class": "TerrainTextureManager",
-   "package": "src",
-   "status": "changed",
-   "lines": 203,
-   "changed_lines": 149,
-   "area": "rendering"
-  },
-  {
    "class": "Tessellator",
    "package": "src",
    "status": "changed",

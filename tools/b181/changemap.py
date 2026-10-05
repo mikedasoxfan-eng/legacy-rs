@@ -20,7 +20,7 @@ SKIP = re.compile(r'^(Packet\d*\w*|NetClientHandler|NetHandler|NetworkManager|Ne
                   r'GuiMultiplayer|GuiConnecting|GuiConnectFailed|GuiDownloadTerrain|GuiSleepMP|WorldClient|'
                   r'EntityClientPlayerMP|EntityOtherPlayerMP|PlayerControllerMP|SaveHandlerMP|ChunkProviderClient|'
                   r'Thread(ConnectToServer|CloseConnection|CheckHasPaid|RunIsoClient|SleepForever|Download\w*)|'
-                  r'J_\w+|EnumJson\w+|CanvasIsomPreview|IsoImageBuffer|ImageBufferDownload|'
+                  r'J_\w+|EnumJson\w+|CanvasIsomPreview|IsoImageBuffer|ImageBufferDownload|TerrainTextureManager|'
                   r'Canvas\w+|Panel\w+|MinecraftApplet\w*|MinecraftAppletImpl|MinecraftImpl|GameWindowListener|'
                   r'UnexpectedThrowable|OsMap|EnumOS\w*|ServerList\w*|ServerNBTStorage|GuiScreenAddServer|'
                   r'GuiSlotServer|ThreadPollServers|GuiScreenServerList|ServerData)$')
