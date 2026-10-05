@@ -219,6 +219,7 @@ pub struct App {
     ingame: gui::ingame::GuiIngame,
     hud: gui::ingame::HudPlayer,
     chunks_loaded: usize,
+    loaded_entities: usize,
     /// World ticks seen since the world became ready.
     ticks_ready: i64,
     sound: Option<crate::sound::SoundManager>,
@@ -261,13 +262,15 @@ pub struct App {
     player: Option<PlayerView>,
     /// Button and key presses since the last input frame went to the world thread.
     input: worker::InputFrame,
+    minecraft_events: crate::minecraft_input::Events,
+    minecraft_system_time: Option<Instant>,
     /// `MouseHelper` counts this frame (y up, as LWJGL reports).
     mouse_delta: (f64, f64),
     mouse_held: [bool; 2],
     /// `MovementInputFromOptions.movementKeyStates`: set by key events, cleared when a screen
     /// takes the focus (`resetPlayerKeyState`).
     move_keys: [bool; 6],
-    /// `EntityRenderer.mouseFilterXAxis/YAxis` for the smooth camera (F8).
+    /// `EntityRenderer.mouseFilterXAxis/YAxis` for smoothCamera.
     mouse_filter: [[f32; 3]; 2],
     input_seq: u64,
     /// Look deltas the world thread may not have applied yet when its last message left.
@@ -313,6 +316,7 @@ impl App {
             ingame: gui::ingame::GuiIngame::new(),
             hud: gui::ingame::HudPlayer::default(),
             chunks_loaded: 0,
+            loaded_entities: 0,
             ticks_ready: 0,
             entities: Vec::new(),
             pistons: Vec::new(),
@@ -332,6 +336,8 @@ impl App {
             world_name: String::new(),
             player: None,
             input: Default::default(),
+            minecraft_events: Default::default(),
+            minecraft_system_time: None,
             mouse_delta: (0.0, 0.0),
             mouse_held: [false; 2],
             move_keys: [false; 6],
@@ -367,6 +373,9 @@ impl App {
 
     fn settings_changed(&mut self) {
         let video = self.video_settings();
+        if let (Some(tx),Some(g))=(&self.tx,&self.gui) {
+            let _=tx.send(ToWorker::MinecraftSettings(g.ui.settings.clone()));
+        }
         if self.gui.as_ref().is_some_and(|g| g.texture_anaglyph != video.anaglyph) { self.refresh_textures(); }
         self.frame_deadline = None;
         if let Some(gpu) = &mut self.gpu {
@@ -392,6 +401,11 @@ impl App {
             w.set_cursor_visible(true);
             self.grabbed = false;
         }
+        if let Some(tx)=&self.tx {
+            let _=tx.send(ToWorker::MinecraftContext {
+                screen:self.gui.as_ref().is_some_and(|g|g.screen.is_some()),focused:self.grabbed,
+            });
+        }
     }
 
     /// `Minecraft.startWorld`: open a world on the world thread (the loading screen shows
@@ -399,6 +413,8 @@ impl App {
     fn start_world(&mut self, w: WorldOptions) {
         let seed = w.seed;
         self.ready = false;
+        self.minecraft_events=Default::default();
+        self.minecraft_system_time=None;
         self.idle = false;
         self.world_time = 0;
         self.last_cam_sent = DVec3::splat(f64::MAX);
@@ -570,9 +586,9 @@ impl App {
                     }
                 }
                 gui::system::GameAction::IngameUnfocus => {
-                    // setIngameNotInFocus -> thePlayer.resetPlayerKeyState()
+                    // setIngameNotInFocus -> KeyBinding.unPressAllKeys()
                     self.move_keys = [false; 6];
-                    if let Some(g)=&mut self.gui {g.ui.settings.release_keys();}
+                    if self.grabbed {if let Some(g)=&mut self.gui {g.ui.settings.release_keys();}}
                     self.set_grab(false);
                 }
                 gui::system::GameAction::Respawn => {
@@ -783,23 +799,7 @@ impl App {
         None
     }
 
-    /// A mouse button: to the screen if one is open, else to the player.
-    fn queue_binding_actions(&mut self, el: &ActiveEventLoop) {
-        let Some(g)=&mut self.gui else {return;};
-        let settings=&mut g.ui.settings;
-        self.input.attack_presses += settings.take_binding_presses("key.attack");
-        self.input.use_presses += settings.take_binding_presses("key.use");
-        self.input.pick_presses += settings.take_binding_presses("key.pickItem");
-        self.input.drop_presses += settings.take_binding_presses("key.drop");
-        let inventories=settings.take_binding_presses("key.inventory");
-        let chats=settings.take_binding_presses("key.chat");
-        for _ in 0..inventories {
-            if let Some(tx)=&self.tx {let _=tx.send(ToWorker::Container(gui::container_api::inventory_key_request()));}
-        }
-        if chats>0 {g.ui.display(Some(Box::new(gui::screens::chat::GuiChat::default())));}
-        self.apply_gui_actions(el);
-    }
-
+    /// A mouse button: to the screen if one is open, else queued for runTick.
     fn mouse_button(&mut self, el: &ActiveEventLoop, b: i32, pressed: bool) {
         let screen_open = self.gui.as_ref().is_some_and(|g| g.screen.is_some());
         if screen_open && self.loading.is_none() {
@@ -812,12 +812,8 @@ impl App {
                 g.mouse_event(x, y, b, pressed);
             }
             self.apply_gui_actions(el);
-        } else if pressed && self.ready && !self.grabbed {
-            // Clicking into the game window takes the mouse (setIngameFocus).
-            self.set_grab(true);
-        } else if self.ready && self.grabbed {
-            if let Some(g)=&mut self.gui {g.ui.settings.input_event(b-100,pressed);}
-            self.queue_binding_actions(el);
+        } else if self.ready && self.player.is_some() {
+            self.minecraft_events.mouse.push(crate::minecraft_input::MouseEvent {button:b,pressed,wheel:0,fresh:true});
         }
         if b < 2 {
             self.mouse_held[b as usize] = pressed;
@@ -828,19 +824,14 @@ impl App {
     fn key_input(&mut self, el: &ActiveEventLoop, code: KeyCode, c: char, pressed: bool, repeat: bool) {
         let repeats = self.gui.as_ref().and_then(|g| g.screen.as_ref()).is_some_and(|s| s.repeats_keys());
         if repeat && !repeats { return; }
-        if pressed && code == KeyCode::F11 {
-            if let Some(gpu) = &self.gpu {
-                let fullscreen = gpu.window.fullscreen().is_none().then(|| winit::window::Fullscreen::Borderless(gpu.window.current_monitor()));
-                gpu.window.set_fullscreen(fullscreen);
-            }
+        let screen_open = self.gui.as_ref().is_some_and(|g| g.screen.is_some());
+        let in_game_key = !screen_open && self.ready && self.loading.is_none() && !repeat;
+        if pressed && code == KeyCode::F11 && !in_game_key {
+            self.toggle_fullscreen();
             return;
         }
-        let screen_open = self.gui.as_ref().is_some_and(|g| g.screen.is_some());
-        // LWJGL delivers no repeats to the game (screens with text fields enable them).
-        let in_game_key = !screen_open && self.ready && self.loading.is_none() && !repeat;
         if in_game_key && self.player.is_some() {
-            if let Some(g)=&mut self.gui {g.ui.settings.input_event(lwjgl_key(code),pressed);}
-            self.queue_binding_actions(el);
+            self.minecraft_events.keys.push(crate::minecraft_input::KeyEvent {code:lwjgl_key(code),pressed});
         }
         // Keyboard.isKeyDown(LSHIFT/RSHIFT) as screens see it, including this event.
         if matches!(code, KeyCode::ShiftLeft | KeyCode::ShiftRight) {
@@ -860,60 +851,19 @@ impl App {
                     g.key_event(c, key);
                 }
                 self.apply_gui_actions(el);
-            } else if in_game_key {
-                if code == KeyCode::KeyS && self.keys.contains(&KeyCode::F3) {
-                    // Minecraft.forceReload: rebuild the sound pools from downloaded resources.
-                    let seed = self.started.elapsed().as_nanos() as i64;
-                    let mut sound = crate::sound::SoundManager::new(&crate::sound::resources_dir(), seed);
-                    if let Some(g) = &self.gui { sound.options_changed(g.ui.settings.sound_volume, g.ui.settings.music_volume); }
-                    self.sound = Some(sound);
-                }
-                // key.inventory opens GuiInventory once the container screens are in.
-                match code {
-                    KeyCode::Escape => {
-                        self.display_ingame_menu();
-                        self.apply_gui_actions(el);
-                    }
-                    KeyCode::F1 => {
-                        if let Some(g) = &mut self.gui {
-                            g.ui.settings.hide_gui = !g.ui.settings.hide_gui;
-                        }
-                    }
-                    KeyCode::F3 => {
-                        if let Some(g) = &mut self.gui {
-                            g.ui.settings.show_debug_info = !g.ui.settings.show_debug_info;
-                        }
-                    }
-                    KeyCode::F5 => {
-                        if let Some(g) = &mut self.gui {
-                            g.ui.settings.third_person_view = !g.ui.settings.third_person_view;
-                        }
-                    }
-                    KeyCode::KeyF if self.keys.contains(&KeyCode::F3) => {
-                        let backward=self.keys.contains(&KeyCode::ShiftLeft)||self.keys.contains(&KeyCode::ShiftRight);
-                        if let Some(g)=&mut self.gui {g.ui.settings.set_option_value(gui::settings::EnumOptions::RenderDistance,if backward {-1}else {1});}
-                        self.settings_changed();
-                    }
-                    KeyCode::Digit1
-                    | KeyCode::Digit2
-                    | KeyCode::Digit3
-                    | KeyCode::Digit4
-                    | KeyCode::Digit5
-                    | KeyCode::Digit6
-                    | KeyCode::Digit7
-                    | KeyCode::Digit8
-                    | KeyCode::Digit9 => {
-                        // Keys 2..10 (LWJGL) select the hotbar slot.
-                        self.input.hotbar_slot = Some((lwjgl_key(code) - 2) as u8);
-                    }
-                    _ => {}
-                }
             }
             if code != KeyCode::F2 || !repeat { self.keys.insert(code); }
         } else {
             if code != KeyCode::F2 {
                 self.keys.remove(&code);
             }
+        }
+    }
+
+    fn toggle_fullscreen(&self) {
+        if let Some(gpu)=&self.gpu {
+            let fullscreen=gpu.window.fullscreen().is_none().then(||winit::window::Fullscreen::Borderless(gpu.window.current_monitor()));
+            gpu.window.set_fullscreen(fullscreen);
         }
     }
 
@@ -949,7 +899,7 @@ impl App {
                     self.mouse_delta.0 += x;
                     self.mouse_delta.1 -= y;
                 }
-                Command::Scroll(n) => self.input.scroll += n,
+                Command::Scroll(n) => self.minecraft_events.mouse.push(crate::minecraft_input::MouseEvent {button:-1,pressed:false,wheel:n,fresh:true}),
                 Command::Move(x, y) => {
                     self.cursor = (x, y);
                     if let Some(g) = &mut self.gui {
@@ -1010,6 +960,17 @@ impl App {
             if let Some(g) = &mut self.gui {
                 g.update_screen();
             }
+            if self.ready && self.player.is_some() {
+                let mut events=std::mem::take(&mut self.minecraft_events);
+                let fresh=self.minecraft_system_time.is_some_and(|time|now.duration_since(time)<=Duration::from_millis(200));
+                for event in &mut events.mouse {event.fresh=fresh;}
+                self.minecraft_system_time=Some(now);
+                events.down=self.keys.iter().map(|&k|lwjgl_key(k)).collect();
+                if let (Some(g),Some(tx))=(&self.gui,&self.tx) {
+                    let _=tx.send(ToWorker::MinecraftEvents {settings:g.ui.settings.clone(),events,
+                        screen:g.screen.is_some(),focused:self.grabbed});
+                }
+            }
             self.gui_ticks += Duration::from_millis(50);
             gui_ticks += 1;
         }
@@ -1033,6 +994,7 @@ impl App {
         let mut uploads = 0;
         let mut closed = false;
         let mut ungrab = false;
+        let mut minecraft_actions=Vec::new();
         if let (Some(rx), Some(gpu)) = (&self.rx, &mut self.gpu) {
             while uploads < 64 {
                 match rx.try_recv() {
@@ -1253,7 +1215,7 @@ impl App {
                         self.idle = false;
                     }
                     Ok(FromWorker::Drop { cx, cz }) => gpu.remove_chunk(cx, cz),
-                    Ok(FromWorker::Time { time, brightness, fog_brightness, chunks, weather, terrain }) => {
+                    Ok(FromWorker::Time { time, brightness, fog_brightness, chunks, loaded_entities, weather, terrain }) => {
                         if self.ready {
                             self.ticks_ready += 1;
                         }
@@ -1261,6 +1223,7 @@ impl App {
                             self.hud.brightness = brightness;
                         }
                         self.chunks_loaded = chunks;
+                        self.loaded_entities=loaded_entities;
                         self.cloud_ticks += 1;
                         let rng = &mut self.flicker_rng;
                         self.flicker.tick(|| rng.next_double());
@@ -1297,6 +1260,16 @@ impl App {
                         self.particles.spawn(splashes);
                         self.particles.tick(self.cam.pos.to_array());
                     }
+                    Ok(FromWorker::MinecraftActions {actions,settings}) => {
+                        if let Some(g)=&mut self.gui {
+                            g.ui.settings.hide_gui=settings.hide_gui;
+                            g.ui.settings.show_debug_info=settings.show_debug_info;
+                            g.ui.settings.third_person_view=settings.third_person_view;
+                            g.ui.settings.render_distance=settings.render_distance;
+                            g.ui.settings.smooth_camera_zoom_amount=settings.smooth_camera_zoom_amount;
+                        }
+                        minecraft_actions.extend(actions);
+                    }
                     Ok(FromWorker::Idle) => self.idle = true,
                     Ok(FromWorker::Saved) => {
                         closed = true;
@@ -1314,6 +1287,24 @@ impl App {
                     }
                     Err(_) => break,
                 }
+            }
+        }
+        for action in minecraft_actions {
+            use crate::minecraft_input::Action;
+            match action {
+                Action::Focus=>self.set_grab(true),
+                Action::Menu=>{self.display_ingame_menu();self.apply_gui_actions(el);},
+                Action::Inventory=>{if let Some(tx)=&self.tx {let _=tx.send(ToWorker::Container(gui::container_api::inventory_key_request()));}},
+                Action::Chat=>{if let Some(g)=&mut self.gui {g.ui.display(Some(Box::new(gui::screens::chat::GuiChat::default())));}self.apply_gui_actions(el);},
+                Action::Fullscreen=>self.toggle_fullscreen(),
+                Action::Container=>{}, // Existing PlayerEvent opens the actual screen.
+                Action::Settings=>self.settings_changed(),
+                Action::Reload=>{
+                    let seed=self.started.elapsed().as_nanos() as i64;
+                    let mut sound=crate::sound::SoundManager::new(&crate::sound::resources_dir(),seed);
+                    if let Some(g)=&self.gui {sound.options_changed(g.ui.settings.sound_volume,g.ui.settings.music_volume);}
+                    self.sound=Some(sound);
+                },
             }
         }
         if ungrab {
@@ -1637,7 +1628,7 @@ impl App {
             fps_line: self.debug_line.clone(),
             renders: format!("C: {}/{}. F: 0, O: 0, E: 0", gpu.chunk_count(), gpu.chunk_count()),
             entities: "E: 0/0. B: 0, I: 0".into(),
-            particles: format!("P: {}. T: All: 0", self.particles.len()),
+            particles: crate::minecraft_input::debug_entities(self.particles.len(),self.loaded_entities),
             chunks: format!("ServerChunkCache: {} Drop: 0", self.chunks_loaded),
             ..memory_info()
         };
@@ -1858,10 +1849,11 @@ impl ApplicationHandler for App {
                 let screen_open = self.gui.as_ref().is_some_and(|g| g.screen.is_some());
                 if screen_open && y!=0.0 {if let Some(g)=self.gui.as_mut(){if let Some(s)=g.screen.as_mut(){s.mouse_scrolled(&mut g.ui,y.signum() as i32);}}}
                 if self.ready && !screen_open && y != 0.0 {
-                    self.input.scroll += y.signum() as i32;
+                    self.minecraft_events.mouse.push(crate::minecraft_input::MouseEvent {button:-1,pressed:false,wheel:y.signum() as i32,fresh:true});
                 }
             }
             WindowEvent::Focused(false) => {
+                if self.gpu.as_ref().is_some_and(|g|g.window.fullscreen().is_some()) {self.toggle_fullscreen();}
                 if self.ready && self.loading.is_none() && self.script.is_none() {
                     // EntityRenderer: losing focus opens the pause menu.
                     self.display_ingame_menu();

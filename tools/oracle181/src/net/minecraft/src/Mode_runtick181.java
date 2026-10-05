@@ -1,0 +1,156 @@
+package net.minecraft.src;
+import java.io.*;
+import java.util.*;
+import java.lang.reflect.*;
+import net.minecraft.client.Minecraft;
+import org.lwjgl.input.Mouse;
+import org.lwjgl.input.Keyboard;
+
+/** Calls the unmodified original Minecraft.runTick. Only platform/render/world
+ * tick callbacks are replaced; inventory, item use, clicks and controllers run
+ * the original bytecode. The fixture carries its event inputs with each result. */
+public final class Mode_runtick181 {
+    static Field field(Class<?> c,String n)throws Exception {Field f=c.getDeclaredField(n);f.setAccessible(true);return f;}
+    static final class Settings extends GameSettings {Client client;public void saveOptions(){client.actions.add(6);}}
+    static final class Stats extends StatFileWriter {
+        Stats(){super(null,null);}public void func_27178_d(){}public void syncStats(){}
+    }
+    static final class Hud extends GuiIngame {Hud(){super(null);}public void updateTick(){}}
+    static final class Textures extends RenderEngine {
+        Textures(){super(null,null);}public int getTexture(String s){return 0;}public void updateDynamicTextures(){}
+    }
+    static final class Renderer extends EntityRenderer {
+        Renderer(){super(null);}public void getMouseOver(float p){}public void updateRenderer(){}
+    }
+    static final class Global extends RenderGlobal {Global(){super(null,null);}public void updateClouds(){}}
+    static final class Effects extends EffectRenderer {
+        Effects(World w){super(w,null);}public void addBlockHitEffects(int x,int y,int z,int side){WorldEventOracle.hit(worldObj,x,y,z,side);}public void updateEffects(){}
+    }
+    static final class Cursor extends MouseHelper {
+        Cursor(){super(null);}public void grabMouseCursor(){}public void ungrabMouseCursor(){}
+    }
+    static final class Screen extends GuiScreen {
+        int mouseCalls,keyCalls;
+        public void handleInput(){super.handleInput();}public void handleMouseInput(){mouseCalls++;}
+        public void handleKeyboardInput(){keyCalls++;}public void updateScreen(){}
+    }
+    static final class WorldProbe extends World {
+        int ticks,updates,joins,display;boolean mobs,animals;
+        WorldProbe(){super((ISaveHandler)null,"",new WorldSettings(0,0,true));}
+        public void tick(){ticks++;}public void updateEntities(){updates++;}
+        public void joinEntityInSurroundings(Entity e){joins++;}
+        public void randomDisplayUpdates(int x,int y,int z){display++;}
+        public void setAllowedMobSpawns(boolean m,boolean a){mobs=m;animals=a;}
+    }
+    static final class Player extends EntityPlayerSP {
+        int drops,swings;
+        Player(Minecraft mc,World w){super(mc,w,new Session("Player",""),0);}
+        public void addStat(StatBase s,int n){}
+        public void dropCurrentItem(){drops++;super.dropCurrentItem();}
+        public void swingItem(){swings++;super.swingItem();}
+    }
+    static final class Survival extends PlayerControllerSP {
+        int[] clicks=new int[5];Survival(Minecraft mc){super(mc);}
+        public void clickBlock(int x,int y,int z,int side){clicks[0]++;super.clickBlock(x,y,z,side);}
+        public void attackEntity(EntityPlayer p,Entity e){clicks[1]++;super.attackEntity(p,e);}
+        public void interactWithEntity(EntityPlayer p,Entity e){clicks[2]++;super.interactWithEntity(p,e);}
+        public boolean sendPlaceBlock(EntityPlayer p,World w,ItemStack s,int x,int y,int z,int side){clicks[3]++;return super.sendPlaceBlock(p,w,s,x,y,z,side);}
+        public boolean sendUseItem(EntityPlayer p,World w,ItemStack s){clicks[4]++;return super.sendUseItem(p,w,s);}
+    }
+    static final class Creative extends PlayerControllerTest {
+        int[] clicks=new int[5];Creative(Minecraft mc){super(mc);}
+        public void clickBlock(int x,int y,int z,int side){clicks[0]++;super.clickBlock(x,y,z,side);}
+        public void attackEntity(EntityPlayer p,Entity e){clicks[1]++;super.attackEntity(p,e);}
+        public void interactWithEntity(EntityPlayer p,Entity e){clicks[2]++;super.interactWithEntity(p,e);}
+        public boolean sendPlaceBlock(EntityPlayer p,World w,ItemStack s,int x,int y,int z,int side){clicks[3]++;return super.sendPlaceBlock(p,w,s,x,y,z,side);}
+        public boolean sendUseItem(EntityPlayer p,World w,ItemStack s){clicks[4]++;return super.sendUseItem(p,w,s);}
+    }
+    static final class Client extends Minecraft {
+        ArrayList<Integer> actions=new ArrayList<>();
+        Client(){super(null,null,null,1,1,false);}
+        public void displayUnexpectedThrowable(UnexpectedThrowable t){throw new RuntimeException();}
+        public void displayGuiScreen(GuiScreen s){
+            if(s==null){currentScreen=null;return;}
+            actions.add(s instanceof GuiInventory?1:s instanceof GuiChat?2:7);
+            Screen probe=new Screen();probe.allowUserInput=false;probe.guiParticles=new GuiParticle(this);
+            currentScreen=probe;setIngameNotInFocus();
+        }
+        public void displayInGameMenu(){
+            actions.add(3);Screen probe=new Screen();probe.guiParticles=new GuiParticle(this);currentScreen=probe;setIngameNotInFocus();
+        }
+        public void setIngameFocus(){if(!inGameHasFocus)actions.add(0);super.setIngameFocus();}
+        public void toggleFullscreen(){actions.add(4);}
+    }
+    static void i(DataOutputStream o,int n)throws Exception {EntityOracle.i(o,n);}
+    static WorldProbe world()throws Exception {
+        World source=Mode_entities181.world();WorldProbe w=(WorldProbe)Oracle.allocate(WorldProbe.class);
+        for(Field f:World.class.getDeclaredFields())if(!Modifier.isStatic(f.getModifiers())){f.setAccessible(true);f.set(w,f.get(source));}
+        return w;
+    }
+    public static void main(String[] a)throws Exception {
+        try(DataOutputStream out=new DataOutputStream(new BufferedOutputStream(new FileOutputStream(a[1])))) {
+            i(out,26); // 2 controllers x 13 independent scenarios
+            for(int mode=0;mode<2;mode++)for(int scenario=0;scenario<13;scenario++) {
+                Mouse.reset();Keyboard.reset();WorldProbe w=world();WorldEventOracle.attach(w);Item.itemRand.setSeed(605);
+                Client mc=(Client)Oracle.allocate(Client.class);mc.actions=new ArrayList<>();mc.theWorld=w;
+                Player p=new Player(mc,w);mc.thePlayer=p;p.setLocationAndAngles(.5,64,.5,0,0);p.onGround=true;
+                mc.gameSettings=new Settings();((Settings)mc.gameSettings).client=mc;KeyBinding.func_35959_a();
+                mc.gameSettings.field_22275_C=scenario%2==0;
+                mc.statFileWriter=(Stats)Oracle.allocate(Stats.class);mc.ingameGUI=(Hud)Oracle.allocate(Hud.class);
+                mc.renderEngine=(Textures)Oracle.allocate(Textures.class);mc.entityRenderer=(Renderer)Oracle.allocate(Renderer.class);
+                mc.entityRenderer.itemRenderer=(ItemRenderer)Oracle.allocate(ItemRenderer.class);mc.renderGlobal=(Global)Oracle.allocate(Global.class);
+                mc.effectRenderer=new Effects(w);mc.mouseHelper=(Cursor)Oracle.allocate(Cursor.class);
+                mc.sndManager=(WorldEventOracle.Sounds)Oracle.allocate(WorldEventOracle.Sounds.class);((WorldEventOracle.Sounds)mc.sndManager).world=w;
+                mc.inGameHasFocus=scenario!=4;
+                mc.playerController=mode==0?new Survival(mc):new Creative(mc);
+                if(mode==1)PlayerControllerTest.func_35646_d(p);
+                p.inventory.mainInventory=new ItemStack[36];p.inventory.armorInventory=new ItemStack[4];
+                for(int slot=0;slot<9;slot++)p.inventory.mainInventory[slot]=new ItemStack(scenario==1?267:scenario==9?260:scenario==10?261:278,8,0);
+                p.inventory.mainInventory[8]=new ItemStack(262,64,0);p.func_35191_at().func_35764_a(10);
+                if(scenario==6){mc.gameSettings.field_35382_v.keyCode=33;mc.gameSettings.field_35381_w.keyCode=2;mc.gameSettings.field_35383_y.keyCode=16;KeyBinding.func_35961_b();}
+                i(out,mode);i(out,scenario);i(out,80);
+                for(int t=0;t<80;t++) {
+                    int phase=t%20;
+                    boolean close=phase==12&&(scenario==5||scenario==7||scenario==11);
+                    if(close){mc.currentScreen=null;mc.setIngameFocus();mc.actions.clear();}
+                    if(scenario==7&&phase==0){Screen s=new Screen();s.allowUserInput=true;s.guiParticles=new GuiParticle(mc);mc.currentScreen=s;mc.setIngameNotInFocus();}
+                    boolean fresh=scenario!=4||phase>=4;
+                    boolean paused=t%3!=0;field(Minecraft.class,"isGamePaused").setBoolean(mc,paused);
+                    w.multiplayerWorld=scenario==8;mc.gameSettings.difficulty=t%4;w.field_27172_i=phase%5;
+                    boolean target=phase<16;mc.objectMouseOver=target?new MovingObjectPosition(4,64,4,1,Vec3D.createVector(4,65,4)):null;
+                    EntityOracle.rawBlock(w,4,64,4,scenario==12?58:1,0);EntityOracle.rawBlock(w,4,65,4,0,0);
+                    ArrayList<int[]> mouse=new ArrayList<>(),keys=new ArrayList<>();
+                    if(phase==0)mouse.add(new int[]{0,1,0});if(phase==3)mouse.add(new int[]{0,1,0});if(phase==6)mouse.add(new int[]{0,0,0});
+                    if(phase==2||phase==4)mouse.add(new int[]{1,1,0});if(phase==9)mouse.add(new int[]{1,0,0});
+                    if(phase==5)mouse.add(new int[]{2,1,0});if(phase==6)mouse.add(new int[]{2,0,0});
+                    if(scenario==2||scenario==4){mouse.add(new int[]{-1,0,phase%2==0?120:-240});mouse.add(new int[]{-1,0,120});if(phase%3==0)keys.add(new int[]{2+t%9,1});}
+                    if(scenario==3){if(phase==0)keys.add(new int[]{61,1});if(phase==3)keys.add(new int[]{42,1});if(phase==4)keys.add(new int[]{54,1});if(phase==5)keys.add(new int[]{42,0});if(phase==7)keys.add(new int[]{54,0});if(phase<10)keys.add(new int[]{33,1});if(phase==10)keys.add(new int[]{61,0});if(phase%3==0)keys.add(new int[]{59,1});if(phase%4==0)keys.add(new int[]{63,1});if(phase==15)keys.add(new int[]{66,1});if(phase==16)keys.add(new int[]{87,1});}
+                    if(scenario==5&&phase==7){keys.add(new int[]{16,1});keys.add(new int[]{18,1});keys.add(new int[]{18,1});keys.add(new int[]{20,1});}
+                    if(scenario==6){keys.add(new int[]{phase%2==0?33:2,phase%3==0?0:1});if(phase==4)keys.add(new int[]{16,1});}
+                    if(scenario==8&&phase==7)keys.add(new int[]{20,1});
+                    if(scenario==11&&phase==7){keys.add(new int[]{1,1});keys.add(new int[]{5,1});}
+                    if(scenario==0&&phase==8){keys.add(new int[]{16,1});keys.add(new int[]{16,1});keys.add(new int[]{16,0});}
+                    i(out,close?1:0);i(out,scenario==7&&phase==0?1:0);out.writeBoolean(fresh);out.writeBoolean(paused);out.writeBoolean(target);i(out,mc.gameSettings.difficulty);i(out,w.field_27172_i);
+                    i(out,mouse.size());for(int[] event:mouse){for(int n:event)i(out,n);Mouse.queue(event[0],event[1]!=0,event[2]);}
+                    i(out,keys.size());for(int[] event:keys){for(int n:event)i(out,n);Keyboard.queue(event[0],event[1]!=0);}
+                    ArrayList<Integer> down=new ArrayList<>();for(int k=0;k<256;k++)if(Keyboard.isKeyDown(k))down.add(k);i(out,down.size());for(int k:down)i(out,k);
+                    field(Minecraft.class,"systemTime").setLong(mc,System.currentTimeMillis()-(fresh?0:1000));
+                    mc.runTick();
+                    ByteArrayOutputStream bytes=new ByteArrayOutputStream();DataOutputStream o=new DataOutputStream(bytes);
+                    i(o,mc.currentScreen==null?0:1);o.writeBoolean(mc.inGameHasFocus);i(o,field(Minecraft.class,"leftClickCounter").getInt(mc));i(o,field(Minecraft.class,"field_35001_ab").getInt(mc));
+                    i(o,p.inventory.currentItem);i(o,p.drops);i(o,p.swingProgressInt);o.writeBoolean(p.isSwinging);o.writeBoolean(p.func_35196_Z());i(o,p.func_35205_Y());
+                    for(ItemStack stack:p.inventory.mainInventory)PlayerOracle.stack(o,stack);
+                    int[] clicks=mode==0?((Survival)mc.playerController).clicks:((Creative)mc.playerController).clicks;
+                    for(int n:clicks)i(o,n);i(o,p.swings);
+                    for(KeyBinding k:mc.gameSettings.keyBindings){o.writeBoolean(k.field_35965_e);i(o,k.field_35964_f);}
+                    o.writeBoolean(mc.gameSettings.hideGUI);o.writeBoolean(mc.gameSettings.showDebugInfo);o.writeBoolean(mc.gameSettings.thirdPersonView);i(o,mc.gameSettings.renderDistance);EntityOracle.f(o,mc.gameSettings.field_22272_F);
+                    i(o,mc.actions.size());for(int action:mc.actions)i(o,action);mc.actions.clear();
+                    i(o,w.difficultySetting);i(o,w.field_27172_i);i(o,w.ticks);i(o,w.updates);i(o,w.joins);i(o,w.display);o.writeBoolean(w.mobs);o.writeBoolean(w.animals);
+                    if(mode==0){PlayerControllerSP c=(PlayerControllerSP)mc.playerController;for(String n:new String[]{"curBlockDamage","prevBlockDamage","field_1069_h"})EntityOracle.f(o,field(PlayerControllerSP.class,n).getFloat(c));for(String n:new String[]{"curBlockX","curBlockY","curBlockZ","blockHitWait"})i(o,field(PlayerControllerSP.class,n).getInt(c));}
+                    else i(o,field(PlayerControllerTest.class,"field_35647_c").getInt(mc.playerController));
+                    i(out,bytes.size());out.write(bytes.toByteArray());
+                }
+            }
+        }
+    }
+}

@@ -134,6 +134,9 @@ pub struct GameSettings {
     pub show_debug_info: bool,
     pub last_server: String,
     pub smooth_camera: bool,
+    /// Minecraft's transient wheel zoom fields (not persisted in options.txt).
+    pub smooth_camera_zoom: bool,
+    pub smooth_camera_zoom_amount: f32,
     pub gui_scale: i32,
     file: Option<PathBuf>,
 }
@@ -166,6 +169,8 @@ impl Default for GameSettings {
             show_debug_info: false,
             last_server: String::new(),
             smooth_camera: false,
+            smooth_camera_zoom: false,
+            smooth_camera_zoom_amount: 1.0,
             gui_scale: 0,
             file: None,
         }

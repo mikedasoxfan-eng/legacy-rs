@@ -29,6 +29,11 @@ pub enum ToWorker {
     QuickSave(i32),
     /// The player's keys and mouse since the last message (merged until the next tick).
     Input(InputFrame),
+    MinecraftEvents { settings:crate::gui::settings::GameSettings, events:crate::minecraft_input::Events, screen:bool, focused:bool },
+    /// A completed window-side screen/focus callback acknowledges the logical
+    /// state already changed by runTick on the worker.
+    MinecraftContext { screen:bool, focused:bool },
+    MinecraftSettings(crate::gui::settings::GameSettings),
     /// `GuiGameOver` "Respawn".
     Respawn,
     /// A container screen request: open the inventory, click, close (see gui/CONTAINERS.md).
@@ -135,6 +140,89 @@ impl InputFrame {
     }
 }
 
+/// The actual player/controller adapter shared by the worker and runTick replay.
+pub(crate) struct MinecraftHost<'a> {
+    pub world:&'a mut World,
+    pub player:worldgen::entity::Entity,
+    pub controller:worldgen::entity::player::controller::PlayerControllerSP,
+    pub target:Option<worldgen::entity::MovingObjectPosition>,
+    pub screen:bool,
+    pub focused:bool,
+    pub multiplayer:bool,
+    pub allow_input:bool,
+    pub actions:Vec<crate::minecraft_input::Action>,
+    pub drops:i32,
+    pub clicks:[i32;6],
+}
+impl crate::minecraft_input::Host for MinecraftHost<'_> {
+    fn screen(&self)->bool {self.screen}
+    fn allow_input(&self)->bool {self.allow_input}
+    fn focused(&self)->bool {self.focused}
+    fn multiplayer(&self)->bool {self.multiplayer}
+    fn left_counter(&mut self)->&mut i32 {&mut self.player.player_state_mut().unwrap().left_click_counter}
+    fn right_counter(&mut self)->&mut i32 {&mut self.player.player_state_mut().unwrap().right_click_delay}
+    fn action(&mut self, action:crate::minecraft_input::Action) {
+        use crate::minecraft_input::Action;
+        match action {
+            Action::Focus=>{self.focused=true;self.screen=false;*self.left_counter()=10000;},
+            Action::Menu|Action::Inventory|Action::Chat=>{
+                self.screen=true;
+                if self.focused {crate::gui::settings::KeyBinding::release_all();self.focused=false;}
+            },
+            _=>{},
+        }
+        self.actions.push(action);
+    }
+    fn scroll(&mut self, wheel:i32) {self.player.player_state_mut().unwrap().inventory.change_current_item(wheel);}
+    fn hotbar(&mut self, slot:i32) {self.player.player_state_mut().unwrap().inventory.current_item=slot;}
+    fn drop_item(&mut self) {
+        self.drops+=1;
+        let s=self.player.player_state_mut().unwrap();
+        if let Some(stack)=s.inventory.decrement(s.inventory.current_item as usize,1) {self.player.drop_player_item(self.world,stack,false);}
+    }
+    fn using_item(&self)->bool {self.player.player_state().unwrap().item_in_use.is_some()}
+    fn stop_using(&mut self) {self.player.stop_item_use(self.world);}
+    fn click(&mut self, right:bool) {
+        let before=self.player.player_state().unwrap().events.len();
+        let callbacks=self.player.click_player(self.world,&mut self.controller,self.target,right);
+        for bit in 0..6 {if callbacks&(1<<bit)!=0 {self.clicks[bit]+=1;}}
+        // Original block/entity callbacks can display a screen inside clickMouse.
+        // Its key release affects the remaining press-count loops immediately.
+        if self.player.player_state().unwrap().events[before..].iter().any(|e|matches!(e,
+            worldgen::entity::player::PlayerEvent::OpenContainer{..}
+            |worldgen::entity::player::PlayerEvent::OpenVehicleInventory{..}
+            |worldgen::entity::player::PlayerEvent::EditSign{..})) {
+            self.screen=true;
+            if self.focused {crate::gui::settings::KeyBinding::release_all();self.focused=false;}
+            self.actions.push(crate::minecraft_input::Action::Container);
+        }
+    }
+    fn pick(&mut self) {self.player.pick_block(self.world,self.target);}
+    fn mine(&mut self, held:bool) {
+        if held && self.player.player_state().unwrap().left_click_counter<=0 && matches!(self.target,Some(worldgen::entity::MovingObjectPosition::Block{..})) {
+            if let Some(worldgen::entity::MovingObjectPosition::Block{x,y,z,..})=self.target {if self.player.can_edit_block181(x,y,z) {self.clicks[5]+=1;}}
+        }
+        self.player.send_click_block(self.world,&mut self.controller,self.target,held);
+    }
+}
+
+fn minecraft_events(world:&mut World,id:i32,settings:&mut crate::gui::settings::GameSettings,
+    events:crate::minecraft_input::Events,screen:bool,focused:bool,paused:bool)->(Vec<crate::minecraft_input::Action>,bool,bool) {
+    let Some(mut player)=world.entities.remove(&id) else {return (Vec::new(),screen,focused);};
+    let mut controller=std::mem::take(&mut player.player_state_mut().unwrap().controller);
+    if !paused {controller.update_for_mode(player.player_state().unwrap().capabilities.creative);}
+    let target=player.mouse_over(world,1.0);
+    let multiplayer=world.multiplayer_world;
+    let mut host=MinecraftHost {world,player,controller,target,screen,focused,multiplayer,
+        allow_input:false,actions:Vec::new(),drops:0,clicks:[0;6]};
+    crate::minecraft_input::run_tick(settings,&mut host,events);
+    let states=["key.forward","key.back","key.left","key.right","key.jump","key.sneak"].map(|name|settings.binding_pressed(name));
+    host.player.set_player_input(worldgen::entity::player::PlayerInput {forward:states[0],back:states[1],left:states[2],right:states[3],jump:states[4],sneak:states[5],..Default::default()});
+    host.player.player_state_mut().unwrap().controller=host.controller;
+    host.world.entities.insert(id,host.player);
+    (host.actions,host.screen,host.focused)
+}
+
 /// `LoadingScreenRenderer` calls made by the world thread.
 pub enum Loading {
     Title(String),
@@ -143,6 +231,7 @@ pub enum Loading {
 }
 
 pub enum FromWorker {
+    MinecraftActions { actions:Vec<crate::minecraft_input::Action>, settings:crate::gui::settings::GameSettings },
     Signs(Vec<crate::render::sign::Snapshot>, Vec<crate::render::entity::chest::Tile>, Vec<crate::render::spawner::Snapshot>),
     /// Ordered after old meshes, before meshes using the new settings.
     ResetMeshes,
@@ -167,6 +256,7 @@ pub enum FromWorker {
         brightness: f32,
         fog_brightness: f32,
         chunks: usize,
+        loaded_entities: usize,
         weather: crate::render::weather::Weather,
         terrain: crate::render::weather::Snapshot,
     },
@@ -279,18 +369,25 @@ fn run(opts: WorldOptions, mut col: Colorizers, mut video: VideoSettings, rx: Re
         let _ = tx.send(FromWorker::Loading(msg));
     };
     // Minecraft.startWorld: a world from before McRegion is converted first.
+    let mut open_seed=opts.seed;
+    let mut open_settings=opts.settings;
     if let Some(dir) = opts.dir.as_deref() {
         if worldgen::convert::is_old_map_format(dir) {
             worldgen::convert::convert_map_format(dir, &mut progress);
+            // convertMapFormat restarts through startWorld with WorldSettings(0,0,true).
+            open_seed=0;
+            open_settings=Some(worldgen::entity::player::food::WorldSettings {seed:0,game_mode:0,map_features:true});
         }
     }
+    progress(worldgen::scenario::LoadStep::Title("Switching level"));
+    progress(worldgen::scenario::LoadStep::Text(""));
     let opened = World::open_with_settings(
         opts.dir.as_deref(),
-        opts.seed,
+        open_seed,
         opts.world_rand,
         opts.server,
         opts.name.as_deref(),
-        opts.settings,
+        open_settings,
         &mut progress,
     );
     let (mut world, is_new) = match opened {
@@ -351,6 +448,9 @@ fn run(opts: WorldOptions, mut col: Colorizers, mut video: VideoSettings, rx: Re
         if let Some(e) = world.entities.get_mut(&id) { e.initialize_player_mode(worldgen::entity::player::controller::PlayerControllerSP::saved_world_is_creative(world.info.game_type)); }
     }
     let mut input = InputFrame::default();
+    let mut minecraft_input_active = false;
+    let mut minecraft_context=None;
+    let mut minecraft_settings=None;
     let mut life = 0u32;
     let start = match player.and_then(|id| world.entities.get(&id)) {
         Some(e) => (e.pos.x, e.pos.y, e.pos.z),
@@ -422,6 +522,30 @@ fn run(opts: WorldOptions, mut col: Colorizers, mut video: VideoSettings, rx: Re
                     }
                     input.merge(InputFrame { yaw_delta: 0.0, pitch_delta: 0.0, ..f });
                 }
+                Ok(ToWorker::MinecraftContext {screen,focused}) => {
+                    let was_focused=minecraft_context.is_some_and(|(_,focus)|focus);
+                    if focused && !was_focused {
+                        if let Some(s)=player.and_then(|id|world.entities.get_mut(&id)).and_then(|e|e.player_state_mut()) {s.left_click_counter=10000;}
+                    }
+                    minecraft_context=Some((screen,focused));
+                }
+                Ok(ToWorker::MinecraftSettings(settings)) => {minecraft_settings=Some(settings);}
+                Ok(ToWorker::MinecraftEvents {settings,events,screen,focused}) => {
+                    if let Some(id)=player {
+                        minecraft_input_active=true;
+                        let settings=minecraft_settings.get_or_insert(settings);
+                        let (screen,focused)=minecraft_context.unwrap_or((screen,focused));
+                        let (actions,screen,focused)=minecraft_events(&mut world,id,settings,events,screen,focused,paused);
+                        minecraft_context=Some((screen,focused));
+                        let policy=crate::minecraft_input::tick_policy(&mut join_player_counter,settings.difficulty,paused,world.multiplayer_world);
+                        world.difficulty=policy.difficulty;
+                        if policy.world {world.spawn_hostile_mobs=settings.difficulty>0;world.spawn_peaceful_mobs=true;}
+                        if policy.join {
+                            if let Some(e)=world.entities.get(&id) {let pos=e.pos;world.join_entity_in_surroundings(pos);}
+                        }
+                        let _=tx.send(FromWorker::MinecraftActions {actions,settings:settings.clone()});
+                    }
+                }
                 Ok(ToWorker::Container(command)) => {
                     if let Some(id) = player {
                         let opens = matches!(
@@ -446,6 +570,11 @@ fn run(opts: WorldOptions, mut col: Colorizers, mut video: VideoSettings, rx: Re
                     // Minecraft.respawn(false, 0): out of the Nether first (it can't be
                     // respawned in), then a new player at the bed or the spawn point.
                     if let Some(old) = player {
+                        // These are Minecraft fields, although the simulation adapter
+                        // stores them beside the player. Replacing the player must not
+                        // reset either click counter.
+                        let click_counters=world.entities.get(&old).and_then(|e|e.player_state())
+                            .map(|s|(s.left_click_counter,s.right_click_delay));
                         if world.dimension.is_hell_world() {
                             if let Some(next) = world.use_portal(old, fresh_seed(), fresh_seed(), &mut progress) {
                                 world = next;
@@ -456,6 +585,9 @@ fn run(opts: WorldOptions, mut col: Colorizers, mut video: VideoSettings, rx: Re
                             let _ = tx.send(FromWorker::Chat(key.to_string()));
                         }
                         if let Some(e)=world.entities.get_mut(&old){e.initialize_player_mode(worldgen::entity::player::controller::PlayerControllerSP::saved_world_is_creative(world.info.game_type));}
+                        if let (Some((left,right)),Some(s))=(click_counters,world.entities.get_mut(&old).and_then(|e|e.player_state_mut())) {
+                            s.left_click_counter=left;s.right_click_delay=right;
+                        }
                         life += 1;
                         if let Some(e) = world.entities.get(&old) {
                             cam = (e.pos.x, e.pos.y, e.pos.z);
@@ -507,7 +639,7 @@ fn run(opts: WorldOptions, mut col: Colorizers, mut video: VideoSettings, rx: Re
             if let Some(id) = player {
                 // Minecraft.runTick with thePlayer: input/controller, joinEntityInSurroundings
                 // every 30 ticks, updateEntities, World.tick, randomDisplayUpdates.
-                join_player_counter += 1;
+                if !minecraft_input_active {join_player_counter += 1;}
                 // Mouse events come before keyboard events in runTick: every wheel event
                 // is its own changeCurrentItem. Pick presses run after attack/use queues.
                 if let Some(s) = world.entities.get_mut(&id).and_then(|e| e.player_state_mut()) {
@@ -516,7 +648,15 @@ fn run(opts: WorldOptions, mut col: Colorizers, mut video: VideoSettings, rx: Re
                     }
                 }
                 input.scroll = 0;
-                world.player_tick(id, input.take_tick_input(), join_player_counter);
+                if minecraft_input_active {
+                    let _=input.take_tick_input();
+                    if world.lightning_sky_flash>0 {world.lightning_sky_flash-=1;}
+                    if let Some(index)=world.entities.get(&id).and_then(|e|e.player_state()).and_then(|s|s.player_index) {
+                        world.client_tick(index,1);
+                    }
+                } else {
+                    world.player_tick(id, input.take_tick_input(), join_player_counter);
+                }
                 if let Some(e) = world.entities.get(&id) {
                     cam = (e.pos.x, e.pos.y, e.pos.z);
                 }
@@ -755,6 +895,7 @@ fn run(opts: WorldOptions, mut col: Colorizers, mut video: VideoSettings, rx: Re
                 brightness,
                 fog_brightness,
                 chunks,
+                loaded_entities:world.loaded_entity_list.len(),
                 weather,
                 terrain,
             });

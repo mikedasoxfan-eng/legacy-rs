@@ -16,8 +16,15 @@ if [ ! -f "$unsealed" ]; then
   python "$here/unseal.py" "$(cygpath -w "$sealed")" "$unsealed"
 fi
 libs=${libs//"$(cygpath -w "$sealed")"/"$(cygpath -w "$unsealed")"}
+# Input stubs are isolated from every existing oracle and from guishot's real LWJGL.
+input="$here/build/input"
+mkdir -p "$input"
+if [ ! -f "$input/.compiled" ] || find "$here/headless/org/lwjgl/input" "$here/headless-input" -name '*.java' -newer "$input/.compiled" -print -quit | grep -q .; then
+  javac -nowarn -cp "$jar$libs" -d "$input" "$here"/headless/org/lwjgl/input/*.java "$here"/headless-input/org/lwjgl/opengl/*.java
+  touch "$input/.compiled"
+fi
 if [ ! -f "$here/build/.compiled" ] || find "$here/src" "$here/headless" -name '*.java' -newer "$here/build/.compiled" -print -quit | grep -q .; then
-  javac -nowarn -cp "$jar$libs" -d "$here/build" $(ls "$here"/src/net/minecraft/src/*.java | grep -v ModelShot.java) "$here"/headless/org/lwjgl/opengl/*.java
+  javac -nowarn -cp "$input;$jar$libs" -d "$here/build" $(ls "$here"/src/net/minecraft/src/*.java | grep -v ModelShot.java) "$here"/headless/org/lwjgl/opengl/*.java
   touch "$here/build/.compiled"
 fi
 if [ ! -f "$here/build/net/minecraft/src/Explosion.class" ] || [ ! -f "$here/build/net/minecraft/src/Entity.class" ] || [ "$here/build_entity.py" -nt "$here/build/net/minecraft/src/Entity.class" ] || [ "$here/src/net/minecraft/src/OracleHooks.java" -nt "$here/build/net/minecraft/src/Entity.class" ]; then
@@ -31,6 +38,8 @@ for jl in "$LOCALAPPDATA"/Packages/Microsoft.4297127D64EC6_*/LocalCache/Local/ru
 done
 [ -n "${ORACLE_JAVA:-}" ] && java="$ORACLE_JAVA"
 "$java" -version 2>&1 | grep -q '1.8.0_51' || { echo "oracle requires Mojang Java 8u51; refusing another JVM" >&2; exit 1; }
+input_cp=""
+case "${1:-}" in runtick181) input_cp="$input;";; esac
 cd "$here/out"
 # b1.8.1 prints its achievement and recipe counts and IntCache growth on stdout.
-"$java" -cp "$here/build;$jar$libs" net.minecraft.src.Oracle "$@" 2>&1 | { grep -v -E '^([0-9]+ achievements|[0-9]+ recipes|New max size: [0-9]+|Placed stronghold in [A-Za-z ]+ biome at .*)$' || true; }
+"$java" -cp "$input_cp$here/build;$jar$libs" net.minecraft.src.Oracle "$@" 2>&1 | { grep -v -E '^([0-9]+ achievements|[0-9]+ recipes|New max size: [0-9]+|Placed stronghold in [A-Za-z ]+ biome at .*)$' || true; }

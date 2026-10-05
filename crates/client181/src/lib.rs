@@ -2,7 +2,7 @@
 //! bit-exact world simulation.
 //!
 //! Controls are the original's (rebindable in Options): WASD, Space, Shift, mouse, 1-9,
-//! Q, F1/F2/F3/F5/F8, F for render distance, Esc for the game menu. With `--server` there is
+//! Q, F1/F2/F3/F5, F3+F for render distance, Esc for the game menu. With `--server` there is
 //! no player: WASD flies the camera, Space/Shift up/down, Ctrl faster.
 //!
 //! Worlds are saved in the b1.8.1 format under `b1.8.1/saves/<name>` (copy a folder into
@@ -22,6 +22,8 @@ mod playscript;
 mod render;
 mod sound;
 mod worker;
+mod minecraft_input;
+mod minecraft_check;
 mod world_effects;
 
 use render::blocks::Colorizers;
@@ -367,6 +369,15 @@ pub fn run() {
     let mut args: Vec<String> = std::env::args().collect();
     if let Some(i) = args.iter().position(|a| a == "--mc") {
         args.drain(i..(i + 2).min(args.len()));
+    }
+    if args.get(1).map(String::as_str)==Some("--runtickcheck") {
+        std::process::exit(if minecraft_check::check(&args[2]) {0}else{1});
+    }
+    if args.get(1).map(String::as_str)==Some("--minecraftpreloadcheck") {
+        std::process::exit(if minecraft_check::check_preload(&args[2]) {0}else{1});
+    }
+    if args.get(1).map(String::as_str)==Some("--minecraftdebugcheck") {
+        std::process::exit(if minecraft_check::check_debug(&args[2]) {0}else{1});
     }
     let _ = std::fs::create_dir_all(DATA_DIR);
     match args.get(1).map(String::as_str) {

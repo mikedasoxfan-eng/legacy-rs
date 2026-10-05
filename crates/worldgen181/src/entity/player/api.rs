@@ -54,17 +54,19 @@ pub struct PlayerHud {
     pub mining_progress: f32,
 }
 impl Entity {
-    fn click_player(
+    pub fn click_player(
         &mut self,
         w: &mut World,
         c: &mut controller::PlayerControllerSP,
         hit: Option<Hit>,
         right: bool,
-    ) {
+    ) -> u8 {
         if !right && self.player_state().unwrap().left_click_counter > 0 {
-            return;
+            return 0;
         }
+        let mut callbacks=0;
         if !right {
+            callbacks|=32;
             self.swing_item();
         } else {
             self.player_state_mut().unwrap().right_click_delay = 6;
@@ -78,29 +80,59 @@ impl Entity {
             }
             Some(Hit::Entity { id, .. }) => {
                 if right {
+                    callbacks|=4;
                     self.use_on_entity(w, id);
                 } else {
+                    callbacks|=2;
                     self.attack_with_item(w, id);
                 }
             }
             Some(Hit::Block { x, y, z, side, .. }) => {
                 if right {
                     let held = self.held_item();
+                    callbacks|=8;
                     if self.use_on_block(w, x, y, z, side) {
                         use_item = false;
+                        callbacks|=32;
                         self.swing_item();
                     }
                     if held.is_none() {
-                        return;
+                        return callbacks;
                     }
                 } else {
+                    callbacks|=1;
                     c.click_block(self, w, x, y, z, side);
                 }
             }
         }
         if right && use_item {
+            if self.held_item().is_some() {callbacks|=16;}
             self.use_item(w);
         }
+        callbacks
+    }
+    /// Minecraft.sendClickBlockToController(0, held), also used by the client's
+    /// event-queue driver. Creative's resetBlockRemoving is a no-op.
+    pub fn send_click_block(&mut self, w:&mut World, c:&mut controller::PlayerControllerSP, hit:Option<Hit>, held:bool) {
+        if !held { self.player_state_mut().unwrap().left_click_counter=0; }
+        if self.player_state().unwrap().left_click_counter>0 { return; }
+        if held {
+            if let Some(Hit::Block{x,y,z,side,..})=hit {
+                c.dig(self,w,x,y,z,side);
+                if self.can_edit_block181(x,y,z) {
+                    let block=w.get_block_id(x,y,z);
+                    let metadata=w.get_block_metadata(x,y,z);
+                    let b=w.block_bounds[block as usize];
+                    w.events.push(crate::world::events::WorldEvent::BlockHit {
+                        position:(x,y,z), side, block, metadata,
+                        bounds:[b.min_x,b.min_y,b.min_z,b.max_x,b.max_y,b.max_z],
+                    });
+                    self.swing_item();
+                }
+                return;
+            }
+        }
+        if !self.player_state().unwrap().capabilities.creative { c.reset(); }
     }
     pub fn player_hud(&self, w: &mut World, partial: f32) -> Option<PlayerHud> {
         let s = self.player_state()?;
@@ -187,34 +219,7 @@ impl World {
         if input.right_held && p.player_state().unwrap().right_click_delay == 0 && p.player_state().unwrap().item_in_use.is_none() {
             p.click_player(self,&mut controller,hit,true);
         }
-        if !input.left_held {
-            p.player_state_mut().unwrap().left_click_counter = 0;
-        }
-        if p.player_state().unwrap().left_click_counter <= 0 {
-            if input.left_held {
-                if let Some(Hit::Block { x, y, z, side, .. }) = hit {
-                    controller.dig(&mut p, self, x, y, z, side);
-                    let block = self.get_block_id(x, y, z);
-                    let metadata = self.get_block_metadata(x, y, z);
-                    self.events
-                        .push(crate::world::events::WorldEvent::BlockHit {
-                            position: (x, y, z),
-                            side,
-                            block,
-                            metadata,
-                            bounds: {
-                                let b = self.block_bounds[block as usize];
-                                [b.min_x, b.min_y, b.min_z, b.max_x, b.max_y, b.max_z]
-                            },
-                        });
-                    p.swing_item();
-                } else {
-                    if !p.player_state().unwrap().capabilities.creative { controller.reset(); }
-                }
-            } else {
-                if !p.player_state().unwrap().capabilities.creative { controller.reset(); }
-            }
-        }
+        p.send_click_block(self, &mut controller, hit, input.left_held);
         p.player_state_mut().unwrap().controller = controller;
         if let Some(index) = p.player_state().and_then(|s| s.player_index) {
             self.players[index] = (p.pos.x, p.pos.y, p.pos.z);
