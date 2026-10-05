@@ -39,7 +39,7 @@ def owned(area):
 
 COMMON = '''# Task: Minecraft Beta 1.8.1 port, area "{area}"
 
-You are one of 9 parallel workers porting **Minecraft Beta 1.8.1** into beta-rs, a Rust port of
+You are one of 4 parallel workers porting **Minecraft Beta 1.8.1** into beta-rs, a Rust port of
 Minecraft Beta 1.7.3 that is **bit-exact** with the original, proven against Mojang's original
 bytecode (the "oracle"). b1.7.3 is finished (v1.0.0). b1.8.1 now lives beside it.
 
@@ -86,8 +86,9 @@ b1.8.1 behaviour is ported in Rust **and** an oracle check covering it ends EXAC
 ## Rules
 
 - Port literally; float vs double exactly as Java; keep vanilla bugs. No approximations.
-- Other workers own the other areas (worldgen, structures, world, player, entities, blocks, gui, render-world,
-  render-entities). If you need something from another area (a new block id, a DamageSource, a
+- Other workers own the other areas: terrain (worldgen+structures), world-blocks, player-gui,
+  entities (+ their renderers/models/particles); the integrator ports the world renderer
+  (lightmap, RenderBlocks, EntityRenderer, RenderGlobal) and merges. If you need something from another area (a new block id, a DamageSource, a
   field on Entity), add the **minimum** you need in the most local place and say so in your
   report; don't rewrite another area's files.
 - Commit identity: author `logiu`, email `224190594+mikedasoxfan-eng@users.noreply.github.com`
@@ -160,18 +161,29 @@ GOALS = {
 }
 
 
+# 4 workers (each owns two related areas); render-world is ported by the integrator.
+GROUPS = {
+    'terrain': ['worldgen', 'structures'],
+    'world-blocks': ['world', 'blocks'],
+    'player-gui': ['player', 'gui'],
+    'entities': ['entities', 'render-entities'],
+}
+
+
 def main():
+    for f in os.listdir(TASKS):
+        if f.startswith('b181-'):
+            os.remove(os.path.join(TASKS, f))
     total = 0
-    for area, goal in GOALS.items():
-        cls = owned(area)
+    for name, areas in GROUPS.items():
+        cls = [r for a in areas for r in owned(a)]
         total += len(cls)
-        lines = []
-        for r in cls:
-            lines.append(f"{r['class']}{'*' if r['status'] == 'new' else ''}: {r['changed_lines']}")
-        text = COMMON.format(area=area, goal=goal, classes=', '.join(lines))
-        open(os.path.join(TASKS, f'b181-{area}.md'), 'w', encoding='utf-8').write(text)
-        print(area, len(cls), sum(r['changed_lines'] for r in cls))
-    print('classes assigned', total, 'of', sum(1 for r in d['classes'] if r['status'] != 'same'))
+        goal = '\n\n'.join(f'**{a}:** {GOALS[a]}' for a in areas)
+        lines = [f"{r['class']}{'*' if r['status'] == 'new' else ''}: {r['changed_lines']}" for r in cls]
+        text = COMMON.format(area=name, goal=goal, classes=', '.join(lines))
+        open(os.path.join(TASKS, f'b181-{name}.md'), 'w', encoding='utf-8').write(text)
+        print(name, len(cls), sum(r['changed_lines'] for r in cls))
+    print('classes assigned to workers', total, 'of', sum(1 for r in d['classes'] if r['status'] != 'same'))
 
 
 main()
