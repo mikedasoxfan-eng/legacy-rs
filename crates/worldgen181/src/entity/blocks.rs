@@ -4,6 +4,9 @@ use crate::{block::*, math::floor_double as floor, World};
 
 impl World {
     pub fn set_block_bounds_based_on_state(&mut self, id: u8, x: i32, y: i32, z: i32) {
+        // BlockSign declares a state hook for both instances, but the standing
+        // instance does nothing and retains the singleton's current bounds.
+        if id == 63 {return;}
         if id == PISTON_MOVING {
             if let Some(crate::world::tile::TileEntity::Piston(p)) =
                 self.get_block_tile_entity(x, y, z).cloned()
@@ -34,6 +37,10 @@ impl World {
             return;
         }
         if self.thin_block_bounds(id,x,y,z) { return; }
+        if id == TRAPDOOR {
+            self.block_bounds[id as usize] = crate::block::visual181::trapdoor_bounds181(self.get_block_metadata(x,y,z));
+            return;
+        }
         let m = self.get_block_metadata(x, y, z) as usize;
         if id == PORTAL {
             self.block_bounds[id as usize] =
@@ -53,6 +60,7 @@ impl World {
         }
     }
     pub fn block_collision_box(&mut self, id: u8, x: i32, y: i32, z: i32) -> Option<BB> {
+        if id == CACTUS {return Some(crate::block::visual181::cactus_box181(x,y,z,false));}
         if matches!(id, 97 | 98 | 99 | 100 | 103) {
             return Some(BB::new(
                 x as f64,
@@ -194,7 +202,7 @@ impl World {
         }
         boxes
     }
-    fn collision_ray_trace(
+    pub fn collision_ray_trace(
         &mut self,
         x: i32,
         y: i32,

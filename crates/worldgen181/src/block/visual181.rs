@@ -13,19 +13,45 @@ pub fn ambient_occlusion181(
 ) -> f32 {
     if normal_cube(x, y, z) { 0.2 } else { 1.0 }
 }
-/// Block.getBlockBrightness. Subclass overrides (fluids/stairs) dispatch separately.
+/// Block.getBlockBrightness. Registered stairs delegate to their model; fluids dispatch separately.
 pub fn base_brightness181(
     id: u8, x: i32, y: i32, z: i32, mut brightness: impl FnMut(i32, i32, i32, i32) -> f32,
 ) -> f32 {
-    brightness(x, y, z, super::light_value(id))
+    brightness(x, y, z, super::light_value(stairs_model181(id).unwrap_or(id)))
 }
 /// Block.func_35275_c supplies emitted light as the minimum lightmap coordinate.
 pub fn base_packed_light181(
     id: u8, x: i32, y: i32, z: i32, mut light: impl FnMut(i32, i32, i32, i32) -> i32,
 ) -> i32 {
-    light(x, y, z, super::light_value(id))
+    light(x, y, z, super::light_value(stairs_model181(id).unwrap_or(id)))
+}
+pub fn stairs_model181(id: u8) -> Option<u8> {match id {53=>Some(5),67=>Some(4),108=>Some(45),109=>Some(98),_=>None}}
+/// Stairs discard metadata before calling the registered model's texture method.
+pub fn stairs_texture181(id: u8, _side: i32, _metadata: i32) -> i32 {
+    texture_from_side(stairs_model181(id).expect("stairs block"),0,false)
 }
 pub const SLAB_TYPES181: [&str;6]=["stone","sand","wood","cobble","brick","smoothStoneBrick"];
+/// BlockTrapDoor.setBlockBoundsForBlockRender accepts a signed integer directly.
+pub fn trapdoor_bounds181(metadata: i32) -> crate::entity::AxisAlignedBB {
+    use crate::entity::AxisAlignedBB as BB;
+    if metadata & 4 == 0 { return BB::new(0.0, 0.0, 0.0, 1.0, 0.1875, 1.0); }
+    match metadata & 3 {
+        0 => BB::new(0.0, 0.0, 0.8125, 1.0, 1.0, 1.0),
+        1 => BB::new(0.0, 0.0, 0.0, 1.0, 1.0, 0.1875),
+        2 => BB::new(0.8125, 0.0, 0.0, 1.0, 1.0, 1.0),
+        _ => BB::new(0.0, 0.0, 0.0, 0.1875, 1.0, 1.0),
+    }
+}
+/// Cactus overrides add in float before promoting to double; selection has an integer top.
+pub fn cactus_box181(x: i32, y: i32, z: i32, selected: bool) -> crate::entity::AxisAlignedBB {
+    crate::entity::AxisAlignedBB::new(
+        (x as f32+0.0625) as f64,y as f64,(z as f32+0.0625) as f64,
+        (x.wrapping_add(1) as f32-0.0625) as f64,
+        if selected {y.wrapping_add(1) as f64}else{(y.wrapping_add(1) as f32-0.0625) as f64},
+        (z.wrapping_add(1) as f32-0.0625) as f64,
+    )
+}
+pub fn cactus_texture181(side: i32) -> i32 {match side {1=>69,0=>71,_=>70}}
 /// Both BlockCloth conversion methods use this same involution, including signed inputs.
 pub fn cloth_dye181(value:i32)->i32 { !value & 15 }
 pub fn cloth_texture181(metadata:i32)->i32 {
@@ -49,10 +75,14 @@ pub fn render_type(id: u8) -> i32 {
 }
 pub fn texture_from_side(id: u8, side: usize, fancy: bool) -> i32 {
     assert!(side < 6);
+    if id == 81 {return cactus_texture181(side as i32);}
+    if stairs_model181(id).is_some() {return stairs_texture181(id,side as i32,0);}
     int(base(id, fancy) + 4 + side * 4)
 }
 pub fn texture_result(id: u8, side: usize, metadata: usize, fancy: bool) -> Result<i32, ()> {
     assert!(side < 6 && metadata < 16);
+    if id == 81 {return Ok(cactus_texture181(side as i32));}
+    if stairs_model181(id).is_some() {return Ok(stairs_texture181(id,side as i32,metadata as i32));}
     if id==35 {return Ok(cloth_texture181(metadata as i32));}
     if matches!(id,43|44) {return Ok(slab_texture181(side as i32,metadata as i32));}
     let v = int(base(id, fancy) + 28 + metadata * 28 + 4 + side * 4);

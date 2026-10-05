@@ -247,6 +247,8 @@ pub static TICK_COUNTS: [std::sync::atomic::AtomicU32; 256] =
     [const { std::sync::atomic::AtomicU32::new(0) }; 256];
 
 pub fn update_tick(w: &mut World, id: u8, x: i32, y: i32, z: i32, rs: RandSel) {
+    // All four registered stair models inherit the empty Block.updateTick.
+    if crate::block::visual181::stairs_model181(id).is_some() {return;}
     if crate::entity::player::block_hooks::tick(w, id, x, y, z, rs) {
         return;
     }
@@ -781,7 +783,7 @@ pub fn pumpkin_can_place(w: &mut World, x: i32, y: i32, z: i32) -> bool {
 
 // ---------------------------------------------------------------- drops
 
-fn quantity_dropped(w: &mut World, id: u8) -> i32 {
+pub fn quantity_dropped(w: &mut World, id: u8) -> i32 {
     match id {
         block::LEAVES => {
             if w.rand.next_int(20) == 0 {
@@ -816,7 +818,7 @@ fn quantity_dropped(w: &mut World, id: u8) -> i32 {
     }
 }
 
-fn id_dropped(w: &mut World, id: u8, meta: i32) -> i32 {
+pub fn id_dropped(w: &mut World, id: u8, meta: i32) -> i32 {
     match id {
         55 => ITEM_REDSTONE,
         63 | 68 => 323,
@@ -834,7 +836,8 @@ fn id_dropped(w: &mut World, id: u8, meta: i32) -> i32 {
                 -1
             }
         }
-        block::DEAD_BUSH | block::MOB_SPAWNER => -1,
+        block::DEAD_BUSH => -1,
+        block::MOB_SPAWNER => 0,
         block::GRAVEL => {
             if w.rand.next_int(10) == 0 {
                 ITEM_FLINT

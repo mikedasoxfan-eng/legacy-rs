@@ -3,6 +3,7 @@ mod round4;
 mod round5;
 mod round6;
 mod round7;
+mod round8;
 use super::{
     behavior,
     chunk::{idx, Chunk},
@@ -65,6 +66,14 @@ fn fixture(bright: bool) -> World {
 pub fn bytes(kind: &str) -> Vec<u8> {
     let mut o = Vec::new();
     match kind {
+        "trapdoor8" => round8::trapdoor(&mut o),
+        "repeater8" => round8::repeater(&mut o),
+        "reed8" => round8::reed(&mut o),
+        "cactus8" => round8::cactus(&mut o),
+        "wire8" => round8::wire(&mut o),
+        "stairs8" => round8::stairs(&mut o),
+        "spawner8" => round8::spawner(&mut o),
+        "sign8" => round8::sign(&mut o),
         "furnace7" => round7::furnace(&mut o),
         "inventory7" => round7::inventory(&mut o),
         "container7" => round7::container(&mut o),
