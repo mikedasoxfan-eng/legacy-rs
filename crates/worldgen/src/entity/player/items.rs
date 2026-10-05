@@ -41,6 +41,9 @@ impl Entity {
                                 (z as f32 + 0.5) as f64,
                             ),
                         });
+                    let cart_type = match vehicle { VehicleKind::StorageMinecart=>1,VehicleKind::PoweredMinecart=>2,_=>0 };
+                    let cart=Entity::minecart(w,(x as f32+0.5) as f64,(y as f32+0.5) as f64,(z as f32+0.5) as f64,cart_type);
+                    w.entity_joined_world(cart);
                     stack.count -= 1;
                     true
                 } else {
@@ -213,6 +216,8 @@ impl Entity {
                             (z as f32 + 0.5) as f64,
                         ),
                     });
+                let boat=Entity::boat(w,(x as f32+0.5) as f64,(y as f32+1.0) as f64,(z as f32+0.5) as f64);
+                w.entity_joined_world(boat);
                 stack.count -= 1;
             }
         } else if matches!(stack.id, 325..=327 | 335) {

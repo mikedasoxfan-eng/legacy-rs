@@ -39,6 +39,7 @@ public final class EntityOracle {
     static void d(DataOutputStream out,double n)throws IOException{l(out,Double.doubleToLongBits(n));}
     static void f(DataOutputStream out,float n)throws IOException{i(out,Float.floatToIntBits(n));}
     static float floatField(Class<?> type,String name,Object o)throws Exception{Field f=type.getDeclaredField(name);f.setAccessible(true);return f.getFloat(o);}
+    static boolean booleanField(Class<?> type,String name,Object o)throws Exception{Field f=type.getDeclaredField(name);f.setAccessible(true);return f.getBoolean(o);}
     static int intField(Class<?> type,String name,Object o)throws Exception{Field f=type.getDeclaredField(name);f.setAccessible(true);return f.getInt(o);}
     static void snapshot(World w,DataOutputStream out) throws Exception {
         ArrayList<Entity> entities=new ArrayList<Entity>(w.loadedEntityList);entities.addAll(w.weatherEffects);Collections.sort(entities,(a,b)->Integer.compare(a.entityId,b.entityId));
@@ -74,6 +75,21 @@ public final class EntityOracle {
             if(e instanceof EntitySquid){EntitySquid a=(EntitySquid)e;for(float n:new float[]{a.field_21089_a,a.field_21088_b,a.field_21087_c,a.field_21086_f,a.field_21085_g,a.field_21084_h,a.field_21083_i,a.field_21082_j})f(out,n);for(String name:new String[]{"randomMotionSpeed","field_21080_l","field_21079_m","randomMotionVecX","randomMotionVecY","randomMotionVecZ"})f(out,floatField(EntitySquid.class,name,a));}
             if(e instanceof EntityLightningBolt){i(out,intField(EntityLightningBolt.class,"field_27028_b",e));l(out,((EntityLightningBolt)e).field_27029_a);i(out,intField(EntityLightningBolt.class,"field_27030_c",e));}
             if(e instanceof EntityPlayer)PlayerOracle.state((EntityPlayer)e,out);
+            if(e instanceof EntityMinecart) {
+                EntityMinecart c=(EntityMinecart)e;
+                for(int v:new int[]{c.minecartType,c.minecartCurrentDamage,c.minecartTimeSinceHit,c.minecartRockDirection,c.fuel})i(out,v);
+                d(out,c.pushX);d(out,c.pushZ);
+                Field rev=EntityMinecart.class.getDeclaredField("field_856_i");rev.setAccessible(true);out.writeBoolean(rev.getBoolean(c));
+                Field items=EntityMinecart.class.getDeclaredField("cargoItems");items.setAccessible(true);ItemStack[] a=(ItemStack[])items.get(c);i(out,a.length);
+                for(ItemStack item:a)PlayerOracle.stack(out,item);
+            }
+            if(e instanceof EntityBoat) {EntityBoat b=(EntityBoat)e; i(out,b.boatCurrentDamage);i(out,b.boatTimeSinceHit);i(out,b.boatRockDirection);}
+            if(e instanceof EntityBoat||e instanceof EntityMinecart) {
+                for(boolean v:new boolean[]{e.isCollidedHorizontally,e.isCollidedVertically,e.isCollided,e.beenAttacked,booleanField(Entity.class,"isFirstUpdate",e),e.preventEntitySpawning})out.writeBoolean(v);
+                for(float v:new float[]{e.entityCollisionReduction,e.width,e.height,e.yOffset,e.stepHeight,e.prevDistanceWalkedModified})f(out,v);
+            }
+            i(out,e.ridingEntity==null?-1:e.ridingEntity.entityId);i(out,e.riddenByEntity==null?-1:e.riddenByEntity.entityId);
+            for(String name:new String[]{"entityRiderYawDelta","entityRiderPitchDelta"}) {Field a=Entity.class.getDeclaredField(name);a.setAccessible(true);d(out,a.getDouble(e));}
             l(out,rngState(e.rand));
         }
         l(out,rngState(w.rand));l(out,rngState(mathRandom()));l(out,OracleHooks.nextSeed());l(out,OracleHooks.explosionSeed());l(out,w.worldInfo.getWorldTime());for(int n:new int[]{w.field_9437_g,intField(World.class,"soundCounter",w),w.skylightSubtracted,w.field_27168_F,w.field_27172_i,w.worldInfo.getRainTime(),w.worldInfo.getThunderTime()})i(out,n);out.writeBoolean(w.worldInfo.getRaining());out.writeBoolean(w.worldInfo.getThundering());for(float v:new float[]{w.rainingStrength,w.prevRainingStrength,w.thunderingStrength,w.prevThunderingStrength})f(out,v);

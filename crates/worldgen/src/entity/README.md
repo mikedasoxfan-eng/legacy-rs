@@ -4,7 +4,7 @@
 class-specific state for items, falling sand/gravel, primed TNT, arrows,
 fireballs, lightning, snowballs/eggs, the singleplayer player, pig, sheep, cow,
 chicken, squid, wolf, zombie, skeleton, spider, creeper, slime, ghast, pig zombie,
-and giant.
+giant, minecarts (all three types), and boats.
 
 ## Client integration
 
@@ -73,7 +73,9 @@ queue size. Cases cover:
   storm replay exercises the public client pipeline and weather entities. Block hooks
   including chest scattering, digging below sand, TNT ignition, plates, cactus,
   web, soul sand, farmland, and glowing ore display RNG.
-* Repeated NBT reconstruction for all 18 persistable kinds, including saddled pigs,
+* Eight 240-tick vehicle replays with final worlds and 10,000 cart inventory/NBT
+  operations, including placement, collisions, detector rails and riding stats.
+* Repeated NBT reconstruction for the persistable kinds, including saddled pigs,
   sheared sheep, tamed wolves, powered creepers, arrows and TNT.
 
 Rust integration tests additionally exercise actual McRegion save/load with
@@ -83,8 +85,8 @@ Existing world/terrain/lighting/storage/mesh/server comparisons remain enabled.
 
 Exactness is established for these replay inputs, not every possible game state.
 The player inventory/controller simulation is now included; see its linked
-README. Unsupported entities include boats, minecarts and paintings; boat/cart
-item use emits explicit placement requests.
+README. Unsupported entities include paintings. Boat/cart item use creates simulation
+entities; chest carts expose the existing container API. See [vehicle coverage](../../../../VEHICLES.md).
 Existing unsupported block machinery such as full redstone/piston circuits and
 furnace ticking remains outside the entity port; its existing checks remain.
 

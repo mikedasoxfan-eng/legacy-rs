@@ -400,9 +400,12 @@ impl EntityPipeline {
             }
             if let Some(s) = super::bridge::render_state(e, self.partial, snapshot.brightness) {
                 batches.extend(living::scene_with_lighting(&[s], camera, &mut self.normalize));
-            } else if let Some(s) =
+            } else if let Some(mut s) =
                 super::bridge::object_state(e, self.partial, snapshot.brightness, snapshot.falling_light)
             {
+                if let (super::objects::ObjectKind::Vehicle(v),Some(rails))=(&mut s.kind,&snapshot.vehicle_rails) {
+                    v.track=rails.sample(v.position);
+                }
                 let mut g = crate::world_effects::Effects::object_draws(&s, camera.to_array(), self.view, self.fancy);
                 for d in &mut g.draws {
                     if self.normalize {

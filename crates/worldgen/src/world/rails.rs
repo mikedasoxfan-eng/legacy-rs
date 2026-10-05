@@ -435,14 +435,22 @@ impl World {
         false
     }
 
-    /// `BlockDetectorRail.updateTick`: no minecarts are simulated, so a pressed detector
-    /// rail finds none on it and releases (`setStateIfMinecartInteractsWithRail`).
     pub(crate) fn detector_rail_tick(&mut self, x: i32, y: i32, z: i32) {
+        if self.get_block_metadata(x,y,z)&8!=0 { self.update_detector_rail(x,y,z); }
+    }
+    /// BlockDetectorRail.setStateIfMinecartInteractsWithRail.
+    pub(crate) fn update_detector_rail(&mut self,x:i32,y:i32,z:i32) {
         let meta = self.get_block_metadata(x, y, z);
-        if meta & 8 != 0 {
-            self.set_block_metadata_with_notify(x, y, z, meta & 7);
+        let b=crate::entity::AxisAlignedBB::new(
+            (x as f32+0.125) as f64,y as f64,(z as f32+0.125) as f64,
+            ((x+1) as f32-0.125) as f64,y as f64+0.25,((z+1) as f32-0.125) as f64);
+        let occupied=self.entities_within_aabb(None,b).into_iter().any(|id|
+            matches!(self.entities[&id].kind,crate::entity::EntityKind::Minecart(..)));
+        if occupied != (meta&8!=0) {
+            self.set_block_metadata_with_notify(x, y, z, if occupied {meta|8} else {meta&7});
             self.notify_blocks_of_neighbor_change(x, y, z, DETECTOR_RAIL);
             self.notify_blocks_of_neighbor_change(x, y - 1, z, DETECTOR_RAIL);
         }
+        if occupied { self.schedule_block_update(x,y,z,DETECTOR_RAIL,20); }
     }
 }

@@ -101,6 +101,10 @@ public class Oracle {
             PlayerOracle.registry(a[1]);
         } else if (mode.equals("playerinventory")) {
             PlayerOracle.inventory(a[1]);
+        } else if (mode.equals("vehicleinventory")) {
+            VehicleOracle.inventory(a[1]);
+        } else if (mode.equals("vehicles")) {
+            VehicleOracle.replay(a[1],Integer.parseInt(a[2]),a[3]);
         } else if (mode.equals("entities")) {
             EntityOracle.objects(a[1],Integer.parseInt(a[2]),a[3]);
         } else if (mode.equals("entityblocks")) {
@@ -230,6 +234,8 @@ public class Oracle {
             RendererOracle.effects(a[1]);
         } else if (mode.equals("firstperson")) {
             FirstPersonOracle.run(a[1]);
+        } else if (mode.equals("vehiclerenderers")) {
+            RendererOracle.vehicles(a[1]);
         } else if (mode.equals("renderers")) {
             RendererOracle.run(a[1]);
         } else if (mode.equals("itemtable")) {

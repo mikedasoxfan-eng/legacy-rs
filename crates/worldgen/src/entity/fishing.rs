@@ -6,7 +6,7 @@ use super::{
 use crate::{
     World,
     block::MAT_WATER,
-    entity::player::{ItemStack, PlayerEvent},
+    entity::player::ItemStack,
     math::{self, PI_F32 as PI, floor_double as floor},
 };
 #[derive(Clone, Debug, Default)]

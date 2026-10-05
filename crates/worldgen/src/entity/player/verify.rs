@@ -53,7 +53,7 @@ pub fn inventory_bytes() -> Vec<u8> {
     }
     out
 }
-fn write(out: &mut Vec<u8>, s: Option<ItemStack>) {
+pub(crate) fn write(out: &mut Vec<u8>, s: Option<ItemStack>) {
     let a = s.map_or([-1, 0, 0, 0], |s| [s.id, s.count, s.damage, s.animations]);
     for n in a {
         out.extend_from_slice(&n.to_le_bytes());

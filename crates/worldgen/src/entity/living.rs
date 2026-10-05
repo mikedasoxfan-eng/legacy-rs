@@ -459,8 +459,8 @@ impl Entity {
             self.bounding_box.expand(0.2f32 as f64, 0.0, 0.2f32 as f64),
         ) {
             if let Some(mut other) = w.entities.remove(&id) {
-                if other.kind.is_living() && !other.dead {
-                    other.apply_entity_collision(self);
+                if other.can_be_pushed() {
+                    other.collide_entity(w, self);
                 }
                 w.entities.insert(id, other);
             }

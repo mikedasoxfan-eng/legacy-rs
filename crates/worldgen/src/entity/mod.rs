@@ -21,6 +21,8 @@ mod sounds;
 pub mod spawning;
 pub mod special;
 pub mod verify;
+pub mod vehicles;
+pub mod vehicle_verify;
 pub mod world;
 use crate::world::tile::ItemStack;
 use crate::{JavaRandom, World};
@@ -65,6 +67,8 @@ impl EntitySeedSource {
 pub enum EntityKind {
     Fish(fishing::FishState),
     Painting(painting::PaintingState),
+    Minecart(vehicles::MinecartState),
+    Boat(vehicles::BoatState),
     Player(Box<player::PlayerState>),
     Item {
         item: ItemStack,
@@ -135,6 +139,8 @@ impl EntityKind {
         match self {
             Self::Fish(..) => "FishingHook",
             Self::Painting(..) => "Painting",
+            Self::Minecart(..) => "Minecart",
+            Self::Boat(..) => "Boat",
             Self::Player(..) => "Player",
             Self::Ghast(..) => "Ghast",
             Self::Wolf(..) => "Wolf",
@@ -176,6 +182,7 @@ impl EntityKind {
             self,
             Self::Fish(..) |
             Self::Painting(..) |
+            Self::Minecart(..) | Self::Boat(..) |
             Self::Item { .. }
                 | Self::FallingSand { .. }
                 | Self::Tnt { .. }
@@ -414,6 +421,9 @@ impl Entity {
     }
     pub fn attack(&mut self, w: &mut World, attacker: Option<i32>, mut damage: i32) -> bool {
         if matches!(self.kind,EntityKind::Painting(_)) {if !self.dead{self.break_painting(w,true);}return true;}
+        if matches!(self.kind, EntityKind::Minecart(..) | EntityKind::Boat(..)) {
+            return self.attack_vehicle(w, damage);
+        }
         if matches!(self.kind, EntityKind::Player(..))
             && !self.player_damage(w, attacker, &mut damage)
         {
@@ -479,6 +489,8 @@ impl Entity {
         match self.kind {
             EntityKind::Fish(..) => self.update_fish(w),
             EntityKind::Painting(..) => self.update_painting(w),
+            EntityKind::Minecart(..) => self.update_minecart(w),
+            EntityKind::Boat(..) => self.update_boat(w),
             EntityKind::Player(..) => self.update_player(w),
             EntityKind::Item { .. } => self.update_item(w),
             EntityKind::FallingSand { .. } => self.update_falling_sand(w),

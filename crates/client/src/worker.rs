@@ -600,6 +600,9 @@ fn run(opts: WorldOptions, col: Colorizers, mut video: VideoSettings, rx: Receiv
                     let [x,y,z]=xyz;surfaces.push(crate::render::entity::effects::Surface{xyz,block:0,brightness:world.light_brightness_table[access.light_value(x,y,z) as usize]});
                 }
                 snapshot.push(crate::render::entity::effects::Snapshot {
+                    vehicle_rails: if matches!(e.kind,worldgen::entity::EntityKind::Minecart(..)) {
+                        Some(crate::render::entity::vehicles::RailSnapshot::capture(&e,|x,y,z|(access.block(x,y,z),access.meta(x,y,z))))
+                    } else {None},
                     entity: e,
                     brightness: b,
                     falling_light,
@@ -612,6 +615,7 @@ fn run(opts: WorldOptions, col: Colorizers, mut video: VideoSettings, rx: Receiv
                 entity: e.clone(),
                 brightness: 1.0,
                 falling_light: [1.0; 7],
+                vehicle_rails: None,
                 surfaces: Vec::new(),
             }));
             let _ = tx.send(FromWorker::Entities(snapshot));

@@ -116,6 +116,20 @@ fn main() -> ExitCode {
                 ExitCode::FAILURE
             }
         }
+        Some("vehicleinventory") => {
+            let java=std::fs::read(&a[2]).expect("vehicle inventory dump");let rust=worldgen::entity::vehicle_verify::inventory_bytes();
+            if java==rust {println!("EXACT MATCH: 10000 original minecart inventory/NBT operations");ExitCode::SUCCESS}
+            else {eprintln!("vehicle inventory differs at byte {:?}; lengths {}/{}",java.iter().zip(&rust).position(|(a,b)|a!=b),java.len(),rust.len());std::fs::write("target/vehicleinventory-rust.bin",rust).unwrap();ExitCode::FAILURE}
+        }
+        Some("vehicles") => {
+            let java=std::fs::read(&a[4]).expect("vehicle dump");
+            let rust=worldgen::entity::vehicle_verify::replay(&a[2],p(3) as i32);
+            if java==rust { println!("EXACT MATCH: vehicles {}, {} ticks",a[2],a[3]); ExitCode::SUCCESS }
+            else {
+                eprintln!("vehicles differ at byte {:?}; lengths {}/{}",java.iter().zip(&rust).position(|(a,b)|a!=b),java.len(),rust.len());
+                std::fs::write("target/vehicles-rust.bin",rust).unwrap(); ExitCode::FAILURE
+            }
+        }
         Some("entities") => {
             let java = std::fs::read(&a[4]).expect("entity dump");
             let rust = worldgen::entity::verify::object_bytes(&a[2], p(3) as i32);

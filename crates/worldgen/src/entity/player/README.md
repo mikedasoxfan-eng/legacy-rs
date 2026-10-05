@@ -58,7 +58,7 @@ The entity exposes previous/current position and rotation for interpolation.
 
 Events request pickup presentation, a dimension switch, a container screen, or
 a vehicle spawn. `SpawnVehicle` includes boat/cart kind and vanilla placement
-position; vehicle physics remains a client/integration hook. Container events
+position; placement also creates the real simulation entity. Container events
 identify the block and coordinates so the screen can find its inventory.
 The caller handles rendering, sound, particles, screens, pause/focus, and world
 switching. Stats/achievements are not maintained by this simulation.
@@ -120,7 +120,8 @@ See `crates/client/src/gui/CONTAINERS.md` for the UI/world-thread contract.
 Maps, fishing rods and signs/paintings
 are not implemented. The requested foods, buckets, flint/steel,
 bow, snowballs/eggs, hoe/seeds, shears and dyes are implemented. Boats and carts
-use explicit spawn requests, as permitted by the task.
+have simulation, riding, inventory, NBT and renderer ports; see
+[vehicle coverage](../../../../../VEHICLES.md).
 
 Finished stages are stored in `target/player-stages` and can be committed with
 `bash target/commit-player.sh` when Git metadata is writable. The script stages

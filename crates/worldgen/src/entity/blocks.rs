@@ -101,7 +101,7 @@ impl World {
         }
         table::COLLISION[id as usize][m].map(|b| b.translated(x as f64, y as f64, z as f64))
     }
-    pub fn get_colliding_bounding_boxes(&mut self, _entity: Option<i32>, query: BB) -> Vec<BB> {
+    pub fn get_colliding_bounding_boxes(&mut self, entity: Option<i32>, query: BB) -> Vec<BB> {
         let mut boxes = Vec::new();
         for x in floor(query.min_x)..floor(query.max_x + 1.0) {
             for z in floor(query.min_z)..floor(query.max_z + 1.0) {
@@ -132,7 +132,15 @@ impl World {
                 }
             }
         }
-        // The scoped entity kinds inherit null getBoundingBox/getCollisionBox.
+        let vehicle = entity.and_then(|id|self.entities.get(&id)).is_some_and(|e|
+            matches!(e.kind, super::EntityKind::Minecart(..) | super::EntityKind::Boat(..)));
+        for id in self.entities_within_aabb(entity,query.expand(0.25,0.25,0.25)) {
+            let other=&self.entities[&id];
+            if matches!(other.kind,super::EntityKind::Boat(..)) && other.bounding_box.intersects(query) {
+                boxes.push(other.bounding_box);
+            }
+            if vehicle && other.bounding_box.intersects(query) { boxes.push(other.bounding_box); }
+        }
         boxes
     }
     fn collision_ray_trace(

@@ -42,7 +42,7 @@ impl Entity {
                 && (self.kind.is_living()
                     || matches!(
                         self.kind,
-                        EntityKind::FallingSand { .. } | EntityKind::Tnt { .. }
+                        EntityKind::FallingSand { .. } | EntityKind::Tnt { .. } | EntityKind::Minecart(..) | EntityKind::Boat(..)
                     )))
     }
     pub fn arrow(w: &mut World, x: f64, y: f64, z: f64) -> Self {

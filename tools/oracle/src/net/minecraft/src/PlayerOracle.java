@@ -19,7 +19,7 @@ public final class PlayerOracle {
     }
     static final class HeadlessPlayer extends EntityPlayerSP {
         HeadlessPlayer(Minecraft mc,World w) {super(mc,w,new Session("Player",""),0);}
-        public void addStat(StatBase stat,int count) {stat(this,stat,count);}
+        public void addStat(StatBase stat,int count) {stat(this,stat,count);VehicleOracle.stat(stat,count);}
         public void onItemPickup(Entity e,int count) {}
         public void displayGUIChest(IInventory i) {}
         public void displayWorkbenchGUI(int x,int y,int z) {}

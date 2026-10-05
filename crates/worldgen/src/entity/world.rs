@@ -148,7 +148,7 @@ impl World {
                     if !rider.dead && rider.riding == Some(e.entity_id) {
                         self.entities.insert(e.entity_id, e.clone());
                         self.update_entity_with_optional_force(&mut rider, true);
-                        self.entities.remove(&e.entity_id);
+                        if let Some(parent)=self.entities.remove(&e.entity_id) { *e=parent; }
                     } else {
                         rider.riding = None;
                         e.ridden_by = None;

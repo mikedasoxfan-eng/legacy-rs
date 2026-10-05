@@ -20,7 +20,7 @@ class Reader:
             if kind=='Item':
                 self.many(p,'age delay item count damage','<i');self.read(p+'hover','<f');self.read(p+'health','<i')
             elif kind=='FallingSand': self.many(p,'block falltime','<i')
-            elif kind not in ("Arrow","Snowball","ThrownEgg","PrimedTnt","FallingSand","Fireball","LightningBolt"):
+            elif kind not in ("Arrow","Snowball","ThrownEgg","PrimedTnt","FallingSand","Fireball","LightningBolt","Minecart","Boat"):
                 self.many(p,'health prevhealth hearts halves hurt maxhurt death attack sound age lastdamage','<i')
                 self.many(p,'attackyaw body prevbody limb amount prevamount swing prevswing walk prevwalk phase prevphase random speed scale strafe forward randomyaw','<f');self.read(p+'jump','<?')
             if kind in ('Snowball','ThrownEgg'):
@@ -46,6 +46,13 @@ class Reader:
                 self.many(p,'swingticks portalcooldown sleeptimer armor currentitem remainder','<i');self.many(p,'swinging sleeping sneaking','<?')
                 self.many(p,'prevcloakx prevcloaky prevcloakz cloakx cloaky cloakz','<d')
                 for slot in range(40): self.stack(p+f'slot{slot}.')
+            if kind=='Minecart':
+                self.many(p,'carttype damage hit direction fuel','<i');self.many(p,'pushx pushz','<d');self.read(p+'reversed','<?')
+                for slot in range(self.read(p+'slots','<i')):self.stack(p+f'cargo{slot}.')
+            if kind=='Boat':self.many(p,'damage hit direction','<i')
+            if kind in ('Boat','Minecart'):
+                self.many(p,'collidedx collidedy collided attacked firstupdate preventspawn','<?');self.many(p,'collisionreduction width height yoffset stepheight prevdistance','<f')
+            self.many(p,'riding rider','<i');self.many(p,'rideryaw riderpitch','<d')
             self.read(p+'rng','<q')
         self.many('world.','rng mathrng entityseed explosionseed time','<q')
         self.many('world.','lcg sound sky flash skyflash raintime thundertime','<i');self.many('world.','rain thunder','<?');self.many('world.','rainstrength prevrain thunderstrength prevthunder','<f')
@@ -75,8 +82,18 @@ class Reader:
         if len(sys.argv)>4 and sys.argv[4] in ('api','pipeline','bucket'): self.many('api.','leftcounter lastclick','<i');self.read('api.brightness','<f')
         if len(sys.argv)>4 and sys.argv[4]=='nbt':
             n=self.read('nbt_len','<i');data=self.data[self.at:self.at+n];self.at+=n;self.fields['nbt']=(data,data)
+        if self.data[:8]==b'B173VEH1':
+            carts=[int(k.split(':')[0]) for k in self.fields if k.endswith(':Minecart.carttype') and int(k.split(':')[0])<16]
+            for eid in carts:
+                for j in range(5):
+                    p=f'{eid}:helper{j}.'
+                    if self.read(p+'present','<?'):self.many(p,'x y z','<d')
+            for i in range(self.read('stats.count','<i')):self.many(f'stat{i}.','id count','<i')
+            for i in range(self.read('vehicle_nbt.count','<i')):
+                eid=self.read('vehicle_nbt.id','<i');n=self.read('vehicle_nbt.len','<i');raw=self.data[self.at:self.at+n];self.at+=n;self.fields[f'{eid}:NBT']=(raw,raw)
         return self.fields
 a,b=Reader(sys.argv[1]),Reader(sys.argv[2])
+if a.data[:8]==b'B173VEH1':a.at=b.at=12
 for frame in range(int(sys.argv[3])+1):
     x,y=a.frame(),b.frame()
     diff=[(k,x[k][1],y.get(k,('',None))[1]) for k in x if x[k][0]!=y.get(k,('',None))[0]]

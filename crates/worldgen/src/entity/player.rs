@@ -51,6 +51,8 @@ pub enum PlayerEvent {
     /// `addChatMessage(key)`: a translated line in the chat area.
     Chat(&'static str),
     EditSign { position: (i32, i32, i32), block: u8, metadata: i32, sign: crate::sign::Sign },
+    /// A chest minecart opened from the world (the container session takes it from here).
+    OpenVehicleInventory { entity: i32 },
     Container(crate::container::ContainerEvent),
     Pickup {
         entity: i32,
@@ -214,9 +216,9 @@ impl Entity {
                 match s.minecart_start {
                     None => s.minecart_start = Some(here),
                     Some((x, y, z)) => {
-                        // ChunkCoordinates.getSqDistanceTo returns a float.
-                        let (a, b, c) = (x - here.0, y - here.1, z - here.2);
-                        if (a.wrapping_mul(a).wrapping_add(b.wrapping_mul(b)).wrapping_add(c.wrapping_mul(c))) as f32 >= 1000.0 {
+                        // ChunkCoordinates.getSqDistanceTo is misnamed: it returns the distance.
+                        let (a, b, c) = (x.wrapping_sub(here.0), y.wrapping_sub(here.1), z.wrapping_sub(here.2));
+                        if (a.wrapping_mul(a).wrapping_add(b.wrapping_mul(b)).wrapping_add(c.wrapping_mul(c)) as f64).sqrt() >= 1000.0 {
                             self.add_stat(stat::ON_A_RAIL, 1);
                         }
                     }
@@ -776,6 +778,8 @@ pub mod stat {
     pub fn vehicle(kind: &super::EntityKind) -> Option<i32> {
         match kind {
             super::EntityKind::Pig { .. } => Some(PIG),
+            super::EntityKind::Minecart(..) => Some(MINECART),
+            super::EntityKind::Boat(..) => Some(BOAT),
             _ => None,
         }
     }

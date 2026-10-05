@@ -379,6 +379,11 @@ fn main() {
     if args.get(1).map(String::as_str) == Some("--pistoncheck") {
         let ok=render::piston_check::check(args.get(2).expect("--pistoncheck oracle dump"));
         println!("{}",if ok {"PISTON RENDERERS EXACT"} else {"PISTON RENDERERS DIFFER"});
+        std::process::exit(if ok { 0 } else { 1 });
+    }
+    if args.get(1).map(String::as_str) == Some("--vehiclerenderercheck") {
+        let ok=render::entity::object_check::vehicle_check(args.get(2).expect("oracle vehicle renderer dump"));
+        println!("{}",if ok {"VEHICLE RENDERERS EXACT"} else {"VEHICLE RENDERERS DIFFER"});
         std::process::exit(if ok {0} else {1});
     }
     if args.get(1).map(String::as_str) == Some("--renderercheck") {

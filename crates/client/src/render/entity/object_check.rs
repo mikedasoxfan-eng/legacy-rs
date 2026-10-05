@@ -141,6 +141,29 @@ pub fn painting_check(path:&str)->bool {
     }
     assert_eq!(d.at,d.data.len());println!("painting renderers: {} values, {} differences",d.checks,d.bad);d.bad==0
 }
+pub fn vehicle_check(path:&str)->bool {
+    use super::vehicles::{self,RailSnapshot};
+    use worldgen::entity::Entity;
+    let mut d=Input {data:std::fs::read(path).unwrap(),at:0,checks:0,bad:0};
+    assert_eq!(d.u(),u32::from_le_bytes(*b"V173"));assert_eq!(d.u(),1);let n=d.u();
+    let mut w=worldgen::World::new(0,300);let mut draws=0;
+    for case in 0..n {
+        let t=d.u() as i32;let meta=d.u() as i32;let hit=d.u() as i32;let damage=d.u() as i32;let dir=d.u() as i32;
+        let partial=d.f();let brightness=d.f();let prev_yaw=d.f();let yaw=d.f();let prev_pitch=d.f();let pitch=d.f();
+        let last:[f64;3]=std::array::from_fn(|_|d.d());let pos:[f64;3]=std::array::from_fn(|_|d.d());let rel:[f64;3]=std::array::from_fn(|_|d.d());
+        let mut e=if t<0 {Entity::boat(&mut w,pos[0],pos[1],pos[2])} else {Entity::minecart(&mut w,pos[0],pos[1],pos[2],t)};
+        e.set_position(pos[0],pos[1],pos[2]);e.last_tick_pos=worldgen::entity::Vec3D::new(last[0],last[1],last[2]);
+        e.prev_yaw=prev_yaw;e.yaw=yaw;e.prev_pitch=prev_pitch;e.pitch=pitch;
+        let mut s=vehicles::state(&e,partial).unwrap();s.time_since_hit=hit;s.damage=damage;s.rock_direction=dir;
+        let rails=RailSnapshot::capture(&e,|x,y,z|if meta>=0 && (x,y,z)==(0,70,-3) {(66,meta)} else {(0,0)});
+        s.track=rails.sample(s.position);
+        let mut r=super::fixed::Fixed::new(brightness);vehicles::render(&mut r,s,rel,partial,brightness);
+        let nd=d.u() as usize;assert_eq!(nd,r.draws.len(),"vehicle case {case} draw count");draws+=nd;
+        for (i,r) in r.draws.iter().enumerate() {d.draw(r,&format!("vehicle case {case} draw {i}"));}
+    }
+    assert_eq!(d.at,d.data.len());println!("vehicles: {n} cases, {draws} draws, {} raw-bit comparisons, {} differences",d.checks,d.bad);
+    d.bad==0
+}
 
 pub fn effects_check(path: &str) -> bool {
     use super::effects::Surface;

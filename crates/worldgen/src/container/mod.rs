@@ -79,6 +79,7 @@ pub struct Container {
     pub result: Option<ItemStack>,
     pub tile: Vec<Option<ItemStack>>,
     pub positions: Vec<(i32, i32, i32)>,
+    pub vehicle: Option<i32>,
     pub progress: [i32; 3], // cook, burn, current fuel
     pub events: Vec<ContainerEvent>,
     pub transaction: i16,
@@ -101,6 +102,7 @@ impl Container {
             result: None,
             tile: Vec::new(),
             positions: Vec::new(),
+            vehicle: None,
             progress: [0; 3],
             events: Vec::new(),
             transaction: 0,
@@ -534,6 +536,7 @@ impl Container {
     }
     pub fn snapshot(&self, p: &InventoryPlayer) -> ContainerSnapshot {
         ContainerSnapshot {
+            inventory_name: if self.vehicle.is_some() {Some("Minecart")} else {None},
             window: self.window,
             kind: self.kind,
             slots: self.slots.clone(),
@@ -549,6 +552,7 @@ impl Container {
 }
 #[derive(Clone, Debug)]
 pub struct ContainerSnapshot {
+    pub inventory_name: Option<&'static str>,
     pub window: i32,
     pub kind: ContainerKind,
     pub slots: Vec<Slot>,
@@ -599,6 +603,7 @@ impl PlayerPreview {
 }
 #[derive(Clone, Copy, Debug)]
 pub enum ContainerCommand {
+    OpenVehicle { entity: i32 },
     OpenInventory,
     OpenBlock {
         block: u8,

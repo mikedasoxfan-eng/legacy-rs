@@ -174,27 +174,18 @@ impl Entity {
         };
         if parent.dead {
             self.riding = None;
+            if self.kind.is_living() {
+                self.living.prev_walk_animation=self.living.walk_animation;
+                self.living.walk_animation=0.0;
+            }
+            if let Some(s)=self.player_state_mut() {s.prev_camera_yaw=s.camera_yaw;s.camera_yaw=0.0;}
             return;
         }
         self.motion = Vec3D::default();
         self.on_update(w);
         if self.riding.is_some() {
-            let offset = if matches!(parent.kind, EntityKind::Spider) {
-                parent.height as f64 * 0.75 - 0.5
-            } else {
-                parent.height as f64 * 0.75
-            };
-            self.set_position(
-                parent.pos.x,
-                parent.pos.y
-                    + offset
-                    + if self.player_state().is_some() {
-                        (self.y_offset - 0.5) as f64
-                    } else {
-                        self.y_offset as f64
-                    },
-                parent.pos.z,
-            );
+            let parent=self.riding.and_then(|id|w.entities.get(&id)).cloned().unwrap_or(parent);
+            parent.update_rider_position(self);
             self.rider_yaw_delta += (parent.yaw - parent.prev_yaw) as f64;
             self.rider_pitch_delta += (parent.pitch - parent.prev_pitch) as f64;
             while self.rider_yaw_delta >= 180.0 {
@@ -215,6 +206,10 @@ impl Entity {
             self.rider_pitch_delta -= pitch;
             self.yaw = (self.yaw as f64 + yaw) as f32;
             self.pitch = (self.pitch as f64 + pitch) as f32;
+        }
+        if self.kind.is_living() {
+            self.living.prev_walk_animation=self.living.walk_animation;
+            self.living.walk_animation=0.0;
         }
         if let Some(s) = self.player_state_mut() {
             s.prev_camera_yaw = s.camera_yaw;
