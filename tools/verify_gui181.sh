@@ -2,7 +2,7 @@
 # Pixel-compare the GUI against the original client: every scene in tools/oracle181/gui/scenes.txt
 # is captured from the real b1.8.1 (a game window opens for a few seconds; it draws into a
 # single-sample framebuffer so driver-forced anti-aliasing can't interfere) and from
-# `beta --guishot`, then diffed. Differences are written to shots/gui_diff.
+# `beta --guishot`, then diffed. Differences are written to shots181/gui_diff.
 set -uo pipefail
 root="$(cd "$(dirname "$0")/.." && pwd)"
 # One run at a time per tree (two runs would overwrite each other's oracle output).
@@ -31,7 +31,7 @@ for line in Path(sys.argv[1]).read_text(encoding='utf-8').splitlines():
 EOF
 }
 java_out="$root/tools/oracle181/out/gui_java"
-rust_out="$root/shots/gui"
+rust_out="$root/shots181/gui"
 clear_captures "$root/tools/oracle181/gui/scenes.txt" "$java_out" "$rust_out"
 bash "$root/tools/oracle181/guishot.sh" "$root/tools/oracle181/gui/scenes.txt" "$java_out" > "$root/target/gui-java.log" 2>&1 || fail=1
 grep "^java: GL\|rror:" "$root/target/gui-java.log" || true
@@ -51,16 +51,16 @@ EOF2
 # The original's run renames and deletes fixture worlds; the port starts from the same fixtures.
 python "$root/tools/oracle181/gui/make_saves.py" "$root/tools/oracle181/out/guisaves" >/dev/null || exit 1
 GUI_MSAA=1 "$root/target/release/beta" --mc b1.8.1 --guishot "$root/tools/oracle181/gui/scenes.txt" "$rust_out" >/dev/null || exit 1
-"$root/target/release/beta" --mc b1.8.1 --guidiff "$java_out" "$rust_out" "$root/shots/gui_diff" || fail=1
+"$root/target/release/beta" --mc b1.8.1 --guidiff "$java_out" "$rust_out" "$root/shots181/gui_diff" || fail=1
 scenes="$root/tools/oracle181/gui/container-scenes.txt"
 java_containers="$root/tools/oracle181/out/containers_gui_java"
-rust_containers="$root/shots/containers"
+rust_containers="$root/shots181/containers"
 clear_captures "$scenes" "$java_containers" "$rust_containers"
 bash "$root/tools/oracle181/guishot.sh" "$scenes" "$java_containers" > "$root/target/containers-gui-java.log" 2>&1 || fail=1
 GUI_MSAA=1 "$root/target/release/beta" --mc b1.8.1 --guishot "$scenes" "$rust_containers" >/dev/null || fail=1
-python "$root/tools/oracle181/compare_gui_strict.py" "$scenes" "$java_containers" "$rust_containers" "$root/shots/containers_diff" || fail=1
+python "$root/tools/oracle181/compare_gui_strict.py" "$scenes" "$java_containers" "$rust_containers" "$root/shots181/containers_diff" || fail=1
 sign_scenes="$root/tools/oracle181/gui/sign-scenes.txt"
-python - "$sign_scenes" "$root/tools/oracle181/out/sign_gui_java" "$root/shots/signs" <<'EOF'
+python - "$sign_scenes" "$root/tools/oracle181/out/sign_gui_java" "$root/shots181/signs" <<'EOF'
 from pathlib import Path
 import sys
 for line in Path(sys.argv[1]).read_text().splitlines():
@@ -71,16 +71,16 @@ for line in Path(sys.argv[1]).read_text().splitlines():
             (Path(directory)/(name+'.png')).unlink(missing_ok=True)
 EOF
 bash "$root/tools/oracle181/guishot.sh" "$sign_scenes" "$root/tools/oracle181/out/sign_gui_java" > "$root/target/sign-gui-java.log" 2>&1 || fail=1
-GUI_MSAA=1 "$root/target/release/beta" --mc b1.8.1 --guishot "$sign_scenes" "$root/shots/signs" >/dev/null || fail=1
-python "$root/tools/oracle181/compare_gui_strict.py" "$sign_scenes" "$root/tools/oracle181/out/sign_gui_java" "$root/shots/signs" "$root/shots/signs_diff" || fail=1
+GUI_MSAA=1 "$root/target/release/beta" --mc b1.8.1 --guishot "$sign_scenes" "$root/shots181/signs" >/dev/null || fail=1
+python "$root/tools/oracle181/compare_gui_strict.py" "$sign_scenes" "$root/tools/oracle181/out/sign_gui_java" "$root/shots181/signs" "$root/shots181/signs_diff" || fail=1
 python "$root/tools/oracle181/gui/make_pack.py" "$root/tools/oracle181/out/packmc" || exit 1
 scenes="$root/tools/oracle181/gui/feature-scenes.txt"
 java_features="$root/tools/oracle181/out/features_gui_java"
-rust_features="$root/shots/features"
+rust_features="$root/shots181/features"
 clear_captures "$scenes" "$java_features" "$rust_features"
 bash "$root/tools/oracle181/guishot.sh" "$scenes" "$java_features" > "$root/target/features-gui-java.log" 2>&1 || fail=1
 GUI_MSAA=1 "$root/target/release/beta" --mc b1.8.1 --guishot "$scenes" "$rust_features" > "$root/target/features-gui-rust.log" 2>&1 || fail=1
-python "$root/tools/oracle181/compare_gui_strict.py" "$scenes" "$java_features" "$rust_features" "$root/shots/features_diff" || fail=1
+python "$root/tools/oracle181/compare_gui_strict.py" "$scenes" "$java_features" "$rust_features" "$root/shots181/features_diff" || fail=1
 "$root/target/release/beta" --mc b1.8.1 --texturecheck "$java_features/texture-fx.bin" || fail=1
 [ $fail -eq 0 ] && echo "ALL GUI CASES MATCH" || echo "SOME GUI CASES DIFFER"
 exit $fail
