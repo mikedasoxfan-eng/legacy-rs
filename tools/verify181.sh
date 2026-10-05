@@ -401,5 +401,8 @@ fi
 rm -rf "$cv"
 
 bash "$root/tools/verify_decorations181.sh" || fail=1
+# --- entities (b1.8.1) ---
+bash "$root/tools/verify_entities181.sh" || fail=1
+# --- end entities ---
 [ $fail -eq 0 ] && echo "ALL CASES EXACT" || echo "SOME CASES DIFFER"
 exit $fail

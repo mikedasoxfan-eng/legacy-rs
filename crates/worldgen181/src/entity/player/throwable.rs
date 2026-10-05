@@ -121,7 +121,7 @@ impl Entity {
         if let Some(hit) = hit {
             if let Hit::Entity { id, .. } = hit {
                 if let Some(mut e) = w.entities.remove(&id) {
-                    e.attack(w, s.owner, 0);
+                    e.attack_from(w,crate::entity::damage::DamageSource::indirect(crate::entity::damage::DamageKind::Thrown,self.entity_id,s.owner),0);
                     w.entities.insert(id, e);
                 }
             }

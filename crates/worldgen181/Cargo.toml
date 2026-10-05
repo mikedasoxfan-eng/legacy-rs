@@ -19,5 +19,9 @@ path = "src/bin/compare.rs"
 name = "container_compare181"
 path = "src/bin/container_compare.rs"
 
+[[bin]]
+name = "entity_compare181"
+path = "src/bin/entity_compare181.rs"
+
 [dependencies]
 flate2 = "1.1.10"

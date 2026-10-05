@@ -18,6 +18,9 @@ pub fn render_state(e: &Entity, partial: f32, brightness: f32) -> Option<RenderS
         EntityKind::Zombie => MobKind::Zombie,
         EntityKind::Skeleton => MobKind::Skeleton,
         EntityKind::Spider => MobKind::Spider,
+        EntityKind::CaveSpider => MobKind::CaveSpider,
+        EntityKind::Enderman(..) => MobKind::Enderman,
+        EntityKind::Silverfish{..} => MobKind::Silverfish,
         EntityKind::Creeper { .. } => MobKind::Creeper,
         EntityKind::Pig { .. } => MobKind::Pig,
         EntityKind::Sheep { .. } => MobKind::Sheep,
@@ -49,6 +52,7 @@ pub fn render_state(e: &Entity, partial: f32, brightness: f32) -> Option<RenderS
     s.death_time = l.death_time;
     s.brightness = brightness;
     s.spider_eye_brightness = brightness;
+    if let EntityKind::Enderman(state)=&e.kind {s.carrying=state.carried>0;s.screaming=state.screaming;}
     s.riding = e.riding.is_some();
     s.sneak = e.sneaking;
     match &e.kind {

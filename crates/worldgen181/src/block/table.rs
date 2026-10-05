@@ -160,8 +160,8 @@ pub const BLOCKS: [BlockProps; 256] = [
     BlockProps { exists: true, material: 14, light_opacity: 0, light_value: 9, opaque_cube: false, normal_render: false, container: false, ticks: false, tick_rate: 10, name: "tile.diode" }, // 94
     BlockProps { exists: true, material: 3, light_opacity: 255, light_value: 15, opaque_cube: true, normal_render: true, container: false, ticks: true, tick_rate: 10, name: "tile.lockedchest" }, // 95
     BlockProps { exists: true, material: 3, light_opacity: 0, light_value: 0, opaque_cube: false, normal_render: false, container: false, ticks: false, tick_rate: 10, name: "tile.trapdoor" }, // 96
-    BlockProps::NONE, // 97
-    BlockProps::NONE, // 98
+    BlockProps { exists: true, material: 22, light_opacity: 255, light_value: 0, opaque_cube: true, normal_render: true, container: false, ticks: false, tick_rate: 10, name: "tile.monsterStoneEgg" }, // 97
+    BlockProps { exists: true, material: 4, light_opacity: 255, light_value: 0, opaque_cube: true, normal_render: true, container: false, ticks: false, tick_rate: 10, name: "tile.stonebricksmooth" }, // 98
     BlockProps::NONE, // 99
     BlockProps::NONE, // 100
     BlockProps::NONE, // 101

@@ -15,9 +15,9 @@ impl Entity {
             EntityKind::Cow => "mob.cow",
             EntityKind::Sheep { .. } => "mob.sheep",
             EntityKind::Chicken { .. } => "mob.chicken",
-            EntityKind::Zombie => "mob.zombie",
+            EntityKind::Zombie | EntityKind::Enderman(..) => "mob.zombie",
             EntityKind::Skeleton => "mob.skeleton",
-            EntityKind::Spider => "mob.spider",
+            EntityKind::Spider | EntityKind::CaveSpider | EntityKind::Silverfish { .. } => "mob.spider",
             EntityKind::PigZombie { .. } => "mob.zombiepig.zpig",
             EntityKind::Ghast(..) => "mob.ghast.moan",
             EntityKind::Wolf(s) => {
@@ -48,7 +48,7 @@ impl Entity {
             EntityKind::Cow => "mob.cowhurt",
             EntityKind::Sheep { .. } => "mob.sheep",
             EntityKind::Chicken { .. } => "mob.chickenhurt",
-            EntityKind::Zombie => {
+            EntityKind::Zombie | EntityKind::Enderman(..) => {
                 if death {
                     "mob.zombiedeath"
                 } else {
@@ -56,7 +56,7 @@ impl Entity {
                 }
             }
             EntityKind::Skeleton => "mob.skeletonhurt",
-            EntityKind::Spider => {
+            EntityKind::Spider | EntityKind::CaveSpider | EntityKind::Silverfish { .. } => {
                 if death {
                     "mob.spiderdeath"
                 } else {

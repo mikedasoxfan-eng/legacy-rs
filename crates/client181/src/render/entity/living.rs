@@ -23,6 +23,9 @@ pub enum MobKind {
     Ghast,
     PigZombie,
     Giant,
+    Enderman,
+    Silverfish,
+    CaveSpider,
 }
 
 /// Interpolated `EntityLiving` inputs. The simulation can fill this at partialTicks:
@@ -31,6 +34,8 @@ pub enum MobKind {
 /// limbSwing = S-R*(1-partial), age = ticksExisted+partial, attack = getSwingProgress.
 #[derive(Clone, Debug)]
 pub struct RenderState {
+    pub carrying: bool,
+    pub screaming: bool,
     pub ghast_attack: f32,
     pub ghast_attacking: bool,
     pub held_item: Option<super::equipped::HeldSprite>,
@@ -78,6 +83,8 @@ pub struct RenderState {
 impl RenderState {
     pub fn new(kind: MobKind) -> Self {
         Self {
+            carrying: false,
+            screaming: false,
             ghast_attack: 0.0,
             ghast_attacking: false,
             held_item: if kind == MobKind::Skeleton {
@@ -210,6 +217,9 @@ pub const TEXTURES: &[&str] = &[
 
 pub fn model_kind(kind: MobKind) -> ModelKind {
     match kind {
+        MobKind::Enderman => ModelKind::Enderman,
+        MobKind::Silverfish => ModelKind::Silverfish,
+        MobKind::CaveSpider => ModelKind::Spider,
         MobKind::Biped => ModelKind::Biped,
         MobKind::Zombie => ModelKind::Zombie,
         MobKind::Skeleton => ModelKind::Skeleton,
@@ -230,6 +240,9 @@ pub fn model_kind(kind: MobKind) -> ModelKind {
 
 fn texture(s: &RenderState) -> &'static str {
     match s.kind {
+        MobKind::Enderman => "mob/enderman.png",
+        MobKind::Silverfish => "mob/silverfish.png",
+        MobKind::CaveSpider => "mob/cavespider.png",
         MobKind::Biped => "mob/char.png",
         MobKind::Zombie | MobKind::Giant => "mob/zombie.png",
         MobKind::PigZombie => "mob/pigzombie.png",
@@ -297,11 +310,12 @@ pub fn model_transform(s: &RenderState, camera: DVec3) -> Mat4 {
             if f > 1.0 {
                 f = 1.0;
             }
-            let max = if s.kind == MobKind::Spider { 180.0 } else { 90.0 };
+            let max = if matches!(s.kind,MobKind::Spider|MobKind::CaveSpider|MobKind::Silverfish) { 180.0 } else { 90.0 };
             m *= Mat4::from_rotation_z((f * max).to_radians());
         }
     }
     m *= Mat4::from_scale(Vec3::new(-1.0, -1.0, 1.0));
+    if s.kind == MobKind::CaveSpider { m *= Mat4::from_scale(Vec3::splat(0.7)); }
     if s.kind == MobKind::Ghast {
         let mut f = (s.ghast_attack / 20.0).max(0.0);
         f = 1.0 / (f * f * f * f * f * 2.0 + 1.0);
@@ -342,13 +356,13 @@ fn light(x: f32, z: f32) -> Vec3 {
 }
 
 /// GL_BYTE normal arrays as written by Tessellator.setNormal. Preserve both its
-/// 128 X multiplier and signed-byte OR/sign-extension, rather than repairing them.
+/// 127 X multiplier and signed-byte OR/sign-extension, rather than repairing them.
 pub fn packed_normal(q: &TexturedQuad) -> u32 {
     pack_normal(q.normal())
 }
 
 pub fn pack_normal(n: Vec3) -> u32 {
-    let x = (n.x * 128.0) as i32 as i8 as i32;
+    let x = (n.x * 127.0) as i32 as i8 as i32;
     let y = (n.y * 127.0) as i32 as i8 as i32;
     let z = (n.z * 127.0) as i32 as i8 as i32;
     (x | (y << 8) | (z << 16)) as u32
@@ -461,6 +475,7 @@ fn render_with_lighting(s: &RenderState, camera: DVec3, normalize: bool) -> Vec<
     main.on_ground = s.attack;
     main.is_riding = s.riding;
     main.is_sneak = s.sneak;
+    main.carrying=s.carrying;main.screaming=s.screaming;
     main.held_left = s.held_left;
     main.held_right = s.held_right;
     let mut amount = s.limb_amount;
@@ -492,11 +507,14 @@ fn render_with_lighting(s: &RenderState, camera: DVec3, normalize: bool) -> Vec<
             let fleece = FLEECE_COLORS[s.fleece_color];
             pass_color = [s.brightness * fleece[0], s.brightness * fleece[1], s.brightness * fleece[2], 1.0];
         }
-        MobKind::Spider => {
+        MobKind::Spider | MobKind::CaveSpider => {
             pass_model = Some(Model::new(ModelKind::Spider));
             pass_texture = "mob/spider_eyes.png";
-            pass_color = [1.0, 1.0, 1.0, (1.0 - s.spider_eye_brightness) * 0.5];
+            pass_color = [1.0;4];
             pass = Pass::Eyes;
+        }
+        MobKind::Enderman => {
+            pass_model=Some(main.clone());pass_texture="mob/enderman_eyes.png";pass_color=[1.0;4];pass=Pass::Eyes;
         }
         MobKind::Slime => {
             pass_model = Some(Model::new(ModelKind::SlimeOuter));

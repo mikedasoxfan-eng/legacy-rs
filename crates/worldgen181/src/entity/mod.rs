@@ -1,5 +1,9 @@
-//! Singleplayer Beta 1.7.3 entity simulation. Arithmetic follows the client source.
+//! Singleplayer Beta 1.8.1 entity simulation. Arithmetic follows the client source.
 pub mod aquatic;
+pub mod damage;
+pub mod potion;
+pub mod mobs181;
+pub mod xp;
 pub mod block_hooks;
 pub mod block_table;
 pub mod blocks;
@@ -21,6 +25,7 @@ mod sounds;
 pub mod spawning;
 pub mod special;
 pub mod verify;
+pub mod verify181;
 pub mod vehicles;
 pub mod vehicle_verify;
 pub mod world;
@@ -99,6 +104,10 @@ pub enum EntityKind {
     Zombie,
     Skeleton,
     Spider,
+    CaveSpider,
+    Enderman(mobs181::EndermanState),
+    Silverfish { ally_timer: i32 },
+    XPOrb(xp::XPOrbState),
     Creeper {
         ignition: i32,
         prev_ignition: i32,
@@ -153,6 +162,10 @@ impl EntityKind {
             Self::Zombie => "Zombie",
             Self::Skeleton => "Skeleton",
             Self::Spider => "Spider",
+            Self::CaveSpider => "CaveSpider",
+            Self::Enderman(..) => "Enderman",
+            Self::Silverfish { .. } => "Silverfish",
+            Self::XPOrb(..) => "XPOrb",
             Self::Creeper { .. } => "Creeper",
             Self::PigZombie { .. } => "PigZombie",
             Self::Giant => "Giant",
@@ -172,6 +185,9 @@ impl EntityKind {
             Self::Zombie
                 | Self::Skeleton
                 | Self::Spider
+                | Self::CaveSpider
+                | Self::Enderman(..)
+                | Self::Silverfish { .. }
                 | Self::Creeper { .. }
                 | Self::PigZombie { .. }
                 | Self::Giant
@@ -183,7 +199,7 @@ impl EntityKind {
             Self::Fish(..) |
             Self::Painting(..) |
             Self::Minecart(..) | Self::Boat(..) |
-            Self::Item { .. }
+            Self::XPOrb(..) | Self::Item { .. }
                 | Self::FallingSand { .. }
                 | Self::Tnt { .. }
                 | Self::Arrow(..)
@@ -225,6 +241,8 @@ pub struct Entity {
     pub dead: bool,
     pub no_clip: bool,
     pub sneaking: bool,
+    pub sprinting: bool,
+    pub velocity_changed: bool,
     pub prevent_entity_spawning: bool,
     pub fall_distance: f32,
     pub distance_walked: f32,
@@ -330,6 +348,8 @@ impl Entity {
             dead: false,
             no_clip: false,
             sneaking: false,
+            sprinting: false,
+            velocity_changed: false,
             prevent_entity_spawning: false,
             fall_distance: 0.0,
             distance_walked: 0.0,
@@ -419,7 +439,21 @@ impl Entity {
         self.yaw = yaw;
         self.pitch = pitch;
     }
-    pub fn attack(&mut self, w: &mut World, attacker: Option<i32>, mut damage: i32) -> bool {
+    pub fn attack(&mut self, w: &mut World, attacker: Option<i32>, damage: i32) -> bool {
+        let kind = if attacker.is_some() { damage::DamageKind::Mob } else { damage::DamageKind::Generic };
+        self.attack_from(w, damage::DamageSource::entity(kind, attacker), damage)
+    }
+    pub fn attack_from(&mut self, w: &mut World, source: damage::DamageSource, mut damage: i32) -> bool {
+        let attacker = source.attacker;
+        if source.indirect && matches!(self.kind, EntityKind::Enderman(..)) {
+            for _ in 0..64 { if self.enderman_teleport_random(w) { return true; } }
+            return false;
+        }
+        if matches!(self.kind, EntityKind::Silverfish { .. }) && source.is_entity() {
+            if let EntityKind::Silverfish { ally_timer } = &mut self.kind { if *ally_timer <= 0 { *ally_timer = 20; } }
+        }
+        if matches!(self.kind, EntityKind::Pig { .. } | EntityKind::Sheep { .. } | EntityKind::Cow | EntityKind::Chicken { .. } | EntityKind::Wolf(..)) { self.living.flee_ticks = 60; }
+
         if matches!(self.kind,EntityKind::Painting(_)) {if !self.dead{self.break_painting(w,true);}return true;}
         if matches!(self.kind, EntityKind::Minecart(..) | EntityKind::Boat(..)) {
             return self.attack_vehicle(w, damage);
@@ -431,7 +465,7 @@ impl Entity {
         }
         self.prepare_special_attack(w, attacker, &mut damage);
         if self.kind.is_living() {
-            let hit = self.living_attack(w, attacker, damage);
+            let hit = self.living_attack(w, source, damage);
             if hit
                 && self.kind.is_mob()
                 && attacker.is_some()
@@ -454,6 +488,10 @@ impl Entity {
             return self.fireball_attack(w, attacker);
         }
         self.been_attacked = true;
+        if let EntityKind::XPOrb(s) = &mut self.kind {
+            s.health -= damage;
+            if s.health <= 0 { self.dead = true; }
+        }
         if let EntityKind::Item { health, .. } = &mut self.kind {
             self.been_attacked = true;
             *health -= damage;
@@ -493,6 +531,7 @@ impl Entity {
             EntityKind::Boat(..) => self.update_boat(w),
             EntityKind::Player(..) => self.update_player(w),
             EntityKind::Item { .. } => self.update_item(w),
+            EntityKind::XPOrb(..) => self.update_xp_orb(w),
             EntityKind::FallingSand { .. } => self.update_falling_sand(w),
             EntityKind::Tnt { .. } => self.update_tnt(w),
             EntityKind::Arrow(..) => self.update_arrow(w),

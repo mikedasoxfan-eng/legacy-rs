@@ -70,38 +70,24 @@ impl Entity {
         }
     }
 }
-fn spawn_list(biome: Biome, category: i32) -> Vec<(&'static str, i32)> {
-    if biome == Biome::Hell {
-        return if category == 0 {
-            vec![("Ghast", 10), ("PigZombie", 10)]
-        } else {
-            vec![]
-        };
-    }
-    if biome == Biome::Sky {
-        return if category == 1 {
-            vec![("Chicken", 10)]
-        } else {
-            vec![]
-        };
-    }
+/// Original b1.8.1 biome IDs, independent of the terrain worker's biome implementation.
+pub fn spawn_list181(biome: i32, category: i32) -> Vec<(&'static str,i32,i32,i32)> {
+    if biome==8 {return if category==0 {vec![("Ghast",10,4,4),("PigZombie",10,4,4)]}else{vec![]};}
+    if biome==9 {return if category==1 {vec![("Chicken",10,4,4)]}else{vec![]};}
     match category {
-        0 => vec![
-            ("Spider", 10),
-            ("Zombie", 10),
-            ("Skeleton", 10),
-            ("Creeper", 10),
-            ("Slime", 10),
-        ],
+        0 => vec![("Spider",10,4,4),("Zombie",10,4,4),("Skeleton",10,4,4),("Creeper",10,4,4),("Slime",10,4,4),("Enderman",2,4,4)],
         1 => {
-            let mut list = vec![("Sheep", 12), ("Pig", 10), ("Chicken", 10), ("Cow", 8)];
-            if matches!(biome, Biome::Forest | Biome::Taiga) {
-                list.push(("Wolf", 2));
-            }
-            list
+            if matches!(biome,0|2|7) {return vec![];}
+            let mut list=vec![("Sheep",12,4,4),("Pig",10,4,4),("Chicken",10,4,4),("Cow",8,4,4)];
+            if biome==4 {list.push(("Wolf",5,4,4));}if biome==5 {list.push(("Wolf",8,4,4));}list
         }
-        _ => vec![("Squid", 10)],
+        2 => vec![("Squid",10,4,4)],
+        _ => vec![],
     }
+}
+fn spawn_list(biome: Biome, category: i32) -> Vec<(&'static str, i32)> {
+    let id=match biome {Biome::Hell=>8,Biome::Sky=>9,Biome::Forest|Biome::SeasonalForest|Biome::Rainforest=>4,Biome::Taiga=>5,Biome::Desert|Biome::IceDesert=>2,Biome::Swampland=>6,_=>1};
+    spawn_list181(id,category).into_iter().map(|(name,weight,_,_)|(name,weight)).collect()
 }
 fn category(kind: &EntityKind) -> i32 {
     if kind.is_mob() || matches!(kind, EntityKind::Slime { .. } | EntityKind::Ghast(..)) {
@@ -356,6 +342,41 @@ impl World {
                     self.entities.insert(id, e);
                 }
                 *delay = 200 + self.rand.next_int(600);
+            }
+        }
+    }
+}
+
+impl World {
+    /// SpawnerAnimals.func_35957_a: passive packs during chunk population.
+    /// The biome ID is the b1.8.1 registry ID; the terrain owner supplies it.
+    pub fn spawn_population_animals(&mut self, biome_id:i32, x:i32, z:i32, width:i32, depth:i32, random:&mut JavaRandom) {
+        let list=spawn_list181(biome_id,1);
+        if list.is_empty(){return;}
+        while random.next_float()<0.1 {
+            // Vanilla draws the weighted choice from World.rand, not the population RNG.
+            let mut choice=self.rand.next_int(list.iter().map(|e|e.1).sum());
+            let entry=list.iter().find(|entry| {choice-=entry.1;choice<0}).copied().unwrap();
+            let count=entry.2+random.next_int(1+entry.3-entry.2);
+            let mut px=x+random.next_int(width);let mut pz=z+random.next_int(depth);
+            let start_x=px;let start_z=pz;
+            for _ in 0..count {
+                let mut spawned=false;
+                for _ in 0..4 {
+                    if spawned {break;}
+                    let y=self.find_top_solid_block(px,pz);
+                    if self.is_block_normal_cube(px,y-1,pz) && !self.is_block_normal_cube(px,y,pz) && !mat(self.get_block_material(px,y,pz)).is_liquid && !self.is_block_normal_cube(px,y+1,pz) {
+                        let mut entity=Entity::living(self,entry.0).unwrap();
+                        entity.set_location_and_angles((px as f32+0.5) as f64,y as f32 as f64,(pz as f32+0.5) as f64,random.next_float()*360.0,0.0);
+                        self.entity_joined_world(entity);spawned=true;
+                    }
+                    px+=random.next_int(5)-random.next_int(5);pz+=random.next_int(5)-random.next_int(5);
+                    // The Z range incorrectly uses width in the original, even for rectangular areas.
+                    while px<x || px>=x+width || pz<z || pz>=z+width {
+                        px=start_x+random.next_int(5)-random.next_int(5);
+                        pz=start_z+random.next_int(5)-random.next_int(5);
+                    }
+                }
             }
         }
     }

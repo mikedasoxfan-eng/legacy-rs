@@ -26,6 +26,11 @@ pub enum Kind {
     Digging { block: u8, metadata: i32 },
     Footstep,
     Pickup,
+    Crit,
+    MagicCrit,
+    Cloud,
+    Aura,
+    Suspend,
 }
 impl Kind {
     pub fn named(name: &str) -> Option<Self> {
@@ -45,6 +50,11 @@ impl Kind {
             "slime" => Self::Slime,
             "snowshovel" => Self::SnowShovel,
             "footstep" => Self::Footstep,
+            "crit" => Self::Crit,
+            "magicCrit" => Self::MagicCrit,
+            "cloud" => Self::Cloud,
+            "townaura" => Self::Aura,
+            "suspended" => Self::Suspend,
             _ => return None,
         })
     }
@@ -85,11 +95,15 @@ impl Particle {
         math_rand: &mut JavaRandom,
         seed: i64,
     ) -> Self {
+        Self::new_in(kind,pos,velocity,math_rand,seed,&Snapshot::default())
+    }
+    pub fn new_in(kind:Kind, mut pos:[f64;3], velocity:[f64;3], math_rand:&mut JavaRandom,seed:i64,terrain:&Snapshot)->Self {
+        if kind == Kind::Suspend { pos[1]-=0.125; }
         let m = math_rand;
         let mut r = JavaRandom::new(seed);
         let input = if matches!(
             kind,
-            Kind::Smoke
+            Kind::Crit | Kind::MagicCrit | Kind::Cloud | Kind::Smoke
                 | Kind::LargeSmoke
                 | Kind::RedDust
                 | Kind::Note
@@ -152,6 +166,18 @@ impl Particle {
             target: 0,
         };
         match kind {
+            Kind::Crit | Kind::MagicCrit | Kind::Cloud => {
+                for i in 0..3 {p.motion[i]*=0.1f32 as f64;p.motion[i]+=velocity[i]*if kind==Kind::Cloud{1.0}else{0.4};}
+                p.color=[if kind==Kind::Cloud {1.0-(m.next_double()*0.3f32 as f64) as f32} else {(m.next_double()*0.3f32 as f64+0.6f32 as f64) as f32};3];
+                p.scale*=12.0/16.0;p.scale*=if kind==Kind::Cloud {2.5}else{1.0};
+                p.max_age=if kind==Kind::Cloud {(8.0/(m.next_double()*0.8+0.3)) as i32}else{(6.0/(m.next_double()*0.8+0.6)) as i32};
+                if kind==Kind::Cloud {p.max_age=(p.max_age as f32*2.5) as i32;}else{p.texture=65;}
+            }
+            Kind::Aura | Kind::Suspend => {
+                if kind==Kind::Aura {p.color=[p.rand.next_float()*0.1+0.2;3];p.width=0.02;p.height=0.02;p.scale*=p.rand.next_float()*0.6+0.5;for v in &mut p.motion {*v*=0.02f32 as f64;}p.max_age=(20.0/(m.next_double()*0.8+0.2)) as i32;p.no_clip=true;}
+                else {p.color=[0.4,0.4,0.7];p.width=0.01;p.height=0.01;p.scale*=p.rand.next_float()*0.6+0.2;p.motion=velocity.map(|v|v*0.0);p.max_age=(16.0/(m.next_double()*0.8+0.2)) as i32;}
+            }
+
             Kind::Smoke | Kind::LargeSmoke | Kind::SnowShovel => {
                 for i in 0..3 {
                     p.motion[i] *= 0.1f32 as f64;
@@ -278,7 +304,7 @@ impl Particle {
                 p.scale /= 2.0;
             }
             Kind::Digging { block, metadata } => {
-                p.texture = rprops(block).textures[(metadata & 15) as usize][0] as i32;
+                p.texture = if block==2 {2} else {rprops(block).textures[(metadata & 15) as usize][0] as i32};
                 p.gravity = 1.0;
                 p.color = [0.6; 3];
                 p.scale /= 2.0;
@@ -289,6 +315,7 @@ impl Particle {
             Kind::Pickup | Kind::Base => {}
         }
         p.original_scale = p.scale;
+        if matches!(kind,Kind::Crit|Kind::MagicCrit) {p.tick(terrain,m);if kind==Kind::MagicCrit {p.color[0]*=0.3;p.color[1]*=0.8;p.texture+=1;}}
         p
     }
     pub fn layer(&self) -> usize {
@@ -340,6 +367,17 @@ impl Particle {
             self.age += 1;
             return None;
         }
+        if matches!(self.kind,Kind::Aura|Kind::Suspend) {
+            self.on_ground=move_particle(self,terrain);
+            if self.kind==Kind::Aura {for v in &mut self.motion {*v*=0.99;}}else if material(terrain,self.pos)!=worldgen::block::MAT_WATER {self.dead=true;}
+            if self.max_age<=0 {self.dead=true;}self.max_age-=1;return None;
+        }
+        if matches!(self.kind,Kind::Crit|Kind::MagicCrit) {
+            if self.age>=self.max_age {self.dead=true;}self.age+=1;
+            self.on_ground=move_particle(self,terrain);self.color[1]=(self.color[1] as f64*0.96) as f32;self.color[2]=(self.color[2] as f64*0.9) as f32;
+            for v in &mut self.motion {*v*=0.7f32 as f64;}self.motion[1]-=0.02f32 as f64;
+            if self.on_ground {self.motion[0]*=0.7f32 as f64;self.motion[2]*=0.7f32 as f64;}return None;
+        }
         if !matches!(self.kind, Kind::Rain | Kind::Splash | Kind::Bubble) {
             if self.age >= self.max_age {
                 self.dead = true;
@@ -348,7 +386,7 @@ impl Particle {
         }
         if matches!(
             self.kind,
-            Kind::Smoke | Kind::LargeSmoke | Kind::Explode | Kind::RedDust | Kind::SnowShovel
+            Kind::Cloud | Kind::Smoke | Kind::LargeSmoke | Kind::Explode | Kind::RedDust | Kind::SnowShovel
         ) {
             self.texture = 7 - self.age * 8 / self.max_age;
         }
@@ -378,7 +416,7 @@ impl Particle {
             self.motion[2] *= 1.1;
         }
         let friction: f32 = match self.kind {
-            Kind::Smoke | Kind::LargeSmoke | Kind::Flame | Kind::RedDust => 0.96,
+            Kind::Cloud | Kind::Smoke | Kind::LargeSmoke | Kind::Flame | Kind::RedDust => 0.96,
             Kind::Explode => 0.9,
             Kind::Bubble => 0.85,
             Kind::Note => 0.66,
@@ -467,7 +505,7 @@ impl Particle {
         }
         let t = (self.age as f32 + partial) / self.max_age as f32;
         match self.kind {
-            Kind::Smoke
+            Kind::Crit | Kind::MagicCrit | Kind::Cloud | Kind::Smoke
             | Kind::LargeSmoke
             | Kind::RedDust
             | Kind::Note
@@ -486,26 +524,7 @@ impl Particle {
         let pos: [f32; 3] = std::array::from_fn(|i| {
             (self.prev[i] + (self.pos[i] - self.prev[i]) * partial as f64 - cam[i]) as f32
         });
-        let mut bright = terrain.brightness([
-            self.pos[0],
-            self.pos[1] - self.y_offset as f64 + (self.bounds[4] - self.bounds[1]) * 0.66,
-            self.pos[2],
-        ]);
-        match self.kind {
-            Kind::Lava => bright = 1.0,
-            Kind::Flame => {
-                let f = t.clamp(0.0, 1.0);
-                bright = bright * f + (1.0 - f);
-            }
-            Kind::Portal => {
-                let mut f = self.age as f32 / self.max_age as f32;
-                f *= f;
-                f *= f;
-                bright = bright * (1.0 - f) + f;
-            }
-            _ => {}
-        }
-        let color = packed_color(self.color.map(|c| c * bright), 1.0);
+        let color = packed_color(self.color, 1.0);
         let fragment = matches!(
             self.kind,
             Kind::Digging { .. } | Kind::Snowball | Kind::Slime

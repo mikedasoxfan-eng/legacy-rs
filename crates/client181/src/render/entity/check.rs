@@ -52,7 +52,7 @@ pub fn model_check(path: &str) -> bool {
     use ModelKind::*;
     let kinds = [
         Biped, Zombie, Skeleton, Quadruped, Pig, Cow, SheepFur, Sheep, Chicken, Spider, Creeper, SlimeOuter,
-        SlimeInner, Squid, Wolf, Ghast,
+        SlimeInner, Squid, Wolf, Ghast, Enderman, Silverfish, Chest, LargeChest,
     ];
     let mut d = Dump { data: std::fs::read(path).expect("read models dump"), at: 0, checks: 0, bad: 0 };
     assert_eq!(d.u32(), u32::from_le_bytes(*b"M173"), "not a model dump");
@@ -61,7 +61,7 @@ pub fn model_check(path: &str) -> bool {
     assert!(n > 0, "empty model dump");
     let mut current = u32::MAX;
     let mut model = Model::new(Biped);
-    let mut seen = [0usize; 16];
+    let mut seen = [0usize; 20];
     let mut parts = 0;
     for case in 0..n {
         let group = d.u32();
@@ -91,6 +91,7 @@ pub fn model_check(path: &str) -> bool {
             partial,
             &WolfAnimation { angry: flags & 16 != 0, sitting: flags & 32 != 0, interested, shake },
         );
+        model.carrying=flags & 4 != 0; model.screaming=flags & 8 != 0;
         model.set_rotation_angles(pose);
         let np = d.u32() as usize;
         assert_eq!(np, model.parts.len(), "case {case}: part count");
@@ -98,7 +99,7 @@ pub fn model_check(path: &str) -> bool {
         for _ in 0..np {
             let name = d.string();
             let path = format!("case {case} {:?}.{name}", kinds[kind]);
-            let r = model.parts.get(&name).expect("oracle part missing in Rust");
+            let r = model.parts.get(&name).unwrap_or_else(||panic!("case {case} {:?}: missing {name}",kinds[kind]));
             for (f, v) in [
                 ("rotationPointX", r.rotation_point_x),
                 ("rotationPointY", r.rotation_point_y),

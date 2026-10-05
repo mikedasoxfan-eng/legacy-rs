@@ -303,6 +303,7 @@ fn assert_plain(id: u8, hook: &str) {
     let plain = matches!(
         id,
         block::STONE
+            | 97 | 98 // EntitySilverfish: vanilla base block lifecycle hooks.
             | block::FENCE
             | block::STAIRS_WOOD
             | block::STAIRS_COBBLESTONE

@@ -17,12 +17,12 @@ pub struct TexturedQuad {
 }
 
 impl TexturedQuad {
-    fn new(mut vertices: [PositionTextureVertex; 4], u0: i32, v0: i32, u1: i32, v1: i32) -> Self {
+    fn new(mut vertices: [PositionTextureVertex; 4], u0: i32, v0: i32, u1: i32, v1: i32, texture: [f32;2]) -> Self {
         // The 0.1 texel inset is present in Beta; later versions removed it.
-        let u0 = u0 as f32 / 64.0 + 0.0015625;
-        let u1 = u1 as f32 / 64.0 - 0.0015625;
-        let v0 = v0 as f32 / 32.0 + 0.003125;
-        let v1 = v1 as f32 / 32.0 - 0.003125;
+        let u0 = u0 as f32 / texture[0] + 0.1 / texture[0];
+        let u1 = u1 as f32 / texture[0] - 0.1 / texture[0];
+        let v0 = v0 as f32 / texture[1] + 0.1 / texture[1];
+        let v1 = v1 as f32 / texture[1] - 0.1 / texture[1];
         for (v, uv) in vertices.iter_mut().zip([[u1, v0], [u0, v0], [u0, v1], [u1, v1]]) {
             v.uv = uv;
         }
@@ -49,6 +49,7 @@ impl TexturedQuad {
 
 #[derive(Clone, Debug)]
 pub struct ModelRenderer {
+    pub texture_size: [f32;2],
     pub corners: [PositionTextureVertex; 8],
     pub faces: Vec<TexturedQuad>,
     texture_offset: [i32; 2],
@@ -69,6 +70,7 @@ pub struct ModelRenderer {
 impl ModelRenderer {
     pub fn new(u: i32, v: i32) -> Self {
         Self {
+            texture_size: [64.0,32.0],
             corners: [PositionTextureVertex { pos: [0.0; 3], uv: [0.0; 2] }; 8],
             faces: Vec::new(),
             texture_offset: [u, v],
@@ -118,7 +120,7 @@ impl ModelRenderer {
         self.faces = specs
             .into_iter()
             .map(|(idx, u0, v0, u1, v1)| {
-                let mut q = TexturedQuad::new(idx.map(|i| self.corners[i]), u0, v0, u1, v1);
+                let mut q = TexturedQuad::new(idx.map(|i| self.corners[i]), u0, v0, u1, v1, self.texture_size);
                 if self.mirror {
                     q.vertices.reverse();
                 }

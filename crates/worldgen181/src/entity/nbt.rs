@@ -65,7 +65,14 @@ impl Entity {
                 n.put(key, Tag::Short(val as i16));
             }
         }
+        if !self.living.effects.is_empty() && self.kind.is_living() {
+            let effects = self.living.effects.iter().map(|e| { let mut n=Compound::new(); n.put("Id",Tag::Byte(e.id as i8));n.put("Amplifier",Tag::Byte(e.amplifier as i8));n.put("Duration",Tag::Int(e.duration));Tag::Compound(n) }).collect();
+            n.put("ActiveEffects",Tag::List(10,effects));
+        }
         match &self.kind {
+            EntityKind::XPOrb(s) => {n.put("Health",Tag::Short(s.health as i8 as i16));n.put("Age",Tag::Short(s.age as i16));n.put("Value",Tag::Short(s.value as i16));}
+            EntityKind::Enderman(s) => {n.put("carried",Tag::Short(s.carried as i16));n.put("carriedData",Tag::Short(s.carried_data as i16));}
+
             EntityKind::Painting(s) => {
                 n.put("Dir",Tag::Byte(s.direction as i8));n.put("Motive",Tag::String(super::painting::ARTS[s.art].title.into()));
                 for (key,v) in ["TileX","TileY","TileZ"].into_iter().zip(s.tile){n.put(key,Tag::Int(v));}
@@ -194,6 +201,7 @@ impl Entity {
                 e.y_offset = e.height / 2.0;
                 e
             }
+            "XPOrb" => Self::xp_orb_base(w),
             "Arrow" => {
                 let mut e = Self::base(w, EntityKind::Arrow(Default::default()));
                 e.width = 0.5;
@@ -290,7 +298,13 @@ impl Entity {
             self.living.death_time = n.short("DeathTime") as i32;
             self.living.attack_time = n.short("AttackTime") as i32;
         }
+        if n.has("ActiveEffects") {
+            for effect in n.list("ActiveEffects") { if let Tag::Compound(n)=effect {self.add_potion_effect(super::potion::PotionEffect::new(n.byte("Id") as i32,n.int("Duration"),n.byte("Amplifier") as i32));} }
+        }
         match &mut self.kind {
+            EntityKind::XPOrb(s) => {s.health=n.short("Health") as i32 & 255;s.age=n.short("Age") as i32;s.value=n.short("Value") as i32;}
+            EntityKind::Enderman(s) => {s.carried=n.short("carried") as i8;s.carried_data=n.short("carryingData") as i8;}
+
             EntityKind::Minecart(s) => {
                 s.cart_type=n.int("Type");
                 if s.cart_type==2 {

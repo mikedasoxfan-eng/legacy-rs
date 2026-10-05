@@ -24,6 +24,10 @@ pub enum ModelKind {
     Squid,
     Wolf,
     Ghast,
+    Enderman,
+    Silverfish,
+    Chest,
+    LargeChest,
 }
 
 #[derive(Clone, Debug)]
@@ -36,6 +40,8 @@ pub struct Model {
     pub held_left: bool,
     pub held_right: bool,
     pub is_sneak: bool,
+    pub carrying: bool,
+    pub screaming: bool,
 }
 
 impl Index<&str> for Model {
@@ -64,6 +70,8 @@ impl Model {
             held_left: false,
             held_right: false,
             is_sneak: false,
+            carrying: false,
+            screaming: false,
         };
         match kind {
             ModelKind::Biped | ModelKind::Zombie => m.init_biped(inflate, offset),
@@ -72,7 +80,7 @@ impl Model {
                 m.init_skeleton();
             }
             ModelKind::Quadruped => m.init_quadruped(legs, inflate),
-            ModelKind::Pig => m.init_quadruped(6, inflate),
+            ModelKind::Pig => {m.init_quadruped(6, inflate);let mut r=ModelRenderer::new(16,16);r.add_box(-2.0,0.0,-9.0,4,3,1,inflate);r.set_rotation_point(0.0,12.0,-6.0);m.parts.insert("field_35401_a".into(),r);}
             ModelKind::Cow => m.init_cow(),
             ModelKind::SheepFur => m.init_sheep1(),
             ModelKind::Sheep => m.init_sheep2(),
@@ -84,6 +92,9 @@ impl Model {
             ModelKind::Squid => m.init_squid(),
             ModelKind::Wolf => m.init_wolf(),
             ModelKind::Ghast => m.init_ghast(),
+            ModelKind::Enderman => { m.init_biped(0.0, -14.0); m.init_enderman(); }
+            ModelKind::Silverfish => m.init_silverfish(),
+            ModelKind::Chest | ModelKind::LargeChest => m.init_chest(kind == ModelKind::LargeChest),
         }
         m
     }
@@ -91,12 +102,16 @@ impl Model {
     /// `setRotationAngles(limbSwing, limbAmount, age, headYaw, headPitch, scale)`.
     pub fn set_rotation_angles(&mut self, p: [f32; 6]) {
         match self.kind {
+            ModelKind::Enderman => { self.pose_biped(p); self.pose_enderman(); }
+            ModelKind::Silverfish => self.pose_silverfish(p[2]),
+            ModelKind::Chest | ModelKind::LargeChest => {},
             ModelKind::Biped => self.pose_biped(p),
             ModelKind::Zombie | ModelKind::Skeleton => {
                 self.pose_biped(p);
                 self.pose_zombie(p);
+                if self.kind == ModelKind::Skeleton { self.pose_skeleton(p[2]); }
             }
-            ModelKind::Quadruped | ModelKind::Pig | ModelKind::SheepFur | ModelKind::Sheep => self.pose_quadruped(p),
+            ModelKind::Quadruped | ModelKind::Pig | ModelKind::SheepFur | ModelKind::Sheep => { self.pose_quadruped(p); if self.kind==ModelKind::Pig {let h=self["head"].clone();let r=&mut self["field_35401_a"];r.rotation_point_x=h.rotation_point_x;r.rotation_point_y=h.rotation_point_y;r.rotation_point_z=h.rotation_point_z;r.rotate_angle_x=h.rotate_angle_x;r.rotate_angle_y=h.rotate_angle_y;r.rotate_angle_z=h.rotate_angle_z;} },
             ModelKind::Cow => {
                 self.pose_quadruped(p);
                 self.pose_cow(p);
@@ -119,6 +134,120 @@ impl Model {
             }
         }
     }
+    fn init_chest(&mut self, large:bool) {
+        let width=if large{30}else{14};let tex=if large{128.0}else{64.0};
+        for (name,uv,pos,dim,point) in [
+            ("field_35405_a",[0,0],[0.0,-5.0,-14.0],[width,5,14],[1.0,7.0,15.0]),
+            ("field_35404_c",[0,0],[-1.0,-2.0,-15.0],[2,4,1],[if large{16.0}else{8.0},7.0,15.0]),
+            ("field_35403_b",[0,19],[0.0,0.0,0.0],[width,10,14],[1.0,6.0,1.0])
+        ] {let mut r=ModelRenderer::new(uv[0],uv[1]);r.texture_size=[tex,64.0];r.add_box(pos[0],pos[1],pos[2],dim[0],dim[1],dim[2],0.0);r.set_rotation_point(point[0],point[1],point[2]);self.parts.insert(name.into(),r);}
+    }
+    fn init_enderman(&mut self) {
+        for (name,uv,boxpos,dims,point,inflate,mirror) in [
+            ("bipedHeadwear",[0,16],[-4.0,-8.0,-4.0],[8,8,8],[0.0,-14.0,0.0],-0.5,false),
+            ("bipedBody",[32,16],[-4.0,0.0,-2.0],[8,12,4],[0.0,-14.0,0.0],0.0,false),
+            ("bipedRightArm",[56,0],[-1.0,-2.0,-1.0],[2,30,2],[-3.0,-12.0,0.0],0.0,false),
+            ("bipedLeftArm",[56,0],[-1.0,-2.0,-1.0],[2,30,2],[5.0,-12.0,0.0],0.0,true),
+            ("bipedRightLeg",[56,0],[-1.0,0.0,-1.0],[2,30,2],[-2.0,-2.0,0.0],0.0,false),
+            ("bipedLeftLeg",[56,0],[-1.0,0.0,-1.0],[2,30,2],[2.0,-2.0,0.0],0.0,true),
+        ] { let mut r=ModelRenderer::new(uv[0],uv[1]);r.mirror=mirror;r.add_box(boxpos[0],boxpos[1],boxpos[2],dims[0],dims[1],dims[2],inflate);r.set_rotation_point(point[0],point[1],point[2]);self.parts.insert(name.into(),r); }
+    }
+    fn pose_enderman(&mut self) {
+		self["bipedHead"].show_model = true;
+		let var7: f32 = -14.0f32;
+		self["bipedBody"].rotate_angle_x = 0.0f32;
+		self["bipedBody"].rotation_point_y = var7;
+		self["bipedBody"].rotation_point_z = -0.0f32;
+		self["bipedRightLeg"].rotate_angle_x -= 0.0f32;
+		self["bipedLeftLeg"].rotate_angle_x -= 0.0f32;
+		self["bipedRightArm"].rotate_angle_x = (self["bipedRightArm"].rotate_angle_x as f64 * 0.5f64) as f32;
+		self["bipedLeftArm"].rotate_angle_x = (self["bipedLeftArm"].rotate_angle_x as f64 * 0.5f64) as f32;
+		self["bipedRightLeg"].rotate_angle_x = (self["bipedRightLeg"].rotate_angle_x as f64 * 0.5f64) as f32;
+		self["bipedLeftLeg"].rotate_angle_x = (self["bipedLeftLeg"].rotate_angle_x as f64 * 0.5f64) as f32;
+		let var8: f32 = 0.4f32;
+		if self["bipedRightArm"].rotate_angle_x > var8 {
+			self["bipedRightArm"].rotate_angle_x = var8;
+		}
+
+		if self["bipedLeftArm"].rotate_angle_x > var8 {
+			self["bipedLeftArm"].rotate_angle_x = var8;
+		}
+
+		if self["bipedRightArm"].rotate_angle_x < -var8 {
+			self["bipedRightArm"].rotate_angle_x = -var8;
+		}
+
+		if self["bipedLeftArm"].rotate_angle_x < -var8 {
+			self["bipedLeftArm"].rotate_angle_x = -var8;
+		}
+
+		if self["bipedRightLeg"].rotate_angle_x > var8 {
+			self["bipedRightLeg"].rotate_angle_x = var8;
+		}
+
+		if self["bipedLeftLeg"].rotate_angle_x > var8 {
+			self["bipedLeftLeg"].rotate_angle_x = var8;
+		}
+
+		if self["bipedRightLeg"].rotate_angle_x < -var8 {
+			self["bipedRightLeg"].rotate_angle_x = -var8;
+		}
+
+		if self["bipedLeftLeg"].rotate_angle_x < -var8 {
+			self["bipedLeftLeg"].rotate_angle_x = -var8;
+		}
+
+		if self.carrying {
+			self["bipedRightArm"].rotate_angle_x = -0.5f32;
+			self["bipedLeftArm"].rotate_angle_x = -0.5f32;
+			self["bipedRightArm"].rotate_angle_z = 0.05f32;
+			self["bipedLeftArm"].rotate_angle_z = -0.05f32;
+		}
+
+		self["bipedRightArm"].rotation_point_z = 0.0f32;
+		self["bipedLeftArm"].rotation_point_z = 0.0f32;
+		self["bipedRightLeg"].rotation_point_z = 0.0f32;
+		self["bipedLeftLeg"].rotation_point_z = 0.0f32;
+		self["bipedRightLeg"].rotation_point_y = 9.0f32 + var7;
+		self["bipedLeftLeg"].rotation_point_y = 9.0f32 + var7;
+		self["bipedHead"].rotation_point_z = -0.0f32;
+		self["bipedHead"].rotation_point_y = var7 + 1.0f32;
+		self["bipedHeadwear"].rotation_point_x = self["bipedHead"].rotation_point_x;
+		self["bipedHeadwear"].rotation_point_y = self["bipedHead"].rotation_point_y;
+		self["bipedHeadwear"].rotation_point_z = self["bipedHead"].rotation_point_z;
+		self["bipedHeadwear"].rotate_angle_x = self["bipedHead"].rotate_angle_x;
+		self["bipedHeadwear"].rotate_angle_y = self["bipedHead"].rotate_angle_y;
+		self["bipedHeadwear"].rotate_angle_z = self["bipedHead"].rotate_angle_z;
+		if self.screaming {
+			let var9: f32 = 1.0f32;
+			self["bipedHead"].rotation_point_y -= var9 * 5.0f32;
+		}
+
+    }
+    fn init_silverfish(&mut self) {
+        let sizes=[[3,2,2],[4,3,2],[6,4,3],[3,3,3],[2,2,3],[2,1,2],[1,1,2]];
+        let uv=[[0,0],[0,4],[0,9],[0,16],[0,22],[11,0],[13,4]];
+        let mut z=-3.5f32; let mut zs=[0.0;7];
+        for i in 0..7 { let [x,y,d]=sizes[i];let mut r=ModelRenderer::new(uv[i][0],uv[i][1]);r.add_box(x as f32 * -0.5,0.0,d as f32 * -0.5,x,y,d,0.0);r.set_rotation_point(0.0,(24-y) as f32,z);self.parts.insert(format!("field_35400_a[{i}]"),r);zs[i]=z;if i<6 {z+=(d+sizes[i+1][2]) as f32*0.5;} }
+        for (i,uv,x,y,d,z) in [(0,[20,0],10,8,3,zs[2]),(1,[20,11],6,4,3,zs[4]),(2,[20,18],6,5,2,zs[1])] {let mut r=ModelRenderer::new(uv[0],uv[1]);r.add_box(x as f32 * -0.5,0.0,-1.5,x,y,d,0.0);r.set_rotation_point(0.0,(24-y) as f32,z);self.parts.insert(format!("field_35398_b[{i}]"),r);}
+    }
+    fn pose_silverfish(&mut self,age:f32) {
+        for i in 0i32..7 {let r=self.parts.get_mut(&format!("field_35400_a[{i}]")).unwrap();r.rotate_angle_y=math::cos(age*0.9+i as f32*0.15*PI_F32)*PI_F32*0.05*(1+(i-2).abs()) as f32;r.rotation_point_x=math::sin(age*0.9+i as f32*0.15*PI_F32)*PI_F32*0.2*(i-2).abs() as f32;}
+        for (i,src) in [(0,2),(1,4),(2,1)] {let r=self.parts[&format!("field_35400_a[{src}]")].clone();let wing=self.parts.get_mut(&format!("field_35398_b[{i}]")).unwrap();wing.rotate_angle_y=r.rotate_angle_y;if i>0 {wing.rotation_point_x=r.rotation_point_x;}}
+    }
+    fn pose_skeleton(&mut self, age:f32) {
+        self["bipedRightArm"].rotate_angle_z=0.0;
+        self["bipedLeftArm"].rotate_angle_z=0.0;
+        self["bipedRightArm"].rotate_angle_y=-0.1+self["bipedHead"].rotate_angle_y;
+        self["bipedLeftArm"].rotate_angle_y=0.1+self["bipedHead"].rotate_angle_y+0.4;
+        self["bipedRightArm"].rotate_angle_x=PI_F32 * -0.5+self["bipedHead"].rotate_angle_x;
+        self["bipedLeftArm"].rotate_angle_x=PI_F32 * -0.5+self["bipedHead"].rotate_angle_x;
+        self["bipedRightArm"].rotate_angle_z+=math::cos(age*0.09)*0.05+0.05;
+        self["bipedLeftArm"].rotate_angle_z-=math::cos(age*0.09)*0.05+0.05;
+        self["bipedRightArm"].rotate_angle_x+=math::sin(age*0.067)*0.05;
+        self["bipedLeftArm"].rotate_angle_x-=math::sin(age*0.067)*0.05;
+    }
+
     fn init_ghast(&mut self) {
         let mut body = ModelRenderer::new(0, 0);
         body.add_box(-8.0, -8.0, -8.0, 16, 16, 16, 0.0);
@@ -737,7 +866,7 @@ impl Model {
     /// Original model draw order (ears/cloak and creeper headwear are not body parts).
     pub fn render_parts(&self) -> Vec<(&ModelRenderer, bool)> {
         let names: &[(&str, bool)] = match self.kind {
-            ModelKind::Biped | ModelKind::Zombie | ModelKind::Skeleton => &[
+            ModelKind::Biped | ModelKind::Zombie | ModelKind::Skeleton | ModelKind::Enderman => &[
                 ("bipedHead", false),
                 ("bipedBody", false),
                 ("bipedRightArm", false),
@@ -791,9 +920,11 @@ impl Model {
                 ("wolfTail", true),
                 ("wolfMane", false),
             ],
-            ModelKind::Squid | ModelKind::Ghast => &[],
+            ModelKind::Chest | ModelKind::LargeChest => &[("field_35405_a",false),("field_35404_c",false),("field_35403_b",false)],
+            ModelKind::Squid | ModelKind::Ghast | ModelKind::Silverfish => &[],
         };
         let mut parts: Vec<_> = names.iter().filter_map(|(n, r)| self.parts.get(*n).map(|p| (p, *r))).collect();
+        if self.kind == ModelKind::Pig {parts.push((&self["field_35401_a"],false));}
         if self.kind == ModelKind::Cow {
             for name in ["horn1", "horn2", "udders"] {
                 parts.push((&self[name], false));
@@ -808,6 +939,10 @@ impl Model {
         if self.kind == ModelKind::Ghast {
             parts.push((&self["body"], false));
             for i in 0..9 { parts.push((&self.parts[&format!("tentacles[{i}]")], false)); }
+        }
+        if self.kind == ModelKind::Silverfish {
+            for i in 0..7 { parts.push((&self.parts[&format!("field_35400_a[{i}]")],false)); }
+            for i in 0..3 { parts.push((&self.parts[&format!("field_35398_b[{i}]")],false)); }
         }
         parts
     }

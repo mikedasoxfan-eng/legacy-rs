@@ -135,9 +135,9 @@ impl Entity {
                     }
                     handled = true;
                 }
-            } else if held.is_some_and(|s| matches!(s.id, 319 | 320)) && s.watched_health < 20 {
+            } else if held.is_some_and(|s| matches!(s.id, 319 | 320 | 363 | 364 | 365 | 366 | 367)) && s.watched_health < 20 {
                 self.consume_held();
-                target.heal(3);
+                target.heal(match held.unwrap().id {320|364=>8,366=>6,367=>4,365=>2,_=>3});
                 handled = true;
             } else if s
                 .owner

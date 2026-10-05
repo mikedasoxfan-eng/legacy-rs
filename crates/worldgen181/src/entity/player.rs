@@ -86,6 +86,11 @@ pub enum SleepStatus {
 }
 #[derive(Clone, Debug)]
 pub struct PlayerState {
+    pub food_exhaustion: f32,
+    pub experience: i32,
+    pub experience_level: i32,
+    pub total_experience: i32,
+    pub xp_pickup_cooldown: i32,
     pub fish_entity:Option<i32>,
     pub left_click_counter: i32,
     pub last_click_tick: i32,
@@ -123,6 +128,11 @@ pub struct PlayerState {
 impl Default for PlayerState {
     fn default() -> Self {
         Self {
+            food_exhaustion: 0.0,
+            experience: 0,
+            experience_level: 0,
+            total_experience: 0,
+            xp_pickup_cooldown: 0,
             fish_entity:None,
             left_click_counter: 0,
             last_click_tick: 0,
@@ -439,6 +449,7 @@ impl Entity {
                 }
             }
         }
+        if matches!(e.kind,EntityKind::XPOrb(..)) {e.pickup_xp_orb(w,self);return;}
         let mut pickup = None;
         if let EntityKind::Item {
             item, pickup_delay, ..
@@ -489,6 +500,7 @@ impl Entity {
     }
     pub(super) fn update_player(&mut self, w: &mut World) {
         let s = self.player_state_mut().unwrap();
+        if s.xp_pickup_cooldown>0 {s.xp_pickup_cooldown-=1;}
         if s.sleeping {
             s.sleep_timer = (s.sleep_timer + 1).min(100);
         } else if s.sleep_timer > 0 {
@@ -575,7 +587,10 @@ impl Entity {
         }
         *damage != 0
     }
-    pub(super) fn damage_living(&mut self, mut amount: i32) {
+    pub(super) fn damage_living_from(&mut self, source: super::damage::DamageSource, mut amount: i32) {
+        if source.bypasses_armor() { self.living.health -= amount; return; }
+        if let Some(s) = self.player_state_mut() { s.food_exhaustion = (s.food_exhaustion + source.exhaustion()).min(40.0); }
+
         if let Some(s) = self.player_state_mut() {
             let damage = amount * (25 - s.inventory.armor_value()) + s.damage_remainder;
             let broken = s.inventory.damage_armor(amount);

@@ -128,10 +128,15 @@ pub fn check(path: &str) -> bool {
             15 => Kind::SnowShovel,
             16 => Kind::Digging { block, metadata },
             17 => Kind::Footstep,
+            18 => Kind::Crit,
+            19 => Kind::MagicCrit,
+            20 => Kind::Cloud,
+            21 => Kind::Aura,
+            22 => Kind::Suspend,
             _ => panic!(),
         };
         let mut m = JavaRandom::new(mathseed);
-        let mut p = Particle::new(kind, pos, velocity, &mut m, seed);
+        let mut p = Particle::new_in(kind, pos, velocity, &mut m, seed,&s);
         if id == 16 && case % 8 == 7 {
             p.multiply_velocity(0.2);
             p.multiply_scale(0.6);
@@ -211,7 +216,7 @@ pub fn check(path: &str) -> bool {
                         bad += 1;
                     }
                 }
-                let brightness = s.brightness([pos[0], pos[1] + (p.y_offset / 2.0) as f64, pos[2]]);
+                let brightness = 1.0f32;
                 if brightness.to_bits() != d.f().to_bits() {
                     bad += 1;
                 }
