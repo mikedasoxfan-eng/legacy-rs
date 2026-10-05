@@ -27,7 +27,7 @@ pub struct Lightning {
 }
 
 pub fn snows(b: Biome) -> bool {
-    matches!(b, Biome::Taiga | Biome::IceDesert | Biome::Tundra)
+    b.enable_snow()
 }
 pub fn rains(b: Biome) -> bool {
     !snows(b) && !matches!(b, Biome::Desert | Biome::Hell | Biome::Sky)

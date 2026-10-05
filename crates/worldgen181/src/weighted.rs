@@ -20,3 +20,9 @@ pub fn creatures(b:crate::Biome)->Vec<SpawnListEntry> {
     let mut entries=vec![SpawnListEntry{entity:"Sheep",weight:12,min:4,max:4},SpawnListEntry{entity:"Pig",weight:10,min:4,max:4},SpawnListEntry{entity:"Chicken",weight:10,min:4,max:4},SpawnListEntry{entity:"Cow",weight:8,min:4,max:4}];
     if matches!(b,Forest|Taiga) {entries.push(SpawnListEntry{entity:"Wolf",weight:if b==Forest{5}else{8},min:4,max:4});}entries
 }
+pub fn monsters(b:crate::Biome)->Vec<SpawnListEntry> {
+    if b==crate::Biome::Sky {return vec![];}
+    let entries=if b==crate::Biome::Hell {vec![("Ghast",10),("PigZombie",10)]}else{vec![("Spider",10),("Zombie",10),("Skeleton",10),("Creeper",10),("Slime",10),("Enderman",2)]};
+    entries.into_iter().map(|(entity,weight)|SpawnListEntry{entity,weight,min:4,max:4}).collect()
+}
+pub fn water_creatures(b:crate::Biome)->Vec<SpawnListEntry> {if matches!(b,crate::Biome::Hell|crate::Biome::Sky) {vec![]}else{vec![SpawnListEntry{entity:"Squid",weight:10,min:4,max:4}]}}

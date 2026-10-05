@@ -21,6 +21,10 @@ public final class Mode_terrain {
                 World world=Oracle.newWorld(seed);
                 ChunkProviderGenerate gen=new ChunkProviderGenerate(world,seed,false);
                 for(int cx=x;cx<x+w;cx++) for(int cz=z;cz<z+h;cz++) out.write(gen.provideChunk(cx,cz).blocks);
+            } else if(mode.equals("sky")) {
+                World world=Oracle.newWorld(seed);world.worldProvider.worldChunkMgr=new WorldChunkManagerHell(BiomeGenBase.sky,0.5F,0.0F);
+                ChunkProviderSky gen=new ChunkProviderSky(world,seed);
+                for(int cx=x;cx<x+w;cx++)for(int cz=z;cz<z+h;cz++)out.write(gen.provideChunk(cx,cz).blocks);
             } else throw new IllegalArgumentException(mode);
         }
     }

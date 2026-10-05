@@ -11,7 +11,13 @@ impl Biome {
     pub fn filler_block(self)->u8 { if self==Self::Desert {block::SAND} else {block::DIRT} }
     pub fn name(self)->&'static str { match self {Self::Ocean=>"Ocean",Self::Plains=>"Plains",Self::Desert=>"Desert",Self::ExtremeHills=>"Extreme Hills",Self::Forest=>"Forest",Self::Taiga=>"Taiga",Self::Swampland=>"Swampland",Self::River=>"River",Self::Hell=>"Hell",Self::Sky=>"Sky"} }
     pub fn heights(self)->(f32,f32) { match self {Self::Ocean=>(-1.0,0.5),Self::Desert=>(0.1,0.2),Self::ExtremeHills=>(0.2,1.8),Self::Taiga=>(0.1,0.4),Self::Swampland=>(-0.2,0.1),Self::River=>(-0.5,0.0),_=>(0.1,0.3)} }
-    pub fn temperature(self)->f32 { genlayer::climate(self as i32,true) as f32/65536.0 }
+    pub fn climate(self)->(f32,f32) {match self {Self::Plains=>(0.8,0.4),Self::Desert=>(2.0,0.0),Self::ExtremeHills=>(0.2,0.3),Self::Forest=>(0.7,0.8),Self::Taiga=>(0.3,0.8),Self::Swampland=>(0.8,0.9),_=>(0.5,0.5)}}
+    pub fn temperature(self)->f32 {self.climate().0}
+    pub fn rainfall(self)->f32 {self.climate().1}
+    pub fn color(self)->i32 {[112,9286496,16421912,6316128,353825,747097,522674,255,16711680,8421631][self as usize]}
+    pub fn foliage_color(self)->i32 {match self {Self::Forest|Self::Taiga=>5159473,Self::Swampland=>9154376,_=>5169201}}
+    pub fn enable_snow(self)->bool {false}
+    pub fn enable_rain(self)->bool {!matches!(self,Self::Desert|Self::Hell|Self::Sky)}
     // Compatibility names for the still-unported weather/population callers.
     #[allow(non_upper_case_globals)] pub const Rainforest:Self=Self::Swampland;
     #[allow(non_upper_case_globals)] pub const SeasonalForest:Self=Self::Forest;
@@ -23,11 +29,17 @@ pub struct BiomeSource {
     layers:[Arc<Layer>;4],
     pub temperature:Vec<f64>,
     pub humidity:Vec<f64>,
-    cache:Mutex<HashMap<(i32,i32),CacheBlock>>,
+    cache:Mutex<Cache>,
 }
-struct CacheBlock {biomes:Vec<Biome>,temperature:Vec<f64>,rainfall:Vec<f64>}
+#[derive(Default)]
+struct Cache {blocks:HashMap<(i32,i32),CacheBlock>,last_cleanup:i64}
+struct CacheBlock {biomes:Vec<Biome>,temperature:Vec<f64>,rainfall:Vec<f64>,last_access:i64}
+fn now_ms()->i64 {std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_millis() as i64}
+impl Cache {
+    fn block<'a>(&'a mut self,source:&BiomeSource,x:i32,z:i32)->&'a mut CacheBlock {let b=self.blocks.entry((x>>4,z>>4)).or_insert_with(||source.cache_block((x>>4)<<4,(z>>4)<<4));b.last_access=now_ms();b}
+}
 impl BiomeSource {
-    pub fn new(seed:i64)->Self { Self{fixed:None,layers:genlayer::stack(seed),temperature:Vec::new(),humidity:Vec::new(),cache:Mutex::new(HashMap::new())} }
+    pub fn new(seed:i64)->Self { Self{fixed:None,layers:genlayer::stack(seed),temperature:Vec::new(),humidity:Vec::new(),cache:Mutex::new(Cache::default())} }
     pub fn hell()->Self {let mut s=Self::new(0);s.fixed=Some(Biome::Hell);s}
     pub fn sky()->Self {let mut s=Self::new(0);s.fixed=Some(Biome::Sky);s}
     /// Coarse biome map for density blending (`func_35557_b`).
@@ -39,7 +51,7 @@ impl BiomeSource {
     pub fn biomes(&mut self,out:&mut Vec<Biome>,x:i32,z:i32,w:i32,h:i32) {
         if w==16&&h==16&&x&15==0&&z&15==0&&self.fixed.is_none() {
             let mut cache=self.cache.lock().unwrap();
-            let b=cache.entry((x>>4,z>>4)).or_insert_with(||self.cache_block(x,z));
+            let b=cache.block(self,x,z);
             *out=b.biomes.clone();self.temperature=b.temperature.clone();self.humidity=b.rainfall.clone();
         } else {
             *out=self.map(1,x,z,w,h);
@@ -51,25 +63,33 @@ impl BiomeSource {
         let temperature=self.climate_values(true,x,z,16,16);
         let rainfall=self.climate_values(false,x,z,16,16);
         let biomes=self.map(1,x,z,16,16);
-        CacheBlock{biomes,temperature,rainfall}
+        CacheBlock{biomes,temperature,rainfall,last_access:0}
     }
     pub fn biome_at(&mut self,x:i32,z:i32)->Biome {
         if let Some(b)=self.fixed {return b;}
-        self.cache.lock().unwrap().entry((x>>4,z>>4)).or_insert_with(||self.cache_block((x>>4)<<4,(z>>4)<<4)).biomes[((x&15)+(z&15)*16) as usize]
+        self.cache.lock().unwrap().block(self,x,z).biomes[((x&15)+(z&15)*16) as usize]
     }
     pub fn block_biomes(&self,x:i32,z:i32,w:i32,h:i32)->Vec<Biome> {
         if self.fixed.is_none()&&w==16&&h==16&&x&15==0&&z&15==0 {
-            self.cache.lock().unwrap().entry((x>>4,z>>4)).or_insert_with(||self.cache_block(x,z)).biomes.clone()
+            self.cache.lock().unwrap().block(self,x,z).biomes.clone()
         } else {self.map(1,x,z,w,h)}
     }
     fn climate_values(&self,temp:bool,x:i32,z:i32,w:i32,h:i32)->Vec<f64> {
-        if self.fixed.is_some() {return vec![if temp {1.0} else {0.0};(w*h) as usize];}
+        if let Some(b)=self.fixed {return vec![if temp {if b==Biome::Sky {0.5}else{1.0}} else {0.0};(w*h) as usize];}
         self.layers[if temp {2} else {3}].get(x,z,w,h).into_iter().take((w*h) as usize).map(|v| (v as f32/65536.0).min(1.0) as f64).collect()
     }
     pub fn raw_temperature(&self,x:i32,z:i32)->f64 {
-        if self.fixed.is_some() {return 1.0;}
-        self.cache.lock().unwrap().entry((x>>4,z>>4)).or_insert_with(||self.cache_block((x>>4)<<4,(z>>4)<<4)).temperature[((x&15)+(z&15)*16) as usize]
+        if let Some(b)=self.fixed {return if b==Biome::Sky {0.5}else{1.0};}
+        self.cache.lock().unwrap().block(self,x,z).temperature[((x&15)+(z&15)*16) as usize]
     }
+    pub fn raw_rainfall(&self,x:i32,z:i32)->f64 {if self.fixed.is_some(){0.0}else{self.cache.lock().unwrap().block(self,x,z).rainfall[((x&15)+(z&15)*16) as usize]}}
+    pub fn cleanup_cache(&self) {self.cleanup_cache_at(now_ms());}
+    pub fn cleanup_cache_at(&self,now:i64) {
+        let mut cache=self.cache.lock().unwrap();let elapsed=now.wrapping_sub(cache.last_cleanup);
+        if elapsed>7500||elapsed<0 {cache.last_cleanup=now;cache.blocks.retain(|_,b|{let age=now.wrapping_sub(b.last_access);(0..=30000).contains(&age)});}
+    }
+    pub(crate) fn cache_snapshot(&self)->Vec<(i32,i32)> {let mut keys:Vec<_>=self.cache.lock().unwrap().blocks.keys().copied().collect();keys.sort();keys}
+    pub(crate) fn cache_fixture_times(&self,last:i64,entries:&[((i32,i32),i64)]) {let mut c=self.cache.lock().unwrap();c.last_cleanup=last;for (key,time) in entries {c.blocks.get_mut(key).unwrap().last_access=*time;}}
     pub fn temperatures(&mut self,out:&mut Vec<f64>,x:i32,z:i32,w:i32,h:i32) {*out=self.climate_values(true,x,z,w,h);}
     pub fn rainfalls(&self,x:i32,z:i32,w:i32,h:i32)->Vec<f64> {self.climate_values(false,x,z,w,h)}
     pub fn viable(&self,x:i32,z:i32,r:i32,allowed:&[Biome])->bool {
@@ -80,6 +100,7 @@ impl BiomeSource {
     }
     /// Vanilla increments the reservoir count only when it replaces the selected position.
     pub fn find_position(&self,x:i32,z:i32,r:i32,allowed:&[Biome],rand:&mut JavaRandom)->Option<(i32,i32)> {
+        if let Some(b)=self.fixed {return if allowed.contains(&b) {Some((x-r+rand.next_int(r*2+1),z-r+rand.next_int(r*2+1)))}else{None};}
         let (x0,z0,x1,z1)=((x-r)>>2,(z-r)>>2,(x+r)>>2,(z+r)>>2);
         let w=x1-x0+1;let h=z1-z0+1;
         let values=if let Some(b)=self.fixed {vec![b as i32; (w*h) as usize]} else {self.layers[0].get_without_reset(x0,z0,w,h)};let mut found=None;let mut count=0;

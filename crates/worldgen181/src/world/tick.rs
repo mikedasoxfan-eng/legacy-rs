@@ -11,16 +11,12 @@ pub use super::java_hash::JavaHashSet;
 
 /// `BiomeGenBase.getEnableSnow`
 fn biome_snows(b: Biome) -> bool {
-    matches!(b, Biome::Taiga | Biome::IceDesert | Biome::Tundra)
+    b.enable_snow()
 }
 
 /// `BiomeGenBase.canSpawnLightningBolt`: rain falls (not snow).
 fn biome_rains(b: Biome) -> bool {
-    !biome_snows(b)
-        && !matches!(
-            b,
-            Biome::Desert | Biome::IceDesert | Biome::Hell | Biome::Sky
-        )
+    !b.enable_snow() && b.enable_rain()
 }
 
 /// `WorldProvider.calculateCelestialAngle`

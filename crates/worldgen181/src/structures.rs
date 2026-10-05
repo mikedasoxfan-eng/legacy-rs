@@ -1,4 +1,25 @@
 //! Literal inclusive bounding-box operations from `StructureBoundingBox`.
+use crate::{JavaRandom,weighted::Weighted};
+#[derive(Clone,Copy,Debug,PartialEq,Eq)]
+pub struct ChunkCoordIntPair {pub x:i32,pub z:i32}
+impl ChunkCoordIntPair {pub fn packed(self)->i64 {((self.x as u32 as u64)|((self.z as u32 as u64)<<32)) as i64}pub fn java_hash(self)->i32 {self.x^self.z}}
+#[derive(Clone,Copy,Debug)]
+pub struct StructurePieceTreasure {pub item:i32,pub metadata:i32,pub min:i32,pub max:i32,pub weight:i32}
+impl Weighted for StructurePieceTreasure {fn weight(&self)->i32 {self.weight}}
+#[derive(Clone,Copy,Debug,Default)]
+pub struct PieceWeight {pub weight:i32,pub spawned:i32,pub limit:i32}
+impl PieceWeight {pub fn can_spawn(self,_depth:i32)->bool {self.limit==0||self.spawned<self.limit}pub fn can_spawn_library(self,depth:i32)->bool {self.can_spawn(depth)&&depth>4}}
+#[derive(Clone,Copy,Debug,PartialEq,Eq)]
+#[repr(i32)]
+pub enum Door {Opening,WoodDoor,Grates,IronDoor}
+impl Door {pub fn switch_index(self)->i32 {self as i32+1}}
+#[derive(Clone,Copy,Debug,Default)]
+pub struct BlockSelector {pub block:i32,pub metadata:i32}
+impl BlockSelector {
+ pub fn stronghold_stone(&mut self,r:&mut JavaRandom,_x:i32,_y:i32,_z:i32,wall:bool) {
+  if !wall {self.block=0;self.metadata=0;}else{self.block=98;let f=r.next_float();if f<0.2{self.metadata=2;}else if f<0.5{self.metadata=1;}else if f<0.55{self.block=97;self.metadata=2;}else{self.metadata=0;}}
+ }
+}
 #[derive(Clone,Copy,Debug,PartialEq,Eq,Default)]
 pub struct BoundingBox {pub min_x:i32,pub min_y:i32,pub min_z:i32,pub max_x:i32,pub max_y:i32,pub max_z:i32}
 impl BoundingBox {
