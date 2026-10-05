@@ -1,3 +1,68 @@
+# Beta 1.8.1 entities - round 10 report
+
+Round 10 completes **Item (base class) and EntityList** with independent original-bytecode checks. ItemBlock's complete class dispatch is also ported, connected to live placement and EXACT at its API boundary, but is **not counted Done** under the task's strict full-class rule: its broad concrete dependency replay still reaches an unported world-owned sponge callback. Three of the five starting backlog classes remain Not done. This table supersedes the preserved reports below. The requested backlog is **not entirely finished**.
+
+## Changes and original-bytecode proof
+
+`tools/verify_entities10_181.sh --built` adds three independent Mode classes executing the original Beta 1.8.1 bytecode on Mojang Java 8u51. One new final delimited entities block in `tools/verify181.sh` invokes it. No existing Java recorder/fixture or existing verify section was rewritten.
+
+| Check | Coverage | Result |
+|---|---|---|
+| itembase10 | Original Item constructor bounds, shifted-index overflow, conflict/replacement and retained aliases; complete field/default/getter/setter audit, fluent edits, signed icon arithmetic, subtype/damage independence, null/self/other containers and failed edits; every inherited base lifecycle callback with nullable stacks and signed values; same-reference return and preserved stack fields; final virtual icon delegation and nullable virtual name/translation-key forwarding | EXACT, 42,739 bytes |
+| itemblock10 | Actual ItemBlock constructors, retained registration on failed texture callback, stored ID and both names; 92,160 original onItemUse calls with all sides, snow/vine/air, height and integer boundaries, null stack/player/world, permission mutation, metadata override, allowed-but-failed set, block replacement during metadata/set/onPlaced and null replacement before onPlacedBy, independently captured sound block, getter order and every injected callback failure | EXACT, 8,984,772 bytes |
+| entitylist10 | All 28 registrations and four unsupported/null names through numeric/name/NBT creation; normal and null Java World arguments; 4,224 cases covering constructor RNG/IDs, null/missing/malformed IDs, 43 wrong-type fields, absent/short/wrong/extra list entries, NaN/infinite motion, signed/unknown item IDs, subclass reads/effects, nullable dropped-item stacks and painting art, minecart cargo and exact-class/null ID/name lookups | EXACT, 895,509 bytes |
+
+Item's base API now preserves editable object/container aliases and the original 32,000-entry constructor array behavior. The existing immutable registered-item tables and subclass callbacks remain the production defaults; the existing action and placed-metadata fallback paths delegate to the base implementation. Existing food, weapon, seed, map, renderer and player APIs retain their earlier ports. This does not introduce a second inventory/ItemStack identity system or change player tick/use/GUI code.
+
+ItemBlock uses one ordered dispatch through a borrowed context. Live `place_block_item` invokes it using the existing collision, placement, combined block-callback and sound APIs. Coordinate offsets now wrap as Java ints. The class facade preserves the stored placement block separately from stack ID, dynamically reloads the block registry between callbacks, retains the pre-set block for sound and propagates dependency errors before decrementing the stack. The fixture uses virtual dependencies to observe original ItemBlock bytecode; its probes are not installed in the production world. The existing production combined block-placement helper is retained.
+
+EntityList supplies nullable-name creation, checked NBT creation and typed nullable/exact-class lookup results. Malformed NBT reads throw their original exception classes at the class boundary, after constructor allocation/RNG draws. The existing Option storage-loading adapter keeps its interface. The entity reader now ignores unused extra list entries, loads effects only for living classes, preserves dead dropped entities when their ItemStack lookup returns null and loads unknown minecart cargo as null. `Entity.dropped_stack_present` and `PaintingState.art_initialized` represent original nullable constructor fields without changing ItemStack/inventory representation or existing art indices. Both have nullable accessors. All registered World-only constructor chains were audited: none dereferences the argument, so Rust's World parameter supplies constructor RNG/IDs while subsequent simulation APIs continue receiving their World explicitly. Original unknown numeric/NBT skipping messages are retained; Java stack-trace formatting is not a Rust API contract.
+
+`docs/entities181-round10-audit.md` maps each completed method and dependency to its port and check. Raw version diffs for all five starting backlog classes are `target/entities10-<Class>.diff`.
+
+## Per-class status
+
+| Class | Status | Proof or remaining gap |
+|---|---|---|
+| Item | Done at base-class/API boundary | Full source diff audit; itembase10 EXACT; unchanged registered defaults/subclasses retain registry, actions, item, metadata, renderer and map proofs. No claim of completing ItemStack or other owners' code. |
+| EntityList | Done | Full source diff and registered-constructor-chain audit; entitylist10 EXACT for concrete normal/null constructors, NBT failure boundaries and nullable/exact-class lookups; retained registry/factorybranches proofs. |
+| ItemBlock | Not done (class dispatch EXACT) | Constructor/names/entire onItemUse dispatch is ported and live placement uses it. itemblock10 EXACT plus retained placement checks. Broad sponge and malformed moving-piston world dependencies remain unclaimed. This class is not included in the round's completed-class count. |
+| SpawnerAnimals | Not done | Prior population/sleep/real-identity-input proofs retained. Integrator-owned live terrain population and allocation-dependent broad spawning integration remain. No partial spawn edits made. |
+| ItemStack | Not done | Complete alias mutation, exceptional load/delegation and player integration audit remain. Player-owned ItemStack/inventory representation and identity code are untouched. |
+| EffectRenderer | Done, retained | Round-8 dispatch and earlier particle/factory/lifecycle/emitter proofs. |
+| RenderManager | Done, retained | Round-9 class/cache/camera/dispatch and real shadow/sprite proofs. |
+| TileEntityRenderer | Done at class/API boundary, retained | Round-9 class/null/cache/context/dispatch proof. Integrator live tile loops unchanged. |
+| TileEntitySpecialRenderer | Done, retained | Round-9 nullable resources/binding/font proof and chest integration. |
+| ItemMap | Done, retained | Round-8 lookup/update/creation plus earlier map/storage/registry proofs. |
+| ItemBed | Done, retained | Round-7 beditem7. |
+| ItemSign | Done, retained | Round-7 signitem7. |
+| ItemSlab | Done, retained | Round-7 metadata7 and metaplace7. |
+| ItemCloth | Done, retained | Round-7 metadata7 and metaplace7. |
+| ItemLeaves | Done, retained | Round-7 metadata7 and metaplace7. |
+| ItemLog | Done, retained | Round-7 metadata7/metaplace7 and logconstructor7. |
+| ItemVine | Done, retained | Round-7 metadata7/metaplace7 and vineconstructor7. |
+| ItemBucket | Done, retained | Round-7 buckethit7 and bucketray7. |
+
+All other previously Done class statuses are retained. Multiplayer synchronization/interpolation, labels, ears and capes remain outside the singleplayer task.
+
+## Validation and handoff
+
+The required `cargo build --release -p worldgen181 -p client` passed on the final nullable-state source (`target/entities10-final-build2.log`, 55.41s). The three new focused checks all passed (`target/entities10-final-verify_entities10_181.sh.log`), ending `ENTITIES10 ALL FOCUSED CASES EXACT`. EntityList passed again after explicit dropped-stack null state was added (`target/entities10-nullable-final.log`).
+
+All ten scripts in the combined validation run returned exit status 0: `verify_entities10_181.sh`, `verify_entities181.sh`, `verify_entities3_181.sh`, `verify_entities4_181.sh`, `verify_entities5_181.sh`, `verify_entities6_181.sh`, `verify_entities7_181.sh`, `verify_entities8_181.sh`, `verify_entities9_181.sh` and `verify_world_blocks181.sh`, all with `--built`. Each finished with its EXACT summary. The combined log is `target/entities10-final-regressions.log`; individual logs are `target/entities10-final-<script>.log`. The final null-state source's new suite passed again in `target/entities10-postflag-verify_entities10_181.sh.log`. The affected simulation/constructor suites also passed again on that final source: `verify_entities181.sh --built` and `verify_entities3_181.sh --built` (`target/entities10-postflag-verify_entities181.sh.log` and `target/entities10-postflag-verify_entities3_181.sh.log`). This post-change sequence returned exit status 0.
+
+Shell syntax, `git diff --check`, formatting of all four new Rust modules, protected-path checks and the explicit 18-file commit manifest pass. The existing verify181 sections are byte-preserved after newline normalization, with only the requested final block added. Static evidence is `target/entities10-static-checks.log`.
+
+The exact new verify181 sections are itembase10, itemblock10 and entitylist10 in the new round-10 block. Earlier sections and recorders are retained. The approximately one-hour full `tools/verify181.sh` remains for the integrator after merge, as requested; no interactive GPU validation was performed.
+
+The unchanged original broad ItemBlock matrix was also run (`target/entities10-blockfull-oracle.log`, `target/entities10-blockfull-compare.log`). Java finishes; Rust reaches `world/behavior.rs` and panics with `onBlockAdded for block 19 (tile.sponge) not ported`. That callback belongs to world-blocks and is not modified or normalized here. Malformed moving-piston dependencies remain unclaimed. Earlier broad pickuprenderers/pickuprenderersfast dependency differences are likewise not claimed fixed.
+
+`target/commit-b181-entities10.sh` stages the explicit round-10 manifest and commits using logiu, the required email and both requested co-author trailers. It is not executed because .git is read-only. The round-10 filename takes precedence over the stale duplicated round-7 instruction.
+
+Protected Beta 1.7.3 crates/tools, original Java, shared Java fixtures/recorders, terrain generation, world-block implementations, player tick/hunger/XP/use/GUI, ItemStack/inventory representation and identity, first-person, weather, live tile dispatch/lids, world/chunk renderer, entity render range and lightmap are untouched. Changes in `entity/player/placement.rs` only delegate ItemBlock placement to the ordered dispatch; `entity/player/registry.rs` only delegates two base defaults. No broad other-owner implementation is replaced.
+
+## Preserved round 9 report
+
 # Beta 1.8.1 entities - round 9 report
 
 Round 9 completes **RenderManager, TileEntityRenderer and TileEntitySpecialRenderer** at the class/API boundary and connects the entity manager and special-renderer texture binding to the existing backend. Five starting backlog classes remain Not done. This table is authoritative; the earlier reports below retain their historical evidence. The requested backlog is **not entirely finished**.

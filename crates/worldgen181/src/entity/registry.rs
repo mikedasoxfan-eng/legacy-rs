@@ -221,5 +221,46 @@ pub fn create(w: &mut crate::World, name: &str) -> Option<super::Entity> {
     Some(e)
 }
 pub fn create_by_id(w: &mut crate::World, id: i32) -> Option<super::Entity> {
-    create(w, by_id(id)?.name)
+    let entity=by_id(id).and_then(|entry|create(w,entry.name));
+    if entity.is_none(){println!("Skipping Entity with id {id}");}
+    entity
+}
+
+/// World is the port's constructor RNG/ID allocator. Entity stores no world
+/// pointer: all registered World-only constructors also accept Java null, since
+/// their complete constructor chains never dereference that argument.
+pub fn create_nullable(w: &mut crate::World, name: Option<&str>) -> Option<super::Entity> {
+    create(w, name?)
+}
+pub fn create_from_nbt_checked(
+    w: &mut crate::World,
+    n: Option<&crate::nbt::Compound>,
+) -> Result<Option<super::Entity>, super::factory_nbt::FactoryError> {
+    // getString is inside the reflection try, but a failed construction then
+    // evaluates it again outside the try for the skipping message.
+    let name = super::factory_nbt::name(n)?;
+    let Some(mut entity) = create(w, &name) else {
+        println!("Skipping Entity with id {name}");
+        return Ok(None);
+    };
+    let n = n.unwrap();
+    super::factory_nbt::validate(&name, n)?;
+    entity
+        .read_existing_nbt(w, n)
+        .expect("validated entity NBT");
+    Ok(Some(entity))
+}
+pub fn get_id_nullable(
+    entity: Option<&super::Entity>,
+) -> Result<i32, super::factory_nbt::FactoryError> {
+    let entity = entity.ok_or(super::factory_nbt::FactoryError::NullPointer)?;
+    by_kind(&entity.kind)
+        .map(|entry| entry.id)
+        .ok_or(super::factory_nbt::FactoryError::NullPointer)
+}
+pub fn get_string_nullable(
+    entity: Option<&super::Entity>,
+) -> Result<Option<&'static str>, super::factory_nbt::FactoryError> {
+    let entity = entity.ok_or(super::factory_nbt::FactoryError::NullPointer)?;
+    Ok(by_kind(&entity.kind).map(|entry| entry.name))
 }

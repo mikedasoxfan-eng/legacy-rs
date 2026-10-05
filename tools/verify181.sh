@@ -496,6 +496,9 @@ bash "$root/tools/verify_entities9_181.sh" --built || fail=1
 # --- minecraft (b1.8.1), round 1 ---
 bash "$root/tools/verify_minecraft181.sh" --built || fail=1
 # --- end minecraft ---
+# --- entities (b1.8.1) ---
+bash "$root/tools/verify_entities10_181.sh" --built || fail=1
+# --- end entities ---
 pflush
 [ $fail -eq 0 ] && echo "ALL CASES EXACT" || echo "SOME CASES DIFFER"
 exit $fail
