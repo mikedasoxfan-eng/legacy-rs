@@ -18,6 +18,7 @@ impl World {
             }
             return;
         }
+        if self.thin_block_bounds(id,x,y,z) { return; }
         let m = self.get_block_metadata(x, y, z) as usize;
         if id == PORTAL {
             self.block_bounds[id as usize] =
@@ -55,13 +56,14 @@ impl World {
         if table::BASE_COLLISION[id as usize]
             || matches!(
                 id,
-                LADDER | DOOR_WOOD | DOOR_STEEL | TRAPDOOR | STAIRS_WOOD | STAIRS_COBBLESTONE
+                LADDER | DOOR_WOOD | DOOR_STEEL | TRAPDOOR | STAIRS_WOOD | STAIRS_COBBLESTONE | STAIRS_BRICK | STAIRS_STONE_BRICK
             )
         {
             return Some(self.block_bounds[id as usize].translated(x as f64, y as f64, z as f64));
         }
         // These overrides perform addition in float before promotion to double.
-        if id == FENCE {
+        if id == FENCE_GATE && m & 4 != 0 { return None; }
+        if id == FENCE || id == FENCE_GATE {
             return Some(BB::new(
                 x as f64,
                 y as f64,
@@ -111,7 +113,13 @@ impl World {
                 for y in floor(query.min_y) - 1..floor(query.max_y + 1.0) {
                     let id = self.get_block_id(x, y, z);
                     let m = self.get_block_metadata(x, y, z) as usize;
-                    if matches!(id, STAIRS_WOOD | STAIRS_COBBLESTONE | PISTON_EXTENSION) {
+                    if matches!(id, IRON_BARS | GLASS_PANE) {
+                        for b in self.pane_boxes(id,x,y,z) {
+                            self.block_bounds[id as usize]=b;
+                            let b=b.translated(x as f64,y as f64,z as f64);
+                            if b.intersects(query) { boxes.push(b); }
+                        }
+                    } else if matches!(id, STAIRS_WOOD | STAIRS_COBBLESTONE | STAIRS_BRICK | STAIRS_STONE_BRICK | PISTON_EXTENSION) {
                         for b in table::MULTI_COLLISION[id as usize][m] {
                             let b = b.translated(x as f64, y as f64, z as f64);
                             if b.intersects(query) {

@@ -26,7 +26,7 @@ pub fn cos(v: f32) -> f32 {
 pub fn floor_double(v: f64) -> i32 {
     let i = v as i32;
     if v < i as f64 {
-        i - 1
+        i.wrapping_sub(1)
     } else {
         i
     }
@@ -36,7 +36,7 @@ pub fn floor_double(v: f64) -> i32 {
 pub fn floor_float(v: f32) -> i32 {
     let i = v as i32;
     if v < i as f32 {
-        i - 1
+        i.wrapping_sub(1)
     } else {
         i
     }
@@ -48,3 +48,10 @@ pub fn sin_table_bits() -> impl Iterator<Item = u32> {
 
 /// Java's `(float)Math.PI`.
 pub const PI_F32: f32 = std::f64::consts::PI as f32;
+
+/// MathHelper.func_35599_c, retaining Java's saturated cast and overflow.
+pub fn floor_long(v:f64)->i64 {let i=v as i64;if v<i as f64{i.wrapping_sub(1)}else{i}}
+pub fn abs_int(v:i32)->i32 {if v>=0{v}else{v.wrapping_neg()}}
+pub fn next_int_inclusive(r:&mut crate::JavaRandom,min:i32,max:i32)->i32 {
+    if min>=max{min}else{r.next_int(max.wrapping_sub(min).wrapping_add(1)).wrapping_add(min)}
+}

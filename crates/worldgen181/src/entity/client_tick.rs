@@ -115,6 +115,7 @@ impl World {
             }
             74 => self.redstone_display(x, y, z),
             8 | 9 => {
+                if r.next_int(10)==0 {let m=self.get_block_metadata(x,y,z);if m<=0||m>=8 {let p=Vec3D::new((x as f32+r.next_float()) as f64,(y as f32+r.next_float()) as f64,(z as f32+r.next_float()) as f64);self.spawn_particle("suspended",p,zero);}}
                 if r.next_int(64) == 0 {
                     let m = self.get_block_metadata(x, y, z);
                     if m > 0 && m < 8 {

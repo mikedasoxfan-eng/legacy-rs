@@ -267,6 +267,7 @@ impl World {
     pub fn tick_tile_entity(&mut self,id:u64) {
         let (x,y,z)=self.tile_objects[&id].position;
         if let Some(mut te)=self.tile_object(id).cloned() {
+            if matches!(&te,crate::world::tile::TileEntity::Chest(_)){self.tick_chest181(id);}
             if let crate::world::tile::TileEntity::MobSpawner {mob,delay}=&mut te {self.tick_mob_spawner(x,y,z,mob,delay);}
             let mut transition=None;
             if let crate::world::tile::TileEntity::Furnace(f)=&mut te {

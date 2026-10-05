@@ -24,6 +24,14 @@ fn main() -> ExitCode {
     let a: Vec<String> = std::env::args().collect();
     let p = |i: usize| a[i].parse::<i64>().expect("number");
     match a.get(1).map(String::as_str) {
+        Some("worldblocks181") => {
+            let java=std::fs::read(&a[3]).unwrap();
+            let rust=worldgen::world::verify181::bytes(&a[2]);
+            if java==rust {println!("EXACT MATCH: worldblocks181 {}, {} bytes",a[2],rust.len());ExitCode::SUCCESS} else {
+                eprintln!("worldblocks181 {} differs at {:?}; Java/Rust {}/{} bytes",a[2],java.iter().zip(&rust).position(|(a,b)|a!=b),java.len(),rust.len());
+                std::fs::write(format!("target/wb181-{}-rust.bin",a[2]),rust).unwrap();ExitCode::FAILURE
+            }
+        }
         Some("mapfiles") => {
             let java=std::fs::read(&a[2]).unwrap();let rust=worldgen::decoration_verify::map_files(std::path::Path::new(&format!("{}.save",a[2])),std::path::Path::new("target/map-rust-save"));verdict(java==rust)
         }

@@ -11,7 +11,7 @@ pub fn read_items(n: &Compound, items: &mut [Option<ItemStack>]) {
         if let Tag::Compound(n) = tag {
             let index = n.byte("Slot") as u8 as usize;
             if index < items.len() {
-                items[index] = Some(ItemStack::from_nbt(n));
+                items[index] = ItemStack::try_from_nbt181(n);
             }
         }
     }
@@ -73,7 +73,7 @@ impl World {
             5 => (1, 0),
             _ => (-1, 0),
         };
-        self.get_block_tile_entity(x, y, z);
+        if self.get_block_tile_entity(x, y, z).is_none(){return;}
         let mut rng = self.dispenser_random.remove(&(x, y, z)).unwrap_or_else(|| {
             crate::JavaRandom::new(crate::entity::EntitySeedSource::Time.next_seed())
         });

@@ -97,7 +97,7 @@ impl World {
     }
 
     fn block_light_value_do(&mut self, x: i32, y: i32, z: i32, special: bool) -> i32 {
-        if !(x >= -32000000 && z >= -32000000 && x < 32000000 && z <= 32000000) {
+        if !(x >= -30000000 && z >= -30000000 && x < 30000000 && z < 30000000) {
             return 15;
         }
         if special {
@@ -137,7 +137,7 @@ impl World {
         if !self.can_block_see_the_sky(x, y, z) {
             return false;
         }
-        if self.find_top_solid_block(x, z) > y {
+        if self.precipitation_height181(x, z) > y {
             return false;
         }
         biome_rains(self.terrain.biome_source.biome_at(x, z))
@@ -265,6 +265,7 @@ impl World {
             let (x0, z0) = (cx * 16, cz * 16);
             // getChunkFromChunkCoords: singleplayer loads (and generates) it here.
             let real = self.access_chunk_pub(cx, cz);
+            if real {self.recheck_skylight181(cx,cz);}
             let block_at = |w: &World, x: i32, y: i32, z: i32| {
                 if real {
                     w.chunk(cx, cz).block(x, y, z)
@@ -304,7 +305,7 @@ impl World {
                 self.update_lcg = self.update_lcg.wrapping_mul(3).wrapping_add(1013904223);
                 let v = self.update_lcg >> 2;
                 let (x, z) = (x0 + (v & 15), z0 + (v >> 8 & 15));
-                let y = self.find_top_solid_block(x, z);
+                let y = self.precipitation_height181(x, z);
                 if self.can_block_be_rained_on(x, y, z) {
                     let bolt = crate::entity::Entity::lightning(self, x as f64, y as f64, z as f64);
                     self.weather_effects.push(bolt);
@@ -317,7 +318,7 @@ impl World {
                 self.update_lcg = self.update_lcg.wrapping_mul(3).wrapping_add(1013904223);
                 let v = self.update_lcg >> 2;
                 let (x, z) = (v & 15, v >> 8 & 15);
-                let y = self.find_top_solid_block(x + x0, z + z0);
+                let y = self.precipitation_height181(x + x0, z + z0);
                 let biome = self.terrain.biome_source.biome_at(x + x0, z + z0);
                 if biome_snows(biome) && y >= 0 && y < 128 {
                     let block_light = if real {
@@ -348,6 +349,11 @@ impl World {
                     }
                 }
             }
+
+            let light_x=x0+self.rand.next_int(16);
+            let light_y=self.rand.next_int(128);
+            let light_z=z0+self.rand.next_int(16);
+            self.update_all_light181(light_x,light_y,light_z);
 
             for _ in 0..80 {
                 self.update_lcg = self.update_lcg.wrapping_mul(3).wrapping_add(1013904223);

@@ -6,6 +6,11 @@
 //! scheduling and chunk loading all have side effects that later code observes.
 
 pub mod behavior;
+pub mod plants181;
+mod blocks181;
+pub mod verify181;
+mod light181;
+pub mod chests181;
 pub mod chunk;
 pub mod events;
 pub mod java_hash;
@@ -90,7 +95,7 @@ pub type ChunkMap = HashMap<(i32, i32), Box<Chunk>, BuildHasherDefault<CoordHash
 
 #[inline]
 fn in_xz_bounds(x: i32, z: i32) -> bool {
-    x >= -32000000 && z >= -32000000 && x < 32000000 && z <= 32000000
+    x >= -30000000 && z >= -30000000 && x < 30000000 && z < 30000000
 }
 
 /// The `WorldProvider` selected when the world is constructed.
@@ -115,7 +120,7 @@ impl Dimension {
         let ambient = if self.is_hell_world() {
             0.1f32
         } else {
-            0.05f32
+            0.0f32
         };
         let mut table = [0.0; 16];
         for i in 0..=15 {
@@ -142,7 +147,6 @@ pub struct World {
     pub rand: JavaRandom,
     /// `World.lightingToUpdate`
     pub light_queue: Vec<LightUpdate>,
-    lighting_updates_counter: i32,
     /// `scheduledTickSet`: entry -> (scheduled time, `tickEntryID`).
     pub pending_ticks: HashMap<TickKey, (i64, u64)>,
     /// `scheduledTickTreeSet`, ordered like `NextTickListEntry.compareTo`.
@@ -213,6 +217,7 @@ pub struct World {
     pub loaded_entity_list: Vec<i32>,
     pub unloaded_entity_list: Vec<i32>,
     pub spawn_eligible_chunks: java_hash::JavaHashSet<(i32, i32)>,
+    pub chest_animations: HashMap<tile_lifecycle::TileId,chests181::ChestAnimation>,
     pub loaded_tile_entities: Vec<tile_lifecycle::TileId>,
     pub tile_objects: HashMap<tile_lifecycle::TileId, tile_lifecycle::TileObject>,
     pub next_tile_id: u64,
@@ -268,7 +273,6 @@ impl World {
             chunks: ChunkMap::default(),
             rand: JavaRandom::new(world_rand_seed),
             light_queue: Vec::new(),
-            lighting_updates_counter: 0,
             pending_ticks: HashMap::new(),
             tick_order: Default::default(),
             next_tick_entry_id: 0,
@@ -312,6 +316,7 @@ impl World {
             unloaded_entity_list: Vec::new(),
             weather_effects: Vec::new(),
             spawn_eligible_chunks: Default::default(),
+            chest_animations: HashMap::new(),
             loaded_tile_entities: Vec::new(),
             tile_objects: HashMap::new(),
             next_tile_id: 0,
@@ -559,7 +564,9 @@ impl World {
         if !self.access_chunk(x >> 4, z >> 4) {
             return true; // EmptyChunk.setBlockIDWithMetadata
         }
-        self.chunk_set_block_with_metadata(x >> 4, z >> 4, x & 15, y, z & 15, id, meta)
+        let changed=self.chunk_set_block_with_metadata(x >> 4, z >> 4, x & 15, y, z & 15, id, meta);
+        self.update_all_light181(x,y,z);
+        changed
     }
 
     pub fn set_block(&mut self, x: i32, y: i32, z: i32, id: u8) -> bool {
@@ -569,7 +576,9 @@ impl World {
         if !self.access_chunk(x >> 4, z >> 4) {
             return true; // EmptyChunk.setBlockID
         }
-        self.chunk_set_block(x >> 4, z >> 4, x & 15, y, z & 15, id)
+        let changed=self.chunk_set_block(x >> 4, z >> 4, x & 15, y, z & 15, id);
+        self.update_all_light181(x,y,z);
+        changed
     }
 
     pub fn set_block_metadata(&mut self, x: i32, y: i32, z: i32, meta: i32) -> bool {
@@ -642,6 +651,8 @@ impl World {
     /// `Chunk.setBlockID`
     fn chunk_set_block(&mut self, cx: i32, cz: i32, x: i32, y: i32, z: i32, id: u8) -> bool {
         let c = self.chunk_mut(cx, cz);
+        let column=(z<<4|x) as usize;
+        if y>=c.precipitation_height[column]-1 {c.precipitation_height[column]=-999;}
         let height = c.height(x, z);
         let old = c.blocks[idx(x, y, z)];
         if old == id {
@@ -657,15 +668,14 @@ impl World {
         self.chunk_mut(cx, cz).data.set(x, y, z, 0);
         if light_opacity(id) != 0 {
             if y >= height {
-                self.relight_column(cx, cz, x, y + 1, z);
+                self.relight_column181(cx, cz, x, y + 1, z);
             }
         } else if y == height - 1 {
-            self.relight_column(cx, cz, x, y, z);
+            self.relight_column181(cx, cz, x, y, z);
         }
         self.schedule_lighting_update(LightKind::Sky, wx, y, wz, wx, y, wz);
         self.schedule_lighting_update(LightKind::Block, wx, y, wz, wx, y, wz);
-        let h = self.chunk(cx, cz).height(x, z);
-        self.update_neighbor_heights(wx, wz, h);
+        self.chunk_mut(cx,cz).skylight_occlusion[(x+z*16) as usize]=true;
         if id != block::AIR {
             behavior::on_block_added(self, id, wx, y, wz);
         }
@@ -685,6 +695,8 @@ impl World {
         meta: i32,
     ) -> bool {
         let c = self.chunk_mut(cx, cz);
+        let column=(z<<4|x) as usize;
+        if y>=c.precipitation_height[column]-1 {c.precipitation_height[column]=-999;}
         let height = c.height(x, z);
         let old = c.blocks[idx(x, y, z)];
         if old == id && c.data.get(x, y, z) == meta {
@@ -701,16 +713,15 @@ impl World {
         if !self.dimension.has_no_sky() {
             if light_opacity(id) != 0 {
                 if y >= height {
-                    self.relight_column(cx, cz, x, y + 1, z);
+                    self.relight_column181(cx, cz, x, y + 1, z);
                 }
             } else if y == height - 1 {
-                self.relight_column(cx, cz, x, y, z);
+                self.relight_column181(cx, cz, x, y, z);
             }
             self.schedule_lighting_update(LightKind::Sky, wx, y, wz, wx, y, wz);
         }
         self.schedule_lighting_update(LightKind::Block, wx, y, wz, wx, y, wz);
-        let h = self.chunk(cx, cz).height(x, z);
-        self.update_neighbor_heights(wx, wz, h);
+        self.chunk_mut(cx,cz).skylight_occlusion[(x+z*16) as usize]=true;
         self.chunk_mut(cx, cz).data.set(x, y, z, meta);
         if id != block::AIR {
             behavior::on_block_added(self, id, wx, y, wz);
@@ -718,63 +729,6 @@ impl World {
         true
     }
 
-    /// `Chunk.func_1003_g`: move a column's height and patch its skylight.
-    fn relight_column(&mut self, cx: i32, cz: i32, x: i32, y: i32, z: i32) {
-        let c = self.chunk_mut(cx, cz);
-        let old_h = c.height(x, z);
-        let mut h = old_h.max(y);
-        while h > 0 && light_opacity(c.block(x, h - 1, z)) == 0 {
-            h -= 1;
-        }
-        if h == old_h {
-            return;
-        }
-        self.touch(cx, cz);
-        let c = self.chunk_mut(cx, cz);
-        c.height_map[(z << 4 | x) as usize] = h as u8;
-        if h < c.lowest_block_height {
-            c.lowest_block_height = h;
-        } else {
-            c.lowest_block_height = c.height_map.iter().map(|&v| v as i32).fold(127, i32::min);
-        }
-        let wx = cx * 16 + x;
-        let wz = cz * 16 + z;
-        if h < old_h {
-            for yy in h..old_h {
-                c.sky_light.set(x, yy, z, 15);
-            }
-        } else {
-            self.schedule_lighting_update(LightKind::Sky, wx, old_h, wz, wx, h, wz);
-            let c = self.chunk_mut(cx, cz);
-            for yy in old_h..h {
-                c.sky_light.set(x, yy, z, 0);
-            }
-        }
-        let c = self.chunk_mut(cx, cz);
-        let mut light = 15;
-        let top = h;
-        while h > 0 && light > 0 {
-            h -= 1;
-            let mut op = light_opacity(c.block(x, h, z));
-            if op == 0 {
-                op = 1;
-            }
-            light -= op;
-            if light < 0 {
-                light = 0;
-            }
-            c.sky_light.set(x, h, z, light);
-        }
-        while h > 0 && light_opacity(c.block(x, h - 1, z)) == 0 {
-            h -= 1;
-        }
-        if h != top {
-            self.schedule_lighting_update(LightKind::Sky, wx - 1, h, wz - 1, wx + 1, top, wz + 1);
-        }
-    }
-
-    /// `Chunk.func_996_c` (+ `func_1020_f`): schedule skylight fixes against the
-    /// four horizontal neighbour columns of world column (wx, wz) at height `h`.
     fn update_neighbor_heights(&mut self, wx: i32, wz: i32, h: i32) {
         self.check_neighbor_height(wx - 1, wz, h);
         self.check_neighbor_height(wx + 1, wz, h);
@@ -957,48 +911,13 @@ impl World {
         y1: i32,
         z1: i32,
     ) {
-        if self.dimension.has_no_sky() && kind == LightKind::Sky {
-            return;
-        }
-        let mx = (x1 + x0) / 2;
-        let mz = (z1 + z0) / 2;
-        if !self.block_exists(mx, 64, mz) {
-            return;
-        }
-        let n = self.light_queue.len();
-        for i in 0..n.min(5) {
-            let u = &mut self.light_queue[n - i - 1];
-            if u.kind == kind && u.try_merge(x0, y0, z0, x1, y1, z1) {
-                return;
-            }
-        }
-        self.light_queue
-            .push(LightUpdate::new(kind, x0, y0, z0, x1, y1, z1));
-        if self.light_queue.len() > 1_000_000 {
-            self.light_queue.clear();
-        }
+        // Kept for callers shared with the old generation pipeline. Vanilla b1.8.1 is empty.
+        let _=(kind,x0,y0,z0,x1,y1,z1);
     }
 
     /// `updatingLighting`: process up to ~500 queued updates; true if more remain.
     pub fn updating_lighting(&mut self) -> bool {
-        if self.lighting_updates_counter >= 50 {
-            return false;
-        }
-        self.lighting_updates_counter += 1;
-        let mut budget = 500;
-        let more = loop {
-            if self.light_queue.is_empty() {
-                break false;
-            }
-            budget -= 1;
-            if budget <= 0 {
-                break true;
-            }
-            let mut u = self.light_queue.pop().unwrap();
-            u.apply(self);
-        };
-        self.lighting_updates_counter -= 1;
-        more
+        false
     }
 
     pub fn drain_lighting(&mut self) {

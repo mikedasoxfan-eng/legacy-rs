@@ -31,6 +31,15 @@ impl Entity {
                 }
                 true
             }
+            107 => {
+                let m=if meta&4!=0 {meta & !4} else {
+                    let quarter=crate::math::floor_double((self.yaw*4.0/360.0) as f64+0.5)&3;
+                    (if meta&3==(quarter+2)%4 {quarter} else {meta}) | 4
+                };
+                w.set_block_metadata_with_notify(x,y,z,m);
+                w.auxiliary_effect(1003,(x,y,z),0);
+                true
+            }
             96 => {
                 w.set_block_metadata_with_notify(x, y, z, meta ^ 4);
                 w.auxiliary_effect(1003, (x, y, z), 0);

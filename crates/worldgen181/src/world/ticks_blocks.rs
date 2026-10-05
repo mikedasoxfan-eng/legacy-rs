@@ -52,7 +52,7 @@ pub fn grass(w: &mut World, x: i32, y: i32, z: i32, rs: RandSel) {
 /// 4 steps through leaves.
 pub fn leaves(w: &mut World, x: i32, y: i32, z: i32) {
     let meta = w.get_block_metadata(x, y, z);
-    if meta & 8 == 0 {
+    if meta & 8 == 0 || meta & 4 != 0 {
         return;
     }
     let r = 4;
@@ -389,22 +389,25 @@ pub fn portal_neighbor(w: &mut World, x: i32, y: i32, z: i32) {
 }
 
 /// `BlockMushroom.updateTick`: rare spread to a nearby dark spot.
-pub fn mushroom(w: &mut World, id: u8, x: i32, y: i32, z: i32, rs: RandSel) {
-    if w.rng(rs).next_int(100) != 0 {
-        return;
-    }
-    let r = w.rng(rs);
-    let nx = x + r.next_int(3) - 1;
-    let ny = y + r.next_int(2) - r.next_int(2);
-    let nz = z + r.next_int(3) - 1;
-    if w.is_air_block(nx, ny, nz) && behavior::flower_can_stay(w, id, nx, ny, nz) {
-        // (sic) two more offsets are drawn and thrown away
-        let _ = w.rng(rs).next_int(3);
-        let _ = w.rng(rs).next_int(3);
-        if w.is_air_block(nx, ny, nz) && behavior::flower_can_stay(w, id, nx, ny, nz) {
-            w.set_block_with_notify(nx, ny, nz, id);
+pub fn mushroom(w: &mut World, id: u8, mut x: i32, mut y: i32, mut z: i32, rs: RandSel) {
+    if w.rng(rs).next_int(100) != 0 { return; }
+    let mut remaining = 5;
+    for bx in x - 4..=x + 4 { for bz in z - 4..=z + 4 { for by in y - 1..=y + 1 {
+        if w.get_block_id(bx, by, bz) == id {
+            remaining -= 1;
+            if remaining <= 0 { return; }
         }
+    }}}
+    let mut nx = x + w.rng(rs).next_int(3) - 1;
+    let mut ny = y + w.rng(rs).next_int(2) - w.rng(rs).next_int(2);
+    let mut nz = z + w.rng(rs).next_int(3) - 1;
+    for _ in 0..4 {
+        if w.is_air_block(nx, ny, nz) && behavior::flower_can_stay(w, id, nx, ny, nz) { x=nx; y=ny; z=nz; }
+        nx = x + w.rng(rs).next_int(3) - 1;
+        ny = y + w.rng(rs).next_int(2) - w.rng(rs).next_int(2);
+        nz = z + w.rng(rs).next_int(3) - 1;
     }
+    if w.is_air_block(nx, ny, nz) && behavior::flower_can_stay(w, id, nx, ny, nz) { w.set_block_with_notify(nx, ny, nz, id); }
 }
 
 /// `BlockReed.updateTick` / `BlockCactus.updateTick`: grow up to three tall.

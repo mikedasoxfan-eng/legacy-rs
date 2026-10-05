@@ -19,7 +19,7 @@ impl Entity {
                 }
                 used
             }
-            1..=96 => self.place_block_item(w, &mut stack, x, y, z, side),
+            1..=109 => self.place_block_item(w, &mut stack, x, y, z, side),
             324 | 330 => self.place_door(w, &mut stack, x, y, z, side),
             355 => self.place_bed(w, &mut stack, x, y, z, side),
             351 => self.dye_block(w, &mut stack, x, y, z),
@@ -90,9 +90,9 @@ impl Entity {
                     true
                 }
             }
-            295 => {
+            295 | 361 | 362 => {
                 if side == 1 && w.get_block_id(x, y, z) == 60 && w.get_block_id(x, y + 1, z) == 0 {
-                    w.set_block_with_notify(x, y + 1, z, 59);
+                    w.set_block_with_notify(x, y + 1, z, match stack.id {361=>104,362=>105,_=>59});
                     stack.count -= 1;
                     true
                 } else {

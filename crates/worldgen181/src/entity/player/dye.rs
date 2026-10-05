@@ -18,7 +18,7 @@ impl Entity {
                 stack.count -= 1;
                 true
             }
-            59 => {
+            59 | 104 | 105 => {
                 w.set_block_metadata_with_notify(x, y, z, 7);
                 stack.count -= 1;
                 true

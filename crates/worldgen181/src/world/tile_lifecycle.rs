@@ -14,8 +14,10 @@ pub struct TileObject {
 
 impl World {
     pub(crate) fn new_tile_object(&mut self, position: (i32, i32, i32), te: TileEntity) -> TileId {
+        let chest=matches!(&te,TileEntity::Chest(_));
         let id = self.next_tile_id;
         self.next_tile_id += 1;
+        if chest {self.chest_animations.insert(id,Default::default());}
         self.tile_objects.insert(
             id,
             TileObject {
@@ -105,10 +107,10 @@ impl World {
         let key = (x & 15, y, z & 15);
         if !self.chunk(x >> 4, z >> 4).tile_entities.contains_key(&key) {
             let block = self.chunk(x >> 4, z >> 4).block(x & 15, y, z & 15);
-            if !props(block).container {
+            if !props(block).container || block==36 {
                 return None;
             }
-            super::behavior::on_block_added(self, block, x, y, z);
+            self.set_block_tile_entity(x,y,z,TileEntity::for_block(block));
         }
         if let Some(&id) = self.chunk(x >> 4, z >> 4).tile_entity_ids.get(&key) {
             if self.tile_objects[&id].invalid {
@@ -125,6 +127,7 @@ impl World {
     pub(crate) fn remove_chunk_tile(&mut self, x: i32, y: i32, z: i32) {
         if self.access_chunk(x >> 4, z >> 4) && self.chunk(x >> 4, z >> 4).loaded {
             if let Some(id) = self.detach_chunk_tile(x, y, z) {
+                if self.chest_animations.contains_key(&id){self.chest_animations.get_mut(&id).unwrap().adjacency_checked=false;self.check_chest_adjacency181(id);}
                 self.tile_objects.get_mut(&id).unwrap().invalid = true;
             }
             self.chunk_mut(x >> 4, z >> 4)
@@ -146,6 +149,7 @@ impl World {
             .copied();
         if let Some(id) = id {
             if self.scanning_tiles {
+                if self.chest_animations.contains_key(&id){self.chest_animations.get_mut(&id).unwrap().adjacency_checked=false;self.check_chest_adjacency181(id);}
                 self.tile_objects.get_mut(&id).unwrap().invalid = true;
                 return;
             }
@@ -195,5 +199,6 @@ impl World {
             owners.extend(c.tile_entity_ids.values().copied());
         }
         self.tile_objects.retain(|id, _| owners.contains(id));
+        self.chest_animations.retain(|id,_|owners.contains(id));
     }
 }

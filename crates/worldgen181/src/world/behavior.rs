@@ -68,7 +68,8 @@ pub fn on_block_added(w: &mut World, id: u8, x: i32, y: i32, z: i32) {
             if w.get_block_tile_entity(x,y,z).is_none() { w.piston_update(id,x,y,z); }
         }
         34 | 36 => {}
-        25 | block::CHEST | block::MOB_SPAWNER => {
+        block::CHEST => w.chest_added181(x,y,z),
+        25 | block::MOB_SPAWNER => {
             w.set_block_tile_entity(x, y, z, TileEntity::for_block(id))
         }
         _ => assert_plain(id, "onBlockAdded"),
@@ -175,7 +176,9 @@ pub fn on_neighbor_block_change(w: &mut World, id: u8, x: i32, y: i32, z: i32, _
         | block::MUSHROOM_RED
         | block::TALL_GRASS
         | block::DEAD_BUSH
-        | block::SAPLING => check_flower(w, id, x, y, z),
+        | block::SAPLING | block::PUMPKIN_STEM | block::MELON_STEM => check_flower(w, id, x, y, z),
+        block::VINE => super::plants181::vine_neighbor(w, x, y, z),
+        block::CHEST => w.chest_neighbor181(x,y,z),
         block::REED => {
             if !reed_can_place(w, x, y, z) {
                 let meta = w.get_block_metadata(x, y, z);
@@ -255,6 +258,8 @@ pub fn update_tick(w: &mut World, id: u8, x: i32, y: i32, z: i32, rs: RandSel) {
         95 => {
             w.set_block_with_notify(x, y, z, 0);
         }
+        block::PUMPKIN_STEM | block::MELON_STEM => super::plants181::stem(w, id, x, y, z, rs),
+        block::VINE => super::plants181::vine(w, x, y, z),
         block::GRASS => tb::grass(w, x, y, z, rs),
         block::LEAVES => tb::leaves(w, x, y, z),
         block::LAVA_STILL => tb::still_lava(w, x, y, z, rs),
@@ -302,7 +307,7 @@ fn warn_once(id: u8, hook: &str) {
 fn assert_plain(id: u8, hook: &str) {
     let plain = matches!(
         id,
-        block::STONE
+        97..=109 | block::STONE
             | block::FENCE
             | block::STAIRS_WOOD
             | block::STAIRS_COBBLESTONE
@@ -687,6 +692,7 @@ fn try_to_fall(w: &mut World, id: u8, x: i32, mut y: i32, z: i32) {
 /// `BlockFlower.canThisPlantGrowOnThisBlockID` and overrides.
 fn plant_grows_on(id: u8, below: u8) -> bool {
     match id {
+        block::PUMPKIN_STEM | block::MELON_STEM => below == block::TILLED_FIELD,
         59 => below == 60,
         block::MUSHROOM_BROWN | block::MUSHROOM_RED => opaque_cube_lookup(below),
         block::DEAD_BUSH => below == block::SAND,
@@ -712,7 +718,7 @@ pub fn flower_can_stay(w: &mut World, id: u8, x: i32, y: i32, z: i32) -> bool {
 }
 
 /// `BlockFlower.func_268_h`
-fn check_flower(w: &mut World, id: u8, x: i32, y: i32, z: i32) {
+pub(crate) fn check_flower(w: &mut World, id: u8, x: i32, y: i32, z: i32) {
     if !flower_can_stay(w, id, x, y, z) {
         let meta = w.get_block_metadata(x, y, z);
         drop_block_as_item(w, id, x, y, z, meta);
@@ -775,6 +781,9 @@ fn quantity_dropped(w: &mut World, id: u8) -> i32 {
                 0
             }
         }
+        block::VINE | block::SILVERFISH => 0,
+        block::MELON => 3 + w.rand.next_int(5),
+        block::MUSHROOM_CAP_BROWN | block::MUSHROOM_CAP_RED => (w.rand.next_int(10) - 7).max(0),
         block::SNOW
         | block::ICE
         | block::FIRE
@@ -826,6 +835,12 @@ fn id_dropped(w: &mut World, id: u8, meta: i32) -> i32 {
         block::TILLED_FIELD => block::DIRT as i32,
         block::STAIRS_WOOD => 5,
         block::STAIRS_COBBLESTONE => 4,
+        block::STAIRS_BRICK => 45,
+        block::STAIRS_STONE_BRICK => 98,
+        block::PUMPKIN_STEM | block::MELON_STEM => -1,
+        block::MELON => 360,
+        block::MUSHROOM_CAP_BROWN => 39,
+        block::MUSHROOM_CAP_RED => 40,
         block::STONE => block::COBBLESTONE as i32,
         block::GRASS => block::DIRT as i32,
         block::LEAVES => block::SAPLING as i32,
@@ -881,6 +896,11 @@ pub fn drop_block_with_chance(
     meta: i32,
     chance: f32,
 ) {
+    if matches!(id, 53 | 67 | 108 | 109) {
+        let model=match id {53=>5,67=>4,108=>45,_=>98};
+        drop_block_with_chance(w,model,x,y,z,meta,chance);
+        return;
+    }
     if id==36 {
         if let Some(TileEntity::Piston(p))=w.get_block_tile_entity(x,y,z).cloned() {
             drop_block_as_item(w,p.block_id,x,y,z,p.block_data);
@@ -896,7 +916,7 @@ pub fn drop_block_with_chance(
                     block::LOG => meta,
                     block::ORE_LAPIS => 4,
                     block::LEAVES | block::SAPLING => meta & 3,
-                    35 | 43 | 44 => meta,
+                    35 | 43 | 44 | block::STONE_BRICK => meta,
                     _ => 0,
                 };
                 let s = 0.7f32;
@@ -929,7 +949,7 @@ pub fn drop_block_with_chance(
             }
         }
     }
-    if id == 59 {
+    if matches!(id, 59 | block::PUMPKIN_STEM | block::MELON_STEM) {
         for _ in 0..3 {
             if w.rand.next_int(15) <= meta {
                 let s = 0.7f32;
@@ -941,7 +961,7 @@ pub fn drop_block_with_chance(
                     (x as f32 + ox) as f64,
                     (y as f32 + oy) as f64,
                     (z as f32 + oz) as f64,
-                    ItemStack::new(295, 1, 0),
+                    ItemStack::new(match id { block::PUMPKIN_STEM => 361, block::MELON_STEM => 362, _ => 295 }, 1, 0),
                 );
                 if let crate::entity::EntityKind::Item { pickup_delay, .. } = &mut e.kind {
                     *pickup_delay = 10;

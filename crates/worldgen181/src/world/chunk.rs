@@ -61,6 +61,9 @@ pub struct Chunk {
     pub x: i32,
     pub z: i32,
     pub blocks: Box<[u8; CHUNK_VOLUME]>,
+    pub precipitation_height: [i32;256],
+    pub skylight_occlusion: [bool;256],
+    pub skylight_updated: bool,
     pub data: Nibbles,
     pub sky_light: Nibbles,
     pub block_light: Nibbles,
@@ -100,7 +103,9 @@ impl Chunk {
             x,
             z,
             blocks,
-            data: Nibbles::default(),
+            precipitation_height: [-999;256],
+            skylight_occlusion: [false;256],
+            skylight_updated: false,            data: Nibbles::default(),
             sky_light: Nibbles::default(),
             block_light: Nibbles::default(),
             height_map: [0; 256],
@@ -167,6 +172,8 @@ impl Chunk {
             }
         }
         self.lowest_block_height = lowest;
+        self.skylight_occlusion.fill(true);
+        self.modified=true;
     }
 
     #[inline]
@@ -200,5 +207,21 @@ impl Chunk {
 
     pub fn is_air(&self, x: i32, y: i32, z: i32) -> bool {
         self.block(x, y, z) == block::AIR
+    }
+}
+
+/// NibbleArray's new height-bit constructor. Chunks use the same layout with seven bits.
+#[derive(Clone)]
+pub struct NibbleArray181 {pub data:Vec<u8>,pub height_bits:u32}
+impl NibbleArray181 {
+    pub fn new(size:usize,height_bits:u32)->Self{Self{data:vec![0;size>>1],height_bits}}
+    pub fn from_data(data:Vec<u8>,height_bits:u32)->Self{Self{data,height_bits}}
+    pub fn get(&self,x:i32,y:i32,z:i32)->i32 {
+        let i=(x.wrapping_shl(self.height_bits+4)|z.wrapping_shl(self.height_bits)|y) as usize;
+        (self.data[i>>1]>>(if i&1==0{0}else{4})&15) as i32
+    }
+    pub fn set(&mut self,x:i32,y:i32,z:i32,v:i32) {
+        let i=(x.wrapping_shl(self.height_bits+4)|z.wrapping_shl(self.height_bits)|y) as usize;
+        let shift=if i&1==0{0}else{4};self.data[i>>1]=(self.data[i>>1]&!(15<<shift))|((v as u8&15)<<shift);
     }
 }

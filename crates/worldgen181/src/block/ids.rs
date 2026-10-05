@@ -1,4 +1,4 @@
-//! Block IDs used by world generation (Beta 1.7.3 numbering).
+//! Block IDs used by world generation (Beta 1.8.1 numbering).
 
 pub const AIR: u8 = 0;
 pub const STONE: u8 = 1;
@@ -62,3 +62,17 @@ pub const WEB: u8 = 30;
 pub const PRESSURE_PLATE_WOOD: u8 = 72;
 pub const PRESSURE_PLATE_STONE: u8 = 70;
 pub const ORE_REDSTONE_GLOWING: u8 = 74;
+
+pub const SILVERFISH: u8 = 97;
+pub const STONE_BRICK: u8 = 98;
+pub const MUSHROOM_CAP_BROWN: u8 = 99;
+pub const MUSHROOM_CAP_RED: u8 = 100;
+pub const IRON_BARS: u8 = 101;
+pub const GLASS_PANE: u8 = 102;
+pub const MELON: u8 = 103;
+pub const PUMPKIN_STEM: u8 = 104;
+pub const MELON_STEM: u8 = 105;
+pub const VINE: u8 = 106;
+pub const FENCE_GATE: u8 = 107;
+pub const STAIRS_BRICK: u8 = 108;
+pub const STAIRS_STONE_BRICK: u8 = 109;
