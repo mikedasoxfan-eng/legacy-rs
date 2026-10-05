@@ -16,7 +16,6 @@ pub struct Effects {
     pub fancy: bool,
     biomes: BiomeSource,
     pub collector: Option<worldgen::entity::Entity>,
-    pub interp_camera: [f64; 3],
 }
 impl Effects {
     pub fn object_draws(
@@ -62,12 +61,11 @@ impl Effects {
             colors: None,
             fancy: true,
             collector: None,
-            interp_camera: [0.0; 3],
             biomes: BiomeSource::new(seed),
         }
     }
     pub fn change_world(&mut self, seed: i64) {
-        self.renderer.clear();
+        self.renderer.clear_world(Snapshot::default());
         self.terrain = Snapshot::default();
         self.collector = None;
         self.biomes = BiomeSource::new(seed);
@@ -104,7 +102,6 @@ impl Effects {
         partial: f32,
         lightmap: &[u32; 256],
     ) -> [Vec<WeatherVertex>; 3] {
-        self.interp_camera = cam;
         // b1.8.1 EntityFX: Tessellator brightness from func_35115_a, drawn through the lightmap.
         self.renderer
             .lightmapped_vertices(&self.terrain, cam, yaw, pitch, partial)
@@ -159,11 +156,10 @@ impl Effects {
         };
         let mut batches = Vec::new();
         // EntityRenderer calls the lit layer before renderParticles updates interpPos.
-        let origin = self.interp_camera;
-        for p in &mut self.renderer.layers[3] {
+        self.renderer.render_lit_particles(&self.terrain, view[0], view[1], partial, |p, origin, rotation, _light| {
             if matches!(p.kind, Kind::Footstep | Kind::LargeExplode) {
-                let vs = p.vertices(&self.terrain, origin, crate::render::particles::rotation(view[0], view[1]), partial);
-                if vs.is_empty() { continue; }
+                let vs = p.vertices(&self.terrain, origin, rotation, partial);
+                if vs.is_empty() { return; }
                 let vertices = [0, 1, 2, 0, 2, 3]
                     .map(|i| EntityVertex {
                         pos: vs[i].pos,
@@ -229,7 +225,7 @@ impl Effects {
                 let g = effects::fire_at(source, relative, view[0]);
                 batches.extend(g.draws.iter().map(|d| d.batch()));
             }
-        }
+        });
         batches
     }
     pub(crate) fn tint(&mut self, block: u8, meta: i32, p: [i32; 3]) -> u32 {

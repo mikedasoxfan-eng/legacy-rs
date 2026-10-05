@@ -24,6 +24,7 @@ pub mod round4_verify181;
 pub mod round5_verify181;
 pub mod round6_verify181;
 pub mod round7_verify181;
+pub mod round8_verify181;
 pub mod objects;
 pub mod painting;
 pub mod path;

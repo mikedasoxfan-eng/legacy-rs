@@ -1,3 +1,60 @@
+# Beta 1.8.1 entities - round 8 report
+
+Round 8 completes **EffectRenderer and ItemMap** and fixes the inherited wild-wolf despawn RNG discrepancy. Eight starting backlog classes remain Not done. The round-8 table below is authoritative; the preserved earlier reports retain their historical validation and scope.
+
+## Round 8 changes and original-bytecode proof
+
+`tools/verify_entities8_181.sh --built` runs new, independent Mode classes against the original Beta 1.8.1 jar on Mojang Java 8u51. It is wired into a new final delimited entities block in `tools/verify181.sh`. No original Java source or shared Java recorder/fixture was edited.
+
+| Check | Coverage | Result |
+|---|---|---|
+| effectdispatch8_181 | 600 original EffectRenderer pass sequences: empty/sparse/full layers, interleaved admission, insertion order, brightness query before each render callback, all five billboard rotation arguments, per-layer white reset and callback color mutations, retained interpolation origin, clear/reuse, negative/extrapolated partial ticks and large camera angles | EXACT, 850,080 bytes |
+| itemmap8 | 267 static/stack lookup, creation and onUpdate cases: signed-short allocation rollover, full-int stack IDs, cache reuse identity, default versus initialized maps, player/non-player/null entities, client/server, both dimensions, selected/unselected updates, null-player creation mutation before exception | EXACT, 9,386,832 bytes |
+| wolfdespawn8 | Wild/tamed/sitting/angry combinations, no player, distance boundaries at 32 and 128, age boundaries at 600, 1,600 RNG seeds; age reset, death and exact random state | EXACT, 627,200 cases, 8,153,600 bytes |
+
+EffectRenderer now has a single ordered dispatch for each pass. Both the normal packed-light vertex output and the live lit-batch builder use it. The lit pass computes the current camera rotation, evaluates packed brightness before each callback, and retains the previous regular pass's origin; regular rendering updates the origin even with empty layers. The origin belongs to EffectRenderer rather than a second cached field in world_effects. World changes clear the constructor terrain snapshot while preserving the renderer RNGs and interpolation origin. The integrator's existing world_effects lightmapped_vertices/lightmap::sample hookup is retained.
+
+The dispatch oracle uses custom EntityFX virtual callbacks to observe the **original EffectRenderer bytecode**, including the actual Tessellator brightness set before each callback. It isolates that class from known inherited pickup/item/arrow draw differences. The existing particle factory, constructor, lifecycle, fragment, emitter and vertex checks are retained as complementary coverage. This is not a new claim that the broad pickuprenderers or pickuprenderersfast dependency failure is fixed, nor a GPU screenshot validation.
+
+ItemMap's complete class diff only renames the terrain-update method. The missing static lookup is now supplied through the existing World map APIs: a missing short-ID lookup allocates a default MapData under the next signed-short key; unlike stack lookup it does not set spawn, dimension, scale or dirty state. The existing inventory map loop delegates to the literal item onUpdate callback, with its remote-world guard and player-only markers. It publishes mutated stack damage before marker inventory lookup, preserving the existing Java alias behavior without changing ItemStack/inventory representation. Nullable update/creation adapters preserve allocation and stack mutations before NullPointerException. Terrain sampling, MapData and storage formats remain the existing implementations. ItemMap and ItemMapBase have no map-specific packet override in this original client; inherited item registry/action properties and existing map/file checks remain the proof for that dependency.
+
+The wild-wolf fix is one condition in entity/creature.rs. EntityAnimal cannot despawn, but EntityWolf overrides canDespawn to return !isWolfTamed. Rust had incorrectly excluded all wolves. Java's despawn random draw after idle age 600 first exposed this at frame 950, Wolf id 3. After the fix, the unchanged inherited 1,000-tick special recording is EXACT (`target/entities8-special1000-fixed.log`). The unchanged full 3,000-tick section is also EXACT (`target/entities8-special3000-compare.log`).
+
+## Per-class status
+
+| Class | Status | Proof or remaining gap |
+|---|---|---|
+| EffectRenderer | Done | Full Java diff audit; effectdispatch8_181 plus retained particlefactory5/6_181, effectlifecycle4_181, particleeffects, particles181/particles2_181 and emitters181 EXACT. Integrator runtime regular lightmap already supplied. Existing pickup-renderer dependency difference is not claimed repaired. |
+| ItemMap | Done | Full Java diff audit; itemmap8 EXACT; retained maps, mapfiles/mapread and registry/action proofs. No packet override exists in this class or ItemMapBase. |
+| SpawnerAnimals | Not done | Existing population/sleep/identity-input proofs retained. Live terrain population and allocation-dependent full-suite spawning integration remain. |
+| EntityList | Not done | Registry and existing factory proofs retained. Complete nullable/malformed constructor fidelity remains. |
+| RenderManager | Not done | Complete class/cache/dispatch audit and standalone bytecode proof remain. |
+| TileEntityRenderer | Not done | Complete null/cache/dispatch proof remains; live tile dispatch belongs to the integrator. |
+| TileEntitySpecialRenderer | Not done | Standalone nullable texture-engine/context/font dispatch proof and integration remain. |
+| Item | Not done | Full inherited lifecycle, exceptional/edit behavior and delegation audit remain. |
+| ItemBlock | Not done | Existing placement proofs retained. Broad block callback dependencies, sponge and malformed moving-piston paths remain unclaimed. |
+| ItemStack | Not done | Complete alias mutation, load/exception and delegation audit remains with player integration. |
+| EntityWolf | Done, corrected | Previous proofs retained; wild/tamed despawn condition fixed. New wolfdespawn8 and the unchanged full 3,000-tick special section are EXACT. |
+
+All eight round-7 Item class Done statuses and all earlier completed class statuses are retained. Multiplayer watcher synchronization, remote interpolation, labels, ears and capes remain outside the assigned singleplayer scope.
+
+## Validation and handoff
+
+The required `cargo build --release -p worldgen181 -p client` passed on the final source (`target/entities8-final-build.log`, 1m 09s). The final focused rerun passed all three new checks, ending `ENTITIES8 ALL FOCUSED CASES EXACT` (`target/entities8-postbuild-focused.log`). The final map callback shares its post-lookup tail with the inventory caller, so the stack's damage is published before marker lookup without performing a second map lookup; the focused check and existing maps recording passed again after that cleanup (`target/entities8-postbuild-maps.log`).
+
+All six retained entity suites (`verify_entities181.sh`, `verify_entities3_181.sh`, `verify_entities4_181.sh`, `verify_entities5_181.sh`, `verify_entities6_181.sh`, `verify_entities7_181.sh`) and `verify_world_blocks181.sh --built` passed with their EXACT summaries. The initial combined run is `target/entities8-regressions.log`; individual logs are `target/entities8-<script-name>.log`. Rounds 1, 3 and 4 were repeated after the wolf correction and final particle changes and passed again (`target/entities8-final-checks.log`, individual `target/entities8-final-<script-name>.log`).
+
+The existing `maps`, `mapfiles` and `mapread` sections remain EXACT (`target/entities8-maps.log`, `target/entities8-mapfiles.log`, `target/entities8-mapread.log`). The existing `entities: special` section is now EXACT for its full 3,000 ticks (`target/entities8-special3000-compare.log`). The new final entities block contributes the three EXACT round-8 checks without rewriting existing sections or recorders. The inherited broad `pickuprenderers`/`pickuprenderersfast` differences remain unclaimed, with baseline evidence preserved in the round-7 report below.
+
+Shell syntax, formatting of the new Rust check modules and `git diff --check` pass. The roughly one-hour full `tools/verify181.sh` remains for the integrator after merge. No interactive GPU validation was performed.
+
+Raw original-source audits are `target/entities8-<Class>.diff` for the ten starting backlog classes and EntityWolf. The commit script is `target/commit-b181-entities8.sh`; it stages the explicit round-8 files and uses the requested author/email and both co-author trailers. It has not been executed because .git is read-only in this sandbox.
+
+Protected b1.7.3 crates/tools, original Java, shared Java fixtures/recorders, terrain generation, world-block implementations, player tick/hunger/XP/GUI, ItemStack/inventory representation, first-person, weather, live tile drawing, world/chunk renderer, render range and lightmap implementations remain untouched. The only existing player-facing delegation change is the map item callback in maps.rs.
+
+## Preserved round 7 report
+
+
 # Beta 1.8.1 entities - round 7 report
 
 Round 7 completes **eight Item classes**: ItemBed, ItemSign, ItemSlab, ItemCloth, ItemLeaves, ItemLog, ItemVine and ItemBucket. The per-class table below is authoritative. The remaining backlog is not finished. Multiplayer watcher synchronization, remote interpolation, labels, ears and capes remain outside the assigned scope.
@@ -291,7 +348,7 @@ Full general `renderers`/`livingrenderers`, GUI scenes and the approximately one
 | RenderSpider | Done | newliving181: Spider/CaveSpider scale/texture, eye/death/overlay states, embedded arrows and lightmap coordinates EXACT. |
 | ModelPig | Done | models181: constructor geometry, UVs, successive animation poses and bitwise vertex/part values; 208 poses, 293,376 comparisons across the suite. |
 | RenderPlayer | Done (singleplayer scope) | playerliving6_181 EXACT: 320 sleeping/alive/dead, local/remote, bed/missing-bed, armor/equipment/arrow traces, 4,466,610 values. playerliving4_181 retains 768 body/armor/block/sword/remote-sneak traces. Correct local-SP sleeping sneak and missing-bed rotation; labels/ears/capes excluded. Existing render_lit API accepts integrator light inputs. |
-| EffectRenderer | Not done | particlefactory6_181 EXACT: 765 factory/admission/distance/error cases, all 35 required-JVM BMP decimal digit ranges, signed mixed-digit IDs, overflow and supplementary-digit rejection. Earlier factory/lifecycle/fragments/particles/emitters retained. Lit-layer ordering/runtime GPU packed-light hookup remain. |
+| EffectRenderer | Done | Round 8: effectdispatch8_181 EXACT for complete pass dispatch, rotation, packed brightness, white regular-pass color and retained origin. Prior particlefactory5/6_181, lifecycle/fragments/particles/emitters proofs retained; integrator regular lightmap hookup supplied. Pickup draw dependency remains separately unclaimed. |
 | EntityPickupFX | Done | particles2_181: 32 pickup cases, 512 squared-interpolation transforms, original float casts, timer/state/RNG and packed light EXACT. Corrected lit draw material to vanilla white. |
 | ModelQuadruped | Done | models181: constructor geometry, UVs, successive animation poses and bitwise vertex/part values; 208 poses, 293,376 comparisons across the suite. |
 | RenderManager | Not done | No complete b1.8.1 changed-class port and dedicated EXACT check completed; inherited implementation remains. |
@@ -356,7 +413,7 @@ The integrator retains world tile dispatch/lid simulation, terrain population an
 | ItemSlab | Done | Full class diff audit; metadata7 EXACT for every signed-short damage plus full-int boundaries, both graphics states, literal icons and clamped name suffixes. metaplace7 verifies inherited placement/replacement/collision/height/count behavior. |
 | ItemLog | Done | Full class diff audit; logconstructor7 EXACT for 180 constructor-held Block/null/delegation cases independent of placement Block, including signed overflow callback inputs and null-reference exception. metadata7 covers both registered blocks (log and stone brick); metaplace7 covers inherited placement. |
 | ItemCloth | Done | Full class diff audit; metadata7 EXACT for signed damage-to-dye conversion, icons/names, constructor properties and placement metadata. metaplace7 verifies inherited callbacks, including malformed counts. |
-| ItemMap | Not done | Existing maps check retained; complete update/packet/inherited audit remains. |
+| ItemMap | Done | Round 8: itemmap8 EXACT for static/stack lookup, creation, client/non-player/null update boundaries, signed allocation, cache identity and mutation/exception order; maps/mapfiles/mapread and inherited registry/action proofs retained. No packet override in the original ItemMap/ItemMapBase. |
 | ItemLeaves | Done | Full class diff audit; metadata7 EXACT for all signed-short/full-int boundaries, fancy/fast icons, pine/birch/default colors and damage-or-4 placement. metaplace7 verifies inherited callbacks. |
 | ItemRecord | Done | recorditem5 EXACT, 435,672 bytes: both records, server/client, air/stone/jukebox, metadata 0/1/15, signed/overflow counts and side boundaries. record4/null-tile and musicevents proofs retained; original no-edit-check behavior preserved. |
 

@@ -7,6 +7,8 @@ fn main() {
     }
     let expected = fs::read(&a[3]).unwrap();
     let actual = match a[1].as_str() {
+        "itemmap8" => worldgen::entity::round8_verify181::itemmap(),
+        "wolfdespawn8" => worldgen::entity::round8_verify181::wolf_despawn(),
         "beditem7" | "signitem7" | "metadata7" | "buckethit7" | "bucketray7" | "logconstructor7" | "vineconstructor7" => worldgen::entity::round7_verify181::replay(&a[1]),
         "blockitem6" => worldgen::entity::round6_verify181::block_items_replay(&expected),
         "spawninputs6" => worldgen::entity::round6_verify181::spawn_inputs_replay(&expected),

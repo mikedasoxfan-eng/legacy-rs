@@ -74,8 +74,7 @@ impl Entity {
                 | EntityKind::Sheep { .. }
                 | EntityKind::Cow
                 | EntityKind::Chicken { .. }
-                | EntityKind::Wolf(..)
-        ) {
+        ) || matches!(&self.kind, EntityKind::Wolf(s) if s.flags & 4 != 0) {
             return;
         }
         if let Some(i) = w.closest_player(self.pos, -1.0) {
