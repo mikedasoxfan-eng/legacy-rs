@@ -106,6 +106,8 @@ fn key_code(name: &str) -> Option<KeyCode> {
         "F2" => F2,
         "F3" => F3,
         "F5" => F5,
+        "F8" => F8,
+        "F11" => F11,
         _ => {
             let c = name.strip_prefix("Digit").map(|d| ("Digit", d)).unwrap_or(("Key", name));
             let ch = c.1.chars().next()?;

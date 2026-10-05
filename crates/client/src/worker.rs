@@ -22,6 +22,7 @@ pub enum ToWorker {
         z: f64,
     },
     Settings(VideoSettings),
+    RefreshTextures(Colorizers),
     /// `isGamePaused`: a screen that pauses the game is open (no ticks, no catch-up).
     Pause(bool),
     /// `World.func_650_a(n)`: the pause menu saves a few chunks every frame.
@@ -239,7 +240,7 @@ pub(crate) fn window_axis(p: i32, wide: i32) -> Vec<i32> {
         .collect()
 }
 
-fn run(opts: WorldOptions, col: Colorizers, mut video: VideoSettings, rx: Receiver<ToWorker>, tx: Sender<FromWorker>) {
+fn run(opts: WorldOptions, mut col: Colorizers, mut video: VideoSettings, rx: Receiver<ToWorker>, tx: Sender<FromWorker>) {
     let t = Instant::now();
     let mut last_progress = -2;
     let mut progress = |step: worldgen::scenario::LoadStep| {
@@ -375,6 +376,13 @@ fn run(opts: WorldOptions, col: Colorizers, mut video: VideoSettings, rx: Receiv
         loop {
             match rx.try_recv() {
                 Ok(ToWorker::Camera { x, y, z }) => cam = (x, y, z),
+                Ok(ToWorker::RefreshTextures(next)) => {
+                    col = next;
+                    meshed.clear();
+                    sort_pos = (f64::MAX, f64::MAX, f64::MAX);
+                    idle_reported = false;
+                    let _ = tx.send(FromWorker::ResetMeshes);
+                }
                 Ok(ToWorker::Settings(next)) => {
                     if next.remesh(video) {
                         meshed.clear();
@@ -842,6 +850,7 @@ pub fn mesh_chunk(
                 let t = if rprops(id).pass == 0 { &mut t0 } else { &mut t1 };
                 let mut rb = RenderBlocks::new(&access, t, col);
                 rb.ao = video.ao;
+    rb.anaglyph = video.anaglyph;
                 rb.render_block(id, cx * 16 + x, y, cz * 16 + z);
             }
         }

@@ -260,9 +260,18 @@ impl GuiRenderer {
         (self.textures.len() - 1) as TexId
     }
 
+    /// glTexImage2D may change the dimensions while retaining the texture name.
+    pub fn replace_texture(&mut self, device: &wgpu::Device, queue: &wgpu::Queue, id: TexId, img: &Image, blur: bool, clamp: bool) {
+        self.textures[id as usize] = make_texture(device, queue, &self.tex_layout, &self.samplers[blur as usize][clamp as usize], img);
+    }
+
     /// Replace a texture's pixels (same size as when it was added).
     pub fn update_texture(&self, queue: &wgpu::Queue, id: TexId, img: &Image) {
         write(queue, &self.textures[id as usize].texture, img);
+    }
+
+    pub fn update_atlas_tile(&self, queue: &wgpu::Queue, id: TexId, icon: u32, image: &[u8; 1024]) {
+        write_tile(queue, &self.textures[id as usize].texture, icon, image);
     }
 
     fn pipeline(&mut self, device: &wgpu::Device, key: PipeKey) -> &wgpu::RenderPipeline {
@@ -534,4 +543,10 @@ fn write(queue: &wgpu::Queue, tex: &wgpu::Texture, img: &Image) {
             depth_or_array_layers: 1,
         },
     );
+}
+
+pub(crate) fn write_tile(queue: &wgpu::Queue, texture: &wgpu::Texture, icon: u32, image: &[u8;1024]) {
+    if texture.width() < icon%16*16+16 || texture.height() < icon/16*16+16 { return; }
+    queue.write_texture(wgpu::TexelCopyTextureInfo { texture, mip_level: 0, origin: wgpu::Origin3d { x: icon%16*16, y: icon/16*16, z: 0 }, aspect: wgpu::TextureAspect::All },
+        image, wgpu::TexelCopyBufferLayout { offset: 0, bytes_per_row: Some(64), rows_per_image: Some(16) }, wgpu::Extent3d { width: 16, height: 16, depth_or_array_layers: 1 });
 }

@@ -1,5 +1,10 @@
 //! wgpu device, pipelines and per-frame drawing.
 
+#[path = "texture_refresh.rs"]
+mod texture_refresh;
+#[path = "stereo.rs"]
+pub(crate) mod stereo;
+
 use super::{sky, Vertex};
 use glam::{DMat4, DVec3, Mat4, Vec4};
 use std::collections::HashMap;
@@ -33,6 +38,7 @@ struct ChunkGpu {
 /// Everything the frame needs from the game state.
 pub struct FrameParams {
     pub player: Option<super::player_view::Frame>,
+    pub player_right: Option<super::player_view::Frame>,
     pub cam_pos: DVec3,
     pub yaw: f32,
     pub pitch: f32,
@@ -67,6 +73,7 @@ pub struct Gpu {
     lit_effects: super::entity::pipeline::EntityPipeline,
     pub lit_effect_batches: Vec<super::entity::living::Batch>,
     pub window: Arc<Window>,
+    stereo: stereo::Stereo,
     surface: wgpu::Surface<'static>,
     device: wgpu::Device,
     queue: wgpu::Queue,
@@ -75,20 +82,23 @@ pub struct Gpu {
     origins_bind: wgpu::BindGroup,
     origins_buf: wgpu::Buffer,
     origins_cap: usize,
-    p_opaque: wgpu::RenderPipeline,
-    p_water_depth: wgpu::RenderPipeline,
-    p_water_color: wgpu::RenderPipeline,
-    p_sky: wgpu::RenderPipeline,
-    p_sky_alpha: wgpu::RenderPipeline,
-    p_sky_add: wgpu::RenderPipeline,
-    p_cloud_depth: wgpu::RenderPipeline,
-    p_cloud_color: wgpu::RenderPipeline,
+    p_opaque: super::color_mask::Pipelines,
+    p_water_depth: super::color_mask::Pipelines,
+    p_water_color: super::color_mask::Pipelines,
+    p_sky: super::color_mask::Pipelines,
+    p_sky_alpha: super::color_mask::Pipelines,
+    p_sky_add: super::color_mask::Pipelines,
+    p_cloud_depth: super::color_mask::Pipelines,
+    p_cloud_color: super::color_mask::Pipelines,
     cloud_slot: DrawSlot,
     cloud_buf: wgpu::Buffer,
     weather_slots: [DrawSlot; 6],
     weather_bufs: [wgpu::Buffer; 6],
-    p_weather: wgpu::RenderPipeline,
-    p_lightning: wgpu::RenderPipeline,
+    p_weather: super::color_mask::Pipelines,
+    p_lightning: super::color_mask::Pipelines,
+    texture_layout: wgpu::BindGroupLayout,
+    sampler: wgpu::Sampler,
+    items_tex: wgpu::Texture,
     terrain_tex: wgpu::Texture,
     quad_index: wgpu::Buffer,
     quad_index_quads: u32,
@@ -226,7 +236,7 @@ impl Gpu {
                     depth_write: bool,
                     depth_cmp: wgpu::CompareFunction,
                     cull: Option<wgpu::Face>| {
-            device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
+            super::color_mask::Pipelines::new(|mask| device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
                 label: Some(label),
                 layout: Some(layout),
                 vertex: wgpu::VertexState {
@@ -261,11 +271,11 @@ impl Gpu {
                     module: &shader,
                     entry_point: Some("fs_main"),
                     compilation_options: Default::default(),
-                    targets: &[Some(wgpu::ColorTargetState { format: config.format, blend, write_mask })],
+                    targets: &[Some(wgpu::ColorTargetState { format: config.format, blend, write_mask: write_mask & mask })],
                 }),
                 multiview_mask: None,
                 cache: None,
-            })
+            }))
         };
         use wgpu::CompareFunction::{Always, LessEqual};
         let all = wgpu::ColorWrites::ALL;
@@ -405,13 +415,14 @@ impl Gpu {
         let sun_slot = slot(&sun_view);
         let moon_slot = slot(&moon_view);
         let cloud_slot = slot(&clouds_view);
+        let (items_tex, items_view) = upload(weather_images[3], "particle items");
         let weather_slots = [
             slot(&upload(weather_images[0], "snow").1),
             slot(&upload(weather_images[1], "rain").1),
             slot(&upload(weather_images[2], "particles").1),
             slot(&white_view),
             slot(&terrain_view),
-            slot(&upload(weather_images[3], "particle items").1),
+            slot(&items_view),
         ];
         let weather_bufs = std::array::from_fn(|_| {
             device.create_buffer(&wgpu::BufferDescriptor {
@@ -436,6 +447,7 @@ impl Gpu {
         });
 
         let mut gpu = Gpu {
+            stereo: stereo::Stereo::new(&device, config.format),
             lit_effect_batches: Vec::new(),
             lit_effects: super::entity::pipeline::EntityPipeline::new(
                 &device, &queue, config.format,
@@ -492,6 +504,9 @@ impl Gpu {
             weather_bufs,
             p_weather,
             p_lightning,
+            texture_layout: layout0,
+            sampler,
+            items_tex,
             terrain_tex,
             quad_index,
             quad_index_quads: 0,
@@ -522,9 +537,6 @@ impl Gpu {
             self.surface.configure(&self.device, &self.config);
         }
         self.entities.fancy = video.fancy;
-        if video.anaglyph {
-            eprintln!("video: anaglyph is not implemented; stereo passes and RenderEngine texture recoloring are still required");
-        }
     }
 
     fn make_depth(device: &wgpu::Device, w: u32, h: u32) -> wgpu::TextureView {
@@ -721,31 +733,17 @@ impl Gpu {
     }
 
     /// The world, then `overlay` (GUI) into the same frame.
-    pub fn render_with_overlay(
-        &mut self,
-        p: &FrameParams,
-        capture: bool,
-        overlay: &mut dyn FnMut(&wgpu::Device, &wgpu::Queue, &wgpu::TextureView, (u32, u32)),
-    ) -> Option<Image> {
-        let frame = match self.surface.get_current_texture() {
-            wgpu::CurrentSurfaceTexture::Success(f) | wgpu::CurrentSurfaceTexture::Suboptimal(f) => f,
-            wgpu::CurrentSurfaceTexture::Outdated | wgpu::CurrentSurfaceTexture::Lost => {
-                self.surface.configure(&self.device, &self.config);
-                return None;
-            }
-            _ => return None,
-        };
-        let view = frame.texture.create_view(&Default::default());
+    fn render_eye(&mut self, p: &FrameParams, eye: i32, target: &wgpu::TextureView) {
         let (w, h) = (self.config.width, self.config.height);
-
-        let rot = p.player.as_ref().map_or_else(
+        let player = if eye == 1 { p.player_right.as_ref() } else { p.player.as_ref() };
+        let mut rot = player.map_or_else(
             || {
                 Mat4::from_rotation_x(p.pitch.to_radians())
                     * Mat4::from_rotation_y((p.yaw + 180.0).to_radians())
             },
             |v| super::camera::matrix(&v.ops),
         );
-        let proj = p.player.as_ref().map_or_else(
+        let mut proj = player.map_or_else(
             || {
                 perspective(
                     p.fov_y_deg.to_radians(),
@@ -756,17 +754,20 @@ impl Gpu {
             },
             |v| super::camera::projection(v.fov, w as f32 / h as f32, p.far * 2.0, v.settings),
         );
+        if player.is_none() && p.video.anaglyph {
+            rot = Mat4::from_translation(glam::Vec3::new((eye*2-1) as f32*0.1, 0.0, 0.0)) * rot;
+            proj = super::camera::projection(p.fov_y_deg, w as f32/h as f32, p.far*2.0,
+                super::camera::Settings { anaglyph: true, eye, zoom: 1.0, ..Default::default() });
+        }
         let view_proj = proj * rot;
-        let medium = p
-            .player
-            .as_ref()
+        let medium = player
             .map_or(super::camera::Medium::Air, |v| v.medium);
-        let nether = p.nether || p.player.as_ref().is_some_and(|v| v.nether);
+        let nether = p.nether || player.is_some_and(|v| v.nether);
         let fog_color = p.fog_color;
         let fog = super::camera::fog(medium, p.far, false, nether);
         self.entities.fog_override = Some(fog);
         self.entities.fog_view = rot;
-        if let Some(v) = &p.player {
+        if let Some(v) = player {
             if let Some(image) = &v.map_image {
                 self.hand.update_map(&self.queue, image);
             }
@@ -832,11 +833,12 @@ impl Gpu {
         self.lit_effects.upload(
             &self.device,
             &self.queue,
-            std::mem::take(&mut self.lit_effect_batches),
+            self.lit_effect_batches.clone(),
             view_proj,
             fog_color,
             p.far,
         );
+        let sky_color = if p.video.anaglyph { super::stereo_color(p.sky_color) } else { p.sky_color };
         let ident = Mat4::IDENTITY.to_cols_array_2d();
         let fog4 = [fog_color[0], fog_color[1], fog_color[2], 1.0];
 
@@ -847,29 +849,14 @@ impl Gpu {
             view_proj: view_proj.to_cols_array_2d(),
             fog_view: rot.to_cols_array_2d(),
             model: ident,
-            color: [p.sky_color[0], p.sky_color[1], p.sky_color[2], 1.0],
+            color: [sky_color[0], sky_color[1], sky_color[2], 1.0],
             fog_color: fog4,
             fog: sky_fog,
         };
         self.write_uniforms(&self.slots[0], &sky_u);
         let sunrise = sky::sunrise_colors(p.celestial);
-        if let Some(c) = sunrise {
-            // Triangle fan: center at (0,100,0), rim of 17 points; rotated 90 about X then 0/180 about Z.
-            let center = Vertex { pos: [0.0, 100.0, 0.0], uv: [0.0; 2], color: rgba(c[0], c[1], c[2], c[3]) };
-            let mut rim = Vec::new();
-            for i in 0..=16 {
-                let a = i as f32 * std::f64::consts::PI as f32 * 2.0 / 16.0;
-                let (s, co) = (worldgen::math::sin(a), worldgen::math::cos(a));
-                rim.push(Vertex {
-                    pos: [s * 120.0, co * 120.0, -co * 40.0 * c[3]],
-                    uv: [0.0; 2],
-                    color: rgba(c[0], c[1], c[2], 0.0),
-                });
-            }
-            let mut fan = Vec::new();
-            for i in 0..16 {
-                fan.extend_from_slice(&[center, rim[i], rim[i + 1]]);
-            }
+        if sunrise.is_some() {
+            let fan = sky::sunrise_fan(p.celestial, p.video.anaglyph).unwrap();
             self.queue.write_buffer(&self.fan, 0, bytemuck::cast_slice(&fan));
             let z = if p.celestial > 0.5 { 180.0f32 } else { 0.0 };
             let model = Mat4::from_rotation_x(90f32.to_radians()) * Mat4::from_rotation_z(z.to_radians());
@@ -898,7 +885,7 @@ impl Gpu {
             view_proj: view_proj.to_cols_array_2d(),
             fog_view: rot.to_cols_array_2d(),
             model: ident,
-            color: [p.sky_color[0] * 0.2 + 0.04, p.sky_color[1] * 0.2 + 0.04, p.sky_color[2] * 0.6 + 0.1, 1.0],
+            color: [sky_color[0] * 0.2 + 0.04, sky_color[1] * 0.2 + 0.04, sky_color[2] * 0.6 + 0.1, 1.0],
             fog_color: fog4,
             fog: sky_fog,
         };
@@ -961,6 +948,7 @@ impl Gpu {
 
         // Clouds (Fancy): rebuilt every frame around the camera, drawn scaled 12x horizontally.
         let cloud_color = sky::cloud_color(p.celestial, p.rain, p.thunder);
+        let cloud_color = if p.video.anaglyph { super::stereo_color(cloud_color) } else { cloud_color };
         let cloud_verts = if p.video.fancy {
             sky::fancy_clouds(cam.x, cam.y, cam.z, p.cloud_offset, cloud_color)
         } else {
@@ -1012,22 +1000,8 @@ impl Gpu {
             v.len() as u32
         });
 
-        // Offscreen copy target for screenshots.
-        let capture_tex = capture.then(|| {
-            self.device.create_texture(&wgpu::TextureDescriptor {
-                label: Some("capture"),
-                size: wgpu::Extent3d { width: w, height: h, depth_or_array_layers: 1 },
-                mip_level_count: 1,
-                sample_count: 1,
-                dimension: wgpu::TextureDimension::D2,
-                format: self.config.format,
-                usage: wgpu::TextureUsages::RENDER_ATTACHMENT | wgpu::TextureUsages::COPY_SRC,
-                view_formats: &[],
-            })
-        });
-        let capture_view = capture_tex.as_ref().map(|t| t.create_view(&Default::default()));
-        let target = capture_view.as_ref().unwrap_or(&view);
-
+        let mut mask = super::color_mask::eye_mask(p.video.anaglyph, eye, false);
+        if p.video.anaglyph { self.stereo.clear(&self.device, &self.queue, target, mask, p.fog_color); }
         let mut enc = self.device.create_command_encoder(&Default::default());
         {
             let mut rp = enc.begin_render_pass(&wgpu::RenderPassDescriptor {
@@ -1037,12 +1011,12 @@ impl Gpu {
                     depth_slice: None,
                     resolve_target: None,
                     ops: wgpu::Operations {
-                        load: wgpu::LoadOp::Clear(wgpu::Color {
+                        load: if p.video.anaglyph { wgpu::LoadOp::Load } else { wgpu::LoadOp::Clear(wgpu::Color {
                             r: p.fog_color[0] as f64,
                             g: p.fog_color[1] as f64,
                             b: p.fog_color[2] as f64,
                             a: 1.0,
-                        }),
+                        }) },
                         store: wgpu::StoreOp::Store,
                     },
                 })],
@@ -1059,17 +1033,17 @@ impl Gpu {
             // RenderGlobal.renderSky draws nothing in the Nether.
             if p.video.sky() && !p.nether {
                 // Sky plane, sunrise glow, sun, moon, stars, void.
-                rp.set_pipeline(&self.p_sky);
+                rp.set_pipeline(self.p_sky.get(mask));
                 rp.set_bind_group(0, &self.slots[0].bind, &[]);
                 rp.set_vertex_buffer(0, self.sky_plane.0.slice(..));
                 rp.draw(0..self.sky_plane.1, 0..1);
                 if sunrise.is_some() {
-                    rp.set_pipeline(&self.p_sky_alpha);
+                    rp.set_pipeline(self.p_sky_alpha.get(mask));
                     rp.set_bind_group(0, &self.slots[1].bind, &[]);
                     rp.set_vertex_buffer(0, self.fan.slice(..));
                     rp.draw(0..48, 0..1);
                 }
-                rp.set_pipeline(&self.p_sky_add);
+                rp.set_pipeline(self.p_sky_add.get(mask));
                 rp.set_bind_group(0, &self.sun_slot.bind, &[]);
                 rp.set_vertex_buffer(0, self.sun_quad.0.slice(..));
                 rp.draw(0..self.sun_quad.1, 0..1);
@@ -1081,14 +1055,14 @@ impl Gpu {
                     rp.set_vertex_buffer(0, self.stars.0.slice(..));
                     rp.draw(0..self.stars.1, 0..1);
                 }
-                rp.set_pipeline(&self.p_sky);
+                rp.set_pipeline(self.p_sky.get(mask));
                 rp.set_bind_group(0, &self.slots[3].bind, &[]);
                 rp.set_vertex_buffer(0, self.void_plane.0.slice(..));
                 rp.draw(0..self.void_plane.1, 0..1);
             }
             // Terrain pass 0.
             rp.set_index_buffer(self.quad_index.slice(..), wgpu::IndexFormat::Uint32);
-            rp.set_pipeline(&self.p_opaque);
+            rp.set_pipeline(self.p_opaque.get(mask));
             rp.set_bind_group(0, &self.terrain_slot.bind, &[]);
             rp.set_bind_group(1, &self.origins_bind, &[]);
             for (i, k) in visible.iter().enumerate() {
@@ -1099,25 +1073,25 @@ impl Gpu {
             }
             // Weather effects belong to renderEntities, before particles and water.
             if weather_n[3] > 0 {
-                rp.set_pipeline(&self.p_lightning);
+                rp.set_pipeline(self.p_lightning.get(mask));
                 rp.set_bind_group(0, &self.weather_slots[3].bind, &[]);
                 rp.set_vertex_buffer(0, self.weather_bufs[3].slice(..));
                 rp.draw(0..weather_n[3], 0..1);
             }
-            self.entities.draw(&mut rp);
-            self.lit_effects.draw(&mut rp);
+            self.entities.draw_masked(&mut rp, mask);
+            self.lit_effects.draw_masked(&mut rp, mask);
             // Lit layer 3 precedes the sprite, terrain and item layers.
             rp.set_bind_group(1, &self.origins_bind, &[]);
             for i in [2, 4, 5] {
                 if weather_n[i] > 0 {
-                    rp.set_pipeline(&self.p_weather);
+                    rp.set_pipeline(self.p_weather.get(mask));
                     rp.set_bind_group(0, &self.weather_slots[i].bind, &[]);
                     rp.set_vertex_buffer(0, self.weather_bufs[i].slice(..));
                     rp.draw_indexed(0..weather_n[i] / 4 * 6, 0, 0..1);
                 }
             }
             if medium == super::camera::Medium::Water {
-                self.targeting.draw(&mut rp);
+                self.targeting.draw_masked(&mut rp, mask);
             }
             // Entity textures occupy group 1; restore the terrain origins binding.
             rp.set_bind_group(1, &self.origins_bind, &[]);
@@ -1126,7 +1100,8 @@ impl Gpu {
                 if !p.video.fancy && pass == 0 {
                     continue;
                 }
-                rp.set_pipeline(pipe);
+                if p.video.fancy && pass == 1 { mask = super::color_mask::eye_mask(p.video.anaglyph, eye, true); }
+                rp.set_pipeline(pipe.get(mask));
                 rp.set_bind_group(0, &self.water_slot.bind, &[]);
                 for (i, k) in visible.iter().enumerate().rev() {
                     if let Some((buf, n)) = &self.chunks[k].translucent {
@@ -1136,14 +1111,14 @@ impl Gpu {
                 }
             }
             if medium != super::camera::Medium::Water {
-                self.targeting.draw(&mut rp);
+                self.targeting.draw_masked(&mut rp, mask);
             }
             rp.set_bind_group(1, &self.origins_bind, &[]);
             for i in 0..2 {
                 if weather_n[i] == 0 {
                     continue;
                 }
-                rp.set_pipeline(&self.p_weather);
+                rp.set_pipeline(self.p_weather.get(mask));
                 rp.set_bind_group(0, &self.weather_slots[i].bind, &[]);
                 rp.set_vertex_buffer(0, self.weather_bufs[i].slice(..));
                 rp.draw_indexed(0..weather_n[i] / 4 * 6, 0, 0..1);
@@ -1153,7 +1128,8 @@ impl Gpu {
                 if p.nether || !p.video.fancy && pass == 0 {
                     continue;
                 }
-                rp.set_pipeline(pipe);
+                if p.video.fancy && pass == 1 { mask = super::color_mask::eye_mask(p.video.anaglyph, eye, true); }
+                rp.set_pipeline(pipe.get(mask));
                 rp.set_bind_group(0, &self.cloud_slot.bind, &[]);
                 rp.set_vertex_buffer(0, self.cloud_buf.slice(..));
                 rp.draw_indexed(0..(cloud_n / 4 * 6) as u32, 0, 0..1);
@@ -1186,14 +1162,58 @@ impl Gpu {
                 occlusion_query_set: None,
                 multiview_mask: None,
             });
-            self.hand.draw(&mut rp);
-            self.overlays.draw(&mut rp);
+            self.hand.draw_masked(&mut rp, mask);
+            self.overlays.draw_masked(&mut rp, mask);
         }
 
-        let world = std::mem::replace(&mut enc, self.device.create_command_encoder(&Default::default()));
-        self.queue.submit([world.finish()]);
-        overlay(&self.device, &self.queue, target, (w, h));
+        self.queue.submit([enc.finish()]);
+    }
 
+    pub fn render_with_overlay(
+        &mut self,
+        p: &FrameParams,
+        capture: bool,
+        overlay: &mut dyn FnMut(&wgpu::Device, &wgpu::Queue, &wgpu::TextureView, (u32, u32)),
+    ) -> Option<Image> {
+        let frame = match self.surface.get_current_texture() {
+            wgpu::CurrentSurfaceTexture::Success(f) | wgpu::CurrentSurfaceTexture::Suboptimal(f) => f,
+            wgpu::CurrentSurfaceTexture::Outdated | wgpu::CurrentSurfaceTexture::Lost => {
+                self.surface.configure(&self.device, &self.config);
+                return None;
+            }
+            _ => return None,
+        };
+        let view = frame.texture.create_view(&Default::default());
+        let (w, h) = (self.config.width, self.config.height);
+
+        // Offscreen copy target for screenshots.
+        let capture_tex = capture.then(|| {
+            self.device.create_texture(&wgpu::TextureDescriptor {
+                label: Some("capture"),
+                size: wgpu::Extent3d { width: w, height: h, depth_or_array_layers: 1 },
+                mip_level_count: 1,
+                sample_count: 1,
+                dimension: wgpu::TextureDimension::D2,
+                format: self.config.format,
+                usage: wgpu::TextureUsages::RENDER_ATTACHMENT | wgpu::TextureUsages::COPY_SRC,
+                view_formats: &[],
+            })
+        });
+        let capture_view = capture_tex.as_ref().map(|t| t.create_view(&Default::default()));
+        let target = capture_view.as_ref().unwrap_or(&view);
+
+        if p.video.anaglyph {
+            let shared = self.stereo.target(&self.device, &self.queue, w, h, self.config.format);
+            self.render_eye(p, 0, &shared);
+            self.render_eye(p, 1, &shared);
+            overlay(&self.device, &self.queue, &shared, (w, h));
+            self.stereo.present(&self.device, &self.queue, target, &shared);
+        } else {
+            self.render_eye(p, 0, target);
+            overlay(&self.device, &self.queue, target, (w, h));
+        }
+        self.lit_effect_batches.clear();
+        let mut enc = self.device.create_command_encoder(&Default::default());
         let mut out = None;
         if let Some(tex) = &capture_tex {
             let bpr = (w * 4).div_ceil(256) * 256;
@@ -1271,10 +1291,7 @@ fn make_slot(
     DrawSlot { buf, bind }
 }
 
-fn rgba(r: f32, g: f32, b: f32, a: f32) -> [u8; 4] {
-    let c = |v: f32| ((v * 255.0f32) as i32).clamp(0, 255) as u8;
-    [c(r), c(g), c(b), c(a)]
-}
+
 
 /// Conservative frustum test of a camera-relative box.
 fn aabb_visible(vp: &DMat4, min: DVec3, max: DVec3) -> bool {

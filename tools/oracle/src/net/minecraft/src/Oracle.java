@@ -181,6 +181,8 @@ public class Oracle {
                 + " fogrange " + Float.floatToIntBits(org.lwjgl.opengl.GL11.fogStart) + " " + Float.floatToIntBits(org.lwjgl.opengl.GL11.fogEnd));
         } else if (mode.equals("weathermesh")) {
             weatherMesh(a);
+        } else if (mode.equals("skydraw")) {
+            skyDraw(a[1]);
         } else if (mode.equals("cloudmesh")) {
             cloudMesh(a);
         } else if (mode.equals("videowindow")) {
@@ -212,7 +214,7 @@ public class Oracle {
             RedstoneOracle.run(a[1], a[2]);
         } else if (mode.equals("rendershowcase")) {
             // layout out [fancy|fast] [on|off]
-            ShowcaseOracle.run(a[1], a[2], a.length <= 3 || !a[3].equals("fast"), a.length <= 4 || !a[4].equals("off"));
+            ShowcaseOracle.run(a[1], a[2], a.length <= 3 || !a[3].equals("fast"), a.length <= 4 || !a[4].equals("off"), a.length > 5 && a[5].equals("anaglyph"));
         } else if (mode.equals("teleport")) {
             TeleportOracle.run(Long.parseLong(a[1]), Long.parseLong(a[2]), Integer.parseInt(a[3]),
                 Double.parseDouble(a[4]), Double.parseDouble(a[5]), Double.parseDouble(a[6]), Long.parseLong(a[7]), a[8]);
@@ -948,6 +950,35 @@ public class Oracle {
         setField(renderer, "fogColor1", 1.0F); setField(renderer, "fogColor2", 1.0F);
         return renderer;
     }
+    static ArrayList<float[]> skyColors;
+    public static void recordSkyColor(float r,float g,float b) { if(skyColors!=null)skyColors.add(new float[]{r,g,b}); }
+    static void skyDraw(String out) throws Exception {
+        World w=newWorld(42L);
+        Entity view=new EntityItem(w,0.5,70,0.5,new ItemStack(1,1,0));
+        EntityRenderer renderer=headlessRenderer(w,view);
+        net.minecraft.client.Minecraft mc=(net.minecraft.client.Minecraft)getField(renderer,"mc");
+        ((HashMap)getField(mc.renderEngine,"textureMap")).put("/terrain/sun.png",2);
+        ((HashMap)getField(mc.renderEngine,"textureMap")).put("/terrain/moon.png",3);
+        RenderGlobal global=(RenderGlobal)allocate(RenderGlobal.class);
+        setField(global,"mc",mc);setField(global,"worldObj",w);setField(global,"renderEngine",mc.renderEngine);
+        Field convert=Tessellator.class.getDeclaredField("convertQuadsToTriangles");convert.setAccessible(true);convert.setBoolean(null,false);
+        DataOut o=new DataOut();o.bytes("B173SKY1".getBytes("US-ASCII"));o.i32(512);
+        for(int c=0;c<512;c++) {
+            int time=(c/2)*97,flash=c%7==0?2:0;
+            float partial=(c%4)*0.25F,rain=(c%5)*0.25F,thunder=(c%3)*0.5F;
+            double x=c*31.125-8000,z=(c%23)*-73.75;
+            w.setWorldTime(time);w.rainingStrength=w.prevRainingStrength=rain;w.thunderingStrength=w.prevThunderingStrength=thunder;w.field_27172_i=flash;
+            mc.renderViewEntity.posX=x;mc.renderViewEntity.posZ=z;mc.gameSettings.anaglyph=c%2==0;
+            o.i64(Double.doubleToLongBits(x));o.i64(Double.doubleToLongBits(z));o.i32(time);o.i32(flash);
+            modelFloat(o,partial);modelFloat(o,rain);modelFloat(o,thunder);o.i32(mc.gameSettings.anaglyph?1:0);
+            skyColors=new ArrayList<float[]>();weatherVertices.clear();
+            global.renderSky(partial);
+            o.i32(skyColors.size());for(float[] rgb:skyColors)for(float f:rgb)modelFloat(o,f);
+            o.i32(weatherVertices.size());for(float[] vertex:weatherVertices)for(float f:vertex)modelFloat(o,f);
+            skyColors=null;
+        }
+        try(OutputStream os=new FileOutputStream(out)){o.writeTo(os);}
+    }
     static final ArrayList<float[]> weatherVertices = new ArrayList<float[]>();
     public static void recordWeatherDraw(int mode, int count, float[] color, int texture) {
         try {
@@ -999,6 +1030,7 @@ public class Oracle {
         Field mcF=EntityRenderer.class.getDeclaredField("mc");mcF.setAccessible(true);
         net.minecraft.client.Minecraft mc=(net.minecraft.client.Minecraft)mcF.get(r);
         mc.gameSettings.fancyGraphics=!a[10].equals("fast");
+        mc.gameSettings.anaglyph=a.length>12 && a[12].equals("anaglyph");
         mc.renderViewEntity.prevPosX=x;mc.renderViewEntity.prevPosY=y;mc.renderViewEntity.prevPosZ=z;
         ((HashMap) getField(mc.renderEngine,"textureMap")).put("/environment/clouds.png",2);
         RenderGlobal global=(RenderGlobal)allocate(RenderGlobal.class);

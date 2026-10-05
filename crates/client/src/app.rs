@@ -4,6 +4,8 @@
 
 #[path = "app_block_tiles.rs"]
 mod block_tiles;
+#[path = "client_textures.rs"]
+mod client_textures;
 
 use crate::render::blocks::Colorizers;
 use crate::render::gpu::{FrameParams, Gpu};
@@ -243,6 +245,7 @@ pub struct App {
     fps_time: Instant,
     fps: u32,
     fx: Vec<render::fx::TextureFx>,
+    item_fx: Option<render::item_fx::ItemFx>,
     fx_rng: render::fx::Rng,
     cloud_ticks: i64,
     weather: render::weather::Weather,
@@ -341,6 +344,7 @@ impl App {
             fps_time: Instant::now(),
             fps: 0,
             fx: render::fx::TextureFx::terrain_set(),
+            item_fx: None,
             fx_rng: render::fx::Rng::new(0x9E3779B97F4A7C15),
             cloud_ticks: 0,
             weather: Default::default(),
@@ -358,6 +362,7 @@ impl App {
 
     fn settings_changed(&mut self) {
         let video = self.video_settings();
+        if self.gui.as_ref().is_some_and(|g| g.texture_anaglyph != video.anaglyph) { self.refresh_textures(); }
         self.frame_deadline = None;
         if let Some(gpu) = &mut self.gpu {
             gpu.apply_video(video);
@@ -394,7 +399,6 @@ impl App {
         self.last_cam_sent = DVec3::splat(f64::MAX);
         self.temps = BiomeSource::new(seed);
         self.seed = seed;
-        self.fx = render::fx::TextureFx::terrain_set();
         self.cloud_ticks = 0;
         self.player = None;
         self.pending_look.clear();
@@ -550,6 +554,7 @@ impl App {
                     self.shutdown(el);
                     return;
                 }
+                gui::system::GameAction::RefreshTextures => self.refresh_textures(),
                 gui::system::GameAction::SettingsChanged => {
                     self.settings_changed();
                 }
@@ -805,6 +810,15 @@ impl App {
 
     /// A key going down or up (`c` is the typed character for screens).
     fn key_input(&mut self, el: &ActiveEventLoop, code: KeyCode, c: char, pressed: bool, repeat: bool) {
+        let repeats = self.gui.as_ref().and_then(|g| g.screen.as_ref()).is_some_and(|s| s.repeats_keys());
+        if repeat && !repeats { return; }
+        if pressed && code == KeyCode::F11 {
+            if let Some(gpu) = &self.gpu {
+                let fullscreen = gpu.window.fullscreen().is_none().then(|| winit::window::Fullscreen::Borderless(gpu.window.current_monitor()));
+                gpu.window.set_fullscreen(fullscreen);
+            }
+            return;
+        }
         let screen_open = self.gui.as_ref().is_some_and(|g| g.screen.is_some());
         // LWJGL delivers no repeats to the game (screens with text fields enable them).
         let in_game_key = !screen_open && self.ready && self.loading.is_none() && !repeat;
@@ -845,6 +859,15 @@ impl App {
                         g.ui.settings.key_bindings.iter().any(|b| b.description == name && b.code == key)
                     })
                 };
+                if code == KeyCode::KeyS && self.keys.contains(&KeyCode::F3) {
+                    // Minecraft.forceReload: rebuild the sound pools from downloaded resources.
+                    let seed = self.started.elapsed().as_nanos() as i64;
+                    let mut sound = crate::sound::SoundManager::new(&crate::sound::resources_dir(), seed);
+                    if let Some(g) = &self.gui { sound.options_changed(g.ui.settings.sound_volume, g.ui.settings.music_volume); }
+                    self.sound = Some(sound);
+                }
+                let chat = bound("key.chat");
+                let fog_key = bound("key.fog");
                 if bound("key.inventory") {
                     // displayGuiScreen(new GuiInventory(thePlayer)): the world thread owns it.
                     if let Some(tx) = &self.tx {
@@ -854,7 +877,11 @@ impl App {
                 if bound("key.drop") {
                     self.input.drop_pressed = true;
                 }
-                if bound("key.fog") {
+                if chat {
+                    if let Some(g) = &mut self.gui { g.ui.display(Some(Box::new(gui::screens::chat::GuiChat::default()))); }
+                    self.apply_gui_actions(el);
+                }
+                if fog_key {
                     // setOptionValue(RENDER_DISTANCE, shift ? -1 : 1)
                     let shift = self.keys.contains(&KeyCode::ShiftLeft) || self.keys.contains(&KeyCode::ShiftRight);
                     if let Some(g) = &mut self.gui {
@@ -907,7 +934,7 @@ impl App {
                     _ => {}
                 }
             }
-            self.keys.insert(code);
+            if code != KeyCode::F2 || !repeat { self.keys.insert(code); }
         } else {
             if code != KeyCode::F2 {
                 self.keys.remove(&code);
@@ -1027,7 +1054,6 @@ impl App {
         let video = self.video_settings();
         // World messages: upload a bounded number of meshes per frame.
         let mut uploads = 0;
-        let mut new_ticks = 0;
         let mut closed = false;
         let mut ungrab = false;
         if let (Some(rx), Some(gpu)) = (&self.rx, &mut self.gpu) {
@@ -1243,7 +1269,6 @@ impl App {
                     }
                     Ok(FromWorker::Drop { cx, cz }) => gpu.remove_chunk(cx, cz),
                     Ok(FromWorker::Time { time, brightness, fog_brightness, chunks, weather, terrain }) => {
-                        new_ticks += 1;
                         if self.ready {
                             self.ticks_ready += 1;
                         }
@@ -1400,17 +1425,7 @@ impl App {
             }
         }
 
-        // Per tick: animated textures and cloud drift.
-        for _ in 0..new_ticks {
-            for f in &mut self.fx {
-                f.tick(&mut self.fx_rng);
-            }
-        }
-        if new_ticks > 0 {
-            if let Some(g) = &self.gpu {
-                g.update_fx(&self.fx);
-            }
-        }
+        self.tick_texture_animations(gui_ticks, video);
         let partial = if self.paused { 0.0 } else { ((now - self.last_tick).as_secs_f32() * 20.0).min(1.0) };
         // EntityRenderer.orientCamera: the player's eyes between the last two ticks.
         if let Some(p) = &self.player {
@@ -1436,17 +1451,25 @@ impl App {
             };
             let loading = self.loading.clone();
             let cursor = self.cursor;
-            let img = gpu.render_overlay_only(flow_shot.is_some(), &mut |device, queue, view, size| {
+            let screenshot = self.keys.remove(&KeyCode::F2);
+            let img = gpu.render_overlay_only(flow_shot.is_some() || screenshot, &mut |device, queue, view, size| {
                 gui.ui.gl.begin_frame();
                 if let Some(l) = &loading {
                     l.draw(&mut gui.ui);
                 } else {
-                    let (mx, my) = gui.gui_mouse(cursor.0, cursor.1);
+                    gui.sync_pack_icons(device, queue);
+            let (mx, my) = gui.gui_mouse(cursor.0, cursor.1);
                     gui.draw_screen(mx, my, gui_partial);
                 }
                 gui.draw_after_frame();
                 gui.renderer.render(device, queue, view, size, &gui.ui.gl, Some([0.0, 0.0, 0.0, 0.0]));
             });
+            if screenshot {
+                if let Some(img) = &img {
+                    let message = crate::screenshot::save(gui.ui.saves_dir.parent().unwrap_or(std::path::Path::new(".")), img);
+                    self.ingame.add_chat_message(&gui.ui, message);
+                }
+            }
             if let (Some(img), Some((dir, name))) = (img, &flow_shot) {
                 let _ = assets::save_png(&img, &dir.join(format!("{name}.png")));
             }
@@ -1509,6 +1532,10 @@ impl App {
                 video.fancy,
             )
         });
+        let player_right = if video.anaglyph {
+            self.player.as_mut().map(|p| p.frame(partial, self.look, render::camera::Settings { eye: 1, ..camera_settings },
+                settings.is_some_and(|s| s.hide_gui), self.cam.pos.to_array(), self.col.as_ref().expect("world colorizers"), video.fancy))
+        } else { None };
         let params = FrameParams {
             cam_pos: self.cam.pos,
             yaw: self.cam.yaw,
@@ -1537,6 +1564,7 @@ impl App {
             particles,
             nether: self.nether,
             player: player_frame,
+            player_right,
         };
 
         if let Some(gpu) = &mut self.gpu {
@@ -1554,7 +1582,8 @@ impl App {
                 && uploads == 0
                 // Ticking keeps changing blocks somewhere, so a timed shot doesn't wait for idle.
                 && if self.opts.shot_ticks > 0 { self.ticks_ready >= self.opts.shot_ticks } else { self.idle };
-        let capture = want_shot || self.keys.remove(&KeyCode::F2) || flow_shot.is_some();
+        let screenshot = self.keys.remove(&KeyCode::F2);
+        let capture = want_shot || screenshot || flow_shot.is_some();
         let (Some(gpu), Some(gui)) = (&mut self.gpu, &mut self.gui) else {
             return;
         };
@@ -1572,6 +1601,7 @@ impl App {
             ..memory_info()
         };
         let shot = gpu.render_with_overlay(&params, capture, &mut |device, queue, view, size| {
+            gui.sync_pack_icons(device, queue);
             let (mx, my) = gui.gui_mouse(cursor.0, cursor.1);
             let screen_open = gui.screen.is_some();
             // EntityRenderer: the game overlay (unless F1), then the screen on a cleared depth.
@@ -1582,7 +1612,7 @@ impl App {
                 gl.alpha_test = true;
                 gl.depth_test = true;
                 gl.color4f(1.0, 1.0, 1.0, 1.0);
-                ingame.render_game_overlay(&mut gui.ui, gui_partial, false, &hud, &debug);
+                ingame.render_game_overlay(&mut gui.ui, gui_partial, gui.screen.as_ref().is_some_and(|s| s.is_chat()), &hud, &debug);
                 gui.renderer.render(device, queue, view, size, &gui.ui.gl, None);
             }
             if screen_open {
@@ -1598,18 +1628,17 @@ impl App {
         if let (Some(img), Some((dir, name))) = (&shot, &flow_shot) {
             let _ = assets::save_png(img, &dir.join(format!("{name}.png")));
         }
-        if let Some(img) = shot.filter(|_| flow_shot.is_none()) {
-            if let Some(path) = self.opts.shot.clone() {
-                match assets::save_png(&img, &path) {
-                    Ok(()) => eprintln!("saved {}", path.display()),
-                    Err(e) => eprintln!("screenshot failed: {e}"),
-                }
-            } else {
-                // F2: ScreenShotHelper.saveScreenshot, reported in the chat area.
-                let message = save_screenshot(&self.data_dir, &img);
-                if let Some(g) = &self.gui {
-                    self.ingame.add_chat_message(&g.ui, message);
-                }
+        if screenshot {
+            if let Some(img) = &shot {
+                let message = crate::screenshot::save(gui.ui.saves_dir.parent().unwrap_or(std::path::Path::new(".")), img);
+                self.ingame.add_chat_message(&gui.ui, message);
+            }
+        }
+        if let Some(img) = shot.filter(|_| want_shot) {
+            let path = self.opts.shot.clone().expect("requested screenshot path");
+            match assets::save_png(&img, &path) {
+                Ok(()) => eprintln!("saved {}", path.display()),
+                Err(e) => eprintln!("screenshot failed: {e}"),
             }
             if want_shot {
                 self.shutdown(el);
@@ -1706,6 +1735,10 @@ impl ApplicationHandler for App {
             splash_seed,
             1,
         );
+        for f in &mut self.fx { f.tick(&mut self.fx_rng); }
+        let assets = assets::load_with(gui.ui.packs.path(), gui.ui.settings.anaglyph).unwrap_or(assets);
+        gpu.refresh_textures(&assets);
+        if let Err(e) = gui.refresh_textures(gpu.device(), gpu.queue()) { eprintln!("refreshTextures: {e}"); }
         gui.ui.stats = gui::stats::Stats::open(&data_dir, "Player", &stat_map);
         // Minecraft.loadScreen: the Mojang logo while starting up.
         gpu.render_overlay_only(false, &mut |device, queue, view, size| {
@@ -1713,6 +1746,11 @@ impl ApplicationHandler for App {
             gui.draw_mojang_logo();
             gui.renderer.render(device, queue, view, size, &gui.ui.gl, Some([0.0, 0.0, 0.0, 0.0]));
         });
+        if let Ok(mut jar) = assets::Jar::open() {
+            if let (Ok(items), Ok(dial)) = (jar.image("gui/items.png"), jar.image("misc/dial.png")) {
+                self.item_fx = Some(render::item_fx::ItemFx::new(&items, &dial));
+            }
+        }
         self.col = Some(Colorizers { grass: assets.grass_color, foliage: assets.foliage_color });
         let mut snd = crate::sound::SoundManager::new(&crate::sound::resources_dir(), splash_seed ^ 0x534f554e44);
         snd.options_changed(gui.ui.settings.sound_volume, gui.ui.settings.music_volume);
@@ -1883,22 +1921,3 @@ pub(crate) fn play_world_sound(
     }
 }
 
-/// `ScreenShotHelper.saveScreenshot`: `screenshots/<yyyy-MM-dd_HH.mm.ss>[_n].png` in the data
-/// directory; the message goes to the chat area.
-fn save_screenshot(dir: &std::path::Path, img: &render::gpu::Image) -> String {
-    let folder = dir.join("screenshots");
-    let _ = std::fs::create_dir(&folder);
-    let stamp = chrono::Local::now().format("%Y-%m-%d_%H.%M.%S").to_string();
-    let mut n = 1;
-    loop {
-        let name = if n == 1 { format!("{stamp}.png") } else { format!("{stamp}_{n}.png") };
-        let path = folder.join(&name);
-        if !path.exists() {
-            return match assets::save_png(img, &path) {
-                Ok(()) => format!("Saved screenshot as {name}"),
-                Err(e) => format!("Failed to save: {e}"),
-            };
-        }
-        n += 1;
-    }
-}

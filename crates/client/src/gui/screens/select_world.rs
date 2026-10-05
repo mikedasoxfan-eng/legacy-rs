@@ -315,6 +315,7 @@ pub fn random_seed() -> i64 {
 }
 
 impl Screen for GuiCreateWorld {
+    fn repeats_keys(&self) -> bool { true }
     fn base(&mut self) -> &mut ScreenBase {
         &mut self.base
     }
@@ -407,6 +408,7 @@ impl GuiRenameWorld {
 }
 
 impl Screen for GuiRenameWorld {
+    fn repeats_keys(&self) -> bool { true }
     fn base(&mut self) -> &mut ScreenBase {
         &mut self.base
     }

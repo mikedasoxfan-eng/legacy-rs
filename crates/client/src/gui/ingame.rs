@@ -76,6 +76,7 @@ pub struct DebugInfo {
     pub free_memory: i64,
 }
 
+#[derive(Clone)]
 struct ChatLine {
     message: String,
     update_counter: i32,
@@ -110,9 +111,9 @@ impl GuiIngame {
         }
     }
 
-    /// Tests: a fresh overlay (vignette back at 1.0) keeping the update counter.
+    /// Tests: reset the vignette while keeping chat messages and the update counter.
     pub fn new_with_counter(o: &GuiIngame) -> GuiIngame {
-        GuiIngame { update_counter: o.update_counter, ..GuiIngame::new() }
+        GuiIngame { chat: o.chat.clone(), update_counter: o.update_counter, ..GuiIngame::new() }
     }
 
     /// Tests: set `updateCounter` (seeds the low-health heart jitter).

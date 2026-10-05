@@ -67,6 +67,7 @@ pub struct RenderBlocks<'a, 'b> {
     b_tr: f32,
     /// `overrideBlockTexture`
     pub override_texture: i32,
+    pub anaglyph: bool,
     /// `flipTexture` (doors)
     flip_texture: bool,
     /// `renderAllFaces` (`func_31075_a`, pistons being pushed)
@@ -116,6 +117,7 @@ impl<'a, 'b> RenderBlocks<'a, 'b> {
             b_br: 0.0,
             b_tr: 0.0,
             override_texture: -1,
+            anaglyph: false,
             flip_texture: false,
             render_all_faces: false,
             piston_head_texture: None,
@@ -208,6 +210,14 @@ impl<'a, 'b> RenderBlocks<'a, 'b> {
         }
         rprops(id).textures[(meta & 15) as usize][side] as i32
             + if id == block::LEAVES && !self.w.fancy { 1 } else { 0 }
+    }
+
+    fn tinted_rgb(&self, c: u32) -> (f32, f32, f32) {
+        let (r,g,b) = rgb(c);
+        if self.anaglyph {
+            let c = super::stereo_color([r,g,b]);
+            (c[0],c[1],c[2])
+        } else { (r,g,b) }
     }
 
     /// `colorMultiplier`
@@ -360,7 +370,7 @@ impl<'a, 'b> RenderBlocks<'a, 'b> {
 
     /// `renderStandardBlock` (smooth lighting is on by default in b1.7.3).
     fn render_standard_block(&mut self, id: u8, x: i32, y: i32, z: i32) -> bool {
-        let (r, g, b) = rgb(self.color_multiplier(id, x, y, z));
+        let (r, g, b) = self.tinted_rgb(self.color_multiplier(id, x, y, z));
         if self.ao {
             self.render_standard_block_ao(id, x, y, z, r, g, b)
         } else {
@@ -1040,7 +1050,7 @@ impl<'a, 'b> RenderBlocks<'a, 'b> {
     /// `renderBlockReed` (flowers, tall grass, dead bushes, mushrooms, reeds, saplings).
     fn render_block_reed(&mut self, id: u8, x: i32, y: i32, z: i32) -> bool {
         let br = self.brightness(id, x, y, z);
-        let (r, g, b) = rgb(self.color_multiplier(id, x, y, z));
+        let (r, g, b) = self.tinted_rgb(self.color_multiplier(id, x, y, z));
         self.t.set_color_opaque_f(br * r, br * g, br * b);
         let (mut px, mut py, mut pz) = (x as f64, y as f64, z as f64);
         if id == block::TALL_GRASS {
@@ -1091,7 +1101,7 @@ impl<'a, 'b> RenderBlocks<'a, 'b> {
 
     /// `renderBlockCactus` → `func_1230_b`
     fn render_block_cactus(&mut self, id: u8, x: i32, y: i32, z: i32) -> bool {
-        let (r, g, b) = rgb(self.color_multiplier(id, x, y, z));
+        let (r, g, b) = self.tinted_rgb(self.color_multiplier(id, x, y, z));
         let mut rendered = false;
         let (s0, s1, s2, s3) = (0.5f32, 1.0f32, 0.8f32, 0.6f32);
         let inset = 1.0f32 / 16.0f32;

@@ -1,25 +1,18 @@
 //! The procedural `TextureFX` animations that overwrite terrain.png tiles every tick:
 //! still/flowing water, still/flowing lava, fire and portal.
-//! They use `Math.random()` in the original, so any RNG is equally faithful.
+//! They share the original Math.random java.util.Random stream and registration order.
 
 use worldgen::math;
 use worldgen::JavaRandom;
 
 const PI_F: f32 = std::f64::consts::PI as f32;
 
-/// Tiny xorshift standing in for `Math.random()`.
-pub struct Rng(u64);
-
+/// Math.random's shared java.util.Random stream, independently seedable by the oracle.
+pub struct Rng(JavaRandom);
 impl Rng {
-    pub fn new(seed: u64) -> Rng {
-        Rng(seed | 1)
-    }
-    fn next(&mut self) -> f64 {
-        self.0 ^= self.0 << 13;
-        self.0 ^= self.0 >> 7;
-        self.0 ^= self.0 << 17;
-        (self.0 >> 11) as f64 / (1u64 << 53) as f64
-    }
+    pub fn new(seed: u64) -> Rng { Rng(JavaRandom::new(seed as i64)) }
+    pub fn random(&mut self) -> f64 { self.next() }
+    fn next(&mut self) -> f64 { self.0.next_double() }
 }
 
 pub enum Kind {
@@ -50,33 +43,38 @@ impl TextureFx {
     /// The list `Minecraft.startGame` registers for terrain.png, in order.
     pub fn terrain_set() -> Vec<TextureFx> {
         vec![
-            TextureFx::new(205, 1, Kind::Water, 256),
             TextureFx::new(237, 1, Kind::Lava, 256),
+            TextureFx::new(205, 1, Kind::Water, 256),
+            TextureFx::new(14, 1, Kind::Portal { tick: 0, frames: portal_frames() }, 0),
             TextureFx::new(206, 2, Kind::WaterFlow { tick: 0 }, 256),
             TextureFx::new(238, 2, Kind::LavaFlow { tick: 0 }, 256),
-            TextureFx::new(14, 1, Kind::Portal { tick: 0, frames: portal_frames() }, 0),
             TextureFx::new(31, 1, Kind::Flames, 320),
             TextureFx::new(47, 1, Kind::Flames, 320),
         ]
+    }
+
+    pub fn tick_anaglyph(&mut self, rng: &mut Rng, enabled: bool) {
+        self.tick(rng);
+        if enabled { crate::texture_packs::anaglyph(&mut self.image); }
     }
 
     pub fn tick(&mut self, rng: &mut Rng) {
         match &mut self.kind {
             Kind::Water => water(&mut self.a, &mut self.b, &mut self.c, &mut self.d, rng, &mut self.image, None),
             Kind::WaterFlow { tick } => {
-                *tick += 1;
+                *tick = tick.wrapping_add(1);
                 let t = *tick;
                 water(&mut self.a, &mut self.b, &mut self.c, &mut self.d, rng, &mut self.image, Some(t));
             }
             Kind::Lava => lava(&mut self.a, &mut self.b, &mut self.c, &mut self.d, rng, &mut self.image, None),
             Kind::LavaFlow { tick } => {
-                *tick += 1;
+                *tick = tick.wrapping_add(1);
                 let t = *tick;
                 lava(&mut self.a, &mut self.b, &mut self.c, &mut self.d, rng, &mut self.image, Some(t));
             }
             Kind::Flames => flames(&mut self.a, &mut self.b, rng, &mut self.image),
             Kind::Portal { tick, frames } => {
-                *tick += 1;
+                *tick = tick.wrapping_add(1);
                 self.image.copy_from_slice(&frames[(*tick & 31) as usize]);
             }
         }
@@ -102,20 +100,19 @@ fn water(g: &mut Vec<f32>, h: &mut Vec<f32>, i: &mut [f32], j: &mut [f32], rng: 
         }
     }
     let (decay, chance) = if flow.is_some() { (0.3f32, 0.2) } else { (0.1f32, 0.05) };
-    for k in 0..256 {
-        i[k] += j[k] * 0.05f32;
-        if i[k] < 0.0 {
-            i[k] = 0.0;
-        }
-        j[k] -= decay;
-        if rng.next() < chance {
-            j[k] = 0.5;
+    for x in 0..16 {
+        for y in 0..16 {
+            let k = x + y*16;
+            i[k] += j[k] * 0.05f32;
+            if i[k] < 0.0 { i[k] = 0.0; }
+            j[k] -= decay;
+            if rng.next() < chance { j[k] = 0.5; }
         }
     }
     std::mem::swap(g, h);
     for k in 0..256i32 {
         let idx = match flow {
-            Some(t) => (k - t * 16) & 255,
+            Some(t) => k.wrapping_sub(t.wrapping_mul(16)) & 255,
             None => k,
         };
         let v = g[idx as usize].clamp(0.0, 1.0);
@@ -156,7 +153,7 @@ fn lava(g: &mut Vec<f32>, h: &mut Vec<f32>, i: &mut [f32], j: &mut [f32], rng: &
     std::mem::swap(g, h);
     for k in 0..256i32 {
         let idx = match flow {
-            Some(t) => (k - t / 3 * 16) & 255,
+            Some(t) => k.wrapping_sub((t / 3).wrapping_mul(16)) & 255,
             None => k,
         };
         let v = (g[idx as usize] * 2.0f32).clamp(0.0, 1.0);
@@ -195,7 +192,7 @@ fn flames(g: &mut Vec<f32>, h: &mut Vec<f32>, rng: &mut Rng, img: &mut [u8; 1024
         let o = k * 4;
         img[o] = (v * 155.0f32 + 100.0f32) as i32 as u8;
         img[o + 1] = (v * v * 255.0f32) as i32 as u8;
-        img[o + 2] = (v.powi(10) * 255.0f32) as i32 as u8;
+        img[o + 2] = (v * v * v * v * v * v * v * v * v * v * 255.0f32) as i32 as u8;
         img[o + 3] = if v < 0.5 { 0 } else { 255 };
     }
 }

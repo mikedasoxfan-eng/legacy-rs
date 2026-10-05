@@ -32,11 +32,15 @@ pub fn decode_png_pub(bytes: &[u8]) -> Image {
 }
 
 fn decode_png(bytes: &[u8]) -> Image {
+    try_decode_png(bytes).expect("png data")
+}
+
+fn try_decode_png(bytes: &[u8]) -> Result<Image, String> {
     let mut dec = png::Decoder::new(std::io::Cursor::new(bytes));
     dec.set_transformations(png::Transformations::EXPAND | png::Transformations::STRIP_16);
-    let mut r = dec.read_info().expect("png header");
-    let mut buf = vec![0; r.output_buffer_size().expect("png size")];
-    let info = r.next_frame(&mut buf).expect("png data");
+    let mut r = dec.read_info().map_err(|e| e.to_string())?;
+    let mut buf = vec![0; r.output_buffer_size().ok_or("png size")?];
+    let info = r.next_frame(&mut buf).map_err(|e| e.to_string())?;
     let (w, h) = (info.width, info.height);
     let px = &buf[..info.buffer_size()];
     let rgba = match info.color_type {
@@ -46,7 +50,7 @@ fn decode_png(bytes: &[u8]) -> Image {
         png::ColorType::Grayscale => px.iter().flat_map(|&g| [g, g, g, 255]).collect(),
         png::ColorType::Indexed => unreachable!("expanded"),
     };
-    Image { width: w, height: h, rgba }
+    Ok(Image { width: w, height: h, rgba })
 }
 
 fn colormap(img: &Image) -> Vec<u32> {
@@ -54,19 +58,17 @@ fn colormap(img: &Image) -> Vec<u32> {
 }
 
 pub fn load() -> Result<Assets, String> {
-    let path = jar_path();
-    let file = std::fs::File::open(&path).map_err(|e| {
-        format!(
-            "can't open {} ({e}). Install b1.7.3 in the launcher first.",
-            path.display()
-        )
-    })?;
-    let mut zip = zip::ZipArchive::new(file).map_err(|e| format!("bad jar: {e}"))?;
+    load_with(None, false)
+}
+
+pub fn load_with(pack: Option<&std::path::Path>, anaglyph: bool) -> Result<Assets, String> {
+    let mut jar = Jar::with_pack(pack)?;
+    let grass = jar.image("misc/grasscolor.png")?;
+    let foliage = jar.image("misc/foliagecolor.png")?;
     let mut read = |name: &str| -> Result<Image, String> {
-        let mut f = zip.by_name(name).map_err(|e| format!("{name} missing from jar: {e}"))?;
-        let mut v = Vec::new();
-        f.read_to_end(&mut v).map_err(|e| e.to_string())?;
-        Ok(decode_png(&v))
+        let mut image = jar.image(name)?;
+        if anaglyph { crate::texture_packs::anaglyph(&mut image.rgba); }
+        Ok(image)
     };
     let terrain = read("terrain.png")?;
     let sun = read("terrain/sun.png")?;
@@ -76,8 +78,6 @@ pub fn load() -> Result<Assets, String> {
     let snow = read("environment/snow.png")?;
     let particles = read("particles.png")?;
     let footprint=read("misc/footprint.png")?;
-    let grass = read("misc/grasscolor.png")?;
-    let foliage = read("misc/foliagecolor.png")?;
     let mut mobs = std::collections::HashMap::new();
     for &name in crate::render::entity::living::TEXTURES {
         mobs.insert(name.to_owned(), read(name)?);
@@ -89,10 +89,12 @@ pub fn load() -> Result<Assets, String> {
         "item/sign.png",
         "art/kz.png",
         "particles.png",
-        "font/default.png",
     ]) {
         mobs.insert(name.to_owned(), read(name)?);
     }
+    let mut font = Jar::open()?.image("font/default.png")?;
+    if anaglyph { crate::texture_packs::anaglyph(&mut font.rgba); }
+    mobs.insert("font/default.png".into(), font);
     mobs.insert(
         "__map".into(),
         crate::render::map::image(&Default::default(), false),
@@ -115,21 +117,35 @@ pub fn load() -> Result<Assets, String> {
 /// The b1.7.3 client jar, for reading resources by path.
 pub struct Jar {
     zip: zip::ZipArchive<std::fs::File>,
+    pack: Option<Box<Jar>>,
 }
 
 impl Jar {
     pub fn open() -> Result<Jar, String> {
-        let path = jar_path();
+        Self::archive(&jar_path())
+    }
+
+    pub fn with_pack(path: Option<&std::path::Path>) -> Result<Self, String> {
+        let mut jar = Self::open()?;
+        jar.pack = path.and_then(|p| Self::archive(p).ok()).map(Box::new);
+        Ok(jar)
+    }
+
+    pub fn archive(path: &std::path::Path) -> Result<Self, String> {
         let file = std::fs::File::open(&path).map_err(|e| {
             format!(
                 "can't open {} ({e}). Install b1.7.3 in the launcher first.",
                 path.display()
             )
         })?;
-        Ok(Jar { zip: zip::ZipArchive::new(file).map_err(|e| format!("bad jar: {e}"))? })
+        Ok(Jar { zip: zip::ZipArchive::new(file).map_err(|e| format!("bad jar: {e}"))?, pack: None })
     }
 
     pub fn bytes(&mut self, name: &str) -> Result<Vec<u8>, String> {
+        let name = name.trim_start_matches('/');
+        if let Some(pack) = &mut self.pack {
+            if let Ok(bytes) = pack.bytes(name) { return Ok(bytes); }
+        }
         let mut f = self.zip.by_name(name).map_err(|e| format!("{name} missing from jar: {e}"))?;
         let mut v = Vec::new();
         f.read_to_end(&mut v).map_err(|e| e.to_string())?;
@@ -142,7 +158,7 @@ impl Jar {
     }
 
     pub fn image(&mut self, name: &str) -> Result<Image, String> {
-        Ok(decode_png(&self.bytes(name)?))
+        try_decode_png(&self.bytes(name)?)
     }
 }
 

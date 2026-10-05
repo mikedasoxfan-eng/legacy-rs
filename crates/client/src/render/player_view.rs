@@ -9,6 +9,7 @@ use worldgen::{
 };
 
 pub struct Snapshot {
+    spawn: (i32,i32,i32),
     chunks: Vec<Chunk>,
     entities: BTreeMap<i32, Entity>,
     bounds: [AxisAlignedBB; 256],
@@ -42,6 +43,7 @@ impl Snapshot {
             }
         }
         Self {
+            spawn: w.spawn,
             chunks,
             entities,
             bounds: w.block_bounds,
@@ -52,6 +54,7 @@ impl Snapshot {
         }
     }
     pub fn apply(self, w: &mut World) -> Option<super::map::Data> {
+        w.spawn = self.spawn;
         w.chunks.clear();
         for c in self.chunks {
             w.chunks.insert((c.x, c.z), Box::new(c));

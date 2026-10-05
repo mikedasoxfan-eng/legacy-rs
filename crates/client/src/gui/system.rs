@@ -19,6 +19,7 @@ pub enum GameAction {
     QuitWorld,
     Shutdown,
     SettingsChanged,
+    RefreshTextures,
     /// `GuiGameOver` "Respawn".
     Respawn,
     /// No screen any more: give the mouse back to the game.
@@ -31,6 +32,9 @@ pub struct GuiSystem {
     pub ui: Ui,
     pub renderer: GuiRenderer,
     pub screen: Option<Box<dyn Screen>>,
+    icon_keys: Vec<(String, bool)>,
+    icon_slots: Vec<super::gl::TexId>,
+    pub texture_anaglyph: bool,
     /// `GuiMainMenu`'s static `Random`.
     pub splash_rand: worldgen::JavaRandom,
     /// `Minecraft.guiAchievement`
@@ -69,8 +73,11 @@ impl GuiSystem {
             textures.insert(name.clone(), id);
         }
         let font_tex = textures["font/default.png"];
-        let font = FontRenderer::new(&res.images["font/default.png"], font_tex, &res.font_txt);
+        let font = FontRenderer::new_with_anaglyph(&res.images["font/default.png"], font_tex, &res.font_txt, settings.anaglyph);
+        let packs = crate::texture_packs::TexturePackList::new(saves_dir.parent().unwrap_or(std::path::Path::new(".")), &settings.skin);
         let ui = Ui {
+            packs,
+            pack_icons: Vec::new(),
             gl: Gl::new(),
             font,
             textures,
@@ -103,11 +110,52 @@ impl GuiSystem {
             ui,
             renderer,
             screen: None,
+            icon_keys: Vec::new(), icon_slots: Vec::new(),
+            texture_anaglyph: false,
             splash_rand: worldgen::JavaRandom::new(splash_seed),
             toast: Default::default(),
             frame_graph: Default::default(),
             tick_nanos: 0,
         }
+    }
+
+    pub fn sync_pack_icons(&mut self, device: &wgpu::Device, queue: &wgpu::Queue) {
+        let keys = self.ui.packs.available.iter().map(|p| (p.key.clone(), self.ui.settings.anaglyph)).collect::<Vec<_>>();
+        if self.icon_keys == keys { return; }
+        self.icon_keys = keys;
+        self.ui.pack_icons.clear();
+        for (i, p) in self.ui.packs.available.iter().enumerate() {
+            let id = if let Some(img) = &p.thumbnail {
+                let mut img = Image { width: img.width, height: img.height, rgba: img.rgba.clone() };
+                if self.ui.settings.anaglyph { crate::texture_packs::anaglyph(&mut img.rgba); }
+                if let Some(&id) = self.icon_slots.get(i) {
+                    self.renderer.replace_texture(device, queue, id, &img, false, false);
+                    id
+                } else {
+                    let id = self.renderer.add_texture(device, queue, &img);
+                    // Keep one reusable slot per list position (including gaps for missing icons).
+                    while self.icon_slots.len() < i { self.icon_slots.push(self.renderer.add_texture(device, queue, &Image { width: 1, height: 1, rgba: vec![255;4] })); }
+                    self.icon_slots.push(id);
+                    id
+                }
+            } else { self.ui.texture("gui/unknown_pack.png") };
+            self.ui.pack_icons.push(id);
+        }
+    }
+
+    pub fn refresh_textures(&mut self, device: &wgpu::Device, queue: &wgpu::Queue) -> Result<(), String> {
+        self.texture_anaglyph = self.ui.settings.anaglyph;
+        let mut jar = crate::assets::Jar::with_pack(self.ui.packs.path())?;
+        for (name, id) in &self.ui.textures {
+            // FontRenderer allocates its image directly from the jar, so pack fonts are ignored.
+            let (path, blur, clamp) = super::texture_options(name);
+            let image = if path == "font/default.png" { crate::assets::Jar::open()?.image(path) } else { jar.image(path) };
+            let mut img = match image { Ok(img) => img, Err(e) => { eprintln!("refreshTextures {path}: {e}"); continue; } };
+            if self.ui.settings.anaglyph { crate::texture_packs::anaglyph(&mut img.rgba); }
+            self.renderer.replace_texture(device, queue, *id, &img, blur, clamp);
+        }
+        self.sync_pack_icons(device, queue);
+        Ok(())
     }
 
     pub fn main_menu(&mut self) -> Box<dyn Screen> {
@@ -167,6 +215,7 @@ impl GuiSystem {
                     Action::QuitWorld => out.push(GameAction::QuitWorld),
                     Action::Shutdown => out.push(GameAction::Shutdown),
                     Action::SettingsChanged => out.push(GameAction::SettingsChanged),
+                    Action::RefreshTextures => out.push(GameAction::RefreshTextures),
                     Action::Respawn => out.push(GameAction::Respawn),
                 }
             }

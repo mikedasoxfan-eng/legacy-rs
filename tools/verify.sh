@@ -180,11 +180,13 @@ fi
 showcase="$root/tools/oracle/showcase.txt"
 for m in "fancy on" "fancy off" "fast on" "fast off"; do
   [ "$quick" = quick ] && [ "$m" != "fancy on" ] && continue
+  for stereo in normal anaglyph; do
   set -- $m
-  echo "== block showcase: $m"
-  if "$oracle" rendershowcase "$(cygpath -w "$showcase")" showcase_mesh.bin "$1" "$2" >/dev/null 2>&1     && "$beta" --meshcheck 0 0 "$out/showcase_mesh.bin" "$1" "$2" "showcase=$showcase" | tail -1 | grep -q "MESHES EXACT"; then
+  echo "== block showcase: $m, $stereo"
+  if "$oracle" rendershowcase "$(cygpath -w "$showcase")" showcase_mesh.bin "$1" "$2" "$stereo" >/dev/null 2>&1     && "$beta" --meshcheck 0 0 "$out/showcase_mesh.bin" "$1" "$2" "showcase=$showcase" "$stereo" | tail -1 | grep -q "MESHES EXACT"; then
     echo "MESHES EXACT"; else echo "MESHES DIFFER"; fail=1; fi
   rm -f "$out/showcase_mesh.bin"
+  done
 done
 if [ "$quick" != quick ]; then
   echo "== Nether terrain meshes (fire, glowstone, the Nether light table)"
@@ -336,10 +338,16 @@ echo "== Fast and Fancy clouds"
 for args in "1 0.5 70 0.5 100 0.75 6000 0 0" "42 -20.25 110 -31.75 123 0.5 13000 0.75 0.4" \
   "2 30000.25 120 -50000.75 2147483647 0.25 23500 1 1" "11 2048 107 0 -2147483648 1.0 18000 0.1 0.9"; do
   for graphics in fancy fast; do
-    if "$oracle" cloudmesh $args "$graphics" cloud_case.bin && "$beta" --cloudcheck $args "$graphics" "$out/cloud_case.bin"; then :; else fail=1; fi
+    for stereo in normal anaglyph; do
+      if "$oracle" cloudmesh $args "$graphics" cloud_case.bin "$stereo" && "$beta" --cloudcheck $args "$graphics" "$out/cloud_case.bin" "$stereo"; then :; else fail=1; fi
+    done
   done
 done
 rm -f "$out/cloud_case.bin"
+
+echo "== sky GL colors and sunrise vertex colors, anaglyph on/off"
+if "$oracle" skydraw sky_draw_case.bin && "$beta" --skydrawcheck "$out/sky_draw_case.bin"; then :; else fail=1; fi
+rm -f "$out/sky_draw_case.bin"
 
 # ---- the statistics file: StatFileWriter's JSON and MD5 checksum, both directions, plus a
 # tampered file and a stat id the original doesn't register.

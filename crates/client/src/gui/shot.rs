@@ -106,6 +106,32 @@ pub fn run(script: &str, out_dir: &std::path::Path) -> Result<(), String> {
                     .unwrap_or(std::path::Path::new("."));
                 sys.ui.saves_dir = base.join(rest);
             }
+            "packs" => {
+                let base = std::path::Path::new(script).parent().unwrap_or(std::path::Path::new("."));
+                sys.ui.packs = crate::texture_packs::TexturePackList::new(&base.join(rest), &sys.ui.settings.skin);
+            }
+            "pack" => {
+                sys.ui.packs.update();
+                let i = sys.ui.packs.available.iter().position(|p| p.name == rest).ok_or("pack missing")?;
+                sys.ui.packs.select(i);
+                sys.refresh_textures(&device, &queue)?;
+            }
+            "repeatstate" => {
+                let expected = rest == "on";
+                if sys.screen.as_ref().is_some_and(|s| s.repeats_keys()) != expected { return Err("keyboard repeat state differs".into()); }
+            }
+            "fontstart" => {
+                sys.ui.settings.anaglyph = rest == "on";
+                let mut jar = crate::assets::Jar::open()?;
+                sys.ui.font = super::font::FontRenderer::new_with_anaglyph(&jar.image("font/default.png")?, sys.ui.texture("font/default.png"), &jar.text("font.txt")?, sys.ui.settings.anaglyph);
+                sys.refresh_textures(&device, &queue)?;
+            }
+            "message" => ingame.add_chat_message(&sys.ui, rest.into()),
+            "anaglyph" => {
+                sys.ui.settings.anaglyph = rest == "on";
+                sys.refresh_textures(&device, &queue)?;
+            }
+            "sessionless" | "texturecheck" => {},
             "millis" => sys.ui.millis = rest.parse().map_err(|_| "millis")?,
             "splash" => splash = rest.to_string(),
             "mojang" => {
@@ -154,6 +180,7 @@ pub fn run(script: &str, out_dir: &std::path::Path) -> Result<(), String> {
                         container = Some((c, p));
                         screen
                     }
+                    "chat" => { sys.ui.world_open = true; Box::new(screens::chat::GuiChat::default()) },
                     "title" => title,
                     "sign" => {sys.ui.world_open=true;Box::new(screens::edit_sign::GuiEditSign::new((0,64,0),arg(1).parse().map_err(|_|"sign block")?,arg(2).parse().map_err(|_|"sign metadata")?,Default::default()))},
                     "options" => Box::new(screens::options::GuiOptions::new(title)),
@@ -289,18 +316,21 @@ pub fn run(script: &str, out_dir: &std::path::Path) -> Result<(), String> {
                     },
                     true,
                 );
-                sys.process_actions();
+                let acts = sys.process_actions();
+                if acts.iter().any(|a| matches!(a, super::system::GameAction::RefreshTextures)) { sys.refresh_textures(&device, &queue)?; }
             }
             "shift" => sys.ui.shift_down = rest == "on",
             "release" => {
                 sys.mouse_event(mx, my, 0, false);
-                sys.process_actions();
+                let acts = sys.process_actions();
+                if acts.iter().any(|a| matches!(a, super::system::GameAction::RefreshTextures)) { sys.refresh_textures(&device, &queue)?; }
             }
             "key" => {
                 let code: i32 = arg(0).parse().map_err(|_| "key code")?;
                 let ch: u32 = arg(1).parse().map_err(|_| "key char")?;
                 sys.key_event(char::from_u32(ch).unwrap_or('\0'), code);
-                sys.process_actions();
+                let acts = sys.process_actions();
+                if acts.iter().any(|a| matches!(a, super::system::GameAction::RefreshTextures)) { sys.refresh_textures(&device, &queue)?; }
             }
             "update" => {
                 let n: usize = if rest.is_empty() {
@@ -313,6 +343,8 @@ pub fn run(script: &str, out_dir: &std::path::Path) -> Result<(), String> {
                 }
             }
             "shot" => {
+                sys.sync_pack_icons(&device, &queue);
+                if sys.ui.actions.iter().any(|a| matches!(a, super::Action::RefreshTextures)) { sys.refresh_textures(&device, &queue)?; }
                 sys.ui.gl.begin_frame();
                 let clear;
                 if mojang {
@@ -331,7 +363,8 @@ pub fn run(script: &str, out_dir: &std::path::Path) -> Result<(), String> {
                         sys.ui.gl.depth_test = true;
                     }
                     sys.draw_screen(mx, my, 0.0);
-                    sys.process_actions();
+                    let acts = sys.process_actions();
+                if acts.iter().any(|a| matches!(a, super::system::GameAction::RefreshTextures)) { sys.refresh_textures(&device, &queue)?; }
                     clear = Some([clear_level, clear_level, clear_level, 0.0]);
                 }
                 sys.renderer

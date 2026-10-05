@@ -9,6 +9,8 @@ pub mod entity;
 pub mod first_person;
 pub mod first_person_check;
 pub mod fx;
+pub mod item_fx;
+pub mod texture_check;
 pub mod particles;
 pub mod particle_check;
 pub mod gpu;
@@ -125,3 +127,12 @@ pub mod sign;
 pub mod painting;
 
 pub mod fishing;
+
+/// Original float anaglyph conversion (RenderBlocks and RenderGlobal).
+pub fn stereo_color([r,g,b]: [f32; 3]) -> [f32; 3] {
+    [(r * 30.0 + g * 59.0 + b * 11.0) / 100.0,
+     (r * 30.0 + g * 70.0) / 100.0,
+     (r * 30.0 + b * 70.0) / 100.0]
+}
+
+pub mod color_mask;
