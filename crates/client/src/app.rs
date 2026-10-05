@@ -990,6 +990,7 @@ impl App {
 
         // GuiScreen.updateScreen runs every game tick (20 per second).
         let mut gui_ticks = 0;
+        let tick_start = Instant::now();
         while now >= self.gui_ticks && gui_ticks < 20 {
             // runTick: statFileWriter.func_27178_d, then the HUD.
             if let Some(g) = &mut self.gui {
@@ -1001,6 +1002,9 @@ impl App {
             }
             self.gui_ticks += Duration::from_millis(50);
             gui_ticks += 1;
+        }
+        if let Some(g) = &mut self.gui {
+            g.tick_nanos = tick_start.elapsed().as_nanos() as i64;
         }
         if gui_ticks == 20 {
             self.gui_ticks = now;
@@ -1425,7 +1429,7 @@ impl App {
                     let (mx, my) = gui.gui_mouse(cursor.0, cursor.1);
                     gui.draw_screen(mx, my, gui_partial);
                 }
-                gui.toast.draw(&mut gui.ui);
+                gui.draw_after_frame();
                 gui.renderer.render(device, queue, view, size, &gui.ui.gl, Some([0.0, 0.0, 0.0, 0.0]));
             });
             if let (Some(img), Some((dir, name))) = (img, &flow_shot) {
@@ -1573,7 +1577,7 @@ impl App {
             }
             // Minecraft.run: guiAchievement.updateAchievementWindow() after the frame.
             gui.ui.gl.begin_frame();
-            gui.toast.draw(&mut gui.ui);
+            gui.draw_after_frame();
             gui.renderer.render(device, queue, view, size, &gui.ui.gl, None);
         });
         if let (Some(img), Some((dir, name))) = (&shot, &flow_shot) {

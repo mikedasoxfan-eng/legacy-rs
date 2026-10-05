@@ -6,6 +6,7 @@ pub mod achievement_toast;
 pub mod container_api;
 pub mod stats_table;
 pub mod font;
+pub mod frame_graph;
 pub mod gl;
 pub mod ingame;
 pub mod keynames;
