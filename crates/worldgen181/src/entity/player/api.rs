@@ -20,6 +20,7 @@ pub struct PlayerTickInput {
     pub use_presses: i32,
     pub right_held: bool,
     pub drop_pressed: bool,
+    pub drop_presses: i32,
     pub hotbar_slot: Option<u8>,
     pub scroll: i32,
 }
@@ -164,7 +165,8 @@ impl World {
             inventory.current_item = slot as i32;
         }
         inventory.change_current_item(input.scroll);
-        if input.drop_pressed {
+        for _ in 0..input.drop_presses + input.drop_pressed as i32 {
+            let inventory = &mut p.player_state_mut().unwrap().inventory;
             let slot = inventory.current_item as usize;
             if let Some(stack) = inventory.decrement(slot, 1) {
                 p.drop_player_item(self, stack, false);

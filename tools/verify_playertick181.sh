@@ -11,7 +11,7 @@ if [ -z "${VERIFY181_LOCKED:-}" ]; then
   export VERIFY181_LOCKED=1
 fi
 if [ "${1:-}" != --built ]; then cargo build --release -q -p worldgen181; fi
-for kind in idle movement sprint flight creativecontroller starve regen eat260 eat282 eat322 eat365 eat367 cancel identity bow xp damage creativedamage creativevoid speed; do
+for kind in idle movement sprint flight creativecontroller starve regen eat260 eat282 eat322 eat365 eat367 cancel identity bow xp damage creativedamage creativevoid speed haste fatigue nausea; do
   # The inherited Java flat fixture has seven chunks per axis. Longer forward
   # movement exits it and causes the original to request a nonexistent chunk.
   ticks=500

@@ -7,14 +7,26 @@ impl Entity {
         };
         let mut damage = registry::attack_damage(self.held_item().map_or(-1, |s| s.id));
         if damage > 0 {
-            if self.motion.y < 0.0 {
-                damage += 1;
+            let critical = self.motion.y < 0.0 && !self.on_ground
+                && !self.is_on_ladder(w) && !self.in_water;
+            if critical {
+                damage = damage.wrapping_mul(3) / 2 + 1;
             }
             // Vanilla passes the live player object to attackEntityFrom.
             w.entities.insert(self.entity_id, self.clone());
-            target.attack(w, Some(self.entity_id), damage);
+            let hit = target.attack_from(w, crate::entity::damage::DamageSource::entity(
+                crate::entity::damage::DamageKind::Player, Some(self.entity_id)), damage);
             if let Some(player) = w.entities.remove(&self.entity_id) {
                 *self = player;
+            }
+            if hit && self.player_state().unwrap().sprinting {
+                let yaw = self.yaw * math::PI_F32 / 180.0;
+                target.add_velocity(w, (-math::sin(yaw) * 1.0) as f64, 0.1,
+                    (math::cos(yaw) * 1.0) as f64);
+                target.velocity_changed = true;
+                self.motion.x *= 0.6;
+                self.motion.z *= 0.6;
+                self.set_sprinting(false);
             }
             if target.kind.is_living() {
                 if let Some(s) = self.held_item() {
@@ -26,6 +38,7 @@ impl Entity {
                         self.add_stat(stat::used(s.id), 1);
                     } else if s.id == 329 {
                         self.saddle(&mut target);
+                        self.add_stat(stat::used(s.id), 1);
                     }
                 }
                 if target.living.health > 0 && !target.dead {
@@ -33,6 +46,7 @@ impl Entity {
                 }
                 self.add_stat(stat::DAMAGE_DEALT, damage);
             }
+            self.add_exhaustion(0.3);
         }
         w.entities.insert(id, target);
     }

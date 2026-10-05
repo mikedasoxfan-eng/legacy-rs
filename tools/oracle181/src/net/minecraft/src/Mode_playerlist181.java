@@ -16,6 +16,13 @@ public final class Mode_playerlist181 {
     i(out,list.func_35576_a());i(out,EntityOracle.intField(PlayerList.class,"field_35583_c",list));i(out,EntityOracle.intField(PlayerList.class,"field_35581_e",list));i(out,table.length);
     for(PlayerListEntry head:table){int count=0;for(PlayerListEntry entry=head;entry!=null;entry=entry.field_35833_c)count++;i(out,count);for(PlayerListEntry entry=head;entry!=null;entry=entry.field_35833_c){EntityOracle.l(out,entry.func_35830_a());value(out,entry.func_35829_b());i(out,entry.hashCode());}}
    }
+   for(int c=0;c<10000;c++) {
+    long key=random.nextLong();Integer v=c%7==0?null:Integer.valueOf(random.nextInt());
+    PlayerListEntry first=new PlayerListEntry(c,key,v,null);
+    PlayerListEntry second=new PlayerListEntry(-c,c%3==0?key:key+1,c%2==0?v:Integer.valueOf(c),first);
+    out.writeBoolean(first.equals(first));out.writeBoolean(first.equals(second));
+    i(out,first.hashCode());WorldEventOracle.text(out,first.toString());
+   }
   }
  }
 }

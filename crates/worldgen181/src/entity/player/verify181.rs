@@ -1,5 +1,9 @@
 //! Original-bytecode whole-player replay. No terrain/world serialization dependency.
 use super::*;
+/// Reuse the entities owner's serializer for the local queued-drop fixture.
+pub fn dropped_entity_snapshot(w: &mut World, entity: &Entity, out: &mut Vec<u8>) {
+    super::super::verify181::state(w, entity, out);
+}
 fn i(o: &mut Vec<u8>, v: i32) { o.extend(v.to_le_bytes()); }
 fn f(o: &mut Vec<u8>, v: f32) { o.extend(v.to_le_bytes()); }
 fn frame(w: &mut World, p: &mut Entity, o: &mut Vec<u8>) {
@@ -57,6 +61,9 @@ pub fn replay(kind:&str,ticks:i32)->Vec<u8> {
         if kind=="damage"&&t%5==0 {p.attack_from(&mut w,DamageSource::new(if t%10==0 {DamageKind::Starve}else {DamageKind::Cactus}),5);}
         if kind=="creativevoid"&&t==0 {p.set_creative(true);p.attack_from(&mut w,DamageSource::new(DamageKind::OutOfWorld),4);}
         if kind=="speed"&&t==0 {p.add_potion_effect(PotionEffect::new(1,80,1));}
+        if kind=="haste"&&t%100==0 {p.add_potion_effect(PotionEffect::new(3,80,t/100%8));}
+        if kind=="fatigue"&&t%100==0 {p.add_potion_effect(PotionEffect::new(4,80,t/100%4));}
+        if kind=="nausea"&&t==0 {p.add_potion_effect(PotionEffect::new(9,300,0));}
         if kind=="creativedamage" {
             p.set_creative(true);
             if t%5==0 {p.attack_from(&mut w,DamageSource::new(if t%10==0 {DamageKind::Starve}else {DamageKind::Cactus}),5);}

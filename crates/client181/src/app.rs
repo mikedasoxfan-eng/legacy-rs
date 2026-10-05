@@ -790,7 +790,7 @@ impl App {
         self.input.attack_presses += settings.take_binding_presses("key.attack");
         self.input.use_presses += settings.take_binding_presses("key.use");
         self.input.middle_pressed |= settings.take_binding_presses("key.pickItem")>0;
-        self.input.drop_pressed |= settings.take_binding_presses("key.drop")>0;
+        self.input.drop_presses += settings.take_binding_presses("key.drop");
         let inventories=settings.take_binding_presses("key.inventory");
         let chats=settings.take_binding_presses("key.chat");
         for _ in 0..inventories {

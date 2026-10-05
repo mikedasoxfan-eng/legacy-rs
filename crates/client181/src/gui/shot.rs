@@ -83,6 +83,7 @@ pub fn run(script: &str, out_dir: &std::path::Path) -> Result<(), String> {
     let (mut mx, mut my) = (-1, -1);
     let mut loading: Option<LoadingScreen> = None;
     let mut mojang = false;
+    let mut toast_mode = false;
     let mut hud: Option<super::ingame::HudPlayer> = None;
     let mut ingame = super::ingame::GuiIngame::new();
     let mut clear_level = 0.0f64;
@@ -133,6 +134,13 @@ pub fn run(script: &str, out_dir: &std::path::Path) -> Result<(), String> {
             }
             "sessionless" | "texturecheck" => {},
             "millis" => sys.ui.millis = rest.parse().map_err(|_| "millis")?,
+            "toast" => {
+                toast_mode = true;
+                sys.toast = Default::default();
+                let index = arg(1).parse().map_err(|_| "toast index")?;
+                if arg(0) == "information" { sys.toast.queue_information(&sys.ui,index); }
+                else { sys.toast.queue_taken(&sys.ui,index); }
+            }
             "splash" => splash = rest.to_string(),
             "mojang" => {
                 mojang = true;
@@ -154,6 +162,7 @@ pub fn run(script: &str, out_dir: &std::path::Path) -> Result<(), String> {
                 mojang = false;
             }
             "open" => {
+                toast_mode = false;
                 mojang = false;
                 loading = None;
                 hud = None;
@@ -362,7 +371,10 @@ pub fn run(script: &str, out_dir: &std::path::Path) -> Result<(), String> {
                 if sys.ui.actions.iter().any(|a| matches!(a, super::Action::RefreshTextures)) { sys.refresh_textures(&device, &queue)?; }
                 sys.ui.gl.begin_frame();
                 let clear;
-                if mojang {
+                if toast_mode {
+                    sys.toast.draw(&mut sys.ui);
+                    clear = Some([clear_level, clear_level, clear_level, 0.0]);
+                } else if mojang {
                     sys.draw_mojang_logo();
                     clear = Some([clear_level, clear_level, clear_level, 0.0]);
                 } else if let Some(p) = &hud {

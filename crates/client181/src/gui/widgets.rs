@@ -68,7 +68,7 @@ impl GuiButton {
         }
     }
 
-    fn hover_state(&self, hovered: bool) -> i32 {
+    pub(crate) fn hover_state(&self, hovered: bool) -> i32 {
         if let ButtonKind::Slider { .. } = self.kind {
             return 0;
         }
@@ -123,7 +123,7 @@ impl GuiButton {
         }
     }
 
-    fn inside(&self, x: i32, y: i32) -> bool {
+    pub(crate) fn inside(&self, x: i32, y: i32) -> bool {
         self.enabled && self.visible && x >= self.x && y >= self.y && x < self.x + self.width && y < self.y + self.height
     }
 

@@ -1,6 +1,13 @@
 //! EntityPlayer / EntityPlayerSP additions introduced in Beta 1.8.1.
 use super::*;
 impl Entity {
+    pub(super) fn player_swing_duration(&self) -> i32 {
+        if let Some(effect) = self.potion_effect(3) {
+            6i32.wrapping_sub(effect.amplifier.wrapping_add(1))
+        } else if let Some(effect) = self.potion_effect(4) {
+            6i32.wrapping_add(effect.amplifier.wrapping_add(1).wrapping_mul(2))
+        } else { 6 }
+    }
     pub fn add_exhaustion(&mut self, amount: f32) {
         if let Some(s) = self.player_state_mut() {
             if !s.capabilities.disable_damage { s.food.add_exhaustion(amount); }

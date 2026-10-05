@@ -90,6 +90,7 @@ public class GuiShot {
         String loadingTitle = "", loadingText = "";
         int loadingProgress = -1;
         TileEntityFurnace furnace;
+        GuiAchievement toast;
 
         public void onGuiClosed() {
             if(inner!=null)inner.onGuiClosed();
@@ -168,6 +169,12 @@ public class GuiShot {
                     mc.session = null;
                 } else if (cmd.equals("millis")) {
                     millis = Long.parseLong(rest.trim());
+                } else if (cmd.equals("toast")) {
+                    mode="toast";
+                    toast=new GuiAchievement(mc);
+                    Achievement achievement=(Achievement)AchievementList.achievementList.get(Integer.parseInt(a[1]));
+                    if(a[0].equals("information"))toast.queueAchievementInformation(achievement);
+                    else toast.queueTakenAchievement(achievement);
                 } else if (cmd.equals("splash")) {
                     splash = rest;
                 } else if (cmd.equals("mojang")) {
@@ -445,7 +452,10 @@ public class GuiShot {
         }
 
         void shotInto(String name) throws Exception {
-            if (mode.equals("mojang")) {
+            if (mode.equals("toast")) {
+                toast.updateAchievementWindow();
+                save(name, org.lwjgl.opengl.EXTFramebufferObject.GL_COLOR_ATTACHMENT0_EXT);
+            } else if (mode.equals("mojang")) {
                 Method m = Minecraft.class.getDeclaredMethod("loadScreen");
                 m.setAccessible(true);
                 m.invoke(mc);

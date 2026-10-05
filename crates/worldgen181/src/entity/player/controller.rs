@@ -174,6 +174,12 @@ impl Entity {
             if !self.on_ground {
                 strength /= 5.0;
             }
+            if let Some(effect) = self.potion_effect(3) {
+                strength *= 1.0 + effect.amplifier.wrapping_add(1) as f32 * 0.2;
+            }
+            if let Some(effect) = self.potion_effect(4) {
+                strength *= 1.0 - effect.amplifier.wrapping_add(1) as f32 * 0.2;
+            }
             strength / hardness / 30.0
         }
     }
