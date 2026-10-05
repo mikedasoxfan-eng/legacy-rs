@@ -17,8 +17,8 @@ orig="$here/../retromcp-b181/minecraft/src/net/minecraft/src/GuiMainMenu.java"
 sed 's/System\.currentTimeMillis()/GuiShot.millis/' "$orig" > "$build/src/GuiMainMenu.java"
 sed 's/System\.currentTimeMillis()/GuiShot.millis/g' "${orig%GuiMainMenu.java}GuiAchievements.java" > "$build/src/GuiAchievements.java"
 sed 's/System\.currentTimeMillis()/GuiShot.millis/g' "${orig%GuiMainMenu.java}GuiAchievement.java" > "$build/src/GuiAchievement.java"
-if [ ! -f "$build/net/minecraft/src/GuiShot.class" ] || [ "$here/gui/GuiShot.java" -nt "$build/net/minecraft/src/GuiShot.class" ]; then
-  javac -nowarn -cp "$jar$libs" -d "$build" "$here/gui/GuiShot.java" "$build/src/GuiMainMenu.java" "$build/src/GuiAchievements.java" "$build/src/GuiAchievement.java"
+if [ ! -f "$build/net/minecraft/src/GuiShot.class" ] || [ "$here/gui/GuiShot.java" -nt "$build/net/minecraft/src/GuiShot.class" ] || [ "$here/gui/GuiLightmapFixture.java" -nt "$build/net/minecraft/src/GuiShot.class" ]; then
+  javac -nowarn -cp "$jar$libs" -d "$build" "$here/gui/GuiShot.java" "$here/gui/GuiLightmapFixture.java" "$build/src/GuiMainMenu.java" "$build/src/GuiAchievements.java" "$build/src/GuiAchievement.java"
 fi
 
 # A throwaway .minecraft: default options, the fixture saves.

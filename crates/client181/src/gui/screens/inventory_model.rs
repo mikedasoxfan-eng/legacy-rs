@@ -228,6 +228,9 @@ pub fn draw(
             ui.gl.triangles(&batch.vertices);
         }
     }
+    // RenderLiving disables texture unit 1 for the color/hurt overlay, then
+    // unconditionally re-enables it before returning to GuiInventory.
+    ui.gl.lightmap_enabled = false;
     if snapshot.preview.hurt_time > 0 {
         ui.gl.texture_2d = false;
         ui.gl.alpha_test = false;
@@ -253,6 +256,7 @@ pub fn draw(
     }
     ui.gl.pop_matrix();
     ui.gl.pop_matrix();
+    ui.gl.lightmap_enabled = true;
 }
 fn block_item(ui: &mut Ui, item: worldgen::container::ItemStack, parent: Mat4, lights: [Vec3; 2]) {
     let mut fixed = crate::render::entity::fixed::Fixed::new(1.0);

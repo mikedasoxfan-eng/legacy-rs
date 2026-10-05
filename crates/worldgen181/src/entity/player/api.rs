@@ -161,7 +161,7 @@ impl World {
             PlayerTarget::ObjectMouseOver(hit) => hit,
         };
         let mut controller = std::mem::take(&mut p.player_state_mut().unwrap().controller);
-        controller.update();
+        controller.update_for_mode(p.player_state().unwrap().capabilities.creative);
         let inventory = &mut p.player_state_mut().unwrap().inventory;
         if let Some(slot) = input.hotbar_slot.filter(|&slot| slot < 9) {
             inventory.current_item = slot as i32;

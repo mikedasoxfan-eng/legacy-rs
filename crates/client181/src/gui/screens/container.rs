@@ -213,6 +213,9 @@ impl Screen for GuiContainer {
         };
         ui.draw_world_background(self.base.width, self.base.height, 0);
         self.background(ui, &s);
+        // GuiContainer sets unit 1's current coordinate after the background
+        // (and its player figure), even when texturing on that unit is disabled.
+        ui.gl.lightmap_coordinates = 240 | (240 << 16);
         let (ox, oy) = self.origin();
         gui_item::set_gui_light_rotation(120.0);
         gui_item::set_gui_rescale_normal(true);
@@ -325,7 +328,7 @@ impl Screen for GuiContainer {
         }
     }
     fn on_gui_closed(&mut self, ui: &mut Ui) {
-        ui.container_commands.push(ContainerCommand::Close {
+        ui.container_commands.push(ContainerCommand::CloseFromGui {
             window: self.window,
         });
     }

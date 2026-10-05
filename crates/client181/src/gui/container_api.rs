@@ -48,7 +48,7 @@ impl GuiSystem {
         // The Open request already closed the old world-side container. Its UI
         // callback must not close a newly reopened window zero.
         let mut generated = self.ui.container_commands.split_off(pending);
-        generated.retain(|c| !matches!(c, ContainerCommand::Close { .. }));
+        generated.retain(|c| !matches!(c, ContainerCommand::Close { .. } | ContainerCommand::CloseFromGui { .. }));
         self.ui.container_commands.extend(generated);
         actions
     }

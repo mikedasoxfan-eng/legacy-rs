@@ -1279,7 +1279,12 @@ impl App {
                         }
                         if let Some(snd) = &mut self.sound {
                             // PlayerControllerSP.updateController, every unpaused tick.
-                            snd.play_random_music_if_ready();
+                            let creative = self.player.as_ref()
+                                .and_then(|p| p.entity.player_state())
+                                .is_some_and(|s| s.capabilities.creative);
+                            if worldgen::entity::player::controller::PlayerControllerSP::updates_each_tick(creative) {
+                                snd.play_random_music_if_ready();
+                            }
                         }
                         let (splashes, rain_sound) = render::weather::add_rain_particles(
                             &self.weather_terrain,
@@ -1624,6 +1629,15 @@ impl App {
             ..memory_info()
         };
         let shot = gpu.render_with_overlay(&params, capture, &mut |device, queue, view, size| {
+            // renderWorld's final func_35810_a disables unit 1, retaining its
+            // binding and last first-person glMultiTexCoord for GUI model draws.
+            gui.ui.gl.lightmap_enabled = false;
+            gui.ui.gl.lightmap_texels = Some(Box::new(lightmap));
+            gui.ui.gl.lightmap_coordinates = self.weather_terrain.packed_brightness(
+                self.player.as_ref().map_or(self.cam.pos.to_array(), |p| {
+                    [p.entity.pos.x, p.entity.pos.y, p.entity.pos.z]
+                })
+            ) as u32;
             gui.sync_pack_icons(device, queue);
             let (mx, my) = gui.gui_mouse(cursor.0, cursor.1);
             let screen_open = gui.screen.is_some();

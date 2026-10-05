@@ -39,6 +39,8 @@ pub struct GuiVertex {
     pub color: [f32; 4],
     /// x: 1 if texturing is enabled; y: alpha-test reference (GREATER), or -1 if disabled.
     pub flags: [f32; 2],
+    /// Texture unit 1's current lightmap sample, applied after unit 0.
+    pub lightmap: [f32; 3],
 }
 
 #[derive(Clone, Copy, Debug, PartialEq)]
@@ -72,6 +74,11 @@ struct TessVertex {
 }
 
 pub struct Gl {
+    pub lightmap_enabled: bool,
+    /// Packed glMultiTexCoord2f(GL_TEXTURE1, block, sky) coordinates.
+    pub lightmap_coordinates: u32,
+    /// None represents an unbound/incomplete texture unit (no modulation).
+    pub lightmap_texels: Option<Box<[u32; 256]>>,
     pub color_mask: u8,
     pub panorama: Option<super::panorama::Panorama>,
     pub proj: Mat4,
@@ -114,6 +121,9 @@ impl Gl {
     /// The state `Minecraft.startGame` leaves behind.
     pub fn new() -> Gl {
         Gl {
+            lightmap_enabled: false,
+            lightmap_coordinates: 0,
+            lightmap_texels: None,
             color_mask: 15,
             panorama: None,
             proj: Mat4::IDENTITY,
@@ -147,6 +157,15 @@ impl Gl {
         self.panorama = None;
         self.verts.clear();
         self.draws.clear();
+    }
+
+    fn lightmap_sample(&self) -> [f32; 3] {
+        if self.lightmap_enabled {
+            if let Some(texels) = &self.lightmap_texels {
+                return crate::render::lightmap::sample(texels, self.lightmap_coordinates);
+            }
+        }
+        [1.0; 3]
     }
 
     // ------------------------------------------------------------------ matrices
@@ -325,6 +344,7 @@ impl Gl {
         }
         let first = self.verts.len() as u32;
         let mv = *self.modelview.last().unwrap();
+        let lightmap = self.lightmap_sample();
         let flags = [
             if self.texture_2d { 1.0 } else { 0.0 },
             if self.alpha_test {
@@ -338,6 +358,7 @@ impl Gl {
             uv: v.uv,
             color: v.color,
             flags,
+            lightmap,
         }));
         let state = DrawState {
             color_mask: self.color_mask,
@@ -388,6 +409,7 @@ impl Gl {
             return;
         }
         let mv = *self.modelview.last().unwrap();
+        let lightmap = self.lightmap_sample();
         let state = DrawState {
             color_mask: self.color_mask,
             texture: if self.texture_2d { self.bound } else { None },
@@ -439,6 +461,7 @@ impl Gl {
                 uv: [0.0; 2],
                 color: [0.0; 4],
                 flags,
+                lightmap,
             }; 4];
             for i in 0..4 {
                 let e = mv * quad[i].pos.extend(1.0);
@@ -447,6 +470,7 @@ impl Gl {
                     uv: uvs[i],
                     color: colors[i],
                     flags,
+                    lightmap,
                 };
             }
             for &i in &[0, 1, 2, 0, 2, 3] {

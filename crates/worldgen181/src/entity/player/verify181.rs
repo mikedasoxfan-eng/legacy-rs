@@ -93,3 +93,50 @@ pub fn replay(kind:&str,ticks:i32)->Vec<u8> {
     }
     o
 }
+
+/// EntityPlayerSP boundary fixture, invoking production action/tick methods.
+pub fn sp_boundaries()->Vec<u8> {
+    use crate::entity::potion::PotionEffect;
+    let mut w=super::super::verify181::world();
+    let mut p=Entity::player(&mut w,"Player");
+    let mut r=crate::JavaRandom::new(6181);
+    let mut o=vec![];
+    for c in 0..10000 {
+        p.yaw=(r.next_int(200001)-100000) as f32/317.0;
+        p.pitch=(r.next_int(200001)-100000) as f32/319.0;
+        p.player_state_mut().unwrap().input=PlayerInput {
+            left:c%3==2,right:c%3==0,forward:c%3==2,back:c%3==0,
+            jump:c%2==0,..Default::default()
+        };
+        p.player_action();
+        let s=p.player_state().unwrap();
+        for v in [s.render_arm_yaw,s.render_arm_pitch,s.prev_render_arm_yaw,s.prev_render_arm_pitch,p.living.move_strafing,p.living.move_forward] {f(&mut o,v);}
+        o.push(p.living.is_jumping as u8);
+        // Check the actual fields consumed by the first-person renderer too.
+        assert_eq!(s.arm_yaw,[s.prev_render_arm_yaw,s.render_arm_yaw]);
+        assert_eq!(s.arm_pitch,[s.prev_render_arm_pitch,s.render_arm_pitch]);
+        p.set_sprinting(c%2==0);
+        let s=p.player_state_mut().unwrap();
+        i(&mut o,s.sprint_ticks);o.push(s.sprinting as u8);
+        s.capabilities.flying=c%3==0;
+        s.ground_speed=(r.next_int(2001)-1000) as f32/1000.0;
+        if c%4==0 {p.add_potion_effect(PotionEffect::new(1,100,c%8));}
+        if c%4==1 {p.add_potion_effect(PotionEffect::new(2,100,c%8));}
+        p.start_item_use(ItemStack::new(if c%3==0 {261}else {267},1,0),72000-(c%101-30));
+        f(&mut o,p.fov_multiplier());p.clear_item_use();
+    }
+    let mut p=Entity::player(&mut w,"Player");p.set_location_and_angles(0.5,64.0,0.5,0.0,0.0);
+    p.player_state_mut().unwrap().input.forward=true;
+    frame(&mut w,&mut p,&mut o);
+    for t in 0..650 {
+        p.set_location_and_angles(0.5,64.0,0.5,0.0,0.0);p.motion.x=0.0;p.motion.z=0.0;
+        p.yaw=(t%17-8) as f32*33.7;p.pitch=(t%11-5) as f32*9.8;
+        if t==0 {p.set_sprinting(true);}
+        if t==610 {p.living.health=0;}
+        p.on_update(&mut w);frame(&mut w,&mut p,&mut o);
+        let s=p.player_state().unwrap();
+        assert_eq!(s.arm_yaw,[s.prev_render_arm_yaw,s.render_arm_yaw]);
+        assert_eq!(s.arm_pitch,[s.prev_render_arm_pitch,s.render_arm_pitch]);
+    }
+    o
+}

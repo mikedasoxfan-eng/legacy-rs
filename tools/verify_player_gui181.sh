@@ -12,6 +12,14 @@ fi
 cd "$root"
 cargo build --release -q -p worldgen181 -p client || exit 1
 fail=0
+echo "== player-gui b1.8.1 round 6: creative initialization and controller update policy"
+bash tools/oracle181/oracle.sh controllermode181 controllermode181-java.bin && target/release/controllermode181 target/controllermode181-rust.bin tools/oracle181/out/controllermode181-java.bin || fail=1
+echo "== player-gui b1.8.1 round 6: SP action state, FOV and sprint expiration"
+bash tools/oracle181/oracle.sh playersp181 playersp181-java.bin && target/release/playersp181 target/playersp181-rust.bin tools/oracle181/out/playersp181-java.bin || fail=1
+echo "== player-gui b1.8.1 round 6: actual GUI container close callbacks"
+bash tools/oracle181/oracle.sh guiclose181 guiclose181-java.bin && target/release/beta --mc b1.8.1 --guiclosecheck tools/oracle181/out/guiclose181-java.bin || fail=1
+echo "== player-gui b1.8.1 round 6: world-side GUI chest close hooks"
+bash tools/oracle181/oracle.sh guichest181 guichest181-java.bin && target/release/guichest181 target/guichest181-rust.bin tools/oracle181/out/guichest181-java.bin || fail=1
 echo "== player-gui b1.8.1 round 5: inventory/NBT and player callbacks"
 bash tools/oracle181/oracle.sh playerstate181 playerstate181-java.bin && target/release/playerstate181 target/playerstate181-rust.bin tools/oracle181/out/playerstate181-java.bin || fail=1
 echo "== player-gui b1.8.1 round 5: queued click/use transitions"
@@ -68,7 +76,7 @@ else
   echo "RECIPE CATALOG DIFFERS"; fail=1
 fi
 if [ "${1:-}" != --no-gui ]; then
-  for scenes in tools/oracle181/gui/player-gui-scenes.txt tools/oracle181/gui/player-gui-container-scenes.txt tools/oracle181/gui/player-gui2-scenes.txt tools/oracle181/gui/player-gui3-scenes.txt tools/oracle181/gui/player-gui4-scenes.txt tools/oracle181/gui/player-gui4-creative-scenes.txt tools/oracle181/gui/player-gui5-scenes.txt tools/oracle181/gui/player-gui5-hud/*.txt; do
+  for scenes in tools/oracle181/gui/player-gui-scenes.txt tools/oracle181/gui/player-gui-container-scenes.txt tools/oracle181/gui/player-gui2-scenes.txt tools/oracle181/gui/player-gui3-scenes.txt tools/oracle181/gui/player-gui4-scenes.txt tools/oracle181/gui/player-gui4-creative-scenes.txt tools/oracle181/gui/player-gui5-scenes.txt tools/oracle181/gui/player-gui5-hud/*.txt tools/oracle181/gui/container-scenes.txt tools/oracle181/gui/player-gui6-scenes.txt; do
   echo "== player-gui b1.8.1: GUI pixels $(basename "$scenes" .txt)"
   java=tools/oracle181/out/player-gui-java
   rust=target/player-gui-rust
