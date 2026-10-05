@@ -401,5 +401,9 @@ fi
 rm -rf "$cv"
 
 bash "$root/tools/verify_decorations181.sh" || fail=1
+# --- player-gui (b1.8.1) ---
+echo "== player/gui: hunger, experience, FOV, creative catalog, options, keys and pixels"
+bash "$root/tools/verify_player_gui181.sh" || fail=1
 [ $fail -eq 0 ] && echo "ALL CASES EXACT" || echo "SOME CASES DIFFER"
 exit $fail
+# --- end player-gui ---

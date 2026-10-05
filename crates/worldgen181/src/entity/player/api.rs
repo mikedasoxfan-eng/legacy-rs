@@ -66,7 +66,7 @@ impl Entity {
         let mut use_item = true;
         match hit {
             None => {
-                if !right {
+                if !right && !self.player_state().unwrap().capabilities.creative {
                     self.player_state_mut().unwrap().left_click_counter = 10;
                 }
             }
@@ -201,10 +201,10 @@ impl World {
                             },
                         });
                 } else {
-                    controller.reset();
+                    if !p.player_state().unwrap().capabilities.creative { controller.reset(); }
                 }
             } else {
-                controller.reset();
+                if !p.player_state().unwrap().capabilities.creative { controller.reset(); }
             }
         }
         p.player_state_mut().unwrap().controller = controller;

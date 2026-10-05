@@ -104,7 +104,7 @@ impl PlayerControllerSP {
     }
     fn creative_remove(&mut self,_p:&mut Entity,w:&mut World,x:i32,y:i32,z:i32,side:i32)->bool {
         let (fx,fy,fz)=super::placement::offset(x,y,z,side);
-        if w.get_block_id(fx,fy,fz)==FIRE {w.auxiliary_effect(1004,(fx,fy,fz),0);w.set_block_with_notify(fx,fy,fz,0);return false;}
+        if w.get_block_id(fx,fy,fz)==FIRE {w.auxiliary_effect(1004,(fx,fy,fz),0);w.set_block_with_notify(fx,fy,fz,0);}
         let id=w.get_block_id(x,y,z);if id==0{return false;}
         let meta=w.get_block_metadata(x,y,z);w.auxiliary_effect(2001,(x,y,z),id as i32+meta*256);
         let removed=w.set_block_with_notify(x,y,z,0);

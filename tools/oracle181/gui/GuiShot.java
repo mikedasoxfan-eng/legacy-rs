@@ -35,6 +35,8 @@ import org.lwjgl.opengl.GL11;
  * never touched. GuiMainMenu is recompiled with its clock replaced by GuiShot.millis.
  */
 public class GuiShot {
+    static TileEntityChest chestFixture(World world) { TileEntityChest chest=new TileEntityChest(); chest.worldObj=world; return chest; }
+
     public static long millis = 0L;
 
     static List<String> script = new ArrayList<>();
@@ -210,8 +212,8 @@ public class GuiShot {
                         if(which.equals("creative")){mc.playerController=new PlayerControllerTest(mc);PlayerControllerTest.func_35646_d(p);s=new GuiContainerCreative(p);}
                         else if(which.equals("inventory")){mc.playerController=new PlayerControllerSP(mc);s=new GuiInventory(p);}
                         else if(which.equals("crafting"))s=new GuiCrafting(p.inventory,mc.theWorld,0,64,0);
-                        else if(which.equals("chest"))s=new GuiChest(p.inventory,new TileEntityChest());
-                        else if(which.equals("largechest"))s=new GuiChest(p.inventory,new InventoryLargeChest("Large chest",new TileEntityChest(),new TileEntityChest()));
+                        else if(which.equals("chest"))s=new GuiChest(p.inventory,chestFixture(mc.theWorld));
+                        else if(which.equals("largechest"))s=new GuiChest(p.inventory,new InventoryLargeChest("Large chest",chestFixture(mc.theWorld),chestFixture(mc.theWorld)));
                         else if(which.equals("furnace")){furnace=new TileEntityFurnace();s=new GuiFurnace(p.inventory,furnace);}
                         else s=new GuiDispenser(p.inventory,new TileEntityDispenser());
                     }

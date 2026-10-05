@@ -141,7 +141,7 @@ fn draw_item(ui: &mut Ui, s: Option<ItemStack>, x: i32, y: i32) {
                 {
                     for (v, i) in quad.iter_mut().zip([0, 1, 2, 0, 2, 3]) {
                         let mut n = nm
-                            .transform_vector3(super::inventory_model::byte_normal(raw[i].normal));
+                            .transform_vector3(if s.id==54 {let b=|shift| (2.0*((raw[i].normal>>shift) as u8 as i8) as f32+1.0)/255.0;glam::Vec3::new(b(0),b(8),b(16))}else {super::inventory_model::byte_normal(raw[i].normal)});
                         if d.flags & 4 != 0 {
                             n = n.normalize_or_zero();
                         } else if d.flags & 2 != 0 {

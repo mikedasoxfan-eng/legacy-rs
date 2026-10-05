@@ -16,3 +16,5 @@ pub mod edit_sign;
 pub mod chat;
 
 pub(crate) mod block_items;
+
+pub(crate) mod chest_item;

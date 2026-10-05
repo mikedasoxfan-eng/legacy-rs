@@ -244,4 +244,21 @@ mouse 0 0
 shot b181_controls_waiting
 click 1
 shot b181_controls_duplicate
+world 42
+clear 128
+hud health=20 prev=20 item=0 pos=0.5,120,0.5 brightness=0.0
+counter 0
+open inventory
+mouse 0 0
+shot b181_inventory
+open chest
+shot b181_chest
+open largechest
+shot b181_largechest
+open crafting
+shot b181_crafting
+open furnace
+shot b181_furnace
+open dispenser
+shot b181_dispenser
 # --- end player-gui ---

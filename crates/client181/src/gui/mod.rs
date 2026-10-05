@@ -32,6 +32,7 @@ use widgets::GuiButton;
 /// Textures the GUI binds by name (`RenderEngine.getTexture("/gui/gui.png")`).
 pub const TEXTURES: &[&str] = &[
     "item/sign.png",
+    "item/chest.png",
     "font/default.png",
     "gui/gui.png",
     "gui/background.png",
