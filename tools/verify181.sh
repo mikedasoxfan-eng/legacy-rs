@@ -445,5 +445,8 @@ bash "$root/tools/verify_entities5_181.sh" --built || fail=1
 # --- entities (b1.8.1) ---
 bash "$root/tools/verify_entities6_181.sh" --built || fail=1
 # --- end entities ---
+# --- terrain (b1.8.1 integration round 6) ---
+bash "$root/tools/verify_drawtrace181.sh" || fail=1
+# --- end terrain ---
 [ $fail -eq 0 ] && echo "ALL CASES EXACT" || echo "SOME CASES DIFFER"
 exit $fail

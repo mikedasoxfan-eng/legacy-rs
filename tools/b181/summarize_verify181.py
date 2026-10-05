@@ -24,7 +24,7 @@ def sections(path):
             if re.search(r'\bEXACT\b|\b0 differences\b|\b0 mismatches\b|test result: ok\. [1-9][0-9]* passed; 0 failed', line, re.I): exact = True
             if re.search(r'CASES DIFFER|FOCUSED CASES|SOME CASES DIFFER', line): continue
             if re.search(r'\b0 differ|\b0 differences|\b0 mismatches', line): continue
-            if re.search(r'(?i)\bdiffers\b|\bdiffer at\b|DIFF:|Exception in thread|Caused by:|panicked|^error:|test result: FAILED|[1-9][0-9]* (?:mismatches|differences)|ORACLE FAILED', line):
+            if re.search(r'(?i)\bdiffers\b|\bdiffer at\b|DIFF:|Exception in thread|Caused by:|panicked|^error:|test result: FAILED|[1-9][0-9]* (?:mismatches|differences|differ\b)|ORACLE FAILED|^(?:ValueError|AssertionError|FileNotFoundError):', line):
                 failures.append({'line': number, 'message': line})
         section['status'] = 'failed' if failures else 'exact' if exact else 'unverified'
         if failures: section['failure'] = failures[0]

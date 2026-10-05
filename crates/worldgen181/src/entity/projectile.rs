@@ -443,7 +443,15 @@ impl Entity {
                     w.entities.insert(id, e);
                 }
             }
+            // World.updateEntities temporarily removes the updating entity from
+            // the Rust map. Vanilla's null-exploder query still includes this
+            // fireball, whose zero-distance knockback produces NaN motion.
+            // Publish the current object for the query and take its mutations
+            // back before continuing the original movement/smoke callbacks.
+            let previous = w.entities.insert(self.entity_id, self.clone());
+            debug_assert!(previous.is_none());
             w.new_explosion(None, self.pos, 1.0, true);
+            *self = w.entities.remove(&self.entity_id).unwrap();
             }
             self.dead = true;
         }
