@@ -20,11 +20,13 @@ impl World {
                 .ok_or(ItemError::ArrayIndexOutOfBounds)?;
         }
         let Some(TileEntity::Piston(p)) = self.get_block_tile_entity(x, y, z).cloned() else { return Ok(None); };
-        if p.block_id == 0 || p.block_id == PISTON_MOVING { return Ok(None); }
-        if !props(p.block_id).exists { return Err(ItemError::NullPointer); }
+        if p.block_id == 0 || p.block_id == PISTON_MOVING as i32 { return Ok(None); }
+        // Block.blocksList[storedBlockID]: outside 0..256 throws, an empty slot is null.
+        let id = u8::try_from(p.block_id).map_err(|_| ItemError::ArrayIndexOutOfBounds)?;
+        if !props(id).exists { return Err(ItemError::NullPointer); }
         let progress = if p.extending { 1.0 - p.progress(0.0) } else { p.progress(0.0) };
         // A null carried-block collision returns before indexing the direction.
-        let Some(mut b) = self.block_collision_box(p.block_id, x, y, z) else { return Ok(None); };
+        let Some(mut b) = self.block_collision_box(id, x, y, z) else { return Ok(None); };
         let &(dx, dy, dz) = crate::world::pistons::DIRECTIONS.get(p.facing as usize)
             .ok_or(ItemError::ArrayIndexOutOfBounds)?;
         let (ox, oy, oz) = ((dx as f32 * progress) as f64,
