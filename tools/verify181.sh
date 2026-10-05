@@ -21,34 +21,59 @@ quick="${1:-}"
 
 fail=0
 bash "$root/tools/verify_vehicles181.sh" --built || fail=1
-run() { # label, oracle args..., then "--", compare args (oracle output file appended)
+run_one() { # label, oracle args..., then "--", compare args (oracle output file appended)
   local label="$1"; shift
   local oargs=() cargs=()
   while [ "$1" != "--" ]; do oargs+=("$1"); shift; done; shift
   cargs=("$@")
+  local rc=0
   local f="case_$(echo "${oargs[*]}" | tr ' ' '_').bin"
   echo "== $label"
   if ! "$oracle" "${oargs[@]:0:1}" "${oargs[@]:1}" "$f" >"$out/$f.log" 2>&1; then
-    cat "$out/$f.log"; echo "ORACLE FAILED: $label"; fail=1
+    cat "$out/$f.log"; echo "ORACLE FAILED: $label"; rc=1
   elif ! "$cmp" "${cargs[@]}" "$out/$f"; then
-    echo "DIFFERS: $label"; fail=1
+    echo "DIFFERS: $label"; rc=1
   fi
   rm -f "$out/$f" "$out/$f.txt" "$out/$f.events" "$out/$f.identities" "$out/$f.spawnidentities" "$out/$f.frames" "$out/$f.log"
+  return $rc
 }
-run_extra() { # like run, but the oracle takes an argument after the output file
+run_extra_one() { # like run, but the oracle takes an argument after the output file
   local label="$1" extra="$2"; shift 2
   local oargs=() cargs=()
   while [ "$1" != "--" ]; do oargs+=("$1"); shift; done; shift
   cargs=("$@")
+  local rc=0
   local f="case_$(echo "${oargs[*]}_$extra" | tr ' :,' '_xc' | cut -c1-80).bin"
   echo "== $label"
   if ! "$oracle" "${oargs[@]}" "$f" "$extra" >"$out/$f.log" 2>&1; then
-    cat "$out/$f.log"; echo "ORACLE FAILED: $label"; fail=1
+    cat "$out/$f.log"; echo "ORACLE FAILED: $label"; rc=1
   elif ! "$cmp" "${cargs[@]}" "$out/$f" "$extra"; then
-    echo "DIFFERS: $label"; fail=1
+    echo "DIFFERS: $label"; rc=1
   fi
   rm -f "$out/$f" "$out/$f.txt" "$out/$f.events" "$out/$f.identities" "$out/$f.spawnidentities" "$out/$f.frames" "$out/$f.log"
+  return $rc
 }
+# Replay cases are independent (each has its own output file), so they run in parallel,
+# VERIFY181_JOBS at a time (default 6). Their output is printed in order by pflush.
+jobs_max="${VERIFY181_JOBS:-6}"
+pdir="$root/target/verify181-par"
+rm -rf "${pdir:?}"; mkdir -p "$pdir"; pn=0
+par() {
+  while [ "$(jobs -rp | wc -l)" -ge "$jobs_max" ]; do wait -n; done
+  pn=$((pn + 1)); local o="$pdir/$(printf %05d "$pn")"
+  ( "$@" >"$o.out" 2>&1; echo $? >"$o.rc" ) &
+}
+pflush() {
+  wait
+  local o
+  for o in "$pdir"/*.out; do
+    [ -e "$o" ] || continue
+    cat "$o"; [ "$(cat "${o%.out}.rc")" = 0 ] || fail=1
+    rm -f "$o" "${o%.out}.rc"
+  done
+}
+run() { par run_one "$@"; }
+run_extra() { par run_extra_one "$@"; }
 
 echo "== MathHelper sine table"
 "$oracle" sin sin.bin && "$cmp" sin "$out/sin.bin" && echo "sine table EXACT" || fail=1
@@ -448,5 +473,6 @@ bash "$root/tools/verify_entities6_181.sh" --built || fail=1
 # --- player-gui (b1.8.1), round 7 ---
 bash tools/verify_player_gui7_181.sh --built || fail=1
 # --- end player-gui ---
+pflush
 [ $fail -eq 0 ] && echo "ALL CASES EXACT" || echo "SOME CASES DIFFER"
 exit $fail
