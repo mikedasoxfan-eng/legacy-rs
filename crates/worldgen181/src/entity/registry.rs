@@ -35,3 +35,69 @@ pub const ENTRIES: &[Entry] = &[
 pub fn by_id(id:i32)->Option<&'static Entry> {ENTRIES.iter().find(|e|e.id==id)}
 pub fn by_name(name:&str)->Option<&'static Entry> {ENTRIES.iter().find(|e|e.name==name)}
 pub fn by_kind(kind:&EntityKind)->Option<&'static Entry> {by_name(kind.name())}
+
+/// EntityList.createEntityInWorld: registration gates constructors, including
+/// the two abstract entries and unregistered players/projectiles.
+pub fn create(w: &mut crate::World, name: &str) -> Option<super::Entity> {
+    by_name(name)?;
+        let e = match name {
+            "Painting" => super::Entity::painting_base(w),
+            "Minecart" => super::Entity::minecart_base(w),
+            "Boat" => super::Entity::boat_base(w),
+            "Mob" | "Monster" => return None,
+            "Item" => {
+                let mut e = super::Entity::base(
+                    w,
+                    super::EntityKind::Item {
+                        item: crate::world::tile::ItemStack::new(0, 0, 0),
+                        age: 0,
+                        pickup_delay: 0,
+                        health: 5,
+                        hover_start: 0.0,
+                        updates: 0,
+                    },
+                );
+                let hover = (w.math_random.next_double() * std::f64::consts::PI * 2.0) as f32;
+                if let super::EntityKind::Item { hover_start, .. } = &mut e.kind {
+                    *hover_start = hover;
+                }
+                e.width = 0.25;
+                e.height = 0.25;
+                e.y_offset = e.height / 2.0;
+                e
+            }
+            "FallingSand" => super::Entity::base(
+                w,
+                super::EntityKind::FallingSand {
+                    block: 0,
+                    fall_time: 0,
+                },
+            ),
+            "PrimedTnt" => {
+                let mut e = super::Entity::base(w, super::EntityKind::Tnt { fuse: 0 });
+                e.prevent_entity_spawning = true;
+                e.width = 0.98;
+                e.height = 0.98;
+                e.y_offset = e.height / 2.0;
+                e
+            }
+            "XPOrb" => super::Entity::xp_orb_base(w),
+            "Arrow" => {
+                let mut e = super::Entity::base(w, super::EntityKind::Arrow(Default::default()));
+                e.width = 0.5;
+                e.height = 0.5;
+                e
+            }
+            "Snowball" => {
+                let mut e = super::Entity::base(w, super::EntityKind::Snowball(Default::default()));
+                e.width = 0.25;
+                e.height = 0.25;
+                e
+            }
+            _ => super::Entity::living(w, name)?,
+        };
+    Some(e)
+}
+pub fn create_by_id(w: &mut crate::World, id: i32) -> Option<super::Entity> {
+    create(w, by_id(id)?.name)
+}

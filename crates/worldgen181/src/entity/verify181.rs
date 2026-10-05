@@ -190,7 +190,11 @@ pub(crate) fn state(w: &mut World, e: &Entity, o: &mut Vec<u8>) {
     i(o, w.loaded_entity_list.len() as i32);
     for id in &w.loaded_entity_list {
         let e = &w.entities[id];
-        text(o, e.kind.name());
+        if let Some(entry) = super::registry::by_kind(&e.kind) {
+            text(o, entry.name);
+        } else {
+            i(o, -1);
+        }
         d(o, e.pos.x);
         d(o, e.pos.y);
         d(o, e.pos.z);

@@ -161,7 +161,12 @@ pub fn block_color(id: u8, meta: i32) -> u32 {
     }
 }
 pub fn inventory(gl: &mut Fixed, id: u8, meta: i32, brightness: f32, tint: bool) {
-    if id==54 {crate::gui::screens::chest_item::append(gl);return;}
+    if id==54 {
+        gl.enable(2, true);
+        crate::gui::screens::chest_item::append(gl);
+        gl.enable(2, false);
+        return;
+    }
     if tint {
         let c = block_color(id, meta);
         gl.material = [

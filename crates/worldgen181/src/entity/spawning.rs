@@ -118,16 +118,7 @@ pub fn spawn_list181(biome: i32, category: i32) -> Vec<(&'static str, i32, i32, 
     }
 }
 fn spawn_list(biome: Biome, category: i32) -> Vec<(&'static str, i32)> {
-    let id = match biome {
-        Biome::Hell => 8,
-        Biome::Sky => 9,
-        Biome::Forest | Biome::SeasonalForest | Biome::Rainforest => 4,
-        Biome::Taiga => 5,
-        Biome::Desert | Biome::IceDesert => 2,
-        Biome::Swampland => 6,
-        _ => 1,
-    };
-    spawn_list181(id, category)
+    spawn_list181(biome as i32, category)
         .into_iter()
         .map(|(name, weight, _, _)| (name, weight))
         .collect()
@@ -145,6 +136,15 @@ fn category(kind: &EntityKind) -> i32 {
 }
 impl World {
     pub fn perform_spawning(&mut self, hostile: bool, peaceful: bool) -> i32 {
+        self.perform_spawning_with_identity(hostile, peaceful, |x, z| {
+            // Identity hashes are a VM-dependent input, just like clock-seeded RNG.
+            // Stable per-coordinate identities keep the port's traversal repeatable.
+            (((x as u32 & 0x7fff) << 16 | (z as u32 & 0xffff)).wrapping_add(1) & 0x7fffffff) as i32
+        })
+    }
+    pub fn perform_spawning_with_identity(
+        &mut self, hostile: bool, peaceful: bool, mut identity: impl FnMut(i32, i32) -> i32,
+    ) -> i32 {
         if !hostile && !peaceful {
             return 0;
         }
@@ -156,7 +156,7 @@ impl World {
             for dx in -8..=8 {
                 for dz in -8..=8 {
                     let key = (cx + dx, cz + dz);
-                    eligible.insert(crate::world::server::chunk_xz_to_int(key.0, key.1), key);
+                    eligible.insert_with_identity(key.0 ^ key.1, identity(key.0, key.1), key);
                 }
             }
         }
