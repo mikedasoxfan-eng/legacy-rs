@@ -789,14 +789,14 @@ impl Entity {
             if damage <= self.living.last_damage {
                 return false;
             }
-            self.damage_living_from(source, damage - self.living.last_damage);
+            self.apply_living_damage181(source, damage.wrapping_sub(self.living.last_damage));
             self.living.last_damage = damage;
             fresh = false;
         } else {
             self.living.last_damage = damage;
             self.living.prev_health = self.living.health;
             self.living.hearts_life = self.living.hearts_halves_life;
-            self.damage_living_from(source, damage);
+            self.apply_living_damage181(source, damage);
             self.living.hurt_time = 10;
             self.living.max_hurt_time = 10;
             fresh = true;
@@ -868,6 +868,13 @@ impl Entity {
             self.on_living_death(w, source);
         }
         true
+    }
+    fn apply_living_damage181(&mut self, source: super::damage::DamageSource, damage: i32) {
+        if self.player_state().is_some() {
+            self.damage_living_from(source, damage);
+        } else {
+            self.living.health = self.living.health.wrapping_sub(damage);
+        }
     }
     /// EntityLiving.onDeath, shared by damage and incoming status packets.
     pub fn on_living_death(&mut self, w: &mut World, source: super::damage::DamageSource) {

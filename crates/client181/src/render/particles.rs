@@ -895,7 +895,7 @@ impl EffectRenderer {
         }
         if distance > 16.0 * 16.0 { return Ok(()); }
         if let Some(suffix) = name.strip_prefix("iconcrack_") {
-            let id = suffix.parse::<i32>().map_err(|_| "NumberFormatException")?;
+            let id = java_particle_integer(suffix)?;
             if !(0..32000).contains(&id) { return Err("ArrayIndexOutOfBoundsException"); }
             if worldgen::entity::player::registry::item(id).is_none() { let _ = self.create(Kind::Snowball, p, [0.0; 3]); return Err("NullPointerException"); }
             let mut particle = self.create(Kind::Snowball, p, [0.0; 3]);
@@ -903,7 +903,7 @@ impl EffectRenderer {
             for axis in 0..3 { particle.motion[axis] = particle.motion[axis] * 0.1f32 as f64 + v[axis]; }
             self.add(particle);
         } else if let Some(suffix) = name.strip_prefix("tilecrack_") {
-            let id = suffix.parse::<i32>().map_err(|_| "NumberFormatException")?;
+            let id = java_particle_integer(suffix)?;
             if !(0..256).contains(&id) { return Err("ArrayIndexOutOfBoundsException"); }
             if worldgen::entity::player::registry::item(id).is_none() { let _ = self.create(Kind::Base, p, v); return Err("NullPointerException"); }
             let particle = self.create(Kind::Digging { block: id as u8, metadata: 0 }, p, v);
@@ -1232,4 +1232,27 @@ fn collision_boxes(id: u8, meta: u8, pos: [i32; 3]) -> Vec<[f64; 6]> {
         }
     }));
     shapes
+}
+
+/// Integer.parseInt uses Character.digit on UTF-16 code units, not ASCII or
+/// Unicode scalar values. These decimal ranges are from Mojang Java 8u51.
+fn java_particle_integer(s: &str) -> Result<i32, &'static str> {
+    const ZERO: &[u16] = &[0x0030, 0x0660, 0x06f0, 0x07c0, 0x0966, 0x09e6, 0x0a66, 0x0ae6, 0x0b66, 0x0be6, 0x0c66, 0x0ce6, 0x0d66, 0x0e50, 0x0ed0, 0x0f20, 0x1040, 0x1090, 0x17e0, 0x1810, 0x1946, 0x19d0, 0x1a80, 0x1a90, 0x1b50, 0x1bb0, 0x1c40, 0x1c50, 0xa620, 0xa8d0, 0xa900, 0xa9d0, 0xaa50, 0xabf0, 0xff10,];
+    let mut units = s.encode_utf16().peekable();
+    let negative = match units.peek().copied() {
+        Some(45) => { units.next(); true },
+        Some(43) => { units.next(); false },
+        _ => false,
+    };
+    let limit = if negative { 2147483648i64 } else { 2147483647i64 };
+    let mut value = 0i64;
+    let mut count = 0;
+    for c in units {
+        let digit = ZERO.iter().find_map(|&z| if c >= z && c < z + 10 { Some((c-z) as i64) } else { None }).ok_or("NumberFormatException")?;
+        value = value * 10 + digit;
+        if value > limit { return Err("NumberFormatException"); }
+        count += 1;
+    }
+    if count == 0 { return Err("NumberFormatException"); }
+    Ok(if negative { -value as i32 } else { value as i32 })
 }

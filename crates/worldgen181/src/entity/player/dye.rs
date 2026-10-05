@@ -1,4 +1,11 @@
 use super::*;
+pub const DYE_COLOR_NAMES: [&str; 16] = ["black", "red", "green", "brown", "blue", "purple", "cyan", "silver", "gray", "pink", "lime", "yellow", "lightBlue", "magenta", "orange", "white"];
+pub const DYE_COLORS: [i32; 16] = [1973019,11743532,3887386,5320730,2437522,8073150,2651799,2651799,4408131,14188952,4312372,14602026,6719955,12801229,15435844,15790320];
+/// ItemDye.getIconFromDamage; Java remainder, division and overflow are intentional.
+pub fn icon(damage: i32) -> i32 { 78i32.wrapping_add((damage % 8).wrapping_mul(16)).wrapping_add(damage / 8) }
+pub fn name(damage: i32) -> Result<String, &'static str> {
+    DYE_COLOR_NAMES.get(damage as usize).map(|s| format!("item.dyePowder.{s}")).ok_or("ArrayIndexOutOfBoundsException")
+}
 impl Entity {
     pub(super) fn dye_block(
         &mut self,
@@ -11,24 +18,27 @@ impl Entity {
         if !self.can_edit_block181(x,y,z) || stack.damage != 15 {
             return false;
         }
+        if w.multiplayer_world {
+            return matches!(w.get_block_id(x,y,z), 2 | 6 | 39 | 40 | 59 | 104 | 105);
+        }
         match w.get_block_id(x, y, z) {
             39 | 40 => {
-                if crate::world::plants181::grow_mushroom(w,x,y,z,crate::world::RandSel::World) {stack.count-=1;}
+                if crate::world::plants181::grow_mushroom(w,x,y,z,crate::world::RandSel::World) {stack.count=stack.count.wrapping_sub(1);}
                 true
             }
             6 => {
                 // ItemDye: Block.sapling.growTree(world, x, y, z, world.rand)
                 crate::world::ticks_blocks::grow_tree(w, x, y, z, crate::world::RandSel::World);
-                stack.count -= 1;
+                stack.count = stack.count.wrapping_sub(1);
                 true
             }
             59 | 104 | 105 => {
                 w.set_block_metadata_with_notify(x, y, z, 7);
-                stack.count -= 1;
+                stack.count = stack.count.wrapping_sub(1);
                 true
             }
             2 => {
-                stack.count -= 1;
+                stack.count = stack.count.wrapping_sub(1);
                 'attempt: for attempt in 0..128 {
                     let (mut bx, mut by, mut bz) = (x, y + 1, z);
                     for _ in 0..attempt / 16 {

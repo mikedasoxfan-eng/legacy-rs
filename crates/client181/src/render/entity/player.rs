@@ -81,9 +81,10 @@ impl Renderer {
         let mut g = Fixed::new(brightness);
         let p = e.player_state().expect("player");
         let held = p.inventory.held();
+        let sneaking = e.sneaking && (!local_player || !p.sleeping);
         for m in [&mut self.main, &mut self.chest, &mut self.armor] {
             m.held_right = held.is_some();
-            m.is_sneak = e.sneaking;
+            m.is_sneak = sneaking;
         }
         self.main.on_ground = e.swing_progress(t);
         self.main.is_riding = e.riding.is_some();
@@ -123,11 +124,11 @@ impl Renderer {
         g.push();
         g.translate(
             (pos[0] - camera[0] + off.x) as f32,
-            (pos[1] - camera[1] - e.y_offset as f64 + off.y - if e.sneaking && !local_player {0.125} else {0.0}) as f32,
+            (pos[1] - camera[1] - e.y_offset as f64 + off.y - if sneaking && !local_player {0.125} else {0.0}) as f32,
             (pos[2] - camera[2] + off.z) as f32,
         );
         if sleeping {
-            g.rotate([90.0, 0.0, 270.0, 180.0][bed as usize & 3], 0.0, 1.0, 0.0);
+            g.rotate(if bed < 0 {0.0} else {[90.0, 0.0, 270.0, 180.0][bed as usize & 3]}, 0.0, 1.0, 0.0);
             g.rotate(90.0, 0.0, 0.0, 1.0);
             g.rotate(270.0, 0.0, 1.0, 0.0);
         } else {

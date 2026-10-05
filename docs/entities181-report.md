@@ -1,4 +1,42 @@
-# Beta 1.8.1 entities - round 5 report
+# Beta 1.8.1 entities - round 6 report
+
+Round 6 completes EntityLiving, RenderLiving, RenderPlayer, ItemDye and ItemDoor within the integrator's singleplayer scope. Entity retains the integrator's existing Done credit. The entire backlog is **not finished**. Multiplayer watcher synchronization, server-driven interpolation, labels, ears and capes are excluded by the task's explicit scope ruling. The per-class table below is authoritative; earlier reports describe historical scope and gaps.
+
+## Round 6 changes and original-bytecode proof
+
+New `tools/verify_entities6_181.sh --built` is called from the final delimited entities block in `tools/verify181.sh`. All new Java modes call original b1.8.1 bytecode using Mojang Java 8u51. Shared fixtures, recorders, original Java and b1.7.3 files are untouched.
+
+| Check | Coverage | Result |
+|---|---|---|
+| living6 | 384 Cow/Zombie/Skeleton/Squid base-update cases, air/water/solid, air/breathing/dead states, four updates | EXACT, 630,344 bytes |
+| livingnbt6 | Colliding potion IDs, replacement/removal, duplicate reload and factory reload; Java HashMap bucket serialization order | EXACT, 2,224 bytes |
+| livingdamage6 | Five attacker categories, four immunity windows, six signed damage boundaries, two attacks; credit/death/knockback/events/RNG | EXACT, 101,760 bytes |
+| sleep6 | Seven scenes and 64 seeds: dark/raised floor, void, bright, two real-bed orientations, two-player list; path, wake, spider sound and jockey RNG | EXACT, 476,338 bytes |
+| spawninputs6 | Four scenes, eight seeds, one/two players, two calls; real JVM allocation identities recorded as external ordering inputs | EXACT, 26,420,204 bytes |
+| playerliving6_181 | 320 local/remote, sleeping/alive/dead and bed/missing-bed cases; armor, held item, arrows, hurt/death and raw rendering | EXACT, 4,466,610 values, zero differences |
+| particlefactory6_181 | 153 names over five admission distances; required-JVM Unicode decimal digits, signs/overflow, malformed and supplementary-digit cases | EXACT, 765 cases, 92,577 bytes |
+| dyeproperties6 | Full dye colors/names and icon/name arithmetic/exception boundaries | EXACT, 873 bytes |
+| dyeblocks6 | Nine targets, three obstructions, four seeds/damages, three signed counts, server/client; growth, world state, events and both RNGs | EXACT, 2,592 cases, 28,550,880 bytes |
+| doorhelper6 | Both door IDs, adjacent/support/obstruction scenes, valid/invalid directions | EXACT, 96 cases, 17,760 bytes |
+| dooritem6 | Both doors, six scenes, seven heights, six sides/yaws, three signed counts | EXACT, 9,072 cases, 1,723,680 bytes |
+| blockbasic6 | Stone/cobblestone/wood/glass/wool; six replacement/collision scenes, six heights, eight faces, signed counts/metadata | EXACT, 1,440 cases, 384,360 bytes |
+
+Living damage now preserves Java signed overflow without changing the player-owned armor/damage implementation. Potion serialization follows the existing Java-map capacity and bucket order. SpawnerAnimals' existing sleep helper was moved from the player sleep file to entity/spawning.rs; only the missing spider living sound and its two pitch RNG draws changed. Player sleep tick, bed exit, hunger, inventory and GUI logic were not rewritten. RenderPlayer now suppresses local-SP sneak while sleeping and uses zero bed rotation for a missing bed. ItemDye exposes literal icon/name/constants and preserves client guards and signed decrement. ItemDoor exposes its literal static helper through the existing placement module, including invalid-direction behavior.
+
+Particle prefix parsing implements Integer.parseInt's UTF-16 decimal-digit behavior for the required JVM. `Mode_javadigits6_181` records the accepted digit ranges; the factory matrix covers every range, signs, mixed scripts, overflow and supplementary digits. GPU lit-layer rendering remains unfinished and is not counted Done.
+
+Natural spawning was re-audited against the class diff. Java's equal-hash tree-bin ordering depends on VM identity hashes; `Mode_entityspawninputs6_181` records actual identities at HashSet insertion and supplies them through the existing Rust identity-input API. Its full output is EXACT without rewriting shared fixtures or pinning mark words. This proves the algorithm under equal inputs; it does **not** claim normal Rust coordinate identities reproduce arbitrary JVM allocation histories. The inherited full-suite spawning/client/stormclient/nether position discrepancy remains with integration. Terrain population's live hook remains with terrain/integrator.
+
+The broad ItemBlock probe is available manually as `oracle.sh itemblock6_181 blockitem6 0 blockitem6.bin` followed by `entity_compare181 blockitem6 0 ...`. It currently stops at block 19's unported sponge onBlockAdded callback. Block 36 is excluded because malformed moving-piston tiles throw from World. No world-block implementation was added to bypass these dependencies. The limited matrix verifies local ItemBlock height handling and wrapping decrement; the full class stays Not done.
+
+Final release build passed (`target/entities6-build11.log`). The complete 12-check new suite passed: `target/entities6-final-verify.log`, ending `ENTITIES6 ALL FOCUSED CASES EXACT`. All five regression suites passed EXACT: `tools/verify_entities181.sh --built`, `tools/verify_entities3_181.sh --built`, `tools/verify_entities4_181.sh --built`, `tools/verify_entities5_181.sh --built`, and `tools/verify_world_blocks181.sh --built`. Their logs are `target/entities6-verify_entities181.log`, `target/entities6-verify_entities3_181.log`, `target/entities6-verify_entities4_181.log`, `target/entities6-verify_entities5_181.log`, `target/entities6-verify_world_blocks181.log`; the summary is `target/entities6-regressions.log`. In particular placement4/placepred4/doors4 and prior dye/particle/player checks remain EXACT. Shell syntax and git diff --check pass. No full `tools/verify181.sh` or interactive GPU validation was run; the task leaves the roughly one-hour full suite to integration after merge.
+
+Audit diffs are `target/entities6-living.diff`, `target/entities6-spawner.diff`, `target/entities6-renderliving.diff`, `target/entities6-renderplayer.diff`, `target/entities6-dye.diff`, `target/entities6-door.diff`, and `target/entities6-itemblock.diff`. Protected b1.7.3 and original Java paths, shared oracle fixtures, terrain, world-block implementations, player tick/GUI, first-person, weather and live tile drawing remain untouched. The minimum existing placement and player-render APIs were extended for the assigned ItemDoor/ItemBlock/RenderPlayer behavior.
+
+Commit preparation: `target/commit-b181-entities6.sh` stages explicit changed/new files with the requested author and co-author trailers. It is not executed because this sandbox makes .git read-only.
+
+## Preserved round 5 report
+
 
 Round 5 ports the highest-impact remaining entity branches and adds original-bytecode proofs. The entire assigned backlog is **not finished**; remaining classes and owner dependencies are explicit below. Earlier round reports and proofs are retained. No b1.7.3 code, original Java sources, shared Java oracle fixtures, terrain generation, block implementations, player tick/GUI, first-person renderer, weather or live tile drawing was edited.
 
@@ -134,11 +172,11 @@ Full general `renderers`/`livingrenderers`, GUI scenes and the approximately one
 | Class | Status | Exact proof or remaining work |
 |---|---|---|
 | EntityEnderman | Done | entities181: Enderman, carry, teleport; rules checks carry eligibility and NBT typo. Indirect and initial stare/pumpkin fixtures are EXACT; sustained target acquisition needs broader coverage. |
-| EntityLiving | Not done | health5 and potionexpiry5 now EXACT for hurt/death/status, server drops, overflow healing and client expiry; previous combat/network/sun checks retained. Watcher mutation timing, player use flags and full player-aware integration remain. |
-| SpawnerAnimals | Not done | spawnbranches and spawnorder EXACT; biome adapter, loaded creature counts and colliding chunk-set order fixed. Population/rules checks remain EXACT. Terrain population hookup and sleep spawning remain. |
+| EntityLiving | Done (singleplayer scope) | Audited b1.7.3/b1.8.1 class diff; living6/livingnbt6/livingdamage6 EXACT for base updates, air/drowning, signed damage, attacker credit, invulnerability, potion NBT ordering/reload. Previous combat181, potions, health5, potionexpiry5, damage/death, sun4 retained. Multiplayer watcher synchronization is excluded by the round-6 scope ruling. |
+| SpawnerAnimals | Not done | sleep6 EXACT across 448 path/bed/wake/sound scenes, including spider sound RNG and jockeys; spawninputs6 EXACT for 64 worlds/two calls with actual JVM identity hashes supplied as inputs. Existing spawnbranches/spawnorder/population/rules retained. Live terrain-population hookup belongs to terrain/integrator; legacy full-suite spawning/client/stormclient/nether still use allocation-dependent JVM identities and remain unclaimed. |
 | EntityXPOrb | Done | entities181: XPOrb, attract, rules (split/texture thresholds, pickup XP/cooldown/sound); xprender181 separately verifies rendering. |
 | EntitySilverfish | Done | entities181: Silverfish and allies (burrowing and timed emergence, block/event/RNG records). |
-| Entity | Not done | watchers5 proves persistent constructor layouts, packet application, signed flags and base fire/rider updates. Earlier network/API/geometry/light retained. Immediate subtype setter/dirty timing and player use flags remain. |
+| Entity | Done (singleplayer scope; credited by integrator) | Previous geometry, coordinates, light, base update/damage/NBT and entity replays retained. Network watcher/setter dirty timing and remote interpolation are outside this round's scope. |
 | Potion | Done | entities181: rules (all 19 IDs, readiness matrix), potions and poison. |
 | DamageSource | Done | entities181: rules covers source names, armor bypass, creative damage, exhaustion; damage and death fixtures exercise dispatch. |
 | EntityFireball | Done | Changed-class audit; Fireball, fireballbranches and impact4 EXACT, covering flight, deflection, owned/null hits, source damage, server/client explosion guard and post-impact particles. |
@@ -184,7 +222,7 @@ Full general `renderers`/`livingrenderers`, GUI scenes and the approximately one
 | TileEntityChestRenderer | Done | chests181: 4,097 cases, 1,372,320 values EXACT; single/double chest adjacency, metadata, lid interpolation/cubic easing, GL states and vertices. World tile dispatcher/lid simulation hookup remains a dependency. |
 | RenderEnderman | Done | newliving181: normal/eye/hurt/death draws, carrying, screaming/jitter, embedded arrows and every captured lightmap coordinate EXACT. Runtime persistent Gaussian RNG and additive eye passes wired. |
 | RenderArrow | Done | arrows181: 1,024 cases covering zero rotation, shake, partial ticks and both crit flags; newliving181 also verifies embedded arrows. Removed obsolete first-rotation visibility guard. |
-| RenderLiving | Not done | Existing 816 mob traces retained; bipedequipment5_181 adds 304 equipped-item traces EXACT. General labels, local/remote player and full runtime light inputs remain. |
+| RenderLiving | Done (singleplayer scope) | Changed-class diff audit plus generaliving181/generaliving4_181, newliving181, livingrenderers and bipedequipment5_181 EXACT: models/passes, arrows, equipment, overlays, transforms and per-draw packed light. Labels are excluded. Runtime world light inputs remain an integrator contract. |
 | EntityCritFX | Done | particles181: constructors, 202 successive state/vertex frames per variant; 184 cases total, 594,688 vertices, zero differing fields. Packed world lightmap integration is a separate remaining dependency. |
 | EntityLargeExplodeFX | Done | particles2_181 EXACT: state/RNG, atlas animation/vertices, terminal frames and literal packed brightness 61680. |
 | EntityCloudFX | Done | particles181: constructors, 202 successive state/vertex frames per variant; 184 cases total, 594,688 vertices, zero differing fields. Packed world lightmap integration is a separate remaining dependency. |
@@ -209,8 +247,8 @@ Full general `renderers`/`livingrenderers`, GUI scenes and the approximately one
 | ModelCreeper | Done | models181: constructor geometry, UVs, successive animation poses and bitwise vertex/part values; 208 poses, 293,376 comparisons across the suite. |
 | RenderSpider | Done | newliving181: Spider/CaveSpider scale/texture, eye/death/overlay states, embedded arrows and lightmap coordinates EXACT. |
 | ModelPig | Done | models181: constructor geometry, UVs, successive animation poses and bitwise vertex/part values; 208 poses, 293,376 comparisons across the suite. |
-| RenderPlayer | Not done | playerliving4_181 EXACT: 768 body/armor/equipped/arrows/remote-sneak traces, 10,977,990 values. Sleeping, ears, capes, labels, local-SP branch and runtime light input hookup need broader proof/integration. |
-| EffectRenderer | Not done | particlefactory5_181 adds 180 EXACT named/prefix/admission/error/RNG cases; lifecycle, fragment, constructor and emitter suites retained. Unicode prefix digits, lit-layer render order and ordinary runtime GPU lightmap hookup remain. |
+| RenderPlayer | Done (singleplayer scope) | playerliving6_181 EXACT: 320 sleeping/alive/dead, local/remote, bed/missing-bed, armor/equipment/arrow traces, 4,466,610 values. playerliving4_181 retains 768 body/armor/block/sword/remote-sneak traces. Correct local-SP sleeping sneak and missing-bed rotation; labels/ears/capes excluded. Existing render_lit API accepts integrator light inputs. |
+| EffectRenderer | Not done | particlefactory6_181 EXACT: 765 factory/admission/distance/error cases, all 35 required-JVM BMP decimal digit ranges, signed mixed-digit IDs, overflow and supplementary-digit rejection. Earlier factory/lifecycle/fragments/particles/emitters retained. Lit-layer ordering/runtime GPU packed-light hookup remain. |
 | EntityPickupFX | Done | particles2_181: 32 pickup cases, 512 squared-interpolation transforms, original float casts, timer/state/RNG and packed light EXACT. Corrected lit draw material to vanilla white. |
 | ModelQuadruped | Done | models181: constructor geometry, UVs, successive animation poses and bitwise vertex/part values; 208 poses, 293,376 comparisons across the suite. |
 | RenderManager | Not done | No complete b1.8.1 changed-class port and dedicated EXACT check completed; inherited implementation remains. |
@@ -254,7 +292,7 @@ Full general `renderers`/`livingrenderers`, GUI scenes and the approximately one
 
 ## Integration and remaining work
 
-Not done: Entity/EntityLiving immediate watcher setter and dirty timing, SpawnerAnimals terrain/sleep hookup, EntityList nullable/malformed constructor fidelity, RenderLiving labels, RenderPlayer sleeping/ears/capes/labels/local branch, RenderManager complete class/cache/dispatch, TileEntityRenderer and TileEntitySpecialRenderer null/cache/dispatch, EffectRenderer lit rendering/runtime GPU light and Unicode factory digits. Vehicle rider, collision and interaction matrices are now EXACT. The prior general `renderers` dependency failure is still not claimed fixed.
+Round-6 remaining work: SpawnerAnimals live terrain-population hookup and the inherited allocation-dependent full-suite spawning recordings; EntityList nullable/malformed constructor fidelity; RenderManager complete class/cache/dispatch; TileEntityRenderer and TileEntitySpecialRenderer null/cache/dispatch; EffectRenderer lit-layer ordering and runtime GPU light. Item/ItemBlock/ItemStack and the other Item classes still marked Not done need their outstanding complete audits/matrices. Sleep spawning, sleeping-player rendering and Unicode factory digits are now EXACT. Multiplayer watcher synchronization, remote interpolation, labels, ears and capes are out of scope. The prior general `renderers` dependency failure is still not claimed fixed.
 
 The integrator retains world tile dispatch/lid simulation, terrain population and world lightmap/range/live drawing ownership. Existing particle packed-light and player scalar-light APIs remain supplied for integration. Run full `tools/verify181.sh` after merge.
 
@@ -262,9 +300,10 @@ The integrator retains world tile dispatch/lid simulation, terrain population an
 
 | Class | Status | Proof and remaining work |
 |---|---|---|
-| ItemDye | Not done | dyesheep5 EXACT for entity/sheep state, signed counts and client/server behavior; existing items/mushrooms/placement4 retained. Complete icon/name invalid-damage and inherited audit remains. |
+| ItemDoor | Done | Full changed-class diff audit and dooritem6/doorhelper6 EXACT: 9,072 item placements plus 96 direct-helper cases, both doors, directions including invalid values, height/face/yaw/obstruction/adjacency and signed-count overflow. |
+| ItemDye | Done | Audited full class diff; dyeproperties6 EXACT for icon arithmetic, constants and names/exceptions at signed damage boundaries; dyeblocks6 EXACT for 2,592 server/client growth callbacks with obstruction/seed/count/metadata/events/RNG. dyesheep5 retains complete sheep/entity callback matrix. |
 | Item | Not done | registry/actions/use/useticks retained; complete inherited lifecycle and exceptional/edit behavior remains with player integration. |
-| ItemBlock | Not done | placement4/placepred4 retained; every-block/height/collision/permission boundary replay remains. |
+| ItemBlock | Not done | Height and stack-count fixes locally ported; broad blockitem6 probe stops at unported sponge onBlockAdded (world-blocks), and moving-piston malformed-tile paths need World exception fidelity. placement4/placepred4 retained. Final limited blockbasic6 result is recorded above; complete every-block matrix remains. |
 | ItemStack | Not done | Nullable NBT and use identity proofs retained; full alias mutation, delegation and load/exception audit remains. |
 | ItemVine | Not done | Existing placement/geometry/items/registry retained; full metadata and target boundaries remain. |
 | ItemBucket | Not done | Creative-preservation fix retained; ray trace, Nether, collection/milk and permission boundaries remain. |
@@ -278,4 +317,4 @@ The integrator retains world tile dispatch/lid simulation, terrain population an
 | ItemLeaves | Not done | Placement damage-or-4 and held-render proof retained; all signed metadata colors/icons/inherited audit remains. |
 | ItemRecord | Done | recorditem5 EXACT, 435,672 bytes: both records, server/client, air/stone/jukebox, metadata 0/1/15, signed/overflow counts and side boundaries. record4/null-tile and musicevents proofs retained; original no-edit-check behavior preserved. |
 
-`target/commit-b181-entities5.sh` stages an explicit changed-file list with author logiu, the requested email and both co-author trailers. No git commit was issued.
+The current round-6 commit script is `target/commit-b181-entities6.sh`; it stages the explicit changed-file list with author logiu, the requested email and both co-author trailers. No git commit was issued.
