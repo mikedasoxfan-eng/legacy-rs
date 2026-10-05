@@ -12,11 +12,11 @@ impl World {
         }
     }
     pub(crate) fn scatter_chest_contents(&mut self, x: i32, y: i32, z: i32) {
-        let slots = match self.get_block_tile_entity(x, y, z) {
+        let mut slots = match self.get_block_tile_entity(x, y, z) {
             Some(crate::world::tile::TileEntity::Chest(slots)) => slots.clone(),
             _ => return,
         };
-        for item in slots.iter().flatten() {
+        for item in slots.iter_mut().take(27).flatten() {
             let ox = self.chest_random.next_float() * 0.8 + 0.1;
             let oy = self.chest_random.next_float() * 0.8 + 0.1;
             let oz = self.chest_random.next_float() * 0.8 + 0.1;
@@ -24,6 +24,7 @@ impl World {
             while count > 0 {
                 let n = (self.chest_random.next_int(21) + 10).min(count);
                 count -= n;
+                item.count = count;
                 let mut e = Entity::item(
                     self,
                     (x as f32 + ox) as f64,
@@ -36,6 +37,9 @@ impl World {
                 e.motion.z = (self.chest_random.next_gaussian() as f32 * 0.05) as f64;
                 self.entity_joined_world(e);
             }
+        }
+        if let Some(crate::world::tile::TileEntity::Chest(items)) = self.get_block_tile_entity(x,y,z) {
+            *items = slots;
         }
         self.remove_block_tile_entity(x, y, z);
     }

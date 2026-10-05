@@ -33,6 +33,15 @@ impl World {
         let o=self.tile_objects.get_mut(&id).unwrap();o.cached_metadata=-1;o.cached_block=None;
         if let Some(a)=self.chest_animations.get_mut(&id) {a.adjacency_checked=false;}
     }
+    /// TileEntityChest.invalidate resets and refreshes adjacency before the
+    /// base invalid flag changes; other tile classes only set that flag.
+    pub fn invalidate_tile181(&mut self, id: TileId) {
+        if self.chest_animations.contains_key(&id) {
+            self.reset_tile_cache181(id);
+            self.check_chest_adjacency181(id);
+        }
+        self.tile_objects.get_mut(&id).unwrap().invalid = true;
+    }
     pub fn tile_inventory_changed181(&mut self,id:TileId) {
         let (x,y,z)=self.tile_objects[&id].position;
         let meta=self.get_block_metadata(x,y,z);self.tile_objects.get_mut(&id).unwrap().cached_metadata=meta;
@@ -154,9 +163,7 @@ impl World {
     pub(crate) fn remove_chunk_tile(&mut self, x: i32, y: i32, z: i32) {
         if self.access_chunk(x >> 4, z >> 4) && self.chunk(x >> 4, z >> 4).loaded {
             if let Some(id) = self.detach_chunk_tile(x, y, z) {
-                self.reset_tile_cache181(id);
-                if self.chest_animations.contains_key(&id){self.chest_animations.get_mut(&id).unwrap().adjacency_checked=false;self.check_chest_adjacency181(id);}
-                self.tile_objects.get_mut(&id).unwrap().invalid = true;
+                self.invalidate_tile181(id);
             }
             self.chunk_mut(x >> 4, z >> 4)
                 .raw_tile_entities
@@ -177,9 +184,7 @@ impl World {
             .copied();
         if let Some(id) = id {
             if self.scanning_tiles {
-                self.reset_tile_cache181(id);
-                if self.chest_animations.contains_key(&id){self.chest_animations.get_mut(&id).unwrap().adjacency_checked=false;self.check_chest_adjacency181(id);}
-                self.tile_objects.get_mut(&id).unwrap().invalid = true;
+                self.invalidate_tile181(id);
                 return;
             }
             if let Some(i) = self.loaded_tile_entities.iter().position(|p| *p == id) {

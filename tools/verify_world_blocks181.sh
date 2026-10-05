@@ -44,5 +44,10 @@ for suite in placement4 fire4 harvest4 regioncache4 oldformat4 sounds4 emptycach
   echo "== world-blocks b1.8.1: $suite"
   if "$oracle" "wb$suite" "wb181-$suite.bin" && "$cmp" worldblocks181 "$suite" "$out/wb181-$suite.bin"; then :; else fail=1; fi
 done
+# Round five: legacy saves, piston transitions, tile removal, hash and fluid behavior.
+for suite in legacy5 piston5 removal5 mchash5 chestopen5 flow5; do
+  echo "== world-blocks b1.8.1: $suite"
+  if "$oracle" "wb$suite" "wb181-$suite.bin" && "$cmp" worldblocks181 "$suite" "$out/wb181-$suite.bin"; then :; else fail=1; fi
+done
 [ $fail -eq 0 ] && echo "WORLD-BLOCKS FOCUSED CASES EXACT" || echo "WORLD-BLOCKS FOCUSED CASES DIFFER"
 exit $fail

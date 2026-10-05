@@ -27,6 +27,7 @@ pub mod rails;
 pub mod dimension;
 pub mod spawn181;
 pub mod tick;
+pub mod mchash181;
 pub mod ticks_blocks;
 pub mod tile;
 pub mod pistons;

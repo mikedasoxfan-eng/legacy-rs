@@ -90,7 +90,7 @@ impl SaveFormatOld181 {
         }
     }
     pub fn loader(&self, name: &str, players: bool) -> io::Result<Storage> {
-        Storage::open_with_players(&self.directory.join(name), players)
+        Storage::open_legacy_with_players(&self.directory.join(name), players)
     }
     pub fn is_old_map_format(&self, _name: &str) -> bool {
         false

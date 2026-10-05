@@ -12,6 +12,29 @@ pub struct ChestAnimation {
     pub ticks: i32,
 }
 impl World {
+    /// BlockChest.blockActivated's nested InventoryLargeChest wrappers.
+    /// A missing neighboring tile aliases the entire other inventory, rather
+    /// than supplying an empty half (the original constructor's null fallback).
+    pub fn chest_inventory_positions181(&mut self,x:i32,y:i32,z:i32)->Option<Vec<(i32,i32,i32)>> {
+        self.get_block_tile_entity(x,y,z)?;
+        if self.is_block_normal_cube(x,y+1,z) {return None;}
+        let neighbors=[(-1,0),(1,0),(0,-1),(0,1)];
+        for (dx,dz) in neighbors {
+            if self.get_block_id(x+dx,y,z+dz)==54 && self.is_block_normal_cube(x+dx,y+1,z+dz) {return None;}
+        }
+        let mut positions=vec![(x,y,z)];
+        for (dx,dz) in neighbors {
+            if self.get_block_id(x+dx,y,z+dz)!=54 {continue;}
+            if self.get_block_tile_entity(x+dx,y,z+dz).is_none() {
+                positions.extend(positions.clone());
+            } else if dx<0 || dz<0 {
+                positions.insert(0,(x+dx,y,z+dz));
+            } else {
+                positions.push((x+dx,y,z+dz));
+            }
+        }
+        Some(positions)
+    }
     pub fn chest_stack181(&self,id:TileId,slot:usize)->Option<super::tile::ItemStack> {
         let super::tile::TileEntity::Chest(items)=self.tile_object(id).unwrap() else{panic!("not a chest")};items[slot]
     }
@@ -137,12 +160,13 @@ impl World {
             .unwrap()
             .adjacency_checked = true;
         let (x, y, z) = self.tile_objects[&id].position;
-        let adjacent = [
-            self.chest_id181(x, y, z - 1),
-            self.chest_id181(x + 1, y, z),
-            self.chest_id181(x - 1, y, z),
-            self.chest_id181(x, y, z + 1),
-        ];
+        // Java performs the lookups west, east, north, south. Invalid
+        // removal and lazy recreation make this order observable.
+        let west = self.chest_id181(x - 1, y, z);
+        let east = self.chest_id181(x + 1, y, z);
+        let north = self.chest_id181(x, y, z - 1);
+        let south = self.chest_id181(x, y, z + 1);
+        let adjacent = [north, east, west, south];
         self.chest_animations.get_mut(&id).unwrap().adjacent = adjacent;
         for k in [0, 3, 1, 2] {
             if let Some(other) = adjacent[k] {
