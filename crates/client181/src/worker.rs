@@ -899,12 +899,21 @@ fn weather_snapshot_radius(world: &mut World, cam: (f64, f64, f64), radius: i32)
     let mut columns = Vec::with_capacity(((radius * 2 + 1) * (radius * 2 + 1)) as usize);
     for x in cx - radius..=cx + radius {
         for z in cz - radius..=cz + radius {
-            let top = world.find_top_solid_block(x, z);
+            // b1.8.1 func_35461_e: the cached precipitation height.
+            let top = world.precipitation_height181(x, z);
+            let biome = biomes[columns.len()];
+            let mut light = [0u32; 129];
+            for (y, l) in light.iter_mut().enumerate() {
+                *l = world.packed_light181(x, y as i32, z, 0) as u32;
+            }
             let mut c = Column {
                 x,
                 z,
                 top,
-                biome: biomes[columns.len()],
+                biome,
+                rain: biome.enable_rain(),
+                snow: biome.enable_snow(),
+                light,
                 particle_rain: crate::render::weather::rains(bs.biome_at(x, z)),
                 blocks: [0; 128],
                 meta: [0; 128],

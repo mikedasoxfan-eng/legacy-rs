@@ -993,22 +993,28 @@ public class Oracle {
             Tessellator t = Tessellator.instance;
             Field rawF = Tessellator.class.getDeclaredField("rawBuffer"); rawF.setAccessible(true);
             Field colF = Tessellator.class.getDeclaredField("hasColor"); colF.setAccessible(true);
+            Field brightF = Tessellator.class.getDeclaredField("field_35838_p"); brightF.setAccessible(true);
+            boolean bright = brightF.getBoolean(t);
             int[] raw = (int[]) rawF.get(t);
             ArrayList<float[]> strip = new ArrayList<float[]>();
+            ArrayList<Integer> lights = new ArrayList<Integer>();
             for (int i=0; i<count; i++) {
                 int o=i*8;
                 float[] v={texture,Float.intBitsToFloat(raw[o]),Float.intBitsToFloat(raw[o+1]),Float.intBitsToFloat(raw[o+2]),
                     mode==5?0:Float.intBitsToFloat(raw[o+3]),mode==5?0:Float.intBitsToFloat(raw[o+4]),color[0],color[1],color[2],color[3]};
                 if (colF.getBoolean(t)) for (int c=0;c<4;c++) v[6+c]=(float)(raw[o+5] >>> (c*8) & 255)/255.0F;
                 strip.add(v);
+                lights.add(bright ? raw[o+7] : -1);  // b1.8.1 lightmap brightness, -1 without one
             }
             if(mode==5) for(int i=2;i<strip.size();i++) {
-                weatherVertices.add(strip.get(i%2==0?i-2:i-1));
-                weatherVertices.add(strip.get(i%2==0?i-1:i-2)); weatherVertices.add(strip.get(i));
-            } else weatherVertices.addAll(strip);
+                int a=i%2==0?i-2:i-1, b=i%2==0?i-1:i-2;
+                weatherVertices.add(strip.get(a)); weatherVertices.add(strip.get(b)); weatherVertices.add(strip.get(i));
+                weatherLights.add(lights.get(a)); weatherLights.add(lights.get(b)); weatherLights.add(lights.get(i));
+            } else { weatherVertices.addAll(strip); weatherLights.addAll(lights); }
         } catch(Exception e) { throw new RuntimeException(e); }
     }
     static final ArrayList<double[]> rainSounds = new ArrayList<double[]>();
+    static final ArrayList<Integer> weatherLights = new ArrayList<Integer>();
     static void videoWindow(String[] a) throws Exception {
         Field convert=Tessellator.class.getDeclaredField("convertQuadsToTriangles");convert.setAccessible(true);convert.setBoolean(null,false);
         net.minecraft.client.Minecraft mc=(net.minecraft.client.Minecraft)allocate(MinecraftImpl.class);
@@ -1077,11 +1083,13 @@ public class Oracle {
         Field weatherMc=EntityRenderer.class.getDeclaredField("mc");weatherMc.setAccessible(true);
         ((net.minecraft.client.Minecraft)weatherMc.get(r)).gameSettings.fancyGraphics=!(a.length>11 && a[11].equals("fast"));
         setField(r,"rendererUpdateCount",tick);setField(r,"rainSoundCounter",soundCounter);
+        weatherVertices.clear();weatherLights.clear();
         DataOut o=new DataOut();o.bytes("B173WTH1".getBytes("US-ASCII"));o.i32(soundCounter);
         BiomeGenBase[] biomes=w.getWorldChunkManager().func_4069_a(cx-10,cz-10,21,21);int k=0;
         for(int xx=cx-10;xx<=cx+10;xx++) for(int zz=cz-10;zz<=cz+10;zz++) {
             o.i32(xx);o.i32(zz);o.i32(w.func_35461_e(xx,zz));
             BiomeGenBase b=biomes[k++];o.u8(b.getEnableSnow()?0:b.canSpawnLightningBolt()?1:2);
+            for(int yy=0;yy<=128;yy++)o.i32(w.func_35451_b(xx,yy,zz,0));  // b1.8.1 packed light
             o.u8(w.getWorldChunkManager().getBiomeGenAt(xx,zz).canSpawnLightningBolt()?1:0);
             for(int yy=0;yy<128;yy++)o.u8(w.getBlockId(xx,yy,zz));
             for(int yy=0;yy<128;yy++)o.u8(w.getBlockMetadata(xx,yy,zz));
@@ -1112,6 +1120,7 @@ public class Oracle {
         new RenderLightningBolt().doRender(bolt,0.25,10.5,-2.75,0.0F,partial);
         o.i32(weatherVertices.size());
         for(float[] v:weatherVertices)for(float f:v)o.i32(Float.floatToIntBits(f));
+        for(int l:weatherLights)o.i32(l);
         Random gaussian=new Random(seed);
         for(int i=0;i<256;i++)o.i64(Double.doubleToLongBits(gaussian.nextGaussian()));
         gaussian.setSeed(seed);

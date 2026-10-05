@@ -1499,15 +1499,30 @@ impl App {
         let temp = self.temps.raw_temperature(self.cam.pos.x.floor() as i32, self.cam.pos.z.floor() as i32) as f32;
         let rain = self.weather.rain_at(partial);
         let thunder = self.weather.thunder_at(partial);
-        let precipitation = render::weather::precipitation(
-            &self.weather_terrain,
-            self.cam.pos.to_array(),
-            self.cloud_ticks as i32,
-            partial,
-            rain,
-            video.fancy,
-            &mut self.weather_rng,
-        );
+        let precipitation = {
+            let dim = if self.nether { worldgen::world::Dimension::Nether } else { worldgen::world::Dimension::Overworld };
+            let angle1 = if self.nether { 0.5 } else { sky::celestial_angle(self.world_time, 1.0) };
+            let sky_factor = render::lightmap::sky_factor(angle1, self.weather.rain_at(1.0), self.weather.thunder_at(1.0));
+            let texels = render::lightmap::compute(&dim.light_brightness_table(), sky_factor, self.flicker.x, self.weather.flash > 0, 0.0);
+            let mut out: [Vec<render::weather::WeatherVertex>; 2] = [Vec::new(), Vec::new()];
+            for (tex, mut v, light) in render::weather::precipitation181(
+                &self.weather_terrain,
+                self.cam.pos.to_array(),
+                self.cloud_ticks as i32,
+                partial,
+                rain,
+                video.fancy,
+                &mut self.weather_rng,
+            ) {
+                // The rain quads sample the lightmap (texture unit 1) at their brightness.
+                let l = render::lightmap::sample(&texels, light);
+                for i in 0..3 {
+                    v.color[i] *= l[i];
+                }
+                out[tex as usize].push(v);
+            }
+            out
+        };
         let lightning = self
             .entities
             .iter()

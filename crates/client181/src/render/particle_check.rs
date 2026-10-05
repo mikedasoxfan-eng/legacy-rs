@@ -87,6 +87,9 @@ pub fn check(path: &str) -> bool {
         let meta = d.bytes();
         let brightness = std::array::from_fn(|_| d.f());
         s.columns.push(Column {
+            rain: false,
+            snow: false,
+            light: [0; 129],
             x,
             z,
             top,
@@ -273,6 +276,9 @@ pub fn effects_check(path: &str) -> bool {
             let meta = d.bytes();
             let brightness = std::array::from_fn(|_| d.f());
             terrain.columns.push(Column {
+                rain: false,
+                snow: false,
+                light: [0; 129],
                 x,
                 z,
                 top,

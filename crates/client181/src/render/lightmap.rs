@@ -93,6 +93,23 @@ pub fn compute(table: &[f32; 16], sky: f32, flicker_x: f32, flash: bool, gamma: 
     out
 }
 
+/// The lightmap as the GPU samples it (linear, clamped) at a packed brightness, as RGB.
+pub fn sample(texels: &[u32; 256], light: u32) -> [f32; 3] {
+    let coord = |v: u32| ((v as f32 + 8.0) / 256.0 * 16.0 - 0.5).clamp(0.0, 15.0);
+    let (u, v) = (coord(light & 0xffff), coord(light >> 16));
+    let (u0, v0) = (u.floor() as usize, v.floor() as usize);
+    let (u1, v1) = ((u0 + 1).min(15), (v0 + 1).min(15));
+    let (fu, fv) = (u - u0 as f32, v - v0 as f32);
+    let ch = |x: usize, y: usize, s: u32| ((texels[y * 16 + x] >> s) & 255) as f32 / 255.0;
+    let mut out = [0.0; 3];
+    for (i, s) in [16u32, 8, 0].into_iter().enumerate() {
+        let a = ch(u0, v0, s) * (1.0 - fu) + ch(u1, v0, s) * fu;
+        let b = ch(u0, v1, s) * (1.0 - fu) + ch(u1, v1, s) * fu;
+        out[i] = a * (1.0 - fv) + b * fv;
+    }
+    out
+}
+
 /// RGBA8 bytes of the ARGB texels, for the GPU texture.
 pub fn rgba(texels: &[u32; 256]) -> Vec<u8> {
     texels.iter().flat_map(|&c| [(c >> 16) as u8, (c >> 8) as u8, c as u8, (c >> 24) as u8]).collect()

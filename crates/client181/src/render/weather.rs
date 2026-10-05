@@ -40,6 +40,11 @@ pub struct Column {
     pub top: i32,
     pub biome: Biome,
     pub particle_rain: bool,
+    /// b1.8.1 BiomeGenBase.canSpawnLightningBolt / getEnableSnow for renderRainSnow.
+    pub rain: bool,
+    pub snow: bool,
+    /// b1.8.1 `World.func_35451_b(x, y, z, 0)` for y 0..=128.
+    pub light: [u32; 129],
     pub blocks: [u8; 128],
     pub meta: [u8; 128],
     pub brightness: [f32; 129],
@@ -256,6 +261,106 @@ pub fn precipitation(
                     });
                 }
             }
+        }
+    }
+    out
+}
+
+/// `EntityRenderer.renderRainSnow` (b1.8.1): one pass in x-major column order, quads turned to
+/// face the camera column, Tessellator byte colours and per-column lightmap brightness. Each
+/// vertex comes with its texture (0 snow, 1 rain) and packed light.
+pub fn precipitation181(
+    s: &Snapshot,
+    cam: [f64; 3],
+    tick: i32,
+    partial: f32,
+    rain: f32,
+    fancy: bool,
+    rng: &mut ClientRandom,
+) -> Vec<(u8, WeatherVertex, u32)> {
+    let mut out = Vec::new();
+    if rain <= 0.0 {
+        return out;
+    }
+    // field_35822_i / field_35820_j: per-offset facing vectors.
+    let mut face_x = [0f32; 1024];
+    let mut face_z = [0f32; 1024];
+    for i in 0..32 {
+        for j in 0..32 {
+            let fx = (j - 16) as f32;
+            let fz = (i - 16) as f32;
+            let len = math::sqrt_float(fx * fx + fz * fz);
+            face_x[(i << 5 | j) as usize] = -fz / len;
+            face_z[(i << 5 | j) as usize] = fx / len;
+        }
+    }
+    // The view entity's block position (posX/posY/posZ) and the interpolated eye position.
+    let (bx, by, bz) = (math::floor_double(cam[0]), math::floor_double(cam[1]), math::floor_double(cam[2]));
+    let interp_y = math::floor_double(cam[1]);
+    let radius = if fancy { 10 } else { 5 };
+    let t = tick as f32 + partial;
+    let byte = |v: f32| ((v * 255.0f32) as i32).clamp(0, 255) as f32 / 255.0f32;
+    for c in &s.columns {
+        let (x, z) = (c.x, c.z);
+        if (x - bx).abs() > radius || (z - bz).abs() > radius {
+            continue;
+        }
+        let k = ((z - bz + 16) * 32 + x - bx + 16) as usize;
+        let fx = face_x[k] * 0.5f32;
+        let fz = face_z[k] * 0.5f32;
+        if !(c.rain || c.snow) {
+            continue;
+        }
+        let top = c.top;
+        let mut lo = by - radius;
+        let mut hi = by + radius;
+        if lo < top {
+            lo = top;
+        }
+        if hi < top {
+            hi = top;
+        }
+        let light_y = if top < interp_y { interp_y } else { top };
+        if lo == hi {
+            continue;
+        }
+        rng.set_seed(((x.wrapping_mul(x).wrapping_mul(3121).wrapping_add(x.wrapping_mul(45238971)))
+            ^ (z.wrapping_mul(z).wrapping_mul(418711).wrapping_add(z.wrapping_mul(13761)))) as i64);
+        let dx = (x as f32 + 0.5f32) as f64 - cam[0];
+        let dz = (z as f32 + 0.5f32) as f64 - cam[2];
+        let dist = math::sqrt_double(dx * dx + dz * dz) / radius as f32;
+        let packed = c.light[light_y.clamp(0, 128) as usize];
+        let (tex, u, scroll, drift, alpha, light);
+        if c.rain {
+            tex = 1u8;
+            scroll = ((tick.wrapping_add(column_seed(x, z)) & 31) as f32 + partial) / 32.0f32
+                * (3.0f32 + rng.random.next_float());
+            u = 0.0f32;
+            drift = 0.0f32;
+            alpha = ((1.0f32 - dist * dist) * 0.5f32 + 0.5f32) * rain;
+            light = packed;
+        } else {
+            tex = 0u8;
+            scroll = ((tick & 511) as f32 + partial) / 512.0f32;
+            u = rng.random.next_float() + t * 0.01f32 * rng.gaussian() as f32;
+            drift = rng.random.next_float() + t * rng.gaussian() as f32 * 0.001f32;
+            alpha = ((1.0f32 - dist * dist) * 0.3f32 + 0.5f32) * rain;
+            light = ((packed as i32).wrapping_mul(3).wrapping_add(15728880) / 4) as u32;
+        }
+        let color = [1.0f32, 1.0, 1.0, byte(alpha)];
+        let xa = (x as f32 - fx) as f64 + 0.5;
+        let xb = (x as f32 + fx) as f64 + 0.5;
+        let za = (z as f32 - fz) as f64 + 0.5;
+        let zb = (z as f32 + fz) as f64 + 0.5;
+        let v0 = lo as f32 * 1.0f32 / 4.0f32 + scroll * 1.0f32 + drift;
+        let v1 = hi as f32 * 1.0f32 / 4.0f32 + scroll * 1.0f32 + drift;
+        for (p, uv) in [
+            ([xa, lo as f64, za], [0.0f32 * 1.0 + u, v0]),
+            ([xb, lo as f64, zb], [1.0f32 * 1.0 + u, v0]),
+            ([xb, hi as f64, zb], [1.0f32 * 1.0 + u, v1]),
+            ([xa, hi as f64, za], [0.0f32 * 1.0 + u, v1]),
+        ] {
+            out.push((tex, WeatherVertex { pos: std::array::from_fn(|i| (p[i] - cam[i]) as f32), uv, color }, light));
         }
     }
     out

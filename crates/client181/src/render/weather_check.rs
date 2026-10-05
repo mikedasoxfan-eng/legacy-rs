@@ -16,19 +16,21 @@ pub fn check(a: &[String]) {
     let mut s = Snapshot::default();
     for _ in 0..441 {
         let (x, z, top) = (d.i32(), d.i32(), d.i32());
-        let biome = match d.bytes(1)[0] {
+        let kind = d.bytes(1)[0];
+        let biome = match kind {
             0 => Biome::Taiga,
             1 => Biome::Plains,
             _ => Biome::Desert,
         };
+        let light = std::array::from_fn(|_| d.i32() as u32);
         let particle_rain = d.bytes(1)[0] != 0;
         let blocks = d.bytes(128).try_into().unwrap();
         let meta = d.bytes(128).try_into().unwrap();
         let brightness = std::array::from_fn(|_| f32::from_bits(d.i32() as u32));
-        s.columns.push(Column { x, z, top, biome, particle_rain, blocks, meta, brightness });
+        s.columns.push(Column { x, z, top, biome, rain: kind == 1, snow: kind == 0, light, particle_rain, blocks, meta, brightness });
     }
     let mut rng = ClientRandom::new(0);
-    let [snow, water] = precipitation(&s, cam, tick, partial, rain, fancy, &mut rng);
+    let rain_snow = super::weather::precipitation181(&s, cam, tick, partial, rain, fancy, &mut rng);
     let mut counter = initial_counter;
     let (splashes, sound) = add_rain_particles(&s, cam, tick, rain, fancy, &mut rng, &mut counter);
     assert_eq!(splashes.len(), d.i32() as usize, "splash count");
@@ -49,12 +51,12 @@ pub fn check(a: &[String]) {
         assert_eq!(sound.pitch.to_bits(), d.i32() as u32, "rain sound pitch");
     }
     let bolts = lightning(Lightning { pos: [0.25, 10.5, -2.75], bolt_vertex: seed }, [0.0; 3]);
-    let vertices: Vec<(i32, WeatherVertex)> = snow
-        .into_iter()
-        .map(|v| (0, v))
-        .chain(water.into_iter().map(|v| (1, v)))
+    let vertices: Vec<(i32, WeatherVertex)> = rain_snow
+        .iter()
+        .map(|&(tex, v, _)| (tex as i32, v))
         .chain(bolts.into_iter().map(|v| (3, v)))
         .collect();
+    let lights: Vec<u32> = rain_snow.iter().map(|&(_, _, l)| l).chain(std::iter::repeat(u32::MAX).take(vertices.len() - rain_snow.len())).collect();
     assert_eq!(vertices.len(), d.i32() as usize, "weather vertex count");
     for (i, (texture, v)) in vertices.iter().enumerate() {
         let fields = [
@@ -70,8 +72,13 @@ pub fn check(a: &[String]) {
             v.color[3],
         ];
         for (j, f) in fields.into_iter().enumerate() {
-            assert_eq!(f.to_bits(), d.i32() as u32, "vertex {i} field {j} ({f})");
+            // Float.floatToIntBits canonicalises NaN (the camera's own column faces 0/0).
+            let bits = if f.is_nan() { 0x7fc0_0000 } else { f.to_bits() };
+            assert_eq!(bits, d.i32() as u32, "vertex {i} field {j} ({f})");
         }
+    }
+    for (i, l) in lights.iter().enumerate() {
+        assert_eq!(*l, d.i32() as u32, "vertex {i} lightmap brightness");
     }
     let mut gaussian = ClientRandom::new(seed);
     for i in 0..256 {
