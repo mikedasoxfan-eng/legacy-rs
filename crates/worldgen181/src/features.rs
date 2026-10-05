@@ -5,6 +5,7 @@ use crate::block::{self, mat, opaque_cube_lookup, MAT_LAVA, MAT_WATER};
 use crate::jmath;
 use crate::math::{self, PI_F32};
 use crate::random::JavaRandom;
+use crate::features181::swamp_tree;
 use crate::world::behavior;
 use crate::world::chunk::LightKind;
 use crate::world::tile::{ItemStack, TileEntity};
@@ -242,8 +243,24 @@ pub fn clay(w: &mut World, n: i32, x: i32, y: i32, z: i32) -> bool {
     if w.get_block_material(x, y, z) != MAT_WATER {
         return false;
     }
-    blob(w, n, x, y, z, true, block::SAND, block::CLAY);
+    disc(w, n, x, y, z, block::CLAY, 1, block::CLAY);
     true
+}
+
+/// `WorldGenSand`, also used for gravel (the decorator accidentally calls sand twice).
+pub fn sand(w: &mut World, n: i32, id: u8, x: i32, y: i32, z: i32) -> bool {
+    if w.get_block_material(x,y,z) != MAT_WATER {return false;}
+    disc(w,n,x,y,z,id,2,block::GRASS);
+    true
+}
+#[allow(clippy::too_many_arguments)]
+fn disc(w:&mut World,n:i32,x:i32,y:i32,z:i32,id:u8,dy:i32,replace:u8) {
+    let radius=w.prand().next_int(n-2)+2;
+    for bx in x-radius..=x+radius {for bz in z-radius..=z+radius {
+        if (bx-x)*(bx-x)+(bz-z)*(bz-z)<=radius*radius {
+            for by in y-dy..=y+dy {let b=w.get_block_id(bx,by,bz);if b==block::DIRT||b==replace {w.set_block(bx,by,bz,id);}}
+        }
+    }}
 }
 
 /// `WorldGenMinable`
@@ -262,8 +279,8 @@ fn blob(w: &mut World, n: i32, x: i32, y: i32, z: i32, clay_loops: bool, target:
     let x1 = ((x + 8) as f32 - math::sin(angle) * nf / 8.0) as f64;
     let z0 = ((z + 8) as f32 + math::cos(angle) * nf / 8.0) as f64;
     let z1 = ((z + 8) as f32 - math::cos(angle) * nf / 8.0) as f64;
-    let y0 = (y + w.prand().next_int(3) + 2) as f64;
-    let y1 = (y + w.prand().next_int(3) + 2) as f64;
+    let y0 = (y + w.prand().next_int(3) - 2) as f64;
+    let y1 = (y + w.prand().next_int(3) - 2) as f64;
     for i in 0..=n {
         let cx = x0 + (x1 - x0) * i as f64 / n as f64;
         let cy = y0 + (y1 - y0) * i as f64 / n as f64;
@@ -482,6 +499,7 @@ pub enum TreeKind {
     BigOak,   // WorldGenBigTree
     Spruce1,  // WorldGenTaiga1
     Spruce2,  // WorldGenTaiga2
+    Swamp,    // WorldGenSwamp
 }
 
 pub fn tree(w: &mut World, kind: TreeKind, x: i32, y: i32, z: i32) -> bool {
@@ -491,6 +509,7 @@ pub fn tree(w: &mut World, kind: TreeKind, x: i32, y: i32, z: i32) -> bool {
         TreeKind::BigOak => BigTree::new().generate(w, x, y, z),
         TreeKind::Spruce1 => taiga1(w, x, y, z),
         TreeKind::Spruce2 => taiga2(w, x, y, z),
+        TreeKind::Swamp => swamp_tree(w,x,y,z),
     }
 }
 

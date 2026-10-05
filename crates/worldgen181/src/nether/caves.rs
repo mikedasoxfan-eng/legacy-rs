@@ -21,11 +21,11 @@ impl CaveCarver {
     pub fn carve(&mut self, world_seed: i64, chunk_x: i32, chunk_z: i32, blocks: &mut [u8]) {
         let r = self.range;
         self.rand.set_seed(world_seed);
-        let mx = self.rand.next_long() / 2 * 2 + 1;
-        let mz = self.rand.next_long() / 2 * 2 + 1;
+        let mx = self.rand.next_long();
+        let mz = self.rand.next_long();
         for x in chunk_x - r..=chunk_x + r {
             for z in chunk_z - r..=chunk_z + r {
-                self.rand.set_seed((x as i64).wrapping_mul(mx).wrapping_add((z as i64).wrapping_mul(mz)) ^ world_seed);
+                self.rand.set_seed((x as i64).wrapping_mul(mx) ^ (z as i64).wrapping_mul(mz) ^ world_seed);
                 self.starts(x, z, chunk_x, chunk_z, blocks);
             }
         }

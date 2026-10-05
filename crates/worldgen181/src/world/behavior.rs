@@ -135,6 +135,7 @@ pub fn on_block_removal(w: &mut World, id: u8, x: i32, y: i32, z: i32) {
 }
 
 pub fn on_neighbor_block_change(w: &mut World, id: u8, x: i32, y: i32, z: i32, _changed: u8) {
+    if id == 106 { crate::features181::vine_neighbor(w,x,y,z); return; }
     if matches!(id, 63 | 68) { crate::sign::neighbor(w,id,x,y,z); return; }
     if id != 26 && crate::entity::player::block_hooks::neighbor(w, id, x, y, z, _changed) {
         return;
@@ -303,6 +304,7 @@ fn assert_plain(id: u8, hook: &str) {
     let plain = matches!(
         id,
         block::STONE
+            | 99 | 100 | 106 // b1.8.1 terrain features: inherited onAdded/onRemoval hooks.
             | block::FENCE
             | block::STAIRS_WOOD
             | block::STAIRS_COBBLESTONE

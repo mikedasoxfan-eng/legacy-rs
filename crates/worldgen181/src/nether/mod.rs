@@ -278,7 +278,7 @@ impl NetherGenerator {
         self.surface.generate(
             &mut self.gravel_noise,
             (cx * 16) as f64,
-            109.0134,
+            109.0,
             (cz * 16) as f64,
             16,
             1,

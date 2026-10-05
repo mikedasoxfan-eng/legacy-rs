@@ -2,7 +2,7 @@
 
 use super::{BlockProps, MaterialProps};
 
-pub const MATERIALS: [MaterialProps; 28] = [
+pub const MATERIALS: [MaterialProps; 29] = [
     MaterialProps { name: "air", is_solid: false, blocks_movement: false, is_liquid: false, burns: false, ground_cover: true, translucent_solid: false, blocks_grass: false },
     MaterialProps { name: "grassMaterial", is_solid: true, blocks_movement: true, is_liquid: false, burns: false, ground_cover: false, translucent_solid: true, blocks_grass: true },
     MaterialProps { name: "ground", is_solid: true, blocks_movement: true, is_liquid: false, burns: false, ground_cover: false, translucent_solid: true, blocks_grass: true },
@@ -31,6 +31,8 @@ pub const MATERIALS: [MaterialProps; 28] = [
     MaterialProps { name: "cakeMaterial", is_solid: true, blocks_movement: true, is_liquid: false, burns: false, ground_cover: false, translucent_solid: true, blocks_grass: true },
     MaterialProps { name: "field_31068_A", is_solid: true, blocks_movement: true, is_liquid: false, burns: false, ground_cover: false, translucent_solid: true, blocks_grass: true },
     MaterialProps { name: "field_31067_B", is_solid: true, blocks_movement: true, is_liquid: false, burns: false, ground_cover: false, translucent_solid: true, blocks_grass: true },
+    // b1.8.1 vine material, appended to preserve the existing material indices.
+    MaterialProps { name: "field_35495_k", is_solid: false, blocks_movement: false, is_liquid: false, burns: true, ground_cover: true, translucent_solid: false, blocks_grass: false },
 ];
 
 pub const MAT_AIR: u8 = 0;
@@ -162,14 +164,14 @@ pub const BLOCKS: [BlockProps; 256] = [
     BlockProps { exists: true, material: 3, light_opacity: 0, light_value: 0, opaque_cube: false, normal_render: false, container: false, ticks: false, tick_rate: 10, name: "tile.trapdoor" }, // 96
     BlockProps::NONE, // 97
     BlockProps::NONE, // 98
-    BlockProps::NONE, // 99
-    BlockProps::NONE, // 100
+    BlockProps { exists: true, material: 3, light_opacity: 255, light_value: 0, opaque_cube: true, normal_render: true, container: false, ticks: false, tick_rate: 10, name: "tile.mushroom" }, // 99
+    BlockProps { exists: true, material: 3, light_opacity: 255, light_value: 0, opaque_cube: true, normal_render: true, container: false, ticks: false, tick_rate: 10, name: "tile.mushroom" }, // 100
     BlockProps::NONE, // 101
     BlockProps::NONE, // 102
     BlockProps::NONE, // 103
     BlockProps::NONE, // 104
     BlockProps::NONE, // 105
-    BlockProps::NONE, // 106
+    BlockProps { exists: true, material: 28, light_opacity: 0, light_value: 0, opaque_cube: false, normal_render: false, container: false, ticks: true, tick_rate: 10, name: "tile.vine" }, // 106
     BlockProps::NONE, // 107
     BlockProps::NONE, // 108
     BlockProps::NONE, // 109

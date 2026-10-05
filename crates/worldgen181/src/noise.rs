@@ -153,13 +153,13 @@ impl PerlinNoise {
         let mut idx = 0usize;
         if size_y == 1 {
             for ix in 0..size_x {
-                let mut x = (x0 + ix as f64) * scale_x + self.x_coord;
+                let mut x = x0 + ix as f64 * scale_x + self.x_coord;
                 let xi = floor_i(x);
                 let xc = xi & 255;
                 x -= xi as f64;
                 let u = fade(x);
                 for iz in 0..size_z {
-                    let mut z = (z0 + iz as f64) * scale_z + self.z_coord;
+                    let mut z = z0 + iz as f64 * scale_z + self.z_coord;
                     let zi = floor_i(z);
                     let zc = zi & 255;
                     z -= zi as f64;
@@ -179,19 +179,19 @@ impl PerlinNoise {
             let mut last_yc = -1;
             let (mut c0, mut c1, mut c2, mut c3) = (0.0, 0.0, 0.0, 0.0);
             for ix in 0..size_x {
-                let mut x = (x0 + ix as f64) * scale_x + self.x_coord;
+                let mut x = x0 + ix as f64 * scale_x + self.x_coord;
                 let xi = floor_i(x);
                 let xc = xi & 255;
                 x -= xi as f64;
                 let u = fade(x);
                 for iz in 0..size_z {
-                    let mut z = (z0 + iz as f64) * scale_z + self.z_coord;
+                    let mut z = z0 + iz as f64 * scale_z + self.z_coord;
                     let zi = floor_i(z);
                     let zc = zi & 255;
                     z -= zi as f64;
                     let w = fade(z);
                     for iy in 0..size_y {
-                        let mut y = (y0 + iy as f64) * scale_y + self.y_coord;
+                        let mut y = y0 + iy as f64 * scale_y + self.y_coord;
                         let yi = floor_i(y);
                         let yc = yi & 255;
                         y -= yi as f64;
@@ -266,7 +266,13 @@ impl OctavePerlin {
         }
         let mut amp = 1.0;
         for o in &self.octaves {
-            o.add_region(buf, x, y, z, size_x, size_y, size_z, scale_x * amp, scale_y * amp, scale_z * amp, amp);
+            let mut ox = x * amp * scale_x;
+            let oy = y * amp * scale_y;
+            let mut oz = z * amp * scale_z;
+            let ix = ox.floor() as i64; let iz = oz.floor() as i64;
+            ox -= ix as f64; oz -= iz as f64;
+            ox += (ix % 16777216) as f64; oz += (iz % 16777216) as f64;
+            o.add_region(buf, ox, oy, oz, size_x, size_y, size_z, scale_x * amp, scale_y * amp, scale_z * amp, amp);
             amp /= 2.0;
         }
     }
@@ -332,9 +338,9 @@ impl SimplexNoise {
         let p = |i: i32| self.perm[i as usize];
         let mut idx = 0usize;
         for ix in 0..size_x {
-            let x = (x0 + ix as f64) * scale_x + self.x_coord;
+            let x = x0 + ix as f64 * scale_x + self.x_coord;
             for iz in 0..size_z {
-                let y = (z0 + iz as f64) * scale_z + self.y_coord;
+                let y = z0 + iz as f64 * scale_z + self.y_coord;
                 let s = (x + y) * f2;
                 let i = wrap(x + s);
                 let j = wrap(y + s);

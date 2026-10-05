@@ -11,11 +11,15 @@ impl World {
         if let Some(s) = &mut self.server {
             s.world_override = true;
         }
-        let mut x = 0;
-        let mut z = 0;
+        let mut rand = crate::JavaRandom::new(self.seed);
+        let (mut x,mut z) = self.terrain.biome_source.find_position(0,0,256,
+            &[crate::Biome::Forest,crate::Biome::Swampland,crate::Biome::Taiga],&mut rand).unwrap_or((0,0));
+        let mut attempts = 0;
         while !self.can_coordinate_be_spawn(x, z) {
-            x += self.rand.next_int(64) - self.rand.next_int(64);
-            z += self.rand.next_int(64) - self.rand.next_int(64);
+            x += rand.next_int(64) - rand.next_int(64);
+            z += rand.next_int(64) - rand.next_int(64);
+            attempts += 1;
+            if attempts == 1000 {break;}
         }
         self.spawn = (x, 64, z);
         if let Some(s) = &mut self.server {
@@ -29,7 +33,7 @@ impl World {
         if self.dimension.is_hell_world() {
             id != block::BEDROCK && id != block::AIR && block::opaque_cube_lookup(id)
         } else {
-            id == block::SAND
+            id == block::GRASS
         }
     }
 
