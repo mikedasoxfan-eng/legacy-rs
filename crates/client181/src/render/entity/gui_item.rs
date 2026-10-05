@@ -17,8 +17,8 @@ pub fn geometry_with(item: &ItemStack, x: i32, y: i32, tint: bool, base: Option<
     if let Some(m) = base {
         g.material = m;
     }
-    let (icon, color, _) = item_table::properties(item.id, item.damage);
-    if inventory::in_3d(item.id) {
+    let (icon, color, _) = item_table::properties(item.id.try_into().expect("item ID"), item.damage);
+    if inventory::in_3d(item.id.try_into().expect("item ID")) {
         g.texture = 1;
         g.push();
         g.translate((x - 2) as f32, (y + 3) as f32, -3.0);
@@ -97,7 +97,7 @@ fn gui_light_rotation() -> f32 {
 /// Vanilla's three durability rectangles. Counts use the GUI's existing FontRenderer.
 pub fn durability(item: &ItemStack, x: i32, y: i32) -> Fixed {
     let mut g = Fixed::new(1.0);
-    let (_, _, max) = item_table::properties(item.id, item.damage);
+    let (_, _, max) = item_table::properties(item.id.try_into().expect("item ID"), item.damage);
     if item.damage > 0 && max > 0 {
         let damage = item.damage as f64;
         let width = (13.0 - damage * 13.0 / max as f64 + 0.5).floor() as i32;

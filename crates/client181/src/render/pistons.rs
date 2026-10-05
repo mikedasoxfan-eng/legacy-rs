@@ -36,14 +36,14 @@ fn geometry(
     r.ao = ao;
     r.render_all_faces = true;
     if base {
-        r.render_piston_base(p.block_id, x, y, z, true);
+        r.render_piston_base(p.block_id.try_into().expect("piston block ID"), x, y, z, true);
     } else if p.block_id == 34 && early {
         r.render_piston_head(34, x, y, z, false);
     } else if p.render_head && !p.extending {
         r.piston_head_texture = Some(if p.block_id == 29 { 106 } else { 107 });
         r.render_piston_head(34, x, y, z, early);
     } else {
-        r.render_block(p.block_id, x, y, z);
+        r.render_block(p.block_id.try_into().expect("piston block ID"), x, y, z);
     }
     Geometry {
         positions: t.raw_positions.unwrap(),

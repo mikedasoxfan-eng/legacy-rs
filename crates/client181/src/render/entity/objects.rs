@@ -107,7 +107,7 @@ pub fn render(s: &ObjectState, camera: [f64; 3], view: [f32; 2]) -> Fixed {
             };
             g.translate(x, y + bob, z);
             g.enable(2, true);
-            if inventory::in_3d(item.id) {
+            if inventory::in_3d(item.id.try_into().expect("item ID")) {
                 g.rotate(angle, 0.0, 1.0, 0.0);
                 g.texture = 1;
                 let id = item.id as u8;
@@ -134,7 +134,7 @@ pub fn render(s: &ObjectState, camera: [f64; 3], view: [f32; 2]) -> Fixed {
             } else {
                 g.scale(0.5, 0.5, 0.5);
                 g.texture = if item.id < 256 { 1 } else { 2 };
-                let (icon, color, _) = super::item_table::properties(item.id, item.damage);
+                let (icon, color, _) = super::item_table::properties(item.id.try_into().expect("item ID"), item.damage);
                 g.material = [
                     (color >> 16 & 255) as f32 / 255.0,
                     (color >> 8 & 255) as f32 / 255.0,

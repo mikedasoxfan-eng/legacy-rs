@@ -97,7 +97,7 @@ pub fn check(path: &str) -> bool {
         let original_kind = kind;
         let kind = match kind {
             0 => ObjectKind::Item {
-                item: worldgen::world::tile::ItemStack { id, count: count as i32, damage },
+                item: worldgen::world::tile::ItemStack { id: id as i32, count: count as i32, damage },
                 age,
                 hover,
             },
@@ -125,7 +125,7 @@ pub fn check(path: &str) -> bool {
                 scale: 0.5,
             },
             6 | 7 => ObjectKind::Item {
-                item: worldgen::world::tile::ItemStack { id, count: count as i32, damage },
+                item: worldgen::world::tile::ItemStack { id: id as i32, count: count as i32, damage },
                 age,
                 hover,
             },
@@ -138,7 +138,7 @@ pub fn check(path: &str) -> bool {
             brightness,
         };
         let r = if original_kind == 6 || original_kind == 7 {
-            let item = worldgen::world::tile::ItemStack { id, count: count as i32, damage };
+            let item = worldgen::world::tile::ItemStack { id: id as i32, count: count as i32, damage };
             if original_kind == 6 {
                 super::gui_item::geometry(&item, 12, 9, true)
             } else {
