@@ -63,6 +63,30 @@ impl FontRenderer {
         self.allowed.contains(&c)
     }
 
+    /// Font display lists on the world renderer's recorded GL stream.
+    pub fn draw_fixed(&self, g: &mut crate::render::entity::fixed::Fixed, s: &str, x: i32, y: i32, color: i32) {
+        g.texture=14;
+        let alpha=if color>>24&255==0 {1.0} else {(color>>24&255) as f32/255.0};
+        g.material=[(color>>16&255) as f32/255.0,(color>>8&255) as f32/255.0,(color&255) as f32/255.0,alpha];
+        g.push();g.translate(x as f32,y as f32,0.0);
+        let chars:Vec<_>=s.chars().collect();let mut i=0;
+        while i<chars.len() {
+            while i+1<chars.len() && chars[i]=='§' {
+                let code=chars[i+1].to_ascii_lowercase();let k="0123456789abcdef".find(code).unwrap_or(15);
+                let [r,b,c]=self.colors[k];g.material=[r,b,c,1.0];i+=2;
+            }
+            if i<chars.len() {
+                if let Some(k)=self.index(chars[i]).filter(|k| k+32<256) {
+                    let c=k+32;let u=(c%16*8) as f32;let v=(c/16*8) as f32;let s=7.99;
+                    g.begin();g.quad([[0.0,s,0.0],[s,s,0.0],[s,0.0,0.0],[0.0,0.0,0.0]],[[u/128.0,(v+s)/128.0],[(u+s)/128.0,(v+s)/128.0],[(u+s)/128.0,v/128.0],[u/128.0,v/128.0]]);g.end();
+                    g.translate(self.char_width[c] as f32,0.0,0.0);
+                }
+            }
+            i+=1;
+        }
+        g.pop();
+    }
+
     fn index(&self, c: char) -> Option<usize> {
         self.allowed.iter().position(|&a| a == c)
     }

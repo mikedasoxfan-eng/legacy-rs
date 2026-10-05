@@ -480,7 +480,9 @@ impl App {
         let acts = gui.process_actions();
         // Container clicks and closes go to the world thread, in order.
         let commands = gui.take_container_commands();
+        let signs=std::mem::take(&mut gui.ui.sign_commands);
         if let Some(tx) = &self.tx {
+            for (position,text) in signs {let _=tx.send(ToWorker::EditSign{position,text});}
             for c in commands {
                 let _ = tx.send(ToWorker::Container(c));
             }
@@ -1091,6 +1093,9 @@ impl App {
                         }
                         for ev in events {
                             match ev {
+                                worldgen::entity::player::PlayerEvent::EditSign { position, block, metadata, sign } => {
+                                    if let Some(g)=&mut self.gui {g.ui.display(Some(Box::new(gui::screens::edit_sign::GuiEditSign::new(position,block,metadata,sign))));}
+                                }
                                 worldgen::entity::player::PlayerEvent::Pickup { source, .. } => self.particles.pickup(source, entity.entity_id),
                                 // The world thread switches dimension itself (usePortal).
                                 worldgen::entity::player::PlayerEvent::ChangeDimension => {}
@@ -1147,6 +1152,7 @@ impl App {
                             gui.ui.world_saved = done;
                         }
                     }
+                    Ok(FromWorker::Signs(signs)) => {gpu.entities.signs=signs;}
                     Ok(FromWorker::Mesh { cx, cz, opaque, translucent }) => {
                         gpu.upload_chunk(cx, cz, &opaque, &translucent);
                         uploads += 1;

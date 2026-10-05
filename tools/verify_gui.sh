@@ -32,4 +32,8 @@ EOF
 bash "$root/tools/oracle/guishot.sh" "$scenes" "$java_containers" > "$root/target/containers-gui-java.log" 2>&1 || true
 GUI_MSAA=1 "$root/target/release/beta" --guishot "$scenes" "$rust_containers" >/dev/null || fail=1
 python "$root/tools/oracle/compare_gui_strict.py" "$scenes" "$java_containers" "$rust_containers" "$root/shots/containers_diff" || fail=1
+sign_scenes="$root/tools/oracle/gui/sign-scenes.txt"
+bash "$root/tools/oracle/guishot.sh" "$sign_scenes" "$root/tools/oracle/out/sign_gui_java" > "$root/target/sign-gui-java.log" 2>&1 || fail=1
+GUI_MSAA=1 "$root/target/release/beta" --guishot "$sign_scenes" "$root/shots/signs" >/dev/null || fail=1
+python "$root/tools/oracle/compare_gui_strict.py" "$sign_scenes" "$root/tools/oracle/out/sign_gui_java" "$root/shots/signs" "$root/shots/signs_diff" || fail=1
 exit $fail

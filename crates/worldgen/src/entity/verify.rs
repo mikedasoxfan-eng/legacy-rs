@@ -1032,6 +1032,10 @@ pub fn append_world(w: &World, out: &mut Vec<u8>) {
                 i(out, v);
             }
             match &c.tile_entities[&(x, y, z)] {
+                crate::world::tile::TileEntity::Sign(sign) => {
+                    out.push(5);
+                    for s in &sign.text { i(out,s.len() as i32);out.extend_from_slice(s.as_bytes()); }
+                }
                 crate::world::tile::TileEntity::Chest(slots) => {
                     out.push(1);
                     for slot in slots.iter() {

@@ -13,6 +13,7 @@ pub mod block;
 pub mod caves;
 pub mod container;
 pub mod entity;
+pub mod decoration_verify;
 pub mod features;
 pub mod jmath;
 pub mod math;
@@ -23,6 +24,7 @@ pub mod overworld;
 pub mod populate;
 pub mod random;
 pub mod scenario;
+pub mod sign;
 pub mod storage;
 pub mod world;
 

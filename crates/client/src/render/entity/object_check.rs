@@ -122,6 +122,16 @@ pub fn check(path: &str) -> bool {
     d.bad == 0
 }
 
+pub fn sign_check(path:&str)->bool {
+    let mut d=Input{data:std::fs::read(path).unwrap(),at:0,checks:0,bad:0};let n=d.u();
+    for case in 0..n {let block=d.u() as u8;let metadata=d.u() as i32;let edited=d.u() as i32;
+        let sign=worldgen::sign::Sign{text:["Hello!".into(),"012345678901234".into(),"a W i".into(),"".into()],line_being_edited:edited,editable:true};
+        let g=crate::render::sign::render(&sign,block,metadata,[-0.25,10.5,3.75],0.73);
+        assert_eq!(d.u() as usize,g.draws.len(),"sign {case} draw count");for (i,r) in g.draws.iter().enumerate(){d.draw(r,&format!("sign {case} draw {i}"));}
+    }
+    assert_eq!(d.at,d.data.len());println!("sign renderers: {} values, {} differences",d.checks,d.bad);d.bad==0
+}
+
 pub fn effects_check(path: &str) -> bool {
     use super::effects::Surface;
     let mut d = Input { data: std::fs::read(path).unwrap(), at: 0, checks: 0, bad: 0 };

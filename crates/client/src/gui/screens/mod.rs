@@ -11,3 +11,4 @@ pub mod options;
 pub mod select_world;
 pub mod stats;
 pub mod texture_packs;
+pub mod edit_sign;

@@ -92,6 +92,7 @@ impl GuiSystem {
             stats: Default::default(),
             container_snapshot: None,
             container_commands: Vec::new(),
+            sign_commands: Vec::new(),
             inventory_armor_state: Default::default(),
         };
         GuiSystem {

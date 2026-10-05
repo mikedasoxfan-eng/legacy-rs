@@ -24,6 +24,11 @@ fn main() -> ExitCode {
     let a: Vec<String> = std::env::args().collect();
     let p = |i: usize| a[i].parse::<i64>().expect("number");
     match a.get(1).map(String::as_str) {
+        Some("signs") => {
+            let java=std::fs::read(&a[2]).unwrap();let len=i32::from_le_bytes(java[..4].try_into().unwrap()) as usize;
+            let allowed=std::str::from_utf8(&java[4..4+len]).unwrap();let rust=worldgen::decoration_verify::signs(allowed);let java=&java[4+len..];
+            if java==rust {println!("EXACT MATCH: signs placement, supports, drops/RNG, editing, NBT");ExitCode::SUCCESS} else {eprintln!("signs differ at {:?}; {}/{} bytes",java.iter().zip(&rust).position(|(a,b)|a!=b),java.len(),rust.len());std::fs::write("target/signs-rust.bin",rust).unwrap();ExitCode::FAILURE}
+        }
         Some("musicevents") => {
             let java = std::fs::read(&a[2]).unwrap();
             let rust = worldgen::entity::verify::music_event_bytes();

@@ -9,6 +9,7 @@ impl Entity {
             return false;
         };
         let used = match stack.id {
+            323 => self.place_sign(w, &mut stack, x, y, z, side),
             2256 | 2257 => {
                 let used = w.insert_record(x, y, z, stack.id);
                 if used {

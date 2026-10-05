@@ -46,6 +46,7 @@ impl PlayerInput {
 }
 #[derive(Clone, Debug)]
 pub enum PlayerEvent {
+    EditSign { position: (i32, i32, i32), block: u8, metadata: i32, sign: crate::sign::Sign },
     Container(crate::container::ContainerEvent),
     Pickup {
         entity: i32,

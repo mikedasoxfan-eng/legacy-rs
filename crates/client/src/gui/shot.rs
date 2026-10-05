@@ -155,6 +155,7 @@ pub fn run(script: &str, out_dir: &std::path::Path) -> Result<(), String> {
                         screen
                     }
                     "title" => title,
+                    "sign" => {sys.ui.world_open=true;Box::new(screens::edit_sign::GuiEditSign::new((0,64,0),arg(1).parse().map_err(|_|"sign block")?,arg(2).parse().map_err(|_|"sign metadata")?,Default::default()))},
                     "options" => Box::new(screens::options::GuiOptions::new(title)),
                     "video" => Box::new(screens::options::GuiVideoSettings::new(title)),
                     "controls" => Box::new(screens::options::GuiControls::new(title)),

@@ -39,6 +39,7 @@ pub struct EntityPipeline {
     pub fog_override: Option<[f32; 3]>,
     pub fog_view: Mat4,
     pub snapshots: Vec<super::effects::Snapshot>,
+    pub signs: Vec<crate::render::sign::Snapshot>,
     pub partial: f32,
     pub fancy: bool,
     pub view: [f32; 2],
@@ -297,6 +298,7 @@ impl EntityPipeline {
             fog_override: None,
             fog_view: Mat4::IDENTITY,
             snapshots: Vec::new(),
+            signs: Vec::new(),
             partial: 0.0,
             fancy: true,
             view: [0.0; 2],
@@ -405,6 +407,11 @@ impl EntityPipeline {
             }
         }
         batches.append(&mut self.extra);
+        for s in &self.signs {
+            let relative=std::array::from_fn(|i|s.position[i] as f64-camera[i] as f64);
+            let g=crate::render::sign::render(&s.sign,s.block,s.metadata,relative,s.brightness);
+            batches.extend(g.draws.iter().map(|d|d.batch()));
+        }
         self.upload(device, queue, batches, view_proj, fog, far);
     }
 

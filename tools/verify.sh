@@ -336,5 +336,6 @@ for args in "1 0.5 70 0.5 100 0.75 6000 0 0" "42 -20.25 110 -31.75 123 0.5 13000
 done
 rm -f "$out/cloud_case.bin"
 
+bash "$root/tools/verify_decorations.sh" || fail=1
 [ $fail -eq 0 ] && echo "ALL CASES EXACT" || echo "SOME CASES DIFFER"
 exit $fail

@@ -29,6 +29,7 @@ use widgets::GuiButton;
 
 /// Textures the GUI binds by name (`RenderEngine.getTexture("/gui/gui.png")`).
 pub const TEXTURES: &[&str] = &[
+    "item/sign.png",
     "font/default.png",
     "gui/gui.png",
     "gui/background.png",
@@ -170,6 +171,7 @@ pub struct Ui {
     pub sounds: Vec<(&'static str, f32, f32)>,
     pub container_snapshot: Option<worldgen::container::ContainerSnapshot>,
     pub container_commands: Vec<worldgen::container::ContainerCommand>,
+    pub sign_commands: Vec<((i32,i32,i32),[String;4])>,
     pub inventory_armor_state: screens::inventory_model::ArmorPassState,
 }
 
