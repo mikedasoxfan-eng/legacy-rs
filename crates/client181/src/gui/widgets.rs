@@ -124,7 +124,7 @@ impl GuiButton {
     }
 
     fn inside(&self, x: i32, y: i32) -> bool {
-        self.enabled && x >= self.x && y >= self.y && x < self.x + self.width && y < self.y + self.height
+        self.enabled && self.visible && x >= self.x && y >= self.y && x < self.x + self.width && y < self.y + self.height
     }
 
     /// `mousePressed` (base version; sliders update through `slider_pressed`).

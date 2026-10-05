@@ -16,6 +16,8 @@ use std::path::{Path, PathBuf};
 /// `WorldInfo`
 #[derive(Clone, Debug)]
 pub struct LevelInfo {
+    pub game_mode: i32,
+    pub map_features: bool,
     pub seed: i64,
     pub spawn: (i32, i32, i32),
     pub time: i64,
@@ -42,6 +44,8 @@ impl LevelInfo {
     /// `new WorldInfo(seed, name)`
     pub fn new(seed: i64, name: &str) -> Self {
         LevelInfo {
+            game_mode: 0,
+            map_features: true,
             seed,
             spawn: (0, 0, 0),
             time: 0,
@@ -59,6 +63,8 @@ impl LevelInfo {
 
     fn from_nbt(c: &Compound) -> Self {
         LevelInfo {
+            game_mode: c.int("GameType"),
+            map_features: !c.has("MapFeatures") || c.boolean("MapFeatures"),
             seed: c.long("RandomSeed"),
             spawn: (c.int("SpawnX"), c.int("SpawnY"), c.int("SpawnZ")),
             time: c.long("Time"),
@@ -78,6 +84,8 @@ impl LevelInfo {
     fn to_nbt(&self) -> Compound {
         let mut c = Compound::new();
         c.put("RandomSeed", Tag::Long(self.seed));
+        c.put("GameType", Tag::Int(self.game_mode));
+        c.put("MapFeatures", Tag::Byte(self.map_features as i8));
         c.put("SpawnX", Tag::Int(self.spawn.0));
         c.put("SpawnY", Tag::Int(self.spawn.1));
         c.put("SpawnZ", Tag::Int(self.spawn.2));

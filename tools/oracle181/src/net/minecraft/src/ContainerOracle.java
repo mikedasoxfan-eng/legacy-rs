@@ -75,12 +75,13 @@ public class ContainerOracle {
             Oracle.worldBytes(w,0,0,0).writeTo(out);
         }
     }
+    static TileEntityChest chest(World w) { TileEntityChest c=new TileEntityChest();c.worldObj=w;return c; }
     static Container make(EntityPlayer p, int kind) {
         switch (kind) {
             case 0: return new ContainerPlayer(p.inventory);
             case 1: return new ContainerWorkbench(p.inventory, p.worldObj, 0, 64, 0);
-            case 2: return new ContainerChest(p.inventory, new TileEntityChest());
-            case 3: return new ContainerChest(p.inventory, new InventoryLargeChest("Large chest", new TileEntityChest(), new TileEntityChest()));
+            case 2: return new ContainerChest(p.inventory, chest(p.worldObj));
+            case 3: return new ContainerChest(p.inventory, new InventoryLargeChest("Large chest", chest(p.worldObj), chest(p.worldObj)));
             case 4: return new ContainerFurnace(p.inventory, new TileEntityFurnace());
             default: return new ContainerDispenser(p.inventory, new TileEntityDispenser());
         }

@@ -30,11 +30,14 @@ pub fn lerp(a: f32, b: f32, t: f32) -> f32 {
     a + (b - a) * t
 }
 pub fn fov(e: &Entity, water: bool, t: f32, extra: [f32; 2]) -> f32 {
-    let mut f = if water { 60.0 } else { 70.0 };
+    fov_with_base(e,water,t,extra,70.0)
+}
+pub fn fov_with_base(e:&Entity,water:bool,t:f32,extra:[f32;2],mut f:f32)->f32 {
     if e.living.health <= 0 {
         let death = e.living.death_time as f32 + t;
         f /= (1.0 - 500.0 / (death + 500.0)) * 2.0 + 1.0;
     }
+    if water {f=f*60.0/70.0;}
     f + extra[0] + (extra[1] - extra[0]) * t
 }
 pub fn hurt(g: &mut Fixed, e: &Entity, t: f32) {

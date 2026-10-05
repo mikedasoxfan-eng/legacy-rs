@@ -7,6 +7,15 @@ use super::Ui;
 /// The player state the overlay reads (`EntityPlayerSP` / `InventoryPlayer`).
 #[derive(Clone, Debug)]
 pub struct HudPlayer {
+    pub food_level: i32,
+    pub food_saturation: f32,
+    pub xp_points: i32,
+    pub xp_level: i32,
+    pub seed: i64,
+    pub poison: bool,
+    pub hunger: bool,
+    pub regeneration: bool,
+    pub nausea: bool,
     pub health: i32,
     pub prev_health: i32,
     /// `heartsLife` (damage flash countdown)
@@ -38,6 +47,15 @@ impl Default for HudPlayer {
     /// A player who has just spawned: full health, empty inventory.
     fn default() -> Self {
         HudPlayer {
+            food_level: 20,
+            food_saturation: 5.0,
+            xp_points: 0,
+            xp_level: 0,
+            seed: 0,
+            poison: false,
+            hunger: false,
+            regeneration: false,
+            nausea: false,
             health: 20,
             prev_health: 20,
             hearts_life: 0,
@@ -181,7 +199,7 @@ impl GuiIngame {
             render_pumpkin_blur(ui, w, h);
         }
         let portal = p.prev_time_in_portal + (p.time_in_portal - p.prev_time_in_portal) * partial;
-        if portal > 0.0 {
+        if portal > 0.0 && !p.nausea {
             render_portal_overlay(ui, portal, w, h);
         }
 
@@ -204,50 +222,56 @@ impl GuiIngame {
         }
         let health = p.health;
         let prev = p.prev_health;
-        self.rand.set_seed(self.update_counter as i64 * 312871);
+        self.rand.set_seed(self.update_counter.wrapping_mul(312871) as i64);
         if p.survival {
+            let left = w / 2 - 91;
+            let right = w / 2 + 91;
+            let cap = (p.xp_level + 1) * 10;
+            if cap > 0 {
+                let fill = p.xp_points * 183 / cap;
+                ui.draw_textured_modal_rect_z(left, h - 29, 0, 64, 182, 5, z);
+                if fill > 0 { ui.draw_textured_modal_rect_z(left, h - 29, 0, 69, fill, 5, z); }
+            }
+            let baseline = h - 39;
+            let upper = baseline - 10;
             let armor = p.armor;
+            let regen_index = if p.regeneration { self.update_counter % 25 } else { -1 };
             for i in 0..10 {
-                let mut y = h - 32;
                 if armor > 0 {
-                    let x = w / 2 + 91 - i * 8 - 9;
-                    if i * 2 + 1 < armor {
-                        ui.draw_textured_modal_rect_z(x, y, 34, 9, 9, 9, z);
-                    }
-                    if i * 2 + 1 == armor {
-                        ui.draw_textured_modal_rect_z(x, y, 25, 9, 9, 9, z);
-                    }
-                    if i * 2 + 1 > armor {
-                        ui.draw_textured_modal_rect_z(x, y, 16, 9, 9, 9, z);
-                    }
+                    let x = left + i * 8;
+                    let u = if i * 2 + 1 < armor { 34 } else if i * 2 + 1 == armor { 25 } else { 16 };
+                    ui.draw_textured_modal_rect_z(x, upper, u, 9, 9, 9, z);
                 }
+                let heart = if p.poison { 52 } else { 16 };
                 let f = if flash { 1 } else { 0 };
-                let x = w / 2 - 91 + i * 8;
-                if health <= 4 {
-                    y += self.rand.next_int(2);
-                }
+                let x = left + i * 8;
+                let mut y = baseline;
+                if health <= 4 { y += self.rand.next_int(2); }
+                if i == regen_index { y -= 2; }
                 ui.draw_textured_modal_rect_z(x, y, 16 + f * 9, 0, 9, 9, z);
                 if flash {
-                    if i * 2 + 1 < prev {
-                        ui.draw_textured_modal_rect_z(x, y, 70, 0, 9, 9, z);
-                    }
-                    if i * 2 + 1 == prev {
-                        ui.draw_textured_modal_rect_z(x, y, 79, 0, 9, 9, z);
-                    }
+                    if i * 2 + 1 < prev { ui.draw_textured_modal_rect_z(x, y, heart + 54, 0, 9, 9, z); }
+                    if i * 2 + 1 == prev { ui.draw_textured_modal_rect_z(x, y, heart + 63, 0, 9, 9, z); }
                 }
-                if i * 2 + 1 < health {
-                    ui.draw_textured_modal_rect_z(x, y, 52, 0, 9, 9, z);
-                }
-                if i * 2 + 1 == health {
-                    ui.draw_textured_modal_rect_z(x, y, 61, 0, 9, 9, z);
-                }
+                if i * 2 + 1 < health { ui.draw_textured_modal_rect_z(x, y, heart + 36, 0, 9, 9, z); }
+                if i * 2 + 1 == health { ui.draw_textured_modal_rect_z(x, y, heart + 45, 0, 9, 9, z); }
+            }
+            for i in 0..10 {
+                let mut y = baseline;
+                let food = if p.hunger { 52 } else { 16 };
+                let empty = if p.hunger { 13 } else { 0 };
+                if p.food_saturation <= 0.0 && self.update_counter % (p.food_level * 3 + 1) == 0 { y += self.rand.next_int(3) - 1; }
+                let x = right - i * 8 - 9;
+                ui.draw_textured_modal_rect_z(x, y, 16 + empty * 9, 27, 9, 9, z);
+                if i * 2 + 1 < p.food_level { ui.draw_textured_modal_rect_z(x, y, food + 36, 27, 9, 9, z); }
+                if i * 2 + 1 == p.food_level { ui.draw_textured_modal_rect_z(x, y, food + 45, 27, 9, 9, z); }
             }
             if p.head_in_water {
                 let full = ((p.air - 2) as f64 * 10.0 / 300.0).ceil() as i32;
                 let popping = (p.air as f64 * 10.0 / 300.0).ceil() as i32 - full;
                 for i in 0..full + popping {
                     let u = if i < full { 16 } else { 25 };
-                    ui.draw_textured_modal_rect_z(w / 2 - 91 + i * 8, h - 32 - 9, u, 18, 9, 9, z);
+                    ui.draw_textured_modal_rect_z(right - i * 8 - 9, upper, u, 18, 9, 9, z);
                 }
             }
         }
@@ -278,7 +302,7 @@ impl GuiIngame {
 
         if ui.settings.show_debug_info {
             ui.gl.push_matrix();
-            ui.draw_string(&format!("Minecraft Beta 1.7.3 ({})", debug.fps_line), 2, 2, 16777215);
+            ui.draw_string(&format!("Minecraft Beta 1.8.1 ({})", debug.fps_line), 2, 2, 16777215);
             ui.draw_string(&debug.renders, 2, 12, 16777215);
             ui.draw_string(&debug.entities, 2, 22, 16777215);
             ui.draw_string(&debug.particles, 2, 32, 16777215);
@@ -296,7 +320,10 @@ impl GuiIngame {
             ui.draw_string(&format!("z: {}", java_double(p.pos[2])), 2, 80, 14737632);
             let f = worldgen::math::floor_double((p.yaw * 4.0 / 360.0) as f64 + 0.5) & 3;
             ui.draw_string(&format!("f: {f}"), 2, 88, 14737632);
+            ui.draw_string(&format!("Seed: {}", p.seed), 2, 104, 14737632);
             ui.gl.pop_matrix();
+        } else {
+            ui.draw_string("Minecraft Beta 1.8.1", 2, 2, 16777215);
         }
 
         if self.record_playing_up_for > 0 {

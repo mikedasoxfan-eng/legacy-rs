@@ -194,6 +194,7 @@ pub enum FromWorker {
 
 #[derive(Clone)]
 pub struct WorldOptions {
+    pub settings: Option<worldgen::entity::player::food::WorldSettings>,
     pub dir: Option<PathBuf>,
     pub seed: i64,
     pub world_rand: i64,
@@ -282,6 +283,12 @@ fn run(opts: WorldOptions, mut col: Colorizers, mut video: VideoSettings, rx: Re
             return;
         }
     };
+    if is_new {
+        if let Some(settings) = opts.settings {
+            world.info.game_mode = settings.game_mode;
+            world.info.map_features = settings.map_features;
+        }
+    }
     if let Some(w) = opts.weather {
         world.info.raining = w.rain > 0.0;
         world.info.thundering = w.thunder > 0.0;
@@ -329,6 +336,9 @@ fn run(opts: WorldOptions, mut col: Colorizers, mut video: VideoSettings, rx: Re
     );
     // Singleplayer: the real player (Minecraft.changeWorld creates thePlayer).
     let player = if opts.server { None } else { Some(world.spawn_player("Player")) };
+    if let Some(id) = player {
+        if let Some(e) = world.entities.get_mut(&id) { e.set_creative(world.info.game_mode == 1); }
+    }
     let mut input = InputFrame::default();
     let mut life = 0u32;
     let start = match player.and_then(|id| world.entities.get(&id)) {
@@ -434,6 +444,7 @@ fn run(opts: WorldOptions, mut col: Colorizers, mut video: VideoSettings, rx: Re
                         if let Some(key) = world.respawn_player(old, &mut progress) {
                             let _ = tx.send(FromWorker::Chat(key.to_string()));
                         }
+                        if let Some(e)=world.entities.get_mut(&old){e.set_creative(world.info.game_mode==1);}
                         life += 1;
                         if let Some(e) = world.entities.get(&old) {
                             cam = (e.pos.x, e.pos.y, e.pos.z);

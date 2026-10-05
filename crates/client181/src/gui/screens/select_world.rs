@@ -70,7 +70,7 @@ impl GuiSelectWorld {
             self.selected = true;
             let folder = self.save_file_name(i).unwrap_or_else(|| format!("World{i}"));
             let name = self.save_name(ui, i);
-            ui.actions.push(Action::StartWorld { folder, name, seed: None });
+            ui.actions.push(Action::StartWorld { folder, name, seed: None, settings: None });
             ui.display(None);
         }
     }
@@ -256,6 +256,9 @@ pub struct GuiCreateWorld {
     seed: GuiTextField,
     folder_name: String,
     create_clicked: bool,
+    creative: bool,
+    map_features: bool,
+    more_options: bool,
 }
 
 impl GuiCreateWorld {
@@ -267,6 +270,9 @@ impl GuiCreateWorld {
             seed: GuiTextField::new(0, 0, 0, 0, ""),
             folder_name: String::new(),
             create_clicked: false,
+            creative: false,
+            map_features: true,
+            more_options: false,
         }
     }
 
@@ -280,6 +286,13 @@ impl GuiCreateWorld {
             f = "World".into();
         }
         self.folder_name = saves::unused_folder_name(&ui.saves_dir, f);
+    }
+
+    fn update_labels(&mut self, ui: &Ui) {
+        let mode = if self.creative { "creative" } else { "survival" };
+        self.base.button(2).text = format!("{} {}", ui.translate("selectWorld.gameMode"), ui.translate(&format!("selectWorld.gameMode.{mode}")));
+        self.base.button(4).text = format!("{} {}", ui.translate("selectWorld.mapFeatures"), ui.translate(if self.map_features { "options.on" } else { "options.off" }));
+        self.base.button(5).text = format!("{} {}", ui.translate("selectWorld.mapType"), ui.translate("selectWorld.mapType.normal"));
     }
 
     fn create(&mut self, ui: &mut Ui) {
@@ -303,7 +316,7 @@ impl GuiCreateWorld {
             }
         }
         let seed = seed.unwrap_or_else(random_seed);
-        ui.actions.push(Action::StartWorld { folder: self.folder_name.clone(), name: self.name.text.clone(), seed: Some(seed) });
+        ui.actions.push(Action::StartWorld { folder: self.folder_name.clone(), name: self.name.text.clone(), seed: Some(seed), settings: Some(worldgen::entity::player::food::WorldSettings::new(seed, self.creative as i32, self.map_features)) });
         ui.display(None);
     }
 }
@@ -328,30 +341,48 @@ impl Screen for GuiCreateWorld {
     fn init_gui(&mut self, ui: &mut Ui) {
         let (w, h) = (self.base.width, self.base.height);
         self.base.buttons.clear();
-        self.base.buttons.push(GuiButton::new(0, w / 2 - 100, h / 4 + 96 + 12, ui.translate("selectWorld.create")));
-        self.base.buttons.push(GuiButton::new(1, w / 2 - 100, h / 4 + 120 + 12, ui.translate("gui.cancel")));
+        self.base.buttons.push(GuiButton::sized(0, w / 2 - 155, h - 28, 150, 20, ui.translate("selectWorld.create")));
+        self.base.buttons.push(GuiButton::sized(1, w / 2 + 5, h - 28, 150, 20, ui.translate("gui.cancel")));
+        self.base.buttons.push(GuiButton::small(2, w / 2 - 75, 100, ""));
+        self.base.buttons.push(GuiButton::small(3, w / 2 - 75, 172, ui.translate("selectWorld.moreWorldOptions")));
+        self.base.buttons.push(GuiButton::small(4, w / 2 - 155, 100, ""));
+        self.base.buttons.push(GuiButton::small(5, w / 2 + 5, 100, ""));
+        self.base.button(4).visible = false;
+        self.base.button(5).visible = false;
+        self.base.button(5).enabled = false;
         self.name = GuiTextField::new(w / 2 - 100, 60, 200, 20, ui.translate("selectWorld.newWorld"));
         self.name.focused = true;
         self.name.max_length = 32;
-        self.seed = GuiTextField::new(w / 2 - 100, 116, 200, 20, "");
+        self.seed = GuiTextField::new(w / 2 - 100, 60, 200, 20, "");
+        self.update_labels(ui);
         self.update_folder_name(ui);
     }
 
     fn action_performed(&mut self, ui: &mut Ui, id: i32) {
+        if !self.base.buttons.iter().any(|b| b.id == id && b.enabled) { return; }
         match id {
-            1 if self.base.buttons[1].enabled => ui.display(self.parent.take()),
+            1 => ui.display(self.parent.take()),
             0 => self.create(ui),
+            2 => { self.creative = !self.creative; self.update_labels(ui); }
+            3 => {
+                self.more_options = !self.more_options;
+                self.base.button(2).visible = !self.more_options;
+                self.base.button(4).visible = self.more_options;
+                self.base.button(5).visible = self.more_options;
+                self.base.button(3).text = ui.translate(if self.more_options { "gui.done" } else { "selectWorld.moreWorldOptions" });
+            }
+            4 => { self.map_features = !self.map_features; self.update_labels(ui); }
             _ => {}
         }
     }
 
     fn key_typed(&mut self, ui: &mut Ui, c: char, key: i32) {
         let clip = ui.clipboard.clone();
-        let next = if self.name.focused {
+        let next = if self.name.focused && !self.more_options {
             self.name.key_typed(ui, c, key, || clip)
-        } else {
+        } else if self.seed.focused && self.more_options {
             self.seed.key_typed(ui, c, key, || clip)
-        };
+        } else { false };
         if next {
             // selectNextField
             if self.name.focused {
@@ -371,25 +402,35 @@ impl Screen for GuiCreateWorld {
 
     fn mouse_clicked(&mut self, ui: &mut Ui, x: i32, y: i32, button: i32) {
         crate::gui::default_mouse_clicked(self, ui, x, y, button);
-        self.name.mouse_clicked(x, y, button);
-        self.seed.mouse_clicked(x, y, button);
+        if !self.more_options { self.name.mouse_clicked(x, y, button); }
+        else { self.seed.mouse_clicked(x, y, button); }
     }
 
     fn draw_screen(&mut self, ui: &mut Ui, mx: i32, my: i32, _partial: f32) {
         let (w, h) = (self.base.width, self.base.height);
         ui.draw_world_background(w, h, 0);
         let t = ui.translate("selectWorld.create");
-        ui.draw_centered_string(&t, w / 2, h / 4 - 60 + 20, 16777215);
-        let s = ui.translate("selectWorld.enterName");
-        ui.draw_string(&s, w / 2 - 100, 47, 10526880);
-        let s = format!("{} {}", ui.translate("selectWorld.resultFolder"), self.folder_name);
-        ui.draw_string(&s, w / 2 - 100, 85, 10526880);
-        let s = ui.translate("selectWorld.enterSeed");
-        ui.draw_string(&s, w / 2 - 100, 104, 10526880);
-        let s = ui.translate("selectWorld.seedInfo");
-        ui.draw_string(&s, w / 2 - 100, 140, 10526880);
-        self.name.draw_text_box(ui);
-        self.seed.draw_text_box(ui);
+        ui.draw_centered_string(&t, w / 2, 20, 16777215);
+        if !self.more_options {
+            let label = ui.translate("selectWorld.enterName");
+            ui.draw_string(&label, w / 2 - 100, 47, 10526880);
+            let label = format!("{} {}", ui.translate("selectWorld.resultFolder"), self.folder_name);
+            ui.draw_string(&label, w / 2 - 100, 85, 10526880);
+            self.name.draw_text_box(ui);
+            let mode = if self.creative { "creative" } else { "survival" };
+            let label = ui.translate(&format!("selectWorld.gameMode.{mode}.line1"));
+            ui.draw_string(&label, w / 2 - 100, 122, 10526880);
+            let label = ui.translate(&format!("selectWorld.gameMode.{mode}.line2"));
+            ui.draw_string(&label, w / 2 - 100, 134, 10526880);
+        } else {
+            let label = ui.translate("selectWorld.enterSeed");
+            ui.draw_string(&label, w / 2 - 100, 47, 10526880);
+            let label = ui.translate("selectWorld.seedInfo");
+            ui.draw_string(&label, w / 2 - 100, 85, 10526880);
+            let label = ui.translate("selectWorld.mapFeatures.info");
+            ui.draw_string(&label, w / 2 - 150, 122, 10526880);
+            self.seed.draw_text_box(ui);
+        }
         self.draw_buttons(ui, mx, my);
     }
 }

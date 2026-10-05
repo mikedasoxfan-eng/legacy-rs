@@ -17,6 +17,7 @@ impl World {
         self.load_map_counts();
         let mut entity = self.entities.remove(&player)?;
         let mut session = self.container_sessions.remove(&player).unwrap_or_default();
+        let creative=entity.player_state()?.capabilities.creative;
         let p = &mut entity.player_state_mut()?.inventory;
         match command {
             ContainerCommand::OpenInventory | ContainerCommand::OpenBlock { .. } | ContainerCommand::OpenVehicle { .. } => {
@@ -26,7 +27,7 @@ impl World {
                 }
                 let mut container = match command {
                     ContainerCommand::OpenInventory => {
-                        Some(Container::new(ContainerKind::Player, 0))
+                        Some(Container::new(if creative {ContainerKind::Creative} else {ContainerKind::Player}, 0))
                     }
                     ContainerCommand::OpenBlock {
                         block,
@@ -73,6 +74,7 @@ impl World {
                     self.deliver_container_events(&mut entity, c);
                 }
             }
+            ContainerCommand::ScrollCreative {window,position} => {if let Some(c)=session.active.as_mut().filter(|c|c.window==window){c.scroll_creative(position);}}
             ContainerCommand::Close { window } => {
                 if session.active.as_ref().is_some_and(|c| c.window == window) {
                     let mut c = session.active.take().unwrap();

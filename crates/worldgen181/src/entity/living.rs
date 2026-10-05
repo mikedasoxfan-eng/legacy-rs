@@ -448,6 +448,11 @@ impl Entity {
             } else if self.on_ground {
                 self.motion.y = 0.42f32 as f64;
                 self.add_stat(crate::entity::player::stat::JUMP, 1);
+                if let Some(p)=self.player_state(){
+                    let sprinting=p.sprinting;
+                    if sprinting {let angle=self.yaw*(math::PI_F32/180.0);self.motion.x-=(math::sin(angle)*0.2) as f64;self.motion.z+=(math::cos(angle)*0.2) as f64;}
+                    self.add_exhaustion(if sprinting {0.8} else {0.2});
+                }
             }
         }
         self.living.move_strafing *= 0.98;
@@ -539,7 +544,12 @@ impl Entity {
     pub fn move_entity_with_heading(&mut self, w: &mut World, strafe: f32, forward: f32) {
         if self.player_state().is_some() {
             let before = self.pos;
+            let flying=self.player_state().unwrap().capabilities.flying;
+            let vertical=self.motion.y;
+            let air=self.player_state().unwrap().air_speed;
+            if flying {self.player_state_mut().unwrap().air_speed=0.05;}
             self.living_move_entity_with_heading(w, strafe, forward);
+            if flying {self.motion.y=vertical*0.6;self.player_state_mut().unwrap().air_speed=air;}
             let d = (self.pos.x - before.x, self.pos.y - before.y, self.pos.z - before.z);
             self.add_movement_stat(w, d.0, d.1, d.2);
         } else {
@@ -584,7 +594,7 @@ impl Entity {
             self.move_flying(
                 strafe,
                 forward,
-                if self.on_ground { 0.1 * accel } else { 0.02 },
+                if self.on_ground { self.player_state().map_or(0.1,|s|s.ground_speed) * accel } else { self.player_state().map_or(0.02,|s|s.air_speed) },
             );
             let friction = self.ground_friction(w);
             if self.is_on_ladder(w) {

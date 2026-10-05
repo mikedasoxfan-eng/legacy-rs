@@ -52,7 +52,8 @@ impl Entity {
         e.set_position(x, y, z);
         e
     }
-    pub fn arrow_from_owner(w: &mut World, owner: &Entity) -> Self {
+    pub fn arrow_from_owner(w:&mut World,owner:&Entity)->Self {Self::arrow_from_owner_speed(w,owner,1.0)}
+    pub fn arrow_from_owner_speed(w: &mut World, owner: &Entity, speed:f32) -> Self {
         let mut e = Self::base(
             w,
             EntityKind::Arrow(ArrowState {
@@ -78,7 +79,7 @@ impl Entity {
             (-math::sin(e.yaw / 180.0 * PI) * math::cos(e.pitch / 180.0 * PI)) as f64,
             (-math::sin(e.pitch / 180.0 * PI)) as f64,
             (math::cos(e.yaw / 180.0 * PI) * math::cos(e.pitch / 180.0 * PI)) as f64,
-            1.5,
+            speed*1.5,
             1.0,
         );
         e

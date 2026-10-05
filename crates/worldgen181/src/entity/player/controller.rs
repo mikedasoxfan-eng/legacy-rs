@@ -43,6 +43,9 @@ impl PlayerControllerSP {
         z: i32,
         side: i32,
     ) {
+        if p.player_state().unwrap().capabilities.creative {
+            self.creative_remove(p,w,x,y,z,side);self.block_hit_wait=5;return;
+        }
         let (fx, fy, fz) = super::placement::offset(x, y, z, side);
         if w.get_block_id(fx, fy, fz) == FIRE {
             w.auxiliary_effect(1004, (fx, fy, fz), 0);
@@ -57,6 +60,10 @@ impl PlayerControllerSP {
         }
     }
     pub fn dig(&mut self, p: &mut Entity, w: &mut World, x: i32, y: i32, z: i32, side: i32) {
+        if p.player_state().unwrap().capabilities.creative {
+            self.block_hit_wait-=1;
+            if self.block_hit_wait<=0 {self.block_hit_wait=5;self.creative_remove(p,w,x,y,z,side);}return;
+        }
         if self.block_hit_wait > 0 {
             self.block_hit_wait -= 1;
             return;
@@ -94,6 +101,14 @@ impl PlayerControllerSP {
             self.step_sound_counter = 0.0;
             self.target = (x, y, z);
         }
+    }
+    fn creative_remove(&mut self,_p:&mut Entity,w:&mut World,x:i32,y:i32,z:i32,side:i32)->bool {
+        let (fx,fy,fz)=super::placement::offset(x,y,z,side);
+        if w.get_block_id(fx,fy,fz)==FIRE {w.auxiliary_effect(1004,(fx,fy,fz),0);w.set_block_with_notify(fx,fy,fz,0);return false;}
+        let id=w.get_block_id(x,y,z);if id==0{return false;}
+        let meta=w.get_block_metadata(x,y,z);w.auxiliary_effect(2001,(x,y,z),id as i32+meta*256);
+        let removed=w.set_block_with_notify(x,y,z,0);
+        if removed && id==46 && meta&1!=0 {w.ignite_tnt(x,y,z);}removed
     }
     pub fn remove_block(
         &mut self,

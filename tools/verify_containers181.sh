@@ -14,6 +14,6 @@ cd "$root"
 export JAVA_TOOL_OPTIONS="${JAVA_TOOL_OPTIONS:-} -Xmx512m"
 python tools/oracle181/container_cases.py
 tools/oracle181/oracle.sh containerreplay "$(cygpath -w "$root/target/container-cases.txt")" container-replay.bin
-cargo run --release -q -p worldgen181 --bin container_compare -- target/container-cases.txt tools/oracle181/out/container-replay.bin
+cargo run --release -q -p worldgen181 --bin container_compare181 -- target/container-cases.txt tools/oracle181/out/container-replay.bin
 tools/oracle181/oracle.sh containertiles 1000 container-tiles.bin
-cargo run --release -q -p worldgen181 --bin container_compare -- tiles 1000 tools/oracle181/out/container-tiles.bin
+cargo run --release -q -p worldgen181 --bin container_compare181 -- tiles 1000 tools/oracle181/out/container-tiles.bin

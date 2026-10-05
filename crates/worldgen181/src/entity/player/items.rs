@@ -8,6 +8,7 @@ impl Entity {
         let Some(mut stack) = self.held_item() else {
             return false;
         };
+        let original=stack;
         let original_id = stack.id;
         let used = match stack.id {
             323 => self.place_sign(w, &mut stack, x, y, z, side),
@@ -19,7 +20,7 @@ impl Entity {
                 }
                 used
             }
-            1..=96 => self.place_block_item(w, &mut stack, x, y, z, side),
+            1..=255 => self.place_block_item(w, &mut stack, x, y, z, side),
             324 | 330 => self.place_door(w, &mut stack, x, y, z, side),
             355 => self.place_bed(w, &mut stack, x, y, z, side),
             351 => self.dye_block(w, &mut stack, x, y, z),
@@ -145,6 +146,7 @@ impl Entity {
         if used {
             self.add_stat(stat::used(original_id), 1);
         }
+        if self.player_state().unwrap().capabilities.creative {stack.count=original.count;stack.damage=original.damage;}
         let inv = &mut self.player_state_mut().unwrap().inventory;
         inv.main[inv.current_item as usize] = if stack.count <= 0 { None } else { Some(stack) };
         used
@@ -154,32 +156,18 @@ impl Entity {
             return false;
         };
         let original = stack;
-        let heal = match stack.id {
-            260 => 4,
-            282 => 10,
-            297 => 5,
-            319 => 3,
-            320 => 8,
-            322 => 42,
-            349 => 2,
-            350 => 5,
-            357 => 1,
-            _ => 0,
-        };
-        if heal > 0 {
-            stack.count -= 1;
-            self.heal(heal);
-            if stack.id == 282 {
-                stack = ItemStack::new(281, 1, 0);
+        if super::mechanics::food_value(stack.id).is_some() {
+            let s = self.player_state().unwrap();
+            if (stack.id == 322 || s.food.needs_food()) && !s.capabilities.disable_damage {
+                self.start_item_use(stack, 32);
             }
+        } else if matches!(stack.id, 267 | 268 | 272 | 276 | 283) {
+            self.start_item_use(stack, 72000);
         } else if stack.id == 346 {
-            self.use_fishing_rod(w,&mut stack);
+            self.use_fishing_rod(w, &mut stack);
         } else if stack.id == 261 {
-            if self.player_state_mut().unwrap().inventory.consume(262) {
-                let pitch = 1.0 / (w.item_random.next_float() * 0.4 + 0.8);
-                w.play_sound_at_entity(self, "random.bow", 1.0, pitch);
-                let arrow = Entity::arrow_from_owner(w, self);
-                w.entity_joined_world(arrow);
+            if self.player_state().unwrap().inventory.main.iter().flatten().any(|i| i.id == 262) {
+                self.start_item_use(stack, 72000);
             }
         } else if matches!(stack.id, 332 | 344) {
             stack.count -= 1;
