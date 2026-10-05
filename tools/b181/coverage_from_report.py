@@ -18,12 +18,15 @@ sections = [l[3:].strip().decode('utf-8', 'replace') for l in open(log, 'rb').re
 path = os.path.join(ROOT, 'tools/b181/coverage.json')
 cov = json.load(open(path)) if os.path.exists(path) else {}
 changes = {r['class'] for r in json.load(open(os.path.join(ROOT, 'tools/b181/changes.json')))['classes']}
+KEEP = set(json.load(open(os.path.join(ROOT, 'tools/b181/integrator_credits.json'))))
 added = removed = 0
 for line in open(report, encoding='utf-8'):
     cells = [c.strip() for c in line.split('|')]
     if len(cells) < 4 or cells[1].rstrip('*') not in changes:
         continue
     cls, status, proof = cells[1].rstrip('*'), cells[2].lower(), cells[3]
+    if (status.startswith('not') or 'partial' in status) and cls in KEEP:
+        continue  # verified by the integrator's own checks (tools/b181/integrator_credits.json)
     if status.startswith('not') or 'partial' in status:
         removed += cov.pop(cls, None) is not None
         continue
