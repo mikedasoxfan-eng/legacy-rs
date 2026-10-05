@@ -5005,6 +5005,27 @@
   "entities3: vehiclebranches",
   "entities3: wolfbranches"
  ],
+ "ChunkCache": [
+  "world-blocks b1.8.1: cache",
+  "world-blocks b1.8.1: emptycache4",
+  "chunk meshes: seed 25, world rand 1, fancy, AO on",
+  "chunk meshes: seed 25, world rand 1, fancy, AO off",
+  "chunk meshes: seed 25, world rand 1, fast, AO on",
+  "chunk meshes: seed 25, world rand 1, fast, AO off",
+  "chunk meshes: seed 1, world rand 1, fancy, AO on",
+  "chunk meshes: seed 1, world rand 1, fancy, AO off",
+  "chunk meshes: seed 1, world rand 1, fast, AO on",
+  "chunk meshes: seed 1, world rand 1, fast, AO off",
+  "chunk meshes: seed -1, world rand -1, fancy, AO on",
+  "chunk meshes: seed -1, world rand -1, fancy, AO off",
+  "chunk meshes: seed -1, world rand -1, fast, AO on",
+  "chunk meshes: seed -1, world rand -1, fast, AO off",
+  "chunk meshes: seed 0, world rand 1, fancy, AO on",
+  "chunk meshes: seed 0, world rand 1, fancy, AO off",
+  "chunk meshes: seed 0, world rand 1, fast, AO on",
+  "chunk meshes: seed 0, world rand 1, fast, AO off",
+  "Nether terrain meshes (fire, glowstone, the Nether light table)"
+ ],
  "ChunkCoordIntPair": [
   "BiomeDecorator 0 fixture 0",
   "BiomeDecorator 0 fixture 1",
