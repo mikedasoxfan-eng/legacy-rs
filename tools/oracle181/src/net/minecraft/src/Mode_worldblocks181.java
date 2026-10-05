@@ -75,6 +75,7 @@ public final class Mode_worldblocks181 {
             b.setBlockBoundsBasedOnState(w,8,64,8);
             box(o,AxisAlignedBB.getBoundingBox(b.minX,b.minY,b.minZ,b.maxX,b.maxY,b.maxZ));
         }
+        for(int id=0;id<=109;id++){raw(w,8,64,8,id,0);o.writeBoolean(((BlockFence)Block.fence).func_35303_f(w,8,64,8));}
     }
     static void drops(DataOutputStream o)throws Exception {
         World w=fixture(false);OracleHooks.reset(100);EntityOracle.mathRandom().setSeed(12345);
@@ -246,6 +247,20 @@ public final class Mode_worldblocks181 {
         }
     }
 
+
+    static void actions(DataOutputStream o)throws Exception {
+        for(int id=0;id<=2257;id++)if(Item.itemsList[id]!=null){ItemStack s=new ItemStack(id,1,0);i(o,id);i(o,s.getItem().func_35412_b(s).ordinal());i(o,s.getItem().func_35411_c(s));}
+        // Probe the original release threshold and speed via a real player with arrows.
+        for(int elapsed=-20;elapsed<=200;elapsed++) {
+            World w=fixture(true);EntityPlayer p=PlayerOracle.player(w);p.inventory.mainInventory[0]=new ItemStack(261,1,0);p.inventory.mainInventory[1]=new ItemStack(262,64,0);
+            Item.bow.func_35414_a(p.inventory.mainInventory[0],w,p,72000-elapsed);
+            o.writeBoolean(!w.loadedEntityList.isEmpty());
+            if(!w.loadedEntityList.isEmpty()) {
+                o.writeBoolean(((EntityArrow)w.loadedEntityList.get(0)).field_35140_d);
+            }
+        }
+    }
+
     public static void main(String[] a)throws Exception {
         int initialized=Block.stone.blockID;
         try(DataOutputStream o=new DataOutputStream(new BufferedOutputStream(new FileOutputStream(a[2])))) {
@@ -260,6 +275,7 @@ public final class Mode_worldblocks181 {
                 case "fluids":fluids(o);break;
                 case "teleporter":teleporter(o);break;
                 case "items":items(o);break;
+                case "actions":actions(o);break;
                 default:throw new IllegalArgumentException(a[1]);
             }
         }
