@@ -139,7 +139,7 @@ pub enum Loading {
 }
 
 pub enum FromWorker {
-    Signs(Vec<crate::render::sign::Snapshot>, Vec<crate::render::entity::chest::Tile>),
+    Signs(Vec<crate::render::sign::Snapshot>, Vec<crate::render::entity::chest::Tile>, Vec<crate::render::spawner::Snapshot>),
     /// Ordered after old meshes, before meshes using the new settings.
     ResetMeshes,
     Ready {
@@ -689,7 +689,19 @@ fn run(opts: WorldOptions, mut col: Colorizers, mut video: VideoSettings, rx: Re
                 chests.push(crate::render::entity::chest::Tile{position:[x,y,z],metadata,
                     adjacent:a.adjacent.map(|o|o.is_some()),lid:a.lid,prev_lid:a.previous_lid,light});
             }
-            let _=tx.send(FromWorker::Signs(signs,chests));
+            // TileEntityMobSpawnerRenderer: the spinning mob, lit at the spawner.
+            let mut spawners=Vec::new();
+            let ids:Vec<_>=world.loaded_tile_entities.iter().copied().filter(|id| !world.tile_objects[id].invalid).collect();
+            for id in ids {
+                let Some(worldgen::world::tile::TileEntity::MobSpawner{mob,..})=world.tile_object(id) else {continue};
+                let mob=mob.clone();
+                let (x,y,z)=world.tile_objects[&id].position;
+                let d=(x as f64+0.5-cam.0).powi(2)+(y as f64+0.5-cam.1).powi(2)+(z as f64+0.5-cam.2).powi(2);
+                if d>=4096.0 {continue;}
+                let (yaw,prev_yaw)=world.spawner_animations.get(&(x,y,z)).copied().unwrap_or((0.0,0.0));
+                spawners.push(crate::render::spawner::Snapshot{position:[x,y,z],mob,yaw,prev_yaw,light:world.packed_light181(x,y,z,0) as u32});
+            }
+            let _=tx.send(FromWorker::Signs(signs,chests,spawners));
             if let Some(id) = player {
                 let events = world.take_player_events(id);
                 // Block activations open their container right here on the world thread.

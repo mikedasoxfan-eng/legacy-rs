@@ -48,6 +48,7 @@ pub struct EntityPipeline {
     /// Batches whose vertices carry their own lightmap brightness (batch index, per vertex).
     vertex_lights: Vec<(usize, Vec<u32>)>,
     pub chests: Vec<super::chest::Tile>,
+    pub spawners: Vec<crate::render::spawner::Snapshot>,
     pub partial: f32,
     pub fancy: bool,
     pub view: [f32; 2],
@@ -391,6 +392,7 @@ impl EntityPipeline {
             signs: Vec::new(),
             vertex_lights: Vec::new(),
             chests: Vec::new(),
+            spawners: Vec::new(),
             partial: 0.0,
             fancy: true,
             view: [0.0; 2],
@@ -586,6 +588,12 @@ impl EntityPipeline {
                 metadata:c.metadata,adjacent:c.adjacent,lid:c.lid,prev_lid:c.prev_lid,partial:self.partial});
             batches.extend(g.draws.iter().map(|d|d.batch()));
             lights.resize(batches.len(), c.light);
+        }
+        for s in &self.spawners {
+            if let Some(st) = crate::render::spawner::state(s, camera.to_array(), self.partial) {
+                batches.extend(living::scene_with_lighting(&[st], DVec3::ZERO, &mut self.normalize));
+                lights.resize(batches.len(), s.light);
+            }
         }
         self.upload_lit(device, queue, batches, &lights, view_proj, fog, far);
     }

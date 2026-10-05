@@ -12,6 +12,9 @@ public final class Mode_chestworld {
   for(int[] s:spots){int x=sp.posX+s[0],z=sp.posZ+s[1];int y=w.getHeightValue(x,z);w.setBlockWithNotify(x,y,z,Block.chest.blockID);}
   int x=sp.posX+1,z=sp.posZ+3,y=w.getHeightValue(x,z);w.setBlockAndMetadataWithNotify(x,y,z,Block.signPost.blockID,8);
   TileEntitySign t=(TileEntitySign)w.getBlockTileEntity(x,y,z);if(t!=null){t.signText[1]="b1.8.1";t.signText[2]="chests";}
+  String[] mobs={"Zombie","Spider","Pig"};int[][] sp2={{-1,3},{2,3},{-2,2}};
+  for(int i=0;i<3;i++){int sx=sp.posX+sp2[i][0],sz=sp.posZ+sp2[i][1],sy=w.getHeightValue(sx,sz);w.setBlockWithNotify(sx,sy,sz,Block.mobSpawner.blockID);
+   TileEntityMobSpawner t2=(TileEntityMobSpawner)w.getBlockTileEntity(sx,sy,sz);if(t2!=null)t2.setMobID(mobs[i]);}
   Oracle.drainLighting(w);w.saveWorld(true,null);
   System.out.println("spawn "+sp.posX+" "+sp.posY+" "+sp.posZ);
  }

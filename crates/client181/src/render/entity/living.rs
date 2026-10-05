@@ -84,6 +84,8 @@ pub struct RenderState {
     pub wolf_shaking: bool,
     /// Spider eyes read brightness at partialTicks=1 rather than the current partial.
     pub spider_eye_brightness: f32,
+    /// GL transforms in force before RenderLiving runs (the mob-spawner renderer's spin).
+    pub prefix: Vec<super::fixed::Op>,
 }
 
 impl RenderState {
@@ -144,6 +146,7 @@ impl RenderState {
             wolf_health: 8,
             wolf_shaking: false,
             spider_eye_brightness: 1.0,
+            prefix: Vec::new(),
         }
     }
 }
@@ -519,17 +522,19 @@ pub fn render_living(s: &RenderState, camera: DVec3) -> Vec<Batch> {
 }
 
 fn render_with_lighting(s: &RenderState, camera: DVec3, normalize: bool) -> Vec<Batch> {
+    let prefixed = |mut g: super::fixed::Fixed| -> Vec<Batch> {
+        for d in &mut g.draws {
+            d.ops.splice(0..0, s.prefix.iter().copied());
+        }
+        g.draws.iter().map(|d| d.batch()).collect()
+    };
     if matches!(s.kind, MobKind::Enderman | MobKind::Silverfish | MobKind::Spider | MobKind::CaveSpider) {
-        return super::raw_living181::render(s, camera.to_array(), normalize).draws.iter().map(|d|d.batch()).collect();
+        return prefixed(super::raw_living181::render(s, camera.to_array(), normalize));
     }
     if matches!(s.kind, MobKind::Ghast | MobKind::PigZombie | MobKind::Giant) {
-        return super::special::render(s, camera.to_array(), normalize)
-            .draws
-            .iter()
-            .map(|d| d.batch())
-            .collect();
+        return prefixed(super::special::render(s, camera.to_array(), normalize));
     }
-    let transform = model_transform(s, camera);
+    let transform = super::fixed::matrix(&s.prefix) * model_transform(s, camera);
     let mut main = Model::new(model_kind(s.kind));
     main.on_ground = s.attack;
     main.is_riding = s.riding;
