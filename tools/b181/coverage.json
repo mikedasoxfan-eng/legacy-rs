@@ -4649,6 +4649,10 @@
   "world-blocks b1.8.1: visual",
   "world-blocks b1.8.1: weather"
  ],
+ "BlockNote": [
+  "redstone: notes",
+  "redstone: pistons_obstructions"
+ ],
  "BlockPane": [
   "world-blocks b1.8.1: actions",
   "world-blocks b1.8.1: activation4",
@@ -4760,6 +4764,11 @@
   "redstone: pistons_pull_failure",
   "redstone: pistons_pulses",
   "moving piston renderer (original TileEntityRendererPiston vertex bits)"
+ ],
+ "BlockRedstoneWire": [
+  "redstone: basic",
+  "redstone: pistons_clock",
+  "redstone: rails"
  ],
  "BlockSilverfish": [
   "world-blocks b1.8.1: actions",
