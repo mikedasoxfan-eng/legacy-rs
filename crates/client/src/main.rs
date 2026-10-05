@@ -356,6 +356,15 @@ fn mesh_check(a: &[String]) -> bool {
 
 fn main() {
     let args: Vec<String> = std::env::args().collect();
+    // A plain launch (double-click, a shortcut, or the version picker's `--mc <version>` restart)
+    // keeps saves, options and screenshots next to the exe, whatever folder it was started from.
+    // Test and tool modes pass more arguments and keep the caller's working folder.
+    let plain = args.len() == 1 || (args.len() == 3 && args[1] == "--mc");
+    if plain {
+        if let Some(dir) = std::env::current_exe().ok().and_then(|exe| exe.parent().map(|d| d.to_path_buf())) {
+            let _ = std::env::set_current_dir(dir);
+        }
+    }
     // `--mc b1.8.1`: the Beta 1.8.1 program (its own simulation, client and data folder).
     if let Some(i) = args.iter().position(|a| a == "--mc") {
         match args.get(i + 1).map(String::as_str) {
