@@ -431,18 +431,15 @@ impl Entity {
                         | EntityKind::Wolf(..)
                 ))
     }
-    fn on_entity_walking(&mut self, w: &mut World, id: u8, x: i32, y: i32, z: i32) {
+    pub(crate) fn on_entity_walking(&mut self, w: &mut World, id: u8, x: i32, y: i32, z: i32) {
         if id == TILLED_FIELD && w.rand.next_int(4) == 0 {
             w.set_block_with_notify(x, y, z, DIRT);
         }
         if matches!(id, ORE_REDSTONE | ORE_REDSTONE_GLOWING) {
-            w.redstone_display(x, y, z);
-            if id == ORE_REDSTONE {
-                w.set_block_with_notify(x, y, z, ORE_REDSTONE_GLOWING);
-            }
+            w.activate_redstone_ore181(id,x,y,z);
         }
     }
-    fn on_entity_collided_with_block(&mut self, w: &mut World, id: u8, x: i32, y: i32, z: i32) {
+    pub(crate) fn on_entity_collided_with_block(&mut self, w: &mut World, id: u8, x: i32, y: i32, z: i32) {
         match id {
             28 => {
                 if w.get_block_metadata(x, y, z) & 8 == 0 {

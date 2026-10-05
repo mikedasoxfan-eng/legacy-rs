@@ -4,6 +4,7 @@ impl Entity {
         let id = w.get_block_id(x, y, z);
         let meta = w.get_block_metadata(x, y, z);
         match id {
+            73 | 74 => { w.activate_redstone_ore181(id,x,y,z); false },
             25 => { w.activate_note(x,y,z); true },
             36 => {
                 if w.get_block_tile_entity(x,y,z).is_none() { w.set_block_with_notify(x,y,z,0); true } else { false }
@@ -72,7 +73,7 @@ impl Entity {
                 true
             }
             58 | 61 | 62 | 23 => {
-                if id == 23 && w.multiplayer_world { return true; }
+                if matches!(id, 23 | 61 | 62) && w.multiplayer_world { return true; }
                 if id != 58 && w.get_block_tile_entity(x,y,z).is_none() {
                     return true;
                 }

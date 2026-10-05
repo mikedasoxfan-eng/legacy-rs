@@ -17,6 +17,30 @@ pub struct TileObject {
 }
 
 impl World {
+    pub fn container_added181(&mut self, block: u8, x: i32, y: i32, z: i32) {
+        if block != 36 { self.set_block_tile_entity(x, y, z, TileEntity::for_block(block)); }
+    }
+    /// BlockContainer.playBlock forwards to the tile's event override.
+    pub fn container_play181(&mut self, x: i32, y: i32, z: i32, event: i32, value: i32) {
+        let chest = matches!(self.get_block_tile_entity(x,y,z),Some(TileEntity::Chest(_)));
+        if chest && event == 1 {
+            let id = self.chunk(x >> 4,z >> 4).tile_entity_ids[&(x & 15,y,z & 15)];
+            self.chest_animations.get_mut(&id).unwrap().users = value;
+        }
+    }
+    /// The two Chunk block setters refresh container caches after onBlockAdded.
+    /// Preserve the original fallback's local coordinates passed to World.
+    pub(crate) fn refresh_changed_block_tile181(&mut self, cx: i32, cz: i32, x: i32, y: i32, z: i32, block: u8, old: u8) {
+        if props(block).container || (block == 0 && props(old).container) {
+            let present = self.get_block_tile_entity(cx * 16 + x, y, cz * 16 + z).is_some();
+            if !present && props(block).container && block != 36 {
+                self.set_block_tile_entity(x, y, z, TileEntity::for_block(block));
+            } else if present {
+                let id = self.chunk(cx, cz).tile_entity_ids[&(x, y, z)];
+                self.reset_tile_cache181(id);
+            }
+        }
+    }
     /// Chunk.onChunkUnload queues tiles without invalidating them. Their world
     /// reference and payload survive until World.updateEntities removes the list.
     pub(crate) fn unload_chunk_tiles181(&mut self,cx:i32,cz:i32) {

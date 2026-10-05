@@ -747,9 +747,10 @@ impl World {
         self.schedule_lighting_update(LightKind::Sky, wx, y, wz, wx, y, wz);
         self.schedule_lighting_update(LightKind::Block, wx, y, wz, wx, y, wz);
         self.chunk_mut(cx,cz).skylight_occlusion[(x+z*16) as usize]=true;
-        if id != block::AIR {
+        if id != block::AIR && !self.multiplayer_world {
             behavior::on_block_added(self, id, wx, y, wz);
         }
+        self.refresh_changed_block_tile181(cx, cz, x, y, z, id, old);
         true
     }
 
@@ -794,9 +795,10 @@ impl World {
         self.schedule_lighting_update(LightKind::Block, wx, y, wz, wx, y, wz);
         self.chunk_mut(cx,cz).skylight_occlusion[(x+z*16) as usize]=true;
         self.chunk_mut(cx, cz).data.set(x, y, z, meta);
-        if id != block::AIR {
+        if id != block::AIR && !self.multiplayer_world {
             behavior::on_block_added(self, id, wx, y, wz);
         }
+        self.refresh_changed_block_tile181(cx, cz, x, y, z, id, old);
         true
     }
 

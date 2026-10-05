@@ -47,6 +47,67 @@ pub struct Furnace {
     pub cook: i32,
 }
 impl World {
+    pub fn tick_furnace181(&mut self, id: u64) {
+        let Some(TileEntity::Furnace(mut furnace)) = self.tile_object(id).cloned() else { return; };
+        let (transition, dirty) = furnace.tick(self.multiplayer_world);
+        self.update_tile_object(id, TileEntity::Furnace(furnace));
+        if let Some(lit) = transition {
+            let (x, y, z) = self.tile_objects[&id].position;
+            self.swap_furnace_block(lit, x, y, z);
+        }
+        if dirty { self.tile_inventory_changed181(id); }
+    }
+    /// Furnace and dispenser inventory callbacks differ in their dirty hook.
+    pub fn machine_stack181(&self, id: u64, slot: usize) -> Option<ItemStack> {
+        match self.tile_object(id).unwrap() {
+            TileEntity::Furnace(f) => f.items[slot],
+            TileEntity::Dispenser(items) => items[slot],
+            _ => panic!("not a machine inventory"),
+        }
+    }
+    pub fn set_machine_stack181(&mut self, id: u64, slot: usize, stack: Option<ItemStack>) {
+        let mut tile = self.tile_object(id).unwrap().clone();
+        let stack = stack.map(|mut s| { if s.count > 64 { s.count = 64; } s });
+        let dispenser = matches!(&tile, TileEntity::Dispenser(_));
+        match &mut tile {
+            TileEntity::Furnace(f) => f.items[slot] = stack,
+            TileEntity::Dispenser(items) => items[slot] = stack,
+            _ => panic!("not a machine inventory"),
+        }
+        self.update_tile_object(id, tile);
+        if dispenser { self.tile_inventory_changed181(id); }
+    }
+    pub fn decrement_machine181(&mut self, id: u64, slot: usize, amount: i32) -> Option<ItemStack> {
+        let mut tile = self.tile_object(id).unwrap().clone();
+        let dispenser = matches!(&tile, TileEntity::Dispenser(_));
+        let items: &mut [Option<ItemStack>] = match &mut tile {
+            TileEntity::Furnace(f) => &mut f.items,
+            TileEntity::Dispenser(items) => &mut **items,
+            _ => panic!("not a machine inventory"),
+        };
+        let mut stack = items[slot]?;
+        let result = if stack.count <= amount {
+            items[slot] = None;
+            stack
+        } else {
+            let result = stack.split(amount);
+            items[slot] = (stack.count != 0).then_some(stack);
+            result
+        };
+        self.update_tile_object(id, tile);
+        if dispenser { self.tile_inventory_changed181(id); }
+        Some(result)
+    }
+    pub fn machine_can_interact181(&mut self, id: u64, position: crate::entity::Vec3D) -> bool {
+        let (x,y,z) = self.tile_objects[&id].position;
+        self.get_block_tile_entity(x,y,z);
+        if self.chunk(x >> 4,z >> 4).tile_entity_ids.get(&(x & 15,y,z & 15)) != Some(&id) { return false; }
+        let dx = position.x - (x as f64 + 0.5);
+        let dy = position.y - (y as f64 + 0.5);
+        let dz = position.z - (z as f64 + 0.5);
+        // Original dcmpl/ifle admits NaN (the decompiler's <= does not).
+        !(dx * dx + dy * dy + dz * dz > 64.0)
+    }
     pub fn mark_container_dirty(&mut self, x: i32, z: i32) {
         if let Some(c) = self.chunks.get_mut(&(x >> 4, z >> 4)) {
             c.modified = true;
@@ -226,12 +287,12 @@ impl Furnace {
             .unwrap();
         if let Some(out) = &mut self.items[2] {
             if out.id == result.id {
-                out.count += 1;
+            out.count = out.count.wrapping_add(1);
             }
         } else {
             self.items[2] = Some(result);
         }
-        input.count -= 1;
+        input.count = input.count.wrapping_sub(1);
         self.items[0] = (input.count > 0).then_some(input);
     }
     /// Returns (block-state transition, inventory dirty).
@@ -248,13 +309,13 @@ impl Furnace {
                 if self.burn > 0 {
                     dirty = true;
                     if let Some(mut s) = self.items[1] {
-                        s.count -= 1;
+                        s.count = s.count.wrapping_sub(1);
                         self.items[1] = (s.count != 0).then_some(s);
                     }
                 }
             }
             if self.burn > 0 && self.can_smelt() {
-                self.cook += 1;
+                self.cook = self.cook.wrapping_add(1);
                 if self.cook == 200 {
                     self.cook = 0;
                     self.smelt();
@@ -276,6 +337,6 @@ impl Furnace {
         if self.current_fuel == 0 {
             self.current_fuel = 200;
         }
-        self.burn.wrapping_mul(scale) / self.current_fuel
+        self.burn.wrapping_mul(scale).wrapping_div(self.current_fuel)
     }
 }

@@ -54,5 +54,10 @@ for suite in slabs6 trapdoors6 doors6 attached6 drops6 conversion6 push6 unload6
   echo "== world-blocks b1.8.1: $suite"
   if "$oracle" "wb$suite" "wb181-$suite.bin" && "$cmp" worldblocks181 "$suite" "$out/wb181-$suite.bin"; then :; else fail=1; fi
 done
+# Round seven: furnace/container callbacks, machine replay and remaining simple blocks.
+for suite in furnace7 inventory7 container7 machines7 ore7 thin7; do
+  echo "== world-blocks b1.8.1: $suite"
+  if "$oracle" "wb$suite" "wb181-$suite.bin" && "$cmp" worldblocks181 "$suite" "$out/wb181-$suite.bin"; then :; else fail=1; fi
+done
 [ $fail -eq 0 ] && echo "WORLD-BLOCKS FOCUSED CASES EXACT" || echo "WORLD-BLOCKS FOCUSED CASES DIFFER"
 exit $fail

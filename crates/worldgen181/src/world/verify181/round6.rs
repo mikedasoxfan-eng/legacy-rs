@@ -769,7 +769,7 @@ fn cells(o: &mut Vec<u8>, w: &mut World) {
         }
     }
 }
-fn result(o: &mut Vec<u8>, w: &mut World) {
+pub(super) fn result(o: &mut Vec<u8>, w: &mut World) {
     cells(o, w);
     l(o, w.rand.state());
     i(o, w.loaded_entity_list.len() as i32);
@@ -796,7 +796,7 @@ fn result(o: &mut Vec<u8>, w: &mut World) {
     }
     super::super::events::write_events(&w.drain_events(), o);
 }
-fn seed(w: &mut World) {
+pub(super) fn seed(w: &mut World) {
     w.rand.set_seed(42);
     w.math_random.set_seed(200);
     w.entity_seed_source = crate::entity::EntitySeedSource::Deterministic(100);
