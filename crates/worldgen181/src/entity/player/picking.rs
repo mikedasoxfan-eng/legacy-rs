@@ -28,18 +28,20 @@ impl Entity {
         let p = -math::cos(pitch);
         Vec3D::new((s * p) as f64, math::sin(pitch) as f64, (c * p) as f64)
     }
-    /// EntityRenderer.getMouseOver, with SP block reach 4 and entity reach 3.
+    /// Existing getMouseOver policy: creative blocks reach 5, entities reach 32.
     pub fn mouse_over(&self, w: &mut World, partial: f32) -> Option<MovingObjectPosition> {
         let start = self.view_position(partial);
         let look = self.look(partial);
-        let block = w.ray_trace_blocks(start, start.add(look.x * 4.0, look.y * 4.0, look.z * 4.0));
-        let reach = block
+        let creative = self.player_state().is_some_and(|s| s.capabilities.creative);
+        let block_reach = controller::PlayerControllerSP::block_reach(creative) as f64;
+        let block = w.ray_trace_blocks(start, start.add(look.x * block_reach, look.y * block_reach, look.z * block_reach));
+        let reach = if controller::PlayerControllerSP::has_extended_entity_reach(creative) { 32.0 } else { block
             .as_ref()
-            .map_or(4.0, |hit| match hit {
+            .map_or(block_reach, |hit| match hit {
                 MovingObjectPosition::Block { hit, .. } => hit.distance(start),
-                _ => 4.0,
+                _ => block_reach,
             })
-            .min(3.0);
+            .min(3.0) };
         let end = start.add(look.x * reach, look.y * reach, look.z * reach);
         let mut pointed = None;
         let mut distance = 0.0;
@@ -75,5 +77,12 @@ impl Entity {
                 hit: w.entities[&id].pos,
             })
             .or(block)
+    }
+    /// Minecraft.clickMiddleMouseButton, including zero block coordinates on entity hits.
+    pub fn pick_block(&mut self, w: &mut World, hit: Option<MovingObjectPosition>) {
+        let Some(hit) = hit else { return; };
+        let (x,y,z) = match hit { MovingObjectPosition::Block {x,y,z,..} => (x,y,z), _ => (0,0,0) };
+        let block = match w.get_block_id(x,y,z) { 2=>3,43=>44,7=>1,b=>b as i32 };
+        self.player_state_mut().unwrap().inventory.set_current_item(block);
     }
 }

@@ -218,22 +218,9 @@ impl StatsList {
         let dir = self.sort_dir;
         // The comparators' column indexes differ: block 2 = mined, 0 = crafted, 1 = used;
         // item 0 = broken, 1 = crafted, 2 = used. `columns()` already follows the screen.
-        let tables = self.columns();
+        let block = self.kind == Kind::Block;
         self.rows.sort_by(|a, b| {
-            let (ia, ib) = (a.1, b.1);
-            if (0..3).contains(&column) {
-                let t = tables[column as usize];
-                let (sa, sb) = (table::lookup(t, ia), table::lookup(t, ib));
-                if sa.is_some() || sb.is_some() {
-                    let Some(sa) = sa else { return std::cmp::Ordering::Greater };
-                    let Some(sb) = sb else { return std::cmp::Ordering::Less };
-                    let (va, vb) = (ui.stats.get(sa), ui.stats.get(sb));
-                    if va != vb {
-                        return ((va - vb) * dir).cmp(&0);
-                    }
-                }
-            }
-            (ia - ib).cmp(&0)
+            compare_stats(block,column,dir,a.1,b.1,|id|ui.stats.get(id)).cmp(&0)
         });
     }
 
@@ -246,6 +233,31 @@ impl StatsList {
         let w = ui.string_width(&v);
         ui.draw_string(&v, x - w, y + 5, if even { 16777215 } else { 9474192 });
     }
+}
+
+/// SorterStatsItem / SorterStatsBlock return the literal Java int, including overflow.
+fn compare_stats(block:bool,column:i32,dir:i32,ia:i32,ib:i32,value:impl Fn(i32)->i32)->i32 {
+    let tables=if block {[&table::CRAFT[..],&table::USE[..],&table::MINE[..]]}else{[&table::BREAK[..],&table::CRAFT[..],&table::USE[..]]};
+    if (0..3).contains(&column) {
+        let (sa,sb)=(table::lookup(tables[column as usize],ia),table::lookup(tables[column as usize],ib));
+        if sa.is_some()||sb.is_some() {
+            let Some(sa)=sa else{return 1;};let Some(sb)=sb else{return -1;};
+            let (va,vb)=(value(sa),value(sb));if va!=vb {return va.wrapping_sub(vb).wrapping_mul(dir);}
+        }
+    }
+    ia.wrapping_sub(ib)
+}
+
+pub fn check_order(path:&str)->bool {
+    let mut r=worldgen::JavaRandom::new(4181);let mut out=Vec::new();
+    for _ in 0..20000 {
+        let block=r.next_bool();let column=r.next_int(5)-1;let dir=r.next_int(3)-1;
+        let ia=r.next_int(if block {256}else {2258});let ib=r.next_int(if block {256}else {2258});let salt=r.next_int_unbounded();
+        let value=|id:i32|if salt%5==0 {0}else{(id^salt).wrapping_mul(1664525).wrapping_add(1013904223)};
+        out.extend(compare_stats(block,column,dir,ia,ib,value).to_le_bytes());
+    }
+    let expected=std::fs::read(path).unwrap();std::fs::write("target/statsorder181-rust.bin",&out).unwrap();
+    if out==expected {println!("STAT COMPARATORS EXACT: 20000 item/block comparisons, missing stats, ties and overflow");true}else{eprintln!("STAT COMPARATORS DIFFER");false}
 }
 
 impl SlotList for StatsList {

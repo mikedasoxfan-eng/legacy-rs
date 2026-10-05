@@ -306,21 +306,48 @@ impl GuiCreateWorld {
             return;
         }
         self.create_clicked = true;
-        let text = self.seed.text.clone();
-        // new Random().nextLong() when empty, zero or unparsable as a number... except that a
-        // non-numeric seed uses its String.hashCode.
-        let mut seed = None;
-        if !text.is_empty() {
-            match text.parse::<i64>() {
-                Ok(v) if v != 0 => seed = Some(v),
-                Ok(_) => {}
-                Err(_) => seed = Some(text.encode_utf16().fold(0i32, |h, c| h.wrapping_mul(31).wrapping_add(c as i32)) as i64),
-            }
-        }
-        let seed = seed.unwrap_or_else(random_seed);
+        // Vanilla draws nextLong before inspecting the field, even for a numeric seed.
+        let random = random_seed();
+        let seed = seed_from_units(&self.seed.text.encode_utf16().collect::<Vec<_>>()).unwrap_or(random);
         ui.actions.push(Action::StartWorld { folder: self.folder_name.clone(), name: self.name.text.clone(), seed: Some(seed), settings: Some(worldgen::entity::player::food::WorldSettings::new(seed, self.creative as i32, self.map_features)) });
         ui.display(None);
     }
+}
+
+/// Java 8 Character.digit(char, 10), using its BMP decimal-digit blocks.
+fn decimal_digit(c:u16)->Option<i64> {
+    const ZEROES:[u16;35]=[0x0030,0x0660,0x06f0,0x07c0,0x0966,0x09e6,0x0a66,0x0ae6,0x0b66,0x0be6,0x0c66,0x0ce6,0x0d66,0x0e50,0x0ed0,0x0f20,0x1040,0x1090,0x17e0,0x1810,0x1946,0x19d0,0x1a80,0x1a90,0x1b50,0x1bb0,0x1c40,0x1c50,0xa620,0xa8d0,0xa900,0xa9d0,0xaa50,0xabf0,0xff10];
+    ZEROES.iter().find_map(|&zero|if c>=zero&&c-zero<10 {Some((c-zero)as i64)}else {None})
+}
+
+/// None means keep the already drawn random seed; malformed numbers use UTF-16 hashCode.
+fn seed_from_units(text:&[u16])->Option<i64> {
+    if text.is_empty(){return None;}
+    let parse=||->Option<i64> {
+        let negative=text[0]==b'-' as u16;let sign=negative||text[0]==b'+' as u16;
+        let digits=&text[sign as usize..];if digits.is_empty(){return None;}
+        let limit=if negative {i64::MIN}else {-i64::MAX};let mut result=0i64;
+        for &c in digits {
+            let d=decimal_digit(c)?;
+            if result<limit/10{return None;}result*=10;
+            if result<limit+d{return None;}result-=d;
+        }
+        Some(if negative {result}else {-result})
+    };
+    match parse(){Some(0)=>None,Some(v)=>Some(v),None=>Some(text.iter().fold(0i32,|h,&c|h.wrapping_mul(31).wrapping_add(c as i32))as i64)}
+}
+
+pub fn check_seeds(path:&str)->bool {
+    let mut out=Vec::new();for c in 0..=u16::MAX {out.push(decimal_digit(c).map_or(255,|d|d as u8));}
+    let mut record=|text:&[u16],mode:i32,features:bool| {
+        let seed=seed_from_units(text);out.push(seed.is_none()as u8);out.extend(seed.unwrap_or(0).to_le_bytes());out.extend(mode.to_le_bytes());out.push(features as u8);out.extend(1i32.to_le_bytes());out.extend(3i32.to_le_bytes());out.push((mode==1)as u8);
+    };
+    for s in ["","0","-0","+0","00","+1","-1","9223372036854775807","-9223372036854775808","9223372036854775808","-9223372036854775809"," 1","1 ","\t1","+","-","hello","\0","１２３","١٢٣","१२३","😀","1.0","1e3"] {
+        for mode in 0..2 {for features in [false,true] {record(&s.encode_utf16().collect::<Vec<_>>(),mode,features);}}
+    }
+    let mut r=worldgen::JavaRandom::new(4181);for _ in 0..10000 {let n=r.next_int(32);let text:Vec<_>=(0..n).map(|_|r.next_int(65536)as u16).collect();let mode=r.next_int(2);let features=r.next_bool();record(&text,mode,features);}
+    let expected=std::fs::read(path).unwrap();std::fs::write("target/worldseed181-rust.bin",&out).unwrap();
+    if out==expected {println!("CREATE WORLD SEED POLICY EXACT: 65536 Java digits, 10096 seed/mode/features records (clock-random seeds classified; Rust GUI callbacks not replayed)");true}else{eprintln!("CREATE WORLD SEEDS DIFFER at {}",out.iter().zip(expected).position(|(a,b)|*a!=b).unwrap_or(out.len()));false}
 }
 
 /// `new Random().nextLong()`

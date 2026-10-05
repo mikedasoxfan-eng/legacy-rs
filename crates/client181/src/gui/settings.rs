@@ -96,10 +96,19 @@ impl EnumOptions {
 #[derive(Clone, Debug)]
 pub struct KeyBinding {
     pub description: &'static str,
-    pub code: i32,
-    pub pressed:bool,
-    pub press_count:i32,
-    pub registration_order:usize,
+    state: std::sync::Arc<std::sync::Mutex<KeyState>>,
+}
+
+#[derive(Debug)]
+struct KeyState { code: i32, pressed: bool, press_count: i32 }
+#[derive(Default)]
+struct KeyRegistry {
+    bindings: Vec<std::sync::Arc<std::sync::Mutex<KeyState>>>,
+    by_code: std::collections::HashMap<i32, std::sync::Arc<std::sync::Mutex<KeyState>>>,
+}
+fn key_registry() -> &'static std::sync::Mutex<KeyRegistry> {
+    static REGISTRY: std::sync::OnceLock<std::sync::Mutex<KeyRegistry>> = std::sync::OnceLock::new();
+    REGISTRY.get_or_init(Default::default)
 }
 
 #[derive(Clone, Debug)]
@@ -131,7 +140,11 @@ pub struct GameSettings {
 
 impl Default for GameSettings {
     fn default() -> Self {
-        let kb = |d, c| KeyBinding { description: d, code: c,pressed:false,press_count:0,registration_order:["key.forward","key.left","key.back","key.right","key.jump","key.inventory","key.drop","key.chat","key.sneak","key.attack","key.use","key.playerlist","key.pickItem"].iter().position(|s|*s==d).unwrap() };
+        // Field construction order precedes the differently ordered Controls array.
+        let bindings: Vec<_> = [("key.forward",17),("key.left",30),("key.back",31),("key.right",32),
+            ("key.jump",57),("key.inventory",18),("key.drop",16),("key.chat",20),("key.sneak",42),
+            ("key.attack",-100),("key.use",-99),("key.playerlist",15),("key.pickItem",-98)]
+            .into_iter().map(|(d,c)|KeyBinding::new(d,c)).collect();
         GameSettings {
             music_volume: 1.0,
             sound_volume: 1.0,
@@ -146,19 +159,7 @@ impl Default for GameSettings {
             fancy_graphics: true,
             ambient_occlusion: true,
             skin: "Default".into(),
-            key_bindings: vec![
-                kb("key.attack",-100),kb("key.use",-99),
-                kb("key.forward", 17),
-                kb("key.left", 30),
-                kb("key.back", 31),
-                kb("key.right", 32),
-                kb("key.jump", 57),
-                kb("key.sneak", 42),
-                kb("key.drop", 16),
-                kb("key.inventory", 18),
-                kb("key.chat", 20),
-                kb("key.playerlist",15),kb("key.pickItem",-98),
-            ],
+            key_bindings: [9,10,0,1,2,3,4,8,6,5,7,11,12].map(|i|bindings[i].clone()).to_vec(),
             difficulty: 2,
             hide_gui: false,
             third_person_view: false,
@@ -182,11 +183,11 @@ impl GameSettings {
         if pressed {self.key_tick(code);}
     }
     pub fn binding_pressed(&self,name:&str)->bool {
-        self.key_bindings.iter().any(|k|k.description==name&&k.pressed)
+        self.key_bindings.iter().any(|k|k.description==name&&k.pressed())
     }
     pub fn take_binding_presses(&mut self,name:&str)->i32 {
         let Some(k)=self.key_bindings.iter_mut().find(|k|k.description==name) else {return 0;};
-        let count=k.press_count;k.press_count=0;count
+        k.take_all_presses()
     }
     /// `new GameSettings(mc, dir)`: defaults, then `options.txt` if present.
     pub fn load(dir: &std::path::Path) -> GameSettings {
@@ -198,6 +199,7 @@ impl GameSettings {
                 eprintln!("Skipping bad option: {line}");
             }
         }
+        KeyBinding::rebuild_registry();
         s
     }
 
@@ -233,7 +235,7 @@ impl GameSettings {
             }
             for kb in &mut self.key_bindings {
                 if p[0] == format!("key_{}", kb.description) {
-                    kb.code = int(v()?)?;
+                    kb.set_code(int(v()?)?);
                 }
             }
             Ok(())
@@ -267,7 +269,7 @@ impl GameSettings {
         line("skin", self.skin.clone());
         line("lastServer", self.last_server.clone());
         for kb in &self.key_bindings {
-            line(&format!("key_{}", kb.description), kb.code.to_string());
+            line(&format!("key_{}", kb.description), kb.code().to_string());
         }
         if let Err(e) = std::fs::write(path, o) {
             eprintln!("Failed to save options: {e}");
@@ -367,16 +369,58 @@ impl GameSettings {
     }
 
     pub fn set_key_binding(&mut self, i: usize, code: i32) {
-        self.key_bindings[i].code = code;
+        self.key_bindings[i].set_code(code);
         self.save();
     }
 }
 
 impl KeyBinding {
-    pub fn take_press(&mut self)->bool {if self.press_count==0 {false}else {self.press_count=self.press_count.wrapping_sub(1);true}}
+    pub fn new(description: &'static str, code: i32) -> Self {
+        let state = std::sync::Arc::new(std::sync::Mutex::new(KeyState { code, pressed: false, press_count: 0 }));
+        let mut registry=key_registry().lock().unwrap();
+        registry.bindings.push(state.clone());registry.by_code.insert(code,state.clone());
+        Self { description,state }
+    }
+    pub fn code(&self)->i32 {self.state.lock().unwrap().code}
+    pub fn set_code(&self,code:i32) {self.state.lock().unwrap().code=code;}
+    pub fn pressed(&self)->bool {self.state.lock().unwrap().pressed}
+    pub fn press_count(&self)->i32 {self.state.lock().unwrap().press_count}
+    pub fn take_press(&self)->bool {let mut s=self.state.lock().unwrap();if s.press_count==0 {false}else {s.press_count=s.press_count.wrapping_sub(1);true}}
+    pub fn take_all_presses(&self)->i32 {let mut s=self.state.lock().unwrap();let n=s.press_count;s.press_count=0;n}
+    /// Rebinding alone leaves the old hash lookup until this explicit vanilla callback.
+    pub fn rebuild_registry() {
+        let mut registry=key_registry().lock().unwrap();registry.by_code.clear();
+        for state in registry.bindings.clone() {let code=state.lock().unwrap().code;registry.by_code.insert(code,state);}
+    }
+    pub fn tick(code:i32) {let registry=key_registry().lock().unwrap();if let Some(state)=registry.by_code.get(&code){let mut s=state.lock().unwrap();s.press_count=s.press_count.wrapping_add(1);}}
+    pub fn set_state(code:i32,pressed:bool) {let registry=key_registry().lock().unwrap();if let Some(state)=registry.by_code.get(&code){state.lock().unwrap().pressed=pressed;}}
+    pub fn release_all() {let registry=key_registry().lock().unwrap();for state in &registry.bindings {let mut s=state.lock().unwrap();s.pressed=false;s.press_count=0;}}
 }
 impl GameSettings {
-    pub fn key_tick(&mut self,code:i32){if let Some(k)=self.key_bindings.iter_mut().filter(|k|k.code==code).max_by_key(|k|k.registration_order){k.press_count=k.press_count.wrapping_add(1);}}
-    pub fn key_state(&mut self,code:i32,pressed:bool){if let Some(k)=self.key_bindings.iter_mut().filter(|k|k.code==code).max_by_key(|k|k.registration_order){k.pressed=pressed;}}
-    pub fn release_keys(&mut self){for k in &mut self.key_bindings {k.pressed=false;k.press_count=0;}}
+    pub fn key_tick(&mut self,code:i32){KeyBinding::tick(code);}
+    pub fn key_state(&mut self,code:i32,pressed:bool){KeyBinding::set_state(code,pressed);}
+    pub fn release_keys(&mut self){KeyBinding::release_all();}
+}
+
+/// Independent original-bytecode fixture; runs in a fresh client process.
+pub fn check_key_registry(path:&str)->bool {
+    use std::fmt::Write;
+    let mut keys=Vec::new();
+    for _ in 0..4 {keys.extend(GameSettings::default().key_bindings);}
+    for code in [0,-100,-99,-98,17,17,i32::MIN,i32::MAX] {keys.push(KeyBinding::new("custom",code));}
+    let mut random=worldgen::JavaRandom::new(4181);let mut out=String::new();
+    for _ in 0..20000 {
+        let op=random.next_int(7);let index=random.next_int(keys.len()as i32)as usize;let code=random.next_int(220)-105;let pressed=random.next_bool();
+        match op {
+            0=>keys[index].set_code(code),1=>KeyBinding::tick(code),2=>KeyBinding::set_state(code,pressed),
+            3=>{writeln!(out,"{}",keys[index].take_press()).unwrap();},4=>KeyBinding::release_all(),5=>KeyBinding::rebuild_registry(),
+            _=>{KeyBinding::tick(keys[index].code());KeyBinding::set_state(keys[index].code(),pressed);}
+        }
+        for k in &keys {write!(out,"{},{},{};",k.code(),k.pressed(),k.press_count()).unwrap();}out.push('\n');
+    }
+    keys[0].state.lock().unwrap().press_count=i32::MAX;keys[0].set_code(12345);KeyBinding::rebuild_registry();KeyBinding::tick(12345);
+    writeln!(out,"{}",keys[0].press_count()).unwrap();writeln!(out,"{}",keys[0].take_press()).unwrap();writeln!(out,"{}",keys[0].press_count()).unwrap();
+    let expected=std::fs::read_to_string(path).unwrap().replace("\r\n","\n");
+    if expected==out {println!("GLOBAL KEY REGISTRY EXACT: 20000 events, 4 settings, 8 standalone bindings, overflow");true}
+    else {std::fs::write("target/keyregistry181-rust.txt",out).unwrap();eprintln!("GLOBAL KEY REGISTRY DIFFERS");false}
 }

@@ -323,3 +323,50 @@ millis 40000
 toast information 16
 shot b181_toast_snipe_hint
 # --- end player-gui round 3 ---
+
+# --- player-gui round 4 (b1.8.1) ---
+saves ../out/guisaves
+world 42
+clear 128
+hud health=20 prev=20 item=0 pos=0.5,120,0.5 brightness=0.0 food=20 saturation=5 xp=0 level=0
+counter 0
+open achievements
+key 42 0
+screenstate open
+key 18 0
+screenstate none
+hud health=20 prev=20 item=0 pos=0.5,120,0.5 brightness=0.0 food=20 saturation=5 xp=0 level=0
+shot b181_achievement_inventory_close
+open creative
+key 18 0
+screenstate none
+open create
+mouse 213 180
+click
+mouse 213 70
+click
+key 78 43
+key 2 49
+key 3 50
+key 4 51
+mouse 0 0
+shot b181_create_signed_seed
+mouse 213 180
+click
+mouse 213 110
+click
+mouse 0 0
+shot b181_create_signed_seed_return
+# --- end player-gui round 4 ---
+# --- player-gui round 4 creative close (b1.8.1) ---
+saves ../out/guisaves
+world 42
+clear 128
+hud health=20 prev=20 item=0 pos=0.5,120,0.5 brightness=0.0 food=20 saturation=5 xp=0 level=0 creative=1
+counter 0
+open creative
+key 18 0
+screenstate none
+hud health=20 prev=20 item=0 pos=0.5,120,0.5 brightness=0.0 food=20 saturation=5 xp=0 level=0 creative=1
+shot b181_creative_inventory_close
+# --- end player-gui round 4 creative close ---

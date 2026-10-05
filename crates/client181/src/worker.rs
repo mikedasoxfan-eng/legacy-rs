@@ -58,6 +58,7 @@ pub struct InputFrame {
     pub drop_presses: i32,
     /// `clickMiddleMouseButton`
     pub middle_pressed: bool,
+    pub pick_presses: i32,
     pub hotbar_slot: Option<u8>,
     pub scroll: i32,
     /// Numbers the frames, so the window can tell which look deltas a tick has used.
@@ -84,6 +85,7 @@ impl InputFrame {
         self.drop_pressed |= n.drop_pressed;
         self.drop_presses += n.drop_presses;
         self.middle_pressed |= n.middle_pressed;
+        self.pick_presses += n.pick_presses;
         if n.hotbar_slot.is_some() {
             self.hotbar_slot = n.hotbar_slot;
         }
@@ -109,6 +111,7 @@ impl InputFrame {
             left_held: self.left_held,
             right_pressed: self.right_pressed,
             use_presses: self.use_presses,
+            pick_presses: self.pick_presses + self.middle_pressed as i32,
             right_held: self.right_held,
             drop_pressed: self.drop_pressed,
             drop_presses: self.drop_presses,
@@ -125,6 +128,7 @@ impl InputFrame {
         self.drop_pressed = false;
         self.drop_presses = 0;
         self.middle_pressed = false;
+        self.pick_presses = 0;
         self.hotbar_slot = None;
         self.scroll = 0;
         t
@@ -505,10 +509,7 @@ fn run(opts: WorldOptions, mut col: Colorizers, mut video: VideoSettings, rx: Re
                 // every 30 ticks, updateEntities, World.tick, randomDisplayUpdates.
                 join_player_counter += 1;
                 // Mouse events come before keyboard events in runTick: every wheel event
-                // is its own changeCurrentItem, and the middle button picks a block.
-                if input.middle_pressed {
-                    pick_block(&mut world, id);
-                }
+                // is its own changeCurrentItem. Pick presses run after attack/use queues.
                 if let Some(s) = world.entities.get_mut(&id).and_then(|e| e.player_state_mut()) {
                     for _ in 0..input.scroll.abs() {
                         s.inventory.change_current_item(input.scroll.signum());
@@ -950,33 +951,6 @@ fn weather_snapshot_radius(world: &mut World, cam: (f64, f64, f64), radius: i32)
         }
     }
     Snapshot { columns }
-}
-
-/// `Minecraft.clickMiddleMouseButton`: select the hotbar slot holding the block looked at.
-/// An entity hit reads the block at 0,0,0 (its block fields are zero), as in vanilla.
-fn pick_block(world: &mut World, id: i32) {
-    use worldgen::entity::geometry::MovingObjectPosition;
-    let Some(e) = world.entities.get(&id).cloned() else { return };
-    let Some(hit) = e.mouse_over(world, 1.0) else { return };
-    let (x, y, z) = match hit {
-        MovingObjectPosition::Block { x, y, z, .. } => (x, y, z),
-        _ => (0, 0, 0),
-    };
-    let mut block = world.get_block_id(x, y, z) as i32;
-    block = match block {
-        2 => 3,  // grass -> dirt
-        43 => 44, // double slab -> slab
-        7 => 1,  // bedrock -> stone
-        b => b,
-    };
-    if let Some(s) = world.entities.get_mut(&id).and_then(|e| e.player_state_mut()) {
-        // InventoryPlayer.setCurrentItem: getInventorySlotContainItem, hotbar only.
-        if let Some(slot) = s.inventory.main.iter().position(|st| st.is_some_and(|st| st.id == block)) {
-            if slot < 9 {
-                s.inventory.current_item = slot as i32;
-            }
-        }
-    }
 }
 
 /// The biome source the mesher colors with: the Nether's is a single hell biome.

@@ -271,6 +271,9 @@ pub fn run(script: &str, out_dir: &std::path::Path) -> Result<(), String> {
                     },
                 };
             }
+            "screenstate" => {
+                if sys.screen.is_some() != (rest == "open") { return Err(format!("screen state differs: {rest}")); }
+            }
             "hud" => {
                 mojang = false;
                 loading = None;

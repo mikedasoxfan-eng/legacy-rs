@@ -106,6 +106,11 @@ impl Default for InventoryPlayer {
     }
 }
 impl InventoryPlayer {
+    pub fn set_current_item(&mut self, id: i32) {
+        if let Some(slot) = self.main.iter().position(|s| s.is_some_and(|s| s.id == id)) {
+            if slot < 9 { self.current_item = slot as i32; }
+        }
+    }
     pub fn held(&self) -> Option<ItemStack> {
         if (0..9).contains(&self.current_item) {
             self.main[self.current_item as usize]
