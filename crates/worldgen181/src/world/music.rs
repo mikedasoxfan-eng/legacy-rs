@@ -15,11 +15,15 @@ impl World {
     }
     /// BlockJukeBox.ejectRecord is the record-setting callback despite its MCP name.
     pub fn set_record181(&mut self,x:i32,y:i32,z:i32,record:i32) {
-        if self.multiplayer_world {return;}
-        if let Some(TileEntity::RecordPlayer { record: stored }) =
-            self.get_block_tile_entity(x, y, z)
-        {
-            *stored = record;
+        self.try_set_record181(x,y,z,record).expect("BlockJukeBox.ejectRecord");
+    }
+    pub fn try_set_record181(&mut self,x:i32,y:i32,z:i32,record:i32) -> Result<(), super::tile_nbt181::TileError181> {
+        if self.multiplayer_world {return Ok(());}
+        match self.get_block_tile_entity(x,y,z) {
+            None => return Ok(()),
+            Some(TileEntity::RecordPlayer { record: stored }) => *stored = record,
+            _ => return Err(super::tile_nbt181::TileError181::ClassCast),
+        }
             if let Some(&tile) =
                 self.chunk(x >> 4, z >> 4)
                     .tile_entity_ids
@@ -28,29 +32,26 @@ impl World {
                 self.tile_inventory_changed181(tile);
             }
             self.set_block_metadata_with_notify(x, y, z, 1);
-        }
+        Ok(())
     }
     pub fn eject_record(&mut self, x: i32, y: i32, z: i32) {
-        if self.multiplayer_world {return;}
-        let Some(TileEntity::RecordPlayer { record }) = self.get_block_tile_entity(x, y, z) else {
-            return;
+        self.try_eject_record181(x,y,z).expect("BlockJukeBox.func_28038_b_");
+    }
+    pub fn try_eject_record181(&mut self, x: i32, y: i32, z: i32) -> Result<(), super::tile_nbt181::TileError181> {
+        if self.multiplayer_world {return Ok(());}
+        let record = match self.get_block_tile_entity(x, y, z) {
+            None => return Ok(()),
+            Some(TileEntity::RecordPlayer { record }) => *record,
+            _ => return Err(super::tile_nbt181::TileError181::ClassCast),
         };
-        let record = *record;
         if record == 0 {
-            return;
+            return Ok(());
         }
+        let tile = self.chunk(x >> 4,z >> 4).tile_entity_ids[&(x & 15,y,z & 15)];
         self.auxiliary_effect(1005, (x, y, z), 0);
         self.play_record(None, (x, y, z));
-        if let Some(TileEntity::RecordPlayer { record }) = self.get_block_tile_entity(x, y, z) {
-            *record = 0;
-        }
-        if let Some(&tile) = self
-            .chunk(x >> 4, z >> 4)
-            .tile_entity_ids
-            .get(&(x & 15, y, z & 15))
-        {
-            self.tile_inventory_changed181(tile);
-        }
+        self.update_tile_object(tile, TileEntity::RecordPlayer { record: 0 });
+        self.tile_inventory_changed181(tile);
         self.set_block_metadata_with_notify(x, y, z, 0);
         let s = 0.7f32;
         let ox = (self.rand.next_float() * s) as f64 + (1.0 - s) as f64 * 0.5;
@@ -67,5 +68,6 @@ impl World {
             *pickup_delay = 10;
         }
         self.entity_joined_world(item);
+        Ok(())
     }
 }

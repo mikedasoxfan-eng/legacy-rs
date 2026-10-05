@@ -1136,7 +1136,7 @@ fn world(w: &World, path: &str) -> ExitCode {
                         let (id, count, dmg) = (r.i16(), r.u8(), r.i16());
                         if id >= 0 {
                             *s = Some(worldgen::world::tile::ItemStack {
-                                id,
+                                id: id as i32,
                                 count: count as i32,
                                 damage: dmg,
                             });

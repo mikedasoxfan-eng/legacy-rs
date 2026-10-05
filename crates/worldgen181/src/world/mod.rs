@@ -31,6 +31,7 @@ pub mod tick;
 pub mod mchash181;
 pub mod ticks_blocks;
 pub mod tile;
+pub mod tile_nbt181;
 pub mod pistons;
 pub mod notes;
 mod tile_lifecycle;
@@ -776,18 +777,24 @@ impl World {
         id: u8,
         meta: i32,
     ) -> bool {
+        self.chunk_set_block_with_metadata_raw181(cx,cz,x,y,z,id as i32,meta).expect("Chunk.setBlockIDWithMetadata")
+    }
+    fn chunk_set_block_with_metadata_raw181(&mut self,cx:i32,cz:i32,x:i32,y:i32,z:i32,raw_id:i32,meta:i32) -> Result<bool,tile_nbt181::TileError181> {
+        let id=raw_id as u8;
         let c = self.chunk_mut(cx, cz);
         let column=(z<<4|x) as usize;
         if y>=c.precipitation_height[column]-1 {c.precipitation_height[column]=-999;}
         let height = c.height(x, z);
         let old = c.blocks[idx(x, y, z)];
-        if old == id && c.data.get(x, y, z) == meta {
-            return false;
+        if old as i32 == raw_id && c.data.get(x, y, z) == meta {
+            return Ok(false);
         }
         let wx = cx * 16 + x;
         let wz = cz * 16 + z;
         c.blocks[idx(x, y, z)] = id;
-        self.touch(cx, cz);
+        let failure = if !(0..256).contains(&raw_id) {Some(tile_nbt181::TileError181::ArrayIndexOutOfBounds)}
+            else if raw_id!=0 && !block::props(id).exists && !self.multiplayer_world {Some(tile_nbt181::TileError181::NullPointer)}else{None};
+        if failure.is_none() {self.touch(cx,cz);}
         if old != block::AIR {
             behavior::on_block_removal(self, old, wx, y, wz);
         }
@@ -806,10 +813,13 @@ impl World {
         self.chunk_mut(cx,cz).skylight_occlusion[(x+z*16) as usize]=true;
         self.chunk_mut(cx, cz).data.set(x, y, z, meta);
         if id != block::AIR && !self.multiplayer_world {
+            if let Some(e)=failure {return Err(e);}
             behavior::on_block_added(self, id, wx, y, wz);
         }
+        // The original indexes blocksList even remotely for instanceof.
+        if let Some(e)=failure {return Err(e);}
         self.refresh_changed_block_tile181(cx, cz, x, y, z, id, old);
-        true
+        Ok(true)
     }
 
     fn update_neighbor_heights(&mut self, wx: i32, wz: i32, h: i32) {

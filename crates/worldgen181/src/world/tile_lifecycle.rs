@@ -5,15 +5,21 @@ use crate::block::props;
 
 pub type TileId = u64;
 pub struct TileObject {
-    pub cached_metadata: i32,
-    pub cached_block: Option<u8>,
-    pub position: (i32, i32, i32),
-    pub invalid: bool,
+    pub base181: super::tile_nbt181::TileBase181,
+    pub world_attached181: bool,
+    pub dispenser_random181: Option<crate::JavaRandom>,
     // World.field_34900_Q membership: removeAll after the current tile pass.
     pub pending_unload: bool,
     // Attached objects live in Chunk.tile_entities for the inventory APIs. An
     // overwritten, deferred or unloaded object retains its own payload here.
     pub detached: Option<TileEntity>,
+}
+impl std::ops::Deref for TileObject {
+    type Target = super::tile_nbt181::TileBase181;
+    fn deref(&self)->&Self::Target { &self.base181 }
+}
+impl std::ops::DerefMut for TileObject {
+    fn deref_mut(&mut self)->&mut Self::Target { &mut self.base181 }
 }
 
 impl World {
@@ -60,21 +66,21 @@ impl World {
         }
     }
     pub fn tile_metadata181(&mut self,id:TileId)->i32 {
-        if self.tile_objects[&id].cached_metadata == -1 {
-            let (x,y,z)=self.tile_objects[&id].position;
-            let meta=self.get_block_metadata(x,y,z);self.tile_objects.get_mut(&id).unwrap().cached_metadata=meta;
-        }
-        self.tile_objects[&id].cached_metadata
+        let mut base=self.tile_objects[&id].base181.clone();
+        let attached=self.tile_objects[&id].world_attached181;
+        let result=base.metadata(attached.then_some(&mut *self)).expect("TileEntity.getBlockMetadata");
+        self.tile_objects.get_mut(&id).unwrap().base181=base;
+        result
     }
     pub fn tile_block181(&mut self,id:TileId)->Option<u8> {
-        if self.tile_objects[&id].cached_block.is_none() {
-            let (x,y,z)=self.tile_objects[&id].position;let block=self.get_block_id(x,y,z);
-            self.tile_objects.get_mut(&id).unwrap().cached_block=if block==0 {None}else{Some(block)};
-        }
-        self.tile_objects[&id].cached_block
+        let mut base=self.tile_objects[&id].base181.clone();
+        let attached=self.tile_objects[&id].world_attached181;
+        let result=base.block(attached.then_some(&mut *self)).expect("TileEntity.getBlockType");
+        self.tile_objects.get_mut(&id).unwrap().base181=base;
+        result
     }
     pub fn reset_tile_cache181(&mut self,id:TileId) {
-        let o=self.tile_objects.get_mut(&id).unwrap();o.cached_metadata=-1;o.cached_block=None;
+        self.tile_objects.get_mut(&id).unwrap().reset_cache();
         if let Some(a)=self.chest_animations.get_mut(&id) {a.adjacency_checked=false;}
     }
     /// TileEntityChest.invalidate resets and refreshes adjacency before the
@@ -84,25 +90,27 @@ impl World {
             self.reset_tile_cache181(id);
             self.check_chest_adjacency181(id);
         }
-        self.tile_objects.get_mut(&id).unwrap().invalid = true;
+        self.tile_objects.get_mut(&id).unwrap().invalidate();
     }
     pub fn tile_inventory_changed181(&mut self,id:TileId) {
-        let (x,y,z)=self.tile_objects[&id].position;
-        let meta=self.get_block_metadata(x,y,z);self.tile_objects.get_mut(&id).unwrap().cached_metadata=meta;
-        self.touch(x>>4,z>>4);
+        let mut base=self.tile_objects[&id].base181.clone();
+        let attached=self.tile_objects[&id].world_attached181;
+        base.inventory_changed(attached.then_some(&mut *self));
+        self.tile_objects.get_mut(&id).unwrap().base181=base;
     }
     pub(crate) fn new_tile_object(&mut self, position: (i32, i32, i32), te: TileEntity) -> TileId {
         let chest=matches!(&te,TileEntity::Chest(_));
+        if matches!(&te,TileEntity::Dispenser(_)) {self.dispenser_random.remove(&position);}
+        let dispenser_random181 = matches!(&te, TileEntity::Dispenser(_)).then(|| crate::JavaRandom::new(crate::entity::EntitySeedSource::Time.next_seed()));
         let id = self.next_tile_id;
         self.next_tile_id += 1;
         if chest {self.chest_animations.insert(id,Default::default());}
         self.tile_objects.insert(
             id,
             TileObject {
-                cached_metadata: -1,
-                cached_block: None,
-                position,
-                invalid: false,
+                base181: super::tile_nbt181::TileBase181 {position, ..Default::default()},
+                world_attached181: true,
+                dispenser_random181,
                 pending_unload: false,
                 detached: Some(te),
             },
