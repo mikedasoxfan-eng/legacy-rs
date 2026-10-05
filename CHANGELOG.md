@@ -18,6 +18,10 @@ Minecraft Beta 1.8.1 (the Adventure Update), next to Beta 1.7.3 in the same prog
   smooth lighting and block shapes (vines, stems, panes, fence gates, ...), sky, clouds, fog
   (including the void fog near bedrock), rain and snow, first-person hand with arm sway,
   chests as animated tile entities, lit signs and moving pistons, depth particles.
+- Tile entities in play: animated chests, lit signs and moving pistons, the spinning mob inside
+  monster spawners; distant mobs are hidden at the original render range.
+- Play-tested from the title screen: world creation (survival/creative), the creative
+  inventory and flying, sprinting, Nether portals and the Nether.
 - World generation, entities, the player (hunger, sprinting, experience, creative), blocks,
   items and screens are being ported area by area; each part counts only once the original
   b1.8.1 bytecode agrees with it bit for bit.
