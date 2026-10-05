@@ -494,7 +494,7 @@ impl App {
     fn shutdown(&mut self, el: &ActiveEventLoop) {
         if self.tx.is_some() {
             if let Some(g) = &self.gpu {
-                g.window.set_title("Minecraft Beta 1.7.3 (Rust) — saving world...");
+                g.window.set_title("Minecraft Beta 1.8.1 (Rust) — saving world...");
             }
             self.quit_world(true);
             // Wait here: the window is closing.
@@ -1677,7 +1677,7 @@ impl App {
             self.fps_time = Instant::now();
             let p = self.cam.pos;
             gpu.window.set_title(&format!(
-                "Minecraft Beta 1.7.3 (Rust) — {} (seed {}) — {} fps — x {:.1} y {:.1} z {:.1} — {} chunks{}",
+                "Minecraft Beta 1.8.1 (Rust) — {} (seed {}) — {} fps — x {:.1} y {:.1} z {:.1} — {} chunks{}",
                 self.world_name,
                 self.seed,
                 self.fps,
@@ -1705,7 +1705,7 @@ impl ApplicationHandler for App {
             }
         };
         let attrs = Window::default_attributes()
-            .with_title("Minecraft Beta 1.7.3 (Rust)")
+            .with_title("Minecraft Beta 1.8.1 (Rust)")
             .with_inner_size(winit::dpi::LogicalSize::new(854.0, 480.0));
         let window = Arc::new(el.create_window(attrs).expect("create window"));
         let mut gpu = Gpu::new(

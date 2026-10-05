@@ -1763,7 +1763,12 @@ impl ApplicationHandler for App {
             self.start_world(w);
         } else {
             let mut acts = Vec::new();
-            let menu = gui.main_menu();
+            // A plain launch (no arguments) asks which Minecraft version to play first.
+            let menu: Box<dyn gui::Screen> = if std::env::args().len() == 1 {
+                Box::new(gui::screens::version_select::GuiVersionSelect::new())
+            } else {
+                gui.main_menu()
+            };
             gui.display_gui_screen(Some(menu), &mut acts);
             self.gui = Some(gui);
         }

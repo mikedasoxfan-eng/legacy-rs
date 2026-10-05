@@ -1,5 +1,6 @@
 //! The ported `GuiScreen` subclasses.
 
+pub mod version_select;
 pub mod achievements;
 pub mod conflict;
 pub mod container;
