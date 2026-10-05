@@ -206,6 +206,8 @@ Getting there needed a few fixes:
 reads them from your own installation:
 
 - `%APPDATA%\.minecraft\versions\b1.7.3\b1.7.3.jar`: textures, fonts, language files
+- `%APPDATA%\.minecraft\versions\b1.8.1\b1.8.1.jar`: the same for Beta 1.8.1 (install
+  "old_beta b1.8.1" in the launcher and play it once)
 - `%APPDATA%\.minecraft\resources\`: sounds and music
 
 The verification harness additionally needs the original client decompiled with
@@ -224,8 +226,11 @@ cargo build --release -p client
 target\release\beta.exe
 ```
 
-or double-click `play.bat`. `beta --help` lists the command-line options. The game starts at the title screen: **Singleplayer → Create New
-World**, exactly like the original. Worlds go to `saves\` next to the exe.
+or double-click `play.bat`. `beta --help` lists the command-line options. Started without
+arguments, beta-rs first asks which version to play: **Beta 1.7.3** or **Beta 1.8.1** (the
+Adventure Update; `beta.exe --mc b1.8.1` skips the question). The game then starts at the title
+screen: **Singleplayer → Create New World**, exactly like the original. Beta 1.7.3 worlds go to
+`saves\` next to the exe; Beta 1.8.1 keeps its own saves, options and statistics in `b1.8.1\`.
 
 ### Controls
 
