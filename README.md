@@ -8,9 +8,9 @@
 [![Rust](https://img.shields.io/badge/built_with-Rust-b7410e?style=flat&logo=rust&logoColor=white&labelColor=3b3b3b)](#)
 [![wgpu](https://img.shields.io/badge/graphics-wgpu-4b6ec2?style=flat&labelColor=3b3b3b)](#)
 [![oracle](https://img.shields.io/badge/oracle-ALL_CASES_EXACT-2ea44f?style=flat&logo=openjdk&logoColor=white&labelColor=3b3b3b)](#how-exact-is-exact)
-[![GUI](https://img.shields.io/badge/GUI_pixel_diff-67_exact,_8_within_1_shade-2ea44f?style=flat&labelColor=3b3b3b)](#the-gui-pixel-diff)
+[![GUI](https://img.shields.io/badge/GUI_pixel_diff-68_exact,_8_within_1_shade-2ea44f?style=flat&labelColor=3b3b3b)](#the-gui-pixel-diff)
 
-[![progress](https://img.shields.io/badge/goal_progress-95%25-8fbc3a?style=flat&labelColor=3b3b3b)](#progress)
+[![progress](https://img.shields.io/badge/goal_progress-98%25-8fbc3a?style=flat&labelColor=3b3b3b)](#progress)
 [![verified sections](https://img.shields.io/badge/verified_sections-158-2ea44f?style=flat&labelColor=3b3b3b)](#what-is-checked)
 [![Rust lines](https://img.shields.io/badge/Rust-56k_lines-b7410e?style=flat&labelColor=3b3b3b)](#layout)
 [![Mojang assets](https://img.shields.io/badge/Mojang_assets_bundled-0_bytes-2ea44f?style=flat&labelColor=3b3b3b)](#you-need-your-own-copy)
@@ -24,7 +24,7 @@
 ## Progress
 
 ```
-Overall  ██████████████████████████████████████░░  95 %
+Overall  ███████████████████████████████████████▏  98 %
 ```
 
 Weighted by how much of the game each part is. Only merged work counts; parts other agents
@@ -35,18 +35,18 @@ against the original game code, not just "looks right".
 |---|---:|---:|---|
 | World generation (Overworld + Nether: terrain, caves, ores, lakes, dungeons, trees, plants, snow) | 12 | 100 % | ✅ verified |
 | Lighting, chunk loading/unloading, saving (McRegion, level.dat) | 8 | 100 % | ✅ verified |
-| World ticking (block ticks, random ticks, fire, liquids, growth, weather, lightning) | 8 | 95 % | ✅ verified |
-| Mobs and other entities (physics, AI, spawning, items, arrows, TNT, NBT) | 12 | 90 % | ✅ verified (minecarts and boats can be placed but not ridden yet) |
-| The player (movement, health, mining, placing, items, beds, portals, respawn, stats) | 10 | 95 % | ✅ verified |
+| World ticking (block ticks, random ticks, fire, liquids, growth, weather, lightning) | 8 | 100 % | ✅ verified |
+| Mobs and other entities (physics, AI, spawning, items, arrows, TNT, minecarts, boats, paintings, NBT) | 12 | 100 % | ✅ verified |
+| The player (movement, health, mining, placing, items, beds, portals, respawn, riding, fishing, stats) | 10 | 100 % | ✅ verified |
 | Block rendering (all 18 render types, smooth lighting, Fancy/Fast) | 8 | 100 % | ✅ verified |
-| Mob/item/effect rendering, sky, clouds, rain, snow, fog | 8 | 95 % | ✅ verified |
-| Menus, HUD, achievements, death screen, statistics screen | 7 | 97 % | ✅ pixel-exact; stats counted and saved exactly (chat box next) |
+| Mob/item/effect rendering, vehicles, signs, paintings, maps, sky, clouds, rain, snow, fog | 8 | 95 % | ✅ verified (3D anaglyph mode being ported) |
+| Menus, HUD, achievements, death screen, statistics, sign editing | 7 | 97 % | ✅ pixel-exact (chat box and texture-pack loading being ported) |
 | Redstone (wire, torches, repeaters, levers, buttons, plates, doors, rails, note blocks, pistons) | 6 | 100 % | ✅ verified |
-| Inventory, crafting, chests, furnaces, dispensers | 7 | 95 % | ✅ verified (65,706 clicks, 151 recipes, 35 screens pixel-exact) |
+| Inventory, crafting, chests, furnaces, dispensers, chest carts | 7 | 100 % | ✅ verified (65,706 clicks, 151 recipes, 35 screens pixel-exact) |
 | First-person view (hand, held item, block outline, cracks, bobbing, third person) | 5 | 100 % | ✅ verified (8.1 million values, 0 differences) |
 | Particles and world sounds | 5 | 90 % | ✅ verified (every particle type; sounds in the original order) |
 | Tile entities (spawners, furnaces, dispensers, note blocks, pistons, jukeboxes) | 2 | 100 % | ✅ lifecycle, ticking and saving verified |
-| Vehicles, signs, paintings, maps, fishing, records, statistics | 2 | 30 % | 🟡 records and statistics done; vehicles and signs being ported |
+| Vehicles, signs, paintings, maps, fishing, records, statistics | 2 | 100 % | ✅ verified |
 
 ---
 
@@ -117,6 +117,8 @@ Details that turned out to matter:
 | Respawn | At spawn, at a bed, with the bed gone |
 | Statistics file | The port's stats file read by the original and back, checksum rejection, unknown stat ids |
 | Old worlds | An Alpha-format copy of a world converted by the original and by the port: every chunk and progress step identical |
+| Vehicles | Minecarts (all three kinds) and boats: 8 replays on every rail shape, boosters, trains, crashes and riding; 1.58 million renderer values |
+| Signs, paintings, maps, fishing | Placement, supports, editing (9 pixel-exact screens), painting choice on varied walls, map colours at all scales, casting and catching; their renderers vertex-exact |
 | Statistics | Every `addStat` call (about 13,000) in all 24 player replays, in order, with amounts |
 | Redstone | Scripted circuits, rail layouts, all piston facings and push lengths, sticky pulls, quick pulses, clocks, pushing entities, note instruments and pitches, every tick |
 | Moving pistons | 24,840 original-bytecode renderer cases: partial ticks, all facings, carried blocks, Fancy/Fast, smooth lighting |
@@ -130,12 +132,12 @@ Details that turned out to matter:
 ### The GUI pixel diff
 
 `tools/verify_gui.sh` opens the **real** b1.7.3 client for a few seconds, drives it through
-75 scenes (title screen, options, video settings, controls, world list, create and rename
+76 scenes (title screen, options, video settings, controls, world list, create and rename
 world, texture packs, loading screens, in-game HUD states, achievements, death screen, the
 statistics screen with sorting, tooltips and scrolling, and 35
 inventory, crafting, chest, furnace and dispenser screens with items, tooltips and a held
 cursor stack), and takes screenshots. Then it renders the same scenes with the port and diffs
-them pixel for pixel. 67 are identical; 8 (3D block icons under the achievement and
+them pixel for pixel. 68 are identical; 8 (3D block icons under the achievement and
 statistics screens' lighting) differ by one colour level on at most a few hundred pixels,
 which is GPU rounding in item lighting.
 
@@ -186,7 +188,7 @@ Same as the original's defaults, and rebindable in Options → Controls:
 | E | Inventory |
 | Q | Drop item |
 | F | Cycle render distance (Shift: backwards) |
-| F1 / F2 / F3 | Hide HUD / screenshot / debug info |
+| F1 / F2 / F3 | Hide HUD / screenshot (saved in `screenshots\`) / debug info and frame graph |
 | F5 / F8 | Third person / smooth camera |
 | Esc | Game menu (pauses and saves) |
 
@@ -289,9 +291,8 @@ Being exact means keeping these too:
 
 ## Not yet
 
-Minecarts and boats (placing them works; riding and physics are being ported), signs,
-paintings, maps and fishing (being ported), custom texture packs, the chat box, and the 3D
-anaglyph mode (being ported).
+Custom texture packs, the chat box and the 3D anaglyph mode are being ported now. Everything
+else in singleplayer is in and checked.
 
 ---
 
