@@ -266,6 +266,10 @@ Being exact means keeping these too:
 
 - `tools/verify.sh quick` runs a fast subset; the full run takes a while. Every change has to end
   with `ALL CASES EXACT`.
+- Signs, paintings, maps and fishing are wired into gameplay, saves and rendering. Their
+  original-bytecode replay and renderer checks run through `tools/verify_decorations.sh`
+  (also included in `verify.sh`); sign editing has strict pixel checks in `verify_gui.sh`.
+  See [decoration verification](crates/worldgen/DECORATIONS.md) for coverage and preserved quirks.
 - `beta --play-script` plus `--no-save --seed` gives repeatable gameplay screenshots without
   anyone at the keyboard.
 - `tools/oracle/make_showcase.py` regenerates the block showcase;
@@ -280,8 +284,8 @@ Being exact means keeping these too:
 ## Not yet
 
 Minecarts and boats (placing them works; riding and physics don't), pistons (being ported),
-signs, paintings, maps, fishing, counting statistics while you play (the screen exists, the
-counters don't move yet), and the 3D anaglyph mode.
+complete gameplay statistics (fishing catches and broken rods now record statistics),
+and the 3D anaglyph mode.
 
 ---
 

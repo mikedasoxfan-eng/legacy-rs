@@ -537,7 +537,10 @@ fn run(opts: WorldOptions, col: Colorizers, mut video: VideoSettings, rx: Receiv
                 .filter(|id| {
                     world.entities.get(id).is_some_and(|e| {
                         let (dx, dy, dz) = (e.pos.x - cam.0, e.pos.y - cam.1, e.pos.z - cam.2);
-                        dx * dx + dy * dy + dz * dz < 128.0 * 128.0
+                        let range = if matches!(e.kind, worldgen::entity::EntityKind::Fish(_)) {
+                            e.bounding_box.average_edge_length() * 4.0 * 64.0
+                        } else {128.0};
+                        dx * dx + dy * dy + dz * dz < range * range
                     })
                 })
                 .collect();

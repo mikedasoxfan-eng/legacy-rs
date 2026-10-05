@@ -46,7 +46,7 @@ public final class DecorationOracle {
         MapData markers=new MapData("map_100");markers.field_28177_e=0;ItemStack held=new ItemStack(358,1,100);p.inventory.mainInventory[0]=held;p.dimension=0;
         SignPlayer second=new SignPlayer((net.minecraft.client.Minecraft)Oracle.allocate(PlayerOracle.HeadlessMinecraft.class),w);second.inventory.armorInventory[0]=new ItemStack(358,1,100);second.setPosition(-63.75,70,63.75);second.dimension=0;second.rotationYaw=179;
         for(int t=0;t<12;t++){p.setPosition(t==6?64.01:-64+t*.25,70,-63.75);p.rotationYaw=-370+t*31.25F;markers.func_28169_a(p,held);markers.func_28169_a(second,held);mapState(o,markers,held);if(t==7)p.isDead=true;if(t==9)second.inventory.armorInventory[0]=null;}p.isDead=false;
-        World created=Oracle.newWorld(0);created.chunkProvider=new EntityOracle.FlatProvider(created);SignPlayer player=new SignPlayer((net.minecraft.client.Minecraft)Oracle.allocate(PlayerOracle.HeadlessMinecraft.class),created);player.setPosition(-13.25,70,19.75);
+        World created=Oracle.newWorld(0);((Map)Oracle.getField(created.field_28108_z,"idCounts")).put("map",Short.valueOf((short)32766));created.chunkProvider=new EntityOracle.FlatProvider(created);SignPlayer player=new SignPlayer((net.minecraft.client.Minecraft)Oracle.allocate(PlayerOracle.HeadlessMinecraft.class),created);player.setPosition(-13.25,70,19.75);
         for(int c=0;c<4;c++){ItemStack stack=new ItemStack(358,1,32767);if(c%2==0)Item.mapItem.onCreated(stack,created,player);else Item.mapItem.func_28012_a(stack,created);mapState(o,(MapData)created.loadItemData(MapData.class,"map_"+stack.getItemDamage()),stack);}
         try(OutputStream f=new FileOutputStream(path)){o.writeTo(f);}System.out.println("maps: palette, 480 terrain/marker frames, NBT sizes/scales and creation");
     }
@@ -71,7 +71,7 @@ public final class DecorationOracle {
     static void fishState(DataOutputStream o,EntityFish f,SignPlayer p,ItemStack rod,World w)throws Exception {
         for(double v:new double[]{f.posX,f.posY,f.posZ,f.prevPosX,f.prevPosY,f.prevPosZ,f.motionX,f.motionY,f.motionZ,f.boundingBox.minX,f.boundingBox.minY,f.boundingBox.minZ,f.boundingBox.maxX,f.boundingBox.maxY,f.boundingBox.maxZ})EntityOracle.d(o,v);
         for(float v:new float[]{f.rotationYaw,f.rotationPitch,f.prevRotationYaw,f.prevRotationPitch,f.fallDistance})EntityOracle.f(o,v);
-        for(int v:new int[]{f.isDead?1:0,f.onGround?1:0,f.isCollidedHorizontally?1:0,f.inWater?1:0,f.ticksExisted,f.shake,EntityOracle.intField(EntityFish.class,"ticksInGround",f),EntityOracle.intField(EntityFish.class,"ticksInAir",f),EntityOracle.intField(EntityFish.class,"ticksCatchable",f),((Boolean)Oracle.getField(f,"inGround"))?1:0,f.bobber==null?0:1,p.fishEntity==null?0:1,rod.getItemDamage(),rod.stackSize,p.caught})EntityOracle.i(o,v);
+        for(int v:new int[]{f.isDead?1:0,f.onGround?1:0,f.isCollidedHorizontally?1:0,f.inWater?1:0,f.ticksExisted,f.shake,EntityOracle.intField(EntityFish.class,"ticksInGround",f),EntityOracle.intField(EntityFish.class,"ticksInAir",f),EntityOracle.intField(EntityFish.class,"ticksCatchable",f),((Boolean)Oracle.getField(f,"inGround"))?1:0,f.bobber==null?0:1,p.fishEntity==null?0:1,rod.getItemDamage(),rod.stackSize,p.caught,p.broken})EntityOracle.i(o,v);
         EntityOracle.l(o,EntityOracle.rngState(f.rand));EntityOracle.l(o,EntityOracle.rngState(w.rand));EntityOracle.l(o,EntityOracle.rngState(EntityOracle.mathRandom()));
         ArrayList<Entity> other=new ArrayList<Entity>();for(Object value:w.loadedEntityList)if(value!=p&&value!=f)other.add((Entity)value);EntityOracle.i(o,other.size());
         for(Entity e:other){EntityOracle.i(o,e instanceof EntityItem?((EntityItem)e).item.itemID:0);for(double v:new double[]{e.posX,e.posY,e.posZ,e.motionX,e.motionY,e.motionZ})EntityOracle.d(o,v);EntityOracle.l(o,EntityOracle.rngState(e.rand));}
@@ -97,6 +97,9 @@ public final class DecorationOracle {
                 if(scene==4&&tick==10&&f.bobber!=null)f.bobber.setEntityDead();
                 if(!f.isDead)f.onUpdate();
                 if(!f.isDead&&((EntityOracle.intField(EntityFish.class,"ticksCatchable",f)>0&&tick>20)||(scene==3&&f.bobber!=null)||(scene==9&&tick==10)))Item.fishingRod.onItemRightClick(rod,w,p);
+                if(scene==5&&tick==1200){w.loadedEntityList.remove(p);w.updateEntities();}
+                if(scene==5&&tick==1250)Item.fishingRod.onItemRightClick(rod,w,p);
+                if(scene==5&&tick==1251){Item.fishingRod.onItemRightClick(rod,w,p);f=p.fishEntity;}
                 fishState(o,f,p,rod,w);
             }
         }}System.out.println("fishing: 30 casts, 48000 ticks, rain/bites/catches/mobs/ground/line breaks/interpolation/rod durability/events");
@@ -157,9 +160,9 @@ public final class DecorationOracle {
         try(OutputStream f=new FileOutputStream(path)){o.writeTo(f);}System.out.println("painting renderers: 300 cases, every art and direction, varied lighting");
     }
     static class SignPlayer extends EntityPlayerSP {
-        int opened,caught;
+        int opened,caught,broken;
         SignPlayer(net.minecraft.client.Minecraft mc,World w){super(mc,w,new Session("Player",""),0);}
-        public void addStat(StatBase s,int count){if(s==StatList.fishCaughtStat)caught+=count;}
+        public void addStat(StatBase s,int count){if(s==StatList.fishCaughtStat)caught+=count;if(s==StatList.field_25170_B[346])broken+=count;}
         public void displayGUIEditSign(TileEntitySign s){opened++;}
     }
     static void text(Oracle.DataOut o,String s)throws Exception {byte[] b=s.getBytes("UTF-8");o.i32(b.length);o.bytes(b);}

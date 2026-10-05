@@ -19,7 +19,7 @@ for name in paths:
     destination = directory / name
     destination.parent.mkdir(parents=True, exist_ok=True)
     shutil.copyfile(root / name, destination)
-(directory / "files.txt").write_text("\n".join(paths) + "\n", encoding="utf-8")
+(directory / "files.txt").write_text("\n".join(paths) + "\n", encoding="utf-8", newline="\n")
 script = root / "target" / "commit-signs.sh"
 if not script.exists():
     script.write_text('''#!/usr/bin/env bash
@@ -28,7 +28,7 @@ cd "$(dirname "$0")/.."
 export GIT_AUTHOR_NAME=logiu GIT_COMMITTER_NAME=logiu
 export GIT_AUTHOR_EMAIL=224190594+mikedasoxfan-eng@users.noreply.github.com
 export GIT_COMMITTER_EMAIL=224190594+mikedasoxfan-eng@users.noreply.github.com
-''', encoding="utf-8")
+''', encoding="utf-8", newline="\n")
 with script.open("a", encoding="utf-8", newline="\n") as f:
     f.write(f'''while IFS= read -r file; do
   blob=$(git hash-object -w --path="$file" "target/decoration-stages/{stage}/$file")
