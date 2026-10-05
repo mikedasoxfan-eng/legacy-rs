@@ -83,6 +83,10 @@ pub fn run(script: &str, out_dir: &std::path::Path) -> Result<(), String> {
     let (mut mx, mut my) = (-1, -1);
     let mut loading: Option<LoadingScreen> = None;
     let mut mojang = false;
+    // GuiShot keeps one EntityPlayerSP and one world for the whole script: hud fields that a
+    // command does not set keep their previous values, and `water` places a block at the eye.
+    let mut hud_player: Option<super::ingame::HudPlayer> = None;
+    let mut hud_water: std::collections::HashSet<(i32, i32, i32)> = Default::default();
     let mut toast_mode = false;
     let mut hud: Option<super::ingame::HudPlayer> = None;
     let mut ingame = super::ingame::GuiIngame::new();
@@ -219,7 +223,24 @@ pub fn run(script: &str, out_dir: &std::path::Path) -> Result<(), String> {
                 let mut acts = Vec::new();
                 sys.display_gui_screen(Some(s), &mut acts);
             }
-            "world" => sys.ui.world_open = true,
+            // GuiShot's world command reopens the same save with the same EntityPlayerSP, so hud
+            // state and placed water survive it; it installs a new PlayerControllerSP (survival)
+            // and changeWorld calls preparePlayerToSpawn (health 20).
+            "world" => {
+                sys.ui.world_open = true;
+                if let Some(p) = &mut hud_player {
+                    p.survival = true;
+                    p.health = 20;
+                }
+            }
+            // GuiShot quits (changeWorld1(null) drops EntityPlayerSP) and deletes its scratch
+            // world, so the next world starts with a new player and no placed water; the port's
+            // world command never writes a save.
+            "dropworld" => {
+                sys.ui.world_open = false;
+                hud_player = None;
+                hud_water.clear();
+            }
             "statsreset" => sys.ui.stats = Default::default(),
             "stat" => {
                 let id: i32 = arg(0).parse().map_err(|_| "stat id")?;
@@ -290,13 +311,13 @@ pub fn run(script: &str, out_dir: &std::path::Path) -> Result<(), String> {
             "hud" => {
                 mojang = false;
                 loading = None;
-                let mut p = super::ingame::HudPlayer::default();
+                let mut p = hud_player.clone().unwrap_or_default();
+                let mut water: Option<bool> = None;
                 for kv in rest.split_whitespace() {
                     let (k, v) = kv.split_once('=').ok_or("hud key=value")?;
                     let i = || v.parse::<i32>().map_err(|_| format!("hud {k}"));
                     match k {
                         "health" => p.health = i()?,
-                        "water" => p.head_in_water = i()? != 0,
                         "food" => p.food_level = i()?,
                         "saturation" => p.food_saturation = v.parse().map_err(|_| "hud saturation")?,
                         "xp" => p.xp_points = i()?,
@@ -304,7 +325,7 @@ pub fn run(script: &str, out_dir: &std::path::Path) -> Result<(), String> {
                         "seed" => p.seed = v.parse().map_err(|_| "hud seed")?,
                         "armor" => p.armor = i()?,
                         "air" => p.air = i()?,
-                        "water" => p.head_in_water = i()? != 0,
+                        "water" => water = Some(i()? != 0),
                         "creative" => p.survival = i()? == 0,
                         "poison" => p.poison = i()? != 0,
                         "hunger" => p.hunger = i()? != 0,
@@ -322,6 +343,15 @@ pub fn run(script: &str, out_dir: &std::path::Path) -> Result<(), String> {
                         _ => return Err(format!("unknown hud field {k}")),
                     }
                 }
+                // EntityPlayer.getEyeHeight is 0.12; the block at the eye decides isInsideOfMaterial.
+                let eye = (p.pos[0].floor() as i32, (p.pos[1] + 0.12f32 as f64).floor() as i32, p.pos[2].floor() as i32);
+                match water {
+                    Some(true) => { hud_water.insert(eye); }
+                    Some(false) => { hud_water.remove(&eye); }
+                    None => {}
+                }
+                p.head_in_water = hud_water.contains(&eye);
+                hud_player = Some(p.clone());
                 hud = Some(p);
             }
             "clear" => clear_level = rest.parse::<f64>().map_err(|_| "clear")? / 255.0,
