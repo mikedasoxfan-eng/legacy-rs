@@ -508,6 +508,11 @@ bash tools/verify_player_gui10_181.sh --built || fail=1
 bash "$root/tools/verify_entities11_181.sh" --built || fail=1
 # --- end entities ---
 
+# --- player-gui (b1.8.1) ---
+# Round 11: StatFileWriter constructor/UTF16/charset and RenderEngine cache/failure/map/buffer.
+bash tools/verify_player_gui11_181.sh --built || fail=1
+# --- end player-gui ---
+
 pflush
 [ $fail -eq 0 ] && echo "ALL CASES EXACT" || echo "SOME CASES DIFFER"
 exit $fail

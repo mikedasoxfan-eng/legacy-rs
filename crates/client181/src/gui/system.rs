@@ -69,12 +69,14 @@ impl GuiSystem {
         let mut renderer = GuiRenderer::new(device, queue, format, samples);
         let mut textures = HashMap::new();
         for (name, img) in &res.images {
-            let (_, blur, clamp) = super::texture_options(name);
-            let id = renderer.add_texture_with(device, queue, img, blur, clamp);
+            let id = renderer.named_texture(device, queue, name, img, |_, _, _| Ok(Some(Image {
+                width: img.width, height: img.height, rgba: img.rgba.clone()
+            }))).unwrap_or_else(|e| panic!("{e}"));
             textures.insert(name.clone(), id);
         }
         let empty = Image { width: 256, height: 256, rgba: vec![0; 256 * 256 * 4] };
         textures.insert("panorama_snapshot".into(), renderer.add_texture_with(device, queue, &empty, true, false));
+        renderer.engine.anaglyph = settings.anaglyph;
         let font_tex = textures["font/default.png"];
         let font = FontRenderer::new_with_anaglyph(&res.images["font/default.png"], font_tex, &res.font_txt, settings.anaglyph);
         let packs = crate::texture_packs::TexturePackList::new(saves_dir.parent().unwrap_or(std::path::Path::new(".")), &settings.skin);
@@ -130,10 +132,12 @@ impl GuiSystem {
         self.ui.pack_icons.clear();
         for (i, p) in self.ui.packs.available.iter().enumerate() {
             let id = if let Some(img) = &p.thumbnail {
-                let mut img = Image { width: img.width, height: img.height, rgba: img.rgba.clone() };
-                if self.ui.settings.anaglyph { crate::texture_packs::anaglyph(&mut img.rgba); }
+                let img = Image { width: img.width, height: img.height, rgba: img.rgba.clone() };
                 if let Some(&id) = self.icon_slots.get(i) {
-                    self.renderer.replace_texture(device, queue, id, &img, false, false);
+                    self.renderer.engine.update_dynamic(id as i32, &img);
+                    let mut uploaded = Image { width: img.width, height: img.height, rgba: img.rgba.clone() };
+                    if self.ui.settings.anaglyph { crate::texture_packs::anaglyph(&mut uploaded.rgba); }
+                    self.renderer.replace_texture(device, queue, id, &uploaded, false, false);
                     id
                 } else {
                     let id = self.renderer.add_texture(device, queue, &img);
@@ -150,15 +154,16 @@ impl GuiSystem {
     pub fn refresh_textures(&mut self, device: &wgpu::Device, queue: &wgpu::Queue) -> Result<(), String> {
         self.texture_anaglyph = self.ui.settings.anaglyph;
         let mut jar = crate::assets::Jar::with_pack(self.ui.packs.path())?;
-        for (name, id) in &self.ui.textures {
-            if name.starts_with("panorama_") { continue; }
-            // FontRenderer allocates its image directly from the jar, so pack fonts are ignored.
-            let (path, blur, clamp) = super::texture_options(name);
-            let image = if path == "font/default.png" { crate::assets::Jar::open()?.image(path) } else { jar.image(path) };
-            let mut img = match image { Ok(img) => img, Err(e) => { eprintln!("refreshTextures {path}: {e}"); continue; } };
-            if self.ui.settings.anaglyph { crate::texture_packs::anaglyph(&mut img.rgba); }
-            self.renderer.replace_texture(device, queue, *id, &img, blur, clamp);
-        }
+        // The fallback bitmap is a resource-decoder input to the engine. Refresh
+        // has no missing-stream fallback; this argument is not consumed here.
+        let missing = Image { width: 64, height: 64, rgba: vec![255;64*64*4] };
+        self.renderer.engine.anaglyph = self.ui.settings.anaglyph;
+        let mut font_jar = crate::assets::Jar::open()?;
+        self.renderer.refresh_engine(device, queue, &missing, |path, _, _| {
+            let path = path.trim_start_matches('/');
+            let image = if path == "font/default.png" { font_jar.image(path) } else { jar.image(path) };
+            image.map(Some).map_err(|_| "IOException")
+        }).map_err(str::to_string)?;
         self.sync_pack_icons(device, queue);
         Ok(())
     }

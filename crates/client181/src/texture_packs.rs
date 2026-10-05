@@ -131,7 +131,7 @@ pub fn anaglyph(rgba: &mut [u8]) {
     }
 }
 
-fn windows_1252(bytes: &[u8]) -> String {
+pub(crate) fn windows_1252(bytes: &[u8]) -> String {
     const HIGH: [char; 32] = [
         '\u{20ac}', '\u{fffd}', '\u{201a}', '\u{192}', '\u{201e}', '\u{2026}', '\u{2020}', '\u{2021}', '\u{2c6}',
         '\u{2030}', '\u{160}', '\u{2039}', '\u{152}', '\u{fffd}', '\u{17d}', '\u{fffd}', '\u{fffd}', '\u{2018}',
