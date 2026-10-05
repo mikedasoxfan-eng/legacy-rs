@@ -17,6 +17,8 @@ use std::path::{Path, PathBuf};
 #[derive(Clone, Debug)]
 pub struct LevelInfo {
     pub seed: i64,
+    pub game_type: i32,
+    pub map_features: bool,
     pub spawn: (i32, i32, i32),
     pub time: i64,
     pub size_on_disk: i64,
@@ -43,7 +45,8 @@ impl LevelInfo {
     pub fn new(seed: i64, name: &str) -> Self {
         LevelInfo {
             seed,
-            spawn: (0, 0, 0),
+            game_type: 0,
+            map_features: true,            spawn: (0, 0, 0),
             time: 0,
             size_on_disk: 0,
             last_played: 0,
@@ -57,9 +60,11 @@ impl LevelInfo {
         }
     }
 
-    fn from_nbt(c: &Compound) -> Self {
+    pub fn from_nbt(c: &Compound) -> Self {
         LevelInfo {
             seed: c.long("RandomSeed"),
+            game_type: c.int("GameType"),
+            map_features: !c.has("MapFeatures") || c.boolean("MapFeatures"),
             spawn: (c.int("SpawnX"), c.int("SpawnY"), c.int("SpawnZ")),
             time: c.long("Time"),
             size_on_disk: c.long("SizeOnDisk"),
@@ -75,9 +80,11 @@ impl LevelInfo {
     }
 
     /// `updateTagCompound`
-    fn to_nbt(&self) -> Compound {
+    pub fn to_nbt(&self) -> Compound {
         let mut c = Compound::new();
         c.put("RandomSeed", Tag::Long(self.seed));
+        c.put("GameType", Tag::Int(self.game_type));
+        c.put("MapFeatures", Tag::Byte(self.map_features as i8));
         c.put("SpawnX", Tag::Int(self.spawn.0));
         c.put("SpawnY", Tag::Int(self.spawn.1));
         c.put("SpawnZ", Tag::Int(self.spawn.2));
@@ -572,7 +579,7 @@ pub fn chunk_from_nbt_for_dimension(
                 for it in t.list("Items") {
                     let Tag::Compound(it) = it else { continue };
                     let slot = (it.byte("Slot") as u8) as usize;
-                    if slot < 27 {
+                    if slot < 27 && crate::entity::player::registry::item(it.short("id") as i32).is_some() {
                         slots[slot] = Some(ItemStack {
                             id: it.short("id"),
                             count: it.byte("Count") as u8,

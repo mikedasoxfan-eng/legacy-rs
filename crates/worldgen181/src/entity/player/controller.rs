@@ -119,7 +119,7 @@ impl PlayerControllerSP {
             let cost = if matches!(s.id, 267 | 268 | 272 | 276 | 283) {
                 2
             } else if matches!(s.id,256..=258|269..=271|273..=275|277..=279|284..=286)
-                || (s.id == 359 && matches!(id, 18 | 30))
+                || (s.id == 359 && matches!(id, 18 | 30 | 31 | 106))
             {
                 1
             } else {
@@ -193,8 +193,8 @@ impl Entity {
         if id != 78 {
             self.add_stat(super::stat::mine(id as i32), 1);
         }
-        if id == 18 && self.held_item().is_some_and(|s| s.id == 359) {
-            super::block_hooks::drop_stack(w, x, y, z, ItemStack::new(18, 1, meta & 3));
+        if matches!(id,18|106) && self.held_item().is_some_and(|s| s.id == 359) {
+            super::block_hooks::drop_stack(w, x, y, z, ItemStack::new(id as i32, 1, if id==18 {meta & 3}else{meta}));
         } else if id == 78 {
             super::block_hooks::drop_stack(w, x, y, z, ItemStack::new(332, 1, 0));
             self.add_stat(super::stat::mine(78), 1);

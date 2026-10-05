@@ -53,6 +53,8 @@ impl ItemStack {
         n.put("Damage", Tag::Short(self.damage as i16));
         n
     }
+    /// ItemStack.func_35864_a: unregistered positive IDs read as null.
+    pub fn try_from_nbt181(n:&Compound)->Option<Self>{let stack=Self::from_nbt(n);super::registry::item(stack.id).map(|_|stack)}
     pub fn from_nbt(n: &Compound) -> Self {
         Self::new(
             n.short("id") as i32,

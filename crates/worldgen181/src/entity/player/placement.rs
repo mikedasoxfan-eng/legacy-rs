@@ -24,13 +24,16 @@ pub fn can_place(w: &mut World, id: u8, x: i32, y: i32, z: i32, side: i32) -> bo
     {
         return false;
     }
-    if !matches!(existing, 0 | 8..=11 | 51 | 78) {
+    if !matches!(existing, 0 | 8..=11 | 51 | 78 | VINE) {
         return false;
     }
     can_place_at(w, id, x, y, z, side)
 }
 pub fn can_place_at(w: &mut World, id: u8, x: i32, y: i32, z: i32, side: i32) -> bool {
     match id {
+        VINE => crate::world::plants181::vine_can_place(w,x,y,z,side),
+        FENCE_GATE => mat(w.get_block_material(x,y-1,z)).is_solid,
+        PUMPKIN_STEM | MELON_STEM => w.get_block_id(x,y-1,z)==TILLED_FIELD,
         34 | 36 => false,
         50 | 75 | 76 => {
             w.is_block_normal_cube(x - 1, y, z)
@@ -108,7 +111,7 @@ impl Entity {
     ) -> bool {
         if w.get_block_id(x, y, z) == 78 {
             side = 0;
-        } else {
+        } else if w.get_block_id(x,y,z) != VINE {
             (x, y, z) = offset(x, y, z, side);
         }
         if stack.count == 0 {
@@ -126,12 +129,12 @@ impl Entity {
         }
         let meta = match id {
             29 | 33 => 7,
-            6 | 17 | 35 | 44 => stack.damage,
+            6 | 17 | 35 | 44 | STONE_BRICK | VINE => stack.damage,
             18 => stack.damage | 4,
             _ => 0,
         };
         if w.set_block_and_metadata_with_notify(x, y, z, id, meta) {
-            self.block_placed(w, id, x, y, z, side);
+            if w.get_block_id(x,y,z)==id {self.block_placed(w, id, x, y, z, side);}
             let (name, volume, pitch) = crate::world::events::step_sound(id);
             w.play_sound(
                 name,
@@ -149,6 +152,7 @@ impl Entity {
     }
     pub fn block_placed(&self, w: &mut World, id: u8, x: i32, y: i32, z: i32, side: i32) {
         let quarter = floor((self.yaw * 4.0 / 360.0) as f64 + 0.5) & 3;
+        if id==54 {w.chest_placed181(x,y,z,self.yaw);return;}
         let meta = match id {
             29 | 33 => {
                 let eye=self.pos.y+1.82-self.y_offset as f64;
@@ -157,7 +161,7 @@ impl Entity {
                 } else {None};
                 Some(vertical.unwrap_or([2,5,3,4][quarter as usize]))
             }
-            53 | 67 => Some([2, 1, 3, 0][quarter as usize]),
+            53 | 67 | STAIRS_BRICK | STAIRS_STONE_BRICK => Some([2, 1, 3, 0][quarter as usize]),
             61 | 62 | 23 => Some([2, 5, 3, 4][quarter as usize]),
             86 | 91 => Some(floor((self.yaw * 4.0 / 360.0) as f64 + 2.5) & 3),
             96 => Some(match side {
@@ -166,6 +170,8 @@ impl Entity {
                 5 => 3,
                 _ => 0,
             }),
+            FENCE_GATE => Some(quarter),
+            VINE => match side {2=>Some(1),3=>Some(4),4=>Some(8),5=>Some(2),_=>None},
             93 | 94 => Some((quarter + 2) % 4),
             65 => {
                 let mut meta = w.get_block_metadata(x, y, z);

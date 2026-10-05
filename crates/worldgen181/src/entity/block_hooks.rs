@@ -174,7 +174,7 @@ impl World {
                 let meta = self.get_block_metadata(x, y, z);
                 if meta > 0 {
                     self.set_block_metadata_with_notify(x, y, z, meta - 1);
-                } else if self.get_block_id(x, y + 1, z) != 59 {
+                } else if !matches!(self.get_block_id(x, y + 1, z), 59 | PUMPKIN_STEM | MELON_STEM) {
                     self.set_block_with_notify(x, y, z, DIRT);
                 }
             }

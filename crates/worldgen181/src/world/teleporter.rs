@@ -153,7 +153,7 @@ impl World {
                     'column2: while y >= 0 {
                         if self.is_air_block(x, y, z) {
                             // No `y > 0` guard here, as in vanilla.
-                            while self.is_air_block(x, y - 1, z) {
+                            while y > 0 && self.is_air_block(x, y - 1, z) {
                                 y -= 1;
                             }
                             for o in start..start + 2 {

@@ -8,6 +8,7 @@ pub struct ContainerSession {
     pub next_window: i32,
 }
 impl World {
+    fn chest_container_use181(&mut self,c:&Container,opening:bool){if matches!(c.kind,ContainerKind::Chest{..}){for &(x,y,z) in &c.positions{self.chest_use181(x,y,z,opening);}}}
     pub fn container_command(
         &mut self,
         player: i32,
@@ -21,6 +22,7 @@ impl World {
         match command {
             ContainerCommand::OpenInventory | ContainerCommand::OpenBlock { .. } | ContainerCommand::OpenVehicle { .. } => {
                 if let Some(mut old) = session.active.take() {
+                    self.chest_container_use181(&old,false);
                     old.close(p, false);
                     self.deliver_container_events(&mut entity, &mut old);
                 }
@@ -56,6 +58,7 @@ impl World {
                             "openInventory",
                         )));
                 }
+                if let Some(c)=&container{self.chest_container_use181(c,true);}
                 session.active = container;
             }
             ContainerCommand::Click {
@@ -76,6 +79,7 @@ impl World {
             ContainerCommand::Close { window } => {
                 if session.active.as_ref().is_some_and(|c| c.window == window) {
                     let mut c = session.active.take().unwrap();
+                    self.chest_container_use181(&c,false);
                     c.close(p, false);
                     self.deliver_container_events(&mut entity, &mut c);
                 }
@@ -142,6 +146,7 @@ impl World {
         });
         if !usable {
             if let Some(mut c) = session.active.take() {
+                self.chest_container_use181(&c,false);
                 c.close(&mut e.player_state_mut().unwrap().inventory, false);
                 let window = c.window;
                 self.deliver_container_events(e, &mut c);
