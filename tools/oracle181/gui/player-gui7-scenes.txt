@@ -1,0 +1,79 @@
+# --- player-gui (b1.8.1), round 7: original entity brightness ---
+world 42
+clear 128
+mouse -1 -1
+lightmap 2
+open inventory
+previewlight 0
+pose 27 0.0 0.0 0.0 off off 5
+shot b181_previewlight0
+open inventory
+previewlight 1
+pose 27 0.0 0.0 0.0 off off 5
+shot b181_previewlight1
+open inventory
+previewlight 2
+pose 27 0.0 0.0 0.0 off off 5
+shot b181_previewlight2
+open inventory
+previewlight 3
+pose 27 0.0 0.0 0.0 off off 5
+shot b181_previewlight3
+open inventory
+previewlight 4
+pose 27 0.0 0.0 0.0 off off 5
+shot b181_previewlight4
+open inventory
+previewlight 5
+pose 27 0.0 0.0 0.0 off off 5
+shot b181_previewlight5
+open inventory
+previewlight 6
+pose 27 0.0 0.0 0.0 off off 5
+shot b181_previewlight6
+open inventory
+previewlight 7
+pose 27 0.0 0.0 0.0 off off 5
+shot b181_previewlight7
+open inventory
+previewlight 8
+pose 27 0.0 0.0 0.0 off off 5
+shot b181_previewlight8
+open inventory
+previewlight 9
+pose 27 0.0 0.0 0.0 off off 5
+shot b181_previewlight9
+open inventory
+previewlight 10
+pose 27 0.0 0.0 0.0 off off 5
+shot b181_previewlight10
+open inventory
+previewlight 11
+pose 27 0.0 0.0 0.0 off off 5
+shot b181_previewlight11
+open inventory
+previewlight 12
+pose 27 0.0 0.0 0.0 off off 5
+shot b181_previewlight12
+open inventory
+previewlight 13
+pose 27 0.0 0.0 0.0 off off 5
+shot b181_previewlight13
+open inventory
+previewlight 14
+pose 27 0.0 0.0 0.0 off off 5
+shot b181_previewlight14
+open inventory
+previewlight 15
+pose 27 0.0 0.0 0.0 off off 5
+shot b181_previewlight15
+open inventory
+stack 36 264 37 0
+cursor 35 17 14
+inventorymode creative
+update
+shot b181_inventory_to_creative
+inventorymode survival
+update
+shot b181_creative_to_inventory
+# --- end player-gui ---

@@ -102,6 +102,9 @@ pub fn run(script: &str, out_dir: &std::path::Path) -> Result<(), String> {
         let arg = |i: usize| rest.split_whitespace().nth(i).unwrap_or("").to_string();
         match cmd {
             "lightmap" => {lightmap_pattern=Some(rest.parse().map_err(|_| "lightmap pattern")?);}
+            "inventorymode" => {
+                sys.ui.container_snapshot.as_mut().ok_or("inventorymode requires container")?.creative = rest == "creative";
+            }
             "saves" => {
                 // Relative to the script's folder.
                 let base = std::path::Path::new(script)
@@ -271,7 +274,15 @@ pub fn run(script: &str, out_dir: &std::path::Path) -> Result<(), String> {
                     } else {
                         arg(6).parse().map_err(|_| "pose hurt")?
                     },
+                    brightness: preview.brightness,
+                    death_time: if arg(7).is_empty() { 0 } else { arg(7).parse().map_err(|_| "pose death")? },
                 };
+            }
+            "previewlight" => {
+                let level: usize = rest.parse().map_err(|_| "previewlight level")?;
+                if level > 15 { return Err("previewlight level out of range".into()); }
+                let f = 1.0f32 - level as f32 / 15.0;
+                preview.brightness = (1.0 - f) / (f * 3.0 + 1.0);
             }
             "screenstate" => {
                 if sys.screen.is_some() != (rest == "open") { return Err(format!("screen state differs: {rest}")); }
@@ -373,6 +384,12 @@ pub fn run(script: &str, out_dir: &std::path::Path) -> Result<(), String> {
                 };
                 for _ in 0..n {
                     sys.update_screen();
+                    if sys.ui.actions.iter().any(|a| matches!(a,super::Action::RedirectInventory)) {
+                        sys.process_actions();
+                        if let Some(s)=sys.ui.container_snapshot.as_ref() {
+                            container=Some((worldgen::container::Container::new(s.kind,s.window),s.player_inventory.clone()));
+                        }
+                    }
                 }
             }
             "shot" => {

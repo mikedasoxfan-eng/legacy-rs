@@ -67,7 +67,13 @@ impl ItemStack {
         n
     }
     /// ItemStack.func_35864_a: unregistered positive IDs read as null.
-    pub fn try_from_nbt181(n:&Compound)->Option<Self>{let stack=Self::from_nbt(n);super::registry::item(stack.id).map(|_|stack)}
+    pub fn try_from_nbt181(n:&Compound)->Option<Self>{
+        let stack=Self::from_nbt(n);
+        // ItemStack.getItem indexes the original 32,000-entry array before
+        // deciding whether the entry is registered. Even ignored slots fail here.
+        assert!((0..32000).contains(&stack.id), "Item.itemsList index out of bounds");
+        super::registry::item(stack.id).map(|_|stack)
+    }
     pub fn from_nbt(n: &Compound) -> Self {
         Self::new(
             n.short("id") as i32,

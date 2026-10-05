@@ -1,0 +1,12 @@
+# InventoryPlayer b1.8.1 delta audit
+
+The full class was compared against b173 (target/player-gui7-inventory.diff). Its vanilla delta consists of the following four changes; the remaining methods keep the existing implementation.
+
+| Change | Port and original-bytecode evidence |
+| --- | --- |
+| New func_35157_d membership query | InventoryPlayer::contains_item uses the existing main-inventory search, including count-independent membership and first-match behavior. playerstate181 proves 108 supplied inventory/pick cases. inventorybounds181 additionally checks membership for every signed-short item ID after actual original NBT reads, including the fact that armor does not satisfy the main-inventory query. |
+| Nullable ItemStack factory during readFromNBT | try_from_nbt181 indexes the original 32,000-entry domain before checking registration. Unregistered in-range IDs return no stack; negative or >=32000 signed-short IDs fail even for ignored slots. inventorybounds181 calls the original readFromNBT for all 65,536 signed-short IDs and compares exception presence, partially loaded main/armor arrays, unsigned slot interpretation, cursor, current slot and changed flag: 43,843,584 bytes EXACT. The original array exception is represented by a caught Rust panic. Existing playerstate181 proves canonical serialized NBT, duplicate slots, signed count/damage, invalid registration and retained fields over 4,516 cases. |
+| Armor destruction callback renamed | Original ItemStack.onItemDestroyedByUse is a no-op; the existing armor/durability/stat APIs keep that callback behavior. The 10,000 original inventory operations include damageArmor/getTotalArmorValue and inventory snapshots. Retained damage/death/combat player replays exercise the player-facing paths. |
+| New open/close interface callbacks | Both original InventoryPlayer callbacks are no-ops. playerstate181 and inventorybounds181 call them after reads and compare complete inventory state. Container/chest and GUI-close replays independently retain the callbacks of other inventory implementations. |
+
+Unchanged storage/add/consume/decrement/animation/hotbar methods remain covered by the 10,000 inventory operations and 66,146 container records. Unchanged strength/harvest/attack/armor/drop/player-dependent paths use the existing player APIs and retained mining, combat, damage, death, item-use and pickup replays. This status is for the vanilla b181 class delta; arbitrary noncompound NBTTagList elements and mod item registration are not claimed.

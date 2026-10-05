@@ -109,6 +109,7 @@ impl GuiSystem {
             container_commands: Vec::new(),
             sign_commands: Vec::new(),
             inventory_armor_state: Default::default(),
+            inventory_redirect_pending: false,
         };
         GuiSystem {
             ui,
@@ -222,6 +223,24 @@ impl GuiSystem {
                     Action::SettingsChanged => out.push(GameAction::SettingsChanged),
                     Action::RefreshTextures => out.push(GameAction::RefreshTextures),
                     Action::Respawn => out.push(GameAction::Respawn),
+                    Action::RedirectInventory => {
+                        if let Some(old) = self.ui.container_snapshot.clone() {
+                            use worldgen::container::{Container, ContainerKind, ContainerCommand};
+                            let kind = if old.creative { ContainerKind::Creative } else { ContainerKind::Player };
+                            let mut snapshot = Container::new(kind, 0).snapshot(&old.player_inventory);
+                            // The old GuiContainer close clears the carried stack before
+                            // the replacement screen can draw; drops stay world-owned.
+                            snapshot.cursor = None;
+                            snapshot.player_inventory.cursor = None;
+                            snapshot.preview = old.preview;
+                            snapshot.alive = old.alive;
+                            self.ui.container_snapshot = Some(snapshot.clone());
+                            self.add_stat(worldgen::entity::player::stat::OPEN_INVENTORY, 1);
+                            self.display_gui_screen(Some(Box::new(super::screens::container::GuiContainer::new(&snapshot))), &mut out);
+                            self.ui.inventory_redirect_pending = true;
+                            self.ui.container_commands.push(ContainerCommand::OpenInventory);
+                        }
+                    }
                 }
             }
         }

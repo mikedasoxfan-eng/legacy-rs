@@ -442,5 +442,8 @@ bash "$root/tools/verify_entities4_181.sh" --built || fail=1
 # --- entities (b1.8.1) ---
 bash "$root/tools/verify_entities5_181.sh" --built || fail=1
 # --- end entities ---
+# --- player-gui (b1.8.1), round 7 ---
+bash tools/verify_player_gui7_181.sh --built || fail=1
+# --- end player-gui ---
 [ $fail -eq 0 ] && echo "ALL CASES EXACT" || echo "SOME CASES DIFFER"
 exit $fail

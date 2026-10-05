@@ -1084,10 +1084,6 @@ impl App {
                     }
                     Ok(FromWorker::ContainerOpened(s)) => {
                         if let Some(g) = &mut self.gui {
-                            // new GuiInventory(player): the "Taking Inventory" achievement.
-                            if s.kind == worldgen::container::ContainerKind::Player {
-                                g.add_stat(worldgen::entity::player::stat::OPEN_INVENTORY, 1);
-                            }
                             for a in g.open_container(s) {
                                 match a {
                                     // setIngameNotInFocus -> resetPlayerKeyState
