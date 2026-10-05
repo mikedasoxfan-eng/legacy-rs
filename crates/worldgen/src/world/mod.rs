@@ -124,6 +124,7 @@ impl Dimension {
 }
 
 pub struct World {
+    pub maps:crate::maps::MapStorage,
     /// Ordered IWorldAccess callbacks since the last client tick.
     pub events: Vec<events::WorldEvent>,
     pub note_power: HashMap<(i32, i32, i32), bool>,
@@ -243,6 +244,7 @@ impl World {
         World {
             events: Vec::new(),
             note_power: HashMap::new(),
+            maps:Default::default(),
             display_seed_source: crate::entity::EntitySeedSource::Time,
             seed,
             dimension,
@@ -1173,6 +1175,7 @@ impl World {
             if let Err(e) = s.save_level(&info) {
                 eprintln!("saving level.dat: {e}");
             }
+            if let Err(e)=self.maps.save(&s.dir){eprintln!("saving maps: {e}");}
         }
     }
 

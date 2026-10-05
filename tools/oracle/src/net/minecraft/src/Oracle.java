@@ -70,6 +70,11 @@ public class Oracle {
         String mode = a.length > 0 ? a[0] : "";
         if(mode.equals("signs")){DecorationOracle.signs(a[1]);return;}
         if(mode.equals("paintings")){DecorationOracle.paintings(a[1]);return;}
+        if(mode.equals("mapfiles")){DecorationOracle.mapFiles(a[1]);return;}
+        if(mode.equals("mapread")){DecorationOracle.mapRead(a[1],a[2]);return;}
+        if(mode.equals("fishrenderers")){DecorationOracle.fishRenderers(a[1]);return;}
+        if(mode.equals("fishing")){DecorationOracle.fishing(a[1]);return;}
+        if(mode.equals("maps")){DecorationOracle.maps(a[1]);return;}
         if(mode.equals("paintingrenderers")){DecorationOracle.paintingRenderers(a[1]);return;}
         if(mode.equals("signrenderers")){DecorationOracle.signRenderers(a[1]);return;}
         if (mode.equals("pickuprenderersfast")) { ParticleOracle.pickupDraws(a[1],false);

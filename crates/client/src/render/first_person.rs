@@ -75,7 +75,7 @@ pub fn item(g: &mut Fixed, item: ItemStack, brightness: f32, fishing: bool) {
         g.pop();
     } else {
         let icon = if fishing && item.id == 346 {
-            54
+            item_table::properties(346, item.damage as i16).0 + 16
         } else {
             item_table::properties(item.id as i16, item.damage as i16).0
         };
@@ -212,7 +212,7 @@ pub fn render_with_map(
             if held.id == 346 {
                 g.rotate(180.0, 0.0, 1.0, 0.0);
             }
-            item(&mut g, held, block_brightness, false);
+            item(&mut g, held, block_brightness, e.player_state().is_some_and(|p|p.fish_entity.is_some()));
             g.pop();
         }
     } else {

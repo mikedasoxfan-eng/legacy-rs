@@ -384,7 +384,7 @@ impl Entity {
         }
     }
     pub fn can_trigger_walking(&self) -> bool {
-        self.kind.is_living() && !matches!(self.kind, EntityKind::Spider | EntityKind::Wolf(..))
+        matches!(self.kind, EntityKind::Fish(_)) || (self.kind.is_living() && !matches!(self.kind, EntityKind::Spider | EntityKind::Wolf(..)))
     }
     fn on_entity_walking(&mut self, w: &mut World, id: u8, x: i32, y: i32, z: i32) {
         if id == TILLED_FIELD && w.rand.next_int(4) == 0 {

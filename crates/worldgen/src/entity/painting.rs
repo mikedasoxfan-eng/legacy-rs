@@ -59,6 +59,11 @@ impl Entity {
         self.dead=true;if attacked{self.been_attacked=true;}
         let e=Self::item(w,self.pos.x,self.pos.y,self.pos.z,crate::world::tile::ItemStack::new(321,1,0));w.entity_joined_world(e);
     }
+    /// Entity.addVelocity, overridden by EntityPainting even when already dead.
+    pub fn add_velocity(&mut self,w:&mut World,x:f64,y:f64,z:f64) {
+        if matches!(self.kind,EntityKind::Painting(_)) {if x*x+y*y+z*z>0.0 {self.break_painting(w,false);}return;}
+        self.motion.x+=x;self.motion.y+=y;self.motion.z+=z;
+    }
     pub fn place_painting(&self,w:&mut World,stack:&mut super::player::ItemStack,x:i32,y:i32,z:i32,side:i32)->bool {
         if side==0||side==1{return false;}let direction=match side{4=>1,3=>2,5=>3,_=>0};let e=Self::painting(w,x,y,z,direction);
         if e.painting_valid_surface(w){w.entity_joined_world(e);stack.count-=1;}true

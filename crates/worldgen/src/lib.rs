@@ -17,6 +17,7 @@ pub mod decoration_verify;
 pub mod features;
 pub mod jmath;
 pub mod math;
+pub mod maps;
 pub mod nbt;
 pub mod nether;
 pub mod noise;

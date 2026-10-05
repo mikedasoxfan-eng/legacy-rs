@@ -13,6 +13,7 @@ pub mod nbt;
 pub mod objects;
 pub mod path;
 pub mod painting;
+pub mod fishing;
 pub mod physics;
 pub mod player;
 pub mod projectile;
@@ -62,6 +63,7 @@ impl EntitySeedSource {
 
 #[derive(Clone, Debug)]
 pub enum EntityKind {
+    Fish(fishing::FishState),
     Painting(painting::PaintingState),
     Player(Box<player::PlayerState>),
     Item {
@@ -131,6 +133,7 @@ pub enum EntityKind {
 impl EntityKind {
     pub fn name(&self) -> &'static str {
         match self {
+            Self::Fish(..) => "FishingHook",
             Self::Painting(..) => "Painting",
             Self::Player(..) => "Player",
             Self::Ghast(..) => "Ghast",
@@ -171,6 +174,7 @@ impl EntityKind {
     pub fn is_living(&self) -> bool {
         !matches!(
             self,
+            Self::Fish(..) |
             Self::Painting(..) |
             Self::Item { .. }
                 | Self::FallingSand { .. }
@@ -473,6 +477,7 @@ impl Entity {
     }
     pub fn on_update(&mut self, w: &mut World) {
         match self.kind {
+            EntityKind::Fish(..) => self.update_fish(w),
             EntityKind::Painting(..) => self.update_painting(w),
             EntityKind::Player(..) => self.update_player(w),
             EntityKind::Item { .. } => self.update_item(w),

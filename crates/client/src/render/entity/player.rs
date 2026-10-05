@@ -149,10 +149,11 @@ impl Renderer {
             first_person::item(&mut g, helmet, brightness, false);
             g.pop();
         }
-        if let Some(item) = held {
+        if let Some(mut item) = held {
             g.push();
             special::part(&mut g, &self.main["bipedRightArm"], true);
             g.translate(-0.0625, 0.4375, 0.0625);
+            if p.fish_entity.is_some() {item=worldgen::entity::player::ItemStack::new(280,1,0);}
             if inventory::in_3d(item.id as i16) {
                 g.translate(0.0, 0.1875, -0.3125);
                 g.rotate(20.0, 1.0, 0.0, 0.0);

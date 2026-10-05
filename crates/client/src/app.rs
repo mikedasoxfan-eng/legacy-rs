@@ -1093,6 +1093,7 @@ impl App {
                         }
                         for ev in events {
                             match ev {
+                                worldgen::entity::player::PlayerEvent::Stat { id,count } => {if let Some(g)=&mut self.gui{g.ui.stats.add(id,count);}}
                                 worldgen::entity::player::PlayerEvent::EditSign { position, block, metadata, sign } => {
                                     if let Some(g)=&mut self.gui {g.ui.display(Some(Box::new(gui::screens::edit_sign::GuiEditSign::new(position,block,metadata,sign))));}
                                 }
@@ -1456,6 +1457,8 @@ impl App {
             gpu.entities.partial = partial;
             gpu.entities.fancy = self.gui.as_ref().is_none_or(|gui| gui.ui.settings.fancy_graphics);
             gpu.entities.view = [self.cam.yaw, self.cam.pitch];
+            gpu.entities.angler=self.player.as_ref().map(|p|p.entity.clone());
+            gpu.entities.third_person=camera_settings.third_person;
         }
         let want_shot = self.opts.shot.is_some()
                 && self.ready

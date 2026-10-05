@@ -18,7 +18,7 @@ impl Entity {
         if self.dead
             || matches!(
                 self.kind,
-                EntityKind::Fireball(..) | EntityKind::Egg(..) | EntityKind::Lightning { .. }
+                EntityKind::Fireball(..) | EntityKind::Egg(..) | EntityKind::Lightning { .. } | EntityKind::Fish(..)
             )
         {
             return None;

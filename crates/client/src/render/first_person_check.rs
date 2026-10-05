@@ -345,8 +345,9 @@ pub fn check(path: &str) -> bool {
                     d.eq(v.to_bits(), "combined projection matrix");
                 }
             }
-            1 => {
-                let e = d.entity(&mut w);
+            1 | 10 => {
+                let mut e = d.entity(&mut w);
+                if kind==10 {e.player_state_mut().unwrap().fish_entity=Some(-1);}
                 let t = d.f();
                 let (mut s, hide) = d.settings();
                 s.anaglyph = false;
@@ -422,8 +423,9 @@ pub fn check(path: &str) -> bool {
                 let r = first_person::overlays(&e, water, &opaque, brightness, s);
                 d.draws(&r);
             }
-            3 => {
+            3 | 11 => {
                 let mut e = d.entity(&mut w);
+                if kind==11 {e.player_state_mut().unwrap().fish_entity=Some(-1);}
                 if d.i() != 0 {
                     e.riding = Some(-1);
                 }

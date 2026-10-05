@@ -109,6 +109,7 @@ impl Entity {
         if let EntityKind::Arrow(s) = &mut self.kind {
             s.ticks_ground = 0;
         }
+        if let EntityKind::Fish(s) = &mut self.kind { s.arrow.ticks_ground = 0; }
     }
     pub fn fireball(w: &mut World, pos: Vec3D, aim: Vec3D) -> Self {
         let mut e = Self::base(w, EntityKind::Fireball(Default::default()));

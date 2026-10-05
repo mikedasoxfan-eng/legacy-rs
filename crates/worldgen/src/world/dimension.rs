@@ -18,6 +18,7 @@ impl World {
         w.world_time = self.world_time;
         w.difficulty = self.difficulty;
         w.storage = self.storage.as_ref().and_then(|s| s.for_dimension(dimension).ok());
+        std::mem::swap(&mut w.maps,&mut self.maps);w.map_id=self.map_id;
         // JVM-wide state that the original keeps in statics, not in the World.
         std::mem::swap(&mut w.next_entity_id, &mut self.next_entity_id);
         std::mem::swap(&mut w.entity_seed_source, &mut self.entity_seed_source);

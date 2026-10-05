@@ -46,6 +46,7 @@ impl PlayerInput {
 }
 #[derive(Clone, Debug)]
 pub enum PlayerEvent {
+    Stat { id:i32, count:i32 },
     EditSign { position: (i32, i32, i32), block: u8, metadata: i32, sign: crate::sign::Sign },
     Container(crate::container::ContainerEvent),
     Pickup {
@@ -80,6 +81,7 @@ pub enum SleepStatus {
 }
 #[derive(Clone, Debug)]
 pub struct PlayerState {
+    pub fish_entity:Option<i32>,
     pub left_click_counter: i32,
     pub last_click_tick: i32,
     pub controller: controller::PlayerControllerSP,
@@ -112,6 +114,7 @@ pub struct PlayerState {
 impl Default for PlayerState {
     fn default() -> Self {
         Self {
+            fish_entity:None,
             left_click_counter: 0,
             last_click_tick: 0,
             controller: Default::default(),
@@ -269,6 +272,7 @@ impl Entity {
         let s = self.player_state_mut().unwrap();
         s.inventory.tick_animations();
         s.prev_camera_yaw = s.camera_yaw;
+        self.update_maps(w);
     }
     fn player_push_out(&mut self, w: &mut World, x: f64, y: f64, z: f64) {
         let (bx, by, bz) = (floor(x), floor(y), floor(z));
