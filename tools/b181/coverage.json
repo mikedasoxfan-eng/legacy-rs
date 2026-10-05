@@ -39200,6 +39200,17 @@
   "terrain round2 skygrid seed 9223372036854775807",
   "utilities"
  ],
+ "Minecraft": [
+  "minecraft b1.8.1: original runTick event queues, clicks, screen/focus callbacks and world policy",
+  "minecraft b1.8.1: original preloadWorld coordinate, progress and lighting callbacks",
+  "minecraft b1.8.1: retained clickMouse and sendClickBlockToController effects",
+  "minecraft b1.8.1: original debugInfoEntities counts and excluded particle layer",
+  "minecraft b1.8.1: retained global key registry and press-count overflow",
+  "minecraft b1.8.1: retained controller factory, spawn yaw and item-use release",
+  "minecraft b1.8.1: retained create-world callbacks and WorldSettings",
+  "minecraft b1.8.1: retained world seed parsing and settings",
+  "minecraft b1.8.1: retained saved-world controller selection"
+ ],
  "ModelBase": [
   "entities181: Arrow",
   "entities181: Boat",

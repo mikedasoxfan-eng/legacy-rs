@@ -53,6 +53,14 @@ Not counted, as for Beta 1.7.3:
 - classes whose b1.8.1 change is only renamed identifiers
   (`tools/b181/no_behaviour_change.json`).
 
+Window and startup code is verified by play-testing, as for Beta 1.7.3: in the `Minecraft`
+class that is `startGame`, `loadScreen`, `run`, `main` and the loading-screen text, which draw
+the window and have no effect on the game. Everything it does to the game (the `runTick` input
+loop, clicks, screens and focus, `preloadWorld`, controllers, world creation and selection, the
+debug entity counts) is compared with the original in `tools/verify_minecraft181.sh`. Its
+`ChunkProviderLoadOrGenerate` branches never run in Beta 1.8.1 singleplayer, whose `World`
+uses `ChunkProvider`.
+
 ## Detailed reports
 
 The port was built area by area; each area's report lists every class, what was ported and

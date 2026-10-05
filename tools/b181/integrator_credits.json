@@ -89,5 +89,6 @@
  "WorldProviderSky",
  "PlayerControllerSP",
  "RenderList",
- "BlockCake"
+ "BlockCake",
+ "Minecraft"
 ]
