@@ -6,6 +6,9 @@ use crate::{
     nbt::{Compound, Tag},
 };
 
+/// PistonBlockTextures.field_31057_a.
+pub const OPPOSITE_SIDES: [i32; 6] = [1, 0, 3, 2, 5, 4];
+
 pub const DIRECTIONS: [(i32, i32, i32); 6] = [
     (0, -1, 0),
     (0, 1, 0),
@@ -90,7 +93,7 @@ pub fn mobility(id: u8) -> i32 {
         _ => match material_of(id) {
             MAT_WATER | MAT_LAVA | MAT_LEAVES | MAT_PLANTS | MAT_FIRE | MAT_CIRCUITS
             | MAT_UNUSED | MAT_SNOW | MAT_CACTUS | MAT_PUMPKIN | MAT_CAKEMATERIAL
-            | MAT_WEB => 1,
+            | MAT_WEB | MAT_VINE => 1,
             MAT_PORTAL | MAT_PISTON => 2,
             _ => 0,
         },
@@ -412,7 +415,8 @@ impl World {
                 self.set_block_and_metadata_with_notify(x, y, z, p.block_id, p.block_data);
             }
         } else {
-            p.progress = (p.progress + 0.5).min(1.0);
+            p.progress += 0.5;
+            if p.progress >= 1.0 { p.progress = 1.0; }
             self.update_tile_object(id, TileEntity::Piston(p.clone()));
             if p.extending {
                 self.piston_push_entities(

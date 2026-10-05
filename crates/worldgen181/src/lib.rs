@@ -47,3 +47,4 @@ pub use world::World;
 
 pub mod region_cache181;
 pub mod save_format_old181;
+pub mod legacy_chunk181;

@@ -154,7 +154,8 @@ impl World {
             62 => 1,
             _ => 2,
         };
-        for item in items.into_iter().flatten() {
+        for (slot, item) in items.into_iter().enumerate() {
+            let Some(item) = item else { continue; };
             let ox = self.container_drop_random[index].next_float() * 0.8 + 0.1;
             let oy = self.container_drop_random[index].next_float() * 0.8 + 0.1;
             let oz = self.container_drop_random[index].next_float() * 0.8 + 0.1;
@@ -162,6 +163,13 @@ impl World {
             while count > 0 {
                 let n = (self.container_drop_random[index].next_int(21) + 10).min(count);
                 count -= n;
+                // ItemStack.stackSize is mutated in place even when the tile
+                // is about to be invalidated and detached from the chunk.
+                match self.get_block_tile_entity(x,y,z) {
+                    Some(TileEntity::Furnace(f)) => f.items[slot].as_mut().unwrap().count = count,
+                    Some(TileEntity::Dispenser(items)) => items[slot].as_mut().unwrap().count = count,
+                    _ => (),
+                }
                 let mut e = Entity::item(
                     self,
                     (x as f32 + ox) as f64,

@@ -182,23 +182,7 @@ impl World {
         let mut c = Container::new(kind, window);
         c.positions.push((x, y, z));
         if block == 54 {
-            if self.is_block_normal_cube(x, y + 1, z) {
-                return None;
-            }
-            // BlockChest.blockActivated wraps in this precise order. Negative
-            // neighbors precede the clicked chest, positive neighbors follow it.
-            for (dx, dz) in [(-1, 0), (1, 0), (0, -1), (0, 1)] {
-                if self.get_block_id(x + dx, y, z + dz) == 54 {
-                    if self.is_block_normal_cube(x + dx, y + 1, z + dz) {
-                        return None;
-                    }
-                    if dx < 0 || dz < 0 {
-                        c.positions.insert(0, (x + dx, y, z + dz));
-                    } else {
-                        c.positions.push((x + dx, y, z + dz));
-                    }
-                }
-            }
+            c.positions=self.chest_inventory_positions181(x,y,z)?;
             if c.positions.len() > 1 {
                 let positions = c.positions;
                 c = Container::new(

@@ -304,6 +304,7 @@ pub struct Storage {
     /// (`SaveOldDir.getChunkLoader`).
     chunk_dir: PathBuf,
     session: i64,
+    legacy_chunks: bool,
 }
 
 impl Storage {
@@ -326,6 +327,7 @@ impl Storage {
             dir: dir.to_path_buf(),
             chunk_dir: dir.to_path_buf(),
             session,
+            legacy_chunks: false,
         })
     }
 
@@ -334,7 +336,15 @@ impl Storage {
     pub fn for_dimension(&self, dimension: crate::world::Dimension) -> io::Result<Storage> {
         let chunk_dir = if dimension.is_hell_world() { self.dir.join("DIM-1") } else { self.dir.clone() };
         std::fs::create_dir_all(&chunk_dir)?;
-        Ok(Storage { dir: self.dir.clone(), chunk_dir, session: self.session })
+        Ok(Storage { dir: self.dir.clone(), chunk_dir, session: self.session, legacy_chunks: self.legacy_chunks })
+    }
+
+    /// SaveHandler (as returned by SaveFormatOld) uses ChunkLoader, whereas
+    /// SaveOldDir uses McRegionChunkLoader. Keep that choice across dimensions.
+    pub fn open_legacy_with_players(dir: &Path, players: bool) -> io::Result<Storage> {
+        let mut storage = Self::open_with_players(dir, players)?;
+        storage.legacy_chunks = true;
+        Ok(storage)
     }
 
     /// `checkSessionLock`: someone else opened this world since we did.
@@ -395,8 +405,13 @@ impl Storage {
         cz: i32,
         dimension: crate::world::Dimension,
     ) -> Option<Chunk> {
-        let raw = crate::region_cache181::read_chunk(&self.chunk_dir,cx,cz).ok()??;
-        let root = nbt::read_root(&mut &raw[..]).ok()?;
+        let root = if self.legacy_chunks {
+            crate::legacy_chunk181::LegacyChunkLoader181::new(&self.chunk_dir, true)
+                .read_root(cx, cz)?
+        } else {
+            let raw = crate::region_cache181::read_chunk(&self.chunk_dir,cx,cz).ok()??;
+            nbt::read_root(&mut &raw[..]).ok()?
+        };
         let level = match root.compound("Level") {
             Some(l) if l.has("Blocks") => l.clone(),
             Some(_) => {
@@ -425,6 +440,13 @@ impl Storage {
 
     /// `McRegionChunkLoader.saveChunk`. Returns the region file growth (`SizeOnDisk` delta).
     pub fn save_chunk(&mut self, c: &Chunk, world_time: i64) -> io::Result<i64> {
+        if self.legacy_chunks {
+            if !self.session_ok() {
+                return Err(io::Error::new(io::ErrorKind::Other, "Failed to check session lock, aborting"));
+            }
+            return crate::legacy_chunk181::LegacyChunkLoader181::new(&self.chunk_dir, true)
+                .save_chunk(c, world_time);
+        }
         let mut root = Compound::new();
         root.put("Level", Tag::Compound(chunk_to_nbt(c, world_time)));
         let mut raw = Vec::new();
