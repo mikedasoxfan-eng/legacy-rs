@@ -102,10 +102,24 @@ impl Effects {
         yaw: f32,
         pitch: f32,
         partial: f32,
+        lightmap: &[u32; 256],
     ) -> [Vec<WeatherVertex>; 3] {
         self.interp_camera = cam;
+        // b1.8.1 EntityFX: Tessellator brightness from func_35115_a, drawn through the lightmap.
         self.renderer
-            .vertices(&self.terrain, cam, yaw, pitch, partial)
+            .lightmapped_vertices(&self.terrain, cam, yaw, pitch, partial)
+            .map(|layer| {
+                layer
+                    .into_iter()
+                    .map(|(mut v, light)| {
+                        let l = crate::render::lightmap::sample(lightmap, light as u32);
+                        for i in 0..3 {
+                            v.color[i] *= l[i];
+                        }
+                        v
+                    })
+                    .collect()
+            })
     }
     pub fn pickup(&mut self, source: Box<worldgen::entity::Entity>, target: i32) {
         let pos = [source.pos.x, source.pos.y, source.pos.z];

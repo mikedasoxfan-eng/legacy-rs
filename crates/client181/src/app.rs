@@ -1520,11 +1520,21 @@ impl App {
         let lit_effect_batches = self.particles.lit_batches(
             self.cam.pos.to_array(), [self.cam.yaw, self.cam.pitch], partial, video.fancy,
         );
+        // EntityRenderer.func_35808_e: the lightmap, with the world read at partial tick 1.
+        let lightmap = {
+            let dim = if self.nether { worldgen::world::Dimension::Nether } else { worldgen::world::Dimension::Overworld };
+            let angle1 = if self.nether { 0.5 } else { sky::celestial_angle(self.world_time, 1.0) };
+            let sky_factor = render::lightmap::sky_factor(angle1, self.weather.rain_at(1.0), self.weather.thunder_at(1.0));
+            // The Brightness option (GameSettings.field_35380_M).
+            let gamma = self.gui.as_ref().map_or(0.0, |g| g.ui.settings.gamma);
+            render::lightmap::compute(&dim.light_brightness_table(), sky_factor, self.flicker.x, self.weather.flash > 0, gamma)
+        };
         let particles = self.particles.vertices(
             self.cam.pos.to_array(),
             self.cam.yaw,
             self.cam.pitch,
             partial,
+            &lightmap,
         );
         // First-person camera, player model and targeting use a private render snapshot.
         let settings = self.gui.as_ref().map(|g| &g.ui.settings);
@@ -1585,15 +1595,6 @@ impl App {
             player_right,
         };
 
-        // EntityRenderer.func_35808_e: the lightmap, with the world read at partial tick 1.
-        let lightmap = {
-            let dim = if self.nether { worldgen::world::Dimension::Nether } else { worldgen::world::Dimension::Overworld };
-            let angle1 = if self.nether { 0.5 } else { sky::celestial_angle(self.world_time, 1.0) };
-            let sky_factor = render::lightmap::sky_factor(angle1, self.weather.rain_at(1.0), self.weather.thunder_at(1.0));
-            // The Brightness option (GameSettings.field_35380_M).
-            let gamma = self.gui.as_ref().map_or(0.0, |g| g.ui.settings.gamma);
-            render::lightmap::compute(&dim.light_brightness_table(), sky_factor, self.flicker.x, self.weather.flash > 0, gamma)
-        };
         if let Some(gpu) = &mut self.gpu {
             gpu.set_lightmap(&lightmap);
             gpu.lit_effect_batches = lit_effect_batches;
