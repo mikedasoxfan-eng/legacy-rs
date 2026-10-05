@@ -34,6 +34,8 @@ pub enum ModelKind {
 pub struct Model {
     pub kind: ModelKind,
     pub parts: BTreeMap<String, ModelRenderer>,
+    pub registered: Vec<String>,
+    retired: BTreeMap<usize, ModelRenderer>,
     /// `ModelBase.onGround`: interpolated attack swing progress.
     pub on_ground: f32,
     pub is_riding: bool,
@@ -57,6 +59,21 @@ impl IndexMut<&str> for Model {
 }
 
 impl Model {
+    fn insert_part(&mut self, name: String, part: ModelRenderer) {
+        if let Some(old) = self.parts.remove(&name) {
+            let index = self.registered.iter().rposition(|n| n == &name).unwrap();
+            self.retired.insert(index, old);
+        }
+        self.registered.push(name.clone());
+        self.parts.insert(name, part);
+    }
+    pub fn registered_part(&self, index: usize) -> &ModelRenderer {
+        self.retired.get(&index).unwrap_or_else(|| &self.parts[&self.registered[index]])
+    }
+    pub fn random_part(&self, random: &mut worldgen::JavaRandom) -> &ModelRenderer {
+        self.registered_part(random.next_int(self.registered.len() as i32) as usize)
+    }
+
     pub fn new(kind: ModelKind) -> Self {
         Self::with_options(kind, 0.0, 0.0, 12)
     }
@@ -65,6 +82,8 @@ impl Model {
         let mut m = Self {
             kind,
             parts: BTreeMap::new(),
+            registered: Vec::new(),
+            retired: BTreeMap::new(),
             on_ground: 0.0,
             is_riding: false,
             held_left: false,
@@ -85,7 +104,7 @@ impl Model {
                 let mut r = ModelRenderer::new(16, 16);
                 r.add_box(-2.0, 0.0, -9.0, 4, 3, 1, inflate);
                 r.set_rotation_point(0.0, 12.0, -6.0);
-                m.parts.insert("field_35401_a".into(), r);
+                m.insert_part("field_35401_a".into(), r);
             }
             ModelKind::Cow => m.init_cow(),
             ModelKind::SheepFur => m.init_sheep1(),
@@ -103,7 +122,8 @@ impl Model {
                 m.init_enderman();
             }
             ModelKind::Silverfish => m.init_silverfish(),
-            ModelKind::Chest | ModelKind::LargeChest => m.init_chest(kind == ModelKind::LargeChest),
+            ModelKind::Chest => m.init_chest(false),
+            ModelKind::LargeChest => { m.init_chest(false); m.init_chest(true); },
         }
         m
     }
@@ -195,7 +215,7 @@ impl Model {
             r.texture_size = [tex, 64.0];
             r.add_box(pos[0], pos[1], pos[2], dim[0], dim[1], dim[2], 0.0);
             r.set_rotation_point(point[0], point[1], point[2]);
-            self.parts.insert(name.into(), r);
+            self.insert_part(name.into(), r);
         }
     }
     fn init_enderman(&mut self) {
@@ -261,7 +281,7 @@ impl Model {
                 boxpos[0], boxpos[1], boxpos[2], dims[0], dims[1], dims[2], inflate,
             );
             r.set_rotation_point(point[0], point[1], point[2]);
-            self.parts.insert(name.into(), r);
+            self.insert_part(name.into(), r);
         }
     }
     fn pose_enderman(&mut self) {
@@ -357,7 +377,7 @@ impl Model {
             let mut r = ModelRenderer::new(uv[i][0], uv[i][1]);
             r.add_box(x as f32 * -0.5, 0.0, d as f32 * -0.5, x, y, d, 0.0);
             r.set_rotation_point(0.0, (24 - y) as f32, z);
-            self.parts.insert(format!("field_35400_a[{i}]"), r);
+            self.insert_part(format!("field_35400_a[{i}]"), r);
             zs[i] = z;
             if i < 6 {
                 z += (d + sizes[i + 1][2]) as f32 * 0.5;
@@ -371,7 +391,7 @@ impl Model {
             let mut r = ModelRenderer::new(uv[0], uv[1]);
             r.add_box(x as f32 * -0.5, 0.0, -1.5, x, y, d, 0.0);
             r.set_rotation_point(0.0, (24 - y) as f32, z);
-            self.parts.insert(format!("field_35398_b[{i}]"), r);
+            self.insert_part(format!("field_35398_b[{i}]"), r);
         }
     }
     fn pose_silverfish(&mut self, age: f32) {
@@ -412,7 +432,7 @@ impl Model {
         let mut body = ModelRenderer::new(0, 0);
         body.add_box(-8.0, -8.0, -8.0, 16, 16, 16, 0.0);
         body.rotation_point_y += 8.0;
-        self.parts.insert("body".into(), body);
+        self.insert_part("body".into(), body);
         let mut random = worldgen::JavaRandom::new(1660);
         for i in 0..9 {
             let mut t = ModelRenderer::new(0, 0);
@@ -420,7 +440,7 @@ impl Model {
             let z = (i / 3) as f32 / 2.0 * 2.0 - 1.0;
             t.add_box(-1.0, 0.0, -1.0, 2, random.next_int(7) + 8, 2, 0.0);
             t.set_rotation_point(x * 5.0, 15.0, z * 5.0);
-            self.parts.insert(format!("tentacles[{i}]"), t);
+            self.insert_part(format!("tentacles[{i}]"), t);
         }
     }
 
@@ -430,39 +450,30 @@ impl Model {
         self.held_left = false;
         self.held_right = false;
         self.is_sneak = false;
-        self.parts
-            .insert("bipedCloak".into(), ModelRenderer::new(0, 0));
+        self.insert_part("bipedCloak".into(), ModelRenderer::new(0, 0));
         self["bipedCloak"].add_box(-5.0f32, 0.0f32, -1.0f32, 10, 16, 1, var1);
-        self.parts
-            .insert("bipedEars".into(), ModelRenderer::new(24, 0));
+        self.insert_part("bipedEars".into(), ModelRenderer::new(24, 0));
         self["bipedEars"].add_box(-3.0f32, -6.0f32, -1.0f32, 6, 6, 1, var1);
-        self.parts
-            .insert("bipedHead".into(), ModelRenderer::new(0, 0));
+        self.insert_part("bipedHead".into(), ModelRenderer::new(0, 0));
         self["bipedHead"].add_box(-4.0f32, -8.0f32, -4.0f32, 8, 8, 8, var1);
         self["bipedHead"].set_rotation_point(0.0f32, 0.0f32 + var2, 0.0f32);
-        self.parts
-            .insert("bipedHeadwear".into(), ModelRenderer::new(32, 0));
+        self.insert_part("bipedHeadwear".into(), ModelRenderer::new(32, 0));
         self["bipedHeadwear"].add_box(-4.0f32, -8.0f32, -4.0f32, 8, 8, 8, var1 + 0.5f32);
         self["bipedHeadwear"].set_rotation_point(0.0f32, 0.0f32 + var2, 0.0f32);
-        self.parts
-            .insert("bipedBody".into(), ModelRenderer::new(16, 16));
+        self.insert_part("bipedBody".into(), ModelRenderer::new(16, 16));
         self["bipedBody"].add_box(-4.0f32, 0.0f32, -2.0f32, 8, 12, 4, var1);
         self["bipedBody"].set_rotation_point(0.0f32, 0.0f32 + var2, 0.0f32);
-        self.parts
-            .insert("bipedRightArm".into(), ModelRenderer::new(40, 16));
+        self.insert_part("bipedRightArm".into(), ModelRenderer::new(40, 16));
         self["bipedRightArm"].add_box(-3.0f32, -2.0f32, -2.0f32, 4, 12, 4, var1);
         self["bipedRightArm"].set_rotation_point(-5.0f32, 2.0f32 + var2, 0.0f32);
-        self.parts
-            .insert("bipedLeftArm".into(), ModelRenderer::new(40, 16));
+        self.insert_part("bipedLeftArm".into(), ModelRenderer::new(40, 16));
         self["bipedLeftArm"].mirror = true;
         self["bipedLeftArm"].add_box(-1.0f32, -2.0f32, -2.0f32, 4, 12, 4, var1);
         self["bipedLeftArm"].set_rotation_point(5.0f32, 2.0f32 + var2, 0.0f32);
-        self.parts
-            .insert("bipedRightLeg".into(), ModelRenderer::new(0, 16));
+        self.insert_part("bipedRightLeg".into(), ModelRenderer::new(0, 16));
         self["bipedRightLeg"].add_box(-2.0f32, 0.0f32, -2.0f32, 4, 12, 4, var1);
         self["bipedRightLeg"].set_rotation_point(-2.0f32, 12.0f32 + var2, 0.0f32);
-        self.parts
-            .insert("bipedLeftLeg".into(), ModelRenderer::new(0, 16));
+        self.insert_part("bipedLeftLeg".into(), ModelRenderer::new(0, 16));
         self["bipedLeftLeg"].mirror = true;
         self["bipedLeftLeg"].add_box(-2.0f32, 0.0f32, -2.0f32, 4, 12, 4, var1);
         self["bipedLeftLeg"].set_rotation_point(2.0f32, 12.0f32 + var2, 0.0f32);
@@ -472,21 +483,17 @@ impl Model {
     #[allow(unused_mut)]
     fn init_skeleton(&mut self) {
         let mut var1: f32 = 0.0f32;
-        self.parts
-            .insert("bipedRightArm".into(), ModelRenderer::new(40, 16));
+        self.insert_part("bipedRightArm".into(), ModelRenderer::new(40, 16));
         self["bipedRightArm"].add_box(-1.0f32, -2.0f32, -1.0f32, 2, 12, 2, var1);
         self["bipedRightArm"].set_rotation_point(-5.0f32, 2.0f32, 0.0f32);
-        self.parts
-            .insert("bipedLeftArm".into(), ModelRenderer::new(40, 16));
+        self.insert_part("bipedLeftArm".into(), ModelRenderer::new(40, 16));
         self["bipedLeftArm"].mirror = true;
         self["bipedLeftArm"].add_box(-1.0f32, -2.0f32, -1.0f32, 2, 12, 2, var1);
         self["bipedLeftArm"].set_rotation_point(5.0f32, 2.0f32, 0.0f32);
-        self.parts
-            .insert("bipedRightLeg".into(), ModelRenderer::new(0, 16));
+        self.insert_part("bipedRightLeg".into(), ModelRenderer::new(0, 16));
         self["bipedRightLeg"].add_box(-1.0f32, 0.0f32, -1.0f32, 2, 12, 2, var1);
         self["bipedRightLeg"].set_rotation_point(-2.0f32, 12.0f32, 0.0f32);
-        self.parts
-            .insert("bipedLeftLeg".into(), ModelRenderer::new(0, 16));
+        self.insert_part("bipedLeftLeg".into(), ModelRenderer::new(0, 16));
         self["bipedLeftLeg"].mirror = true;
         self["bipedLeftLeg"].add_box(-1.0f32, 0.0f32, -1.0f32, 2, 12, 2, var1);
         self["bipedLeftLeg"].set_rotation_point(2.0f32, 12.0f32, 0.0f32);
@@ -495,23 +502,23 @@ impl Model {
     /// `ModelQuadruped` constructor.
     #[allow(unused_mut)]
     fn init_quadruped(&mut self, var1: i32, var2: f32) {
-        self.parts.insert("head".into(), ModelRenderer::new(0, 0));
+        self.insert_part("head".into(), ModelRenderer::new(0, 0));
 
         self["head"].add_box(-4.0f32, -4.0f32, -8.0f32, 8, 8, 8, var2);
         self["head"].set_rotation_point(0.0f32, (18 - var1) as f32, -6.0f32);
-        self.parts.insert("body".into(), ModelRenderer::new(28, 8));
+        self.insert_part("body".into(), ModelRenderer::new(28, 8));
         self["body"].add_box(-5.0f32, -10.0f32, -7.0f32, 10, 16, 8, var2);
         self["body"].set_rotation_point(0.0f32, (17 - var1) as f32, 2.0f32);
-        self.parts.insert("leg1".into(), ModelRenderer::new(0, 16));
+        self.insert_part("leg1".into(), ModelRenderer::new(0, 16));
         self["leg1"].add_box(-2.0f32, 0.0f32, -2.0f32, 4, var1, 4, var2);
         self["leg1"].set_rotation_point(-3.0f32, (24 - var1) as f32, 7.0f32);
-        self.parts.insert("leg2".into(), ModelRenderer::new(0, 16));
+        self.insert_part("leg2".into(), ModelRenderer::new(0, 16));
         self["leg2"].add_box(-2.0f32, 0.0f32, -2.0f32, 4, var1, 4, var2);
         self["leg2"].set_rotation_point(3.0f32, (24 - var1) as f32, 7.0f32);
-        self.parts.insert("leg3".into(), ModelRenderer::new(0, 16));
+        self.insert_part("leg3".into(), ModelRenderer::new(0, 16));
         self["leg3"].add_box(-2.0f32, 0.0f32, -2.0f32, 4, var1, 4, var2);
         self["leg3"].set_rotation_point(-3.0f32, (24 - var1) as f32, -5.0f32);
-        self.parts.insert("leg4".into(), ModelRenderer::new(0, 16));
+        self.insert_part("leg4".into(), ModelRenderer::new(0, 16));
         self["leg4"].add_box(-2.0f32, 0.0f32, -2.0f32, 4, var1, 4, var2);
         self["leg4"].set_rotation_point(3.0f32, (24 - var1) as f32, -5.0f32);
     }
@@ -520,21 +527,20 @@ impl Model {
     #[allow(unused_mut)]
     fn init_cow(&mut self) {
         self.init_quadruped(12, 0.0f32);
-        self.parts.insert("head".into(), ModelRenderer::new(0, 0));
+        self.insert_part("head".into(), ModelRenderer::new(0, 0));
         self["head"].add_box(-4.0f32, -4.0f32, -6.0f32, 8, 8, 6, 0.0f32);
         self["head"].set_rotation_point(0.0f32, 4.0f32, -8.0f32);
-        self.parts.insert("horn1".into(), ModelRenderer::new(22, 0));
+        self.insert_part("horn1".into(), ModelRenderer::new(22, 0));
         self["horn1"].add_box(-4.0f32, -5.0f32, -4.0f32, 1, 3, 1, 0.0f32);
         self["horn1"].set_rotation_point(0.0f32, 3.0f32, -7.0f32);
-        self.parts.insert("horn2".into(), ModelRenderer::new(22, 0));
+        self.insert_part("horn2".into(), ModelRenderer::new(22, 0));
         self["horn2"].add_box(3.0f32, -5.0f32, -4.0f32, 1, 3, 1, 0.0f32);
         self["horn2"].set_rotation_point(0.0f32, 3.0f32, -7.0f32);
-        self.parts
-            .insert("udders".into(), ModelRenderer::new(52, 0));
+        self.insert_part("udders".into(), ModelRenderer::new(52, 0));
         self["udders"].add_box(-2.0f32, -3.0f32, 0.0f32, 4, 6, 2, 0.0f32);
         self["udders"].set_rotation_point(0.0f32, 14.0f32, 6.0f32);
         self["udders"].rotate_angle_x = PI_F32 * 0.5f32;
-        self.parts.insert("body".into(), ModelRenderer::new(18, 4));
+        self.insert_part("body".into(), ModelRenderer::new(18, 4));
         self["body"].add_box(-6.0f32, -10.0f32, -7.0f32, 12, 18, 10, 0.0f32);
         self["body"].set_rotation_point(0.0f32, 5.0f32, 2.0f32);
         self["leg1"].rotation_point_x -= 1.0;
@@ -551,23 +557,23 @@ impl Model {
     #[allow(unused_mut)]
     fn init_sheep1(&mut self) {
         self.init_quadruped(12, 0.0f32);
-        self.parts.insert("head".into(), ModelRenderer::new(0, 0));
+        self.insert_part("head".into(), ModelRenderer::new(0, 0));
         self["head"].add_box(-3.0f32, -4.0f32, -4.0f32, 6, 6, 6, 0.6f32);
         self["head"].set_rotation_point(0.0f32, 6.0f32, -8.0f32);
-        self.parts.insert("body".into(), ModelRenderer::new(28, 8));
+        self.insert_part("body".into(), ModelRenderer::new(28, 8));
         self["body"].add_box(-4.0f32, -10.0f32, -7.0f32, 8, 16, 6, 1.75f32);
         self["body"].set_rotation_point(0.0f32, 5.0f32, 2.0f32);
         let mut var1: f32 = 0.5f32;
-        self.parts.insert("leg1".into(), ModelRenderer::new(0, 16));
+        self.insert_part("leg1".into(), ModelRenderer::new(0, 16));
         self["leg1"].add_box(-2.0f32, 0.0f32, -2.0f32, 4, 6, 4, var1);
         self["leg1"].set_rotation_point(-3.0f32, 12.0f32, 7.0f32);
-        self.parts.insert("leg2".into(), ModelRenderer::new(0, 16));
+        self.insert_part("leg2".into(), ModelRenderer::new(0, 16));
         self["leg2"].add_box(-2.0f32, 0.0f32, -2.0f32, 4, 6, 4, var1);
         self["leg2"].set_rotation_point(3.0f32, 12.0f32, 7.0f32);
-        self.parts.insert("leg3".into(), ModelRenderer::new(0, 16));
+        self.insert_part("leg3".into(), ModelRenderer::new(0, 16));
         self["leg3"].add_box(-2.0f32, 0.0f32, -2.0f32, 4, 6, 4, var1);
         self["leg3"].set_rotation_point(-3.0f32, 12.0f32, -5.0f32);
-        self.parts.insert("leg4".into(), ModelRenderer::new(0, 16));
+        self.insert_part("leg4".into(), ModelRenderer::new(0, 16));
         self["leg4"].add_box(-2.0f32, 0.0f32, -2.0f32, 4, 6, 4, var1);
         self["leg4"].set_rotation_point(3.0f32, 12.0f32, -5.0f32);
     }
@@ -576,10 +582,10 @@ impl Model {
     #[allow(unused_mut)]
     fn init_sheep2(&mut self) {
         self.init_quadruped(12, 0.0f32);
-        self.parts.insert("head".into(), ModelRenderer::new(0, 0));
+        self.insert_part("head".into(), ModelRenderer::new(0, 0));
         self["head"].add_box(-3.0f32, -4.0f32, -6.0f32, 6, 6, 8, 0.0f32);
         self["head"].set_rotation_point(0.0f32, 6.0f32, -8.0f32);
-        self.parts.insert("body".into(), ModelRenderer::new(28, 8));
+        self.insert_part("body".into(), ModelRenderer::new(28, 8));
         self["body"].add_box(-4.0f32, -10.0f32, -7.0f32, 8, 16, 6, 0.0f32);
         self["body"].set_rotation_point(0.0f32, 5.0f32, 2.0f32);
     }
@@ -588,32 +594,28 @@ impl Model {
     #[allow(unused_mut)]
     fn init_chicken(&mut self) {
         let var1: i32 = 16;
-        self.parts.insert("head".into(), ModelRenderer::new(0, 0));
+        self.insert_part("head".into(), ModelRenderer::new(0, 0));
         self["head"].add_box(-2.0f32, -6.0f32, -2.0f32, 4, 6, 3, 0.0f32);
         self["head"].set_rotation_point(0.0f32, (-1 + var1) as f32, -4.0f32);
-        self.parts.insert("bill".into(), ModelRenderer::new(14, 0));
+        self.insert_part("bill".into(), ModelRenderer::new(14, 0));
         self["bill"].add_box(-2.0f32, -4.0f32, -4.0f32, 4, 2, 2, 0.0f32);
         self["bill"].set_rotation_point(0.0f32, (-1 + var1) as f32, -4.0f32);
-        self.parts.insert("chin".into(), ModelRenderer::new(14, 4));
+        self.insert_part("chin".into(), ModelRenderer::new(14, 4));
         self["chin"].add_box(-1.0f32, -2.0f32, -3.0f32, 2, 2, 2, 0.0f32);
         self["chin"].set_rotation_point(0.0f32, (-1 + var1) as f32, -4.0f32);
-        self.parts.insert("body".into(), ModelRenderer::new(0, 9));
+        self.insert_part("body".into(), ModelRenderer::new(0, 9));
         self["body"].add_box(-3.0f32, -4.0f32, -3.0f32, 6, 8, 6, 0.0f32);
         self["body"].set_rotation_point(0.0f32, (0 + var1) as f32, 0.0f32);
-        self.parts
-            .insert("rightLeg".into(), ModelRenderer::new(26, 0));
+        self.insert_part("rightLeg".into(), ModelRenderer::new(26, 0));
         self["rightLeg"].add_box(-1.0f32, 0.0f32, -3.0f32, 3, 5, 3, 0.0);
         self["rightLeg"].set_rotation_point(-2.0f32, (3 + var1) as f32, 1.0f32);
-        self.parts
-            .insert("leftLeg".into(), ModelRenderer::new(26, 0));
+        self.insert_part("leftLeg".into(), ModelRenderer::new(26, 0));
         self["leftLeg"].add_box(-1.0f32, 0.0f32, -3.0f32, 3, 5, 3, 0.0);
         self["leftLeg"].set_rotation_point(1.0f32, (3 + var1) as f32, 1.0f32);
-        self.parts
-            .insert("rightWing".into(), ModelRenderer::new(24, 13));
+        self.insert_part("rightWing".into(), ModelRenderer::new(24, 13));
         self["rightWing"].add_box(0.0f32, 0.0f32, -3.0f32, 1, 4, 6, 0.0);
         self["rightWing"].set_rotation_point(-4.0f32, (-3 + var1) as f32, 0.0f32);
-        self.parts
-            .insert("leftWing".into(), ModelRenderer::new(24, 13));
+        self.insert_part("leftWing".into(), ModelRenderer::new(24, 13));
         self["leftWing"].add_box(-1.0f32, 0.0f32, -3.0f32, 1, 4, 6, 0.0);
         self["leftWing"].set_rotation_point(4.0f32, (-3 + var1) as f32, 0.0f32);
     }
@@ -623,48 +625,37 @@ impl Model {
     fn init_spider(&mut self) {
         let mut var1: f32 = 0.0f32;
         let var2: i32 = 15;
-        self.parts
-            .insert("spiderHead".into(), ModelRenderer::new(32, 4));
+        self.insert_part("spiderHead".into(), ModelRenderer::new(32, 4));
         self["spiderHead"].add_box(-4.0f32, -4.0f32, -8.0f32, 8, 8, 8, var1);
         self["spiderHead"].set_rotation_point(0.0f32, (0 + var2) as f32, -3.0f32);
-        self.parts
-            .insert("spiderNeck".into(), ModelRenderer::new(0, 0));
+        self.insert_part("spiderNeck".into(), ModelRenderer::new(0, 0));
         self["spiderNeck"].add_box(-3.0f32, -3.0f32, -3.0f32, 6, 6, 6, var1);
         self["spiderNeck"].set_rotation_point(0.0f32, var2 as f32, 0.0f32);
-        self.parts
-            .insert("spiderBody".into(), ModelRenderer::new(0, 12));
+        self.insert_part("spiderBody".into(), ModelRenderer::new(0, 12));
         self["spiderBody"].add_box(-5.0f32, -4.0f32, -6.0f32, 10, 8, 12, var1);
         self["spiderBody"].set_rotation_point(0.0f32, (0 + var2) as f32, 9.0f32);
-        self.parts
-            .insert("spiderLeg1".into(), ModelRenderer::new(18, 0));
+        self.insert_part("spiderLeg1".into(), ModelRenderer::new(18, 0));
         self["spiderLeg1"].add_box(-15.0f32, -1.0f32, -1.0f32, 16, 2, 2, var1);
         self["spiderLeg1"].set_rotation_point(-4.0f32, (0 + var2) as f32, 2.0f32);
-        self.parts
-            .insert("spiderLeg2".into(), ModelRenderer::new(18, 0));
+        self.insert_part("spiderLeg2".into(), ModelRenderer::new(18, 0));
         self["spiderLeg2"].add_box(-1.0f32, -1.0f32, -1.0f32, 16, 2, 2, var1);
         self["spiderLeg2"].set_rotation_point(4.0f32, (0 + var2) as f32, 2.0f32);
-        self.parts
-            .insert("spiderLeg3".into(), ModelRenderer::new(18, 0));
+        self.insert_part("spiderLeg3".into(), ModelRenderer::new(18, 0));
         self["spiderLeg3"].add_box(-15.0f32, -1.0f32, -1.0f32, 16, 2, 2, var1);
         self["spiderLeg3"].set_rotation_point(-4.0f32, (0 + var2) as f32, 1.0f32);
-        self.parts
-            .insert("spiderLeg4".into(), ModelRenderer::new(18, 0));
+        self.insert_part("spiderLeg4".into(), ModelRenderer::new(18, 0));
         self["spiderLeg4"].add_box(-1.0f32, -1.0f32, -1.0f32, 16, 2, 2, var1);
         self["spiderLeg4"].set_rotation_point(4.0f32, (0 + var2) as f32, 1.0f32);
-        self.parts
-            .insert("spiderLeg5".into(), ModelRenderer::new(18, 0));
+        self.insert_part("spiderLeg5".into(), ModelRenderer::new(18, 0));
         self["spiderLeg5"].add_box(-15.0f32, -1.0f32, -1.0f32, 16, 2, 2, var1);
         self["spiderLeg5"].set_rotation_point(-4.0f32, (0 + var2) as f32, 0.0f32);
-        self.parts
-            .insert("spiderLeg6".into(), ModelRenderer::new(18, 0));
+        self.insert_part("spiderLeg6".into(), ModelRenderer::new(18, 0));
         self["spiderLeg6"].add_box(-1.0f32, -1.0f32, -1.0f32, 16, 2, 2, var1);
         self["spiderLeg6"].set_rotation_point(4.0f32, (0 + var2) as f32, 0.0f32);
-        self.parts
-            .insert("spiderLeg7".into(), ModelRenderer::new(18, 0));
+        self.insert_part("spiderLeg7".into(), ModelRenderer::new(18, 0));
         self["spiderLeg7"].add_box(-15.0f32, -1.0f32, -1.0f32, 16, 2, 2, var1);
         self["spiderLeg7"].set_rotation_point(-4.0f32, (0 + var2) as f32, -1.0f32);
-        self.parts
-            .insert("spiderLeg8".into(), ModelRenderer::new(18, 0));
+        self.insert_part("spiderLeg8".into(), ModelRenderer::new(18, 0));
         self["spiderLeg8"].add_box(-1.0f32, -1.0f32, -1.0f32, 16, 2, 2, var1);
         self["spiderLeg8"].set_rotation_point(4.0f32, (0 + var2) as f32, -1.0f32);
     }
@@ -673,26 +664,25 @@ impl Model {
     #[allow(unused_mut)]
     fn init_creeper(&mut self, var1: f32) {
         let var2: i32 = 4;
-        self.parts.insert("head".into(), ModelRenderer::new(0, 0));
+        self.insert_part("head".into(), ModelRenderer::new(0, 0));
         self["head"].add_box(-4.0f32, -8.0f32, -4.0f32, 8, 8, 8, var1);
         self["head"].set_rotation_point(0.0f32, var2 as f32, 0.0f32);
-        self.parts
-            .insert("unusedCreeperHeadwear".into(), ModelRenderer::new(32, 0));
+        self.insert_part("unusedCreeperHeadwear".into(), ModelRenderer::new(32, 0));
         self["unusedCreeperHeadwear"].add_box(-4.0f32, -8.0f32, -4.0f32, 8, 8, 8, var1 + 0.5f32);
         self["unusedCreeperHeadwear"].set_rotation_point(0.0f32, var2 as f32, 0.0f32);
-        self.parts.insert("body".into(), ModelRenderer::new(16, 16));
+        self.insert_part("body".into(), ModelRenderer::new(16, 16));
         self["body"].add_box(-4.0f32, 0.0f32, -2.0f32, 8, 12, 4, var1);
         self["body"].set_rotation_point(0.0f32, var2 as f32, 0.0f32);
-        self.parts.insert("leg1".into(), ModelRenderer::new(0, 16));
+        self.insert_part("leg1".into(), ModelRenderer::new(0, 16));
         self["leg1"].add_box(-2.0f32, 0.0f32, -2.0f32, 4, 6, 4, var1);
         self["leg1"].set_rotation_point(-2.0f32, (12 + var2) as f32, 4.0f32);
-        self.parts.insert("leg2".into(), ModelRenderer::new(0, 16));
+        self.insert_part("leg2".into(), ModelRenderer::new(0, 16));
         self["leg2"].add_box(-2.0f32, 0.0f32, -2.0f32, 4, 6, 4, var1);
         self["leg2"].set_rotation_point(2.0f32, (12 + var2) as f32, 4.0f32);
-        self.parts.insert("leg3".into(), ModelRenderer::new(0, 16));
+        self.insert_part("leg3".into(), ModelRenderer::new(0, 16));
         self["leg3"].add_box(-2.0f32, 0.0f32, -2.0f32, 4, 6, 4, var1);
         self["leg3"].set_rotation_point(-2.0f32, (12 + var2) as f32, -4.0f32);
-        self.parts.insert("leg4".into(), ModelRenderer::new(0, 16));
+        self.insert_part("leg4".into(), ModelRenderer::new(0, 16));
         self["leg4"].add_box(-2.0f32, 0.0f32, -2.0f32, 4, 6, 4, var1);
         self["leg4"].set_rotation_point(2.0f32, (12 + var2) as f32, -4.0f32);
     }
@@ -700,21 +690,16 @@ impl Model {
     /// `ModelSlime` constructor.
     #[allow(unused_mut)]
     fn init_slime(&mut self, var1: i32) {
-        self.parts
-            .insert("slimeBodies".into(), ModelRenderer::new(0, var1));
+        self.insert_part("slimeBodies".into(), ModelRenderer::new(0, var1));
         self["slimeBodies"].add_box(-4.0f32, 16.0f32, -4.0f32, 8, 8, 8, 0.0);
         if var1 > 0 {
-            self.parts
-                .insert("slimeBodies".into(), ModelRenderer::new(0, var1));
+            self.insert_part("slimeBodies".into(), ModelRenderer::new(0, var1));
             self["slimeBodies"].add_box(-3.0f32, 17.0f32, -3.0f32, 6, 6, 6, 0.0);
-            self.parts
-                .insert("slimeRightEye".into(), ModelRenderer::new(32, 0));
+            self.insert_part("slimeRightEye".into(), ModelRenderer::new(32, 0));
             self["slimeRightEye"].add_box(-3.25f32, 18.0f32, -3.5f32, 2, 2, 2, 0.0);
-            self.parts
-                .insert("slimeLeftEye".into(), ModelRenderer::new(32, 4));
+            self.insert_part("slimeLeftEye".into(), ModelRenderer::new(32, 4));
             self["slimeLeftEye"].add_box(1.25f32, 18.0f32, -3.5f32, 2, 2, 2, 0.0);
-            self.parts
-                .insert("slimeMouth".into(), ModelRenderer::new(32, 8));
+            self.insert_part("slimeMouth".into(), ModelRenderer::new(32, 8));
             self["slimeMouth"].add_box(0.0f32, 21.0f32, -3.5f32, 1, 1, 1, 0.0);
         }
     }
@@ -724,48 +709,37 @@ impl Model {
     fn init_wolf(&mut self) {
         let mut var1: f32 = 0.0f32;
         let mut var2: f32 = 13.5f32;
-        self.parts
-            .insert("wolfHeadMain".into(), ModelRenderer::new(0, 0));
+        self.insert_part("wolfHeadMain".into(), ModelRenderer::new(0, 0));
         self["wolfHeadMain"].add_box(-3.0f32, -3.0f32, -2.0f32, 6, 6, 4, var1);
         self["wolfHeadMain"].set_rotation_point(-1.0f32, var2, -7.0f32);
-        self.parts
-            .insert("wolfBody".into(), ModelRenderer::new(18, 14));
+        self.insert_part("wolfBody".into(), ModelRenderer::new(18, 14));
         self["wolfBody"].add_box(-4.0f32, -2.0f32, -3.0f32, 6, 9, 6, var1);
         self["wolfBody"].set_rotation_point(0.0f32, 14.0f32, 2.0f32);
-        self.parts
-            .insert("wolfMane".into(), ModelRenderer::new(21, 0));
+        self.insert_part("wolfMane".into(), ModelRenderer::new(21, 0));
         self["wolfMane"].add_box(-4.0f32, -3.0f32, -3.0f32, 8, 6, 7, var1);
         self["wolfMane"].set_rotation_point(-1.0f32, 14.0f32, 2.0f32);
-        self.parts
-            .insert("wolfLeg1".into(), ModelRenderer::new(0, 18));
+        self.insert_part("wolfLeg1".into(), ModelRenderer::new(0, 18));
         self["wolfLeg1"].add_box(-1.0f32, 0.0f32, -1.0f32, 2, 8, 2, var1);
         self["wolfLeg1"].set_rotation_point(-2.5f32, 16.0f32, 7.0f32);
-        self.parts
-            .insert("wolfLeg2".into(), ModelRenderer::new(0, 18));
+        self.insert_part("wolfLeg2".into(), ModelRenderer::new(0, 18));
         self["wolfLeg2"].add_box(-1.0f32, 0.0f32, -1.0f32, 2, 8, 2, var1);
         self["wolfLeg2"].set_rotation_point(0.5f32, 16.0f32, 7.0f32);
-        self.parts
-            .insert("wolfLeg3".into(), ModelRenderer::new(0, 18));
+        self.insert_part("wolfLeg3".into(), ModelRenderer::new(0, 18));
         self["wolfLeg3"].add_box(-1.0f32, 0.0f32, -1.0f32, 2, 8, 2, var1);
         self["wolfLeg3"].set_rotation_point(-2.5f32, 16.0f32, -4.0f32);
-        self.parts
-            .insert("wolfLeg4".into(), ModelRenderer::new(0, 18));
+        self.insert_part("wolfLeg4".into(), ModelRenderer::new(0, 18));
         self["wolfLeg4"].add_box(-1.0f32, 0.0f32, -1.0f32, 2, 8, 2, var1);
         self["wolfLeg4"].set_rotation_point(0.5f32, 16.0f32, -4.0f32);
-        self.parts
-            .insert("wolfTail".into(), ModelRenderer::new(9, 18));
+        self.insert_part("wolfTail".into(), ModelRenderer::new(9, 18));
         self["wolfTail"].add_box(-1.0f32, 0.0f32, -1.0f32, 2, 8, 2, var1);
         self["wolfTail"].set_rotation_point(-1.0f32, 12.0f32, 8.0f32);
-        self.parts
-            .insert("wolfRightEar".into(), ModelRenderer::new(16, 14));
+        self.insert_part("wolfRightEar".into(), ModelRenderer::new(16, 14));
         self["wolfRightEar"].add_box(-3.0f32, -5.0f32, 0.0f32, 2, 2, 1, var1);
         self["wolfRightEar"].set_rotation_point(-1.0f32, var2, -7.0f32);
-        self.parts
-            .insert("wolfLeftEar".into(), ModelRenderer::new(16, 14));
+        self.insert_part("wolfLeftEar".into(), ModelRenderer::new(16, 14));
         self["wolfLeftEar"].add_box(1.0f32, -5.0f32, 0.0f32, 2, 2, 1, var1);
         self["wolfLeftEar"].set_rotation_point(-1.0f32, var2, -7.0f32);
-        self.parts
-            .insert("wolfSnout".into(), ModelRenderer::new(0, 10));
+        self.insert_part("wolfSnout".into(), ModelRenderer::new(0, 10));
         self["wolfSnout"].add_box(-2.0f32, 0.0f32, -5.0f32, 3, 3, 4, var1);
         self["wolfSnout"].set_rotation_point(-0.5f32, var2, -7.0f32);
     }
@@ -1020,7 +994,7 @@ impl Model {
         let mut body = ModelRenderer::new(0, 0);
         body.add_box(-6.0, -8.0, -6.0, 12, 16, 12, 0.0);
         body.rotation_point_y += 8.0;
-        self.parts.insert("squidBody".into(), body);
+        self.insert_part("squidBody".into(), body);
         for i in 0..8 {
             let a = i as f64 * std::f64::consts::PI * 2.0 / 8.0;
             let mut part = ModelRenderer::new(48, 0);
@@ -1030,7 +1004,7 @@ impl Model {
             part.rotation_point_y = 15.0;
             part.rotate_angle_y =
                 (i as f64 * std::f64::consts::PI * -2.0 / 8.0 + std::f64::consts::PI * 0.5) as f32;
-            self.parts.insert(format!("squidTentacles[{i}]"), part);
+            self.insert_part(format!("squidTentacles[{i}]"), part);
         }
     }
     /// `ModelWolf.setLivingAnimations`: standing/sitting, tail wag, begging and wet shake.

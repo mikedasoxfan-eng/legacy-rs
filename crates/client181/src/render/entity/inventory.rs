@@ -160,6 +160,12 @@ pub fn block_color(id: u8, meta: i32) -> u32 {
     }
 }
 pub fn inventory(gl: &mut Fixed, id: u8, meta: i32, brightness: f32, tint: bool) {
+    if id == 54 {
+        let chest=super::chest::item();
+        for mut d in chest.draws {let mut ops=gl.ops.clone();ops.extend(d.ops);d.ops=ops;d.flags=(d.flags&(64|128|512))|gl.flags|2;d.normal=gl.normal;d.src=gl.src;d.dst=gl.dst;d.depth=gl.depth;gl.draws.push(d);}
+        gl.texture=31;gl.material=[1.0;4];gl.enable(2,true);return;
+    }
+
     if tint {
         let c = block_color(id, meta);
         gl.material = [

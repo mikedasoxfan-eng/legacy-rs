@@ -34,6 +34,12 @@ pub enum MobKind {
 /// limbSwing = S-R*(1-partial), age = ticksExisted+partial, attack = getSwingProgress.
 #[derive(Clone, Debug)]
 pub struct RenderState {
+    pub entity_id: i32,
+    pub arrow_count: i32,
+    pub carried_block: u8,
+    pub carried_data: i32,
+    pub scream_jitter: [f64; 2],
+    pub overlay_brightness: f32,
     pub carrying: bool,
     pub screaming: bool,
     pub ghast_attack: f32,
@@ -83,6 +89,12 @@ pub struct RenderState {
 impl RenderState {
     pub fn new(kind: MobKind) -> Self {
         Self {
+            entity_id: 0,
+            arrow_count: 0,
+            carried_block: 0,
+            carried_data: 0,
+            scream_jitter: [0.0; 2],
+            overlay_brightness: 1.0,
             carrying: false,
             screaming: false,
             ghast_attack: 0.0,
@@ -171,6 +183,7 @@ pub enum Pass {
     Opaque,
     Alpha,
     Eyes,
+    EyesOverlay,
     Additive,
     Overlay,
     TntFlash,
@@ -506,6 +519,9 @@ pub fn render_living(s: &RenderState, camera: DVec3) -> Vec<Batch> {
 }
 
 fn render_with_lighting(s: &RenderState, camera: DVec3, normalize: bool) -> Vec<Batch> {
+    if matches!(s.kind, MobKind::Enderman | MobKind::Silverfish | MobKind::Spider | MobKind::CaveSpider) {
+        return super::raw_living181::render(s, camera.to_array(), normalize).draws.iter().map(|d|d.batch()).collect();
+    }
     if matches!(s.kind, MobKind::Ghast | MobKind::PigZombie | MobKind::Giant) {
         return super::special::render(s, camera.to_array(), normalize)
             .draws

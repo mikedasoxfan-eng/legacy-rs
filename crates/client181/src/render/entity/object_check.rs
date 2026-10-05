@@ -481,3 +481,50 @@ pub fn fish_check(path: &str) -> bool {
     println!("fish renderers: {} values, {} differences", d.checks, d.bad);
     d.bad == 0
 }
+
+pub fn chest_check(path: &str) -> bool {
+    let mut d = Input { data: std::fs::read(path).unwrap(), at: 0, checks: 0, bad: 0 };
+    let cases = d.u();
+    for case in 0..cases {
+        let adj = d.u() as i32;
+        let metadata = d.u() as i32;
+        let lid = d.f(); let prev_lid = d.f(); let partial = d.f();
+        let g = if adj < 0 { super::chest::item() } else { super::chest::render(&super::chest::ChestState {
+            position: [-0.25,10.5,3.75], metadata, adjacent: std::array::from_fn(|i| adj & (1<<i) != 0), lid, prev_lid, partial,
+        }) };
+        assert_eq!(d.u() as usize, g.draws.len(), "chest {case} draw count");
+        for (i,r) in g.draws.iter().enumerate() { d.draw(r, &format!("chest {case} draw {i}")); }
+    }
+    assert_eq!(d.at, d.data.len());
+    println!("chest renderers: {cases} cases, {} values, {} differences", d.checks, d.bad);
+    d.bad == 0
+}
+
+pub fn new_living_check(path:&str)->bool {
+ use super::living::{MobKind,RenderState};
+ let mut d=Input{data:std::fs::read(path).unwrap(),at:0,checks:0,bad:0};let n=d.u();
+ for case in 0..n {let kind=d.u();let c=d.u() as i32;let arrows=d.u() as i32;let partial=d.f();let brightness=d.f();let packed=d.u() as i32;
+  let mut s=RenderState::new(match kind {0=>MobKind::Enderman,1=>MobKind::Silverfish,2=>MobKind::Spider,_=>MobKind::CaveSpider});
+  s.entity_id=c*337;s.arrow_count=arrows;s.partial=partial;s.brightness=1.0;s.overlay_brightness=brightness;s.position=[-0.25,10.5,3.75];
+  s.body_yaw=-33.0+(17.0 - -33.0)*partial;s.yaw=-75.0+(35.0 - -75.0)*partial;s.pitch=25.0+(-12.0-25.0)*partial;
+  s.limb_amount=0.2+(0.9-0.2)*partial;s.limb_swing=3.75-0.9*(1.0-partial);s.age=(c*127) as f32+partial;s.attack=0.15+(0.65-0.15)*partial;
+  s.hurt_time=if c%4==1 {3}else{0};s.death_time=if c%4==2 {c}else{0};
+  if kind==0 {s.carried_block=match c%3 {0=>0,1=>1,_=>35};s.carried_data=c%16;s.carrying=s.carried_block>0;s.screaming=c&1!=0;if s.screaming {let mut r=crate::render::weather::ClientRandom::new((42+c) as i64);s.scream_jitter=[r.gaussian()*0.02,r.gaussian()*0.02];}}
+  let g=super::raw_living181::render(&s,[0.0;3],c>=8);assert_eq!(d.u() as usize,g.draws.len(),"new living {case} draw count");for (i,r) in g.draws.iter().enumerate(){d.draw(r,&format!("new living {case} draw {i}"));}
+  let lights=super::raw_living181::packed_brightnesses(&g.draws,packed);assert_eq!(d.u() as usize,lights.len());for (i,v) in lights.into_iter().enumerate(){d.eq(v as u32,&format!("new living {case} light {i}"));}
+ }
+ assert_eq!(d.at,d.data.len());println!("new living renderers: {n} cases, {} values, {} differences",d.checks,d.bad);d.bad==0
+}
+
+pub fn bed_check(path:&str)->bool {
+ use super::bed_model::*;let mut d=Input{data:std::fs::read(path).unwrap(),at:0,checks:0,bad:0};
+ for table in [&X[..],&Z[..],&HEAD_INVISIBLE_FACE[..],&FACE_DIRECTION[..],&FOOT_INVISIBLE_FACE_REMAP[..],&NEXT[..],&PREVIOUS[..]] {for v in table {d.eq(*v as u32,"ModelBed table");}}
+ for table in BED_DIRECTION {for v in table {d.eq(v as u32,"ModelBed direction");}}
+ assert_eq!(d.at,d.data.len());println!("ModelBed: {} values, {} differences",d.checks,d.bad);d.bad==0
+}
+
+pub fn arrow_check(path:&str)->bool {
+ let mut d=Input{data:std::fs::read(path).unwrap(),at:0,checks:0,bad:0};let n=d.u();
+ for case in 0..n {let yaw=d.f();let pitch=d.f();let shake=d.u() as i32;let partial=d.f();let g=super::objects::render(&ObjectState{kind:ObjectKind::Arrow{yaw,pitch,shake,visible:false},position:[-0.25,10.5,3.75],partial,brightness:1.0},[0.0;3],[0.0;2]);assert_eq!(d.u() as usize,g.draws.len());for (i,r) in g.draws.iter().enumerate(){d.draw(r,&format!("arrow {case} draw {i}"));}}
+ assert_eq!(d.at,d.data.len());println!("arrows: {n} cases, {} values, {} differences",d.checks,d.bad);d.bad==0
+}

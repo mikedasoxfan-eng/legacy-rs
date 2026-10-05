@@ -78,7 +78,9 @@ pub fn check(path: &str) -> bool {
         data: std::fs::read(path).unwrap(),
         at: 0,
     };
-    assert_eq!(d.bytes::<8>(), *b"B173PRT1");
+    let magic = d.bytes::<8>();
+    let light = magic == *b"B181PRT2";
+    assert!(light || magic == *b"B173PRT1");
     let mut s = Snapshot::default();
     let width = d.i();
     for _ in 0..width * width {
@@ -86,6 +88,7 @@ pub fn check(path: &str) -> bool {
         let blocks = d.bytes();
         let meta = d.bytes();
         let brightness = std::array::from_fn(|_| d.f());
+        let packed_light = if light { std::array::from_fn(|_| d.i()) } else { [0;129] };
         s.columns.push(Column {
             x,
             z,
@@ -93,6 +96,7 @@ pub fn check(path: &str) -> bool {
             blocks,
             meta,
             brightness,
+            packed_light,
             biome: Biome::Plains,
             particle_rain: true,
         });
@@ -133,6 +137,7 @@ pub fn check(path: &str) -> bool {
             20 => Kind::Cloud,
             21 => Kind::Aura,
             22 => Kind::Suspend,
+            23 => Kind::LargeExplode,
             _ => panic!(),
         };
         let mut m = JavaRandom::new(mathseed);
@@ -158,7 +163,13 @@ pub fn check(path: &str) -> bool {
             }
             d.at = end;
             for partial in [0.0, 0.25, 0.75, 1.0] {
+                if light {
+                    let java = d.i();
+                    let rust = p.packed_brightness(&s, partial);
+                    if rust != java { if bad < 12 { eprintln!("particle {kind:?} tick {tick} light {rust:08x}/{java:08x}"); } bad += 1; }
+                }
                 let vs = p.vertices(&s, [0.125, 65.0, -0.25], rotation(37.25, -21.5), partial);
+                if light { assert_eq!(d.i() as usize, vs.len(), "particle vertex count"); }
                 for v in vs {
                     let mut fields = Vec::new();
                     for n in v.pos.into_iter().chain(v.uv) {
@@ -223,6 +234,7 @@ pub fn check(path: &str) -> bool {
                 if brightness.to_bits() != d.f().to_bits() {
                     bad += 1;
                 }
+                if light && p.packed_brightness(&s,partial) != d.i() { bad += 1; }
                 transforms += 1;
             }
             if !p.dead {
@@ -279,6 +291,7 @@ pub fn effects_check(path: &str) -> bool {
                 blocks,
                 meta,
                 brightness,
+                packed_light: [0;129],
                 biome: Biome::Plains,
                 particle_rain: true,
             });
@@ -438,4 +451,37 @@ pub fn effects_check(path: &str) -> bool {
     assert_eq!(d.at, d.data.len());
     println!("EffectRenderer checks: {cases} block/metadata cases, {vertices} vertices, {bad} differing fields");
     bad == 0
+}
+
+pub fn emitter_check(path: &str) -> bool {
+    let mut r = Reader { data: std::fs::read(path).unwrap(), at: 0 };
+    let cases = r.i(); let mut bad = 0;
+    for case in 0..cases {
+        let kind = if r.i() == 0 { Kind::HugeExplode } else { Kind::CritEmitter };
+        let seed = r.l(); let mathseed = r.l();
+        let mut w = worldgen::entity::verify181::world();
+        let mut target = worldgen::entity::Entity::living(&mut w, "Pig").unwrap();
+        target.set_position(-3.5,64.1,1.5); target.motion = worldgen::entity::Vec3D::new(0.25,-0.1,0.5);
+        let pos = if kind == Kind::CritEmitter { [target.pos.x, target.bounding_box.min_y+(target.height/2.0) as f64,target.pos.z] } else { [-3.5,64.1,1.5] };
+        let motion = if kind == Kind::CritEmitter { [0.25,-0.1,0.5] } else { [0.0;3] };
+        let mut m = JavaRandom::new(mathseed);
+        let terrain = Snapshot::default();
+        let mut p = Particle::new(kind,pos,motion,&mut m,seed);
+        if kind == Kind::CritEmitter { p.pickup=Some(Box::new(target.clone()));p.tick(&terrain,&mut m); }
+        for tick in 0..10 {
+            let mut bytes = state(&p,&m);
+            bytes.extend((p.emitted.len() as i32).to_le_bytes());
+            for (name,pos,motion) in std::mem::take(&mut p.emitted) {
+                bytes.push(1);bytes.extend((name.len() as i32).to_le_bytes());bytes.extend(name.as_bytes());
+                for v in pos.into_iter().chain(motion) {bytes.extend(v.to_bits().to_le_bytes());}
+            }
+            if bytes != r.data[r.at..r.at+bytes.len()] { if bad<12 {eprintln!("emitter {case} tick {tick} differs at {:?}",bytes.iter().zip(&r.data[r.at..]).position(|(a,b)|a!=b));} bad+=1; }
+            r.at += bytes.len();
+            target.set_position(target.pos.x+0.125,target.pos.y-0.03125,target.pos.z+0.25);
+            p.pickup=Some(Box::new(target.clone()));
+            if !p.dead {p.tick(&terrain,&mut m);}
+        }
+    }
+    assert_eq!(r.at,r.data.len());
+    println!("particle emitters: {cases} cases, {bad} differences");bad==0
 }

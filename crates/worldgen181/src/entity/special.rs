@@ -127,7 +127,7 @@ impl Entity {
                     .is_some_and(|e| e.player_state().is_some());
             let source_living = id < 0 || w.entities.get(&id).is_some_and(|e| e.kind.is_living());
             if source_living {
-                if self.living.target.is_none() {
+                if w.loaded_entity_list.contains(&self.entity_id) && self.living.target.is_none() {
                     self.living.target = Some(target);
                 }
                 let b = BB::new(

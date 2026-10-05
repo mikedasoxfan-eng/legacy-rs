@@ -25,7 +25,7 @@ pub fn check(a: &[String]) {
         let blocks = d.bytes(128).try_into().unwrap();
         let meta = d.bytes(128).try_into().unwrap();
         let brightness = std::array::from_fn(|_| f32::from_bits(d.i32() as u32));
-        s.columns.push(Column { x, z, top, biome, particle_rain, blocks, meta, brightness });
+        s.columns.push(Column { x, z, top, biome, particle_rain, blocks, meta, brightness, packed_light: [0;129] });
     }
     let mut rng = ClientRandom::new(0);
     let [snow, water] = precipitation(&s, cam, tick, partial, rain, fancy, &mut rng);

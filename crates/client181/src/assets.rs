@@ -87,6 +87,9 @@ pub fn load_with(pack: Option<&std::path::Path>, anaglyph: bool) -> Result<Asset
         "misc/mapbg.png",
         "misc/mapicons.png",
         "item/sign.png",
+        "item/chest.png",
+        "item/largechest.png",
+        "misc/explosion.png",
         "art/kz.png",
         "particles.png",
     ]) {

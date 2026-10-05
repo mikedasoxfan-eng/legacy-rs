@@ -31,6 +31,9 @@ pub enum Kind {
     Cloud,
     Aura,
     Suspend,
+    LargeExplode,
+    HugeExplode,
+    CritEmitter,
 }
 impl Kind {
     pub fn named(name: &str) -> Option<Self> {
@@ -55,6 +58,8 @@ impl Kind {
             "cloud" => Self::Cloud,
             "townaura" => Self::Aura,
             "suspended" => Self::Suspend,
+            "largeexplode" => Self::LargeExplode,
+            "hugeexplosion" => Self::HugeExplode,
             _ => return None,
         })
     }
@@ -87,8 +92,37 @@ pub struct Particle {
     pub pickup: Option<Box<worldgen::entity::Entity>>,
     pub target: i32,
     pub cloud_player: Option<[f64; 5]>,
+    pub duration: i32,
+    pub emitted: Vec<(&'static str, [f64; 3], [f64; 3])>,
 }
 impl Particle {
+    /// Entity.func_35115_a and the three particle overrides. The partial tick
+    /// affects Flame, but Portal deliberately uses the integer age alone.
+    pub fn packed_brightness(&self, terrain: &Snapshot, partial: f32) -> i32 {
+        let base = terrain.packed_brightness([self.pos[0],
+            self.pos[1] - self.y_offset as f64 + (self.bounds[4] - self.bounds[1]) * 0.66,
+            self.pos[2]]);
+        self.packed_brightness_from(base, partial)
+    }
+    pub fn packed_brightness_from(&self, base: i32, partial: f32) -> i32 {
+        let block = base & 255;
+        let sky = (base >> 16) & 255;
+        match self.kind {
+            Kind::LargeExplode => 61680,
+            Kind::Lava => 240 | sky << 16,
+            Kind::Flame => {
+                let t = ((self.age as f32 + partial) / self.max_age as f32).clamp(0.0, 1.0);
+                (block + (t * 15.0 * 16.0) as i32).min(240) | sky << 16
+            }
+            Kind::Portal => {
+                let mut t = self.age as f32 / self.max_age as f32;
+                t *= t;
+                t *= t;
+                block | (sky + (t * 15.0 * 16.0) as i32).min(240) << 16
+            }
+            _ => base,
+        }
+    }
     pub fn new(
         kind: Kind,
         pos: [f64; 3],
@@ -127,6 +161,8 @@ impl Particle {
                 | Kind::Slime
                 | Kind::Snowball
                 | Kind::Footstep
+                | Kind::LargeExplode
+                | Kind::HugeExplode
         ) {
             [0.0; 3]
         } else {
@@ -178,8 +214,17 @@ impl Particle {
             pickup: None,
             target: 0,
             cloud_player: None,
+            duration: 0,
+            emitted: Vec::new(),
         };
         match kind {
+            Kind::LargeExplode => {
+                p.duration = 6 + p.rand.next_int(4);
+                p.color = [p.rand.next_float() * 0.6 + 0.4; 3];
+                p.original_scale = 1.0 - velocity[0] as f32 * 0.5;
+            }
+            Kind::HugeExplode => p.duration = 8,
+            Kind::CritEmitter => p.duration = 3,
             Kind::Crit | Kind::MagicCrit | Kind::Cloud => {
                 for i in 0..3 {
                     p.motion[i] *= 0.1f32 as f64;
@@ -364,7 +409,9 @@ impl Particle {
             }
             Kind::Pickup | Kind::Base => {}
         }
-        p.original_scale = p.scale;
+        if kind != Kind::LargeExplode {
+            p.original_scale = p.scale;
+        }
         if matches!(kind, Kind::Crit | Kind::MagicCrit) {
             p.tick(terrain, m);
             if kind == Kind::MagicCrit {
@@ -377,9 +424,9 @@ impl Particle {
     }
     pub fn layer(&self) -> usize {
         match self.kind {
-            Kind::Digging { .. } => 1,
+            Kind::Digging { .. } | Kind::HugeExplode => 1,
             Kind::Slime | Kind::Snowball => 2,
-            Kind::Footstep | Kind::Pickup => 3,
+            Kind::Footstep | Kind::Pickup | Kind::LargeExplode | Kind::CritEmitter => 3,
             _ => 0,
         }
     }
@@ -395,6 +442,29 @@ impl Particle {
         self.original_scale = self.scale;
     }
     pub fn tick(&mut self, terrain: &Snapshot, m: &mut JavaRandom) -> Option<([f64; 3], [f64; 3])> {
+        if matches!(self.kind, Kind::LargeExplode | Kind::HugeExplode | Kind::CritEmitter) {
+            if self.kind == Kind::LargeExplode {
+                self.prev = self.pos;
+            } else if self.kind == Kind::HugeExplode {
+                for _ in 0..6 {
+                    let pos = std::array::from_fn(|i| self.pos[i] + (self.rand.next_double() - self.rand.next_double()) * 4.0);
+                    self.emitted.push(("largeexplode", pos, [(self.timer as f32 / self.duration as f32) as f64, 0.0, 0.0]));
+                }
+            } else if let Some(target) = &self.pickup {
+                for _ in 0..16 {
+                    let v: [f64; 3] = std::array::from_fn(|_| (self.rand.next_float() * 2.0 - 1.0) as f64);
+                    if v.iter().map(|v| v * v).sum::<f64>() <= 1.0 {
+                        let pos = [target.pos.x + v[0] * target.width as f64 / 4.0,
+                            target.bounding_box.min_y + (target.height / 2.0) as f64 + v[1] * target.height as f64 / 4.0,
+                            target.pos.z + v[2] * target.width as f64 / 4.0];
+                        self.emitted.push(("crit", pos, [v[0], v[1] + 0.2, v[2]]));
+                    }
+                }
+            }
+            self.timer += 1;
+            self.dead = if self.kind == Kind::CritEmitter { self.timer >= self.duration } else { self.timer == self.duration };
+            return None;
+        }
         if self.kind == Kind::Pickup {
             self.timer += 1;
             if self.timer == 3 {
@@ -585,7 +655,7 @@ impl Particle {
         rotation: [f32; 5],
         partial: f32,
     ) -> Vec<WeatherVertex> {
-        if self.kind == Kind::Pickup {
+        if matches!(self.kind, Kind::Pickup | Kind::HugeExplode | Kind::CritEmitter) {
             return Vec::new();
         }
         if self.kind == Kind::Footstep {
@@ -636,21 +706,27 @@ impl Particle {
             self.kind,
             Kind::Digging { .. } | Kind::Snowball | Kind::Slime
         );
-        let u0 = if fragment {
+        let frame = ((self.timer as f32 + partial) * 15.0 / self.duration as f32) as i32;
+        if self.kind == Kind::LargeExplode && frame > 15 { return Vec::new(); }
+        let u0 = if self.kind == Kind::LargeExplode {
+            (frame % 4) as f32 * 4.0
+        } else if fragment {
             (self.texture % 16) as f32 + self.jitter[0] / 4.0
         } else {
             (self.texture % 16) as f32
         } / 16.0;
-        let v0 = if fragment {
+        let v0 = if self.kind == Kind::LargeExplode {
+            (frame / 4) as f32 * 4.0
+        } else if fragment {
             (self.texture / 16) as f32 + self.jitter[1] / 4.0
         } else {
             (self.texture / 16) as f32
         } / 16.0;
-        let width = 0.999 / if fragment { 64.0 } else { 16.0 };
+        let width = 0.999 / if self.kind == Kind::LargeExplode { 4.0 } else if fragment { 64.0 } else { 16.0 };
         let u1 = u0 + width;
         let v1 = v0 + width;
         let [rx, ry, rz, ux, uz] = rotation;
-        let size = 0.1 * self.scale;
+        let size = if self.kind == Kind::LargeExplode { 2.0 * self.original_scale } else { 0.1 * self.scale };
         let points = [
             [
                 pos[0] - rx * size - ux * size,
@@ -723,6 +799,31 @@ pub struct EffectRenderer {
     pub seed_source: Option<worldgen::entity::EntitySeedSource>,
 }
 impl EffectRenderer {
+    /// EntityCrit2FX constructs at the target's center and emits its first
+    /// burst immediately, then follows the target for two more updates.
+    pub fn critical_hit(&mut self, target: &worldgen::entity::Entity, view: [f64; 3]) {
+        let pos = [target.pos.x, target.bounding_box.min_y + (target.height / 2.0) as f64, target.pos.z];
+        let mut p = self.create(Kind::CritEmitter, pos, [target.motion.x, target.motion.y, target.motion.z]);
+        p.pickup = Some(Box::new(target.clone()));
+        p.target = target.entity_id;
+        p.tick(&self.creation_terrain, &mut self.math_random);
+        for (name, pos, motion) in std::mem::take(&mut p.emitted) { self.spawn(name, pos, motion, view); }
+        self.add(p);
+    }
+    /// Keep the emitter's target current without borrowing the simulation world.
+    pub fn update_critical_target(&mut self, target: &worldgen::entity::Entity) {
+        for p in &mut self.layers[3] {
+            if p.kind == Kind::CritEmitter && p.target == target.entity_id { p.pickup = Some(Box::new(target.clone())); }
+        }
+    }
+    /// Parallel packed-light output for integrators using the lightmap texture.
+    pub fn lightmapped_vertices(&mut self, s: &Snapshot, cam: [f64; 3], yaw: f32, pitch: f32, partial: f32) -> [Vec<(WeatherVertex, i32)>; 3] {
+        let rot = rotation(yaw, pitch);
+        std::array::from_fn(|i| self.layers[i].iter_mut().flat_map(|p| {
+            let light = p.packed_brightness(s, partial);
+            p.vertices(s, cam, rot, partial).into_iter().map(move |v| (v, light))
+        }).collect())
+    }
     pub fn new(seed: i64) -> Self {
         Self {
             layers: std::array::from_fn(|_| Vec::new()),
@@ -782,7 +883,7 @@ impl EffectRenderer {
             .map(|i| (view[i] - p[i]) * (view[i] - p[i]))
             .sum::<f64>();
         // Original bytecode rejects with dcmpl/ifgt; NaN therefore passes.
-        if !(distance > 16.0 * 16.0) {
+        if matches!(name, "largeexplode" | "hugeexplosion") || !(distance > 16.0 * 16.0) {
             if let Some(kind) = Kind::named(name) {
                 let p = self.create(kind, p, v);
                 self.add(p);
@@ -796,6 +897,10 @@ impl EffectRenderer {
                 self.layers[layer][index].cloud_player = self.cloud_player;
                 let smoke = self.layers[layer][index].tick(s, &mut self.math_random);
                 let dead = self.layers[layer][index].dead;
+                let emitted = std::mem::take(&mut self.layers[layer][index].emitted);
+                for (name, pos, motion) in emitted {
+                    self.spawn(name, pos, motion, view);
+                }
                 if let Some((p, v)) = smoke {
                     self.spawn("smoke", p, v, view);
                 }

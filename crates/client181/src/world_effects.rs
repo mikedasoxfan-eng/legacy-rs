@@ -147,8 +147,9 @@ impl Effects {
         // EntityRenderer calls the lit layer before renderParticles updates interpPos.
         let origin = self.interp_camera;
         for p in &mut self.renderer.layers[3] {
-            if p.kind == Kind::Footstep {
-                let vs = p.vertices(&self.terrain, origin, [0.0; 5], partial);
+            if matches!(p.kind, Kind::Footstep | Kind::LargeExplode) {
+                let vs = p.vertices(&self.terrain, origin, crate::render::particles::rotation(view[0], view[1]), partial);
+                if vs.is_empty() { continue; }
                 let vertices = [0, 1, 2, 0, 2, 3]
                     .map(|i| EntityVertex {
                         pos: vs[i].pos,
@@ -157,7 +158,7 @@ impl Effects {
                     })
                     .to_vec();
                 batches.push(Batch {
-                    texture: Some("misc/footprint.png"),
+                    texture: Some(if p.kind == Kind::LargeExplode { "misc/explosion.png" } else { "misc/footprint.png" }),
                     pass: Pass::Alpha,
                     vertices,
                 });
@@ -173,23 +174,8 @@ impl Effects {
                     p.timer,
                     partial,
                 );
-                let bright = self.terrain.brightness([
-                    worldpos[0],
-                    worldpos[1] + (p.y_offset / 2.0) as f64,
-                    worldpos[2],
-                ]);
-                let source_brightness = self.terrain.brightness([
-                    source.pos.x,
-                    source.pos.y - source.y_offset as f64
-                        + (source.bounding_box.max_y - source.bounding_box.min_y) * 0.66,
-                    source.pos.z,
-                ]);
                 let relative = std::array::from_fn(|i| (worldpos[i] - origin[i]) as f32 as f64);
-                let color = if matches!(source.kind, worldgen::entity::EntityKind::Item { .. }) {
-                    source_brightness
-                } else {
-                    bright
-                };
+                let color = 1.0;
                 if let Some(mut state) = bridge::object_state(source, partial, color, [color; 7]) {
                     state.position = relative;
                     let g = Self::object_draws(&state, [0.0; 3], view, fancy);

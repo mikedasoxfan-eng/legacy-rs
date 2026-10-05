@@ -2,6 +2,7 @@
 
 pub mod bridge;
 pub mod check;
+pub mod chest;
 pub mod effects;
 pub mod equipped;
 pub mod fixed;
@@ -15,9 +16,12 @@ pub mod object_check;
 pub mod objects;
 pub mod pipeline;
 pub mod player;
+pub mod raw_living181;
 pub mod shot;
 pub mod special;
 pub mod vehicles;
 
 #[cfg(test)]
 mod tests;
+
+pub mod bed_model;

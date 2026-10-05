@@ -213,9 +213,9 @@ pub fn render(s: &ObjectState, camera: [f64; 3], view: [f32; 2]) -> Fixed {
             yaw,
             pitch,
             shake,
-            visible,
+            visible: _,
         } => {
-            if visible {
+            { // Beta 1.8.1 renders arrows even before their first nonzero rotation.
                 g.texture = 3;
                 g.push();
                 g.translate(x, y, z);

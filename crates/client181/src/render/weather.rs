@@ -43,12 +43,17 @@ pub struct Column {
     pub blocks: [u8; 128],
     pub meta: [u8; 128],
     pub brightness: [f32; 129],
+    pub packed_light: [i32; 129],
 }
 #[derive(Clone, Default)]
 pub struct Snapshot {
     pub columns: Vec<Column>,
 }
 impl Snapshot {
+    pub fn packed_brightness(&self, p: [f64; 3]) -> i32 {
+        self.column(math::floor_double(p[0]), math::floor_double(p[2]))
+            .map_or(0, |c| c.packed_light[math::floor_double(p[1]).clamp(0, 128) as usize])
+    }
     pub fn column(&self, x: i32, z: i32) -> Option<&Column> {
         let first = self.columns.first()?;
         let (dx, dz) = (x - first.x, z - first.z);
