@@ -296,6 +296,12 @@ pub fn run(script: &str, out_dir: &std::path::Path) -> Result<(), String> {
                         "poison" => p.poison = i()? != 0,
                         "hunger" => p.hunger = i()? != 0,
                         "regen" => p.regeneration = i()? != 0,
+                        "nausea" => p.nausea = i()? != 0,
+                        "portal" => {
+                            let t: f32 = v.parse().map_err(|_| "hud portal")?;
+                            p.time_in_portal = t;
+                            p.prev_time_in_portal = t;
+                        }
                         "prev" => p.prev_health = i()?,
                         "hearts_life" => p.hearts_life = i()?,
                         "item" => p.current_item = i()?,

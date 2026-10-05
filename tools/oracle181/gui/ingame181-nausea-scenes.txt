@@ -1,0 +1,7 @@
+# GuiIngame (b1.8.1): no portal overlay under nausea (the harness keeps potion effects, so last).
+saves ../out/guisaves
+world 42
+clear 128
+hud health=20 prev=20 item=0 pos=0.5,120,0.5 brightness=0.0 food=20 saturation=5 xp=0 level=0 portal=0.6 nausea=1
+counter 0
+shot b181_portal_nausea

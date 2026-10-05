@@ -1,0 +1,10 @@
+# GuiIngame (b1.8.1): the portal overlay while teleporting. Each harness world state is pinned to
+# the first shot after setup: the Java client keeps running between shots (vignette easing).
+saves ../out/guisaves
+world 42
+clear 128
+hud health=20 prev=20 item=0 pos=0.5,120,0.5 brightness=0.0 food=20 saturation=5 xp=0 level=0 portal=0.15
+counter 0
+shot b181_portal_early
+hud health=20 prev=20 item=0 pos=0.5,120,0.5 brightness=0.0 food=20 saturation=5 xp=0 level=0 portal=1.0
+shot b181_portal_full
