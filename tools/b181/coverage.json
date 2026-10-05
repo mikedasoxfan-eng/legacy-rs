@@ -6848,7 +6848,11 @@
   "entities7: metadata7",
   "entities7: metaplace7",
   "entities7: signitem7",
-  "entities7: vineconstructor7"
+  "entities7: vineconstructor7",
+  "entities8: EffectRenderer dispatch",
+  "entities8: ItemMap lifecycle",
+  "entities8: Wolf despawning",
+  "entities: special, every frame for 3000 ticks"
  ],
  "Chunk": [
   "Java save / Rust load seed -4172144997902289642",
@@ -7458,7 +7462,11 @@
   "entities7: metadata7",
   "entities7: metaplace7",
   "entities7: signitem7",
-  "entities7: vineconstructor7"
+  "entities7: vineconstructor7",
+  "entities8: EffectRenderer dispatch",
+  "entities8: ItemMap lifecycle",
+  "entities8: Wolf despawning",
+  "entities: special, every frame for 3000 ticks"
  ],
  "ChunkFile": [
   "container clicks, recipes, furnace and dispenser world replay",
@@ -19745,13 +19753,14 @@
   "entities5: watchers5"
  ],
  "EffectRenderer": [
+  "EntityPickupFX item and arrow renderer draws",
   "entities181: particles181",
   "entities4: effectlifecycle4_181",
-  "entities4: rendereffects",
   "entities4: particleeffects",
+  "entities4: rendereffects",
   "entities5: particlefactory5_181",
   "entities6: particlefactory6_181",
-  "EntityPickupFX item and arrow renderer draws"
+  "entities6: playerliving6_181"
  ],
  "EmptyChunk": [
   "container clicks, recipes, furnace and dispenser world replay",
@@ -19935,7 +19944,11 @@
   "entities7: metadata7",
   "entities7: metaplace7",
   "entities7: signitem7",
-  "entities7: vineconstructor7"
+  "entities7: vineconstructor7",
+  "entities8: EffectRenderer dispatch",
+  "entities8: ItemMap lifecycle",
+  "entities8: Wolf despawning",
+  "entities: special, every frame for 3000 ticks"
  ],
  "EntityAnimal": [
   "entities181: Arrow",
@@ -20043,7 +20056,11 @@
   "entities7: metadata7",
   "entities7: metaplace7",
   "entities7: signitem7",
-  "entities7: vineconstructor7"
+  "entities7: vineconstructor7",
+  "entities8: EffectRenderer dispatch",
+  "entities8: ItemMap lifecycle",
+  "entities8: Wolf despawning",
+  "entities: special, every frame for 3000 ticks"
  ],
  "EntityArrow": [
   "entities181: Arrow",
@@ -20202,7 +20219,11 @@
   "entities7: metadata7",
   "entities7: metaplace7",
   "entities7: signitem7",
-  "entities7: vineconstructor7"
+  "entities7: vineconstructor7",
+  "entities8: EffectRenderer dispatch",
+  "entities8: ItemMap lifecycle",
+  "entities8: Wolf despawning",
+  "entities: special, every frame for 3000 ticks"
  ],
  "EntityCaveSpider": [
   "entities181: Arrow",
@@ -20457,7 +20478,11 @@
   "entities7: metadata7",
   "entities7: metaplace7",
   "entities7: signitem7",
-  "entities7: vineconstructor7"
+  "entities7: vineconstructor7",
+  "entities8: EffectRenderer dispatch",
+  "entities8: ItemMap lifecycle",
+  "entities8: Wolf despawning",
+  "entities: special, every frame for 3000 ticks"
  ],
  "EntityCreeper": [
   "entities181: Arrow",
@@ -20565,7 +20590,11 @@
   "entities7: metadata7",
   "entities7: metaplace7",
   "entities7: signitem7",
-  "entities7: vineconstructor7"
+  "entities7: vineconstructor7",
+  "entities8: EffectRenderer dispatch",
+  "entities8: ItemMap lifecycle",
+  "entities8: Wolf despawning",
+  "entities: special, every frame for 3000 ticks"
  ],
  "EntityCrit2FX": [
   "entities181: Arrow",
@@ -20673,7 +20702,11 @@
   "entities7: metadata7",
   "entities7: metaplace7",
   "entities7: signitem7",
-  "entities7: vineconstructor7"
+  "entities7: vineconstructor7",
+  "entities8: EffectRenderer dispatch",
+  "entities8: ItemMap lifecycle",
+  "entities8: Wolf despawning",
+  "entities: special, every frame for 3000 ticks"
  ],
  "EntityCritFX": [
   "entities181: particles181"
@@ -20982,7 +21015,11 @@
   "entities7: metadata7",
   "entities7: metaplace7",
   "entities7: signitem7",
-  "entities7: vineconstructor7"
+  "entities7: vineconstructor7",
+  "entities8: EffectRenderer dispatch",
+  "entities8: ItemMap lifecycle",
+  "entities8: Wolf despawning",
+  "entities: special, every frame for 3000 ticks"
  ],
  "EntityFish": [
   "entities181: Arrow",
@@ -21090,7 +21127,11 @@
   "entities7: metadata7",
   "entities7: metaplace7",
   "entities7: signitem7",
-  "entities7: vineconstructor7"
+  "entities7: vineconstructor7",
+  "entities8: EffectRenderer dispatch",
+  "entities8: ItemMap lifecycle",
+  "entities8: Wolf despawning",
+  "entities: special, every frame for 3000 ticks"
  ],
  "EntityFlameFX": [
   "entities181: Arrow",
@@ -21198,7 +21239,11 @@
   "entities7: metadata7",
   "entities7: metaplace7",
   "entities7: signitem7",
-  "entities7: vineconstructor7"
+  "entities7: vineconstructor7",
+  "entities8: EffectRenderer dispatch",
+  "entities8: ItemMap lifecycle",
+  "entities8: Wolf despawning",
+  "entities: special, every frame for 3000 ticks"
  ],
  "EntityFlying": [
   "entities181: Arrow",
@@ -21306,7 +21351,11 @@
   "entities7: metadata7",
   "entities7: metaplace7",
   "entities7: signitem7",
-  "entities7: vineconstructor7"
+  "entities7: vineconstructor7",
+  "entities8: EffectRenderer dispatch",
+  "entities8: ItemMap lifecycle",
+  "entities8: Wolf despawning",
+  "entities: special, every frame for 3000 ticks"
  ],
  "EntityFootStepFX": [
   "entities181: particles181"
@@ -21417,7 +21466,11 @@
   "entities7: metadata7",
   "entities7: metaplace7",
   "entities7: signitem7",
-  "entities7: vineconstructor7"
+  "entities7: vineconstructor7",
+  "entities8: EffectRenderer dispatch",
+  "entities8: ItemMap lifecycle",
+  "entities8: Wolf despawning",
+  "entities: special, every frame for 3000 ticks"
  ],
  "EntityHeartFX": [
   "entities181: particles181"
@@ -21528,7 +21581,11 @@
   "entities7: metadata7",
   "entities7: metaplace7",
   "entities7: signitem7",
-  "entities7: vineconstructor7"
+  "entities7: vineconstructor7",
+  "entities8: EffectRenderer dispatch",
+  "entities8: ItemMap lifecycle",
+  "entities8: Wolf despawning",
+  "entities: special, every frame for 3000 ticks"
  ],
  "EntityItem": [
   "entities181: Arrow",
@@ -21684,7 +21741,11 @@
   "entities7: metadata7",
   "entities7: metaplace7",
   "entities7: signitem7",
-  "entities7: vineconstructor7"
+  "entities7: vineconstructor7",
+  "entities8: EffectRenderer dispatch",
+  "entities8: ItemMap lifecycle",
+  "entities8: Wolf despawning",
+  "entities: special, every frame for 3000 ticks"
  ],
  "EntityLavaFX": [
   "entities181: Arrow",
@@ -21792,7 +21853,11 @@
   "entities7: metadata7",
   "entities7: metaplace7",
   "entities7: signitem7",
-  "entities7: vineconstructor7"
+  "entities7: vineconstructor7",
+  "entities8: EffectRenderer dispatch",
+  "entities8: ItemMap lifecycle",
+  "entities8: Wolf despawning",
+  "entities: special, every frame for 3000 ticks"
  ],
  "EntityLightningBolt": [
   "entities181: Arrow",
@@ -21900,7 +21965,11 @@
   "entities7: metadata7",
   "entities7: metaplace7",
   "entities7: signitem7",
-  "entities7: vineconstructor7"
+  "entities7: vineconstructor7",
+  "entities8: EffectRenderer dispatch",
+  "entities8: ItemMap lifecycle",
+  "entities8: Wolf despawning",
+  "entities: special, every frame for 3000 ticks"
  ],
  "EntityList": [
   "entities3: factorybranches",
@@ -22012,7 +22081,11 @@
   "entities7: metadata7",
   "entities7: metaplace7",
   "entities7: signitem7",
-  "entities7: vineconstructor7"
+  "entities7: vineconstructor7",
+  "entities8: EffectRenderer dispatch",
+  "entities8: ItemMap lifecycle",
+  "entities8: Wolf despawning",
+  "entities: special, every frame for 3000 ticks"
  ],
  "EntityMinecart": [
   "entities181: Arrow",
@@ -22120,7 +22193,11 @@
   "entities7: metadata7",
   "entities7: metaplace7",
   "entities7: signitem7",
-  "entities7: vineconstructor7"
+  "entities7: vineconstructor7",
+  "entities8: EffectRenderer dispatch",
+  "entities8: ItemMap lifecycle",
+  "entities8: Wolf despawning",
+  "entities: special, every frame for 3000 ticks"
  ],
  "EntityMob": [
   "entities181: Arrow",
@@ -22228,7 +22305,11 @@
   "entities7: metadata7",
   "entities7: metaplace7",
   "entities7: signitem7",
-  "entities7: vineconstructor7"
+  "entities7: vineconstructor7",
+  "entities8: EffectRenderer dispatch",
+  "entities8: ItemMap lifecycle",
+  "entities8: Wolf despawning",
+  "entities: special, every frame for 3000 ticks"
  ],
  "EntityNoteFX": [
   "entities181: particles181"
@@ -22339,7 +22420,11 @@
   "entities7: metadata7",
   "entities7: metaplace7",
   "entities7: signitem7",
-  "entities7: vineconstructor7"
+  "entities7: vineconstructor7",
+  "entities8: EffectRenderer dispatch",
+  "entities8: ItemMap lifecycle",
+  "entities8: Wolf despawning",
+  "entities: special, every frame for 3000 ticks"
  ],
  "EntityPickupFX": [
   "entities181: Arrow",
@@ -22447,7 +22532,11 @@
   "entities7: metadata7",
   "entities7: metaplace7",
   "entities7: signitem7",
-  "entities7: vineconstructor7"
+  "entities7: vineconstructor7",
+  "entities8: EffectRenderer dispatch",
+  "entities8: ItemMap lifecycle",
+  "entities8: Wolf despawning",
+  "entities: special, every frame for 3000 ticks"
  ],
  "EntityPigZombie": [
   "entities181: Arrow",
@@ -22555,7 +22644,11 @@
   "entities7: metadata7",
   "entities7: metaplace7",
   "entities7: signitem7",
-  "entities7: vineconstructor7"
+  "entities7: vineconstructor7",
+  "entities8: EffectRenderer dispatch",
+  "entities8: ItemMap lifecycle",
+  "entities8: Wolf despawning",
+  "entities: special, every frame for 3000 ticks"
  ],
  "EntityPlayer": [
   "EntityPlayer NBT: read then write, byte order of level.dat player data",
@@ -22810,7 +22903,11 @@
   "entities7: metadata7",
   "entities7: metaplace7",
   "entities7: signitem7",
-  "entities7: vineconstructor7"
+  "entities7: vineconstructor7",
+  "entities8: EffectRenderer dispatch",
+  "entities8: ItemMap lifecycle",
+  "entities8: Wolf despawning",
+  "entities: special, every frame for 3000 ticks"
  ],
  "EntityRainFX": [
   "entities181: particles181"
@@ -23029,7 +23126,11 @@
   "entities7: metadata7",
   "entities7: metaplace7",
   "entities7: signitem7",
-  "entities7: vineconstructor7"
+  "entities7: vineconstructor7",
+  "entities8: EffectRenderer dispatch",
+  "entities8: ItemMap lifecycle",
+  "entities8: Wolf despawning",
+  "entities: special, every frame for 3000 ticks"
  ],
  "EntitySlime": [
   "entities181: Arrow",
@@ -23137,7 +23238,11 @@
   "entities7: metadata7",
   "entities7: metaplace7",
   "entities7: signitem7",
-  "entities7: vineconstructor7"
+  "entities7: vineconstructor7",
+  "entities8: EffectRenderer dispatch",
+  "entities8: ItemMap lifecycle",
+  "entities8: Wolf despawning",
+  "entities: special, every frame for 3000 ticks"
  ],
  "EntitySlimeFX": [
   "entities181: particles181"
@@ -23350,7 +23455,11 @@
   "entities7: metadata7",
   "entities7: metaplace7",
   "entities7: signitem7",
-  "entities7: vineconstructor7"
+  "entities7: vineconstructor7",
+  "entities8: EffectRenderer dispatch",
+  "entities8: ItemMap lifecycle",
+  "entities8: Wolf despawning",
+  "entities: special, every frame for 3000 ticks"
  ],
  "EntitySuspendFX": [
   "entities181: particles181"
@@ -23461,7 +23570,11 @@
   "entities7: metadata7",
   "entities7: metaplace7",
   "entities7: signitem7",
-  "entities7: vineconstructor7"
+  "entities7: vineconstructor7",
+  "entities8: EffectRenderer dispatch",
+  "entities8: ItemMap lifecycle",
+  "entities8: Wolf despawning",
+  "entities: special, every frame for 3000 ticks"
  ],
  "EntityWolf": [
   "entities181: Arrow",
@@ -23569,7 +23682,11 @@
   "entities7: metadata7",
   "entities7: metaplace7",
   "entities7: signitem7",
-  "entities7: vineconstructor7"
+  "entities7: vineconstructor7",
+  "entities8: EffectRenderer dispatch",
+  "entities8: ItemMap lifecycle",
+  "entities8: Wolf despawning",
+  "entities: special, every frame for 3000 ticks"
  ],
  "EntityXPOrb": [
   "entities181: Arrow",
@@ -24475,7 +24592,11 @@
   "entities7: metadata7",
   "entities7: metaplace7",
   "entities7: signitem7",
-  "entities7: vineconstructor7"
+  "entities7: vineconstructor7",
+  "entities8: EffectRenderer dispatch",
+  "entities8: ItemMap lifecycle",
+  "entities8: Wolf despawning",
+  "entities: special, every frame for 3000 ticks"
  ],
  "FontRenderer": [
   "player-gui b1.8.1 round 4: chest container lifecycle",
@@ -32214,7 +32335,11 @@
   "entities7: metadata7",
   "entities7: metaplace7",
   "entities7: signitem7",
-  "entities7: vineconstructor7"
+  "entities7: vineconstructor7",
+  "entities8: EffectRenderer dispatch",
+  "entities8: ItemMap lifecycle",
+  "entities8: Wolf despawning",
+  "entities: special, every frame for 3000 ticks"
  ],
  "ItemBow": [
   "container clicks, recipes, furnace and dispenser world replay",
@@ -32398,7 +32523,11 @@
   "entities7: metadata7",
   "entities7: metaplace7",
   "entities7: signitem7",
-  "entities7: vineconstructor7"
+  "entities7: vineconstructor7",
+  "entities8: EffectRenderer dispatch",
+  "entities8: ItemMap lifecycle",
+  "entities8: Wolf despawning",
+  "entities: special, every frame for 3000 ticks"
  ],
  "ItemCloth": [
   "entities181: Arrow",
@@ -32506,7 +32635,11 @@
   "entities7: metadata7",
   "entities7: metaplace7",
   "entities7: signitem7",
-  "entities7: vineconstructor7"
+  "entities7: vineconstructor7",
+  "entities8: EffectRenderer dispatch",
+  "entities8: ItemMap lifecycle",
+  "entities8: Wolf despawning",
+  "entities: special, every frame for 3000 ticks"
  ],
  "ItemDoor": [
   "container clicks, recipes, furnace and dispenser world replay",
@@ -32616,6 +32749,10 @@
   "entities7: metaplace7",
   "entities7: signitem7",
   "entities7: vineconstructor7",
+  "entities8: EffectRenderer dispatch",
+  "entities8: ItemMap lifecycle",
+  "entities8: Wolf despawning",
+  "entities: special, every frame for 3000 ticks",
   "world-blocks b1.8.1: actions",
   "world-blocks b1.8.1: activation4",
   "world-blocks b1.8.1: arrays",
@@ -32796,7 +32933,11 @@
   "entities7: metadata7",
   "entities7: metaplace7",
   "entities7: signitem7",
-  "entities7: vineconstructor7"
+  "entities7: vineconstructor7",
+  "entities8: EffectRenderer dispatch",
+  "entities8: ItemMap lifecycle",
+  "entities8: Wolf despawning",
+  "entities: special, every frame for 3000 ticks"
  ],
  "ItemFlintAndSteel": [
   "container clicks, recipes, furnace and dispenser world replay",
@@ -33132,7 +33273,11 @@
   "entities7: metadata7",
   "entities7: metaplace7",
   "entities7: signitem7",
-  "entities7: vineconstructor7"
+  "entities7: vineconstructor7",
+  "entities8: EffectRenderer dispatch",
+  "entities8: ItemMap lifecycle",
+  "entities8: Wolf despawning",
+  "entities: special, every frame for 3000 ticks"
  ],
  "ItemLog": [
   "entities181: Arrow",
@@ -33240,11 +33385,125 @@
   "entities7: metadata7",
   "entities7: metaplace7",
   "entities7: signitem7",
-  "entities7: vineconstructor7"
+  "entities7: vineconstructor7",
+  "entities8: EffectRenderer dispatch",
+  "entities8: ItemMap lifecycle",
+  "entities8: Wolf despawning",
+  "entities: special, every frame for 3000 ticks"
  ],
  "ItemMap": [
+  "decorations181: map files",
   "decorations181: maps: palette, terrain, markers, NBT",
-  "decorations181: map files"
+  "entities181: Arrow",
+  "entities181: Boat",
+  "entities181: CaveSpider",
+  "entities181: Chicken",
+  "entities181: Cow",
+  "entities181: Creeper",
+  "entities181: Egg",
+  "entities181: Enderman",
+  "entities181: Fireball",
+  "entities181: Ghast",
+  "entities181: Item",
+  "entities181: Lightning",
+  "entities181: Minecart",
+  "entities181: Pig",
+  "entities181: PigZombie",
+  "entities181: Sheep",
+  "entities181: Silverfish",
+  "entities181: Skeleton",
+  "entities181: Slime",
+  "entities181: Snowball",
+  "entities181: Spider",
+  "entities181: Squid",
+  "entities181: Wolf",
+  "entities181: XPOrb",
+  "entities181: Zombie",
+  "entities181: allies",
+  "entities181: attract",
+  "entities181: carry",
+  "entities181: damage",
+  "entities181: entitygeometry",
+  "entities181: indirect",
+  "entities181: kill-Chicken",
+  "entities181: kill-Cow",
+  "entities181: kill-Enderman",
+  "entities181: kill-Sheep",
+  "entities181: kill-Zombie",
+  "entities181: models181",
+  "entities181: particles181",
+  "entities181: poison",
+  "entities181: population",
+  "entities181: potions",
+  "entities181: rules",
+  "entities181: stare",
+  "entities181: starepumpkin",
+  "entities181: teleport",
+  "entities181: xprender181",
+  "entities3: factorybranches",
+  "entities3: fireballbranches",
+  "entities3: skeletonbranches",
+  "entities3: slimebranches",
+  "entities3: spawnbranches",
+  "entities3: spawnorder",
+  "entities3: vehiclebranches",
+  "entities3: wolfbranches",
+  "entities4: creeper4",
+  "entities4: creeperdeath4",
+  "entities4: effectlifecycle4_181",
+  "entities4: explosionblocks4",
+  "entities4: fishing",
+  "entities4: flying4",
+  "entities4: generaliving4_181",
+  "entities4: impact4",
+  "entities4: lightning4",
+  "entities4: livingrenderers",
+  "entities4: network4",
+  "entities4: paintings",
+  "entities4: particleeffects",
+  "entities4: playerliving4_181",
+  "entities4: rendereffects",
+  "entities4: retaliation4",
+  "entities4: sun4",
+  "entities5: bipedequipment5_181",
+  "entities5: dyesheep5",
+  "entities5: health5",
+  "entities5: paintingitem5",
+  "entities5: particlefactory5_181",
+  "entities5: potionexpiry5",
+  "entities5: recorditem5",
+  "entities5: skeletondeath5",
+  "entities5: vehiclecollision5",
+  "entities5: vehicleinteract5",
+  "entities5: vehicleriders5",
+  "entities5: watchers5",
+  "entities5: wolfattack5",
+  "entities5: wolffollow5",
+  "entities5: wolfremote5",
+  "entities6: blockbasic6 (limited block callbacks)",
+  "entities6: doorhelper6",
+  "entities6: dooritem6",
+  "entities6: dyeblocks6",
+  "entities6: dyeproperties6",
+  "entities6: living6",
+  "entities6: livingdamage6",
+  "entities6: livingnbt6",
+  "entities6: particlefactory6_181",
+  "entities6: playerliving6_181",
+  "entities6: sleep6",
+  "entities6: spawninputs6 (real JVM identity hashes)",
+  "entities7: beditem7",
+  "entities7: buckethit7",
+  "entities7: bucketray7",
+  "entities7: logconstructor7",
+  "entities7: metadata7",
+  "entities7: metaplace7",
+  "entities7: signitem7",
+  "entities7: vineconstructor7",
+  "entities8: EffectRenderer dispatch",
+  "entities8: ItemMap lifecycle",
+  "entities8: Wolf despawning",
+  "entities: special, every frame for 3000 ticks"
  ],
  "ItemPainting": [
   "entities181: Arrow",
@@ -33352,7 +33611,11 @@
   "entities7: metadata7",
   "entities7: metaplace7",
   "entities7: signitem7",
-  "entities7: vineconstructor7"
+  "entities7: vineconstructor7",
+  "entities8: EffectRenderer dispatch",
+  "entities8: ItemMap lifecycle",
+  "entities8: Wolf despawning",
+  "entities: special, every frame for 3000 ticks"
  ],
  "ItemRecord": [
   "entities181: Arrow",
@@ -33460,7 +33723,11 @@
   "entities7: metadata7",
   "entities7: metaplace7",
   "entities7: signitem7",
-  "entities7: vineconstructor7"
+  "entities7: vineconstructor7",
+  "entities8: EffectRenderer dispatch",
+  "entities8: ItemMap lifecycle",
+  "entities8: Wolf despawning",
+  "entities: special, every frame for 3000 ticks"
  ],
  "ItemRedstone": [
   "container clicks, recipes, furnace and dispenser world replay",
@@ -33875,7 +34142,11 @@
   "entities7: metadata7",
   "entities7: metaplace7",
   "entities7: signitem7",
-  "entities7: vineconstructor7"
+  "entities7: vineconstructor7",
+  "entities8: EffectRenderer dispatch",
+  "entities8: ItemMap lifecycle",
+  "entities8: Wolf despawning",
+  "entities: special, every frame for 3000 ticks"
  ],
  "ItemSlab": [
   "entities181: Arrow",
@@ -33983,7 +34254,11 @@
   "entities7: metadata7",
   "entities7: metaplace7",
   "entities7: signitem7",
-  "entities7: vineconstructor7"
+  "entities7: vineconstructor7",
+  "entities8: EffectRenderer dispatch",
+  "entities8: ItemMap lifecycle",
+  "entities8: Wolf despawning",
+  "entities: special, every frame for 3000 ticks"
  ],
  "ItemSoup": [
   "container clicks, recipes, furnace and dispenser world replay",
@@ -34243,7 +34518,11 @@
   "entities7: metadata7",
   "entities7: metaplace7",
   "entities7: signitem7",
-  "entities7: vineconstructor7"
+  "entities7: vineconstructor7",
+  "entities8: EffectRenderer dispatch",
+  "entities8: ItemMap lifecycle",
+  "entities8: Wolf despawning",
+  "entities: special, every frame for 3000 ticks"
  ],
  "KeyBinding": [
   "player-gui b1.8.1 round 4: chest container lifecycle",
@@ -37799,7 +38078,11 @@
   "entities7: metadata7",
   "entities7: metaplace7",
   "entities7: signitem7",
-  "entities7: vineconstructor7"
+  "entities7: vineconstructor7",
+  "entities8: EffectRenderer dispatch",
+  "entities8: ItemMap lifecycle",
+  "entities8: Wolf despawning",
+  "entities: special, every frame for 3000 ticks"
  ],
  "ModelBed": [
   "entities181: Arrow",
@@ -37907,7 +38190,11 @@
   "entities7: metadata7",
   "entities7: metaplace7",
   "entities7: signitem7",
-  "entities7: vineconstructor7"
+  "entities7: vineconstructor7",
+  "entities8: EffectRenderer dispatch",
+  "entities8: ItemMap lifecycle",
+  "entities8: Wolf despawning",
+  "entities: special, every frame for 3000 ticks"
  ],
  "ModelBiped": [
   "entities181: models181"
@@ -38018,7 +38305,11 @@
   "entities7: metadata7",
   "entities7: metaplace7",
   "entities7: signitem7",
-  "entities7: vineconstructor7"
+  "entities7: vineconstructor7",
+  "entities8: EffectRenderer dispatch",
+  "entities8: ItemMap lifecycle",
+  "entities8: Wolf despawning",
+  "entities: special, every frame for 3000 ticks"
  ],
  "ModelChest": [
   "entities181: models181"
@@ -38147,7 +38438,11 @@
   "entities7: metadata7",
   "entities7: metaplace7",
   "entities7: signitem7",
-  "entities7: vineconstructor7"
+  "entities7: vineconstructor7",
+  "entities8: EffectRenderer dispatch",
+  "entities8: ItemMap lifecycle",
+  "entities8: Wolf despawning",
+  "entities: special, every frame for 3000 ticks"
  ],
  "ModelPig": [
   "entities181: models181"
@@ -40891,7 +41186,11 @@
   "entities7: metadata7",
   "entities7: metaplace7",
   "entities7: signitem7",
-  "entities7: vineconstructor7"
+  "entities7: vineconstructor7",
+  "entities8: EffectRenderer dispatch",
+  "entities8: ItemMap lifecycle",
+  "entities8: Wolf despawning",
+  "entities: special, every frame for 3000 ticks"
  ],
  "RenderArrow": [
   "entities181: Arrow",
@@ -40999,7 +41298,11 @@
   "entities7: metadata7",
   "entities7: metaplace7",
   "entities7: signitem7",
-  "entities7: vineconstructor7"
+  "entities7: vineconstructor7",
+  "entities8: EffectRenderer dispatch",
+  "entities8: ItemMap lifecycle",
+  "entities8: Wolf despawning",
+  "entities: special, every frame for 3000 ticks"
  ],
  "RenderBiped": [
   "entities5: bipedequipment5_181"
@@ -41137,7 +41440,11 @@
   "entities7: metadata7",
   "entities7: metaplace7",
   "entities7: signitem7",
-  "entities7: vineconstructor7"
+  "entities7: vineconstructor7",
+  "entities8: EffectRenderer dispatch",
+  "entities8: ItemMap lifecycle",
+  "entities8: Wolf despawning",
+  "entities: special, every frame for 3000 ticks"
  ],
  "RenderChicken": [
   "entities181: Arrow",
@@ -41245,7 +41552,11 @@
   "entities7: metadata7",
   "entities7: metaplace7",
   "entities7: signitem7",
-  "entities7: vineconstructor7"
+  "entities7: vineconstructor7",
+  "entities8: EffectRenderer dispatch",
+  "entities8: ItemMap lifecycle",
+  "entities8: Wolf despawning",
+  "entities: special, every frame for 3000 ticks"
  ],
  "RenderCreeper": [
   "entities181: Arrow",
@@ -41353,7 +41664,11 @@
   "entities7: metadata7",
   "entities7: metaplace7",
   "entities7: signitem7",
-  "entities7: vineconstructor7"
+  "entities7: vineconstructor7",
+  "entities8: EffectRenderer dispatch",
+  "entities8: ItemMap lifecycle",
+  "entities8: Wolf despawning",
+  "entities: special, every frame for 3000 ticks"
  ],
  "RenderEnderman": [
   "entities181: Arrow",
@@ -41461,7 +41776,11 @@
   "entities7: metadata7",
   "entities7: metaplace7",
   "entities7: signitem7",
-  "entities7: vineconstructor7"
+  "entities7: vineconstructor7",
+  "entities8: EffectRenderer dispatch",
+  "entities8: ItemMap lifecycle",
+  "entities8: Wolf despawning",
+  "entities: special, every frame for 3000 ticks"
  ],
  "RenderFish": [
   "decorations181: fishing line renderer",
@@ -41570,7 +41889,11 @@
   "entities7: metadata7",
   "entities7: metaplace7",
   "entities7: signitem7",
-  "entities7: vineconstructor7"
+  "entities7: vineconstructor7",
+  "entities8: EffectRenderer dispatch",
+  "entities8: ItemMap lifecycle",
+  "entities8: Wolf despawning",
+  "entities: special, every frame for 3000 ticks"
  ],
  "RenderGlobal": [
   "sky colors",
@@ -41708,7 +42031,11 @@
   "entities7: metadata7",
   "entities7: metaplace7",
   "entities7: signitem7",
-  "entities7: vineconstructor7"
+  "entities7: vineconstructor7",
+  "entities8: EffectRenderer dispatch",
+  "entities8: ItemMap lifecycle",
+  "entities8: Wolf despawning",
+  "entities: special, every frame for 3000 ticks"
  ],
  "RenderList": [
   "render lists (RenderList: camera offset kept in double, near, far and at the border)"
@@ -41829,7 +42156,11 @@
   "entities7: metadata7",
   "entities7: metaplace7",
   "entities7: signitem7",
-  "entities7: vineconstructor7"
+  "entities7: vineconstructor7",
+  "entities8: EffectRenderer dispatch",
+  "entities8: ItemMap lifecycle",
+  "entities8: Wolf despawning",
+  "entities: special, every frame for 3000 ticks"
  ],
  "RenderPlayer": [
   "entities4: playerliving4_181",
@@ -41941,7 +42272,11 @@
   "entities7: metadata7",
   "entities7: metaplace7",
   "entities7: signitem7",
-  "entities7: vineconstructor7"
+  "entities7: vineconstructor7",
+  "entities8: EffectRenderer dispatch",
+  "entities8: ItemMap lifecycle",
+  "entities8: Wolf despawning",
+  "entities: special, every frame for 3000 ticks"
  ],
  "RenderSilverfish": [
   "entities181: Arrow",
@@ -42049,7 +42384,11 @@
   "entities7: metadata7",
   "entities7: metaplace7",
   "entities7: signitem7",
-  "entities7: vineconstructor7"
+  "entities7: vineconstructor7",
+  "entities8: EffectRenderer dispatch",
+  "entities8: ItemMap lifecycle",
+  "entities8: Wolf despawning",
+  "entities: special, every frame for 3000 ticks"
  ],
  "RenderSpider": [
   "entities181: Arrow",
@@ -42157,7 +42496,11 @@
   "entities7: metadata7",
   "entities7: metaplace7",
   "entities7: signitem7",
-  "entities7: vineconstructor7"
+  "entities7: vineconstructor7",
+  "entities8: EffectRenderer dispatch",
+  "entities8: ItemMap lifecycle",
+  "entities8: Wolf despawning",
+  "entities: special, every frame for 3000 ticks"
  ],
  "RenderSquid": [
   "entities181: Arrow",
@@ -42265,7 +42608,11 @@
   "entities7: metadata7",
   "entities7: metaplace7",
   "entities7: signitem7",
-  "entities7: vineconstructor7"
+  "entities7: vineconstructor7",
+  "entities8: EffectRenderer dispatch",
+  "entities8: ItemMap lifecycle",
+  "entities8: Wolf despawning",
+  "entities: special, every frame for 3000 ticks"
  ],
  "RenderWolf": [
   "entities181: Arrow",
@@ -42373,7 +42720,11 @@
   "entities7: metadata7",
   "entities7: metaplace7",
   "entities7: signitem7",
-  "entities7: vineconstructor7"
+  "entities7: vineconstructor7",
+  "entities8: EffectRenderer dispatch",
+  "entities8: ItemMap lifecycle",
+  "entities8: Wolf despawning",
+  "entities: special, every frame for 3000 ticks"
  ],
  "RenderXPOrb": [
   "entities181: xprender181"
@@ -42957,7 +43308,11 @@
   "entities7: metadata7",
   "entities7: metaplace7",
   "entities7: signitem7",
-  "entities7: vineconstructor7"
+  "entities7: vineconstructor7",
+  "entities8: EffectRenderer dispatch",
+  "entities8: ItemMap lifecycle",
+  "entities8: Wolf despawning",
+  "entities: special, every frame for 3000 ticks"
  ],
  "Slot": [
   "gui181: chest_items",
@@ -49066,7 +49421,11 @@
   "entities7: metadata7",
   "entities7: metaplace7",
   "entities7: signitem7",
-  "entities7: vineconstructor7"
+  "entities7: vineconstructor7",
+  "entities8: EffectRenderer dispatch",
+  "entities8: ItemMap lifecycle",
+  "entities8: Wolf despawning",
+  "entities: special, every frame for 3000 ticks"
  ],
  "TileEntityRecordPlayer": [
   "container clicks, recipes, furnace and dispenser world replay",
@@ -49261,7 +49620,11 @@
   "entities7: metadata7",
   "entities7: metaplace7",
   "entities7: signitem7",
-  "entities7: vineconstructor7"
+  "entities7: vineconstructor7",
+  "entities8: EffectRenderer dispatch",
+  "entities8: ItemMap lifecycle",
+  "entities8: Wolf despawning",
+  "entities: special, every frame for 3000 ticks"
  ],
  "TileEntitySpecialRenderer": [
   "decorations181: sign renderer (TileEntitySignRenderer)"
