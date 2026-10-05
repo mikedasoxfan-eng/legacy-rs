@@ -30764,6 +30764,9 @@
   "player-gui b1.8.1: statistics synchronization",
   "player-gui b1.8.1: whole-player ticks"
  ],
+ "ScreenShotHelper": [
+  "ScreenShotHelper: numbered and named screenshots, pixel order"
+ ],
  "ShapedRecipes": [
   "player-gui b1.8.1: GUI pixels player-gui-container-scenes",
   "player-gui b1.8.1: GUI pixels player-gui-scenes",
