@@ -35,6 +35,19 @@ rust_out="$root/shots/gui"
 clear_captures "$root/tools/oracle181/gui/scenes.txt" "$java_out" "$rust_out"
 bash "$root/tools/oracle181/guishot.sh" "$root/tools/oracle181/gui/scenes.txt" "$java_out" > "$root/target/gui-java.log" 2>&1 || fail=1
 grep "^java: GL\|rror:" "$root/target/gui-java.log" || true
+# The hud scenes' brightness= values tell the port what light level the original computes for
+# the player (Java prints it); a stale value would make the vignette differ for the wrong reason.
+python - "$root/tools/oracle181/gui/scenes.txt" "$root/target/gui-java.log" <<'EOF2' || fail=1
+import re, sys
+hints = [float(m.group(1)) for l in open(sys.argv[1], encoding='utf-8')
+         if l.startswith('hud ') for m in [re.search(r'brightness=([0-9.]+)', l)] if m]
+java = [float(l.split()[-1]) for l in open(sys.argv[2], encoding='utf-8', errors='replace') if 'player brightness' in l]
+bad = [i for i, (h, j) in enumerate(zip(hints, java)) if abs(h - j) > 1e-6]
+if len(hints) != len(java) or bad:
+    print(f"HUD BRIGHTNESS HINTS DIFFER from the original's light levels: {len(hints)} hints, {len(java)} values, mismatches at {bad}")
+    sys.exit(1)
+print(f"HUD BRIGHTNESS HINTS EXACT ({len(hints)} scenes)")
+EOF2
 GUI_MSAA=1 "$root/target/release/beta" --mc b1.8.1 --guishot "$root/tools/oracle181/gui/scenes.txt" "$rust_out" >/dev/null || exit 1
 "$root/target/release/beta" --mc b1.8.1 --guidiff "$java_out" "$rust_out" "$root/shots/gui_diff" || fail=1
 scenes="$root/tools/oracle181/gui/container-scenes.txt"
