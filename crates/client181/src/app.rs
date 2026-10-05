@@ -1555,11 +1555,12 @@ impl App {
                     let sky = sky::sky_color(angle, temp, rain, thunder, self.weather.flash, partial);
                     sky::nether_fog_color(sky, video.distance, rain, thunder)
                 } else {
-                    sky::fog_color(angle, temp, video.distance, rain, thunder, self.weather.flash, partial)
+                    sky::fog_color(angle, temp, video.distance, rain, thunder, self.weather.flash, partial, sky::look(self.cam.yaw, self.cam.pitch, self.cam.yaw, self.cam.pitch, partial))
                 },
                 player_frame.as_ref().map_or(render::camera::Medium::Air, |v| v.medium),
                 self.fog_fade[0] + (self.fog_fade[1] - self.fog_fade[0]) * partial,
                 video.anaglyph,
+                self.cam.pos.y,
             ),
             far: video.far(),
             video,

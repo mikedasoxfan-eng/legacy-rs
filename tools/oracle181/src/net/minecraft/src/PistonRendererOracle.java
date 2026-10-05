@@ -27,8 +27,8 @@ class PistonRendererOracle {
             TileEntityRenderer dispatcher=(TileEntityRenderer)Oracle.allocate(TileEntityRenderer.class);
             dispatcher.renderEngine=RendererOracle.manager(w).renderEngine;
             renderer.setTileEntityRenderer(dispatcher);renderer.func_31069_a(w);
-            Field progress=TileEntityPiston.class.getDeclaredField("field_31022_k");progress.setAccessible(true);
-            Field previous=TileEntityPiston.class.getDeclaredField("field_31020_l");previous.setAccessible(true);
+            Field progress=TileEntityPiston.class.getDeclaredField("progress");progress.setAccessible(true);
+            Field previous=TileEntityPiston.class.getDeclaredField("lastProgress");previous.setAccessible(true);
             for(int id:new int[]{1,2,4,5,12,17,18,20,27,28,29,33,34,35,43,44,53,60,66,67,79,85,89})for(int facing=0;facing<6;facing++)for(int mode=0;mode<3;mode++)for(int phase=0;phase<3;phase++) {
                 int meta=id==34?facing|8:(id==29||id==33?facing:phase);
                 boolean extending=mode==0,head=mode==2&&(id==29||id==33);

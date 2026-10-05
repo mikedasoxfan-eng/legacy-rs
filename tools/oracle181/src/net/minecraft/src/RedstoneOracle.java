@@ -32,7 +32,7 @@ class RedstoneOracle {
             if(t instanceof TileEntityNote) {TileEntityNote n=(TileEntityNote)t;s.append(",M,").append(n.note).append(',').append(n.previousRedstoneState?1:0);}
             if(t instanceof TileEntityPiston) {
                 TileEntityPiston p=(TileEntityPiston)t;
-                Field f=TileEntityPiston.class.getDeclaredField("field_31022_k");f.setAccessible(true);
+                Field f=TileEntityPiston.class.getDeclaredField("progress");f.setAccessible(true);
                 s.append(",P,").append(p.getStoredBlockID()).append(',').append(p.getBlockMetadata()).append(',').append(p.func_31009_d()).append(',').append(Float.floatToRawIntBits(f.getFloat(p))).append(',').append(Float.floatToRawIntBits(p.func_31008_a(0))).append(',').append(p.func_31015_b()?1:0).append(',').append(p.func_31012_k()?1:0);
             }
         }

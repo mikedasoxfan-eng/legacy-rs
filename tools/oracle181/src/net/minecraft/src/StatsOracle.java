@@ -13,7 +13,7 @@ import java.lang.reflect.Field;
  *  screen shows, and which stat each block/item index adds to (after replaceSimilarBlocks). */
 class StatsOracle {
     static String type(StatBase s) throws Exception {
-        Field f = StatBase.class.getDeclaredField("field_26902_a");
+        Field f = StatBase.class.getDeclaredField("type");
         f.setAccessible(true);
         Object t = f.get(s);
         return t == StatBase.timeStatType ? "time" : t == StatBase.distanceStatType ? "distance" : "simple";

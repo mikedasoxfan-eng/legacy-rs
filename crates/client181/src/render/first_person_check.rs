@@ -220,6 +220,8 @@ impl Input {
         let fov = [self.f(), self.f()];
         let debug_yaw = [self.f(), self.f()];
         let debug_pitch = [self.f(), self.f()];
+        let fov_option = self.f();
+        let fov_zoom = Some([self.f(), self.f()]);
         let zoom = self.d();
         let zoom_yaw = self.d();
         let zoom_pitch = self.d();
@@ -234,6 +236,8 @@ impl Input {
                 distance,
                 roll,
                 fov,
+                fov_option,
+                fov_zoom,
                 debug_yaw,
                 debug_pitch,
                 zoom,
@@ -306,7 +310,7 @@ pub fn check(path: &str) -> bool {
                 let (s, _) = d.settings();
                 d.blocks(&mut w);
                 let medium = camera::medium(&e, &mut w);
-                let fov = camera::fov(&e, medium == camera::Medium::Water, t, s.fov);
+                let fov = camera::fov(&e, medium == camera::Medium::Water, t, &s, true);
                 d.eq(fov.to_bits(), "fov");
                 let j = d.ops();
                 let mut p = Fixed::new(1.0);
@@ -490,7 +494,7 @@ pub fn check(path: &str) -> bool {
                 d.draws(&r);
             }
             6 => {
-                let _e = d.entity(&mut w);
+                let e = d.entity(&mut w);
                 let t = d.f();
                 let distance = d.i();
                 let anaglyph = d.i() != 0;
@@ -508,8 +512,12 @@ pub fn check(path: &str) -> bool {
                     2 => camera::Medium::Lava,
                     _ => camera::Medium::Air,
                 };
+                let angle = d.f();
+                let look = super::sky::look(e.yaw, e.pitch, e.prev_yaw, e.prev_pitch, t);
+                let fog = super::sky::sunrise_fog(fog, angle, distance, look);
                 let base = camera::fog_base(sky, fog, distance, rain, thunder);
-                for v in camera::fog_color(base, medium, camera::lerp(old, new, t), anaglyph) {
+                let eye_y = e.last_tick_pos.y + (e.pos.y - e.last_tick_pos.y) * t as f64;
+                for v in camera::fog_color(base, medium, camera::lerp(old, new, t), anaglyph, eye_y) {
                     d.eq(v.to_bits(), "fog color");
                 }
                 let fog = camera::fog(medium, far, mode < 0, nether);

@@ -152,7 +152,7 @@ impl View {
         let bed = self.bed();
         (
             camera::transform(&e, t, s, d, bed),
-            camera::fov(&e, medium == camera::Medium::Water, t, s.fov),
+            camera::fov(&e, medium == camera::Medium::Water, t, &s, true),
             medium,
         )
     }

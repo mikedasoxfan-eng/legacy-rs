@@ -114,7 +114,7 @@ public final class DecorationOracle {
         try(OutputStream out=new FileOutputStream(path)){o.writeTo(out);}System.out.println("fish renderers: 120 cases, first/third person, swing and partial ticks");
     }
     static void paintingState(Oracle.DataOut o,EntityPainting p,World w)throws Exception {
-        o.i32(p.art.ordinal());o.i32(p.direction);for(int v:new int[]{p.xPosition,p.yPosition,p.zPosition,EntityOracle.intField(EntityPainting.class,"field_695_c",p)})o.i32(v);
+        o.i32(p.art.ordinal());o.i32(p.direction);for(int v:new int[]{p.xPosition,p.yPosition,p.zPosition,EntityOracle.intField(EntityPainting.class,"tickCounter1",p)})o.i32(v);
         for(double v:new double[]{p.posX,p.posY,p.posZ,p.boundingBox.minX,p.boundingBox.minY,p.boundingBox.minZ,p.boundingBox.maxX,p.boundingBox.maxY,p.boundingBox.maxZ})o.i64(Double.doubleToLongBits(v));
         Oracle.modelFloat(o,p.rotationYaw);Oracle.modelFloat(o,p.prevRotationYaw);o.i32(p.isDead?1:0);o.i32(p.beenAttacked?1:0);o.i32(p.canStay()?1:0);o.i64(EntityOracle.rngState(p.rand));o.i32(w.loadedEntityList.size());
     }

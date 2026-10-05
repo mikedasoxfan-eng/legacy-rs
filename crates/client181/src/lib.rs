@@ -193,7 +193,8 @@ fn sky_check(a: &[String]) {
     let fog = if nether {
         sky::nether_fog_color(s, distance, rain, thunder)
     } else {
-        sky::fog_color(angle, temp, distance, rain, thunder, weather.flash, partial)
+        // The oracle camera is a headless EntityPlayerSP with zero rotations.
+        sky::fog_color(angle, temp, distance, rain, thunder, weather.flash, partial, sky::look(0.0, 0.0, 0.0, 0.0, partial))
     }
     .map(|c| c * (fog_prev + (fog_current - fog_prev) * partial));
     let fog_start = if nether { 0.0 } else { far * 0.25f32 };

@@ -301,7 +301,7 @@ public class Oracle {
             {1024.5F,.4F,10000.25F,123.75F,-45.5F,.0625F}, {0,0,0,0,0,.0625F}
         };
         float[] attacks = {0,.35F,.8F,1,-10000,.01F,.6F,0};
-        Field corners = ModelRenderer.class.getDeclaredField("corners"); corners.setAccessible(true);
+        Field corners = ModelRenderer.class.getDeclaredField("field_35978_r"); corners.setAccessible(true);
         Field faces = ModelRenderer.class.getDeclaredField("faces"); faces.setAccessible(true);
         Field normal = Tessellator.class.getDeclaredField("normal"); normal.setAccessible(true);
         Field drawing = Tessellator.class.getDeclaredField("isDrawing"); drawing.setAccessible(true);
@@ -845,7 +845,7 @@ public class Oracle {
                     TileEntityNote n=(TileEntityNote)te;o.u8(5);o.u8(n.note);o.u8(n.previousRedstoneState?1:0);
                 } else if(te instanceof TileEntityPiston) {
                     TileEntityPiston p=(TileEntityPiston)te;o.u8(6);o.i32(p.getStoredBlockID());o.i32(p.getBlockMetadata());o.i32(p.func_31009_d());
-                    Field progress=TileEntityPiston.class.getDeclaredField("field_31022_k");progress.setAccessible(true);
+                    Field progress=TileEntityPiston.class.getDeclaredField("progress");progress.setAccessible(true);
                     o.i32(Float.floatToRawIntBits(progress.getFloat(p)));o.i32(Float.floatToRawIntBits(p.func_31008_a(0)));
                     o.u8(p.func_31015_b()?1:0);o.u8(p.func_31012_k()?1:0);
                 } else if(te instanceof TileEntityFurnace||te instanceof TileEntityDispenser) {

@@ -106,7 +106,31 @@ pub fn fog_color_base(angle: f32) -> [f32; 3] {
     ]
 }
 
-/// `EntityRenderer.updateFogColor` for render distance Far, out of water.
+/// `EntityLiving.getLook(partial)` for a camera with these (interpolated) angles.
+pub fn look(yaw: f32, pitch: f32, prev_yaw: f32, prev_pitch: f32, partial: f32) -> [f64; 3] {
+    let r = std::f32::consts::PI / 180.0f32;
+    let pi = std::f32::consts::PI;
+    if partial == 1.0 {
+        let c = math::cos(-yaw * r - pi);
+        let s = math::sin(-yaw * r - pi);
+        let cp = -math::cos(-pitch * r);
+        let sp = math::sin(-pitch * r);
+        [(s * cp) as f64, sp as f64, (c * cp) as f64]
+    } else {
+        let p = prev_pitch + (pitch - prev_pitch) * partial;
+        let y = prev_yaw + (yaw - prev_yaw) * partial;
+        let c = math::cos(-y * r - pi);
+        let s = math::sin(-y * r - pi);
+        let cp = -math::cos(-p * r);
+        let sp = math::sin(-p * r);
+        [(s * cp) as f64, sp as f64, (c * cp) as f64]
+    }
+}
+
+/// `EntityRenderer.updateFogColor` for render distance Far, out of water. `look` is the view
+/// entity's `getLook(partial)`: from b1.8.1, at Far and Normal the fog takes on the sunrise
+/// colour when looking toward the sun.
+#[allow(clippy::too_many_arguments)]
 pub fn fog_color(
     angle: f32,
     temp: f32,
@@ -115,11 +139,12 @@ pub fn fog_color(
     thunder: f32,
     flash: i32,
     partial: f32,
+    look: [f64; 3],
 ) -> [f32; 3] {
     let mut k = 1.0f32 / (4 - render_distance) as f32;
     k = 1.0f32 - (k as f64).powf(0.25) as f32;
     let sky = sky_color(angle, temp, rain, thunder, flash, partial);
-    let mut f = fog_color_base(angle);
+    let mut f = sunrise_fog(fog_color_base(angle), angle, render_distance, look);
     for i in 0..3 {
         f[i] += (sky[i] - f[i]) * k;
     }
@@ -131,6 +156,27 @@ pub fn fog_color(
     if thunder > 0.0 {
         for c in &mut f {
             *c *= 1.0f32 - thunder * 0.5f32;
+        }
+    }
+    f
+}
+
+/// b1.8.1 `updateFogColor`: at Far and Normal, blend the fog toward the sunrise colour by how
+/// directly `look` faces the sun (`World.func_35456_d` picks the east or west horizon).
+pub fn sunrise_fog(mut f: [f32; 3], angle: f32, render_distance: i32, look: [f64; 3]) -> [f32; 3] {
+    if render_distance < 2 {
+        let sun_z = if math::sin(angle * std::f32::consts::PI * 2.0f32) > 0.0 { 1.0f64 } else { -1.0 };
+        let mut d = (look[0] * 0.0 + look[1] * 0.0 + look[2] * sun_z) as f32;
+        if d < 0.0 {
+            d = 0.0;
+        }
+        if d > 0.0 {
+            if let Some(c) = sunrise_colors(angle) {
+                d *= c[3];
+                f[0] = f[0] * (1.0f32 - d) + c[0] * d;
+                f[1] = f[1] * (1.0f32 - d) + c[1] * d;
+                f[2] = f[2] * (1.0f32 - d) + c[2] * d;
+            }
         }
     }
     f

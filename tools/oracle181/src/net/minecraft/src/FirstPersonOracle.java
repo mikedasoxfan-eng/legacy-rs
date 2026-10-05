@@ -19,11 +19,11 @@ public final class FirstPersonOracle {
         for(int i=0;i<c;i++)data.field_28173_i.add(new MapCoord(data,(byte)(i%16),(byte)(i*43-127),(byte)(127-i*37),(byte)(i*5)));
         p.worldObj.setItemData("map_"+damage,data);
         MapItemRenderer renderer=(MapItemRenderer)Oracle.allocate(MapItemRenderer.class);
-        Oracle.setField(renderer,"field_28159_a",new int[16384]);Oracle.setField(renderer,"field_28158_b",12);Oracle.setField(renderer,"field_28161_c",p.mc.gameSettings);
-        Oracle.setField(renderer,"field_28160_d",new FontRenderer(p.mc.gameSettings,"/font/default.png",new FontEngine()));
+        Oracle.setField(renderer,"intArray",new int[16384]);Oracle.setField(renderer,"bufferedImage",12);Oracle.setField(renderer,"gameSettings",p.mc.gameSettings);
+        Oracle.setField(renderer,"fontRenderer",new FontRenderer(p.mc.gameSettings,"/font/default.png",new FontEngine()));
         Oracle.setField(p.mc.renderEngine,"imageData",ByteBuffer.allocate(65536));Oracle.setField(p.mc.renderEngine,"options",p.mc.gameSettings);
         HashMap<String,Integer> textures=(HashMap<String,Integer>)Oracle.getField(p.mc.renderEngine,"textureMap");textures.put("/misc/mapicons.png",13);
-        Oracle.setField(p.mc.entityRenderer.itemRenderer,"field_28131_f",renderer);
+        Oracle.setField(p.mc.entityRenderer.itemRenderer,"mapItemRenderer",renderer);
     }
     static ArrayList<Integer> modes=new ArrayList<Integer>();
     static ArrayList<float[]> matrices=new ArrayList<float[]>();
@@ -73,10 +73,10 @@ public final class FirstPersonOracle {
         HashMap<Class,Render> renderers=new HashMap<Class,Render>();RenderPlayer rp=new RenderPlayer();rp.setRenderManager(m);renderers.put(EntityPlayer.class,rp);Oracle.setField(m,"entityRenderMap",renderers);
         Map textures=(Map)Oracle.getField(m.renderEngine,"textureMap");textures.put("/mob/char.png",9);textures.put("/misc/water.png",10);textures.put("/misc/mapbg.png",11);
         String[] names={"cloth","chain","iron","diamond","gold"};for(int a=0;a<5;a++)for(int b=1;b<=2;b++)textures.put("/armor/"+names[a]+"_"+b+".png",20+a*2+b-1);
-        Minecraft mc=p.mc;mc.renderViewEntity=p;mc.renderEngine=m.renderEngine;mc.gameSettings=m.options;mc.displayWidth=853;mc.displayHeight=480;
+        Minecraft mc=p.mc;mc.renderViewEntity=p;mc.thePlayer=p;if(mc.playerController==null)mc.playerController=(PlayerController)Oracle.allocate(PlayerControllerSP.class);mc.renderEngine=m.renderEngine;mc.gameSettings=m.options;mc.displayWidth=853;mc.displayHeight=480;
         RenderGlobal global=(RenderGlobal)Oracle.allocate(RenderGlobal.class);Oracle.setField(global,"worldObj",p.worldObj);Oracle.setField(global,"renderEngine",m.renderEngine);Oracle.setField(global,"mc",mc);Oracle.setField(global,"globalRenderBlocks",new RenderBlocks(p.worldObj));mc.renderGlobal=global;
         ItemRenderer ir=(ItemRenderer)Oracle.allocate(ItemRenderer.class);Oracle.setField(ir,"mc",mc);Oracle.setField(ir,"renderBlocksInstance",new RenderBlocks());Oracle.setField(ir,"field_20099_f",-1);m.itemRenderer=ir;
-        EntityRenderer er=(EntityRenderer)Oracle.allocate(EntityRenderer.class);Oracle.setField(er,"mc",mc);er.itemRenderer=ir;Oracle.setField(er,"cameraZoom",1.0);Oracle.setField(er,"field_22227_s",4.0F);Oracle.setField(er,"field_22228_r",4.0F);Oracle.setField(er,"fogColorBuffer",FloatBuffer.allocate(16));mc.entityRenderer=er;return m;
+        EntityRenderer er=(EntityRenderer)Oracle.allocate(EntityRenderer.class);Oracle.setField(er,"mc",mc);er.itemRenderer=ir;Oracle.setField(er,"cameraZoom",1.0);Oracle.setField(er,"field_22227_s",4.0F);Oracle.setField(er,"thirdPersonDistance",4.0F);Oracle.setField(er,"fogColorBuffer",FloatBuffer.allocate(16));mc.entityRenderer=er;return m;
     }
     static void block(Oracle.DataOut o,World w,int x,int y,int z,int id,int meta){o.i32(x);o.i32(y);o.i32(z);o.i32(id);o.i32(meta);EntityOracle.rawBlock(w,x,y,z,id,meta);}
     static void settings(Oracle.DataOut o,PlayerOracle.HeadlessPlayer p,int c)throws Exception {
@@ -84,8 +84,11 @@ public final class FirstPersonOracle {
         o.i32((s.viewBobbing?1:0)|(s.thirdPersonView?2:0)|(s.anaglyph?4:0)|(s.debugCamEnable?8:0)|(s.hideGUI?16:0));o.i32(c%2);o.i32(c*17);o.i32(s.renderDistance);
         EntityRenderer er=p.mc.entityRenderer;Oracle.setField(er,"rendererUpdateCount",c*17);
         float[] extras={-.75F,.5F,1.25F,-.35F,-31.25F,12.5F,20.75F,-17.25F};
-        String[] fields={"field_22230_A","field_22220_z","field_22221_y","field_22222_x","field_22225_u","field_22226_t","field_22223_w","field_22224_v"};
+        String[] fields={"prevCamRoll","camRoll","prevDebugCamFOV","debugCamFOV","prevDebugCamYaw","debugCamYaw","prevDebugCamPitch","debugCamPitch"};
         for(int i=0;i<fields.length;i++){f(o,extras[i]);Oracle.setField(er,fields[i],extras[i]);}
+        // b1.8.1 FOV: the FOV option and the sprint/bow zoom (field_35813_N previous, field_35812_M current).
+        float option=(c%5)*.25F,zp=1F+(c%3)*.05F,zc=1F+(c%7)*.03F;s.field_35379_L=option;
+        Oracle.setField(er,"field_35813_N",zp);Oracle.setField(er,"field_35812_M",zc);f(o,option);f(o,zp);f(o,zc);
         double zoom=c%3==0?1.35:1.0;double yaw=.125,pitch=-.0625;d(o,zoom);d(o,yaw);d(o,pitch);Oracle.setField(er,"cameraZoom",zoom);Oracle.setField(er,"cameraYaw",yaw);Oracle.setField(er,"cameraPitch",pitch);
     }
     public static void run(String path)throws Exception {
@@ -101,7 +104,7 @@ public final class FirstPersonOracle {
             out.i32(c<256?2:10);block(out,w,0,65,-3,p.sleeping?26:medium==1?9:medium==2?11:0,c%4);block(out,w,0,65,-6,1,0);
             if(c>=256){double range=.5+(c%7)*.5;double dx=-MathHelper.sin(p.rotationYaw/180F*(float)Math.PI)*MathHelper.cos(p.rotationPitch/180F*(float)Math.PI),dz=MathHelper.cos(p.rotationYaw/180F*(float)Math.PI)*MathHelper.cos(p.rotationPitch/180F*(float)Math.PI),dy=-MathHelper.sin(p.rotationPitch/180F*(float)Math.PI);for(int i=0;i<8;i++)block(out,w,MathHelper.floor_double(p.posX-dx*range)+i%2,MathHelper.floor_double(p.posY-dy*range)+i/2%2,MathHelper.floor_double(p.posZ-dz*range)+i/4%2,1,0);}
             start(1);call(p.mc.entityRenderer,"setupCameraTransform",new Class[]{float.class,int.class},t,c%2);stop();
-            f(out,(Float)call(p.mc.entityRenderer,"getFOVModifier",new Class[]{float.class},t));ops(out,projectionOps);for(float v:projection)f(out,v);ops(out,RendererOracle.ops);
+            f(out,(Float)call(p.mc.entityRenderer,"getFOVModifier",new Class[]{float.class,boolean.class},t,true));ops(out,projectionOps);for(float v:projection)f(out,v);ops(out,RendererOracle.ops);
             for(float v:matrix(RendererOracle.ops))f(out,v);for(float v:multiply(matrix(projectionOps),projection))f(out,v);n++;
         }
         // First person: every item, four swing/equip/partial states, plus empty hand.
@@ -116,7 +119,7 @@ public final class FirstPersonOracle {
                 float brightness=w.getLightBrightness(MathHelper.floor_double(p.posX),MathHelper.floor_double(p.posY),MathHelper.floor_double(p.posZ));f(out,brightness);f(out,p.getEntityBrightness(1));
                 Oracle.setField(p.mc.entityRenderer.itemRenderer,"itemToRender",item);Oracle.setField(p.mc.entityRenderer.itemRenderer,"prevEquippedProgress",c*.23F);Oracle.setField(p.mc.entityRenderer.itemRenderer,"equippedProgress",1-c*.19F);
                 start(brightness);call(p.mc.entityRenderer,"func_4135_b",new Class[]{float.class,int.class},t,0);stop();draws(out);n++;
-                if(id==358){int[] pixels=(int[])Oracle.getField(Oracle.getField(p.mc.entityRenderer.itemRenderer,"field_28131_f"),"field_28159_a");for(int v:pixels)out.i32(v);out.bytes(GL11.uploaded);}
+                if(id==358){int[] pixels=(int[])Oracle.getField(Oracle.getField(p.mc.entityRenderer.itemRenderer,"mapItemRenderer"),"intArray");for(int v:pixels)out.i32(v);out.bytes(GL11.uploaded);}
             }
         }
         // Overlay branch combinations include the vanilla double opaque draw.
@@ -173,7 +176,7 @@ public final class FirstPersonOracle {
             Oracle.setField(er,"fogColor2",old);Oracle.setField(er,"fogColor1",newer);Oracle.setField(er,"farPlaneDistance",far);
             out.i32(6);state(out,p);f(out,t);out.i32(c%4);out.i32((c&4)!=0?1:0);out.i32((c&8)!=0?1:0);out.i32(mode);f(out,far);f(out,old);f(out,newer);
             Vec3D sky=w.getSkyColor(p,t),fog=w.getFogColor(t);for(double v:new double[]{sky.xCoord,sky.yCoord,sky.zCoord,fog.xCoord,fog.yCoord,fog.zCoord})f(out,(float)v);
-            f(out,w.getRainStrength(t));f(out,w.getWeightedThunderStrength(t));out.i32(p.isInsideOfMaterial(Material.water)?1:p.isInsideOfMaterial(Material.lava)?2:0);
+            f(out,w.getRainStrength(t));f(out,w.getWeightedThunderStrength(t));out.i32(p.isInsideOfMaterial(Material.water)?1:p.isInsideOfMaterial(Material.lava)?2:0);f(out,w.getCelestialAngle(t));
             start(1);call(er,"updateFogColor",new Class[]{float.class},t);call(er,"setupFog",new Class[]{int.class,float.class},mode,t);stop();
             for(int i=0;i<3;i++)f(out,GL11.clearColor[i]);out.i32(GL11.fogMode);if(GL11.fogMode==GL11.GL_EXP){f(out,GL11.fogDensity);}else{f(out,GL11.fogStart);f(out,GL11.fogEnd);}n++;
         }
@@ -198,8 +201,8 @@ public final class FirstPersonOracle {
         for(int c=0;c<32;c++) {
             World w=world();PlayerOracle.HeadlessPlayer p=player(w,c);setup(p);p.mc.gameSettings.anaglyph=(c&1)!=0;mapSetup(p,c,c%17);
             out.i32(9);out.i32(c);out.i32((c&1)!=0?1:0);out.i32(c%17);
-            MapItemRenderer mr=(MapItemRenderer)Oracle.getField(p.mc.entityRenderer.itemRenderer,"field_28131_f");MapData data=(MapData)w.loadItemData(MapData.class,"map_"+c);
-            start(1);mr.renderMap(p,p.mc.renderEngine,data);stop();draws(out);for(int v:(int[])Oracle.getField(mr,"field_28159_a"))out.i32(v);out.bytes(GL11.uploaded);n++;
+            MapItemRenderer mr=(MapItemRenderer)Oracle.getField(p.mc.entityRenderer.itemRenderer,"mapItemRenderer");MapData data=(MapData)w.loadItemData(MapData.class,"map_"+c);
+            start(1);mr.renderMap(p,p.mc.renderEngine,data);stop();draws(out);for(int v:(int[])Oracle.getField(mr,"intArray"))out.i32(v);out.bytes(GL11.uploaded);n++;
         }
         Oracle.DataOut file=new Oracle.DataOut();file.bytes(new byte[]{'F','1','7','3'});file.i32(1);file.i32(n);file.bytes(out.buf.toByteArray());try(OutputStream stream=new BufferedOutputStream(new FileOutputStream(path))){file.writeTo(stream);}
         System.out.println("first-person oracle: "+n+" original-bytecode cases");

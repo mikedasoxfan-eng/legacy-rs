@@ -22,7 +22,7 @@ public final class ParticleOracle {
     static void state(EntityFX p,DataOutputStream o)throws Exception {
         for(double n:new double[]{p.posX,p.posY,p.posZ,p.prevPosX,p.prevPosY,p.prevPosZ,p.motionX,p.motionY,p.motionZ,p.boundingBox.minX,p.boundingBox.minY,p.boundingBox.minZ,p.boundingBox.maxX,p.boundingBox.maxY,p.boundingBox.maxZ})EntityOracle.d(o,n);
         for(float n:new float[]{p.particleRed,p.particleGreen,p.particleBlue,p.particleScale,p.particleGravity,p.particleTextureJitterX,p.particleTextureJitterY,p.width,p.height,p.yOffset})EntityOracle.f(o,n);
-        for(int n:new int[]{p.particleTextureIndex,p.particleAge,p.particleMaxAge,p.getFXLayer(),p instanceof EntityFootStepFX?EntityOracle.intField(EntityFootStepFX.class,"field_27018_a",p):p instanceof EntityPickupFX?EntityOracle.intField(EntityPickupFX.class,"field_678_p",p):0})EntityOracle.i(o,n);
+        for(int n:new int[]{p.particleTextureIndex,p.particleAge,p.particleMaxAge,p.getFXLayer(),p instanceof EntityFootStepFX?EntityOracle.intField(EntityFootStepFX.class,"field_27018_a",p):p instanceof EntityPickupFX?EntityOracle.intField(EntityPickupFX.class,"age",p):0})EntityOracle.i(o,n);
         o.writeBoolean(p.isDead);o.writeBoolean(p.onGround);o.writeBoolean(p.noClip);o.writeBoolean(p.isInWeb);EntityOracle.l(o,EntityOracle.rngState(p.rand));EntityOracle.l(o,EntityOracle.rngState(EntityOracle.mathRandom()));
     }
     public static void pickupDraws(String path)throws Exception {pickupDraws(path,true);}

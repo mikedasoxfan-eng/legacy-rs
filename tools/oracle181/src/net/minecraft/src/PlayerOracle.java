@@ -178,7 +178,7 @@ public final class PlayerOracle {
     }
     static void nbtState(HeadlessPlayer p,DataOutputStream o)throws Exception {NBTTagCompound n=new NBTTagCompound();p.writeToNBT(n);ByteArrayOutputStream b=new ByteArrayOutputStream();DataOutputStream d=new DataOutputStream(b);d.writeByte(10);d.writeUTF("");canonical(n,d);byte[] bytes=b.toByteArray();i(o,bytes.length);o.write(bytes);}
     static void api(HeadlessPlayer p,PlayerControllerSP c,int ticks)throws Exception {
-        Minecraft mc=p.mc;Method click=Minecraft.class.getDeclaredMethod("clickMouse",int.class);click.setAccessible(true);Method held=Minecraft.class.getDeclaredMethod("func_6254_a",int.class,boolean.class);held.setAccessible(true);
+        Minecraft mc=p.mc;Method click=Minecraft.class.getDeclaredMethod("clickMouse",int.class);click.setAccessible(true);Method held=Minecraft.class.getDeclaredMethod("sendClickBlockToController",int.class,boolean.class);held.setAccessible(true);
         boolean left=ticks%40<15||ticks%40>=35,right=ticks%40>=20&&ticks%40<34;
         int last=EntityOracle.intField(Minecraft.class,"mouseTicksRan",mc);
         if(ticks%40==0||ticks%40==35){click.invoke(mc,0);last=ticks;}
@@ -193,7 +193,7 @@ public final class PlayerOracle {
     }
     static void controllerState(PlayerControllerSP c,int result,DataOutputStream o)throws Exception {
         i(o,result);for(String name:new String[]{"curBlockDamage","prevBlockDamage","field_1069_h"})EntityOracle.f(o,EntityOracle.floatField(PlayerControllerSP.class,name,c));
-        for(String name:new String[]{"field_1074_c","field_1073_d","field_1072_e","blockHitWait"})i(o,EntityOracle.intField(PlayerControllerSP.class,name,c));
+        for(String name:new String[]{"curBlockX","curBlockY","curBlockZ","blockHitWait"})i(o,EntityOracle.intField(PlayerControllerSP.class,name,c));
         EntityOracle.l(o,EntityOracle.rngState(Item.itemRand));
     }
     static void i(DataOutputStream o,int n)throws IOException {EntityOracle.i(o,n);}

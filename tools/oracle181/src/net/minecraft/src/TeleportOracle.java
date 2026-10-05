@@ -20,7 +20,7 @@ class TeleportOracle {
         EntityPig e = new EntityPig(w);
         e.setLocationAndAngles(x, y, z, 0.0F, 0.0F);
         Teleporter t = new Teleporter();
-        Field f = Teleporter.class.getDeclaredField("field_4232_a");
+        Field f = Teleporter.class.getDeclaredField("random");
         f.setAccessible(true);
         ((Random) f.get(t)).setSeed(trand);
         t.placeInPortal(w, e);
@@ -78,7 +78,7 @@ class TeleportOracle {
             p.setLocationAndAngles(nx, p.posY, nz, p.rotationYaw, p.rotationPitch);
             n.updateEntityWithOptionalForce(p, false);
             Teleporter t = new Teleporter();
-            Field f = Teleporter.class.getDeclaredField("field_4232_a"); f.setAccessible(true);
+            Field f = Teleporter.class.getDeclaredField("random"); f.setAccessible(true);
             ((Random) f.get(t)).setSeed(trand);
             t.placeInPortal(n, p);
         }

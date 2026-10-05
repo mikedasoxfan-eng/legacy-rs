@@ -22,6 +22,10 @@ pub struct Settings {
     pub debug_pitch: [f32; 2],
     pub roll: [f32; 2],
     pub fov: [f32; 2],
+    /// b1.8.1 FOV option (`field_35379_L`, 0..1 adds up to 40 degrees).
+    pub fov_option: f32,
+    /// b1.8.1 sprint/bow zoom `[field_35813_N, field_35812_M]`; `None` is 1.0 (no zoom).
+    pub fov_zoom: Option<[f32; 2]>,
     pub zoom: f64,
     pub zoom_yaw: f64,
     pub zoom_pitch: f64,
@@ -29,13 +33,23 @@ pub struct Settings {
 pub fn lerp(a: f32, b: f32, t: f32) -> f32 {
     a + (b - a) * t
 }
-pub fn fov(e: &Entity, water: bool, t: f32, extra: [f32; 2]) -> f32 {
-    let mut f = if water { 60.0 } else { 70.0 };
+/// `getFOVModifier(t, projection)` (b1.8.1): the option and zoom only apply to the world
+/// projection, not to the hand.
+pub fn fov(e: &Entity, water: bool, t: f32, s: &Settings, projection: bool) -> f32 {
+    let mut f = 70.0f32;
+    if projection {
+        f += s.fov_option * 40.0f32;
+        let z = s.fov_zoom.unwrap_or([1.0, 1.0]);
+        f *= z[0] + (z[1] - z[0]) * t;
+    }
     if e.living.health <= 0 {
         let death = e.living.death_time as f32 + t;
         f /= (1.0 - 500.0 / (death + 500.0)) * 2.0 + 1.0;
     }
-    f + extra[0] + (extra[1] - extra[0]) * t
+    if water {
+        f = f * 60.0f32 / 70.0f32;
+    }
+    f + s.fov[0] + (s.fov[1] - s.fov[0]) * t
 }
 pub fn hurt(g: &mut Fixed, e: &Entity, t: f32) {
     let l = &e.living;
@@ -223,13 +237,22 @@ pub fn medium(e: &Entity, w: &mut World) -> Medium {
         Medium::Air
     }
 }
-pub fn fog_color(base: [f32; 3], medium: Medium, fade: f32, anaglyph: bool) -> [f32; 3] {
-    let c = match medium {
+/// `eye_y`: the view entity's interpolated posY; b1.8.1 darkens the fog below y 32.
+pub fn fog_color(base: [f32; 3], medium: Medium, fade: f32, anaglyph: bool, eye_y: f64) -> [f32; 3] {
+    let mut c = match medium {
         Medium::Air => base,
         Medium::Water => [0.02, 0.02, 0.2],
         Medium::Lava => [0.6, 0.1, 0.0],
     }
     .map(|c| c * fade);
+    let mut depth = eye_y / 32.0;
+    if depth < 1.0 {
+        if depth < 0.0 {
+            depth = 0.0;
+        }
+        depth *= depth;
+        c = c.map(|v| (v as f64 * depth) as f32);
+    }
     if anaglyph {
         [
             (c[0] * 30.0 + c[1] * 59.0 + c[2] * 11.0) / 100.0,

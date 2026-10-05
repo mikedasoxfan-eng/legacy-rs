@@ -20,7 +20,7 @@ public final class WorldEventOracle {
             case "playSound": o.writeByte(0);text(o,(String)a[0]);pos(o,(Double)a[1],(Double)a[2],(Double)a[3]);EntityOracle.f(o,(Float)a[4]);EntityOracle.f(o,(Float)a[5]);break;
             case "spawnParticle": o.writeByte(1);text(o,(String)a[0]);pos(o,(Double)a[1],(Double)a[2],(Double)a[3]);pos(o,(Double)a[4],(Double)a[5],(Double)a[6]);break;
             case "playRecord": o.writeByte(2);i(o,a[0]==null?0:1);if(a[0]!=null)text(o,(String)a[0]);cell(o,(Integer)a[1],(Integer)a[2],(Integer)a[3]);break;
-            case "func_28136_a": o.writeByte(3);i(o,(Integer)a[1]);cell(o,(Integer)a[2],(Integer)a[3],(Integer)a[4]);i(o,(Integer)a[5]);break;
+            case "playAuxSFX": o.writeByte(3);i(o,(Integer)a[1]);cell(o,(Integer)a[2],(Integer)a[3],(Integer)a[4]);i(o,(Integer)a[5]);break;
             default:return null;
             }
             events.get(w).add(b.toByteArray());return null;
