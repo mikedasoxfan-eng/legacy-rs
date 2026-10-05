@@ -1,6 +1,27 @@
 use worldgen::{genlayer, OverworldGenerator};
 fn main() {
     let a: Vec<String> = std::env::args().skip(1).collect();
+    if a[0] == "component" {
+        compare(
+            worldgen::structures::verify::component(a[1].parse().unwrap()),
+            std::fs::read(&a[2]).unwrap(),
+        );
+        return;
+    }
+    if a[0] == "round2" {
+        compare(
+            worldgen::terrain_verify::round2(&a[1], a[2].parse().unwrap()),
+            std::fs::read(&a[3]).unwrap(),
+        );
+        return;
+    }
+    if a[0] == "structures" {
+        compare(
+            worldgen::structures::verify::dump(&a[1], a[2].parse().unwrap()),
+            std::fs::read(&a[3]).unwrap(),
+        );
+        return;
+    }
     if a[0] == "starts" {
         compare(
             worldgen::terrain_verify::starts(a[1].parse().unwrap()),

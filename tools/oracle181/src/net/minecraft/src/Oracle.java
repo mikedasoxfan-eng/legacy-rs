@@ -807,7 +807,7 @@ public class Oracle {
     static DataOut worldBytes(World w, int sx, int sy, int sz) throws Exception {
         List<Chunk> chunks;
         if(w.chunkProvider instanceof EntityOracle.FlatProvider)chunks=new ArrayList<>(((EntityOracle.FlatProvider)w.chunkProvider).chunks.values());
-        else {Field cmF = ChunkProvider.class.getDeclaredField("chunkMap");cmF.setAccessible(true);Map<Integer,Chunk> map=(Map<Integer,Chunk>)cmF.get(w.chunkProvider);chunks=new ArrayList<>(map.values());}
+        else {Field listF = ChunkProvider.class.getDeclaredField("chunkList");listF.setAccessible(true);chunks=new ArrayList<>((Collection<Chunk>)listF.get(w.chunkProvider));}
         chunks.sort((p, q) -> p.xPosition != q.xPosition ? Integer.compare(p.xPosition, q.xPosition)
                                                          : Integer.compare(p.zPosition, q.zPosition));
         DataOut o = new DataOut();
@@ -865,9 +865,8 @@ public class Oracle {
         for (NextTickListEntry t : ticks) {
             o.i32(t.xCoord); o.i32(t.yCoord); o.i32(t.zCoord); o.i32(t.blockID); o.i64(t.scheduledTime);
         }
-        Field ltu = World.class.getDeclaredField("lightingToUpdate");
-        ltu.setAccessible(true);
-        o.i32(((List<?>) ltu.get(w)).size());
+        // b1.8.1 updates light synchronously; World no longer has this queue.
+        o.i32(0);
         return o;
     }
 

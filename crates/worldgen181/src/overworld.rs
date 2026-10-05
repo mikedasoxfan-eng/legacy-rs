@@ -39,7 +39,6 @@ pub struct OverworldGenerator {
     pub biome_source: BiomeSource,
     caves: CaveCarver,
     ravines: CaveCarver,
-    pub(crate) big_trees: Vec<Option<crate::features::BigTree>>,
 
     density: Vec<f64>,
     stone_noise: Vec<f64>,
@@ -74,9 +73,6 @@ impl OverworldGenerator {
             biome_source: BiomeSource::new(seed),
             caves: CaveCarver::default(),
             ravines: CaveCarver::ravines(),
-            big_trees: (0..10)
-                .map(|_| Some(crate::features::BigTree::new()))
-                .collect(),
             density: Vec::new(),
             // The Java fields start as `new double[256]`, not null.
             stone_noise: vec![0.0; 256],

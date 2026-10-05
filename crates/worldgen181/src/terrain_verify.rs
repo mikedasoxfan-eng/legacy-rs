@@ -292,7 +292,11 @@ pub fn biomes(seed: i64) -> Vec<u8> {
     out
 }
 pub fn feature(name: &str, seed: i64, fixture: i32) -> Vec<u8> {
-    let mut w = World::new(0, 300);
+    let mut w = if name == "sky" {
+        World::with_dimension(seed, 300, crate::world::Dimension::Sky)
+    } else {
+        World::new(0, 300)
+    };
     w.sand_fall_instantly = true;
     for cx in -3..=3 {
         for cz in -3..=3 {
@@ -347,7 +351,10 @@ pub fn feature(name: &str, seed: i64, fixture: i32) -> Vec<u8> {
     } else {
         64
     };
-    let result = if let Some(id) = name.strip_prefix("animals") {
+    let result = if name == "sky" {
+        crate::sky::populate(&mut w, 0, 0);
+        true
+    } else if let Some(id) = name.strip_prefix("animals") {
         crate::populate::spawn_population(
             &mut w,
             crate::Biome::from_id(id.parse().unwrap()),
@@ -376,7 +383,7 @@ pub fn feature(name: &str, seed: i64, fixture: i32) -> Vec<u8> {
             "ore" => features::minable(&mut w, 14, 8, 8, y, 8),
             "lake" => features::lakes(&mut w, 9, 8, y, 8),
             "lava" => features::lakes(&mut w, 11, 8, y, 8),
-            "dungeon" => features::dungeon(&mut w, 8, y, 8),
+            "dungeon" | "dungeontiles" => features::dungeon(&mut w, 8, 32, 8),
             _ => panic!("unknown feature {name}"),
         }
     };
@@ -408,5 +415,74 @@ pub fn feature(name: &str, seed: i64, fixture: i32) -> Vec<u8> {
         };
         out.extend_from_slice(&color.to_be_bytes());
     }
+    if name == "dungeontiles" {
+        crate::structures::verify::tiles(&mut out, &mut w, -48, 63);
+    }
     out
+}
+pub fn round2(mode: &str, seed: i64) -> Vec<u8> {
+    match mode {
+        "lifetime" => [seed, 3, 4, 5]
+            .into_iter()
+            .flat_map(|s| feature("decorate4", s, 0))
+            .collect(),
+        "dungeon" => feature("dungeontiles", seed, 4),
+        "sky" => feature("sky", seed, 0),
+        "locations" => {
+            let mut out = Vec::new();
+            let mut r = JavaRandom::new(0);
+            let biomes = crate::BiomeSource::new(seed);
+            for (x, z) in crate::structures::locations::strongholds(seed, &biomes, &mut r) {
+                out.extend(x.to_be_bytes());
+                out.extend(z.to_be_bytes());
+            }
+            out.extend(r.state().to_be_bytes());
+            out
+        }
+        "skygrid" => {
+            let mut out = Vec::new();
+            let mut w = World::with_dimension(seed, 300, crate::world::Dimension::Sky);
+            for x in -2..=2 {
+                for z in -2..=2 {
+                    w.load_chunk(x, z);
+                }
+            }
+            out.extend(w.prand().state().to_be_bytes());
+            out.extend(w.rand.state().to_be_bytes());
+            out.extend((w.chunks.len() as i32).to_be_bytes());
+            let mut keys: Vec<_> = w.chunks.keys().copied().collect();
+            keys.sort();
+            for (x, z) in keys {
+                let c = w.chunk(x, z);
+                out.extend(x.to_be_bytes());
+                out.extend(z.to_be_bytes());
+                out.push(c.populated as u8);
+                out.extend(&c.blocks[..]);
+                out.extend(&c.data.0[..]);
+                out.extend(&c.sky_light.0[..]);
+                out.extend(&c.block_light.0[..]);
+                out.extend(&c.height_map[..]);
+            }
+            out
+        }
+        "colors" => {
+            let mut out = Vec::new();
+            for id in 0..10 {
+                for t in [-100.0, -3.0, -1.0, 0.0, 0.5, 1.0, 3.0, 100.0] {
+                    out.extend(crate::Biome::from_id(id).sky_color_by_temp(t).to_be_bytes());
+                }
+            }
+            for time in [-1, 0, 6000, 12000, 18000, 24000] {
+                for partial in [0.0, 0.5, 1.0] {
+                    out.extend(
+                        crate::world::Dimension::Sky
+                            .celestial_angle(time, partial)
+                            .to_be_bytes(),
+                    );
+                }
+            }
+            out
+        }
+        _ => panic!("unknown round2 fixture"),
+    }
 }

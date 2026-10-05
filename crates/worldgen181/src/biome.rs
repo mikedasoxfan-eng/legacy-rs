@@ -10,6 +10,8 @@ use std::{
 };
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
+// BiomeGenBase's singleton generators outlive every World/provider.
+// (The enum below identifies the corresponding singleton.)
 #[repr(u8)]
 pub enum Biome {
     Ocean = 0,
@@ -22,6 +24,23 @@ pub enum Biome {
     River = 7,
     Hell = 8,
     Sky = 9,
+}
+static BIG_TREES: std::sync::LazyLock<Mutex<Vec<Option<crate::features::BigTree>>>> =
+    std::sync::LazyLock::new(|| {
+        Mutex::new(
+            (0..10)
+                .map(|_| Some(crate::features::BigTree::new()))
+                .collect(),
+        )
+    });
+pub(crate) fn big_tree(biome: Biome, w: &mut crate::World, x: i32, y: i32, z: i32) -> bool {
+    let mut tree = BIG_TREES.lock().unwrap()[biome as usize]
+        .take()
+        .expect("recursive biome big tree");
+    tree.set_scale(1.0, 1.0, 1.0);
+    let result = tree.generate(w, x, y, z);
+    BIG_TREES.lock().unwrap()[biome as usize] = Some(tree);
+    result
 }
 impl Biome {
     pub fn from_id(id: i32) -> Self {
@@ -175,6 +194,11 @@ impl BiomeSource {
     pub fn sky() -> Self {
         let mut s = Self::new(0);
         s.fixed = Some(Biome::Sky);
+        s
+    }
+    pub(crate) fn structure_fixture_plains() -> Self {
+        let mut s = Self::new(0);
+        s.fixed = Some(Biome::Plains);
         s
     }
     /// Coarse biome map for density blending (`func_35557_b`).
@@ -351,5 +375,46 @@ impl BiomeSource {
             }
         }
         found
+    }
+}
+
+pub fn hsb_to_rgb(hue: f32, sat: f32, bri: f32) -> u32 {
+    let (r, g, b);
+    if sat == 0.0 {
+        let v = (bri * 255.0f32 + 0.5f32) as i32;
+        r = v;
+        g = v;
+        b = v;
+    } else {
+        let h = (hue - hue.floor()) * 6.0f32;
+        let f = h - h.floor();
+        let p = bri * (1.0f32 - sat);
+        let q = bri * (1.0f32 - sat * f);
+        let t = bri * (1.0f32 - sat * (1.0f32 - f));
+        let c = |v: f32| (v * 255.0f32 + 0.5f32) as i32;
+        (r, g, b) = match h as i32 {
+            0 => (c(bri), c(t), c(p)),
+            1 => (c(q), c(bri), c(p)),
+            2 => (c(p), c(bri), c(t)),
+            3 => (c(p), c(q), c(bri)),
+            4 => (c(t), c(p), c(bri)),
+            5 => (c(bri), c(p), c(q)),
+            _ => (0, 0, 0),
+        };
+    }
+    0xff000000 | ((r as u32) << 16) | ((g as u32) << 8) | b as u32
+}
+
+impl Biome {
+    pub fn sky_color_by_temp(self, temp: f32) -> i32 {
+        if self == Self::Sky {
+            return 12632319;
+        }
+        let t = (temp / 3.0f32).clamp(-1.0, 1.0);
+        hsb_to_rgb(
+            224.0f32 / 360.0f32 - t * 0.05f32,
+            0.5f32 + t * 0.1f32,
+            1.0f32,
+        ) as i32
     }
 }

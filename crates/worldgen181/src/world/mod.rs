@@ -103,6 +103,7 @@ fn in_xz_bounds(x: i32, z: i32) -> bool {
 pub enum Dimension {
     Overworld,
     Nether,
+    Sky,
 }
 
 impl Dimension {
@@ -114,6 +115,9 @@ impl Dimension {
     pub fn is_hell_world(self) -> bool {
         self == Self::Nether
     }
+    pub fn id(self) -> i32 { match self { Self::Nether => -1, Self::Overworld => 0, Self::Sky => 1 } }
+    pub fn from_id(id:i32) -> Option<Self> { match id { -1=>Some(Self::Nether),0=>Some(Self::Overworld),1=>Some(Self::Sky),_=>None } }
+    pub fn celestial_angle(self,time:i64,partial:f32)->f32 {match self {Self::Nether=>0.5,Self::Sky=>0.0,Self::Overworld=>tick::celestial_angle(time,partial)}}
 
     /// `WorldProvider.generateLightBrightnessTable` and the Hell override.
     pub fn light_brightness_table(self) -> [f32; 16] {
@@ -140,9 +144,15 @@ pub struct World {
     pub display_seed_source: crate::entity::EntitySeedSource,
     pub seed: i64,
     pub terrain: OverworldGenerator,
+    pub(crate) mineshafts: crate::structures::MineshaftGenerator,
+    pub(crate) villages: crate::structures::village::VillageGenerator,
+    pub(crate) structure_locations: crate::structures::locations::Locations,
+    pub(crate) generator_epoch: u64,
+    pub(crate) structure_rng_epoch: Option<u64>,
     pub dimension: Dimension,
     pub light_brightness_table: [f32; 16],
     nether: Option<crate::nether::NetherGenerator>,
+    pub(crate) sky: Option<crate::sky::SkyGenerator>,
     pub chunks: ChunkMap,
     /// `World.rand`
     pub rand: JavaRandom,
@@ -257,6 +267,8 @@ impl World {
         let mut terrain = OverworldGenerator::new(seed);
         if dimension.is_hell_world() {
             terrain.biome_source = crate::biome::BiomeSource::hell();
+        } else if dimension == Dimension::Sky {
+            terrain.biome_source = crate::biome::BiomeSource::sky();
         }
         World {
             events: Vec::new(),
@@ -271,6 +283,12 @@ impl World {
                 None
             },
             terrain,
+            sky: if dimension == Dimension::Sky {Some(crate::sky::SkyGenerator::new(seed))} else {None},
+            mineshafts: Default::default(),
+            villages: Default::default(),
+            structure_locations: Default::default(),
+            generator_epoch: 0,
+            structure_rng_epoch: None,
             chunks: ChunkMap::default(),
             rand: JavaRandom::new(world_rand_seed),
             light_queue: Vec::new(),
@@ -399,6 +417,7 @@ impl World {
     /// The population RNG (`ChunkProviderGenerate.rand` / `ChunkProviderHell.hellRNG`).
     #[inline]
     pub fn prand(&mut self) -> &mut JavaRandom {
+        if let Some(gen) = &mut self.sky {return gen.rand_mut();}
         match &mut self.nether {
             Some(gen) => gen.rand_mut(),
             None => self.terrain.rand_mut(),
@@ -448,10 +467,18 @@ impl World {
             self.load_chunk_entities(cx, cz);
         } else {
             // ChunkProviderGenerate/ChunkProviderHell.provideChunk
-            let raw = match &mut self.nether {
+            let raw = if let Some(gen) = &mut self.sky {gen.generate(cx,cz)} else {match &mut self.nether {
                 Some(gen) => gen.generate(cx, cz),
                 None => self.terrain.generate(cx, cz),
-            };
+            }};
+            if self.dimension == Dimension::Overworld && self.info.map_features {
+                if self.structure_locations.strongholds.is_none() {
+                    self.structure_locations.strongholds=Some(crate::structures::locations::strongholds(self.seed,&self.terrain.biome_source,&mut JavaRandom::new(0)));
+                }
+                self.mineshafts.generate(self.seed,cx,cz);
+                self.villages.generate(self.seed,cx,cz,&self.terrain.biome_source,&mut self.rand);
+            }
+            self.generator_epoch=self.generator_epoch.wrapping_add(1);
             let mut c = Box::new(Chunk::new(cx, cz, raw.blocks));
             // ChunkProviderHell returns a new Chunk without func_1024_c. Its
             // height/skylight arrays remain zero until individual block writes.
@@ -512,6 +539,8 @@ impl World {
             self.chunk_mut(cx, cz).populated = true;
             if self.dimension.is_hell_world() {
                 crate::nether::populate::populate(self, cx, cz);
+            } else if self.dimension == Dimension::Sky {
+                crate::sky::populate(self,cx,cz);
             } else {
                 crate::populate::populate(self, cx, cz);
             }

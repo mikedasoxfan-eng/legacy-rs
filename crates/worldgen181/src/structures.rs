@@ -1,5 +1,75 @@
 //! Literal inclusive bounding-box operations from `StructureBoundingBox`.
 use crate::{weighted::Weighted, JavaRandom};
+pub mod component;
+pub mod locations;
+mod long_map_order;
+pub mod mineshaft;
+pub mod verify;
+pub mod village;
+use std::collections::HashMap;
+
+/// `MapGenStructure`'s retained start map, in Java HashMap value iteration order.
+#[derive(Default)]
+pub struct MineshaftGenerator {
+    pub starts: HashMap<i64, (Vec<mineshaft::MineshaftPiece>, BoundingBox)>,
+    order: long_map_order::LongMapOrder<i64>,
+}
+impl MineshaftGenerator {
+    pub(crate) fn merge_start(
+        &mut self,
+        key: i64,
+        start: (Vec<mineshaft::MineshaftPiece>, BoundingBox),
+    ) {
+        if let std::collections::hash_map::Entry::Vacant(e) = self.starts.entry(key) {
+            e.insert(start);
+            self.order
+                .insert((key ^ ((key as u64 >> 32) as i64)) as i32, key);
+        }
+    }
+    pub fn keys(&self) -> Vec<i64> {
+        self.order.iter().collect()
+    }
+    pub fn generate(&mut self, seed: i64, cx: i32, cz: i32) -> i64 {
+        let mut r = JavaRandom::new(seed);
+        let mx = r.next_long();
+        let mz = r.next_long();
+        for x in cx.wrapping_sub(8)..=cx.wrapping_add(8) {
+            for z in cz.wrapping_sub(8)..=cz.wrapping_add(8) {
+                let key = ChunkCoordIntPair { x, z }.packed();
+                r.set_seed((x as i64).wrapping_mul(mx) ^ (z as i64).wrapping_mul(mz) ^ seed);
+                if !self.starts.contains_key(&key) {
+                    r.next_int_unbounded();
+                    if r.next_int(80) == 0
+                        && r.next_int(80) < x.wrapping_abs().max(z.wrapping_abs())
+                    {
+                        let start = mineshaft::MineshaftPiece::start(&mut r, x, z);
+                        self.starts.insert(key, start);
+                        self.order
+                            .insert((key ^ ((key as u64 >> 32) as i64)) as i32, key);
+                    }
+                }
+            }
+        }
+        r.state()
+    }
+    pub fn populate(&mut self, w: &mut crate::World, r: &mut JavaRandom, cx: i32, cz: i32) -> bool {
+        let previous_epoch = w.structure_rng_epoch.replace(w.generator_epoch);
+        let x = (cx << 4).wrapping_add(8);
+        let z = (cz << 4).wrapping_add(8);
+        let clip = BoundingBox::region(x, z, x.wrapping_add(15), z.wrapping_add(15));
+        let mut placed = false;
+        for key in self.order.iter() {
+            let (pieces, bounds) = self.starts.get_mut(&key).unwrap();
+            if bounds.intersects_region(x, z, x.wrapping_add(15), z.wrapping_add(15)) {
+                pieces.retain_mut(|p| !p.bounds().intersects(clip) || p.generate(w, r, clip));
+                placed = true;
+            }
+        }
+        component::random(w, r);
+        w.structure_rng_epoch = previous_epoch;
+        placed
+    }
+}
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct ChunkCoordIntPair {
     pub x: i32,

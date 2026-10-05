@@ -22,11 +22,34 @@ pub fn populate(w: &mut World, cx: i32, cz: i32) {
             .wrapping_add((cz as i64).wrapping_mul(mz))
             ^ seed,
     );
-    if w.prand().next_int(4) == 0 {
+    let mut village = false;
+    if w.info.map_features {
+        let mut structures = std::mem::take(&mut w.mineshafts);
+        let mut r = w.prand().clone();
+        structures.populate(w, &mut r, cx, cz);
+        *w.prand() = r;
+        // A structure callback can load more chunks. Keep starts registered by those
+        // nested loads while the outer generator was temporarily borrowed out.
+        for key in w.mineshafts.keys() {
+            let start = w.mineshafts.starts.remove(&key).unwrap();
+            structures.merge_start(key, start);
+        }
+        w.mineshafts = structures;
+        let mut structures = std::mem::take(&mut w.villages);
+        let mut r = w.prand().clone();
+        village = structures.populate(w, &mut r, cx, cz);
+        *w.prand() = r;
+        for key in w.villages.keys() {
+            let start = w.villages.starts.remove(&key).unwrap();
+            structures.merge_start(key, start);
+        }
+        w.villages = structures;
+    }
+    if !village && w.prand().next_int(4) == 0 {
         let (x, y, z) = surface_pos(w, x0, z0);
         features::lakes(w, block::WATER_STILL, x, y, z);
     }
-    if w.prand().next_int(8) == 0 {
+    if !village && w.prand().next_int(8) == 0 {
         let x = x0 + w.prand().next_int(16) + 8;
         let bound = w.prand().next_int(120) + 8;
         let y = w.prand().next_int(bound);
@@ -96,12 +119,7 @@ pub fn decorate(w: &mut World, biome: Biome, x0: i32, z0: i32) {
         let y = w.get_height_value(x, z);
         if matches!(kind, TreeKind::BigOak) {
             // BiomeGenBase retains its big-tree generator, including its first height limit.
-            let mut tree = w.terrain.big_trees[biome as usize]
-                .take()
-                .expect("recursive big tree");
-            tree.set_scale(1.0, 1.0, 1.0);
-            tree.generate(w, x, y, z);
-            w.terrain.big_trees[biome as usize] = Some(tree);
+            crate::biome::big_tree(biome, w, x, y, z);
         } else {
             features::tree(w, kind, x, y, z);
         }
@@ -198,7 +216,7 @@ fn disc_pos(w: &mut World, x0: i32, z0: i32) -> (i32, i32, i32) {
     }
     (x, -1, z)
 }
-fn tree_for_biome(w: &mut World, biome: Biome) -> TreeKind {
+pub(crate) fn tree_for_biome(w: &mut World, biome: Biome) -> TreeKind {
     let r = w.prand();
     match biome {
         Biome::Forest => {

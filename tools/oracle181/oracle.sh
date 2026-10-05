@@ -33,4 +33,4 @@ done
 "$java" -version 2>&1 | grep -q '1.8.0_51' || { echo "oracle requires Mojang Java 8u51; refusing another JVM" >&2; exit 1; }
 cd "$here/out"
 # b1.8.1 prints its achievement and recipe counts and IntCache growth on stdout.
-"$java" -cp "$here/build;$jar$libs" net.minecraft.src.Oracle "$@" 2>&1 | { grep -v -E '^([0-9]+ achievements|[0-9]+ recipes|New max size: [0-9]+)$' || true; }
+"$java" -cp "$here/build;$jar$libs" net.minecraft.src.Oracle "$@" 2>&1 | { grep -v -E '^([0-9]+ achievements|[0-9]+ recipes|New max size: [0-9]+|Placed stronghold in INVALID biome at \(-?[0-9]+, -?[0-9]+\))$' || true; }
