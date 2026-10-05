@@ -117,6 +117,11 @@ pub fn draw(
     ui.gl.translatef(0.0, 1.62, 0.0);
     ui.gl.translatef(0.0, -1.62, 0.0);
     ui.gl.rotatef(180.0 - state.body_yaw, 0.0, 1.0, 0.0);
+    if snapshot.preview.death_time > 0 {
+        // Bridge the existing RenderLiving corpse pose into the GUI GL adapter.
+        let f = ((snapshot.preview.death_time as f32 + 1.0 - 1.0) / 20.0 * 1.6) as f64;
+        ui.gl.rotatef((f.sqrt() as f32).min(1.0) * 90.0, 0.0, 0.0, 1.0);
+    }
     ui.gl.scalef(-1.0, -1.0, 1.0);
     ui.gl.scalef(15.0 / 16.0, 15.0 / 16.0, 15.0 / 16.0);
     ui.gl.translatef(0.0, -24.0 / 16.0 - 0.0078125, 0.0);
@@ -231,7 +236,7 @@ pub fn draw(
     // RenderLiving disables texture unit 1 for the color/hurt overlay, then
     // unconditionally re-enables it before returning to GuiInventory.
     ui.gl.lightmap_enabled = false;
-    if snapshot.preview.hurt_time > 0 {
+    if snapshot.preview.hurt_time > 0 || snapshot.preview.death_time > 0 {
         ui.gl.texture_2d = false;
         ui.gl.alpha_test = false;
         ui.gl.blend = true;
@@ -240,7 +245,7 @@ pub fn draw(
             crate::gui::gl::Factor::OneMinusSrcAlpha,
         );
         ui.gl.depth_equal = true;
-        let color = Some([1.0, 0.0, 0.0, 0.4]);
+        let color = Some([snapshot.preview.brightness, 0.0, 0.0, 0.4]);
         for (p, r) in model.render_parts() {
             part(ui, p, parent, r, lights, color);
         }

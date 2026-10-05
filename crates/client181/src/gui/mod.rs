@@ -5,6 +5,7 @@
 pub mod achievement_toast;
 pub mod container_api;
 pub mod container_check;
+pub mod inventory_check;
 pub mod stats_table;
 pub mod font;
 pub mod frame_graph;
@@ -147,6 +148,8 @@ pub enum Action {
     RefreshTextures,
     /// `thePlayer.respawnPlayer()`
     Respawn,
+    /// GuiInventory / GuiContainerCreative's synchronous mode-change redirect.
+    RedirectInventory,
 }
 
 /// The parts of `Minecraft` the GUI code reaches into.
@@ -194,6 +197,8 @@ pub struct Ui {
     pub container_commands: Vec<worldgen::container::ContainerCommand>,
     pub sign_commands: Vec<((i32,i32,i32),[String;4])>,
     pub inventory_armor_state: screens::inventory_model::ArmorPassState,
+    /// A displayed mode-change screen is awaiting the world-thread acknowledgement.
+    pub inventory_redirect_pending: bool,
 }
 
 impl Ui {

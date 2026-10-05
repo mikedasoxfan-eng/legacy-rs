@@ -27,23 +27,9 @@ fn integer_format(v: i64) -> String {
 
 /// `StatBase.func_27081_j()`: `new DecimalFormat("########0.00")` (half-even rounding).
 fn decimal_format(v: f64) -> String {
-    let scaled = v * 100.0;
-    let floor = scaled.floor();
-    let diff = scaled - floor;
-    let mut r = if diff > 0.5 {
-        floor + 1.0
-    } else if diff < 0.5 {
-        floor
-    } else if floor % 2.0 == 0.0 {
-        floor
-    } else {
-        floor + 1.0
-    };
-    if r == -0.0 {
-        r = 0.0;
-    }
-    let r = r as i64;
-    format!("{}.{:02}", r / 100, (r % 100).abs())
+    // Format the original binary double directly. Multiplying by 100 first can
+    // round a value just below a decimal half to an exact half (3949.535 km).
+    format!("{v:.2}")
 }
 
 /// Java's `Double.toString` for the small values the time format prints.
@@ -127,6 +113,16 @@ fn item_cell(ui: &mut Ui, x: i32, y: i32, item: i32) {
 
 struct General;
 
+struct GeneralCell { text: String, x: i32, y: i32, color: i32 }
+fn general_cells(ui: &Ui, index: usize, x: i32, y: i32) -> [GeneralCell; 2] {
+    let (id, kind, name) = table::GENERAL[index];
+    let color = if index % 2 == 0 { 16777215 } else { 9474192 };
+    let value = format_stat(kind, ui.stats.get(id));
+    let width = ui.string_width(&value);
+    [GeneralCell { text: name.into(), x: x.wrapping_add(2), y: y.wrapping_add(1), color },
+     GeneralCell { text: value, x: x.wrapping_add(2).wrapping_add(213).wrapping_sub(width), y: y.wrapping_add(1), color }]
+}
+
 impl SlotList for General {
     fn size(&self) -> i32 {
         table::GENERAL.len() as i32
@@ -143,13 +139,45 @@ impl SlotList for General {
         ui.draw_world_background(sr.width, sr.height, 0);
     }
     fn draw_slot(&mut self, ui: &mut Ui, index: i32, x: i32, y: i32, _h: i32) {
-        let (id, kind, name) = table::GENERAL[index as usize];
-        let color = if index % 2 == 0 { 16777215 } else { 9474192 };
-        ui.draw_string(name, x + 2, y + 1, color);
-        let v = format_stat(kind, ui.stats.get(id));
-        let w = ui.string_width(&v);
-        ui.draw_string(&v, x + 2 + 213 - w, y + 1, color);
+        for cell in general_cells(ui, index as usize, x, y) {
+            ui.draw_string(&cell.text, cell.x, cell.y, cell.color);
+        }
     }
+}
+
+pub fn check_general(path: &str) -> bool {
+    let mut ui = crate::gui::utility_check::fixture_ui("target".into());
+    let mut out = Vec::new();
+    let mut r = worldgen::JavaRandom::new(7281);
+    let mut list = General;
+    for c in 0i32..1024 {
+        ui.stats = Default::default();
+        for (id, _, _) in table::GENERAL {
+            let value = match c % 7 { 0 => i32::MIN, 1 => i32::MAX, 2 => -1, 3 => 0, _ => id.wrapping_mul(1664525).wrapping_add(c.wrapping_mul(1013904223)) };
+            ui.stats.add(id, value);
+        }
+        let x = r.next_int(20001) - 10000;
+        let y = r.next_int(20001) - 10000;
+        list.element_clicked(&mut ui, c - 512, c & 1 != 0);
+        out.extend(list.size().to_le_bytes());out.extend(list.content_height().unwrap().to_le_bytes());out.push(list.is_selected(c - 512) as u8);
+        for index in 0..table::GENERAL.len() {
+            for cell in general_cells(&ui, index, x, y) {
+                out.extend((cell.text.len() as i32).to_le_bytes());out.extend(cell.text.as_bytes());
+                for n in [cell.x, cell.y, cell.color] { out.extend(n.to_le_bytes()); }
+            }
+        }
+    }
+    for _ in 0..10000 {
+        let center = r.next_int(2147483) * 1000 + 500;
+        for delta in -1..=1 {
+            let text = format_stat(StatType::Distance, center + delta);
+            out.extend((text.len() as i32).to_le_bytes());out.extend(text.as_bytes());
+        }
+    }
+    let expected = std::fs::read(path).unwrap();
+    std::fs::write("target/generalstats181-rust.bin", &out).unwrap();
+    if out != expected {let at = out.iter().zip(&expected).position(|(a,b)|a!=b).unwrap_or(out.len().min(expected.len()));eprintln!("GENERAL STATS DIFFERS byte {at}, lengths {}/{}",out.len(),expected.len());return false;}
+    println!("GENERAL STATS EXACT: 1024 original list/row callbacks, every general stat, signed format boundaries and draw arguments ({} bytes)",out.len());true
 }
 
 // ------------------------------------------------------------------ blocks and items

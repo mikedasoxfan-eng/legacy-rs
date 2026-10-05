@@ -1,0 +1,22 @@
+# Diagnostic: rotated RenderPlayer lighting is not pixel EXACT.
+world 42
+clear 128
+mouse -1 -1
+lightmap 2
+open inventory
+previewlight 7
+pose 27 0.0 0.0 0.0 off off 0 1
+shot b181_preview_death1
+open inventory
+previewlight 7
+pose 27 0.0 0.0 0.0 off off 0 5
+shot b181_preview_death5
+open inventory
+previewlight 7
+pose 27 0.0 0.0 0.0 off off 0 13
+shot b181_preview_death13
+open inventory
+previewlight 7
+pose 27 0.0 0.0 0.0 off off 0 20
+shot b181_preview_death20
+# --- end player-gui ---

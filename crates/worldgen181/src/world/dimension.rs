@@ -223,7 +223,7 @@ impl World {
         // world.setEntityDead(thePlayer)
         self.take_player(old);
         // playerController.createPlayer: a new EntityPlayerSP for the session's user.
-        let mut e = crate::entity::Entity::player(self, "Player");
+        let mut e = crate::entity::player::controller::PlayerControllerSP::create_player(self, "Player");
         if let Some(s) = e.player_state_mut() {
             s.dimension = 0;
         }
@@ -241,7 +241,7 @@ impl World {
             );
         }
         // flipPlayer
-        e.yaw = -180.0;
+        crate::entity::player::controller::PlayerControllerSP::flip_player(&mut e, self.info.game_type == 1);
         // spawnPlayerWithLoadedChunks; then thePlayer.entityId = the old id.
         e.entity_id = old;
         let (px, pz) = (e.pos.x, e.pos.z);

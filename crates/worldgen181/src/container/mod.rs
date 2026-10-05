@@ -556,6 +556,8 @@ impl Container {
             cursor: p.cursor,
             armor: p.armor,
             held: p.held(),
+            player_inventory: p.clone(),
+            creative: self.kind == ContainerKind::Creative,
             preview: PlayerPreview::default(),
             progress: self.progress,
             alive: true,
@@ -564,6 +566,8 @@ impl Container {
 }
 #[derive(Clone, Debug)]
 pub struct ContainerSnapshot {
+    pub player_inventory: InventoryPlayer,
+    pub creative: bool,
     pub inventory_name: Option<&'static str>,
     pub window: i32,
     pub kind: ContainerKind,
@@ -578,6 +582,8 @@ pub struct ContainerSnapshot {
 }
 #[derive(Clone, Copy, Debug)]
 pub struct PlayerPreview {
+    pub brightness: f32,
+    pub death_time: i32,
     pub age: f32,
     pub limb_swing: f32,
     pub limb_amount: f32,
@@ -589,6 +595,8 @@ pub struct PlayerPreview {
 impl Default for PlayerPreview {
     fn default() -> Self {
         Self {
+            brightness: 1.0,
+            death_time: 0,
             age: 1.0,
             limb_swing: 0.0,
             limb_amount: 0.0,
@@ -602,6 +610,8 @@ impl Default for PlayerPreview {
 impl PlayerPreview {
     pub fn from_entity(e: &crate::entity::Entity) -> Self {
         Self {
+            brightness: 1.0,
+            death_time: e.living.death_time,
             age: e.ticks_existed as f32 + 1.0,
             limb_swing: e.living.limb_swing,
             limb_amount: e.living.prev_limb_amount

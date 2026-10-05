@@ -41,6 +41,7 @@ pub(super) fn fixture_ui(saves_dir: std::path::PathBuf) -> super::Ui {
         container_commands: Vec::new(),
         sign_commands: Vec::new(),
         inventory_armor_state: Default::default(),
+        inventory_redirect_pending: false,
     }
 }
 

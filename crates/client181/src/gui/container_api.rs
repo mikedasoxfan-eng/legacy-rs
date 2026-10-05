@@ -40,6 +40,16 @@ impl GuiSystem {
     }
     /// Called with the authoritative answer to an Open request, on the UI thread.
     pub fn open_container(&mut self, snapshot: ContainerSnapshot) -> Vec<GameAction> {
+        if self.ui.inventory_redirect_pending {
+            self.ui.inventory_redirect_pending = false;
+            self.ui.container_snapshot = Some(snapshot);
+            return Vec::new();
+        }
+        if matches!(snapshot.kind, worldgen::container::ContainerKind::Player | worldgen::container::ContainerKind::Creative) {
+            // The inventory key constructs GuiInventory first, even in creative.
+            self.add_stat(worldgen::entity::player::stat::OPEN_INVENTORY,
+                if snapshot.kind == worldgen::container::ContainerKind::Creative { 2 } else { 1 });
+        }
         let screen = Box::new(GuiContainer::new(&snapshot));
         self.ui.container_snapshot = Some(snapshot);
         let pending = self.ui.container_commands.len();
@@ -54,6 +64,7 @@ impl GuiSystem {
     }
     /// Called after a click and once per unpaused world tick. Stale windows are ignored.
     pub fn update_container(&mut self, snapshot: ContainerSnapshot) {
+        if self.ui.inventory_redirect_pending { return; }
         if self
             .ui
             .container_snapshot
@@ -64,6 +75,7 @@ impl GuiSystem {
         }
     }
     pub fn container_closed(&mut self, window: i32) {
+        if self.ui.inventory_redirect_pending { return; }
         if let Some(s) = self
             .ui
             .container_snapshot

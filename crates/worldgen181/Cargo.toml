@@ -9,6 +9,14 @@ description = "Bit-exact port of the Minecraft Beta 1.8.1 simulation: world gene
 autobins = false
 
 [[bin]]
+name = "controllerlife181"
+path = "src/bin/controllerlife181.rs"
+
+[[bin]]
+name = "inventorybounds181"
+path = "src/bin/inventorybounds181.rs"
+
+[[bin]]
 name = "playersp181"
 path = "src/bin/playersp181.rs"
 

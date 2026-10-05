@@ -194,6 +194,16 @@ fn draw_item(ui: &mut Ui, s: Option<ItemStack>, x: i32, y: i32) {
     gui_item::render_item_overlay_into_gui(ui, overlay.as_ref(), x, y);
 }
 impl Screen for GuiContainer {
+    fn init_gui(&mut self, ui: &mut Ui) {
+        self.base.buttons.clear();
+        self.redirect_inventory(ui);
+    }
+    fn action_performed(&mut self, ui: &mut Ui, id: i32) {
+        if self.kind == ContainerKind::Player {
+            if id == 0 { ui.display(Some(Box::new(super::achievements::GuiAchievements::new()))); }
+            if id == 1 { ui.display_child(|parent| Box::new(super::stats::GuiStats::new(parent))); }
+        }
+    }
     fn base(&mut self) -> &mut ScreenBase {
         &mut self.base
     }
@@ -333,6 +343,10 @@ impl Screen for GuiContainer {
         });
     }
     fn update_screen(&mut self, ui: &mut Ui) {
+        if matches!(self.kind, ContainerKind::Player | ContainerKind::Creative) {
+            self.redirect_inventory(ui);
+            return;
+        }
         if ui
             .container_snapshot
             .as_ref()
@@ -346,5 +360,14 @@ impl Screen for GuiContainer {
     }
     fn is_container(&self) -> bool {
         true
+    }
+}
+impl GuiContainer {
+    fn redirect_inventory(&self, ui: &mut Ui) {
+        if matches!(self.kind, ContainerKind::Player | ContainerKind::Creative)
+            && ui.container_snapshot.as_ref().is_some_and(|s| s.creative != (self.kind == ContainerKind::Creative))
+        {
+            ui.actions.push(crate::gui::Action::RedirectInventory);
+        }
     }
 }

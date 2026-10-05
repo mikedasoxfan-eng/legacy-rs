@@ -50,15 +50,6 @@ impl World {
                 if let Some(c) = &mut container {
                     c.next_map_id = self.map_id;
                 }
-                if matches!(command, ContainerCommand::OpenInventory) {
-                    entity
-                        .player_state_mut()
-                        .unwrap()
-                        .events
-                        .push(PlayerEvent::Container(ContainerEvent::Achievement(
-                            "openInventory",
-                        )));
-                }
                 if let Some(c)=&container{self.chest_container_use181(c,true);}
                 session.active = container;
             }
@@ -96,6 +87,8 @@ impl World {
             let mut snapshot = c.snapshot(&entity.player_state().unwrap().inventory);
             snapshot.alive = !entity.dead && entity.living.health > 0;
             snapshot.preview = PlayerPreview::from_entity(&entity);
+            snapshot.preview.brightness = entity.brightness(self);
+            snapshot.creative = entity.player_state().unwrap().capabilities.creative;
             snapshot
         });
         self.container_sessions.insert(player, session);
@@ -106,10 +99,13 @@ impl World {
         let mut session = self.container_sessions.remove(&player)?;
         let result = session.active.as_mut().and_then(|c| {
             self.read_container_tiles(c);
-            let e = self.entities.get(&player)?;
+            let e = self.entities.remove(&player)?;
             let mut snapshot = c.snapshot(&e.player_state()?.inventory);
             snapshot.alive = !e.dead && e.living.health > 0;
-            snapshot.preview = PlayerPreview::from_entity(e);
+            snapshot.preview = PlayerPreview::from_entity(&e);
+            snapshot.preview.brightness = e.brightness(self);
+            snapshot.creative = e.player_state().unwrap().capabilities.creative;
+            self.entities.insert(player, e);
             Some(snapshot)
         });
         self.container_sessions.insert(player, session);

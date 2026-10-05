@@ -20,6 +20,16 @@ impl Default for PlayerControllerSP {
     }
 }
 impl PlayerControllerSP {
+    /// PlayerController.createPlayer (SP delegates to this unchanged).
+    pub fn create_player(w: &mut World, username: impl Into<String>) -> Entity {
+        let mut p = Entity::player(w, username);
+        p.player_state_mut().unwrap().dimension = w.dimension.id();
+        p
+    }
+    /// Survival's flipPlayer; creative inherits the base no-op.
+    pub fn flip_player(p: &mut Entity, creative: bool) {
+        if !creative { p.yaw = -180.0; }
+    }
     pub fn block_reach(creative: bool) -> f32 { if creative { 5.0 } else { 4.0 } }
     pub fn should_draw_hud(creative: bool) -> bool { !creative }
     pub fn has_extended_entity_reach(creative: bool) -> bool { creative }
@@ -137,9 +147,9 @@ impl PlayerControllerSP {
         _side: i32,
     ) -> bool {
         let id = w.get_block_id(x, y, z);
-        if id == 0 {
-            return false;
-        }
+        // The base returns false for air, but SP still calls canHarvestBlock(null)
+        // afterwards. Preserve that original failure for direct API callers.
+        assert!(id != 0, "PlayerControllerSP.canHarvestBlock(null)");
         let meta = w.get_block_metadata(x, y, z);
         w.auxiliary_effect(2001, (x, y, z), id as i32 + meta * 256);
         let removed = w.set_block_with_notify(x, y, z, 0);

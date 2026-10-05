@@ -123,6 +123,7 @@ public class GuiShot {
 
         boolean reported = false;
         int lightmapPattern=-1;
+        int previewLight=-1;
 
         void step() throws Exception {
             if (!reported) {
@@ -142,6 +143,12 @@ public class GuiShot {
                 String[] a = rest.isEmpty() ? new String[0] : rest.trim().split("\\s+");
                 if (cmd.equals("lightmap")) {
                     lightmapPattern=Integer.parseInt(rest);
+                } else if (cmd.equals("previewlight")) {
+                    previewLight=Integer.parseInt(rest);
+                } else if (cmd.equals("inventorymode")) {
+                    boolean creative=rest.equals("creative");
+                    mc.playerController=creative?new PlayerControllerTest(mc):new PlayerControllerSP(mc);
+                    if(creative)PlayerControllerTest.func_35646_d(mc.thePlayer);else PlayerControllerTest.func_35645_e(mc.thePlayer);
                 } else if (cmd.equals("saves")) {
                     // The client lists <data dir>/saves; the script's folder is copied there.
                 } else if (cmd.equals("packs")) {
@@ -245,6 +252,7 @@ public class GuiShot {
                     p.swingProgress=p.prevSwingProgress=Float.parseFloat(a[3]);
                     p.ridingEntity=a[4].equals("on")?new EntityPig(mc.theWorld):null;p.movementInput.sneak=a[5].equals("on");
                     p.hurtTime=a.length>6?Integer.parseInt(a[6]):0;
+                    p.deathTime=a.length>7?Integer.parseInt(a[7]):0;
                 } else if (cmd.equals("hud")) {
                     mode = "hud";
                     Boolean water=null;
@@ -334,7 +342,10 @@ public class GuiShot {
                     m.invoke(inner, (char) Integer.parseInt(a[1]), Integer.parseInt(a[0]));
                 } else if (cmd.equals("update")) {
                     int n = a.length > 0 ? Integer.parseInt(a[0]) : 1;
-                    for (int i = 0; i < n; i++) inner.updateScreen();
+                    for (int i = 0; i < n; i++) {
+                        inner.updateScreen();
+                        if(mc.currentScreen!=this && mc.currentScreen!=null) {inner=mc.currentScreen;mc.currentScreen=this;}
+                    }
                 } else if (cmd.equals("shot")) {
                     shot(rest.trim());
                     return;
@@ -463,6 +474,15 @@ public class GuiShot {
         }
 
         void shotInto(String name) throws Exception {
+            if(previewLight>=0 && mc.thePlayer!=null) {
+                EntityPlayerSP p=mc.thePlayer;
+                p.setPosition(0.5D,65.62D,0.5D);
+                int y=MathHelper.floor_double(p.posY-(double)p.yOffset+(p.boundingBox.maxY-p.boundingBox.minY)*0.66D);
+                mc.theWorld.getChunkFromChunkCoords(0,0).setBlockIDWithMetadata(0,y,0,0,0);
+                mc.theWorld.setLightValue(EnumSkyBlock.Sky,0,y,0,0);
+                mc.theWorld.setLightValue(EnumSkyBlock.Block,0,y,0,previewLight);
+                System.out.println("java: preview brightness "+p.getEntityBrightness(1.0F));
+            }
             if(lightmapPattern>=0)GuiLightmapFixture.install(mc.renderEngine,lightmapPattern);
             if (mode.equals("toast")) {
                 toast.updateAchievementWindow();
