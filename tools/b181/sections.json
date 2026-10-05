@@ -655,6 +655,7 @@
  "player-gui round 8: select8_181": true,
  "player-gui round 8: stats8_181": true,
  "player-gui round 8: yesno8_181": true,
+ "player-gui round 9: original inventory callbacks": true,
  "player/gui: hunger, experience, FOV, creative catalog, options, keys and pixels": true,
  "player: activate, every frame and final world": true,
  "player: api, every frame and final world": true,
