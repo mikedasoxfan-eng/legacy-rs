@@ -253,8 +253,9 @@ impl<'a, 'b> RenderBlocks<'a, 'b> {
                 } else {
                     let mut v = x.wrapping_mul(3129871).wrapping_add(z.wrapping_mul(6129781)).wrapping_add(y) as i64;
                     v = v.wrapping_mul(v).wrapping_mul(42317861).wrapping_add(v.wrapping_mul(11));
-                    let x2 = (x as i64 + (v >> 14 & 31)) as i32;
-                    let z2 = (z as i64 + (v >> 24 & 31)) as i32;
+                    // b1.8.1 centres the jitter: +-16 around the block.
+                    let x2 = (x as i64 + ((v >> 14 & 31) - 16)) as i32;
+                    let z2 = (z as i64 + ((v >> 24 & 31) - 16)) as i32;
                     let (t, h) = self.w.climate(x2, z2);
                     self.col.grass(t, h)
                 }

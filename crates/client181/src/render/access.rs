@@ -137,12 +137,11 @@ impl<'a> Access<'a> {
         self.table[self.light_value(x, y, z) as usize]
     }
 
-    /// Temperature and humidity at a column, as `func_4069_a(x, z, 1, 1)` leaves them.
+    /// b1.8.1 `WorldChunkManager.func_35554_b` / `func_35558_c`: the column's cached
+    /// temperature and rainfall (BiomeCache), as the colour multipliers read them.
     pub fn climate(&self, x: i32, z: i32) -> (f64, f64) {
-        let mut bs = self.biomes.borrow_mut();
-        let mut out = self.clim.borrow_mut();
-        bs.biomes(&mut out, x, z, 1, 1);
-        (bs.temperature[0], bs.humidity[0])
+        let bs = self.biomes.borrow();
+        (bs.raw_temperature(x, z), bs.raw_rainfall(x, z))
     }
 
     /// `ChunkCache.func_35454_a`: saved sky or block light, with y clamped to the world and

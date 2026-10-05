@@ -5333,6 +5333,33 @@
   "world-blocks b1.8.1: saves",
   "world-blocks b1.8.1: teleporter"
  ],
+ "RenderBlocks": [
+  "Nether terrain meshes (fire, glowstone, the Nether light table)",
+  "block showcase: fancy off, anaglyph",
+  "block showcase: fancy off, normal",
+  "block showcase: fancy on, anaglyph",
+  "block showcase: fancy on, normal",
+  "block showcase: fast off, anaglyph",
+  "block showcase: fast off, normal",
+  "block showcase: fast on, anaglyph",
+  "block showcase: fast on, normal",
+  "chunk meshes: seed -1, world rand -1, fancy, AO off",
+  "chunk meshes: seed -1, world rand -1, fancy, AO on",
+  "chunk meshes: seed -1, world rand -1, fast, AO off",
+  "chunk meshes: seed -1, world rand -1, fast, AO on",
+  "chunk meshes: seed 0, world rand 1, fancy, AO off",
+  "chunk meshes: seed 0, world rand 1, fancy, AO on",
+  "chunk meshes: seed 0, world rand 1, fast, AO off",
+  "chunk meshes: seed 0, world rand 1, fast, AO on",
+  "chunk meshes: seed 1, world rand 1, fancy, AO off",
+  "chunk meshes: seed 1, world rand 1, fancy, AO on",
+  "chunk meshes: seed 1, world rand 1, fast, AO off",
+  "chunk meshes: seed 1, world rand 1, fast, AO on",
+  "chunk meshes: seed 25, world rand 1, fancy, AO off",
+  "chunk meshes: seed 25, world rand 1, fancy, AO on",
+  "chunk meshes: seed 25, world rand 1, fast, AO off",
+  "chunk meshes: seed 25, world rand 1, fast, AO on"
+ ],
  "SpawnListEntry": [
   "BiomeDecorator 0 fixture 0",
   "BiomeDecorator 0 fixture 1",
@@ -8535,5 +8562,23 @@
  ],
  "WorldInfo": [
   "world-blocks b1.8.1: saves"
+ ],
+ "WorldRenderer": [
+  "chunk meshes: seed -1, world rand -1, fancy, AO off",
+  "chunk meshes: seed -1, world rand -1, fancy, AO on",
+  "chunk meshes: seed -1, world rand -1, fast, AO off",
+  "chunk meshes: seed -1, world rand -1, fast, AO on",
+  "chunk meshes: seed 0, world rand 1, fancy, AO off",
+  "chunk meshes: seed 0, world rand 1, fancy, AO on",
+  "chunk meshes: seed 0, world rand 1, fast, AO off",
+  "chunk meshes: seed 0, world rand 1, fast, AO on",
+  "chunk meshes: seed 1, world rand 1, fancy, AO off",
+  "chunk meshes: seed 1, world rand 1, fancy, AO on",
+  "chunk meshes: seed 1, world rand 1, fast, AO off",
+  "chunk meshes: seed 1, world rand 1, fast, AO on",
+  "chunk meshes: seed 25, world rand 1, fancy, AO off",
+  "chunk meshes: seed 25, world rand 1, fancy, AO on",
+  "chunk meshes: seed 25, world rand 1, fast, AO off",
+  "chunk meshes: seed 25, world rand 1, fast, AO on"
  ]
 }
