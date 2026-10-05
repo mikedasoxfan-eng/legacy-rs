@@ -209,6 +209,34 @@ pub enum LoadStep<'a> {
     Progress(i32),
 }
 
+#[cfg(test)]
+mod player_gui_settings_checks {
+    use super::*;
+    use crate::entity::player::food::WorldSettings;
+
+    #[test]
+    fn new_settings_reach_preload_and_first_save_existing_settings_win() {
+        let stamp = std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_nanos();
+        let dir = std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../target").join(format!("player-gui-settings-{stamp}"));
+        let mut progress_count = 0;
+        let (world, new) = World::open_with_settings(Some(&dir), 99, 100, false, Some("Settings fixture"),
+            Some(WorldSettings::new(42, 1, false)), &mut |step| {
+                if matches!(step, LoadStep::Progress(_)) { progress_count += 1; }
+            }).unwrap();
+        assert!(new);
+        assert_eq!(progress_count, 289);
+        assert_eq!((world.seed, world.info.seed, world.info.game_type, world.info.map_features), (42,42,1,false));
+        assert!(world.structure_locations.strongholds.is_none(), "features were enabled during initial terrain generation");
+        let saved = crate::storage::Storage::open(&dir).unwrap().load_level().unwrap();
+        assert_eq!((saved.seed, saved.game_type, saved.map_features), (42,1,false));
+        drop(world);
+        let (reopened,new) = World::open_with_settings(Some(&dir), 99, 100, false, None,
+            Some(WorldSettings::new(105,0,true)), &mut |_| {}).unwrap();
+        assert!(!new);
+        assert_eq!((reopened.seed,reopened.info.game_type,reopened.info.map_features),(42,1,false));
+    }
+}
+
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum LightMode {
     Each,

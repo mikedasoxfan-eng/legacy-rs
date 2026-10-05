@@ -85,8 +85,6 @@ impl Stats {
         self.total.get(&id).copied().unwrap_or(0)
     }
 
-    pub(crate) fn contains(&self, id: i32) -> bool { self.total.contains_key(&id) }
-
     /// `readStat`
     pub fn add(&mut self, id: i32, n: i32) {
         Self::increment(&mut self.unsent, id, n);
@@ -141,6 +139,12 @@ impl Stats {
     }
 
     pub(crate) fn unsent_snapshot(&self) -> &HashMap<i32, i32> { &self.unsent }
+    pub(crate) fn total_snapshot(&self) -> &HashMap<i32, i32> { &self.total }
+    pub(crate) fn fixture_mailboxes(&mut self, value: i32) {
+        if let Some(file) = &mut self.file {
+            file.fixture_mailboxes(HashMap::from([(1000,value),(5242880,0)]),HashMap::from([(1000,-11),(5242880,0)]));
+        }
+    }
     pub(crate) fn ready(&self) -> bool { self.file.as_ref().is_some_and(|f| f.ready()) }
 }
 

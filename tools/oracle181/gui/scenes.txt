@@ -288,3 +288,38 @@ hud health=11 prev=11 food=13 saturation=0 xp=25 level=7 armor=20 poison=1 hunge
 counter 3
 shot b181_hud_air_creative
 # --- end player-gui round 2 ---
+# --- player-gui round 3 (b1.8.1): achievement notifications ---
+clear 128
+millis 10000
+toast taken 0
+shot b181_toast_start
+millis 10100
+shot b181_toast_enter
+millis 10375
+shot b181_toast_visible
+millis 11500
+shot b181_toast_middle
+millis 12900
+shot b181_toast_exit
+millis 13000
+shot b181_toast_end
+millis 13001
+shot b181_toast_expired
+millis 12000
+shot b181_toast_no_revival
+millis 0
+toast taken 0
+shot b181_toast_zero_clock
+millis 20000
+toast taken 16
+millis 20500
+shot b181_toast_snipe
+millis 30000
+toast information 0
+shot b181_toast_hint
+millis 33000
+shot b181_toast_hint_late
+millis 40000
+toast information 16
+shot b181_toast_snipe_hint
+# --- end player-gui round 3 ---

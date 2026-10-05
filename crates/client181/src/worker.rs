@@ -55,6 +55,7 @@ pub struct InputFrame {
     pub use_presses: i32,
     pub right_held: bool,
     pub drop_pressed: bool,
+    pub drop_presses: i32,
     /// `clickMiddleMouseButton`
     pub middle_pressed: bool,
     pub hotbar_slot: Option<u8>,
@@ -81,6 +82,7 @@ impl InputFrame {
         self.use_presses += n.use_presses;
         self.right_held = n.right_held;
         self.drop_pressed |= n.drop_pressed;
+        self.drop_presses += n.drop_presses;
         self.middle_pressed |= n.middle_pressed;
         if n.hotbar_slot.is_some() {
             self.hotbar_slot = n.hotbar_slot;
@@ -109,6 +111,7 @@ impl InputFrame {
             use_presses: self.use_presses,
             right_held: self.right_held,
             drop_pressed: self.drop_pressed,
+            drop_presses: self.drop_presses,
             hotbar_slot: self.hotbar_slot,
             scroll: self.scroll,
             ..Default::default()
@@ -120,6 +123,7 @@ impl InputFrame {
         self.right_pressed = false;
         self.use_presses = 0;
         self.drop_pressed = false;
+        self.drop_presses = 0;
         self.middle_pressed = false;
         self.hotbar_slot = None;
         self.scroll = 0;

@@ -1,5 +1,9 @@
 //! Original-bytecode whole-player replay. No terrain/world serialization dependency.
 use super::*;
+/// Reuse the entities owner's serializer for the local queued-drop fixture.
+pub fn dropped_entity_snapshot(w: &mut World, entity: &Entity, out: &mut Vec<u8>) {
+    super::super::verify181::state(w, entity, out);
+}
 fn i(o: &mut Vec<u8>, v: i32) { o.extend(v.to_le_bytes()); }
 fn f(o: &mut Vec<u8>, v: f32) { o.extend(v.to_le_bytes()); }
 fn frame(w: &mut World, p: &mut Entity, o: &mut Vec<u8>) {

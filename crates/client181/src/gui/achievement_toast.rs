@@ -52,6 +52,7 @@ impl AchievementToast {
         let sr = ui.scaled();
         ui.setup_overlay_rendering();
         ui.gl.depth_test = false;
+        ui.gl.depth_mask = false;
         let mut slide = t * 2.0;
         if slide > 1.0 {
             slide = 2.0 - slide;
@@ -74,8 +75,8 @@ impl AchievementToast {
         if self.information {
             ui.font.draw_split_string(&mut ui.gl, &text, x + 30, y + 7, 120, -1);
         } else {
-            ui.draw_string(&title, x + 30, y + 7, -256);
-            ui.draw_string(&text, x + 30, y + 18, -1);
+            ui.font.draw_string(&mut ui.gl, &title, x + 30, y + 7, -256);
+            ui.font.draw_string(&mut ui.gl, &text, x + 30, y + 18, -1);
         }
         // glRotatef(180, 1, 0, 0); enableStandardItemLighting; GL_RESCALE_NORMAL
         gui_item::set_gui_light_rotation(180.0);
@@ -83,7 +84,7 @@ impl AchievementToast {
         let icon = ACHIEVEMENTS[index].icon;
         let stack = ItemStack::new(icon.0 as i32, 1, icon.1 as i32);
         gui_item::render_item_into_gui(ui, Some(&stack), x + 8, y + 8);
-        gui_item::set_gui_rescale_normal(false);
+        ui.gl.depth_mask = true;
         ui.gl.depth_test = true;
     }
 }

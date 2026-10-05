@@ -11,6 +11,9 @@ public final class Mode_statsync181 {
     static Object field(Object o, String name) throws Exception {
         Field f=o.getClass().getDeclaredField(name); f.setAccessible(true); return f.get(o);
     }
+    static void set(Object o,String name,Object value)throws Exception {
+        Field f=o.getClass().getDeclaredField(name);f.setAccessible(true);f.set(o,value);
+    }
     static void idle(StatFileWriter w) throws Exception {
         StatsSyncher s=(StatsSyncher)field(w,"statsSyncher");
         while((Boolean)field(s,"isBusy")) Thread.sleep(1);
@@ -34,6 +37,7 @@ public final class Mode_statsync181 {
     }
     static String disk(File f) throws Exception {
         if(!f.exists())return "missing";
+        if(f.isDirectory())return "directory";
         String text=new String(Files.readAllBytes(f.toPath()),"UTF-8");
         return map(StatFileWriter.func_27177_a(text));
     }
@@ -63,6 +67,14 @@ public final class Mode_statsync181 {
                 StatFileWriter w=new StatFileWriter(new Session("MiXeD","-"),dir);
                 snapshot(p,w,dir);Random r=new Random(181+scenario);
                 for(int t=0;t<350;t++) {
+                    if(t==210){idle(w);new File(dir,"stats/stats_mixed_unsent.tmp").mkdir();w.syncStats();snapshot(p,w,dir);}
+                    if(t==211){idle(w);new File(dir,"stats/stats_mixed_unsent.tmp").delete();}
+                    if(t==110) {
+                        idle(w);StatsSyncher s=(StatsSyncher)field(w,"statsSyncher");
+                        set(s,"field_27437_b",values(83+scenario));
+                        set(s,"field_27436_c",values(-11));
+                        s.beginReceiveStats();snapshot(p,w,dir);
+                    }
                     int id=ids[r.nextInt(ids.length)],n=r.nextInt();
                     if(t%3==0)w.readStat(StatList.func_27361_a(id),n);
                     if(t%47==0)w.syncStats();
@@ -73,4 +85,3 @@ public final class Mode_statsync181 {
         }
     }
 }
-

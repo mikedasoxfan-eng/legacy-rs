@@ -41,6 +41,16 @@ public final class Mode_playercombat181 {
                 p.setLocationAndAngles(0.5,64,0.5,0,0);
                 EntityOracle.f(o,Block.blocksList[block].blockStrength(p));
             }
+            for(int c=0;c<100;c++) {
+                w.loadedEntityList.clear();
+                Player dropper=new Player(w);dropper.setLocationAndAngles(0.5,64,0.5,c*17%360,c%90-45);
+                dropper.inventory.mainInventory[0]=new ItemStack(260,c%65,0);
+                for(int n=0;n<c%70;n++)dropper.dropCurrentItem();
+                PlayerOracle.stack(o,dropper.inventory.mainInventory[0]);EntityOracle.l(o,EntityOracle.rngState(dropper.rand));
+                java.util.ArrayList<int[]> stats=PlayerOracle.stats.get(dropper);EntityOracle.i(o,stats==null?0:stats.size());if(stats!=null)for(int[] row:stats){EntityOracle.i(o,row[0]);EntityOracle.i(o,row[1]);}
+                EntityOracle.i(o,w.loadedEntityList.size());
+                for(Object item:w.loadedEntityList)Mode_entities181.state(w,(Entity)item,o);
+            }
         }
     }
 }

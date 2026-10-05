@@ -16,7 +16,7 @@ struct Transfers {
 pub struct Syncher {
     /// `field_27434_e`, `field_27432_g`, `field_27430_i`: the unsent file and its .tmp/.old.
     unsent: [PathBuf; 3],
-    /// `field_27433_f`, `field_27431_h`, `field_27429_j`: the "sent" file (only ever read).
+    /// `field_27433_f`, `field_27431_h`, `field_27429_j`: the "sent" file and rotation files.
     sent: [PathBuf; 3],
     user: String,
     /// `AchievementMap`: stat id -> GUID, from `achievement/map.txt`.
@@ -268,6 +268,16 @@ impl Syncher {
         while self.transfers.lock().unwrap().busy {
             std::thread::sleep(std::time::Duration::from_millis(1));
         }
+    }
+
+    /// The original fixture sets its private volatile mailboxes by reflection.
+    pub(crate) fn fixture_mailboxes(&mut self, sent: HashMap<i32,i32>, unsent: HashMap<i32,i32>) {
+        self.wait_idle();
+        let mut state = self.transfers.lock().unwrap();
+        state.received = Some(sent);
+        state.unsent = Some(unsent);
+        drop(state);
+        self.receive();
     }
 
     /// `func_27425_c`: count down, and hand over the sent file's stats once.
