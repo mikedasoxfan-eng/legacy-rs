@@ -1,12 +1,60 @@
 {
- "WorldInfo": ["world-blocks b1.8.1: saves"],
- "Teleporter": ["world-blocks b1.8.1: teleporter"],
- "RegionFile": ["world-blocks b1.8.1: region cross-read"],
- "RegionFileChunkBuffer": ["world-blocks b1.8.1: region cross-read"],
- "NibbleArray": ["world-blocks b1.8.1: helpers"],
- "EnumAction": ["world-blocks b1.8.1: actions"],
- "Material": ["world-blocks b1.8.1: definitions", "world-blocks b1.8.1: registry"],
- "MaterialWeb": ["world-blocks b1.8.1: definitions"],
- "BlockFence": ["world-blocks b1.8.1: geometry", "all Beta block collision/selection states (10000 cases)"],
- "BlockFarmland": ["world-blocks b1.8.1: plants"]
+ "BlockFarmland": [
+  "world-blocks b1.8.1: plants"
+ ],
+ "BlockFence": [
+  "all Beta block collision/selection states (10000 cases)",
+  "world-blocks b1.8.1: geometry"
+ ],
+ "EnumAction": [
+  "world-blocks b1.8.1: actions"
+ ],
+ "Material": [
+  "world-blocks b1.8.1: definitions",
+  "world-blocks b1.8.1: registry"
+ ],
+ "MaterialWeb": [
+  "world-blocks b1.8.1: definitions"
+ ],
+ "NibbleArray": [
+  "world-blocks b1.8.1: helpers"
+ ],
+ "RegionFile": [
+  "world-blocks b1.8.1: actions",
+  "world-blocks b1.8.1: chests",
+  "world-blocks b1.8.1: definitions",
+  "world-blocks b1.8.1: drops",
+  "world-blocks b1.8.1: fluids",
+  "world-blocks b1.8.1: geometry",
+  "world-blocks b1.8.1: helpers",
+  "world-blocks b1.8.1: items",
+  "world-blocks b1.8.1: lights",
+  "world-blocks b1.8.1: plants",
+  "world-blocks b1.8.1: region cross-read",
+  "world-blocks b1.8.1: registry",
+  "world-blocks b1.8.1: saves",
+  "world-blocks b1.8.1: teleporter"
+ ],
+ "RegionFileChunkBuffer": [
+  "world-blocks b1.8.1: actions",
+  "world-blocks b1.8.1: chests",
+  "world-blocks b1.8.1: definitions",
+  "world-blocks b1.8.1: drops",
+  "world-blocks b1.8.1: fluids",
+  "world-blocks b1.8.1: geometry",
+  "world-blocks b1.8.1: helpers",
+  "world-blocks b1.8.1: items",
+  "world-blocks b1.8.1: lights",
+  "world-blocks b1.8.1: plants",
+  "world-blocks b1.8.1: region cross-read",
+  "world-blocks b1.8.1: registry",
+  "world-blocks b1.8.1: saves",
+  "world-blocks b1.8.1: teleporter"
+ ],
+ "Teleporter": [
+  "world-blocks b1.8.1: teleporter"
+ ],
+ "WorldInfo": [
+  "world-blocks b1.8.1: saves"
+ ]
 }
