@@ -24875,6 +24875,12 @@
   "gui181: b181_options",
   "gui181: loading"
  ],
+ "GuiSelectWorld": [
+  "gui181: select",
+  "gui181: select_pressed",
+  "gui181: select_clicked",
+  "gui181: select_hover_rename"
+ ],
  "GuiSlot": [
   "gui181: select",
   "gui181: select_pressed",
