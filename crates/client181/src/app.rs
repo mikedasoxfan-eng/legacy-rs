@@ -880,8 +880,9 @@ impl App {
                 }
             }
         }
-        // Started at the title screen (no world flags), the script also drives the menus.
-        let menus = !self.opts.direct && self.loading.is_none();
+        // Scripts also drive the title screen after a directly opened world is closed.
+        // Keep waiting during world loading, when there is no player to drive yet.
+        let menus = !self.ready && self.loading.is_none();
         if !menus && (!self.ready || self.loading.is_some() || self.player.is_none()) {
             return None;
         }
@@ -980,7 +981,7 @@ impl App {
         if gui_ticks == 20 {
             self.gui_ticks = now;
         }
-        if (self.ready && self.player.is_some()) || (!self.opts.direct && self.loading.is_none()) {
+        if (self.ready && self.player.is_some()) || (!self.ready && self.loading.is_none()) {
             self.script_ticks += gui_ticks as i64;
         }
         if let Some(g) = &mut self.gui {
