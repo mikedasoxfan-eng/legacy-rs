@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-set -euo pipefail
+set -uo pipefail
 root="$(cd "$(dirname "$0")/.." && pwd)"
 # One run at a time per tree (two runs would overwrite each other's oracle output).
 lock="$root/target/verify181.lock"
@@ -12,32 +12,25 @@ fi
 beta() { "$root/target/release/beta" --mc b1.8.1 "$@"; }
 oracle="$root/tools/oracle181/oracle.sh"
 out="$root/tools/oracle181/out"
-cargo build --release -q --manifest-path "$root/Cargo.toml" -p worldgen181 -p client
+cargo build --release -q --manifest-path "$root/Cargo.toml" -p worldgen181 -p client || exit 1
+fail=0
 echo "== decorations181: signs: placement, editing, NBT"
-"$oracle" signs signs.bin
-"$root/target/release/compare181" signs "$out/signs.bin"
+{ "$oracle" signs signs.bin && "$root/target/release/compare181" signs "$out/signs.bin"; } || { echo "DIFFERS: decorations181: signs: placement, editing, NBT"; fail=1; }
 echo "== decorations181: sign renderer (TileEntitySignRenderer)"
-"$oracle" signrenderers sign-renderers.bin
-beta --signrenderercheck "$out/sign-renderers.bin"
+{ "$oracle" signrenderers sign-renderers.bin && beta --signrenderercheck "$out/sign-renderers.bin"; } || { echo "DIFFERS: decorations181: sign renderer (TileEntitySignRenderer)"; fail=1; }
 echo "== decorations181: paintings"
-"$oracle" paintings paintings.bin
-"$root/target/release/compare181" paintings "$out/paintings.bin"
+{ "$oracle" paintings paintings.bin && "$root/target/release/compare181" paintings "$out/paintings.bin"; } || { echo "DIFFERS: decorations181: paintings"; fail=1; }
 echo "== decorations181: painting renderer"
-"$oracle" paintingrenderers painting-renderers.bin
-beta --paintingrenderercheck "$out/painting-renderers.bin"
+{ "$oracle" paintingrenderers painting-renderers.bin && beta --paintingrenderercheck "$out/painting-renderers.bin"; } || { echo "DIFFERS: decorations181: painting renderer"; fail=1; }
 echo "== decorations181: maps: palette, terrain, markers, NBT"
-"$oracle" maps maps.bin
-"$root/target/release/compare181" maps "$out/maps.bin"
+{ "$oracle" maps maps.bin && "$root/target/release/compare181" maps "$out/maps.bin"; } || { echo "DIFFERS: decorations181: maps: palette, terrain, markers, NBT"; fail=1; }
 echo "== decorations181: map files"
-"$oracle" mapfiles mapfiles.bin
-"$root/target/release/compare181" mapfiles "$out/mapfiles.bin"
+{ "$oracle" mapfiles mapfiles.bin && "$root/target/release/compare181" mapfiles "$out/mapfiles.bin"; } || { echo "DIFFERS: decorations181: map files"; fail=1; }
 echo "== decorations181: map files read back"
-"$oracle" mapread "$root/target/map-rust-save" mapread.bin
-"$root/target/release/compare181" mapread "$out/mapfiles.bin" "$out/mapread.bin"
+{ "$oracle" mapread "$root/target/map-rust-save" mapread.bin && "$root/target/release/compare181" mapread "$out/mapfiles.bin" "$out/mapread.bin"; } || { echo "DIFFERS: decorations181: map files read back"; fail=1; }
 echo "== decorations181: fishing"
-"$oracle" fishing fishing.bin
-"$root/target/release/compare181" fishing "$out/fishing.bin"
+{ "$oracle" fishing fishing.bin && "$root/target/release/compare181" fishing "$out/fishing.bin"; } || { echo "DIFFERS: decorations181: fishing"; fail=1; }
 echo "== decorations181: fishing line renderer"
-"$oracle" fishrenderers fish-renderers.bin
-beta --fishrenderercheck "$out/fish-renderers.bin"
-echo "DECORATIONS EXACT"
+{ "$oracle" fishrenderers fish-renderers.bin && beta --fishrenderercheck "$out/fish-renderers.bin"; } || { echo "DIFFERS: decorations181: fishing line renderer"; fail=1; }
+[ $fail -eq 0 ] && echo "DECORATIONS EXACT"
+exit $fail

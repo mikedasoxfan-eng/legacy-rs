@@ -89,8 +89,11 @@ def main():
     lines = [
         '## Beta 1.8.1 progress',
         '',
-        'The port of **Minecraft Beta 1.8.1** (the Adventure Update) is under way, next to the finished',
-        'b1.7.3 (which stays exact). Run it with `beta.exe --mc b1.8.1`.',
+        ('The port of **Minecraft Beta 1.8.1** (the Adventure Update) is complete, next to Beta 1.7.3'
+         if done == total else
+         'The port of **Minecraft Beta 1.8.1** (the Adventure Update) is under way, next to the finished'),
+        ('(which stays exact). Run it with `beta.exe --mc b1.8.1`.' if done == total else
+         'b1.7.3 (which stays exact). Run it with `beta.exe --mc b1.8.1`.'),
         '',
         '```',
         f'Beta 1.8.1  {"█" * bar}{"░" * (40 - bar)}  {pct:.1f} %  ({done:,} / {total:,} lines)',
