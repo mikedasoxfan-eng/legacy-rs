@@ -14,6 +14,7 @@ pub struct ArrowState {
     pub owner: Option<i32>,
     pub ticks_ground: i32,
     pub ticks_air: i32,
+    pub critical: bool,
 }
 impl Default for ArrowState {
     fn default() -> Self {
@@ -27,6 +28,7 @@ impl Default for ArrowState {
             owner: None,
             ticks_ground: 0,
             ticks_air: 0,
+            critical: false,
         }
     }
 }
@@ -37,13 +39,18 @@ pub struct FireballState {
 }
 impl Entity {
     pub fn can_be_collided_with(&self) -> bool {
-        matches!(self.kind, EntityKind::Fireball(..) | EntityKind::Painting(..))
-            || (!self.dead
-                && (self.kind.is_living()
-                    || matches!(
-                        self.kind,
-                        EntityKind::FallingSand { .. } | EntityKind::Tnt { .. } | EntityKind::Minecart(..) | EntityKind::Boat(..)
-                    )))
+        matches!(
+            self.kind,
+            EntityKind::Fireball(..) | EntityKind::Painting(..)
+        ) || (!self.dead
+            && (self.kind.is_living()
+                || matches!(
+                    self.kind,
+                    EntityKind::FallingSand { .. }
+                        | EntityKind::Tnt { .. }
+                        | EntityKind::Minecart(..)
+                        | EntityKind::Boat(..)
+                )))
     }
     pub fn arrow(w: &mut World, x: f64, y: f64, z: f64) -> Self {
         let mut e = Self::base(w, EntityKind::Arrow(Default::default()));
@@ -53,6 +60,9 @@ impl Entity {
         e
     }
     pub fn arrow_from_owner(w: &mut World, owner: &Entity) -> Self {
+        Self::arrow_from_owner_power(w, owner, 1.0)
+    }
+    pub fn arrow_from_owner_power(w: &mut World, owner: &Entity, power: f32) -> Self {
         let mut e = Self::base(
             w,
             EntityKind::Arrow(ArrowState {
@@ -78,7 +88,7 @@ impl Entity {
             (-math::sin(e.yaw / 180.0 * PI) * math::cos(e.pitch / 180.0 * PI)) as f64,
             (-math::sin(e.pitch / 180.0 * PI)) as f64,
             (math::cos(e.yaw / 180.0 * PI) * math::cos(e.pitch / 180.0 * PI)) as f64,
-            1.5,
+            power * 1.5,
             1.0,
         );
         e
@@ -109,7 +119,9 @@ impl Entity {
         if let EntityKind::Arrow(s) = &mut self.kind {
             s.ticks_ground = 0;
         }
-        if let EntityKind::Fish(s) = &mut self.kind { s.arrow.ticks_ground = 0; }
+        if let EntityKind::Fish(s) = &mut self.kind {
+            s.arrow.ticks_ground = 0;
+        }
     }
     pub fn fireball(w: &mut World, pos: Vec3D, aim: Vec3D) -> Self {
         let mut e = Self::base(w, EntityKind::Fireball(Default::default()));
@@ -320,7 +332,23 @@ impl Entity {
                 match hit {
                     Hit::Entity { id, .. } => {
                         let success = if let Some(mut target) = w.entities.remove(&id) {
-                            let hit = target.attack(w, s.owner, 4);
+                            let speed = self.motion.length() as f32;
+                            let mut damage = (speed as f64 * 2.0).ceil() as i32;
+                            if s.critical {
+                                damage = damage * 3 / 2 + 1;
+                            }
+                            let hit = target.attack_from(
+                                w,
+                                super::damage::DamageSource::indirect(
+                                    super::damage::DamageKind::Arrow,
+                                    self.entity_id,
+                                    s.owner,
+                                ),
+                                damage,
+                            );
+                            if hit && target.kind.is_living() {
+                                target.living.arrows_stuck += 1;
+                            }
                             w.entities.insert(id, target);
                             hit
                         } else {
@@ -356,13 +384,25 @@ impl Entity {
                         w.play_sound_at_entity(self, "random.drr", 1.0, pitch);
                         s.in_ground = true;
                         s.shake = 7;
+                        s.critical = false;
                     }
+                }
+            }
+            if s.critical {
+                for i in 0..4 {
+                    let t = i as f64 / 4.0;
+                    w.spawn_particle(
+                        "crit",
+                        self.pos
+                            .add(self.motion.x * t, self.motion.y * t, self.motion.z * t),
+                        Vec3D::new(-self.motion.x, -self.motion.y + 0.2, -self.motion.z),
+                    );
                 }
             }
             self.projectile_advance(
                 w,
                 if self.in_water { 0.8 } else { 0.99 },
-                0.03,
+                0.05,
                 Vec3D::default(),
             );
         }
@@ -400,7 +440,15 @@ impl Entity {
         if let Some(hit) = impact {
             if let Hit::Entity { id, .. } = hit {
                 if let Some(mut e) = w.entities.remove(&id) {
-                    e.attack(w, s.arrow.owner, 0);
+                    e.attack_from(
+                        w,
+                        super::damage::DamageSource::indirect(
+                            super::damage::DamageKind::Fireball,
+                            self.entity_id,
+                            s.arrow.owner,
+                        ),
+                        0,
+                    );
                     w.entities.insert(id, e);
                 }
             }

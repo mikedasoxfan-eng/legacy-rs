@@ -16,8 +16,8 @@ pub mod throwable;
 pub mod verify;
 use super::{Entity, EntityKind, Vec3D};
 use crate::{
-    World,
     math::{self, floor_double as floor},
+    World,
 };
 pub use api::{PlayerHud, PlayerTarget, PlayerTickInput};
 pub use inventory::{InventoryPlayer, ItemStack};
@@ -47,12 +47,22 @@ impl PlayerInput {
 #[derive(Clone, Debug)]
 pub enum PlayerEvent {
     /// `EntityPlayer.addStat` (the client's StatFileWriter and achievement pop-up).
-    Stat { id: i32, amount: i32 },
+    Stat {
+        id: i32,
+        amount: i32,
+    },
     /// `addChatMessage(key)`: a translated line in the chat area.
     Chat(&'static str),
-    EditSign { position: (i32, i32, i32), block: u8, metadata: i32, sign: crate::sign::Sign },
+    EditSign {
+        position: (i32, i32, i32),
+        block: u8,
+        metadata: i32,
+        sign: crate::sign::Sign,
+    },
     /// A chest minecart opened from the world (the container session takes it from here).
-    OpenVehicleInventory { entity: i32 },
+    OpenVehicleInventory {
+        entity: i32,
+    },
     Container(crate::container::ContainerEvent),
     Pickup {
         entity: i32,
@@ -86,7 +96,12 @@ pub enum SleepStatus {
 }
 #[derive(Clone, Debug)]
 pub struct PlayerState {
-    pub fish_entity:Option<i32>,
+    pub food_exhaustion: f32,
+    pub experience: i32,
+    pub experience_level: i32,
+    pub total_experience: i32,
+    pub xp_pickup_cooldown: i32,
+    pub fish_entity: Option<i32>,
     pub left_click_counter: i32,
     pub last_click_tick: i32,
     pub controller: controller::PlayerControllerSP,
@@ -123,7 +138,12 @@ pub struct PlayerState {
 impl Default for PlayerState {
     fn default() -> Self {
         Self {
-            fish_entity:None,
+            food_exhaustion: 0.0,
+            experience: 0,
+            experience_level: 0,
+            total_experience: 0,
+            xp_pickup_cooldown: 0,
+            fish_entity: None,
             left_click_counter: 0,
             last_click_tick: 0,
             controller: Default::default(),
@@ -201,7 +221,11 @@ impl Entity {
     }
     /// `EntityPlayer.addMountedMovementStat`
     pub(super) fn add_mounted_movement_stat(&mut self, w: &mut World, dx: f64, dy: f64, dz: f64) {
-        let Some(vehicle) = self.riding.and_then(|id| w.entities.get(&id)).map(|e| stat::vehicle(&e.kind)) else {
+        let Some(vehicle) = self
+            .riding
+            .and_then(|id| w.entities.get(&id))
+            .map(|e| stat::vehicle(&e.kind))
+        else {
             return;
         };
         let n = java_round_f(((dx * dx + dy * dy + dz * dz).sqrt() as f32) * 100.0);
@@ -217,8 +241,18 @@ impl Entity {
                     None => s.minecart_start = Some(here),
                     Some((x, y, z)) => {
                         // ChunkCoordinates.getSqDistanceTo is misnamed: it returns the distance.
-                        let (a, b, c) = (x.wrapping_sub(here.0), y.wrapping_sub(here.1), z.wrapping_sub(here.2));
-                        if (a.wrapping_mul(a).wrapping_add(b.wrapping_mul(b)).wrapping_add(c.wrapping_mul(c)) as f64).sqrt() >= 1000.0 {
+                        let (a, b, c) = (
+                            x.wrapping_sub(here.0),
+                            y.wrapping_sub(here.1),
+                            z.wrapping_sub(here.2),
+                        );
+                        if (a
+                            .wrapping_mul(a)
+                            .wrapping_add(b.wrapping_mul(b))
+                            .wrapping_add(c.wrapping_mul(c)) as f64)
+                            .sqrt()
+                            >= 1000.0
+                        {
                             self.add_stat(stat::ON_A_RAIL, 1);
                         }
                     }
@@ -439,6 +473,10 @@ impl Entity {
                 }
             }
         }
+        if matches!(e.kind, EntityKind::XPOrb(..)) {
+            e.pickup_xp_orb(w, self);
+            return;
+        }
         let mut pickup = None;
         if let EntityKind::Item {
             item, pickup_delay, ..
@@ -489,6 +527,9 @@ impl Entity {
     }
     pub(super) fn update_player(&mut self, w: &mut World) {
         let s = self.player_state_mut().unwrap();
+        if s.xp_pickup_cooldown > 0 {
+            s.xp_pickup_cooldown -= 1;
+        }
         if s.sleeping {
             s.sleep_timer = (s.sleep_timer + 1).min(100);
         } else if s.sleep_timer > 0 {
@@ -575,7 +616,19 @@ impl Entity {
         }
         *damage != 0
     }
-    pub(super) fn damage_living(&mut self, mut amount: i32) {
+    pub(super) fn damage_living_from(
+        &mut self,
+        source: super::damage::DamageSource,
+        mut amount: i32,
+    ) {
+        if source.bypasses_armor() {
+            self.living.health -= amount;
+            return;
+        }
+        if let Some(s) = self.player_state_mut() {
+            s.food_exhaustion = (s.food_exhaustion + source.exhaustion()).min(40.0);
+        }
+
         if let Some(s) = self.player_state_mut() {
             let damage = amount * (25 - s.inventory.armor_value()) + s.damage_remainder;
             let broken = s.inventory.damage_armor(amount);

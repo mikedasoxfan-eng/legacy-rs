@@ -412,5 +412,8 @@ bash "$root/tools/verify_world_blocks181.sh" --built || fail=1
 # --- terrain (b1.8.1) ---
 bash "$root/tools/verify_terrain181.sh" --built || fail=1
 # --- end terrain ---
+# --- entities (b1.8.1) ---
+bash "$root/tools/verify_entities181.sh" || fail=1
+# --- end entities ---
 [ $fail -eq 0 ] && echo "ALL CASES EXACT" || echo "SOME CASES DIFFER"
 exit $fail

@@ -34,6 +34,9 @@ impl Vec3D {
             Self::new(self.x / n, self.y / n, self.z / n)
         }
     }
+    pub fn dot(self, v: Self) -> f64 {
+        self.x * v.x + self.y * v.y + self.z * v.z
+    }
     pub fn cross(self, v: Self) -> Self {
         Self::new(
             self.y * v.z - self.z * v.y,

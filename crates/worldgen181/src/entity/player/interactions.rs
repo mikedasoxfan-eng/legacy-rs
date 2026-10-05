@@ -13,7 +13,9 @@ impl Entity {
             // Vanilla passes the live player object to attackEntityFrom.
             w.entities.insert(self.entity_id, self.clone());
             target.attack(w, Some(self.entity_id), damage);
-            if let Some(player)=w.entities.remove(&self.entity_id) { *self=player; }
+            if let Some(player) = w.entities.remove(&self.entity_id) {
+                *self = player;
+            }
             if target.kind.is_living() {
                 if let Some(s) = self.held_item() {
                     if matches!(s.id, 267 | 268 | 272 | 276 | 283) {
@@ -52,23 +54,35 @@ impl Entity {
         };
         let held = self.held_item();
         let mut handled = false;
-        if matches!(target.kind,EntityKind::Boat(..)) || matches!(&target.kind,EntityKind::Minecart(s) if s.cart_type==0) {
-            let occupied=target.ridden_by.and_then(|r|w.entities.get(&r)).is_some_and(|r|r.player_state().is_some() && r.entity_id!=self.entity_id);
+        if matches!(target.kind, EntityKind::Boat(..))
+            || matches!(&target.kind,EntityKind::Minecart(s) if s.cart_type==0)
+        {
+            let occupied = target
+                .ridden_by
+                .and_then(|r| w.entities.get(&r))
+                .is_some_and(|r| r.player_state().is_some() && r.entity_id != self.entity_id);
             if !occupied {
-                w.entities.insert(id,target.clone());
-                self.mount_entity(w,Some(id));
-                target=w.entities.remove(&id).unwrap();
+                w.entities.insert(id, target.clone());
+                self.mount_entity(w, Some(id));
+                target = w.entities.remove(&id).unwrap();
             }
-            handled=true;
+            handled = true;
         }
-        if let EntityKind::Minecart(s)=&mut target.kind {
-            if s.cart_type==1 {
-                self.player_state_mut().unwrap().events.push(PlayerEvent::OpenVehicleInventory { entity:id });
-                handled=true;
-            } else if s.cart_type==2 {
-                if held.is_some_and(|s|s.id==263) { self.consume_held(); s.fuel=s.fuel.wrapping_add(1200); }
-                s.push_x=target.pos.x-self.pos.x; s.push_z=target.pos.z-self.pos.z;
-                handled=true;
+        if let EntityKind::Minecart(s) = &mut target.kind {
+            if s.cart_type == 1 {
+                self.player_state_mut()
+                    .unwrap()
+                    .events
+                    .push(PlayerEvent::OpenVehicleInventory { entity: id });
+                handled = true;
+            } else if s.cart_type == 2 {
+                if held.is_some_and(|s| s.id == 263) {
+                    self.consume_held();
+                    s.fuel = s.fuel.wrapping_add(1200);
+                }
+                s.push_x = target.pos.x - self.pos.x;
+                s.push_z = target.pos.z - self.pos.z;
+                handled = true;
             }
         }
         if matches!(target.kind, EntityKind::Pig { saddled: true })
@@ -135,9 +149,17 @@ impl Entity {
                     }
                     handled = true;
                 }
-            } else if held.is_some_and(|s| matches!(s.id, 319 | 320)) && s.watched_health < 20 {
+            } else if held.is_some_and(|s| matches!(s.id, 319 | 320 | 363 | 364 | 365 | 366 | 367))
+                && s.watched_health < 20
+            {
                 self.consume_held();
-                target.heal(3);
+                target.heal(match held.unwrap().id {
+                    320 | 364 => 8,
+                    366 => 6,
+                    367 => 4,
+                    365 => 2,
+                    _ => 3,
+                });
                 handled = true;
             } else if s
                 .owner

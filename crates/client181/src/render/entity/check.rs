@@ -11,7 +11,9 @@ struct Dump {
 }
 impl Dump {
     fn bytes<const N: usize>(&mut self) -> [u8; N] {
-        let b = self.data[self.at..self.at + N].try_into().expect("truncated model dump");
+        let b = self.data[self.at..self.at + N]
+            .try_into()
+            .expect("truncated model dump");
         self.at += N;
         b
     }
@@ -23,7 +25,9 @@ impl Dump {
     }
     fn string(&mut self) -> String {
         let n = self.u32() as usize;
-        let s = std::str::from_utf8(&self.data[self.at..self.at + n]).expect("part name").to_owned();
+        let s = std::str::from_utf8(&self.data[self.at..self.at + n])
+            .expect("part name")
+            .to_owned();
         self.at += n;
         s
     }
@@ -51,17 +55,22 @@ impl Dump {
 pub fn model_check(path: &str) -> bool {
     use ModelKind::*;
     let kinds = [
-        Biped, Zombie, Skeleton, Quadruped, Pig, Cow, SheepFur, Sheep, Chicken, Spider, Creeper, SlimeOuter,
-        SlimeInner, Squid, Wolf, Ghast,
+        Biped, Zombie, Skeleton, Quadruped, Pig, Cow, SheepFur, Sheep, Chicken, Spider, Creeper,
+        SlimeOuter, SlimeInner, Squid, Wolf, Ghast, Enderman, Silverfish, Chest, LargeChest,
     ];
-    let mut d = Dump { data: std::fs::read(path).expect("read models dump"), at: 0, checks: 0, bad: 0 };
+    let mut d = Dump {
+        data: std::fs::read(path).expect("read models dump"),
+        at: 0,
+        checks: 0,
+        bad: 0,
+    };
     assert_eq!(d.u32(), u32::from_le_bytes(*b"M173"), "not a model dump");
     assert_eq!(d.u32(), 2, "model dump version");
     let n = d.u32();
     assert!(n > 0, "empty model dump");
     let mut current = u32::MAX;
     let mut model = Model::new(Biped);
-    let mut seen = [0usize; 16];
+    let mut seen = [0usize; 20];
     let mut parts = 0;
     for case in 0..n {
         let group = d.u32();
@@ -89,8 +98,15 @@ pub fn model_check(path: &str) -> bool {
             pose[0],
             pose[1],
             partial,
-            &WolfAnimation { angry: flags & 16 != 0, sitting: flags & 32 != 0, interested, shake },
+            &WolfAnimation {
+                angry: flags & 16 != 0,
+                sitting: flags & 32 != 0,
+                interested,
+                shake,
+            },
         );
+        model.carrying = flags & 4 != 0;
+        model.screaming = flags & 8 != 0;
         model.set_rotation_angles(pose);
         let np = d.u32() as usize;
         assert_eq!(np, model.parts.len(), "case {case}: part count");
@@ -98,7 +114,10 @@ pub fn model_check(path: &str) -> bool {
         for _ in 0..np {
             let name = d.string();
             let path = format!("case {case} {:?}.{name}", kinds[kind]);
-            let r = model.parts.get(&name).expect("oracle part missing in Rust");
+            let r = model
+                .parts
+                .get(&name)
+                .unwrap_or_else(|| panic!("case {case} {:?}: missing {name}", kinds[kind]));
             for (f, v) in [
                 ("rotationPointX", r.rotation_point_x),
                 ("rotationPointY", r.rotation_point_y),
@@ -125,15 +144,26 @@ pub fn model_check(path: &str) -> bool {
                 }
                 for (k, v) in q.normal().to_array().into_iter().enumerate() {
                     let j = d.u32();
-                    d.equal(j as u64, v.to_bits() as u64, &format!("{path}.faces[{i}].normal[{k}]"));
+                    d.equal(
+                        j as u64,
+                        v.to_bits() as u64,
+                        &format!("{path}.faces[{i}].normal[{k}]"),
+                    );
                 }
                 let j = d.u32();
-                d.equal(j as u64, super::living::packed_normal(q) as u64, &format!("{path}.faces[{i}].packedNormal"));
+                d.equal(
+                    j as u64,
+                    super::living::packed_normal(q) as u64,
+                    &format!("{path}.faces[{i}].packedNormal"),
+                );
             }
         }
     }
     assert_eq!(d.at, d.data.len(), "trailing model dump bytes");
     assert!(seen.iter().all(|n| *n > 0), "oracle must cover every model");
-    println!("models: {n} poses, {parts} parts, {} bit comparisons, {} differ", d.checks, d.bad);
+    println!(
+        "models: {n} poses, {parts} parts, {} bit comparisons, {} differ",
+        d.checks, d.bad
+    );
     d.bad == 0
 }

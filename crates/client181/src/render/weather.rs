@@ -44,7 +44,7 @@ pub struct Column {
     pub meta: [u8; 128],
     pub brightness: [f32; 129],
 }
-#[derive(Default)]
+#[derive(Clone, Default)]
 pub struct Snapshot {
     pub columns: Vec<Column>,
 }
@@ -52,7 +52,7 @@ impl Snapshot {
     pub fn column(&self, x: i32, z: i32) -> Option<&Column> {
         let first = self.columns.first()?;
         let (dx, dz) = (x - first.x, z - first.z);
-        let width=(self.columns.len() as f64).sqrt() as i32;
+        let width = (self.columns.len() as f64).sqrt() as i32;
         if !(0..width).contains(&dx) || !(0..width).contains(&dz) {
             return None;
         }
@@ -60,7 +60,9 @@ impl Snapshot {
     }
     pub(crate) fn brightness(&self, p: [f64; 3]) -> f32 {
         self.column(math::floor_double(p[0]), math::floor_double(p[2]))
-            .map_or(0.0, |c| c.brightness[math::floor_double(p[1]).clamp(0, 128) as usize])
+            .map_or(0.0, |c| {
+                c.brightness[math::floor_double(p[1]).clamp(0, 128) as usize]
+            })
     }
 }
 
@@ -80,7 +82,10 @@ pub struct ClientRandom {
 }
 impl ClientRandom {
     pub fn new(seed: i64) -> Self {
-        Self { random: JavaRandom::new(seed), gaussian: None }
+        Self {
+            random: JavaRandom::new(seed),
+            gaussian: None,
+        }
     }
     pub fn set_seed(&mut self, seed: i64) {
         self.random.set_seed(seed);
@@ -132,7 +137,11 @@ fn strict_log(x: f64) -> f64 {
             return if k == 0 { 0.0 } else { dk * HI + dk * LO };
         }
         let r = f * f * (0.5 - 0.33333333333333333 * f);
-        return if k == 0 { f - r } else { dk * HI - ((r - dk * LO) - f) };
+        return if k == 0 {
+            f - r
+        } else {
+            dk * HI - ((r - dk * LO) - f)
+        };
     }
     let s = f / (2.0 + f);
     let z = s * s;
@@ -184,7 +193,11 @@ pub fn precipitation(
             if (c.x - cx).abs() > radius || (c.z - cz).abs() > radius {
                 continue;
             }
-            if !(if pass == 0 { snows(c.biome) } else { rains(c.biome) }) {
+            if !(if pass == 0 {
+                snows(c.biome)
+            } else {
+                rains(c.biome)
+            }) {
                 continue;
             }
             let top = if pass == 0 { c.top.max(0) } else { c.top };
@@ -207,8 +220,8 @@ pub fn precipitation(
                 bright = c.brightness[top.max(cy).clamp(0, 128) as usize];
                 alpha = ((1.0f32 - distance * distance) * 0.3f32 + 0.5f32) * rain;
             } else {
-                scroll =
-                    ((tick.wrapping_add(seed) & 31) as f32 + partial) / 32.0f32 * (3.0f32 + rng.random.next_float());
+                scroll = ((tick.wrapping_add(seed) & 31) as f32 + partial) / 32.0f32
+                    * (3.0f32 + rng.random.next_float());
                 u = 0.0;
                 drift = 0.0;
                 bright = c.brightness[128] * 0.85f32 + 0.15f32;
@@ -232,8 +245,15 @@ pub fn precipitation(
                     [x + 0.5, hi as f64, z],
                 ],
             ] {
-                for (p, uv) in q.into_iter().zip([[u, v0], [1.0f32 + u, v0], [1.0f32 + u, v1], [u, v1]]) {
-                    verts.push(WeatherVertex { pos: std::array::from_fn(|i| (p[i] - cam[i]) as f32), uv, color });
+                for (p, uv) in
+                    q.into_iter()
+                        .zip([[u, v0], [1.0f32 + u, v0], [1.0f32 + u, v1], [u, v1]])
+                {
+                    verts.push(WeatherVertex {
+                        pos: std::array::from_fn(|i| (p[i] - cam[i]) as f32),
+                        uv,
+                        color,
+                    });
                 }
             }
         }
@@ -267,7 +287,11 @@ pub fn add_rain_particles(
         return (out, None);
     }
     rng.set_seed(tick as i64 * 312987231i64);
-    let (cx, cy, cz) = (math::floor_double(cam[0]), math::floor_double(cam[1]), math::floor_double(cam[2]));
+    let (cx, cy, cz) = (
+        math::floor_double(cam[0]),
+        math::floor_double(cam[1]),
+        math::floor_double(cam[2]),
+    );
     let mut count = 0;
     let mut sound_pos = [0.0; 3];
     for _ in 0..(100.0f32 * rain * rain) as i32 {
@@ -277,7 +301,11 @@ pub fn add_rain_particles(
             continue;
         };
         let y = c.top;
-        let id = if (1..=128).contains(&y) { c.blocks[(y - 1) as usize] } else { 0 };
+        let id = if (1..=128).contains(&y) {
+            c.blocks[(y - 1) as usize]
+        } else {
+            0
+        };
         if y <= cy + 10 && y >= cy - 10 && c.particle_rain {
             let fx = rng.random.next_float();
             let fz = rng.random.next_float();
@@ -365,12 +393,20 @@ pub fn lightning(bolt: Lightning, cam: [f64; 3]) -> Vec<WeatherVertex> {
                     // Tessellator.setColorRGBA_F truncates these to bytes.
                     let color = [114.0 / 255.0, 114.0 / 255.0, 127.0 / 255.0, 76.0 / 255.0];
                     strip.push(WeatherVertex {
-                        pos: [(lx + bx) as f32, (pos[1] + (segment * 16) as f64) as f32, (lz + bz) as f32],
+                        pos: [
+                            (lx + bx) as f32,
+                            (pos[1] + (segment * 16) as f64) as f32,
+                            (lz + bz) as f32,
+                        ],
                         uv: [0.0; 2],
                         color,
                     });
                     strip.push(WeatherVertex {
-                        pos: [(ux + px) as f32, (pos[1] + ((segment + 1) * 16) as f64) as f32, (uz + pz) as f32],
+                        pos: [
+                            (ux + px) as f32,
+                            (pos[1] + ((segment + 1) * 16) as f64) as f32,
+                            (uz + pz) as f32,
+                        ],
                         uv: [0.0; 2],
                         color,
                     });
@@ -427,9 +463,11 @@ impl Particles {
         for s in splashes {
             let mut r = JavaRandom::new(self.entity_seeds.next_long());
             let m = &mut self.math_random;
-            let mut motion = std::array::from_fn(|_| ((m.next_double() * 2.0 - 1.0) as f32 * 0.4f32) as f64);
+            let mut motion =
+                std::array::from_fn(|_| ((m.next_double() * 2.0 - 1.0) as f32 * 0.4f32) as f64);
             let speed = (m.next_double() + m.next_double() + 1.0) as f32 * 0.15f32;
-            let length = (motion[0] * motion[0] + motion[1] * motion[1] + motion[2] * motion[2]).sqrt() as f32;
+            let length = (motion[0] * motion[0] + motion[1] * motion[1] + motion[2] * motion[2])
+                .sqrt() as f32;
             for v in &mut motion {
                 *v = *v / length as f64 * speed as f64 * 0.4f32 as f64;
             }
@@ -457,7 +495,14 @@ impl Particles {
             // EntityRainFX.setSize(.01,.01) does NOT resize the .2-wide bounding box!
             let half = (0.2f32 / 2.0f32) as f64;
             let p = s.pos;
-            let bounds = [p[0] - half, p[1] - half, p[2] - half, p[0] + half, p[1] - half + 0.2f32 as f64, p[2] + half];
+            let bounds = [
+                p[0] - half,
+                p[1] - half,
+                p[2] - half,
+                p[0] + half,
+                p[1] - half + 0.2f32 as f64,
+                p[2] + half,
+            ];
             self.particles.push(Particle {
                 pos: p,
                 prev: p,
@@ -494,7 +539,11 @@ impl Particles {
                 p.motion[2] *= 1.1;
             }
             for v in &mut p.motion {
-                *v *= if p.smoke { 0.96f32 as f64 } else { 0.98f32 as f64 };
+                *v *= if p.smoke {
+                    0.96f32 as f64
+                } else {
+                    0.98f32 as f64
+                };
             }
             if !p.smoke {
                 let age = p.max_age;
@@ -512,9 +561,13 @@ impl Particles {
             }
             if !p.smoke {
                 let y = math::floor_double(p.pos[1]);
-                if let Some(c) = terrain.column(math::floor_double(p.pos[0]), math::floor_double(p.pos[2])) {
+                if let Some(c) =
+                    terrain.column(math::floor_double(p.pos[0]), math::floor_double(p.pos[2]))
+                {
                     if (0..128).contains(&y) {
-                        let mat = worldgen::block::mat(worldgen::block::material_of(c.blocks[y as usize]));
+                        let mat = worldgen::block::mat(worldgen::block::material_of(
+                            c.blocks[y as usize],
+                        ));
                         if mat.is_liquid || mat.is_solid {
                             let mut meta = c.meta[y as usize] as i32;
                             if meta >= 8 {
@@ -539,14 +592,18 @@ impl Particles {
         pitch: f32,
         partial: f32,
     ) -> Vec<WeatherVertex> {
-        let (cy, sy) = (math::cos(yaw * math::PI_F32 / 180.0f32), math::sin(yaw * math::PI_F32 / 180.0f32));
+        let (cy, sy) = (
+            math::cos(yaw * math::PI_F32 / 180.0f32),
+            math::sin(yaw * math::PI_F32 / 180.0f32),
+        );
         let sp = math::sin(pitch * math::PI_F32 / 180.0f32);
         let cp = math::cos(pitch * math::PI_F32 / 180.0f32);
         let (rx, ry, rz, ux, uz) = (cy, cp, sy, -sy * sp, cy * sp);
         let mut out = Vec::new();
         for p in &self.particles {
-            let pos: [f32; 3] =
-                std::array::from_fn(|i| (p.prev[i] + (p.pos[i] - p.prev[i]) * partial as f64 - cam[i]) as f32);
+            let pos: [f32; 3] = std::array::from_fn(|i| {
+                (p.prev[i] + (p.pos[i] - p.prev[i]) * partial as f64 - cam[i]) as f32
+            });
             let size = 0.1f32
                 * (p.scale
                     * if p.smoke {
@@ -558,16 +615,45 @@ impl Particles {
             let u1 = u0 + 0.999f32 / 16.0f32;
             let v0 = (p.texture / 16) as f32 / 16.0f32;
             let v1 = v0 + 0.999f32 / 16.0f32;
-            let bright_pos = [p.pos[0], p.pos[1] - 0.1f32 as f64 + (p.bounds[4] - p.bounds[1]) * 0.66, p.pos[2]];
-            let c = ((p.color * terrain.brightness(bright_pos) * 255.0f32) as i32).clamp(0, 255) as f32 / 255.0f32;
-            let points = [
-                [pos[0] - rx * size - ux * size, pos[1] - ry * size, pos[2] - rz * size - uz * size],
-                [pos[0] - rx * size + ux * size, pos[1] + ry * size, pos[2] - rz * size + uz * size],
-                [pos[0] + rx * size + ux * size, pos[1] + ry * size, pos[2] + rz * size + uz * size],
-                [pos[0] + rx * size - ux * size, pos[1] - ry * size, pos[2] + rz * size - uz * size],
+            let bright_pos = [
+                p.pos[0],
+                p.pos[1] - 0.1f32 as f64 + (p.bounds[4] - p.bounds[1]) * 0.66,
+                p.pos[2],
             ];
-            for (pos, uv) in points.into_iter().zip([[u1, v1], [u1, v0], [u0, v0], [u0, v1]]) {
-                out.push(WeatherVertex { pos, uv, color: [c, c, c, 1.0] });
+            let c = ((p.color * terrain.brightness(bright_pos) * 255.0f32) as i32).clamp(0, 255)
+                as f32
+                / 255.0f32;
+            let points = [
+                [
+                    pos[0] - rx * size - ux * size,
+                    pos[1] - ry * size,
+                    pos[2] - rz * size - uz * size,
+                ],
+                [
+                    pos[0] - rx * size + ux * size,
+                    pos[1] + ry * size,
+                    pos[2] - rz * size + uz * size,
+                ],
+                [
+                    pos[0] + rx * size + ux * size,
+                    pos[1] + ry * size,
+                    pos[2] + rz * size + uz * size,
+                ],
+                [
+                    pos[0] + rx * size - ux * size,
+                    pos[1] - ry * size,
+                    pos[2] + rz * size - uz * size,
+                ],
+            ];
+            for (pos, uv) in points
+                .into_iter()
+                .zip([[u1, v1], [u1, v0], [u0, v0], [u0, v1]])
+            {
+                out.push(WeatherVertex {
+                    pos,
+                    uv,
+                    color: [c, c, c, 1.0],
+                });
             }
         }
         out
@@ -616,7 +702,10 @@ fn move_particle(p: &mut Particle, s: &Snapshot) -> bool {
     let mut delta = original;
     for axis in [1, 0, 2] {
         for b in &boxes {
-            if !(0..3).filter(|&i| i != axis).all(|i| p.bounds[i + 3] > b[i] && p.bounds[i] < b[i + 3]) {
+            if !(0..3)
+                .filter(|&i| i != axis)
+                .all(|i| p.bounds[i + 3] > b[i] && p.bounds[i] < b[i + 3])
+            {
                 continue;
             }
             if delta[axis] > 0.0 && p.bounds[axis + 3] <= b[axis] {
@@ -632,12 +721,18 @@ fn move_particle(p: &mut Particle, s: &Snapshot) -> bool {
             p.motion[axis] = 0.0;
         }
     }
-    p.pos = [(p.bounds[0] + p.bounds[3]) / 2.0, p.bounds[1] + 0.1f32 as f64, (p.bounds[2] + p.bounds[5]) / 2.0];
+    p.pos = [
+        (p.bounds[0] + p.bounds[3]) / 2.0,
+        p.bounds[1] + 0.1f32 as f64,
+        (p.bounds[2] + p.bounds[5]) / 2.0,
+    ];
     // Block.onEntityCollidedWithBlock scans the contracted bounding box.
     for x in math::floor_double(p.bounds[0] + 0.001)..=math::floor_double(p.bounds[3] - 0.001) {
         for z in math::floor_double(p.bounds[2] + 0.001)..=math::floor_double(p.bounds[5] - 0.001) {
             if let Some(c) = s.column(x, z) {
-                for y in math::floor_double(p.bounds[1] + 0.001)..=math::floor_double(p.bounds[4] - 0.001) {
+                for y in math::floor_double(p.bounds[1] + 0.001)
+                    ..=math::floor_double(p.bounds[4] - 0.001)
+                {
                     if !(0..128).contains(&y) {
                         continue;
                     }
@@ -668,12 +763,30 @@ fn collision_boxes(id: u8, meta: u8, pos: [i32; 3]) -> Vec<[f64; 6]> {
         29 | 33 => b = [0.0, 0.0, 0.0, 1.0, 1.0, 1.0],
         34 => {
             let pair = match meta & 7 {
-                0 => [[0.0, 0.0, 0.0, 1.0, 0.25, 1.0], [0.375, 0.25, 0.375, 0.625, 1.0, 0.625]],
-                1 => [[0.0, 0.75, 0.0, 1.0, 1.0, 1.0], [0.375, 0.0, 0.375, 0.625, 0.75, 0.625]],
-                2 => [[0.0, 0.0, 0.0, 1.0, 1.0, 0.25], [0.25, 0.375, 0.25, 0.75, 0.625, 1.0]],
-                3 => [[0.0, 0.0, 0.75, 1.0, 1.0, 1.0], [0.25, 0.375, 0.0, 0.75, 0.625, 0.75]],
-                4 => [[0.0, 0.0, 0.0, 0.25, 1.0, 1.0], [0.375, 0.25, 0.25, 0.625, 0.75, 1.0]],
-                5 => [[0.75, 0.0, 0.0, 1.0, 1.0, 1.0], [0.0, 0.375, 0.25, 0.75, 0.625, 0.75]],
+                0 => [
+                    [0.0, 0.0, 0.0, 1.0, 0.25, 1.0],
+                    [0.375, 0.25, 0.375, 0.625, 1.0, 0.625],
+                ],
+                1 => [
+                    [0.0, 0.75, 0.0, 1.0, 1.0, 1.0],
+                    [0.375, 0.0, 0.375, 0.625, 0.75, 0.625],
+                ],
+                2 => [
+                    [0.0, 0.0, 0.0, 1.0, 1.0, 0.25],
+                    [0.25, 0.375, 0.25, 0.75, 0.625, 1.0],
+                ],
+                3 => [
+                    [0.0, 0.0, 0.75, 1.0, 1.0, 1.0],
+                    [0.25, 0.375, 0.0, 0.75, 0.625, 0.75],
+                ],
+                4 => [
+                    [0.0, 0.0, 0.0, 0.25, 1.0, 1.0],
+                    [0.375, 0.25, 0.25, 0.625, 0.75, 1.0],
+                ],
+                5 => [
+                    [0.75, 0.0, 0.0, 1.0, 1.0, 1.0],
+                    [0.0, 0.375, 0.25, 0.75, 0.625, 0.75],
+                ],
                 _ => return shapes,
             };
             for b in pair {
@@ -683,10 +796,22 @@ fn collision_boxes(id: u8, meta: u8, pos: [i32; 3]) -> Vec<[f64; 6]> {
         }
         53 | 67 => {
             let pair = match meta {
-                0 => [[0.0, 0.0, 0.0, 0.5, 0.5, 1.0], [0.5, 0.0, 0.0, 1.0, 1.0, 1.0]],
-                1 => [[0.0, 0.0, 0.0, 0.5, 1.0, 1.0], [0.5, 0.0, 0.0, 1.0, 0.5, 1.0]],
-                2 => [[0.0, 0.0, 0.0, 1.0, 0.5, 0.5], [0.0, 0.0, 0.5, 1.0, 1.0, 1.0]],
-                3 => [[0.0, 0.0, 0.0, 1.0, 1.0, 0.5], [0.0, 0.0, 0.5, 1.0, 0.5, 1.0]],
+                0 => [
+                    [0.0, 0.0, 0.0, 0.5, 0.5, 1.0],
+                    [0.5, 0.0, 0.0, 1.0, 1.0, 1.0],
+                ],
+                1 => [
+                    [0.0, 0.0, 0.0, 0.5, 1.0, 1.0],
+                    [0.5, 0.0, 0.0, 1.0, 0.5, 1.0],
+                ],
+                2 => [
+                    [0.0, 0.0, 0.0, 1.0, 0.5, 0.5],
+                    [0.0, 0.0, 0.5, 1.0, 1.0, 1.0],
+                ],
+                3 => [
+                    [0.0, 0.0, 0.0, 1.0, 1.0, 0.5],
+                    [0.0, 0.0, 0.5, 1.0, 0.5, 1.0],
+                ],
                 _ => return shapes,
             };
             for b in pair {
@@ -704,7 +829,16 @@ fn collision_boxes(id: u8, meta: u8, pos: [i32; 3]) -> Vec<[f64; 6]> {
         85 => b = [0.0, 0.0, 0.0, 1.0, 1.5, 1.0],
         81 => b = [0.0625, 0.0, 0.0625, 0.9375, 0.9375, 0.9375],
         88 => b[4] = 0.875,
-        92 => b = [(1 + meta as i32 * 2) as f32 / 16.0, 0.0, 0.0625, 0.9375, 0.4375, 0.9375],
+        92 => {
+            b = [
+                (1 + meta as i32 * 2) as f32 / 16.0,
+                0.0,
+                0.0625,
+                0.9375,
+                0.4375,
+                0.9375,
+            ]
+        }
         64 | 71 | 65 | 96 => {
             let width = if id == 65 { 0.125 } else { 0.1875 };
             let side = if id == 65 {

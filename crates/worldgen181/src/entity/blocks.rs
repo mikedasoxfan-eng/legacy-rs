@@ -4,16 +4,31 @@ use crate::{block::*, math::floor_double as floor, World};
 
 impl World {
     pub fn set_block_bounds_based_on_state(&mut self, id: u8, x: i32, y: i32, z: i32) {
-        if id==PISTON_MOVING {
-            if let Some(crate::world::tile::TileEntity::Piston(p))=self.get_block_tile_entity(x,y,z).cloned() {
-                if p.block_id!=0 && p.block_id!=PISTON_MOVING && props(p.block_id).exists {
-                    self.set_block_bounds_based_on_state(p.block_id,x,y,z);
-                    let mut b=self.block_bounds[p.block_id as usize];
-                    let progress=if p.extending {1.0-p.progress(0.0)} else {p.progress(0.0)};
-                    let (dx,dy,dz)=crate::world::pistons::DIRECTIONS[p.facing as usize];
-                    let (ox,oy,oz)=((dx as f32*progress) as f64,(dy as f32*progress) as f64,(dz as f32*progress) as f64);
-                    b.min_x-=ox;b.max_x-=ox;b.min_y-=oy;b.max_y-=oy;b.min_z-=oz;b.max_z-=oz;
-                    self.block_bounds[id as usize]=b;
+        if id == PISTON_MOVING {
+            if let Some(crate::world::tile::TileEntity::Piston(p)) =
+                self.get_block_tile_entity(x, y, z).cloned()
+            {
+                if p.block_id != 0 && p.block_id != PISTON_MOVING && props(p.block_id).exists {
+                    self.set_block_bounds_based_on_state(p.block_id, x, y, z);
+                    let mut b = self.block_bounds[p.block_id as usize];
+                    let progress = if p.extending {
+                        1.0 - p.progress(0.0)
+                    } else {
+                        p.progress(0.0)
+                    };
+                    let (dx, dy, dz) = crate::world::pistons::DIRECTIONS[p.facing as usize];
+                    let (ox, oy, oz) = (
+                        (dx as f32 * progress) as f64,
+                        (dy as f32 * progress) as f64,
+                        (dz as f32 * progress) as f64,
+                    );
+                    b.min_x -= ox;
+                    b.max_x -= ox;
+                    b.min_y -= oy;
+                    b.max_y -= oy;
+                    b.min_z -= oz;
+                    b.max_z -= oz;
+                    self.block_bounds[id as usize] = b;
                 }
             }
             return;
@@ -38,13 +53,31 @@ impl World {
         }
     }
     pub fn block_collision_box(&mut self, id: u8, x: i32, y: i32, z: i32) -> Option<BB> {
+        if matches!(id, 97 | 98 | 99 | 100 | 103) {
+            return Some(BB::new(
+                x as f64,
+                y as f64,
+                z as f64,
+                (x + 1) as f64,
+                (y + 1) as f64,
+                (z + 1) as f64,
+            ));
+        }
         if !props(id).exists {
             return None;
         }
-        if id==PISTON_MOVING {
-            let Some(crate::world::tile::TileEntity::Piston(p))=self.get_block_tile_entity(x,y,z).cloned() else { return None; };
-            let progress=if p.extending {1.0-p.progress(0.0)} else {p.progress(0.0)};
-            return self.moving_piston_box(x,y,z,p.block_id,progress,p.facing);
+        if id == PISTON_MOVING {
+            let Some(crate::world::tile::TileEntity::Piston(p)) =
+                self.get_block_tile_entity(x, y, z).cloned()
+            else {
+                return None;
+            };
+            let progress = if p.extending {
+                1.0 - p.progress(0.0)
+            } else {
+                p.progress(0.0)
+            };
+            return self.moving_piston_box(x, y, z, p.block_id, progress, p.facing);
         }
         let m = self.get_block_metadata(x, y, z) as usize;
         if matches!(id, DOOR_WOOD | DOOR_STEEL | TRAPDOOR) {
@@ -140,14 +173,24 @@ impl World {
                 }
             }
         }
-        let vehicle = entity.and_then(|id|self.entities.get(&id)).is_some_and(|e|
-            matches!(e.kind, super::EntityKind::Minecart(..) | super::EntityKind::Boat(..)));
-        for id in self.entities_within_aabb(entity,query.expand(0.25,0.25,0.25)) {
-            let other=&self.entities[&id];
-            if matches!(other.kind,super::EntityKind::Boat(..)) && other.bounding_box.intersects(query) {
+        let vehicle = entity
+            .and_then(|id| self.entities.get(&id))
+            .is_some_and(|e| {
+                matches!(
+                    e.kind,
+                    super::EntityKind::Minecart(..) | super::EntityKind::Boat(..)
+                )
+            });
+        for id in self.entities_within_aabb(entity, query.expand(0.25, 0.25, 0.25)) {
+            let other = &self.entities[&id];
+            if matches!(other.kind, super::EntityKind::Boat(..))
+                && other.bounding_box.intersects(query)
+            {
                 boxes.push(other.bounding_box);
             }
-            if vehicle && other.bounding_box.intersects(query) { boxes.push(other.bounding_box); }
+            if vehicle && other.bounding_box.intersects(query) {
+                boxes.push(other.bounding_box);
+            }
         }
         boxes
     }

@@ -23,6 +23,9 @@ pub enum MobKind {
     Ghast,
     PigZombie,
     Giant,
+    Enderman,
+    Silverfish,
+    CaveSpider,
 }
 
 /// Interpolated `EntityLiving` inputs. The simulation can fill this at partialTicks:
@@ -31,6 +34,8 @@ pub enum MobKind {
 /// limbSwing = S-R*(1-partial), age = ticksExisted+partial, attack = getSwingProgress.
 #[derive(Clone, Debug)]
 pub struct RenderState {
+    pub carrying: bool,
+    pub screaming: bool,
     pub ghast_attack: f32,
     pub ghast_attacking: bool,
     pub held_item: Option<super::equipped::HeldSprite>,
@@ -78,12 +83,18 @@ pub struct RenderState {
 impl RenderState {
     pub fn new(kind: MobKind) -> Self {
         Self {
+            carrying: false,
+            screaming: false,
             ghast_attack: 0.0,
             ghast_attacking: false,
             held_item: if kind == MobKind::Skeleton {
                 Some(super::equipped::HeldSprite::BOW)
             } else if kind == MobKind::PigZombie {
-                Some(super::equipped::HeldSprite { icon: 68, full_3d: true, terrain: false })
+                Some(super::equipped::HeldSprite {
+                    icon: 68,
+                    full_3d: true,
+                    terrain: false,
+                })
             } else {
                 None
             },
@@ -179,6 +190,11 @@ pub struct Batch {
 
 /// All jar resources used by the models, including the powered creeper pass.
 pub const TEXTURES: &[&str] = &[
+    "mob/enderman.png",
+    "mob/enderman_eyes.png",
+    "mob/cavespider.png",
+    "mob/silverfish.png",
+    "item/xporb.png",
     "gui/items.png",
     "terrain.png",
     "item/arrows.png",
@@ -210,6 +226,9 @@ pub const TEXTURES: &[&str] = &[
 
 pub fn model_kind(kind: MobKind) -> ModelKind {
     match kind {
+        MobKind::Enderman => ModelKind::Enderman,
+        MobKind::Silverfish => ModelKind::Silverfish,
+        MobKind::CaveSpider => ModelKind::Spider,
         MobKind::Biped => ModelKind::Biped,
         MobKind::Zombie => ModelKind::Zombie,
         MobKind::Skeleton => ModelKind::Skeleton,
@@ -230,6 +249,9 @@ pub fn model_kind(kind: MobKind) -> ModelKind {
 
 fn texture(s: &RenderState) -> &'static str {
     match s.kind {
+        MobKind::Enderman => "mob/enderman.png",
+        MobKind::Silverfish => "mob/silverfish.png",
+        MobKind::CaveSpider => "mob/cavespider.png",
         MobKind::Biped => "mob/char.png",
         MobKind::Zombie | MobKind::Giant => "mob/zombie.png",
         MobKind::PigZombie => "mob/pigzombie.png",
@@ -297,11 +319,21 @@ pub fn model_transform(s: &RenderState, camera: DVec3) -> Mat4 {
             if f > 1.0 {
                 f = 1.0;
             }
-            let max = if s.kind == MobKind::Spider { 180.0 } else { 90.0 };
+            let max = if matches!(
+                s.kind,
+                MobKind::Spider | MobKind::CaveSpider | MobKind::Silverfish
+            ) {
+                180.0
+            } else {
+                90.0
+            };
             m *= Mat4::from_rotation_z((f * max).to_radians());
         }
     }
     m *= Mat4::from_scale(Vec3::new(-1.0, -1.0, 1.0));
+    if s.kind == MobKind::CaveSpider {
+        m *= Mat4::from_scale(Vec3::splat(0.7));
+    }
     if s.kind == MobKind::Ghast {
         let mut f = (s.ghast_attack / 20.0).max(0.0);
         f = 1.0 / (f * f * f * f * f * 2.0 + 1.0);
@@ -342,13 +374,13 @@ fn light(x: f32, z: f32) -> Vec3 {
 }
 
 /// GL_BYTE normal arrays as written by Tessellator.setNormal. Preserve both its
-/// 128 X multiplier and signed-byte OR/sign-extension, rather than repairing them.
+/// 127 X multiplier and signed-byte OR/sign-extension, rather than repairing them.
 pub fn packed_normal(q: &TexturedQuad) -> u32 {
     pack_normal(q.normal())
 }
 
 pub fn pack_normal(n: Vec3) -> u32 {
-    let x = (n.x * 128.0) as i32 as i8 as i32;
+    let x = (n.x * 127.0) as i32 as i8 as i32;
     let y = (n.y * 127.0) as i32 as i8 as i32;
     let z = (n.z * 127.0) as i32 as i8 as i32;
     (x | (y << 8) | (z << 16)) as u32
@@ -403,7 +435,11 @@ fn part_triangles(
         return;
     }
     let scale = 1.0 / 16.0;
-    let m = if with_rotation { part.transform(parent, scale, true) } else { part.post_render(parent, scale) };
+    let m = if with_rotation {
+        part.transform(parent, scale, true)
+    } else {
+        part.post_render(parent, scale)
+    };
     let inverse = m.inverse();
     let normal_matrix = inverse.transpose();
     // GL_RESCALE_NORMAL: reciprocal length of the inverse modelview's third row.
@@ -418,7 +454,11 @@ fn part_triangles(
         let c = if lit { lit_color(n, color) } else { color };
         let v = face.vertices.map(|v| {
             let p = Vec3::from_array(v.pos.map(|p| p as f32 * scale));
-            EntityVertex { pos: m.transform_point3(p).to_array(), uv: v.uv.map(|u| u + uv_offset), color: c }
+            EntityVertex {
+                pos: m.transform_point3(p).to_array(),
+                uv: v.uv.map(|u| u + uv_offset),
+                color: c,
+            }
         });
         for i in [0, 1, 2, 0, 2, 3] {
             out.push(v[i]);
@@ -439,9 +479,22 @@ fn batch(
     normalize: bool,
     uv_offset: f32,
 ) -> Batch {
-    let mut b = Batch { texture, pass, vertices: Vec::new() };
+    let mut b = Batch {
+        texture,
+        pass,
+        vertices: Vec::new(),
+    };
     for (part, r) in m.render_parts() {
-        part_triangles(part, transform, r, color, lit, normalize, uv_offset, &mut b.vertices);
+        part_triangles(
+            part,
+            transform,
+            r,
+            color,
+            lit,
+            normalize,
+            uv_offset,
+            &mut b.vertices,
+        );
     }
     b
 }
@@ -454,20 +507,33 @@ pub fn render_living(s: &RenderState, camera: DVec3) -> Vec<Batch> {
 
 fn render_with_lighting(s: &RenderState, camera: DVec3, normalize: bool) -> Vec<Batch> {
     if matches!(s.kind, MobKind::Ghast | MobKind::PigZombie | MobKind::Giant) {
-        return super::special::render(s, camera.to_array(), normalize).draws.iter().map(|d| d.batch()).collect();
+        return super::special::render(s, camera.to_array(), normalize)
+            .draws
+            .iter()
+            .map(|d| d.batch())
+            .collect();
     }
     let transform = model_transform(s, camera);
     let mut main = Model::new(model_kind(s.kind));
     main.on_ground = s.attack;
     main.is_riding = s.riding;
     main.is_sneak = s.sneak;
+    main.carrying = s.carrying;
+    main.screaming = s.screaming;
     main.held_left = s.held_left;
     main.held_right = s.held_right;
     let mut amount = s.limb_amount;
     if amount > 1.0 {
         amount = 1.0;
     }
-    let pose = [s.limb_swing, amount, animation_age(s), s.yaw - s.body_yaw, s.pitch, 1.0 / 16.0];
+    let pose = [
+        s.limb_swing,
+        amount,
+        animation_age(s),
+        s.yaw - s.body_yaw,
+        s.pitch,
+        1.0 / 16.0,
+    ];
     main.set_living_animations(pose[0], pose[1], s.partial, &s.wolf);
     main.set_rotation_angles(pose);
     let mut brightness = s.brightness;
@@ -475,8 +541,21 @@ fn render_with_lighting(s: &RenderState, camera: DVec3, normalize: bool) -> Vec<
         let shake = s.wolf.shake[0] + (s.wolf.shake[1] - s.wolf.shake[0]) * s.partial;
         brightness *= 12.0 / 16.0 + shake / 2.0 * 0.25;
     }
-    let color = if s.kind == MobKind::Ghast { [1.0; 4] } else { [brightness, brightness, brightness, 1.0] };
-    let mut result = vec![batch(&main, transform, Some(texture(s)), Pass::Opaque, color, true, normalize, 0.0)];
+    let color = if s.kind == MobKind::Ghast {
+        [1.0; 4]
+    } else {
+        [brightness, brightness, brightness, 1.0]
+    };
+    let mut result = vec![batch(
+        &main,
+        transform,
+        Some(texture(s)),
+        Pass::Opaque,
+        color,
+        true,
+        normalize,
+        0.0,
+    )];
     let mut pass_model = None;
     let mut pass_color = color;
     let mut pass_texture = texture(s);
@@ -490,12 +569,23 @@ fn render_with_lighting(s: &RenderState, camera: DVec3, normalize: bool) -> Vec<
             pass_model = Some(Model::new(ModelKind::SheepFur));
             pass_texture = "mob/sheep_fur.png";
             let fleece = FLEECE_COLORS[s.fleece_color];
-            pass_color = [s.brightness * fleece[0], s.brightness * fleece[1], s.brightness * fleece[2], 1.0];
+            pass_color = [
+                s.brightness * fleece[0],
+                s.brightness * fleece[1],
+                s.brightness * fleece[2],
+                1.0,
+            ];
         }
-        MobKind::Spider => {
+        MobKind::Spider | MobKind::CaveSpider => {
             pass_model = Some(Model::new(ModelKind::Spider));
             pass_texture = "mob/spider_eyes.png";
-            pass_color = [1.0, 1.0, 1.0, (1.0 - s.spider_eye_brightness) * 0.5];
+            pass_color = [1.0; 4];
+            pass = Pass::Eyes;
+        }
+        MobKind::Enderman => {
+            pass_model = Some(main.clone());
+            pass_texture = "mob/enderman_eyes.png";
+            pass_color = [1.0; 4];
             pass = Pass::Eyes;
         }
         MobKind::Slime => {
@@ -514,7 +604,11 @@ fn render_with_lighting(s: &RenderState, camera: DVec3, normalize: bool) -> Vec<
         m.on_ground = s.attack;
         m.is_riding = s.riding;
         m.set_rotation_angles(pose);
-        let offset = if pass == Pass::Additive { s.age * 0.01 } else { 0.0 };
+        let offset = if pass == Pass::Additive {
+            s.age * 0.01
+        } else {
+            0.0
+        };
         result.push(batch(
             m,
             transform,
@@ -526,9 +620,14 @@ fn render_with_lighting(s: &RenderState, camera: DVec3, normalize: bool) -> Vec<
             offset,
         ));
     }
-    if matches!(s.kind, MobKind::Biped | MobKind::Zombie | MobKind::Skeleton | MobKind::PigZombie) {
+    if matches!(
+        s.kind,
+        MobKind::Biped | MobKind::Zombie | MobKind::Skeleton | MobKind::PigZombie
+    ) {
         if let Some(item) = s.held_item {
-            result.push(super::equipped::render_item(&main, transform, item, color, normalize));
+            result.push(super::equipped::render_item(
+                &main, transform, item, color, normalize,
+            ));
         }
     }
     let mut overlays = Vec::new();
@@ -542,7 +641,16 @@ fn render_with_lighting(s: &RenderState, camera: DVec3, normalize: bool) -> Vec<
         }
     }
     for c in overlays {
-        result.push(batch(&main, transform, None, Pass::Overlay, c, true, normalize || s.kind == MobKind::Slime, 0.0));
+        result.push(batch(
+            &main,
+            transform,
+            None,
+            Pass::Overlay,
+            c,
+            true,
+            normalize || s.kind == MobKind::Slime,
+            0.0,
+        ));
         // RenderCreeper.func_27005_b explicitly suppresses overlay passes.
         if s.kind != MobKind::Creeper {
             if let Some(m) = &pass_model {
@@ -568,7 +676,11 @@ pub fn scene(states: &[RenderState], camera: DVec3) -> Vec<Batch> {
 
 /// RenderSlime leaves GL_NORMALIZE enabled. Track the original GL state across
 /// entities and frames, without global mutable Rust state.
-pub fn scene_with_lighting(states: &[RenderState], camera: DVec3, normalize: &mut bool) -> Vec<Batch> {
+pub fn scene_with_lighting(
+    states: &[RenderState],
+    camera: DVec3,
+    normalize: &mut bool,
+) -> Vec<Batch> {
     let mut batches = Vec::new();
     for s in states {
         batches.extend(render_with_lighting(s, camera, *normalize));
