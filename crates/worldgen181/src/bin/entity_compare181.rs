@@ -7,6 +7,11 @@ fn main() {
     }
     let expected = fs::read(&a[3]).unwrap();
     let actual = match a[1].as_str() {
+        "itempiston11" => worldgen::entity::round11_verify181::itempiston(),
+        "itemstack11" => worldgen::entity::round11_verify181::itemstack(),
+        "blockfull11" => worldgen::entity::round11_verify181::blockfull(),
+        "stackdata11" => worldgen::entity::round11_verify181::stackdata(),
+        "stacknbt11" => worldgen::entity::round11_verify181::stacknbt(),
         "entitylist10" => worldgen::entity::round10_verify181::entitylist(),
         "itemblock10" => worldgen::entity::round10_verify181::itemblock(),
         "itembase10" => worldgen::entity::round10_verify181::itembase(),

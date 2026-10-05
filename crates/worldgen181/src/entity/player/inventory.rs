@@ -32,10 +32,10 @@ impl ItemStack {
     }
     pub fn same_object(self, other: Self) -> bool { self.identity == other.identity }
     pub fn max_stack(&self) -> i32 {
-        registry::item(self.id).map_or(64, |i| i.max_stack)
+        self.max_stack_checked181().expect("ItemStack.getMaxStackSize")
     }
     pub fn max_damage(&self) -> i32 {
-        registry::item(self.id).map_or(0, |i| i.durability)
+        self.max_damage_checked181().expect("ItemStack.getMaxDamage")
     }
     pub fn is_damaged(&self) -> bool {
         self.max_damage() > 0 && self.damage > 0
@@ -48,7 +48,7 @@ impl ItemStack {
         if self.max_damage() > 0 {
             self.damage = self.damage.wrapping_add(amount);
             if self.damage > self.max_damage() {
-                self.count = (self.count - 1).max(0);
+                self.count = self.count.wrapping_sub(1).max(0);
                 self.damage = 0;
                 return true;
             }
@@ -56,30 +56,25 @@ impl ItemStack {
         false
     }
     pub fn split(&mut self, count: i32) -> Self {
-        self.count -= count;
+        self.count = self.count.wrapping_sub(count);
         Self::new(self.id, count, self.damage)
     }
     pub fn to_nbt(&self) -> Compound {
         let mut n = Compound::new();
-        n.put("id", Tag::Short(self.id as i16));
-        n.put("Count", Tag::Byte(self.count as i8));
-        n.put("Damage", Tag::Short(self.damage as i16));
+        self.write_nbt181(Some(&mut n)).expect("nonnull ItemStack NBT");
         n
     }
     /// ItemStack.func_35864_a: unregistered positive IDs read as null.
     pub fn try_from_nbt181(n:&Compound)->Option<Self>{
-        let stack=Self::from_nbt(n);
-        // ItemStack.getItem indexes the original 32,000-entry array before
-        // deciding whether the entry is registered. Even ignored slots fail here.
-        assert!((0..32000).contains(&stack.id), "Item.itemsList index out of bounds");
-        super::registry::item(stack.id).map(|_|stack)
+        Self::load_checked181(Some(n), |id| {
+            if !(0..32000).contains(&id) {return Err(crate::entity::item_stack::StackError::ArrayIndexOutOfBounds);}
+            Ok(super::registry::item(id).is_some())
+        }).expect("ItemStack NBT load")
     }
     pub fn from_nbt(n: &Compound) -> Self {
-        Self::new(
-            n.short("id") as i32,
-            n.byte("Count") as i32,
-            n.short("Damage") as i32,
-        )
+        let mut stack=Self::new(0,0,0);
+        stack.read_nbt_checked181(Some(n)).expect("ItemStack.readFromNBT");
+        stack
     }
 }
 impl From<crate::world::tile::ItemStack> for ItemStack {

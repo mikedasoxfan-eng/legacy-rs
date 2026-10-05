@@ -499,6 +499,11 @@ bash "$root/tools/verify_minecraft181.sh" --built || fail=1
 # --- entities (b1.8.1) ---
 bash "$root/tools/verify_entities10_181.sh" --built || fail=1
 # --- end entities ---
+# --- entities (b1.8.1) ---
+# Round 11: complete ItemBlock dependencies and ItemStack alias/NBT/delegation audit.
+bash "$root/tools/verify_entities11_181.sh" --built || fail=1
+# --- end entities ---
+
 pflush
 [ $fail -eq 0 ] && echo "ALL CASES EXACT" || echo "SOME CASES DIFFER"
 exit $fail

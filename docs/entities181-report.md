@@ -1,3 +1,52 @@
+# Beta 1.8.1 entities - round 11 report
+
+Round 11 completes exactly the two assigned classes: **ItemBlock (31 changed lines) and ItemStack (30 changed lines)**. Both have a complete source audit and EXACT original Beta 1.8.1 bytecode checks. This table supersedes the historical reports preserved below. Other classes are not reopened or credited again.
+
+## Per-class status
+
+| Class | Status | Original-bytecode proof |
+|---|---|---|
+| ItemBlock | Done | Retained `itemblock10` proves constructors, names and the complete ordered dispatch. New `blockfull11` is EXACT for all 108 registered non-moving block items (31,104 real placements), and `itempiston11` is EXACT for 19,600 real moving-piston placements including malformed tile/height/direction/null-block exception paths. |
+| ItemStack | Done | `itemstack11`, `stackdata11` and `stacknbt11` are EXACT for every method: full virtual delegation, retained alias mutation, current-ID stats, nullable/same/new/other returns, callback/stat exceptions, constructors, signed split/copy/equality, NBT read/load/write and virtual compound exception/mutation order. Existing production scalar/NBT and block-use paths delegate to these implementations. |
+
+## Changes and exact verify181 sections
+
+The round-10 ItemBlock dispatcher is retained. Rebuilding against the integrator's sponge port allowed the unchanged broad probe to finish, exposing three remaining predicate mismatches (fire 51, crops 59, fence 85). Three local branches in the existing placement helper restore those original predicates; fire uses the existing world helper. The broad registered matrix is now EXACT.
+
+Moving-piston placement now has a checked collision dependency and live checked adapter. It preserves Chunk's unguarded missing-tile array indexing at malformed heights, null/wrong/invalid tile behavior, null carried-block failure, and direction-array failure only after a non-null carried collision. It evaluates the target lookup and collision before replacement/placement rejection and cleans up the temporary collision-visible player on exceptional exit. Native boolean callers retain the existing panic-on-error convention. World tile lifecycle/piston ticking/storage/rendering are not rewritten; the separate Piston class's complete malformed-NBT space is outside this ItemBlock task.
+
+ItemStack extends the existing player-owned struct and identity representation. It supplies literal borrowed callback dispatch, typed null/bounds/class-cast/dependency errors, sequential NBT assignment, virtual compound adapters, copy/equality helpers and nullable load. Split/decrement use explicit Java wrapping. Registered scalar getters no longer silently substitute defaults for an absent/out-of-array item. Live block use now calls ItemStack's dispatch before the existing inventory/controller policy; successful callbacks use the current, possibly mutated item ID for the stat. Animation decrement and crafting/stat/callback order are preserved. No alternate inventory or object/alias store is introduced; new copies allocate through the existing identity counter, and same-object returns retain the existing identity token.
+
+`docs/entities181-round11-audit.md` maps both complete original classes to their implementation and checks. Raw version diffs are `target/entities11-ItemBlock.diff` and `target/entities11-ItemStack.diff`.
+
+One final delimited entities block, placed before verify181's summary/exit, calls `tools/verify_entities11_181.sh --built`. All previous verify181 content is preserved after newline normalization. The five new EXACT sections are:
+
+| Section | Coverage | Result |
+|---|---|---|
+| blockfull11 | All registered non-moving ItemBlock subclasses, six replacement/collision scenes, six heights, eight sides, malformed counts/metadata, blocks/events and both RNG states; input set independently derived in Rust | EXACT, 8,217,180 bytes |
+| itempiston11 | 19,600 original ItemBlock/World placements; missing/sign/piston/invalid tiles, seven heights, two local X positions, five sides, seven carried IDs and ten directions; exact exception class, count, invalidation/map state, RNG and events | EXACT, 611,680 bytes |
+| itemstack11 | 68,640 original method calls; retained mutable aliases, dynamic registry/null/bounds transitions, signed overflow (including MIN_VALUE count break), nullable resources, false/true callbacks, same/new/other/null returns, item/stat failure order and current-ID stats | EXACT, 6,699,453 bytes |
+| stackdata11 | 200 constructors, 625 signed split/copy/equality cases, 5,265 sequential NBT read/load/write cases, nullable compounds, 30 wrong-type fields and 192 registered getter/error cases | EXACT, 454,417 bytes |
+| stacknbt11 | 280 original virtual-compound read/write calls; before/after-mutation exceptions, sequential overwrite order, signed setter narrowing and retained stack state | EXACT, 43,840 bytes |
+
+The four new Java Mode classes execute the original jar on Mojang Java 8u51. The existing broad ItemBlock recorder is reused without alteration, while the new comparison derives its own input IDs and calculates all outcomes. No original Java or shared fixture/recorder is changed.
+
+## Validation and handoff
+
+The required `cargo build --release -p worldgen181 -p client` completed on the final source (`target/entities11-final-build.log`, 58.06s). Its exit status was confirmed as 0 with an incremental unchanged-source build (`target/entities11-final-build-confirmed.log`). All five final checks passed, ending `ENTITIES11 ALL FOCUSED CASES EXACT` (`target/entities11-postbuild-focused.log`).
+
+All eleven suites in `target/entities11-final-regressions.log` returned status 0: rounds 11, 10, 1, 3, 4, 5, 6, 7, 8, 9 and `verify_world_blocks181.sh`, each with its EXACT summary. Individual logs are `target/entities11-final-<script>.log`. Round 11 was repeated after the final NBT/overflow probes and placement-order refinement; the final log above includes all five sections.
+
+The unchanged 10,000-operation player inventory check and container clicks/recipes plus 1,000-tick container-tile replay are EXACT (`target/entities11-final-player-checks.log`, `target/entities11-final-containers.log`). All 23 whole-player tick scenarios (including use identity, eat/cancel/bow, creative controller, damage/XP and effects) are EXACT (`target/entities11-final-playertick.log`). The headless round-7 player/GUI API suite is also EXACT (`target/entities11-final-player-gui7.log`): controller lifecycle, inventory bounds, 10,000 inventory-screen constructor cases/30,000 updates/50,000 button calls and 1,024 general-stat callbacks. The combined final check command returned exit status 0 (`target/entities11-final-checks.log`).
+
+Shell syntax, new-module rustfmt checks, `git diff --check`, protected-path checks, preservation/reachability of verify181's existing content, and the explicit commit manifest pass. The approximately one-hour full `tools/verify181.sh` remains for the integrator after merge, as requested. No interactive GPU validation is claimed.
+
+`target/commit-b181-entities11.sh` stages the explicit round-11 files and commits with author logiu, the requested email and both required co-author trailers. It is prepared but not executed because .git is read-only. There is no remaining gap in the two assigned classes; other owners' work and historical unrelated render/spawn dependencies are unchanged.
+
+Protected Beta 1.7.3 crates/tools, original Java, shared oracle fixtures/recorders, terrain generation, world-block implementations, player tick/hunger/XP/identity/inventory/container/GUI systems, first-person/weather, live tile dispatch/lids and integrator rendering/lightmap are untouched. Changes to existing player files are limited to ItemStack's own scalar/NBT methods, one borrowed ItemStack use delegation and local placement dependencies. Item, EntityList and SpawnerAnimals receive no new work.
+
+## Preserved round 10 report
+
 # Beta 1.8.1 entities - round 10 report
 
 Round 10 completes **Item (base class) and EntityList** with independent original-bytecode checks. ItemBlock's complete class dispatch is also ported, connected to live placement and EXACT at its API boundary, but is **not counted Done** under the task's strict full-class rule: its broad concrete dependency replay still reaches an unported world-owned sponge callback. Three of the five starting backlog classes remain Not done. This table supersedes the preserved reports below. The requested backlog is **not entirely finished**.

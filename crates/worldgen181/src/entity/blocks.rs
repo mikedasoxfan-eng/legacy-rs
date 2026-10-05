@@ -3,6 +3,35 @@ use super::{block_table as table, AxisAlignedBB as BB, MovingObjectPosition, Vec
 use crate::{block::*, math::floor_double as floor, World};
 
 impl World {
+    /// The moving-piston collision dependency of ItemBlock. Preserve Chunk's
+    /// unguarded byte-array access for missing tiles and the original failure
+    /// order; the ordinary world/collision APIs retain their existing interface.
+    pub fn placement_collision_box181(&mut self, id: u8, x: i32, y: i32, z: i32)
+        -> Result<Option<BB>, super::item::ItemError>
+    {
+        use super::item::ItemError;
+        use crate::world::tile::TileEntity;
+        if id != PISTON_MOVING { return Ok(self.block_collision_box(id, x, y, z)); }
+        if !self.access_chunk_pub(x >> 4, z >> 4) { return Ok(None); }
+        let key = (x & 15, y, z & 15);
+        if !self.chunk(x >> 4, z >> 4).tile_entities.contains_key(&key) {
+            let index = ((x & 15) << 11) | ((z & 15) << 7) | y;
+            self.chunk(x >> 4, z >> 4).blocks.get(index as usize)
+                .ok_or(ItemError::ArrayIndexOutOfBounds)?;
+        }
+        let Some(TileEntity::Piston(p)) = self.get_block_tile_entity(x, y, z).cloned() else { return Ok(None); };
+        if p.block_id == 0 || p.block_id == PISTON_MOVING { return Ok(None); }
+        if !props(p.block_id).exists { return Err(ItemError::NullPointer); }
+        let progress = if p.extending { 1.0 - p.progress(0.0) } else { p.progress(0.0) };
+        // A null carried-block collision returns before indexing the direction.
+        let Some(mut b) = self.block_collision_box(p.block_id, x, y, z) else { return Ok(None); };
+        let &(dx, dy, dz) = crate::world::pistons::DIRECTIONS.get(p.facing as usize)
+            .ok_or(ItemError::ArrayIndexOutOfBounds)?;
+        let (ox, oy, oz) = ((dx as f32 * progress) as f64,
+            (dy as f32 * progress) as f64, (dz as f32 * progress) as f64);
+        b.min_x -= ox; b.max_x -= ox; b.min_y -= oy; b.max_y -= oy; b.min_z -= oz; b.max_z -= oz;
+        Ok(Some(b))
+    }
     pub fn set_block_bounds_based_on_state(&mut self, id: u8, x: i32, y: i32, z: i32) {
         // BlockSign declares a state hook for both instances, but the standing
         // instance does nothing and retains the singleton's current bounds.
