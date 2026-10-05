@@ -13,7 +13,7 @@ if [ -z "${VERIFY181_LOCKED:-}" ]; then
   trap 'rmdir "$lock" 2>/dev/null' EXIT
   export VERIFY181_LOCKED=1
 fi
-beta() { "$root/target/release/beta" --mc b1.8.1 --mc b1.8.1 "$@"; }
+beta() { "$root/target/release/beta" --mc b1.8.1 "$@"; }
 python "$root/tools/oracle181/gui/make_saves.py" "$root/tools/oracle181/out/guisaves" || exit 1
 cargo build --release -q --manifest-path "$root/Cargo.toml" -p client || exit 1
 fail=0

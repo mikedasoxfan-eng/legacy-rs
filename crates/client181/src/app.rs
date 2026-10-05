@@ -572,6 +572,7 @@ impl App {
                 gui::system::GameAction::IngameUnfocus => {
                     // setIngameNotInFocus -> thePlayer.resetPlayerKeyState()
                     self.move_keys = [false; 6];
+                    if let Some(g)=&mut self.gui {g.ui.settings.release_keys();}
                     self.set_grab(false);
                 }
                 gui::system::GameAction::Respawn => {
@@ -783,6 +784,22 @@ impl App {
     }
 
     /// A mouse button: to the screen if one is open, else to the player.
+    fn queue_binding_actions(&mut self, el: &ActiveEventLoop) {
+        let Some(g)=&mut self.gui else {return;};
+        let settings=&mut g.ui.settings;
+        self.input.attack_presses += settings.take_binding_presses("key.attack");
+        self.input.use_presses += settings.take_binding_presses("key.use");
+        self.input.middle_pressed |= settings.take_binding_presses("key.pickItem")>0;
+        self.input.drop_pressed |= settings.take_binding_presses("key.drop")>0;
+        let inventories=settings.take_binding_presses("key.inventory");
+        let chats=settings.take_binding_presses("key.chat");
+        for _ in 0..inventories {
+            if let Some(tx)=&self.tx {let _=tx.send(ToWorker::Container(gui::container_api::inventory_key_request()));}
+        }
+        if chats>0 {g.ui.display(Some(Box::new(gui::screens::chat::GuiChat::default())));}
+        self.apply_gui_actions(el);
+    }
+
     fn mouse_button(&mut self, el: &ActiveEventLoop, b: i32, pressed: bool) {
         let screen_open = self.gui.as_ref().is_some_and(|g| g.screen.is_some());
         if screen_open && self.loading.is_none() {
@@ -799,15 +816,8 @@ impl App {
             // Clicking into the game window takes the mouse (setIngameFocus).
             self.set_grab(true);
         } else if self.ready && self.grabbed {
-            if pressed && b == 0 {
-                self.input.left_pressed = true;
-            }
-            if pressed && b == 1 {
-                self.input.right_pressed = true;
-            }
-            if pressed && b == 2 {
-                self.input.middle_pressed = true;
-            }
+            if let Some(g)=&mut self.gui {g.ui.settings.input_event(b-100,pressed);}
+            self.queue_binding_actions(el);
         }
         if b < 2 {
             self.mouse_held[b as usize] = pressed;
@@ -829,16 +839,8 @@ impl App {
         // LWJGL delivers no repeats to the game (screens with text fields enable them).
         let in_game_key = !screen_open && self.ready && self.loading.is_none() && !repeat;
         if in_game_key && self.player.is_some() {
-            // thePlayer.handleKeyPress -> MovementInputFromOptions.checkKeyForMovementInput
-            if let Some(g) = &self.gui {
-                let key = lwjgl_key(code);
-                let names = ["key.forward", "key.back", "key.left", "key.right", "key.jump", "key.sneak"];
-                for (i, name) in names.iter().enumerate() {
-                    if g.ui.settings.key_bindings.iter().any(|b| b.description == *name && b.code == key) {
-                        self.move_keys[i] = pressed;
-                    }
-                }
-            }
+            if let Some(g)=&mut self.gui {g.ui.settings.input_event(lwjgl_key(code),pressed);}
+            self.queue_binding_actions(el);
         }
         // Keyboard.isKeyDown(LSHIFT/RSHIFT) as screens see it, including this event.
         if matches!(code, KeyCode::ShiftLeft | KeyCode::ShiftRight) {
@@ -859,45 +861,12 @@ impl App {
                 }
                 self.apply_gui_actions(el);
             } else if in_game_key {
-                let key = lwjgl_key(code);
-                let bound = |name: &str| {
-                    self.gui.as_ref().is_some_and(|g| {
-                        g.ui.settings.key_bindings.iter().any(|b| b.description == name && b.code == key)
-                    })
-                };
                 if code == KeyCode::KeyS && self.keys.contains(&KeyCode::F3) {
                     // Minecraft.forceReload: rebuild the sound pools from downloaded resources.
                     let seed = self.started.elapsed().as_nanos() as i64;
                     let mut sound = crate::sound::SoundManager::new(&crate::sound::resources_dir(), seed);
                     if let Some(g) = &self.gui { sound.options_changed(g.ui.settings.sound_volume, g.ui.settings.music_volume); }
                     self.sound = Some(sound);
-                }
-                let chat = bound("key.chat");
-                let fog_key = bound("key.fog");
-                if bound("key.inventory") {
-                    // displayGuiScreen(new GuiInventory(thePlayer)): the world thread owns it.
-                    if let Some(tx) = &self.tx {
-                        let _ = tx.send(ToWorker::Container(gui::container_api::inventory_key_request()));
-                    }
-                }
-                if bound("key.drop") {
-                    self.input.drop_pressed = true;
-                }
-                if chat {
-                    if let Some(g) = &mut self.gui { g.ui.display(Some(Box::new(gui::screens::chat::GuiChat::default()))); }
-                    self.apply_gui_actions(el);
-                }
-                if fog_key {
-                    // setOptionValue(RENDER_DISTANCE, shift ? -1 : 1)
-                    let shift = self.keys.contains(&KeyCode::ShiftLeft) || self.keys.contains(&KeyCode::ShiftRight);
-                    if let Some(g) = &mut self.gui {
-                        g.ui.settings.set_option_value(
-                            gui::settings::EnumOptions::RenderDistance,
-                            if shift { -1 } else { 1 },
-                        );
-                        g.ui.actions.push(gui::Action::SettingsChanged);
-                    }
-                    self.apply_gui_actions(el);
                 }
                 // key.inventory opens GuiInventory once the container screens are in.
                 match code {
@@ -1068,6 +1037,7 @@ impl App {
                     Ok(FromWorker::Ready { spawn, seed, name }) => {
                         // changeWorld / respawn: thePlayer.movementInput = new MovementInputFromOptions
                         self.move_keys = [false; 6];
+                    if let Some(g)=&mut self.gui {g.ui.settings.release_keys();}
                         self.ready = true;
                         self.seed = seed;
                         self.temps = BiomeSource::new(seed);
@@ -1383,10 +1353,14 @@ impl App {
                     f.pitch_delta = y * invert;
                 }
                 // Mouse.isButtonDown with the screen gone and the game focused.
-                f.left_held = self.mouse_held[0];
-                f.right_held = self.mouse_held[1];
+                if let Some(g)=&self.gui {
+                    f.left_held = g.ui.settings.binding_pressed("key.attack");
+                    f.right_held = g.ui.settings.binding_pressed("key.use");
+                }
             }
-            let m = self.move_keys;
+            let m = self.gui.as_ref().map_or([false;6],|g| {
+                ["key.forward","key.back","key.left","key.right","key.jump","key.sneak"].map(|name|g.ui.settings.binding_pressed(name))
+            });
             (f.forward, f.back, f.left, f.right, f.jump, f.sneak) = (m[0], m[1], m[2], m[3], m[4], m[5]);
             self.input_seq += 1;
             f.seq = self.input_seq;
@@ -1946,4 +1920,3 @@ pub(crate) fn play_world_sound(
         snd.play_sound(name, [pos[0] as f32, pos[1] as f32, pos[2] as f32], volume, pitch);
     }
 }
-

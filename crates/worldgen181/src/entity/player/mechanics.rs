@@ -14,6 +14,16 @@ impl Entity {
             s.capabilities.set_creative(enabled);
         }
     }
+    /// PlayerControllerTest.func_6473_b: initialize capabilities and only empty hotbar slots.
+    pub fn initialize_player_mode(&mut self, creative: bool) {
+        self.set_creative(creative);
+        if creative {
+            let inventory=&mut self.player_state_mut().unwrap().inventory;
+            for (slot,id) in [1,4,45,3,5,17,18,50,44].into_iter().enumerate() {
+                if inventory.main[slot].is_none() {inventory.main[slot]=Some(ItemStack::new(id,1,0));}
+            }
+        }
+    }
     pub fn set_sprinting(&mut self, enabled: bool) {
         let s = self.player_state_mut().unwrap();
         s.sprinting = enabled;
@@ -60,7 +70,7 @@ impl Entity {
     pub fn fov_multiplier(&self) -> f32 {
         let Some(s) = self.player_state() else { return 1.0; };
         let mut fov = if s.capabilities.flying { 1.1 } else { 1.0 };
-        fov *= (s.ground_speed / 0.1 + 1.0) / 2.0;
+        fov *= (s.ground_speed * self.potion_speed_multiplier() / 0.1 + 1.0) / 2.0;
         if s.item_in_use.is_some_and(|i| i.id == 261) {
             let mut draw = (72000 - s.item_use_ticks) as f32 / 20.0;
             if draw > 1.0 { draw = 1.0; } else { draw *= draw; }
@@ -73,7 +83,7 @@ impl Entity {
     }
     pub fn start_item_use(&mut self, item: ItemStack, duration: i32) {
         let s = self.player_state_mut().unwrap();
-        if s.item_in_use.is_none() {
+        if !s.item_in_use.is_some_and(|used| used.same_object(item)) {
             s.item_in_use = Some(item);
             s.item_use_slot = s.inventory.current_item;
             s.item_use_ticks = duration;
@@ -91,7 +101,8 @@ impl Entity {
             charge=(charge*charge+charge*2.0)/3.0;
             if charge as f64>=0.1 {
                 if charge>1.0 {charge=1.0;}
-                let arrow=Entity::arrow_from_owner_power(w,self,charge*2.0);
+                let mut arrow=Entity::arrow_from_owner_power(w,self,charge*2.0);
+                if let EntityKind::Arrow(a) = &mut arrow.kind { a.critical = charge == 1.0; }
                 let pitch=1.0/(w.item_random.next_float()*0.4+1.2)+charge*0.5;
                 w.play_sound_at_entity(self,"random.bow",1.0,pitch);
                 self.player_state_mut().unwrap().inventory.consume(262);
@@ -103,10 +114,13 @@ impl Entity {
     pub(super) fn update_item_use(&mut self, w: &mut World) {
         let Some(item) = self.player_state().unwrap().item_in_use else { return; };
         let s = self.player_state().unwrap();
-        if s.item_use_slot != s.inventory.current_item || s.inventory.held() != Some(item) {
+        if !s.inventory.held().is_some_and(|held| held.same_object(item)) {
             self.clear_item_use();
             return;
         }
+        let item = s.inventory.held().unwrap();
+        self.player_state_mut().unwrap().item_in_use = Some(item);
+        let s = self.player_state().unwrap();
         let remaining = s.item_use_ticks;
         if remaining <= 25 && remaining % 4 == 0 { self.eating_effect(w, item, 5); }
         self.player_state_mut().unwrap().item_use_ticks -= 1;
@@ -119,6 +133,17 @@ impl Entity {
                 result.count -= 1;
                 if item.id == 282 { result = ItemStack::new(281, 1, 0); }
                 s.inventory.main[s.inventory.current_item as usize] = if result.count == 0 { None } else { Some(result) };
+                let effect = match item.id {
+                    322 => Some((super::super::potion::REGENERATION, 1.0)),
+                    365 => Some((super::super::potion::HUNGER, 0.3)),
+                    367 => Some((super::super::potion::HUNGER, 0.8)),
+                    _ => None,
+                };
+                if let Some((id, probability)) = effect {
+                    if w.rand.next_float() < probability {
+                        self.add_potion_effect(super::super::potion::PotionEffect::new(id, 600, 0));
+                    }
+                }
             }
             self.clear_item_use();
         }

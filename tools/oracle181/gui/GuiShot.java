@@ -233,6 +233,7 @@ public class GuiShot {
                     p.hurtTime=a.length>6?Integer.parseInt(a[6]):0;
                 } else if (cmd.equals("hud")) {
                     mode = "hud";
+                    Boolean water=null;
                     EntityPlayerSP p = mc.thePlayer;
                     for (String kv : a) {
                         String[] e = kv.split("=");
@@ -243,6 +244,7 @@ public class GuiShot {
                         else if (e[0].equals("xp")) p.field_35211_aX=v;
                         else if (e[0].equals("level")) p.field_35210_aY=v;
                         else if (e[0].equals("air")) p.air=v;
+                        else if (e[0].equals("water")) water=v!=0;
                         else if (e[0].equals("creative")) mc.playerController=v!=0?new PlayerControllerTest(mc):new PlayerControllerSP(mc);
                         else if (e[0].equals("armor")) { for(int slot=0;slot<4;slot++)p.inventory.armorInventory[slot]=v==20?new ItemStack(313-slot,1,0):null; }
                         else if (e[0].equals("seed")) { }
@@ -259,6 +261,8 @@ public class GuiShot {
                             p.setPosition(Double.parseDouble(c[0]), Double.parseDouble(c[1]), Double.parseDouble(c[2]));
                         }
                     }
+                    if(water!=null){int waterY=MathHelper.floor_double(p.posY+p.getEyeHeight());
+                    mc.theWorld.setBlockWithNotify(MathHelper.floor_double(p.posX),waterY,MathHelper.floor_double(p.posZ),water?Block.waterStill.blockID:0);}
                     System.out.println("java: player brightness " + p.getEntityBrightness(0.0F));
                 } else if(cmd.equals("stack")) {
                     int id=Integer.parseInt(a[1]);

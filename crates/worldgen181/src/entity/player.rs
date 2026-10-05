@@ -8,6 +8,7 @@ pub mod food;
 pub mod mechanics;
 pub mod interactions;
 pub mod inventory;
+pub mod list;
 pub mod items;
 pub mod persistence;
 pub mod picking;
@@ -16,6 +17,7 @@ pub mod registry;
 pub mod sleep_world;
 pub mod throwable;
 pub mod verify;
+pub mod verify181;
 use super::{Entity, EntityKind, Vec3D};
 use crate::{
     math::{self, floor_double as floor},
@@ -109,6 +111,10 @@ pub struct PlayerState {
     pub fly_toggle_timer: i32,
     pub previous_forward: f32,
     pub previous_jump: bool,
+    pub render_arm_yaw: f32,
+    pub render_arm_pitch: f32,
+    pub prev_render_arm_yaw: f32,
+    pub prev_render_arm_pitch: f32,
     pub ground_speed: f32,
     pub air_speed: f32,
     pub item_in_use: Option<ItemStack>,
@@ -116,6 +122,9 @@ pub struct PlayerState {
     pub item_use_ticks: i32,
     pub fish_entity:Option<i32>,
     pub left_click_counter: i32,
+    pub right_click_delay: i32,
+    pub pending_attack_presses: i32,
+    pub pending_use_presses: i32,
     pub last_click_tick: i32,
     pub controller: controller::PlayerControllerSP,
     pub inventory: InventoryPlayer,
@@ -163,6 +172,10 @@ impl Default for PlayerState {
             fly_toggle_timer: 0,
             previous_forward: 0.0,
             previous_jump: false,
+            render_arm_yaw: 0.0,
+            render_arm_pitch: 0.0,
+            prev_render_arm_yaw: 0.0,
+            prev_render_arm_pitch: 0.0,
             ground_speed: 0.1,
             air_speed: 0.02,
             item_in_use: None,
@@ -170,6 +183,9 @@ impl Default for PlayerState {
             item_use_ticks: 0,
             fish_entity:None,
             left_click_counter: 0,
+            right_click_delay: 0,
+            pending_attack_presses: 0,
+            pending_use_presses: 0,
             last_click_tick: 0,
             controller: Default::default(),
             inventory: Default::default(),
@@ -346,7 +362,12 @@ impl Entity {
         }
     }
     pub(super) fn player_action(&mut self) {
+        let (yaw, pitch) = (self.yaw, self.pitch);
         let s = self.player_state_mut().unwrap();
+        s.prev_render_arm_yaw = s.render_arm_yaw;
+        s.prev_render_arm_pitch = s.render_arm_pitch;
+        s.render_arm_pitch = (s.render_arm_pitch as f64 + (pitch - s.render_arm_pitch) as f64 * 0.5) as f32;
+        s.render_arm_yaw = (s.render_arm_yaw as f64 + (yaw - s.render_arm_yaw) as f64 * 0.5) as f32;
         if s.is_swinging {
             s.swing_ticks += 1;
             if s.swing_ticks >= 6 {
@@ -418,6 +439,9 @@ impl Entity {
         }
         let s = self.player_state_mut().unwrap();
         s.inventory.tick_animations();
+        if let Some(held) = s.inventory.held() {
+            if s.item_in_use.is_some_and(|used| used.same_object(held)) { s.item_in_use = Some(held); }
+        }
         s.prev_camera_yaw = s.camera_yaw;
         self.update_maps(w);
     }
@@ -573,7 +597,6 @@ impl Entity {
     }
     pub(super) fn update_player(&mut self, w: &mut World) {
         self.update_item_use(w);
-        if self.player_state().unwrap().xp_pickup_cooldown > 0 { self.player_state_mut().unwrap().xp_pickup_cooldown -= 1; }
         let s = self.player_state_mut().unwrap();
         if s.xp_pickup_cooldown > 0 {
             s.xp_pickup_cooldown -= 1;
@@ -625,9 +648,7 @@ impl Entity {
         match self.player_state_mut().unwrap().food.tick(w.difficulty, health) {
             food::FoodAction::Heal => self.heal(1),
             food::FoodAction::Starve => {
-                let s=self.player_state_mut().unwrap();s.damage_bypasses_armor=true;s.damage_exhaustion=0.0;
-                self.attack(w,None,1);
-                let s=self.player_state_mut().unwrap();s.damage_bypasses_armor=false;s.damage_exhaustion=0.3;
+                self.attack_from(w, super::damage::DamageSource::new(super::damage::DamageKind::Starve), 1);
             },
             food::FoodAction::None => {}
         }
@@ -639,10 +660,11 @@ impl Entity {
     pub(super) fn player_damage(
         &mut self,
         w: &mut World,
-        attacker: Option<i32>,
+        source: super::damage::DamageSource,
         damage: &mut i32,
     ) -> bool {
-        if self.player_state().unwrap().capabilities.disable_damage { return false; }
+        let attacker = source.attacker;
+        if self.player_state().unwrap().capabilities.disable_damage && !source.harms_creative() { return false; }
         self.living.entity_age = 0;
         if self.living.health <= 0 {
             return false;

@@ -43,6 +43,7 @@ pub struct GuiVertex {
 
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct DrawState {
+    pub color_mask: u8,
     pub texture: Option<TexId>,
     /// `glDepthFunc`: true = GL_GEQUAL (the achievements background), false = GL_LEQUAL.
     pub depth_gequal: bool,
@@ -71,6 +72,8 @@ struct TessVertex {
 }
 
 pub struct Gl {
+    pub color_mask: u8,
+    pub panorama: Option<super::panorama::Panorama>,
     pub proj: Mat4,
     modelview: Vec<Mat4>,
     /// `glColor4f`
@@ -111,6 +114,8 @@ impl Gl {
     /// The state `Minecraft.startGame` leaves behind.
     pub fn new() -> Gl {
         Gl {
+            color_mask: 15,
+            panorama: None,
             proj: Mat4::IDENTITY,
             modelview: vec![Mat4::IDENTITY],
             color: [1.0; 4],
@@ -139,6 +144,7 @@ impl Gl {
 
     /// Drop recorded geometry (start of a frame); state persists like a GL context.
     pub fn begin_frame(&mut self) {
+        self.panorama = None;
         self.verts.clear();
         self.draws.clear();
     }
@@ -155,6 +161,7 @@ impl Gl {
     pub fn modelview_matrix(&self) -> Mat4 {
         *self.modelview.last().unwrap()
     }
+    pub fn set_modelview(&mut self, matrix: Mat4) { *self.top() = matrix; }
 
     pub fn push_matrix(&mut self) {
         let m = *self.modelview.last().unwrap();
@@ -333,6 +340,7 @@ impl Gl {
             flags,
         }));
         let state = DrawState {
+            color_mask: self.color_mask,
             texture: if self.texture_2d { self.bound } else { None },
             blend: if self.blend {
                 Some(self.blend_func)
@@ -381,6 +389,7 @@ impl Gl {
         }
         let mv = *self.modelview.last().unwrap();
         let state = DrawState {
+            color_mask: self.color_mask,
             texture: if self.texture_2d { self.bound } else { None },
             blend: if self.blend {
                 Some(self.blend_func)

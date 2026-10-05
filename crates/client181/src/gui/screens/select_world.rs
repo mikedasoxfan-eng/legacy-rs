@@ -125,6 +125,8 @@ impl SlotList for WorldSlot<'_> {
         let mut conv = String::new();
         if s.needs_conversion {
             conv = format!("{} {}", self.conversion_label, conv);
+        } else {
+            conv = ui.translate(if s.game_mode == 1 { "gameMode.creative" } else { "gameMode.survival" });
         }
         ui.draw_string(&name, x + 2, y + 1, 16777215);
         ui.draw_string(&info, x + 2, y + 12, 8421504);

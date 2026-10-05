@@ -1,5 +1,7 @@
 # b1.8.1 player-gui staged port report
 
+Round 2 supersedes this stage's outstanding-work list and per-class status: see [b181-player-gui2.md](b181-player-gui2.md). This document preserves the round-one evidence.
+
 This is a staged port within the task's approximately 75-minute worker budget. It does not claim that the entire player-gui area is finished. DONE below means the implemented class changes have an original-bytecode check ending EXACT. NOT DONE includes partially implemented classes and classes not handled in this stage.
 
 ## Verified results

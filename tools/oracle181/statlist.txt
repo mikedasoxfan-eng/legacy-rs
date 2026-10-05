@@ -32,6 +32,7 @@ block	16777230	14	Gold Ore Mined
 block	16777231	15	Iron Ore Mined
 block	16777232	16	Coal Ore Mined
 block	16777233	17	Wood Mined
+block	16777234	18	Leaves Mined
 block	16777235	19	Sponge Mined
 block	16777236	20	Glass Mined
 block	16777237	21	Lapis Lazuli Ore Mined
@@ -43,8 +44,8 @@ block	16777243	27	Powered Rail Mined
 block	16777244	28	Detector Rail Mined
 block	16777245	29	Sticky Piston Mined
 block	16777246	30	Cobweb Mined
-block	16777247	31	tile.tallgrass.name Mined
-block	16777248	32	tile.deadbush.name Mined
+block	16777247	31	Grass Mined
+block	16777248	32	Dead Bush Mined
 block	16777249	33	Piston Mined
 block	16777250	34	null.name Mined
 block	16777251	35	Wool Mined
@@ -89,6 +90,19 @@ block	16777304	88	Soul Sand Mined
 block	16777305	89	Glowstone Mined
 block	16777306	90	Portal Mined
 block	16777311	95	Locked chest Mined
+block	16777313	97	null.name Mined
+block	16777314	98	Stone Bricks Mined
+block	16777315	99	Mushroom Mined
+block	16777316	100	Mushroom Mined
+block	16777317	101	Iron Bars Mined
+block	16777318	102	Glass Pane Mined
+block	16777319	103	Melon Mined
+block	16777320	104	tile.pumpkinStem.name Mined
+block	16777321	105	tile.pumpkinStem.name Mined
+block	16777322	106	Vines Mined
+block	16777323	107	Fence Gate Mined
+block	16777324	108	Brick Stairs Mined
+block	16777325	109	Stone Brick Stairs Mined
 item	16908544	256	Iron Shovel Used
 item	16908545	257	Iron Pickaxe Used
 item	16908546	258	Iron Axe Used
@@ -193,6 +207,15 @@ item	16908644	356	Redstone Repeater Used
 item	16908645	357	Cookie Used
 item	16908646	358	Map Used
 item	16908647	359	Shears Used
+item	16908648	360	Melon Used
+item	16908649	361	Pumpkin Seeds Used
+item	16908650	362	Melon Seeds Used
+item	16908651	363	Raw Beef Used
+item	16908652	364	Steak Used
+item	16908653	365	Raw Chicken Used
+item	16908654	366	Cooked Chicken Used
+item	16908655	367	Rotten Flesh Used
+item	16908656	368	Ender Pearl Used
 item	16910544	2256	Music Disc Used
 item	16910545	2257	Music Disc Used
 mine	1	16777217
@@ -207,6 +230,7 @@ mine	14	16777230
 mine	15	16777231
 mine	16	16777232
 mine	17	16777233
+mine	18	16777234
 mine	19	16777235
 mine	20	16777236
 mine	21	16777237
@@ -271,6 +295,19 @@ mine	89	16777305
 mine	90	16777306
 mine	91	16777302
 mine	95	16777311
+mine	97	16777313
+mine	98	16777314
+mine	99	16777315
+mine	100	16777316
+mine	101	16777317
+mine	102	16777318
+mine	103	16777319
+mine	104	16777320
+mine	105	16777321
+mine	106	16777322
+mine	107	16777323
+mine	108	16777324
+mine	109	16777325
 craft	1	16842753
 craft	5	16842757
 craft	20	16842772
@@ -314,6 +351,13 @@ craft	86	16842843
 craft	89	16842841
 craft	91	16842843
 craft	96	16842848
+craft	98	16842850
+craft	101	16842853
+craft	102	16842854
+craft	103	16842855
+craft	107	16842859
+craft	108	16842860
+craft	109	16842861
 craft	256	16843008
 craft	257	16843009
 craft	258	16843010
@@ -396,6 +440,9 @@ craft	356	16843108
 craft	357	16843109
 craft	358	16843110
 craft	359	16843111
+craft	362	16843114
+craft	364	16843116
+craft	366	16843118
 use	1	16908289
 use	2	16908291
 use	3	16908291
@@ -492,6 +539,19 @@ use	93	16908381
 use	94	16908381
 use	95	16908383
 use	96	16908384
+use	97	16908385
+use	98	16908386
+use	99	16908387
+use	100	16908388
+use	101	16908389
+use	102	16908390
+use	103	16908391
+use	104	16908392
+use	105	16908393
+use	106	16908394
+use	107	16908395
+use	108	16908396
+use	109	16908397
 use	256	16908544
 use	257	16908545
 use	258	16908546
@@ -596,6 +656,15 @@ use	356	16908644
 use	357	16908645
 use	358	16908646
 use	359	16908647
+use	360	16908648
+use	361	16908649
+use	362	16908650
+use	363	16908651
+use	364	16908652
+use	365	16908653
+use	366	16908654
+use	367	16908655
+use	368	16908656
 use	2256	16910544
 use	2257	16910545
 break	256	16974080

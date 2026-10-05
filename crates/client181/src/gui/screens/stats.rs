@@ -48,6 +48,13 @@ fn decimal_format(v: f64) -> String {
 
 /// Java's `Double.toString` for the small values the time format prints.
 fn java_double(v: f64) -> String {
+    let a = v.abs();
+    if a != 0.0 && (!(1e-3..1e7).contains(&a)) {
+        let text = format!("{v:e}");
+        let (mantissa, exponent) = text.split_once('e').unwrap();
+        let mantissa = if mantissa.contains('.') { mantissa.to_string() } else { format!("{mantissa}.0") };
+        return format!("{mantissa}E{exponent}");
+    }
     let s = format!("{v}");
     if s.contains('.') || s.contains('e') || s.contains("inf") || s.contains("NaN") {
         s
@@ -57,7 +64,7 @@ fn java_double(v: f64) -> String {
 }
 
 /// `IStatType.func_27192_a`
-fn format_stat(kind: StatType, v: i32) -> String {
+pub(crate) fn format_stat(kind: StatType, v: i32) -> String {
     match kind {
         StatType::Simple => integer_format(v as i64),
         StatType::Time => {

@@ -8,6 +8,7 @@ pub struct GuiMainMenu {
     base: ScreenBase,
     update_counter: f32,
     pub splash_text: String,
+    panorama_ticks: i32,
 }
 
 impl GuiMainMenu {
@@ -16,13 +17,17 @@ impl GuiMainMenu {
         let splash_text = if ui.splashes.is_empty() {
             "missingno".to_string()
         } else {
-            ui.splashes[rand.next_int(ui.splashes.len() as i32) as usize].clone()
+            loop {
+                let splash = &ui.splashes[rand.next_int(ui.splashes.len() as i32) as usize];
+                let hash = splash.encode_utf16().fold(0i32, |h, c| h.wrapping_mul(31).wrapping_add(c as i32));
+                if hash != 125780783 { break splash.clone(); }
+            }
         };
-        GuiMainMenu { base: ScreenBase::default(), update_counter: 0.0, splash_text }
+        GuiMainMenu { base: ScreenBase::default(), update_counter: 0.0, splash_text, panorama_ticks: 0 }
     }
 
     pub fn with_splash(splash: &str) -> GuiMainMenu {
-        GuiMainMenu { base: ScreenBase::default(), update_counter: 0.0, splash_text: splash.to_string() }
+        GuiMainMenu { base: ScreenBase::default(), update_counter: 0.0, splash_text: splash.to_string(), panorama_ticks: 0 }
     }
 }
 
@@ -51,8 +56,11 @@ impl Screen for GuiMainMenu {
         true
     }
 
+    fn does_gui_pause_game(&self) -> bool { false }
+
     fn update_screen(&mut self, _ui: &mut Ui) {
         self.update_counter += 1.0;
+        self.panorama_ticks = self.panorama_ticks.wrapping_add(1);
     }
 
     fn key_typed(&mut self, _ui: &mut Ui, _c: char, _key: i32) {}
@@ -96,7 +104,9 @@ impl Screen for GuiMainMenu {
 
     fn draw_screen(&mut self, ui: &mut Ui, mx: i32, my: i32, partial: f32) {
         let (w, h) = (self.base.width, self.base.height);
-        ui.draw_world_background(w, h, 0);
+        crate::gui::panorama::draw(ui, w, h, self.panorama_ticks as f32 + partial);
+        ui.draw_gradient_rect(0, 0, w, h, -1426063361, 16777215);
+        ui.draw_gradient_rect(0, 0, w, h, 0, -1442840576);
         let logo_w = 274;
         let x = w / 2 - logo_w / 2;
         let y = 30;
@@ -115,8 +125,8 @@ impl Screen for GuiMainMenu {
         let splash = self.splash_text.clone();
         ui.draw_centered_string(&splash, 0, -8, 16776960);
         ui.gl.pop_matrix();
-        ui.draw_string("Minecraft Beta 1.7.3", 2, 2, 5263440);
-        let c = "Copyright Mojang AB. Do not distribute.";
+        ui.draw_string("Minecraft Beta 1.8.1", 2, h - 10, 16777215);
+        let c = "Copyright Mojang AB. Do not distribute!";
         let cw = ui.string_width(c);
         ui.draw_string(c, w - cw - 2, h - 10, 16777215);
         let _ = partial;

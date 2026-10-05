@@ -54,7 +54,7 @@ pub fn world() -> World {
     }
     w
 }
-fn state(w: &mut World, e: &Entity, o: &mut Vec<u8>) {
+pub(crate) fn state(w: &mut World, e: &Entity, o: &mut Vec<u8>) {
     for v in [
         e.pos.x,
         e.pos.y,

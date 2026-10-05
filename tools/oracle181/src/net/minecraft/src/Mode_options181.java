@@ -18,6 +18,17 @@ public final class Mode_options181 {
     else KeyBinding.func_35959_a();
     for(KeyBinding k:s.keyBindings)o.print(k.keyCode+","+k.field_35965_e+","+k.field_35964_f+";");o.println();
    }
+   Block.stone.getClass();Item.shovelSteel.getClass();
+   for(Object object:StatList.field_25187_b){StatBase stat=(StatBase)object;o.println("general\t"+stat.statId+"\t"+StatsOracle.type(stat)+"\t"+stat.statName);}
+   for(Object object:StatList.objectMineStats){StatCrafting stat=(StatCrafting)object;o.println("block\t"+stat.statId+"\t"+stat.func_25072_b());}
+   for(Object object:StatList.field_25186_c){StatCrafting stat=(StatCrafting)object;o.println("item\t"+stat.statId+"\t"+stat.func_25072_b());}
+   String[] names={"mine","craft","use","break"};StatBase[][] arrays={StatList.mineBlockStatArray,StatList.objectCraftStats,StatList.objectUseStats,StatList.objectBreakStats};
+   for(int table=0;table<4;table++)for(int index=0;index<arrays[table].length;index++)if(arrays[table][index]!=null)o.println(names[table]+"\t"+index+"\t"+arrays[table][index].statId);
+   for(Object object:AchievementList.achievementList){Achievement achievement=(Achievement)object;o.println("achievement\t"+achievement.statId+"\t"+achievement.displayColumn+"\t"+achievement.displayRow+"\t"+achievement.theItemStack.itemID+"\t"+(achievement.parentAchievement==null?-1:achievement.parentAchievement.statId)+"\t"+achievement.getSpecial()+"\t"+achievement.statName+"\t"+achievement.getDescription());}
+   o.println("bounds\t"+AchievementList.minDisplayColumn+"\t"+AchievementList.minDisplayRow+"\t"+AchievementList.maxDisplayColumn+"\t"+AchievementList.maxDisplayRow);
+   IStatType[] types={new StatTypeSimple(),new StatTypeTime(),new StatTypeDistance()};
+   for(IStatType type:types)for(int v:new int[]{Integer.MIN_VALUE,-1,0,1,9,10,49,50,51,599,600,601,35999,36000,36001,863999,864000,864001,50000,50001,315359999,315360000,315360001,Integer.MAX_VALUE})o.println("format\t"+v+"\t"+type.format(v));
+   r=new Random(181);for(int i=0;i<5000;i++){int v=r.nextInt();for(IStatType type:types)o.println("format\t"+v+"\t"+type.format(v));}
   }
  }
 }

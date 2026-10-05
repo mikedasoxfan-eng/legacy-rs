@@ -12,6 +12,10 @@ fi
 cd "$root"
 cargo build --release -q -p worldgen181 -p client || exit 1
 fail=0
+echo "== player-gui b1.8.1: whole-player ticks"
+bash tools/verify_playertick181.sh --built || fail=1
+echo "== player-gui b1.8.1: PlayerList hash table"
+bash tools/oracle181/oracle.sh playerlist181 playerlist181-java.bin && target/release/playerlist181 target/playerlist181-rust.bin tools/oracle181/out/playerlist181-java.bin || fail=1
 for mode in playercore creative; do
   echo "== player-gui b1.8.1: $mode"
   bash tools/oracle181/oracle.sh "$mode" "$mode-java.bin" || { fail=1; continue; }
@@ -32,7 +36,7 @@ done
 echo "== player-gui b1.8.1: options and keybindings"
 bash tools/oracle181/oracle.sh options181 options181-java.txt && target/release/beta --mc b1.8.1 --playerguicheck tools/oracle181/out/options181-java.txt || fail=1
 if [ "${1:-}" != --no-gui ]; then
-  for scenes in tools/oracle181/gui/player-gui-scenes.txt tools/oracle181/gui/player-gui-container-scenes.txt; do
+  for scenes in tools/oracle181/gui/player-gui-scenes.txt tools/oracle181/gui/player-gui-container-scenes.txt tools/oracle181/gui/player-gui2-scenes.txt; do
   echo "== player-gui b1.8.1: GUI pixels $(basename "$scenes" .txt)"
   java=tools/oracle181/out/player-gui-java
   rust=target/player-gui-rust
