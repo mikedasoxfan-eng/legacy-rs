@@ -220,6 +220,9 @@ impl BiomeSource {
     /// Voronoi block map. Java uses `x + z * width`, including non-square queries.
     pub fn biomes(&mut self, out: &mut Vec<Biome>, x: i32, z: i32, w: i32, h: i32) {
         if w == 16 && h == 16 && x & 15 == 0 && z & 15 == 0 && self.fixed.is_none() {
+            // func_35555_a resets IntCache even when the biome cache already has
+            // this chunk. The pool's stale tails affect stronghold relocation.
+            crate::intcache::CACHE.with(|cache| cache.borrow_mut().reset());
             let mut cache = self.cache.lock().unwrap();
             let b = cache.block(self, x, z);
             *out = b.biomes.clone();

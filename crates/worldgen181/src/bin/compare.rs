@@ -260,6 +260,19 @@ fn main() -> ExitCode {
             );
             ExitCode::SUCCESS
         }
+        Some("terrain-makesave") => {
+            // Match Mode_terrainsave181's isolated, deterministic save fixture.
+            let mut w = World::new(p(2), p(3));
+            w.set_entity_determinism(100, 200, 0);
+            w.storage = Some(worldgen::storage::Storage::open(
+                std::path::Path::new(&a[4]),
+            ).expect("open terrain save"));
+            w.find_initial_spawn();
+            w.preload_spawn_area();
+            w.save_world(true);
+            println!("deterministic terrain save: {} chunks", w.chunks.len());
+            ExitCode::SUCCESS
+        }
         Some("preload-worldonly") => {
             let mut w = World::new(p(2), p(3));
             w.find_initial_spawn();
@@ -1160,6 +1173,9 @@ fn world(w: &World, path: &str) -> ExitCode {
             .collect();
         rust_tes.sort_by_key(|(p, _)| *p);
         let norm = |t: &TileEntity| match t {
+            // Oracle.worldBytes exposes getSizeInventory(), not the vanilla
+            // constructor's 36-slot backing array (readFromNBT creates 27).
+            TileEntity::Chest(slots) => TileEntity::Chest(slots[..27].to_vec().into()),
             TileEntity::MobSpawner { mob, .. } => TileEntity::MobSpawner {
                 mob: mob.clone(),
                 delay: 20,

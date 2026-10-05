@@ -2,8 +2,9 @@
 use crate::{weighted::Weighted, JavaRandom};
 pub mod component;
 pub mod locations;
-mod long_map_order;
+pub(crate) mod long_map_order;
 pub mod mineshaft;
+pub mod stronghold;
 pub mod verify;
 pub mod village;
 use std::collections::HashMap;

@@ -17,6 +17,9 @@ pub mod java_hash;
 pub mod light;
 pub mod music;
 pub mod server;
+pub mod provider181;
+pub mod legacy_cache181;
+pub mod cache_verify181;
 pub mod teleporter;
 pub mod redstone;
 pub mod rails;
@@ -147,6 +150,7 @@ pub struct World {
     pub terrain: OverworldGenerator,
     pub(crate) mineshafts: crate::structures::MineshaftGenerator,
     pub(crate) villages: crate::structures::village::VillageGenerator,
+    pub(crate) strongholds: crate::structures::stronghold::StrongholdGenerator,
     pub(crate) structure_locations: crate::structures::locations::Locations,
     pub(crate) generator_epoch: u64,
     pub(crate) structure_rng_epoch: Option<u64>,
@@ -195,8 +199,9 @@ pub struct World {
     pub info: crate::storage::LevelInfo,
     /// `ChunkProvider.chunkList`: loaded chunks in load order (`saveChunks` walks it).
     pub chunk_list: Vec<(i32, i32)>,
-    /// Multiplayer-server chunk handling; `None` is singleplayer (chunks never unload).
+    /// Legacy multiplayer-server chunk handling; `None` uses the 1.8.1 singleplayer provider.
     pub server: Option<server::ServerChunks>,
+    pub provider: provider181::ProviderChunks,
     /// `WorldServer.levelSaving`
     pub level_saving: bool,
     /// Chunks unloaded since the renderer last looked (drained by the client).
@@ -287,6 +292,7 @@ impl World {
             sky: if dimension == Dimension::Sky {Some(crate::sky::SkyGenerator::new(seed))} else {None},
             mineshafts: Default::default(),
             villages: Default::default(),
+            strongholds: Default::default(),
             structure_locations: Default::default(),
             generator_epoch: 0,
             structure_rng_epoch: None,
@@ -314,6 +320,7 @@ impl World {
             info: crate::storage::LevelInfo::new(seed, "world"),
             chunk_list: Vec::new(),
             server: None,
+            provider: Default::default(),
             level_saving: false,
             unloaded: Vec::new(),
             raining_strength: 0.0,
@@ -393,6 +400,11 @@ impl World {
     /// shared `EmptyChunk` instead (all air, writes ignored): we return false.
     #[inline]
     fn access_chunk(&mut self, cx: i32, cz: i32) -> bool {
+        if self.server.is_none()
+            && (!(-1875004..1875004).contains(&cx) || !(-1875004..1875004).contains(&cz))
+        {
+            return false;
+        }
         if self.chunk_exists(cx, cz) {
             return true;
         }
@@ -453,6 +465,12 @@ impl World {
     /// `ChunkProvider.prepareChunk` / `ChunkProviderServer.loadChunk` for a chunk not in
     /// the map: read it from the save, else generate it; then run the population checks.
     pub(crate) fn prepare_chunk(&mut self, cx: i32, cz: i32) {
+        if self.server.is_none() {
+            self.provider.cancel(cx, cz);
+            if !(-1875004..1875004).contains(&cx) || !(-1875004..1875004).contains(&cz) {
+                return;
+            }
+        }
         let saved = self
             .storage
             .as_mut()
@@ -473,9 +491,8 @@ impl World {
                 None => self.terrain.generate(cx, cz),
             }};
             if self.dimension == Dimension::Overworld && self.info.map_features {
-                if self.structure_locations.strongholds.is_none() {
-                    self.structure_locations.strongholds=Some(crate::structures::locations::strongholds(self.seed,&self.terrain.biome_source,&mut JavaRandom::new(0)));
-                }
+                self.strongholds.generate(self.seed, cx, cz, &self.terrain.biome_source);
+                self.structure_locations.strongholds = self.strongholds.candidates;
                 self.mineshafts.generate(self.seed,cx,cz);
                 self.villages.generate(self.seed,cx,cz,&self.terrain.biome_source,&mut self.rand);
             }
@@ -511,21 +528,20 @@ impl World {
             && !self.chunk(cx - 1, cz).populated
             && self.chunk_exists(cx - 1, cz + 1)
             && self.chunk_exists(cx, cz + 1)
-            && self.chunk_exists(cx - 1, cz)
+            && self.chunk_exists(cx - 1, cz + 1)
         {
             self.populate_chunk(cx - 1, cz);
         }
         if self.chunk_exists(cx, cz - 1)
             && !self.chunk(cx, cz - 1).populated
             && self.chunk_exists(cx + 1, cz - 1)
-            && self.chunk_exists(cx, cz - 1)
+            && self.chunk_exists(cx + 1, cz - 1)
             && self.chunk_exists(cx + 1, cz)
         {
             self.populate_chunk(cx, cz - 1);
         }
         if self.chunk_exists(cx - 1, cz - 1)
             && !self.chunk(cx - 1, cz - 1).populated
-            && self.chunk_exists(cx - 1, cz - 1)
             && self.chunk_exists(cx, cz - 1)
             && self.chunk_exists(cx - 1, cz)
         {
@@ -1031,11 +1047,14 @@ impl World {
     /// `Chunk.needsSaving`
     fn needs_saving(&self, cx: i32, cz: i32, all: bool) -> bool {
         let c = self.chunk(cx, cz);
+        if c.never_save {
+            return false;
+        }
         if all {
             if c.has_entities && self.world_time != c.last_save_time {
                 return true;
             }
-        } else if c.has_entities && self.world_time >= c.last_save_time + 600 {
+        } else if c.has_entities && self.world_time >= c.last_save_time.wrapping_add(600) {
             return true;
         }
         c.modified
@@ -1043,9 +1062,6 @@ impl World {
 
     /// `ChunkProvider.saveChunks`: all modified chunks, or at most 24 when `all` is false.
     pub fn save_chunks(&mut self, all: bool) -> bool {
-        if self.storage.is_none() {
-            return true;
-        }
         let mut saved = 0;
         for i in 0..self.chunk_list.len() {
             let (cx, cz) = self.chunk_list[i];

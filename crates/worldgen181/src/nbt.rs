@@ -17,11 +17,27 @@ pub enum Tag {
     Compound(Compound),
 }
 
-/// Ordered key/value pairs (the original uses a HashMap; order does not matter).
+/// Key/value pairs in insertion order; serialized in Java HashMap iteration order.
 #[derive(Clone, Debug, Default, PartialEq)]
 pub struct Compound(pub Vec<(String, Tag)>);
 
 impl Compound {
+    pub fn java_order(&self) -> Vec<usize> {
+        let mut sorted: Vec<usize> = (0..self.0.len()).collect();
+        sorted.sort_by(|&a, &b| self.0[a].0.encode_utf16().cmp(self.0[b].0.encode_utf16()));
+        let mut ranks = vec![0; sorted.len()];
+        for (rank, &i) in sorted.iter().enumerate() {
+            ranks[i] = rank;
+        }
+        let mut order = crate::structures::long_map_order::LongMapOrder::default();
+        for (i, (key, _)) in self.0.iter().enumerate() {
+            let hash = key
+                .encode_utf16()
+                .fold(0i32, |h, c| h.wrapping_mul(31).wrapping_add(c as i32));
+            order.insert(hash, ranks[i]);
+        }
+        order.iter().map(|rank| sorted[rank]).collect()
+    }
     pub fn new() -> Self {
         Compound(Vec::new())
     }
@@ -121,9 +137,12 @@ impl Tag {
                 w.write_all(v)
             }
             Tag::String(s) => write_utf(w, s),
-            Tag::List(ty, items) => {
+            Tag::List(_, items) => {
                 // NBTTagList writes the type of its first element (1 = byte when empty).
-                let ty = items.first().map(Tag::id).unwrap_or(if *ty == 0 { 1 } else { *ty });
+                let ty = items
+                    .first()
+                    .map(Tag::id)
+                    .unwrap_or(1);
                 w.write_all(&[ty])?;
                 w.write_all(&(items.len() as i32).to_be_bytes())?;
                 for t in items {
@@ -132,7 +151,8 @@ impl Tag {
                 Ok(())
             }
             Tag::Compound(c) => {
-                for (k, t) in &c.0 {
+                for i in c.java_order() {
+                    let (k, t) = &c.0[i];
                     write_named(w, k, t)?;
                 }
                 w.write_all(&[0])
@@ -142,7 +162,10 @@ impl Tag {
 
     fn read_payload<R: Read>(id: u8, r: &mut R, depth: u32) -> io::Result<Tag> {
         if depth > 512 {
-            return Err(io::Error::new(io::ErrorKind::InvalidData, "NBT nested too deep"));
+            return Err(io::Error::new(
+                io::ErrorKind::InvalidData,
+                "NBT nested too deep",
+            ));
         }
         Ok(match id {
             1 => Tag::Byte(read_n::<1, _>(r)?[0] as i8),
@@ -176,11 +199,16 @@ impl Tag {
                     }
                     let name = read_utf(r)?;
                     let t = Tag::read_payload(ty, r, depth + 1)?;
-                    c.0.push((name, t));
+                    c.put(&name, t);
                 }
                 Tag::Compound(c)
             }
-            _ => return Err(io::Error::new(io::ErrorKind::InvalidData, format!("bad NBT tag type {id}"))),
+            _ => {
+                return Err(io::Error::new(
+                    io::ErrorKind::InvalidData,
+                    format!("bad NBT tag type {id}"),
+                ))
+            }
         })
     }
 }
@@ -219,7 +247,10 @@ pub fn write_root<W: Write>(w: &mut W, root: &Compound) -> io::Result<()> {
 pub fn read_root<R: Read>(r: &mut R) -> io::Result<Compound> {
     let ty = read_n::<1, _>(r)?[0];
     if ty != 10 {
-        return Err(io::Error::new(io::ErrorKind::InvalidData, "Root tag must be a named compound tag"));
+        return Err(io::Error::new(
+            io::ErrorKind::InvalidData,
+            "Root tag must be a named compound tag",
+        ));
     }
     let _name = read_utf(r)?;
     match Tag::read_payload(10, r, 0)? {

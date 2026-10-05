@@ -129,9 +129,12 @@ impl World {
         }
     }
 
-    /// `unload100OldestChunks` (`ChunkProviderServer.func_361_a`). Singleplayer's queue is
-    /// never filled, so this does nothing there, as in the original.
+    /// Dispatch to Beta 1.8.1's singleplayer provider or the legacy server provider.
     pub fn unload_oldest_chunks(&mut self) {
+        if self.server.is_none() {
+            self.unload_provider_chunks();
+            return;
+        }
         if self.level_saving {
             return;
         }
