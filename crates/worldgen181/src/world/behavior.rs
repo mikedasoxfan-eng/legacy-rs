@@ -75,6 +75,17 @@ pub fn on_block_added(w: &mut World, id: u8, x: i32, y: i32, z: i32) {
         25 | block::MOB_SPAWNER => {
             w.set_block_tile_entity(x, y, z, TileEntity::for_block(id))
         }
+        // BlockSponge.onBlockAdded reads the 5x5x5 materials (it absorbs nothing; the reads
+        // still reach the chunk provider).
+        19 => {
+            for sx in x - 2..=x + 2 {
+                for sy in y - 2..=y + 2 {
+                    for sz in z - 2..=z + 2 {
+                        let _ = w.get_block_material(sx, sy, sz);
+                    }
+                }
+            }
+        }
         _ => assert_plain(id, "onBlockAdded"),
     }
 }
@@ -134,6 +145,17 @@ pub fn on_block_removal(w: &mut World, id: u8, x: i32, y: i32, z: i32) {
         }
         block::CHEST => w.scatter_chest_contents(x, y, z),
         block::MOB_SPAWNER => w.remove_block_tile_entity(x, y, z),
+        // BlockSponge.onBlockRemoval notifies every position of the 5x5x5 area.
+        19 => {
+            for sx in x - 2..=x + 2 {
+                for sy in y - 2..=y + 2 {
+                    for sz in z - 2..=z + 2 {
+                        let id = w.get_block_id(sx, sy, sz);
+                        w.notify_blocks_of_neighbor_change(sx, sy, sz, id);
+                    }
+                }
+            }
+        }
         _ => assert_plain(id, "onBlockRemoval"),
     }
 }

@@ -74,6 +74,7 @@ pub fn bytes(kind: &str) -> Vec<u8> {
         "extension9" => round9::extension(&mut o),
         "bed9" => round9::bed(&mut o),
         "cake181" => integrator::cake(&mut o),
+        "sponge181" => integrator::sponge(&mut o),
         "trapdoor8" => round8::trapdoor(&mut o),
         "repeater8" => round8::repeater(&mut o),
         "reed8" => round8::reed(&mut o),
