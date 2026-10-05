@@ -332,6 +332,19 @@ pub fn replay(kind: &str, ticks: i32) -> Vec<u8> {
     if kind == "explosion" { return super::combat_verify181::explosion_replay(); }
     if kind == "combat" { return super::combat_verify181::replay(); }
     if matches!(kind, "watchers" | "coordinates" | "light" | "registry") { return super::api_verify181::replay(kind); }
+    if kind == "displayloop" {
+        // World.randomDisplayUpdates: b1.8.1 depthsuspend specks and their World.rand calls.
+        let mut w = world();
+        let mut o = Vec::new();
+        for c in [(0, 64, 0), (0, 4, 0), (0, 1, 0), (-9, 10, 7), (5, 0, -5), (0, -3, 0)] {
+            for _ in 0..3 {
+                w.random_display_updates(c.0, c.1, c.2);
+                crate::world::events::write_events(&w.drain_events(), &mut o);
+                l(&mut o, w.rand.next_long());
+            }
+        }
+        return o;
+    }
     if kind == "rules" {
         return rules();
     }

@@ -21,7 +21,18 @@ impl World {
             let by = y + self.rand.next_int(16) - self.rand.next_int(16);
             let bz = z + self.rand.next_int(16) - self.rand.next_int(16);
             let id = self.get_block_id(bx, by, bz);
-            self.block_display_tick(id, bx, by, bz, &mut display_rand);
+            // b1.8.1: dark specks in the air near the bottom of the world.
+            if self.rand.next_int(8) > by && id == 0 {
+                let p = Vec3D::new(
+                    (bx as f32 + self.rand.next_float()) as f64,
+                    (by as f32 + self.rand.next_float()) as f64,
+                    (bz as f32 + self.rand.next_float()) as f64,
+                );
+                self.spawn_particle("depthsuspend", p, Vec3D::default());
+            }
+            if id > 0 {
+                self.block_display_tick(id, bx, by, bz, &mut display_rand);
+            }
         }
     }
     pub(super) fn redstone_display(&mut self, x: i32, y: i32, z: i32) {

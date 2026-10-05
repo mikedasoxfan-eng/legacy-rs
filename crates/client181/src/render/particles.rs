@@ -56,7 +56,7 @@ impl Kind {
             "crit" => Self::Crit,
             "magicCrit" => Self::MagicCrit,
             "cloud" => Self::Cloud,
-            "townaura" => Self::Aura,
+            "townaura" | "depthsuspend" => Self::Aura,
             "suspended" => Self::Suspend,
             "largeexplode" => Self::LargeExplode,
             "hugeexplosion" => Self::HugeExplode,
