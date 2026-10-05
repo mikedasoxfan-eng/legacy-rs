@@ -376,6 +376,7 @@ rand {}
             let mut p = worldgen::entity::Entity::player(&mut w, "Player");
             p.set_location_and_angles(0.5, 64.0, 0.5, 0.0, 0.0);
             let mut ticks = 0;
+            let mut probes=std::collections::HashMap::<u64,Vec<i32>>::new();
             let mut steps = String::new();
             let text = std::fs::read_to_string(&a[2]).expect("read script");
             for line in text.lines() {
@@ -389,6 +390,84 @@ rand {}
                     "place" => {
                         w.set_block_and_metadata_with_notify(v[0], v[1], v[2], v[3] as u8, v[4]);
                     }
+                    "itemplace" => {
+                        p.set_location_and_angles(v[5] as f64/1000.0,v[6] as f64/1000.0,v[7] as f64/1000.0,v[8] as f32/1000.0,0.0);
+                        let mut stack=worldgen::entity::player::ItemStack::new(v[4],1,0);
+                        p.place_block_item(&mut w,&mut stack,v[0],v[1],v[2],v[3]);
+                    }
+                    "placedby" => {
+                        p.set_location_and_angles(v[3] as f64/1000.0,v[4] as f64/1000.0,v[5] as f64/1000.0,v[6] as f32/1000.0,0.0);
+                        let id=w.get_block_id(v[0],v[1],v[2]);p.block_placed(&mut w,id,v[0],v[1],v[2],0);
+                    }
+                    "click" => { let id=w.get_block_id(v[0],v[1],v[2]);p.block_clicked(&mut w,id,v[0],v[1],v[2]); }
+                    "item" => {
+                        let e=worldgen::entity::Entity::item(&mut w,v[0] as f64/1000.0,v[1] as f64/1000.0,v[2] as f64/1000.0,worldgen::world::tile::ItemStack::new(v[3],v[4],v[5]));w.entity_joined_world(e);
+                    }
+                    "mob" => {
+                        let name=match v[3] {90=>"Pig",91=>"Sheep",92=>"Cow",93=>"Chicken",54=>"Zombie",_=>panic!("mob id")};
+                        let mut e=worldgen::entity::Entity::living(&mut w,name).unwrap();
+                        e.set_location_and_angles(v[0] as f64/1000.0,v[1] as f64/1000.0,v[2] as f64/1000.0,0.0,0.0);w.entity_joined_world(e);
+                    }
+                    "reload" => {
+                        let te=w.get_block_tile_entity(v[0],v[1],v[2]).unwrap().clone();
+                        let te=match te {
+                            worldgen::world::tile::TileEntity::Note(n)=>worldgen::world::tile::TileEntity::Note(worldgen::world::notes::Note::from_nbt(&n.to_nbt(v[0],v[1],v[2]))),
+                            worldgen::world::tile::TileEntity::Piston(n)=>worldgen::world::tile::TileEntity::Piston(worldgen::world::pistons::Piston::from_nbt(&n.to_nbt(v[0],v[1],v[2]))),
+                            _=>panic!("reload command expects Music/Piston")
+                        };
+                        w.remove_block_tile_entity(v[0],v[1],v[2]);w.set_block_tile_entity(v[0],v[1],v[2],te);
+                    }
+                    "properties" => {
+                        for id in 1..=96u8 {if worldgen::block::props(id).exists {steps.push_str(&format!("property {id} {} {} {}\n",worldgen::world::pistons::mobility(id),worldgen::entity::player::registry::hardness(id).to_bits() as i32,worldgen::block::props(id).container as i32));}}
+                    }
+                    "boxes" => {
+                        let (x,y,z)=(v[0],v[1],v[2]);let id=w.get_block_id(x,y,z);
+                        steps.push_str("collision");
+                        if let Some(b)=w.block_collision_box(id,x,y,z) {for d in [b.min_x,b.min_y,b.min_z,b.max_x,b.max_y,b.max_z] {steps.push_str(&format!(" {}",d.to_bits() as i64));}}else{steps.push_str(" null");}
+                        steps.push('\n');
+                        if id!=0 {w.set_block_bounds_based_on_state(id,x,y,z);let b=w.block_bounds[id as usize];steps.push_str("selection");for d in [b.min_x,b.min_y,b.min_z,b.max_x,b.max_y,b.max_z] {steps.push_str(&format!(" {}",d.to_bits() as i64));}steps.push('\n');}
+                    }
+                    "probe" => {
+                        w.set_block_tile_entity(v[0],v[1],v[2],worldgen::world::tile::TileEntity::Note(worldgen::world::notes::Note {note:17,powered:false}));
+                        probes.insert(w.next_tile_id-1,v[3..].to_vec());
+                    }
+                    "scan" => {
+                        w.scan_tile_entities(|w,id| {
+                            if let Some(v)=probes.remove(&id) {
+                                let (x,y,z)=(v[1],v[2],v[3]);
+                                match v[0] {
+                                    0=>w.remove_block_tile_entity(x,y,z),
+                                    1=>w.set_block_tile_entity(x,y,z,worldgen::world::tile::TileEntity::Note(worldgen::world::notes::Note {note:v[4] as i8,powered:false})),
+                                    2=>{w.set_block_and_metadata_with_notify(x,y,z,v[4] as u8,0);},
+                                    3=>{w.remove_block_tile_entity(x,y,z);w.get_block_tile_entity(x,y,z);w.get_block_tile_entity(x,y,z);},
+                                    4=>{w.set_block_with_notify(x,y,z,0);},
+                                    _=>panic!("probe action")
+                                }
+                                let (x,y,z)=w.tile_objects[&id].position;w.remove_block_tile_entity(x,y,z);
+                            } else {w.tick_tile_entity(id);}
+                        });
+                    }
+                    "lookup" => {
+                        let note=match w.get_block_tile_entity(v[0],v[1],v[2]) {Some(worldgen::world::tile::TileEntity::Note(n))=>n.note as i32,None=>-1,_=>panic!("lookup note")};
+                        steps.push_str(&format!("lookup {note}\n"));
+                    }
+                    "setnote" => {
+                        let mut n=worldgen::nbt::Compound::new();n.put("note",worldgen::nbt::Tag::Byte(v[3] as i8));
+                        w.set_block_tile_entity(v[0],v[1],v[2],worldgen::world::tile::TileEntity::Note(worldgen::world::notes::Note::from_nbt(&n)));
+                    }
+                    "chunkcycle" => {
+                        w.unload_chunk_entities(v[0],v[1]);
+                        w.chunk_mut(v[0],v[1]).loaded=true;
+                        w.load_chunk_entities(v[0],v[1]);
+                    }
+                    "chunkreload" => {
+                        let n=worldgen::storage::chunk_to_nbt(w.chunk(v[0],v[1]),w.world_time);
+                        w.unload_chunk_entities(v[0],v[1]);
+                        let mut c=worldgen::storage::chunk_from_nbt(&n).unwrap();c.loaded=true;
+                        w.chunks.insert((v[0],v[1]),Box::new(c));w.load_chunk_entities(v[0],v[1]);
+                    }
+                    "events" => { redstone_events(&mut w,&mut steps); }
+                    "state" => { redstone_state(&w,&mut steps); }
                     "remove" => {
                         w.set_block_with_notify(v[0], v[1], v[2], 0);
                     }
@@ -399,6 +478,7 @@ rand {}
                     }
                     "tick" => {
                         for _ in 0..v[0] {
+                            w.update_entities();
                             w.tick();
                             w.drain_lighting();
                             ticks += 1;
@@ -408,7 +488,8 @@ rand {}
                         let n = v.get(6).copied().unwrap_or(0);
                         for t in 0..=n {
                             if t > 0 {
-                                w.tick();
+                                w.update_entities();
+                            w.tick();
                                 w.drain_lighting();
                                 ticks += 1;
                             }
@@ -928,6 +1009,24 @@ fn world(w: &World, path: &str) -> ExitCode {
                     let mob = String::from_utf8(r.take(len).to_vec()).unwrap();
                     TileEntity::MobSpawner { mob, delay: 20 }
                 }
+                3 => {
+                    let mut f=worldgen::container::tiles::Furnace::default();
+                    for s in &mut f.items { let (id,count,damage)=(r.i16(),r.u8(),r.i16());if id>=0 { *s=Some(worldgen::entity::player::ItemStack::new(id as i32,count as i32,damage as i32)); } }
+                    f.burn=r.i16() as i32;f.cook=r.i16() as i32;
+                    TileEntity::Furnace(f)
+                }
+                4 => {
+                    let mut items=Box::new([None;9]);
+                    for s in items.iter_mut() { let (id,count,damage)=(r.i16(),r.u8(),r.i16());if id>=0 { *s=Some(worldgen::entity::player::ItemStack::new(id as i32,count as i32,damage as i32)); } }
+                    TileEntity::Dispenser(items)
+                }
+                5 => TileEntity::Note(worldgen::world::notes::Note {note:r.u8() as i8,powered:r.u8()!=0}),
+                6 => {
+                    let (id,meta,facing)=(r.i32() as u8,r.i32(),r.i32());
+                    let (progress,last_progress)=(f32::from_bits(r.i32() as u32),f32::from_bits(r.i32() as u32));
+                    let mut p=worldgen::world::pistons::Piston::new(id,meta,facing,r.u8()!=0,r.u8()!=0);
+                    p.progress=progress;p.last_progress=last_progress;TileEntity::Piston(p)
+                }
                 t => panic!("bad tile entity tag {t}"),
             };
             tes.push(((x, y, z), te));
@@ -1003,6 +1102,7 @@ fn world(w: &World, path: &str) -> ExitCode {
                 mob: mob.clone(),
                 delay: 20,
             },
+            TileEntity::Furnace(f) => { let mut f=f.clone();f.current_fuel=0;TileEntity::Furnace(f) },
             o => o.clone(),
         };
         let rust_tes: Vec<_> = rust_tes.into_iter().map(|(p, t)| (p, norm(&t))).collect();
@@ -1157,4 +1257,43 @@ fn java_math(path: &str) -> ExitCode {
     }
     println!("Math.pow(x, 2.0) vs x*x: {bad_mul} of {pows} differ");
     verdict(ok && bad_mul == 0)
+}
+
+fn redstone_state(w:&World,s:&mut String) {
+    use worldgen::world::tile::TileEntity;
+    s.push_str(&format!("tiles {}:",w.loaded_tile_entities.len()));
+    for id in &w.loaded_tile_entities {
+        let o=&w.tile_objects[id];let (x,y,z)=o.position;
+        s.push_str(&format!(" {x},{y},{z},{}",o.invalid as i32));
+        match w.tile_object(*id).unwrap() {
+            TileEntity::Note(n)=>s.push_str(&format!(",M,{},{}",n.note,n.powered as i32)),
+            TileEntity::Piston(p)=>s.push_str(&format!(",P,{},{},{},{},{},{},{}",p.block_id,p.block_data,p.facing,p.progress.to_bits() as i32,p.last_progress.to_bits() as i32,p.extending as i32,p.render_head as i32)),
+            _=>{}
+        }
+    }
+    s.push('\n');
+    for id in &w.loaded_entity_list {
+        let e=&w.entities[id];s.push_str(&format!("entity {id}"));
+        for v in [e.pos.x,e.pos.y,e.pos.z,e.motion.x,e.motion.y,e.motion.z,e.bounding_box.min_x,e.bounding_box.min_y,e.bounding_box.min_z,e.bounding_box.max_x,e.bounding_box.max_y,e.bounding_box.max_z] {s.push_str(&format!(" {}",v.to_bits() as i64));}
+        s.push('\n');
+    }
+}
+
+fn redstone_events(w:&mut World,s:&mut String) {
+    use worldgen::world::notes::BlockEvent;
+    for e in std::mem::take(&mut w.block_events) {
+        let (position,name,volume,pitch,note)=match e {
+            BlockEvent::Note {position,instrument,pitch,note}=>(position,["note.harp","note.bd","note.snare","note.hat","note.bassattack"][instrument as usize],3.0f32,pitch,Some(note)),
+            BlockEvent::PistonSound {position,extending,pitch}=>(position,if extending {"tile.piston.out"} else {"tile.piston.in"},0.5f32,pitch,None)
+        };
+        let (x,y,z)=position;
+        s.push_str(&format!("sound {name}"));
+        for v in [x as f64+0.5,y as f64+0.5,z as f64+0.5] {s.push_str(&format!(" {}",v.to_bits() as i64));}
+        s.push_str(&format!(" {} {}\n",volume.to_bits() as i32,pitch.to_bits() as i32));
+        if let Some(note)=note {
+            s.push_str("particle note");
+            for v in [x as f64+0.5,y as f64+1.2,z as f64+0.5,note as f64/24.0,0.0,0.0] {s.push_str(&format!(" {}",v.to_bits() as i64));}
+            s.push('\n');
+        }
+    }
 }

@@ -72,6 +72,7 @@ pub struct Chunk {
     /// Keyed by chunk-local (x, y, z).
     pub tile_entities: HashMap<(i32, i32, i32), TileEntity>,
     /// Insertion order before Java's chunk tile-map bucket iteration.
+    pub tile_entity_ids: HashMap<(i32, i32, i32), u64>,
     pub tile_entity_order: Vec<(i32, i32, i32)>,
     /// `World::mod_count` at this chunk's last block/metadata/light change (for renderers).
     pub version: u64,
@@ -108,6 +109,7 @@ impl Chunk {
             loaded: false,
             tile_entities: HashMap::new(),
             tile_entity_order: Vec::new(),
+            tile_entity_ids: HashMap::new(),
             version: 0,
             modified: false,
             last_save_time: 0,

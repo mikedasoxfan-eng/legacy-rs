@@ -10,8 +10,8 @@
 [![oracle](https://img.shields.io/badge/oracle-ALL_CASES_EXACT-2ea44f?style=flat&logo=openjdk&logoColor=white&labelColor=3b3b3b)](#how-exact-is-exact)
 [![GUI](https://img.shields.io/badge/GUI_pixel_diff-67_exact,_8_within_1_shade-2ea44f?style=flat&labelColor=3b3b3b)](#the-gui-pixel-diff)
 
-[![progress](https://img.shields.io/badge/goal_progress-92%25-8fbc3a?style=flat&labelColor=3b3b3b)](#progress)
-[![verified sections](https://img.shields.io/badge/verified_sections-138-2ea44f?style=flat&labelColor=3b3b3b)](#what-is-checked)
+[![progress](https://img.shields.io/badge/goal_progress-95%25-8fbc3a?style=flat&labelColor=3b3b3b)](#progress)
+[![verified sections](https://img.shields.io/badge/verified_sections-158-2ea44f?style=flat&labelColor=3b3b3b)](#what-is-checked)
 [![Rust lines](https://img.shields.io/badge/Rust-56k_lines-b7410e?style=flat&labelColor=3b3b3b)](#layout)
 [![Mojang assets](https://img.shields.io/badge/Mojang_assets_bundled-0_bytes-2ea44f?style=flat&labelColor=3b3b3b)](#you-need-your-own-copy)
 [![multiplayer](https://img.shields.io/badge/multiplayer-not_planned-9e9e9e?style=flat&labelColor=3b3b3b)](#scope)
@@ -24,7 +24,7 @@
 ## Progress
 
 ```
-Overall  ████████████████████████████████████▊░░░  92 %
+Overall  ██████████████████████████████████████░░  95 %
 ```
 
 Weighted by how much of the game each part is. Only merged work counts; parts other agents
@@ -37,16 +37,16 @@ against the original game code, not just "looks right".
 | Lighting, chunk loading/unloading, saving (McRegion, level.dat) | 8 | 100 % | ✅ verified |
 | World ticking (block ticks, random ticks, fire, liquids, growth, weather, lightning) | 8 | 95 % | ✅ verified |
 | Mobs and other entities (physics, AI, spawning, items, arrows, TNT, NBT) | 12 | 90 % | ✅ verified (minecarts and boats can be placed but not ridden yet) |
-| The player (movement, health, mining, placing, items, beds, portals, respawn) | 10 | 95 % | ✅ verified |
+| The player (movement, health, mining, placing, items, beds, portals, respawn, stats) | 10 | 95 % | ✅ verified |
 | Block rendering (all 18 render types, smooth lighting, Fancy/Fast) | 8 | 100 % | ✅ verified |
 | Mob/item/effect rendering, sky, clouds, rain, snow, fog | 8 | 95 % | ✅ verified |
-| Menus, HUD, achievements, death screen, statistics screen | 7 | 97 % | ✅ pixel-exact; stats file exact (counting stats while playing is next) |
-| Redstone (wire, torches, repeaters, levers, buttons, plates, doors, rails, note blocks) | 6 | 75 % | ✅ verified (pistons in progress) |
+| Menus, HUD, achievements, death screen, statistics screen | 7 | 97 % | ✅ pixel-exact; stats counted and saved exactly (chat box next) |
+| Redstone (wire, torches, repeaters, levers, buttons, plates, doors, rails, note blocks, pistons) | 6 | 100 % | ✅ verified |
 | Inventory, crafting, chests, furnaces, dispensers | 7 | 95 % | ✅ verified (65,706 clicks, 151 recipes, 35 screens pixel-exact) |
 | First-person view (hand, held item, block outline, cracks, bobbing, third person) | 5 | 100 % | ✅ verified (8.1 million values, 0 differences) |
 | Particles and world sounds | 5 | 90 % | ✅ verified (every particle type; sounds in the original order) |
-| Tile entities that tick (mob spawners ✅, furnaces ✅, dispensers ✅, pistons) | 2 | 60 % | 🟡 pistons in progress |
-| Vehicles, signs, paintings, maps, fishing, records, statistics | 2 | 10 % | 🟡 records play; the rest is next |
+| Tile entities (spawners, furnaces, dispensers, note blocks, pistons, jukeboxes) | 2 | 100 % | ✅ lifecycle, ticking and saving verified |
+| Vehicles, signs, paintings, maps, fishing, records, statistics | 2 | 30 % | 🟡 records and statistics done; vehicles and signs being ported |
 
 ---
 
@@ -116,7 +116,10 @@ Details that turned out to matter:
 | Portals | Teleporter find/build (incl. the ocean platform), the whole `usePortal` sequence |
 | Respawn | At spawn, at a bed, with the bed gone |
 | Statistics file | The port's stats file read by the original and back, checksum rejection, unknown stat ids |
-| Redstone | Scripted circuits and rail layouts, every tick of the circuit |
+| Statistics | Every `addStat` call (about 13,000) in all 24 player replays, in order, with amounts |
+| Redstone | Scripted circuits, rail layouts, all piston facings and push lengths, sticky pulls, quick pulses, clocks, pushing entities, note instruments and pitches, every tick |
+| Moving pistons | 24,840 original-bytecode renderer cases: partial ticks, all facings, carried blocks, Fancy/Fast, smooth lighting |
+| Tile lifecycle | Object identity, invalidation while scanning, deferred insertion, lazy creation, chunk unload/reload, NBT |
 | Chunk meshes | Every vertex position, UV and colour of real terrain, Fancy/Fast, smooth lighting on/off |
 | Block showcase | Every block id × all 16 metadata values plus neighbour arrangements, all four graphics modes |
 | Models & renderers | Mob geometry, animation poses, full renderer draw calls, shadows, fire |
@@ -259,6 +262,9 @@ Being exact means keeping these too:
   things switch on.
 - **Torch burnout:** a redstone torch that flips 8 times in 100 ticks burns out, sharing one list
   across all torches in the game.
+- **Piston save/load:** a moving piston saves its previous progress, not the current one.
+- **Sticky quick pulses:** retracting a sticky piston before it finishes extending can leave the block behind.
+- **Tile identity:** replacing a block's tile entity leaves the old one in the update list for a tick.
 - **Leftover block bounds:** a block's size is shared state; a renderer that changes it and doesn't
   reset it leaves it for the next block of that kind.
 - **Fog in the Nether:** if it was raining in the Overworld when you left, the Nether fog is darker.
@@ -282,9 +288,9 @@ Being exact means keeping these too:
 
 ## Not yet
 
-Minecarts and boats (placing them works; riding and physics don't), pistons (being ported),
-signs, paintings, maps, fishing, counting statistics while you play (the screen exists, the
-counters don't move yet), and the 3D anaglyph mode.
+Minecarts and boats (placing them works; riding and physics are being ported), signs,
+paintings, maps and fishing (being ported), custom texture packs, the chat box, and the 3D
+anaglyph mode (being ported).
 
 ---
 

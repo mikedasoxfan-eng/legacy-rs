@@ -72,7 +72,7 @@ fn region_roundtrip_simulates_supported_entities_and_preserves_unknown_tags() {
     assert!(w.spawner_animations.is_empty());
     w.server_load_chunk(0, 0);
     assert_eq!(w.loaded_entity_list.len(), 1);
-    assert!(w.loaded_tile_entities.contains(&(8, 64, 8)));
+    assert_eq!(w.loaded_tile_entities.len(), 1);
     assert!(w.spawner_animations.is_empty());
     assert!(w.save_chunks(true));
     drop(w);

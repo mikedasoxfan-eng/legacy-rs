@@ -54,10 +54,16 @@ impl World {
     }
     pub fn swap_furnace_block(&mut self, lit: bool, x: i32, y: i32, z: i32) {
         let metadata = self.get_block_metadata(x, y, z);
+        self.get_block_tile_entity(x,y,z);
+        let tile_id = self.chunk(x >> 4,z >> 4).tile_entity_ids.get(&(x & 15,y,z & 15)).copied();
         self.keep_furnace_inventory = true;
         self.set_block_with_notify(x, y, z, if lit { 62 } else { 61 });
         self.keep_furnace_inventory = false;
         self.set_block_metadata_with_notify(x, y, z, metadata);
+        if let Some(id) = tile_id {
+            self.tile_objects.get_mut(&id).unwrap().invalid = false;
+            self.set_tile_object(id);
+        }
     }
     pub fn dispense_item(&mut self, x: i32, y: i32, z: i32, random: RandSel) {
         let meta = self.get_block_metadata(x, y, z);

@@ -63,7 +63,11 @@ pub fn on_block_added(w: &mut World, id: u8, x: i32, y: i32, z: i32) {
         55 => w.wire_added(x, y, z),
         66 | 27 | 28 => w.rail_added(x, y, z),
         75 | 76 => w.redstone_torch_added(id, x, y, z),
-        block::CHEST | block::MOB_SPAWNER => {
+        29 | 33 => {
+            if w.get_block_tile_entity(x,y,z).is_none() { w.piston_update(id,x,y,z); }
+        }
+        34 | 36 => {}
+        25 | block::CHEST | block::MOB_SPAWNER => {
             w.set_block_tile_entity(x, y, z, TileEntity::for_block(id))
         }
         _ => assert_plain(id, "onBlockAdded"),
@@ -114,6 +118,13 @@ pub fn on_block_removal(w: &mut World, id: u8, x: i32, y: i32, z: i32) {
                 w.notify_blocks_of_neighbor_change(x, y, z, id);
                 w.notify_blocks_of_neighbor_change(x, y - 1, z, id);
             }
+        }
+        25 => w.remove_block_tile_entity(x,y,z),
+        29 | 33 => {},
+        34 => w.piston_head_removed(x,y,z),
+        36 => {
+            if matches!(w.get_block_tile_entity(x,y,z),Some(TileEntity::Piston(_))) { w.finish_piston_at(x,y,z); }
+            else { w.remove_block_tile_entity(x,y,z); }
         }
         block::CHEST => w.scatter_chest_contents(x, y, z),
         block::MOB_SPAWNER => w.remove_block_tile_entity(x, y, z),
@@ -184,6 +195,10 @@ pub fn on_neighbor_block_change(w: &mut World, id: u8, x: i32, y: i32, z: i32, _
             }
         }
         block::FIRE => tb::fire_neighbor(w, x, y, z),
+        25 => w.note_neighbor(x,y,z,_changed),
+        29 | 33 => { if !w.piston_guard[(id==29) as usize] { w.piston_update(id,x,y,z); } },
+        34 => w.piston_head_neighbor(x,y,z,_changed),
+        36 => { w.get_block_tile_entity(x,y,z); },
         55 => w.wire_neighbor_change(x, y, z),
         66 | 27 | 28 => w.rail_neighbor_change(id, x, y, z, _changed),
         75 | 76 => w.redstone_torch_neighbor_change(id, x, y, z),
@@ -769,7 +784,7 @@ fn quantity_dropped(w: &mut World, id: u8) -> i32 {
         | 46
         | 47
         | 52
-        | 92 => 0,
+        | 92 | 34 => 0,
         43 => 2,
         tb::SNOW_BLOCK => 4,
         block::ORE_LAPIS => 4 + w.rand.next_int(5),
@@ -862,6 +877,12 @@ pub fn drop_block_with_chance(
     meta: i32,
     chance: f32,
 ) {
+    if id==36 {
+        if let Some(TileEntity::Piston(p))=w.get_block_tile_entity(x,y,z).cloned() {
+            drop_block_as_item(w,p.block_id,x,y,z,p.block_data);
+        }
+        return;
+    }
     let n = quantity_dropped(w, id);
     for _ in 0..n {
         if w.rand.next_float() <= chance {

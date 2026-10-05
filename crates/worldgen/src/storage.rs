@@ -454,6 +454,8 @@ pub fn chunk_to_nbt(c: &Chunk, world_time: i64) -> Compound {
         let mut t = Compound::new();
         let (x, y, z) = (c.x * 16 + k.0, k.1, c.z * 16 + k.2);
         match te {
+            TileEntity::Note(note)=> { t=note.to_nbt(x,y,z); },
+            TileEntity::Piston(piston)=> { t=piston.to_nbt(x,y,z); },
             TileEntity::Chest(slots) => {
                 t.put("id", Tag::String("Chest".into()));
                 t.put("x", Tag::Int(x));
@@ -563,6 +565,8 @@ pub fn chunk_from_nbt_for_dimension(
                 mob: t.string("EntityId"),
                 delay: t.short("Delay") as i32,
             },
+            "Music" => TileEntity::Note(crate::world::notes::Note::from_nbt(t)),
+            "Piston" => TileEntity::Piston(crate::world::pistons::Piston::from_nbt(t)),
             "Furnace" => TileEntity::Furnace(crate::container::tiles::Furnace::from_nbt(t)),
             "Trap" => {
                 let mut items = Box::new([None; 9]);

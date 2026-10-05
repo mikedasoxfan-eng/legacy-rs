@@ -4,10 +4,10 @@ impl Entity {
         let id = w.get_block_id(x, y, z);
         let meta = w.get_block_metadata(x, y, z);
         match id {
-            25 => {
-                w.trigger_note(x, y, z, true);
-                true
-            }
+            25 => { w.activate_note(x,y,z); true },
+            36 => {
+                if w.get_block_tile_entity(x,y,z).is_none() { w.set_block_with_notify(x,y,z,0); true } else { false }
+            },
             84 => {
                 if meta == 0 {
                     false

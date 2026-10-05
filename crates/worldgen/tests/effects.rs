@@ -32,7 +32,7 @@ fn note_pitch_and_jukebox_record_survive_region_storage() {
     world.get_block_tile_entity(8, 64, 8);
     world.chunk_mut(0, 0).modified = false;
     for _ in 0..6 {
-        world.trigger_note(8, 64, 8, true);
+        world.activate_note(8, 64, 8);
     }
     assert!(
         world.chunk(0, 0).modified,
@@ -43,17 +43,16 @@ fn note_pitch_and_jukebox_record_survive_region_storage() {
     drop(world);
     let mut storage = Storage::open(&dir).unwrap();
     let chunk = storage.load_chunk(0, 0).unwrap();
-    let note = chunk
-        .raw_tile_entities
-        .iter()
-        .find(|n| n.string("id") == "Music")
-        .unwrap();
+    let note = match chunk.tile_entities.get(&(8, 64, 8)) {
+        Some(worldgen::world::tile::TileEntity::Note(n)) => n.note,
+        other => panic!("note block tile entity: {other:?}"),
+    };
     let record = chunk
         .raw_tile_entities
         .iter()
         .find(|n| n.string("id") == "RecordPlayer")
         .unwrap();
-    assert_eq!(note.byte("note"), 6);
+    assert_eq!(note, 6);
     assert_eq!(record.int("Record"), 2257);
     assert_eq!(chunk.data.get(9, 64, 8), 1);
 }

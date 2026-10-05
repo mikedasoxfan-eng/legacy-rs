@@ -1037,6 +1037,14 @@ pub fn append_world(w: &World, out: &mut Vec<u8>) {
                 i(out, v);
             }
             match &c.tile_entities[&(x, y, z)] {
+                crate::world::tile::TileEntity::Note(n)=> {
+                    out.push(5); out.push(n.note as u8); out.push(n.powered as u8);
+                }
+                crate::world::tile::TileEntity::Piston(p)=> {
+                    out.push(6);
+                    for v in [p.block_id as i32,p.block_data,p.facing,p.progress.to_bits() as i32,p.last_progress.to_bits() as i32] { i(out,v); }
+                    out.push(p.extending as u8);out.push(p.render_head as u8);
+                }
                 crate::world::tile::TileEntity::Chest(slots) => {
                     out.push(1);
                     for slot in slots.iter() {
@@ -1195,15 +1203,16 @@ pub fn music_event_bytes() -> Vec<u8> {
         raw(&mut w, 8, 63, 8, below);
         for action in 0..30 {
             raw(&mut w, 8, 65, 8, if action == 27 { 1 } else { 0 });
-            w.trigger_note(8, 64, 8, action != 26);
+            if action != 26 {
+                w.activate_note(8, 64, 8);
+            } else {
+                w.trigger_note(8, 64, 8);
+            }
             emit(&mut w, &mut o);
-            let note = w
-                .chunk(0, 0)
-                .raw_tile_entities
-                .iter()
-                .find(|n| n.int("x") == 8 && n.int("y") == 64 && n.int("z") == 8)
-                .unwrap()
-                .byte("note");
+            let note = match w.get_block_tile_entity(8, 64, 8) {
+                Some(crate::world::tile::TileEntity::Note(n)) => n.note,
+                _ => 0,
+            };
             o.extend((note as i32).to_le_bytes());
         }
     }
@@ -1248,7 +1257,7 @@ pub fn music_event_bytes() -> Vec<u8> {
         w.chunk_mut(0, 0)
             .data
             .set(8, 64, 7, if action % 4 < 2 { 13 } else { 5 });
-        crate::entity::player::block_hooks::neighbor(
+        crate::world::behavior::on_neighbor_block_change(
             &mut w,
             25,
             8,
@@ -1258,15 +1267,12 @@ pub fn music_event_bytes() -> Vec<u8> {
         );
         emit(&mut w, &mut o);
         w.get_block_tile_entity(8, 64, 8);
-        let note = w
-            .chunk(0, 0)
-            .raw_tile_entities
-            .iter()
-            .find(|n| n.int("x") == 8 && n.int("y") == 64 && n.int("z") == 8)
-            .unwrap()
-            .byte("note");
+        let (note, powered) = match w.get_block_tile_entity(8, 64, 8) {
+            Some(crate::world::tile::TileEntity::Note(n)) => (n.note, n.powered),
+            _ => (0, false),
+        };
         o.extend((note as i32).to_le_bytes());
-        o.push(w.note_power.get(&(8, 64, 8)).copied().unwrap_or(false) as u8);
+        o.push(powered as u8);
     }
     for id in 1..=96 {
         let (a, v, p) = crate::world::events::step_sound(id);

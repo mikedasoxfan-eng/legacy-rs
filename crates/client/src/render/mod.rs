@@ -3,6 +3,8 @@
 pub mod access;
 pub mod blocks;
 pub mod camera;
+pub mod pistons;
+pub mod piston_check;
 pub mod entity;
 pub mod first_person;
 pub mod first_person_check;
@@ -68,6 +70,7 @@ pub struct Vertex {
 /// `Tessellator`: accumulates quads with a current color and translation.
 pub struct Tessellator {
     pub verts: Vec<Vertex>,
+    pub raw_positions: Option<Vec<[f64;3]>>,
     color: [u8; 4],
     /// `xOffset`/`yOffset`/`zOffset`: starts at minus the chunk origin, like WorldRenderer's
     /// `setTranslationD`, and the cactus renderer nudges it with `setTranslationF`.
@@ -76,7 +79,7 @@ pub struct Tessellator {
 
 impl Tessellator {
     pub fn new(origin: [f64; 3]) -> Self {
-        Tessellator { verts: Vec::new(), color: [255; 4], offset: [-origin[0], -origin[1], -origin[2]] }
+        Tessellator { raw_positions:None, verts: Vec::new(), color: [255; 4], offset: [-origin[0], -origin[1], -origin[2]] }
     }
 
     #[inline]
@@ -99,6 +102,7 @@ impl Tessellator {
 
     #[inline]
     pub fn vertex_uv(&mut self, x: f64, y: f64, z: f64, u: f64, v: f64) {
+        if let Some(raw)=&mut self.raw_positions { raw.push([x+self.offset[0],y+self.offset[1],z+self.offset[2]]); }
         self.verts.push(Vertex {
             pos: [(x + self.offset[0]) as f32, (y + self.offset[1]) as f32, (z + self.offset[2]) as f32],
             uv: [u as f32, v as f32],

@@ -183,6 +183,8 @@ public class Oracle {
             StatsOracle.run(a[1]);
         } else if (mode.equals("statsfile")) {
             StatsOracle.file(a[1], a[2]);
+        } else if (mode.equals("pistonrender")) {
+            PistonRendererOracle.run(a[1]);
         } else if (mode.equals("redstone")) {
             RedstoneOracle.run(a[1], a[2]);
         } else if (mode.equals("rendershowcase")) {
@@ -806,6 +808,13 @@ public class Oracle {
                     o.u8(2);
                     byte[] id = ((TileEntityMobSpawner) te).getMobID().getBytes("US-ASCII");
                     o.u8(id.length); o.bytes(id);
+                } else if(te instanceof TileEntityNote) {
+                    TileEntityNote n=(TileEntityNote)te;o.u8(5);o.u8(n.note);o.u8(n.previousRedstoneState?1:0);
+                } else if(te instanceof TileEntityPiston) {
+                    TileEntityPiston p=(TileEntityPiston)te;o.u8(6);o.i32(p.getStoredBlockID());o.i32(p.getBlockMetadata());o.i32(p.func_31009_d());
+                    Field progress=TileEntityPiston.class.getDeclaredField("field_31022_k");progress.setAccessible(true);
+                    o.i32(Float.floatToRawIntBits(progress.getFloat(p)));o.i32(Float.floatToRawIntBits(p.func_31008_a(0)));
+                    o.u8(p.func_31015_b()?1:0);o.u8(p.func_31012_k()?1:0);
                 } else if(te instanceof TileEntityFurnace||te instanceof TileEntityDispenser) {
                     boolean furnace=te instanceof TileEntityFurnace;o.u8(furnace?3:4);IInventory inv=(IInventory)te;
                     for(int i=0;i<inv.getSizeInventory();i++){ItemStack st=inv.getStackInSlot(i);o.i16(st==null?-1:st.itemID);o.u8(st==null?0:st.stackSize);o.i16(st==null?0:st.getItemDamage());}

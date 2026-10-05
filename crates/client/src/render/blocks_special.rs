@@ -576,7 +576,7 @@ impl<'a, 'b> RenderBlocks<'a, 'b> {
     }
 
     /// `func_31074_b(block, x, y, z, false)`: the piston base.
-    pub(super) fn render_piston_base(&mut self, id: u8, x: i32, y: i32, z: i32, extended_override: bool) -> bool {
+    pub(crate) fn render_piston_base(&mut self, id: u8, x: i32, y: i32, z: i32, extended_override: bool) -> bool {
         let meta = self.w.meta(x, y, z);
         let extended = extended_override || meta & 8 != 0;
         let facing = meta & 7;
@@ -647,7 +647,7 @@ impl<'a, 'b> RenderBlocks<'a, 'b> {
     }
 
     /// `func_31080_c(block, x, y, z, full)`: the piston head and its arm.
-    pub(super) fn render_piston_head(&mut self, id: u8, x: i32, y: i32, z: i32, full: bool) -> bool {
+    pub(crate) fn render_piston_head(&mut self, id: u8, x: i32, y: i32, z: i32, full: bool) -> bool {
         let meta = self.w.meta(x, y, z);
         let facing = meta & 7;
         let l = self.brightness(id, x, y, z);

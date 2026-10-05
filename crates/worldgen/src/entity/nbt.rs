@@ -355,7 +355,7 @@ fn read_projectile(n: &Compound, arrow: bool) -> ArrowState {
     }
 }
 impl World {
-    pub(crate) fn load_chunk_entities(&mut self, cx: i32, cz: i32) {
+    pub fn load_chunk_entities(&mut self, cx: i32, cz: i32) {
         let tags = std::mem::take(&mut self.chunk_mut(cx, cz).raw_entities);
         for tag in tags {
             if let Tag::Compound(n) = &tag {
@@ -384,8 +384,23 @@ impl World {
             );
         }
         for (x, y, z) in tiles.iter() {
-            self.loaded_tile_entities
-                .push((cx * 16 + x, y, cz * 16 + z));
+            let key = (x, y, z);
+            // onChunkLoad adds the existing objects, without validating them.
+            // Disk-loaded chunks have no IDs; an unload/load of the same Chunk
+            // retains its identities (and their invalid flags).
+            let id = if let Some(&id) = self.chunk(cx, cz).tile_entity_ids.get(&key) {
+                self.tile_objects.get_mut(&id).unwrap().detached = None;
+                id
+            } else {
+                let te = self.chunk_mut(cx, cz).tile_entities.remove(&key).unwrap();
+                let id = self.new_tile_object((cx * 16 + x, y, cz * 16 + z), te);
+                let te = self.tile_objects.get_mut(&id).unwrap().detached.take().unwrap();
+                self.chunk_mut(cx, cz).tile_entities.insert(key, te);
+                self.chunk_mut(cx, cz).tile_entity_ids.insert(key, id);
+                id
+            };
+            if self.scanning_tiles { self.pending_tile_entities.push(id); }
+            else { self.loaded_tile_entities.push(id); }
         }
     }
     pub(crate) fn chunk_entity_nbt(&self, cx: i32, cz: i32) -> Vec<Tag> {
@@ -400,18 +415,21 @@ impl World {
         }
         tags
     }
-    pub(crate) fn unload_chunk_entities(&mut self, cx: i32, cz: i32) {
+    pub fn unload_chunk_entities(&mut self, cx: i32, cz: i32) {
         if let Some(c) = self.chunks.get_mut(&(cx, cz)) {
             c.loaded = false;
             for list in &c.entity_lists {
                 self.unloaded_entity_list.extend_from_slice(list);
             }
         }
-        self.loaded_tile_entities
-            .retain(|&(x, _, z)| x >> 4 != cx || z >> 4 != cz);
+        if let Some(c) = self.chunks.get_mut(&(cx, cz)) {
+            for (key, id) in &c.tile_entity_ids {
+                let o = self.tile_objects.get_mut(id).unwrap();
+                o.invalid = true;
+                o.detached = c.tile_entities.get(key).cloned();
+            }
+        }
         self.spawner_animations
-            .retain(|&(x, _, z), _| x >> 4 != cx || z >> 4 != cz);
-        self.note_power
             .retain(|&(x, _, z), _| x >> 4 != cx || z >> 4 != cz);
     }
 }

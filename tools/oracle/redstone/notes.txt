@@ -1,0 +1,511 @@
+# Every pitch/instrument, rising-edge strong power, occlusion and NBT.
+remove 0 64 0
+place 0 63 0 3 0
+place 0 64 0 25 0
+use 0 64 0
+state
+events
+use 0 64 0
+state
+events
+use 0 64 0
+state
+events
+use 0 64 0
+state
+events
+use 0 64 0
+state
+events
+use 0 64 0
+state
+events
+use 0 64 0
+state
+events
+use 0 64 0
+state
+events
+use 0 64 0
+state
+events
+use 0 64 0
+state
+events
+use 0 64 0
+state
+events
+use 0 64 0
+state
+events
+use 0 64 0
+state
+events
+use 0 64 0
+state
+events
+use 0 64 0
+state
+events
+use 0 64 0
+state
+events
+use 0 64 0
+state
+events
+use 0 64 0
+state
+events
+use 0 64 0
+state
+events
+use 0 64 0
+state
+events
+use 0 64 0
+state
+events
+use 0 64 0
+state
+events
+use 0 64 0
+state
+events
+use 0 64 0
+state
+events
+use 0 64 0
+state
+events
+use 0 64 0
+state
+events
+click 0 64 0
+events
+reload 0 64 0
+state
+place 0 65 0 1 0
+use 0 64 0
+click 0 64 0
+events
+remove 0 65 0
+place 1 64 0 69 5
+use 1 64 0
+state
+events
+use 1 64 0
+state
+events
+use 1 64 0
+state
+events
+remove 1 64 0
+state
+remove 0 64 0
+place 0 63 0 1 0
+place 0 64 0 25 0
+use 0 64 0
+state
+events
+use 0 64 0
+state
+events
+use 0 64 0
+state
+events
+use 0 64 0
+state
+events
+use 0 64 0
+state
+events
+use 0 64 0
+state
+events
+use 0 64 0
+state
+events
+use 0 64 0
+state
+events
+use 0 64 0
+state
+events
+use 0 64 0
+state
+events
+use 0 64 0
+state
+events
+use 0 64 0
+state
+events
+use 0 64 0
+state
+events
+use 0 64 0
+state
+events
+use 0 64 0
+state
+events
+use 0 64 0
+state
+events
+use 0 64 0
+state
+events
+use 0 64 0
+state
+events
+use 0 64 0
+state
+events
+use 0 64 0
+state
+events
+use 0 64 0
+state
+events
+use 0 64 0
+state
+events
+use 0 64 0
+state
+events
+use 0 64 0
+state
+events
+use 0 64 0
+state
+events
+use 0 64 0
+state
+events
+click 0 64 0
+events
+reload 0 64 0
+state
+place 0 65 0 1 0
+use 0 64 0
+click 0 64 0
+events
+remove 0 65 0
+place 1 64 0 69 5
+use 1 64 0
+state
+events
+use 1 64 0
+state
+events
+use 1 64 0
+state
+events
+remove 1 64 0
+state
+remove 0 64 0
+place 0 63 0 12 0
+place 0 64 0 25 0
+use 0 64 0
+state
+events
+use 0 64 0
+state
+events
+use 0 64 0
+state
+events
+use 0 64 0
+state
+events
+use 0 64 0
+state
+events
+use 0 64 0
+state
+events
+use 0 64 0
+state
+events
+use 0 64 0
+state
+events
+use 0 64 0
+state
+events
+use 0 64 0
+state
+events
+use 0 64 0
+state
+events
+use 0 64 0
+state
+events
+use 0 64 0
+state
+events
+use 0 64 0
+state
+events
+use 0 64 0
+state
+events
+use 0 64 0
+state
+events
+use 0 64 0
+state
+events
+use 0 64 0
+state
+events
+use 0 64 0
+state
+events
+use 0 64 0
+state
+events
+use 0 64 0
+state
+events
+use 0 64 0
+state
+events
+use 0 64 0
+state
+events
+use 0 64 0
+state
+events
+use 0 64 0
+state
+events
+use 0 64 0
+state
+events
+click 0 64 0
+events
+reload 0 64 0
+state
+place 0 65 0 1 0
+use 0 64 0
+click 0 64 0
+events
+remove 0 65 0
+place 1 64 0 69 5
+use 1 64 0
+state
+events
+use 1 64 0
+state
+events
+use 1 64 0
+state
+events
+remove 1 64 0
+state
+remove 0 64 0
+place 0 63 0 20 0
+place 0 64 0 25 0
+use 0 64 0
+state
+events
+use 0 64 0
+state
+events
+use 0 64 0
+state
+events
+use 0 64 0
+state
+events
+use 0 64 0
+state
+events
+use 0 64 0
+state
+events
+use 0 64 0
+state
+events
+use 0 64 0
+state
+events
+use 0 64 0
+state
+events
+use 0 64 0
+state
+events
+use 0 64 0
+state
+events
+use 0 64 0
+state
+events
+use 0 64 0
+state
+events
+use 0 64 0
+state
+events
+use 0 64 0
+state
+events
+use 0 64 0
+state
+events
+use 0 64 0
+state
+events
+use 0 64 0
+state
+events
+use 0 64 0
+state
+events
+use 0 64 0
+state
+events
+use 0 64 0
+state
+events
+use 0 64 0
+state
+events
+use 0 64 0
+state
+events
+use 0 64 0
+state
+events
+use 0 64 0
+state
+events
+use 0 64 0
+state
+events
+click 0 64 0
+events
+reload 0 64 0
+state
+place 0 65 0 1 0
+use 0 64 0
+click 0 64 0
+events
+remove 0 65 0
+place 1 64 0 69 5
+use 1 64 0
+state
+events
+use 1 64 0
+state
+events
+use 1 64 0
+state
+events
+remove 1 64 0
+state
+remove 0 64 0
+place 0 63 0 5 0
+place 0 64 0 25 0
+use 0 64 0
+state
+events
+use 0 64 0
+state
+events
+use 0 64 0
+state
+events
+use 0 64 0
+state
+events
+use 0 64 0
+state
+events
+use 0 64 0
+state
+events
+use 0 64 0
+state
+events
+use 0 64 0
+state
+events
+use 0 64 0
+state
+events
+use 0 64 0
+state
+events
+use 0 64 0
+state
+events
+use 0 64 0
+state
+events
+use 0 64 0
+state
+events
+use 0 64 0
+state
+events
+use 0 64 0
+state
+events
+use 0 64 0
+state
+events
+use 0 64 0
+state
+events
+use 0 64 0
+state
+events
+use 0 64 0
+state
+events
+use 0 64 0
+state
+events
+use 0 64 0
+state
+events
+use 0 64 0
+state
+events
+use 0 64 0
+state
+events
+use 0 64 0
+state
+events
+use 0 64 0
+state
+events
+use 0 64 0
+state
+events
+click 0 64 0
+events
+reload 0 64 0
+state
+place 0 65 0 1 0
+use 0 64 0
+click 0 64 0
+events
+remove 0 65 0
+place 1 64 0 69 5
+use 1 64 0
+state
+events
+use 1 64 0
+state
+events
+use 1 64 0
+state
+events
+remove 1 64 0
+state

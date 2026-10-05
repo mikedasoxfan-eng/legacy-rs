@@ -17,7 +17,6 @@ fn plain(id: u8) -> bool {
         id,
         20 | 21
             | 22
-            | 25
             | 26
             | 30
             | 35
@@ -120,12 +119,9 @@ pub fn added(w: &mut World, id: u8, x: i32, y: i32, z: i32) -> bool {
     plain(id)
 }
 pub fn removed(w: &mut World, id: u8, x: i32, y: i32, z: i32) -> bool {
-    if matches!(id, 25 | 84) {
-        if id == 84 {
-            w.eject_record(x, y, z);
-        }
+    if id == 84 {
+        w.eject_record(x, y, z);
         w.remove_block_tile_entity(x, y, z);
-        w.note_power.remove(&(x, y, z));
         return true;
     }
     if matches!(id, 69 | 77) {
@@ -145,19 +141,6 @@ pub fn removed(w: &mut World, id: u8, x: i32, y: i32, z: i32) -> bool {
     plain(id) || matches!(id, 6 | 43 | 44 | 50 | 59 | 93 | 94)
 }
 pub fn neighbor(w: &mut World, id: u8, x: i32, y: i32, z: i32, changed: u8) -> bool {
-    if id == 25 {
-        if matches!(changed, 55 | 69 | 70 | 72 | 75 | 76 | 77 | 93 | 94) {
-            let powered = w.is_block_getting_powered(x, y, z);
-            let prev = w.note_power.get(&(x, y, z)).copied().unwrap_or(false);
-            if prev != powered {
-                if powered {
-                    w.trigger_note(x, y, z, false);
-                }
-                w.note_power.insert((x, y, z), powered);
-            }
-        }
-        return true;
-    }
     if id == 26 {
         let meta = w.get_block_metadata(x, y, z);
         let (dx, dz) = [(0, 1), (-1, 0), (0, -1), (1, 0)][(meta & 3) as usize];
@@ -377,8 +360,8 @@ pub fn repeater_input(w: &mut World, x: i32, y: i32, z: i32, m: i32) -> bool {
         || (w.get_block_id(x + dx, y, z + dz) == 55 && w.get_block_metadata(x + dx, y, z + dz) > 0)
 }
 pub fn ensure_container(w: &mut World, id: u8, x: i32, y: i32, z: i32) {
-    // Note blocks and jukeboxes keep their tile data as NBT ("Music", "RecordPlayer").
-    if matches!(id, 25 | 84) {
+    // Jukeboxes keep their tile data as NBT ("RecordPlayer").
+    if id == 84 {
         if w.chunk(x >> 4, z >> 4)
             .raw_tile_entities
             .iter()
@@ -387,15 +370,11 @@ pub fn ensure_container(w: &mut World, id: u8, x: i32, y: i32, z: i32) {
             return;
         }
         let mut n = crate::nbt::Compound::new();
-        n.put("id", crate::nbt::Tag::String(if id == 25 { "Music" } else { "RecordPlayer" }.into()));
+        n.put("id", crate::nbt::Tag::String("RecordPlayer".into()));
         for (key, v) in [("x", x), ("y", y), ("z", z)] {
             n.put(key, crate::nbt::Tag::Int(v));
         }
-        if id == 25 {
-            n.put("note", crate::nbt::Tag::Byte(0));
-        } else {
-            n.put("Record", crate::nbt::Tag::Int(0));
-        }
+        n.put("Record", crate::nbt::Tag::Int(0));
         w.chunk_mut(x >> 4, z >> 4).raw_tile_entities.push(n);
         return;
     }

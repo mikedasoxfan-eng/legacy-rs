@@ -31,6 +31,7 @@ pub fn can_place(w: &mut World, id: u8, x: i32, y: i32, z: i32, side: i32) -> bo
 }
 pub fn can_place_at(w: &mut World, id: u8, x: i32, y: i32, z: i32, side: i32) -> bool {
     match id {
+        34 | 36 => false,
         50 | 75 | 76 => {
             w.is_block_normal_cube(x - 1, y, z)
                 || w.is_block_normal_cube(x + 1, y, z)
@@ -124,6 +125,7 @@ impl Entity {
             return false;
         }
         let meta = match id {
+            29 | 33 => 7,
             6 | 17 | 35 | 44 => stack.damage,
             18 => stack.damage | 4,
             _ => 0,
@@ -148,6 +150,13 @@ impl Entity {
     pub fn block_placed(&self, w: &mut World, id: u8, x: i32, y: i32, z: i32, side: i32) {
         let quarter = floor((self.yaw * 4.0 / 360.0) as f64 + 0.5) & 3;
         let meta = match id {
+            29 | 33 => {
+                let eye=self.pos.y+1.82-self.y_offset as f64;
+                let vertical=if (self.pos.x as f32-x as f32).abs()<2.0 && (self.pos.z as f32-z as f32).abs()<2.0 {
+                    if eye-y as f64>2.0 {Some(1)} else if y as f64-eye>0.0 {Some(0)} else {None}
+                } else {None};
+                Some(vertical.unwrap_or([2,5,3,4][quarter as usize]))
+            }
             53 | 67 => Some([2, 1, 3, 0][quarter as usize]),
             61 | 62 | 23 => Some([2, 5, 3, 4][quarter as usize]),
             86 | 91 => Some(floor((self.yaw * 4.0 / 360.0) as f64 + 2.5) & 3),
@@ -187,6 +196,7 @@ impl Entity {
         };
         if let Some(meta) = meta {
             w.set_block_metadata_with_notify(x, y, z, meta);
+            if matches!(id,29|33) { w.piston_update(id,x,y,z); }
             if matches!(id, 93 | 94) && super::block_hooks::repeater_input(w, x, y, z, meta) {
                 w.schedule_block_update(x, y, z, id, 1);
             }

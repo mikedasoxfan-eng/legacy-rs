@@ -19,6 +19,9 @@ pub mod dimension;
 pub mod tick;
 pub mod ticks_blocks;
 pub mod tile;
+pub mod pistons;
+pub mod notes;
+mod tile_lifecycle;
 
 use crate::block::{self, light_opacity, mat, material_of, props, MAT_AIR};
 use crate::overworld::OverworldGenerator;
@@ -27,7 +30,7 @@ use chunk::{idx, Chunk, LightKind};
 use light::LightUpdate;
 use std::collections::HashMap;
 use std::hash::{BuildHasherDefault, Hasher};
-use tile::TileEntity;
+
 
 /// Which `java.util.Random` a block tick draws from.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -126,7 +129,6 @@ impl Dimension {
 pub struct World {
     /// Ordered IWorldAccess callbacks since the last client tick.
     pub events: Vec<events::WorldEvent>,
-    pub note_power: HashMap<(i32, i32, i32), bool>,
     /// Call-local Random used by World.randomDisplayUpdates.
     pub display_seed_source: crate::entity::EntitySeedSource,
     pub seed: i64,
@@ -207,7 +209,13 @@ pub struct World {
     pub loaded_entity_list: Vec<i32>,
     pub unloaded_entity_list: Vec<i32>,
     pub spawn_eligible_chunks: java_hash::JavaHashSet<(i32, i32)>,
-    pub loaded_tile_entities: Vec<(i32, i32, i32)>,
+    pub loaded_tile_entities: Vec<tile_lifecycle::TileId>,
+    pub tile_objects: HashMap<tile_lifecycle::TileId, tile_lifecycle::TileObject>,
+    pub next_tile_id: u64,
+    pub piston_guard: [bool; 2],
+    pub block_events: Vec<notes::BlockEvent>,
+    pub scanning_tiles: bool,
+    pub pending_tile_entities: Vec<tile_lifecycle::TileId>,
     pub dispenser_random: HashMap<(i32, i32, i32), JavaRandom>,
     pub container_drop_random: [JavaRandom; 3], // idle furnace, active furnace, dispenser
     pub keep_furnace_inventory: bool,
@@ -242,7 +250,6 @@ impl World {
         }
         World {
             events: Vec::new(),
-            note_power: HashMap::new(),
             display_seed_source: crate::entity::EntitySeedSource::Time,
             seed,
             dimension,
@@ -300,6 +307,12 @@ impl World {
             weather_effects: Vec::new(),
             spawn_eligible_chunks: Default::default(),
             loaded_tile_entities: Vec::new(),
+            tile_objects: HashMap::new(),
+            next_tile_id: 0,
+            piston_guard: [false;2],
+            block_events: Vec::new(),
+            scanning_tiles: false,
+            pending_tile_entities: Vec::new(),
             dispenser_random: HashMap::new(),
             container_drop_random: std::array::from_fn(|_| {
                 JavaRandom::new(crate::entity::EntitySeedSource::Time.next_seed())
@@ -1017,75 +1030,6 @@ impl World {
     }
 
     // ------------------------------------------------------------ tile entities
-
-    /// `getBlockTileEntity` (creates one for an orphaned container block, like the original).
-    pub fn get_block_tile_entity(&mut self, x: i32, y: i32, z: i32) -> Option<&mut TileEntity> {
-        let (cx, cz) = (x >> 4, z >> 4);
-        if !self.access_chunk(cx, cz) {
-            return None;
-        }
-        let key = (x & 15, y, z & 15);
-        let id = self.chunk(cx, cz).block(x & 15, y, z & 15);
-        if matches!(id, 25 | 84) {
-            if !self
-                .chunk(cx, cz)
-                .raw_tile_entities
-                .iter()
-                .any(|n| n.int("x") == x && n.int("y") == y && n.int("z") == z)
-            {
-                crate::entity::player::block_hooks::added(self, id, x, y, z);
-            }
-            return None;
-        }
-        if !self.chunk(cx, cz).tile_entities.contains_key(&key) {
-            let id = self.chunk(cx, cz).block(x & 15, y, z & 15);
-            if !props(id).container {
-                return None;
-            }
-            behavior::on_block_added(self, id, x, y, z);
-        }
-        self.chunk_mut(cx, cz).tile_entities.get_mut(&key)
-    }
-
-    /// `setBlockTileEntity` → `Chunk.setChunkBlockTileEntity`
-    pub fn set_block_tile_entity(&mut self, x: i32, y: i32, z: i32, te: TileEntity) {
-        let (cx, cz) = (x >> 4, z >> 4);
-        if !self.access_chunk(cx, cz) {
-            return;
-        }
-        if !self.loaded_tile_entities.contains(&(x, y, z)) {
-            self.loaded_tile_entities.push((x, y, z));
-        }
-        let c = self.chunk_mut(cx, cz);
-        let id = c.block(x & 15, y, z & 15);
-        if id != block::AIR && props(id).container {
-            let key = (x & 15, y, z & 15);
-            if !c.tile_entities.contains_key(&key) {
-                c.tile_entity_order.push(key);
-            }
-            c.tile_entities.insert(key, te);
-        }
-    }
-
-    /// `removeBlockTileEntity`
-    pub fn remove_block_tile_entity(&mut self, x: i32, y: i32, z: i32) {
-        self.dispenser_random.remove(&(x, y, z));
-        self.loaded_tile_entities.retain(|p| *p != (x, y, z));
-        self.spawner_animations.remove(&(x, y, z));
-        self.note_power.remove(&(x, y, z));
-        let _ = self.get_block_tile_entity(x, y, z);
-        let (cx, cz) = (x >> 4, z >> 4);
-        if !self.access_chunk(cx, cz) {
-            return;
-        }
-        let c = self.chunk_mut(cx, cz);
-        if c.loaded {
-            c.raw_tile_entities
-                .retain(|n| n.int("x") != x || n.int("y") != y || n.int("z") != z);
-            c.tile_entities.remove(&(x & 15, y, z & 15));
-            c.tile_entity_order.retain(|p| *p != (x & 15, y, z & 15));
-        }
-    }
 
     // ------------------------------------------------------------ saving and ticking
 
