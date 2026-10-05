@@ -94,5 +94,7 @@
  "SpawnerAnimals",
  "Item",
  "ItemBlock",
- "ItemStack"
+ "ItemStack",
+ "RenderEngine",
+ "StatFileWriter"
 ]
