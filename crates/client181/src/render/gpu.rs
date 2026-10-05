@@ -722,6 +722,9 @@ impl Gpu {
     /// With `capture`, the frame is also returned as an image.
     /// Upload this frame's lightmap (`func_35808_e` texels, ARGB).
     pub fn set_lightmap(&self, texels: &[u32; 256]) {
+        for p in [&self.entities, &self.hand, &self.overlays, &self.targeting, &self.lit_effects] {
+            p.set_lightmap(&self.queue, texels);
+        }
         self.queue.write_texture(
             wgpu::TexelCopyTextureInfo {
                 texture: &self.lightmap_tex,

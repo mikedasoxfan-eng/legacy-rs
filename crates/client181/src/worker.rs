@@ -611,6 +611,7 @@ fn run(opts: WorldOptions, mut col: Colorizers, mut video: VideoSettings, rx: Re
                     vehicle_rails: if matches!(e.kind,worldgen::entity::EntityKind::Minecart(..)) {
                         Some(crate::render::entity::vehicles::RailSnapshot::capture(&e,|x,y,z|(access.block(x,y,z),access.meta(x,y,z))))
                     } else {None},
+                    light: Some(entity_light(&mut world, &e)),
                     entity: e,
                     brightness: b,
                     falling_light,
@@ -622,6 +623,7 @@ fn run(opts: WorldOptions, mut col: Colorizers, mut video: VideoSettings, rx: Re
             snapshot.extend(world.weather_effects.iter().map(|e| crate::render::entity::effects::Snapshot {
                 entity: e.clone(),
                 brightness: 1.0,
+                light: None,
                 falling_light: [1.0; 7],
                 vehicle_rails: None,
                 surfaces: Vec::new(),
@@ -807,6 +809,19 @@ fn living_brightness(world: &mut World, e: &worldgen::entity::Entity) -> f32 {
     let (x, y, z) = (fl(e.pos.x), fl(e.pos.y - e.y_offset as f64 + h), fl(e.pos.z));
     let l = world.get_block_light_value(x, y, z);
     world.light_brightness_table[l.clamp(0, 15) as usize]
+}
+
+/// `Entity.func_35115_a` (b1.8.1): the packed lightmap brightness two thirds up the entity,
+/// 0 while its column is not loaded.
+fn entity_light(world: &mut World, e: &worldgen::entity::Entity) -> u32 {
+    let fl = worldgen::math::floor_double;
+    let (x, z) = (fl(e.pos.x), fl(e.pos.z));
+    if !world.block_exists(x, 128 / 2, z) {
+        return 0;
+    }
+    let h = (e.bounding_box.max_y - e.bounding_box.min_y) * 0.66;
+    let y = fl(e.pos.y - e.y_offset as f64 + h);
+    world.packed_light181(x, y, z, 0) as u32
 }
 
 /// `Entity.getEntityBrightness` for a player whose eyes are at `cam` (1.8 tall, eyes 1.62 up).

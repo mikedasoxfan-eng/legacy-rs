@@ -11,6 +11,8 @@ pub struct Surface {
 pub struct Snapshot {
     pub entity: Entity,
     pub brightness: f32,
+    /// b1.8.1 `Entity.func_35115_a`: lightmap brightness at the entity (None: not lit by it).
+    pub light: Option<u32>,
     pub falling_light: [f32; 7],
     pub vehicle_rails: Option<super::vehicles::RailSnapshot>,
     pub surfaces: Vec<Surface>,

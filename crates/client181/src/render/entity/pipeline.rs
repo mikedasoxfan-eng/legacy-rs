@@ -57,10 +57,17 @@ pub struct EntityPipeline {
     terrain_tex: Option<wgpu::Texture>,
     map_tex: Option<wgpu::Texture>,
     vertices: wgpu::Buffer,
+    /// b1.8.1: per-vertex lightmap brightness (`Entity.func_35115_a`), `NO_LIGHTMAP` when the
+    /// lightmap unit is off for that draw.
+    lights: wgpu::Buffer,
+    lightmap: wgpu::Texture,
     capacity: usize,
     draws: Vec<Draw>,
     normalize: bool,
 }
+
+/// Light value of a vertex drawn without the lightmap (texture unit 1 disabled).
+pub const NO_LIGHTMAP: u32 = u32::MAX;
 
 impl EntityPipeline {
     pub fn new<'a>(
@@ -71,16 +78,34 @@ impl EntityPipeline {
     ) -> Self {
         let frame_layout = device.create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor {
             label: Some("entity frame"),
-            entries: &[wgpu::BindGroupLayoutEntry {
-                binding: 0,
-                visibility: wgpu::ShaderStages::VERTEX_FRAGMENT,
-                ty: wgpu::BindingType::Buffer {
-                    ty: wgpu::BufferBindingType::Uniform,
-                    has_dynamic_offset: false,
-                    min_binding_size: None,
+            entries: &[
+                wgpu::BindGroupLayoutEntry {
+                    binding: 0,
+                    visibility: wgpu::ShaderStages::VERTEX_FRAGMENT,
+                    ty: wgpu::BindingType::Buffer {
+                        ty: wgpu::BufferBindingType::Uniform,
+                        has_dynamic_offset: false,
+                        min_binding_size: None,
+                    },
+                    count: None,
                 },
-                count: None,
-            }],
+                wgpu::BindGroupLayoutEntry {
+                    binding: 1,
+                    visibility: wgpu::ShaderStages::FRAGMENT,
+                    ty: wgpu::BindingType::Texture {
+                        sample_type: wgpu::TextureSampleType::Float { filterable: true },
+                        view_dimension: wgpu::TextureViewDimension::D2,
+                        multisampled: false,
+                    },
+                    count: None,
+                },
+                wgpu::BindGroupLayoutEntry {
+                    binding: 2,
+                    visibility: wgpu::ShaderStages::FRAGMENT,
+                    ty: wgpu::BindingType::Sampler(wgpu::SamplerBindingType::Filtering),
+                    count: None,
+                },
+            ],
         });
         let texture_layout = device.create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor {
             label: Some("entity texture"),
@@ -120,11 +145,18 @@ impl EntityPipeline {
                     module: &shader,
                     entry_point: Some("vs_main"),
                     compilation_options: Default::default(),
-                    buffers: &[Some(wgpu::VertexBufferLayout {
-                        array_stride: std::mem::size_of::<EntityVertex>() as u64,
-                        step_mode: wgpu::VertexStepMode::Vertex,
-                        attributes: &wgpu::vertex_attr_array![0=>Float32x3,1=>Float32x2,2=>Float32x4],
-                    })],
+                    buffers: &[
+                        Some(wgpu::VertexBufferLayout {
+                            array_stride: std::mem::size_of::<EntityVertex>() as u64,
+                            step_mode: wgpu::VertexStepMode::Vertex,
+                            attributes: &wgpu::vertex_attr_array![0=>Float32x3,1=>Float32x2,2=>Float32x4],
+                        }),
+                        Some(wgpu::VertexBufferLayout {
+                            array_stride: 4,
+                            step_mode: wgpu::VertexStepMode::Vertex,
+                            attributes: &wgpu::vertex_attr_array![3=>Uint32],
+                        }),
+                    ],
                 },
                 primitive: wgpu::PrimitiveState { topology: if label=="fishing line" {wgpu::PrimitiveTopology::LineStrip}else{wgpu::PrimitiveTopology::TriangleList}, cull_mode: None, ..Default::default() },
                 depth_stencil: Some(wgpu::DepthStencilState {
@@ -221,10 +253,39 @@ impl EntityPipeline {
             usage: wgpu::BufferUsages::UNIFORM | wgpu::BufferUsages::COPY_DST,
             mapped_at_creation: false,
         });
+        // This pipeline's copy of the b1.8.1 lightmap (white until the first set_lightmap).
+        let lightmap = device.create_texture_with_data(
+            queue,
+            &wgpu::TextureDescriptor {
+                label: Some("entity lightmap"),
+                size: wgpu::Extent3d { width: 16, height: 16, depth_or_array_layers: 1 },
+                mip_level_count: 1,
+                sample_count: 1,
+                dimension: wgpu::TextureDimension::D2,
+                format: wgpu::TextureFormat::Rgba8Unorm,
+                usage: wgpu::TextureUsages::TEXTURE_BINDING | wgpu::TextureUsages::COPY_DST,
+                view_formats: &[],
+            },
+            wgpu::util::TextureDataOrder::LayerMajor,
+            &[255u8; 1024],
+        );
+        let lightmap_view = lightmap.create_view(&Default::default());
+        let lightmap_sampler = device.create_sampler(&wgpu::SamplerDescriptor {
+            label: Some("entity lightmap"),
+            address_mode_u: wgpu::AddressMode::ClampToEdge,
+            address_mode_v: wgpu::AddressMode::ClampToEdge,
+            mag_filter: wgpu::FilterMode::Linear,
+            min_filter: wgpu::FilterMode::Linear,
+            ..Default::default()
+        });
         let frame_bind = device.create_bind_group(&wgpu::BindGroupDescriptor {
             label: Some("entity frame"),
             layout: &frame_layout,
-            entries: &[wgpu::BindGroupEntry { binding: 0, resource: uniforms.as_entire_binding() }],
+            entries: &[
+                wgpu::BindGroupEntry { binding: 0, resource: uniforms.as_entire_binding() },
+                wgpu::BindGroupEntry { binding: 1, resource: wgpu::BindingResource::TextureView(&lightmap_view) },
+                wgpu::BindGroupEntry { binding: 2, resource: wgpu::BindingResource::Sampler(&lightmap_sampler) },
+            ],
         });
         let sampler = device.create_sampler(&wgpu::SamplerDescriptor {
             label: Some("entity nearest"),
@@ -300,7 +361,15 @@ impl EntityPipeline {
             usage: wgpu::BufferUsages::VERTEX | wgpu::BufferUsages::COPY_DST,
             mapped_at_creation: false,
         });
+        let lights = device.create_buffer(&wgpu::BufferDescriptor {
+            label: Some("entity lights"),
+            size: 4,
+            usage: wgpu::BufferUsages::VERTEX | wgpu::BufferUsages::COPY_DST,
+            mapped_at_creation: false,
+        });
         Self {
+            lights,
+            lightmap,
             states: Vec::new(),
             damage,
             untested,
@@ -420,8 +489,14 @@ impl EntityPipeline {
         far: f32,
     ) {
         let mut batches = living::scene_with_lighting(&self.states, camera, &mut self.normalize);
+        let mut lights = vec![NO_LIGHTMAP; batches.len()];
         for snapshot in &self.snapshots {
             let e = &snapshot.entity;
+            let first = batches.len();
+            // b1.8.1 RenderManager.renderEntity: glColor 1 and the entity's lightmap coordinates;
+            // the colour no longer carries the brightness.
+            let brightness = if snapshot.light.is_some() { 1.0 } else { snapshot.brightness };
+            let snapshot = &super::effects::Snapshot { brightness, ..snapshot.clone() };
             if let worldgen::entity::EntityKind::Fish(s)=&e.kind {
                 let owner=self.angler.as_ref().filter(|p|Some(p.entity_id)==s.arrow.owner).or_else(||self.snapshots.iter().find(|v|Some(v.entity.entity_id)==s.arrow.owner).map(|v|&v.entity));
                 let p=super::bridge::position(e,self.partial);let relative=std::array::from_fn(|i|p[i]-camera[i]);let g=crate::render::fishing::render(e,owner,relative,self.partial,snapshot.brightness,self.view,self.third_person);batches.extend(g.draws.iter().map(|d|d.batch()));
@@ -459,7 +534,13 @@ impl EntityPipeline {
                         .map(|d| d.batch()),
                 );
             }
+            // RenderLiving turns the lightmap off for its hurt/flash overlay passes.
+            let light = snapshot.light.unwrap_or(NO_LIGHTMAP);
+            lights.extend(batches[first..].iter().map(|b| {
+                if matches!(b.pass, Pass::Overlay | Pass::Damage | Pass::TntFlash) { NO_LIGHTMAP } else { light }
+            }));
         }
+        lights.resize(batches.len(), NO_LIGHTMAP);
         batches.append(&mut self.extra);
         batches.extend(self.pistons.iter().filter(|p|p.visible(camera.to_array())).map(|p|p.batch(self.partial,camera.to_array())));
         for s in &self.signs {
@@ -467,7 +548,23 @@ impl EntityPipeline {
             let g=crate::render::sign::render(&s.sign,s.block,s.metadata,relative,s.brightness);
             batches.extend(g.draws.iter().map(|d|d.batch()));
         }
-        self.upload(device, queue, batches, view_proj, fog, far);
+        lights.resize(batches.len(), NO_LIGHTMAP);
+        self.upload_lit(device, queue, batches, &lights, view_proj, fog, far);
+    }
+
+    /// Upload this frame's lightmap texels (`EntityRenderer.func_35808_e`, ARGB).
+    pub fn set_lightmap(&self, queue: &wgpu::Queue, texels: &[u32; 256]) {
+        queue.write_texture(
+            wgpu::TexelCopyTextureInfo {
+                texture: &self.lightmap,
+                mip_level: 0,
+                origin: wgpu::Origin3d::ZERO,
+                aspect: wgpu::TextureAspect::All,
+            },
+            &crate::render::lightmap::rgba(texels),
+            wgpu::TexelCopyBufferLayout { offset: 0, bytes_per_row: Some(64), rows_per_image: Some(16) },
+            wgpu::Extent3d { width: 16, height: 16, depth_or_array_layers: 1 },
+        );
     }
 
     pub fn upload(
@@ -475,6 +572,22 @@ impl EntityPipeline {
         device: &wgpu::Device,
         queue: &wgpu::Queue,
         batches: Vec<Batch>,
+        view_proj: Mat4,
+        fog: [f32; 3],
+        far: f32,
+    ) {
+        let lights = vec![NO_LIGHTMAP; batches.len()];
+        self.upload_lit(device, queue, batches, &lights, view_proj, fog, far);
+    }
+
+    /// `upload` with one lightmap brightness per batch (`NO_LIGHTMAP`: lightmap off).
+    #[allow(clippy::too_many_arguments)]
+    pub fn upload_lit(
+        &mut self,
+        device: &wgpu::Device,
+        queue: &wgpu::Queue,
+        batches: Vec<Batch>,
+        batch_lights: &[u32],
         view_proj: Mat4,
         fog: [f32; 3],
         far: f32,
@@ -496,9 +609,11 @@ impl EntityPipeline {
         );
         self.draws.clear();
         let mut all = Vec::new();
-        for b in batches {
+        let mut light_of = Vec::new();
+        for (i, b) in batches.into_iter().enumerate() {
             let start = all.len() as u32;
             all.extend_from_slice(&b.vertices);
+            light_of.resize(all.len(), batch_lights.get(i).copied().unwrap_or(NO_LIGHTMAP));
             self.draws.push(Draw {
                 range: start..all.len() as u32,
                 texture: b.texture.unwrap_or("__white").into(),
@@ -513,9 +628,16 @@ impl EntityPipeline {
                 usage: wgpu::BufferUsages::VERTEX | wgpu::BufferUsages::COPY_DST,
                 mapped_at_creation: false,
             });
+            self.lights = device.create_buffer(&wgpu::BufferDescriptor {
+                label: Some("entity lights"),
+                size: (self.capacity * 4) as u64,
+                usage: wgpu::BufferUsages::VERTEX | wgpu::BufferUsages::COPY_DST,
+                mapped_at_creation: false,
+            });
         }
         if !all.is_empty() {
             queue.write_buffer(&self.vertices, 0, bytemuck::cast_slice(&all));
+            queue.write_buffer(&self.lights, 0, bytemuck::cast_slice(&light_of));
         }
     }
 
@@ -526,6 +648,7 @@ impl EntityPipeline {
         }
         rp.set_bind_group(0, &self.frame_bind, &[]);
         rp.set_vertex_buffer(0, self.vertices.slice(..));
+        rp.set_vertex_buffer(1, self.lights.slice(..));
         for d in &self.draws {
             rp.set_pipeline((match d.pass {
                 Pass::Line => &self.line,
