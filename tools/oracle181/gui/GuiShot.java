@@ -564,6 +564,15 @@ public class GuiShot {
             ByteBuffer px = BufferUtils.createByteBuffer(w * h * 4);
             GL11.glReadBuffer(buffer);
             GL11.glReadPixels(0, 0, w, h, GL11.GL_RGBA, GL11.GL_UNSIGNED_BYTE, px);
+            // Observation only: alpha is needed to prove masked clears and
+            // framebuffer-copy blur behavior; RGB PNGs cannot expose it.
+            if(System.getenv("GUI_CAPTURE_ALPHA")!=null) {
+                try(FileOutputStream alpha=new FileOutputStream(new File(out,name+".alpha"))) {
+                    byte[] values=new byte[w*h];
+                    for(int y=0;y<h;y++)for(int x=0;x<w;x++)values[y*w+x]=px.get(((h-1-y)*w+x)*4+3);
+                    alpha.write(values);
+                }
+            }
             BufferedImage img = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
             for (int y = 0; y < h; y++) {
                 for (int x = 0; x < w; x++) {

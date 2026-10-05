@@ -15,6 +15,7 @@ pub enum Factor {
     Zero,
     One,
     SrcAlpha,
+    DstAlpha,
     OneMinusSrcAlpha,
     DstColor,
     OneMinusDstColor,
@@ -80,6 +81,8 @@ pub struct Gl {
     /// None represents an unbound/incomplete texture unit (no modulation).
     pub lightmap_texels: Option<Box<[u32; 256]>>,
     pub color_mask: u8,
+    /// Mask in effect at glClear, before this frame's screen callbacks.
+    pub clear_color_mask: u8,
     pub panorama: Option<super::panorama::Panorama>,
     pub proj: Mat4,
     modelview: Vec<Mat4>,
@@ -125,6 +128,7 @@ impl Gl {
             lightmap_coordinates: 0,
             lightmap_texels: None,
             color_mask: 15,
+            clear_color_mask: 15,
             panorama: None,
             proj: Mat4::IDENTITY,
             modelview: vec![Mat4::IDENTITY],
@@ -154,6 +158,7 @@ impl Gl {
 
     /// Drop recorded geometry (start of a frame); state persists like a GL context.
     pub fn begin_frame(&mut self) {
+        self.clear_color_mask = self.color_mask;
         self.panorama = None;
         self.verts.clear();
         self.draws.clear();

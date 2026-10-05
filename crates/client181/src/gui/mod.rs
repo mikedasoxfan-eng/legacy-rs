@@ -6,6 +6,7 @@ pub mod achievement_toast;
 pub mod container_api;
 pub mod container_check;
 pub mod inventory_check;
+pub mod framebuffer_check9;
 pub mod stats_table;
 pub mod font;
 pub mod frame_graph;

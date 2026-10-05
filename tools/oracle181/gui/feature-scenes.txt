@@ -1,4 +1,5 @@
 # Texture packs, GuiChat and GUI anaglyph regression scenes.
+saves ../out/guisaves
 packs ../out/packmc
 millis 250
 splash Ported to Rust!

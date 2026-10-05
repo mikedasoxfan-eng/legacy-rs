@@ -75,7 +75,6 @@ impl GuiSystem {
         }
         let empty = Image { width: 256, height: 256, rgba: vec![0; 256 * 256 * 4] };
         textures.insert("panorama_snapshot".into(), renderer.add_texture_with(device, queue, &empty, true, false));
-        textures.insert("panorama_frame".into(), renderer.add_texture_with(device, queue, &empty, false, false));
         let font_tex = textures["font/default.png"];
         let font = FontRenderer::new_with_anaglyph(&res.images["font/default.png"], font_tex, &res.font_txt, settings.anaglyph);
         let packs = crate::texture_packs::TexturePackList::new(saves_dir.parent().unwrap_or(std::path::Path::new(".")), &settings.skin);
