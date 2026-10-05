@@ -112,6 +112,8 @@ pub struct Gpu {
     sun_quad: (wgpu::Buffer, u32),
     moon_quad: (wgpu::Buffer, u32),
     fan: wgpu::Buffer,
+    /// b1.8.1: the black box under the camera below y 64.
+    void_box: wgpu::Buffer,
     slots: Vec<DrawSlot>,
     terrain_slot: DrawSlot,
     water_slot: DrawSlot,
@@ -447,6 +449,12 @@ impl Gpu {
             ),
             "moon",
         );
+        let void_box = device.create_buffer(&wgpu::BufferDescriptor {
+            label: Some("void box"),
+            size: (30 * std::mem::size_of::<Vertex>()) as u64,
+            usage: wgpu::BufferUsages::VERTEX | wgpu::BufferUsages::COPY_DST,
+            mapped_at_creation: false,
+        });
         let fan = device.create_buffer(&wgpu::BufferDescriptor {
             label: Some("sunrise fan"),
             size: (16 * 3 * std::mem::size_of::<Vertex>()) as u64,
@@ -483,7 +491,7 @@ impl Gpu {
             usage: wgpu::BufferUsages::VERTEX | wgpu::BufferUsages::COPY_DST,
             mapped_at_creation: false,
         });
-        let slots = (0..4).map(|_| slot(&white_view)).collect();
+        let slots = (0..6).map(|_| slot(&white_view)).collect();
         let quad_index = device.create_buffer(&wgpu::BufferDescriptor {
             label: Some("quad index"),
             size: 4,
@@ -565,6 +573,7 @@ impl Gpu {
             sun_quad,
             moon_quad,
             fan,
+            void_box,
             slots,
             terrain_slot,
             water_slot,
@@ -921,7 +930,7 @@ impl Gpu {
         if sunrise.is_some() {
             let fan = sky::sunrise_fan(p.celestial, p.video.anaglyph).unwrap();
             self.queue.write_buffer(&self.fan, 0, bytemuck::cast_slice(&fan));
-            let z = if p.celestial > 0.5 { 180.0f32 } else { 0.0 };
+            let z = if worldgen::math::sin(p.celestial * std::f32::consts::PI * 2.0f32) < 0.0 { 180.0f32 } else { 0.0 };
             let model = Mat4::from_rotation_x(90f32.to_radians()) * Mat4::from_rotation_z(z.to_radians());
             let u = Uniforms {
                 view_proj: view_proj.to_cols_array_2d(),
@@ -944,16 +953,44 @@ impl Gpu {
         };
         let star_b = sky::star_brightness(p.celestial) * (1.0f32 - p.rain);
         let stars_u = Uniforms { color: [star_b; 4], ..sunmoon_u };
+        // RenderGlobal.renderSky: thePlayer.getPosition(partial).yCoord - 64.
+        let void_depth = p.cam_pos.y - 64.0;
         let void_u = Uniforms {
             view_proj: view_proj.to_cols_array_2d(),
             fog_view: rot.to_cols_array_2d(),
-            model: ident,
+            // b1.8.1: the void plane sits at sea level: translate(0, -(y - 64 - 16), 0).
+            model: Mat4::from_translation(glam::Vec3::new(0.0, -((void_depth - 16.0) as f32), 0.0)).to_cols_array_2d(),
             color: [sky_color[0] * 0.2 + 0.04, sky_color[1] * 0.2 + 0.04, sky_color[2] * 0.6 + 0.1, 1.0],
             fog_color: fog4,
             fog: sky_fog,
         };
         self.write_uniforms(&self.slots[2], &stars_u);
         self.write_uniforms(&self.slots[3], &void_u);
+        // Below y 64: the void list again at +12 and a black box under the camera, both black.
+        let below = void_depth < 0.0;
+        if below {
+            let black = Uniforms {
+                model: Mat4::from_translation(glam::Vec3::new(0.0, 12.0, 0.0)).to_cols_array_2d(),
+                color: [0.0, 0.0, 0.0, 1.0],
+                ..void_u
+            };
+            self.write_uniforms(&self.slots[4], &black);
+            self.write_uniforms(&self.slots[5], &Uniforms { model: ident, color: [0.0, 0.0, 0.0, 1.0], ..void_u });
+            let (a, b0, b1) = (1.0f32, -((void_depth + 64.0) as f32), -1.0f32);
+            let quads = [
+                [[-a, b0, a], [a, b0, a], [a, b1, a], [-a, b1, a]],
+                [[-a, b1, -a], [a, b1, -a], [a, b0, -a], [-a, b0, -a]],
+                [[a, b1, -a], [a, b1, a], [a, b0, a], [a, b0, -a]],
+                [[-a, b0, -a], [-a, b0, a], [-a, b1, a], [-a, b1, -a]],
+                [[-a, b1, -a], [-a, b1, a], [a, b1, a], [a, b1, -a]],
+            ];
+            let mut tris = Vec::new();
+            for q in quads {
+                tris.extend_from_slice(&[q[0], q[1], q[2], q[0], q[2], q[3]]);
+            }
+            let verts = tri_list(&tris, [0, 0, 0, 255]);
+            self.queue.write_buffer(&self.void_box, 0, bytemuck::cast_slice(&verts));
+        }
         self.write_uniforms(&self.sun_slot, &sunmoon_u);
         self.write_uniforms(&self.moon_slot, &sunmoon_u);
 
@@ -1123,6 +1160,14 @@ impl Gpu {
                     rp.draw(0..self.stars.1, 0..1);
                 }
                 rp.set_pipeline(self.p_sky.get(mask));
+                if below {
+                    rp.set_bind_group(0, &self.slots[4].bind, &[]);
+                    rp.set_vertex_buffer(0, self.void_plane.0.slice(..));
+                    rp.draw(0..self.void_plane.1, 0..1);
+                    rp.set_bind_group(0, &self.slots[5].bind, &[]);
+                    rp.set_vertex_buffer(0, self.void_box.slice(..));
+                    rp.draw(0..30, 0..1);
+                }
                 rp.set_bind_group(0, &self.slots[3].bind, &[]);
                 rp.set_vertex_buffer(0, self.void_plane.0.slice(..));
                 rp.draw(0..self.void_plane.1, 0..1);

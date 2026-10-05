@@ -8,6 +8,14 @@ jar="$here/../retromcp-b181/minecraft/jars/deobfuscated.jar"
 libs=$(find "$here/../retromcp-b181/libraries" -name '*.jar' ! -name '*sources*' ! -name '*natives*' 2>/dev/null | while read -r f; do printf ';%s' "$(cygpath -w "$f")"; done)
 [ -f "$jar" ] || { echo "missing $jar - run RetroMCP setup+decompile for b1.8.1 first" >&2; exit 1; }
 mkdir -p "$here/build" "$here/out"
+# b1.8.1's LWJGL 2.9.4 jar is sealed, which forbids the headless org.lwjgl.opengl stubs in
+# build/: use a copy with the seal removed.
+unsealed="$here/build/lwjgl-unsealed.jar"
+sealed=$(find "$here/../retromcp-b181/libraries" -name 'lwjgl-2*.jar' ! -name '*natives*' ! -name '*sources*' | head -1)
+if [ ! -f "$unsealed" ]; then
+  python "$here/unseal.py" "$(cygpath -w "$sealed")" "$unsealed"
+fi
+libs=${libs//"$(cygpath -w "$sealed")"/"$(cygpath -w "$unsealed")"}
 if [ ! -f "$here/build/.compiled" ] || find "$here/src" "$here/headless" -name '*.java' -newer "$here/build/.compiled" -print -quit | grep -q .; then
   javac -nowarn -cp "$jar$libs" -d "$here/build" $(ls "$here"/src/net/minecraft/src/*.java | grep -v ModelShot.java) "$here"/headless/org/lwjgl/opengl/*.java
   touch "$here/build/.compiled"
@@ -24,4 +32,5 @@ done
 [ -n "${ORACLE_JAVA:-}" ] && java="$ORACLE_JAVA"
 "$java" -version 2>&1 | grep -q '1.8.0_51' || { echo "oracle requires Mojang Java 8u51; refusing another JVM" >&2; exit 1; }
 cd "$here/out"
-"$java" -cp "$here/build;$jar$libs" net.minecraft.src.Oracle "$@" 2>&1 | { grep -v -E '^(16 achievements|151 recipes)$' || true; }
+# b1.8.1 prints its achievement and recipe counts and IntCache growth on stdout.
+"$java" -cp "$here/build;$jar$libs" net.minecraft.src.Oracle "$@" 2>&1 | { grep -v -E '^([0-9]+ achievements|[0-9]+ recipes|New max size: [0-9]+)$' || true; }

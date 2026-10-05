@@ -64,8 +64,9 @@ pub fn sky_draw(path: &str) {
         let temp=biomes.raw_temperature(x.floor() as i32,z.floor() as i32) as f32;
         let rgb=super::sky::sky_color(angle,temp,rain,rain*thunder,flash,partial);
         let rgb=if ana { super::stereo_color(rgb) } else { rgb };
-        assert_eq!(u(&bytes,&mut at),3);
-        for expected in [rgb,rgb,[rgb[0]*0.2+0.04,rgb[1]*0.2+0.04,rgb[2]*0.6+0.1]] {
+        // b1.8.1 sets black before the void (the below-sea-level box uses it), then the void colour.
+        assert_eq!(u(&bytes,&mut at),4);
+        for expected in [rgb,rgb,[0.0,0.0,0.0],[rgb[0]*0.2+0.04,rgb[1]*0.2+0.04,rgb[2]*0.6+0.1]] {
             for value in expected { assert_eq!(value.to_bits(),u(&bytes,&mut at),"sky case {case}");compared+=1; }
         }
         let fan=super::sky::sunrise_fan(angle,ana);

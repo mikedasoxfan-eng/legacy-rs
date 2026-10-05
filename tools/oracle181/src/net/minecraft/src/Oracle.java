@@ -944,7 +944,8 @@ public class Oracle {
         camera.posZ = camera.lastTickPosZ = e.posZ;
         Field box = Entity.class.getDeclaredField("boundingBox"); box.setAccessible(true);
         box.set(camera, AxisAlignedBB.getBoundingBox(e.posX-.3, e.posY, e.posZ-.3, e.posX+.3, e.posY+1.8, e.posZ+.3));
-        mc.theWorld = w; mc.renderViewEntity = camera;
+        camera.prevPosX = e.posX; camera.prevPosY = e.posY; camera.prevPosZ = e.posZ;
+        mc.theWorld = w; mc.renderViewEntity = camera; mc.thePlayer = (EntityPlayerSP) camera;
         mc.gameSettings = (GameSettings) allocate(GameSettings.class);
         mc.gameSettings.fancyGraphics = true; mc.gameSettings.renderDistance = 0;
         mc.renderEngine = (RenderEngine) allocate(RenderEngine.class);
