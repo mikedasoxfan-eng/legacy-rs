@@ -48,6 +48,8 @@ if len(hints) != len(java) or bad:
     sys.exit(1)
 print(f"HUD BRIGHTNESS HINTS EXACT ({len(hints)} scenes)")
 EOF2
+# The original's run renames and deletes fixture worlds; the port starts from the same fixtures.
+python "$root/tools/oracle181/gui/make_saves.py" "$root/tools/oracle181/out/guisaves" >/dev/null || exit 1
 GUI_MSAA=1 "$root/target/release/beta" --mc b1.8.1 --guishot "$root/tools/oracle181/gui/scenes.txt" "$rust_out" >/dev/null || exit 1
 "$root/target/release/beta" --mc b1.8.1 --guidiff "$java_out" "$rust_out" "$root/shots/gui_diff" || fail=1
 scenes="$root/tools/oracle181/gui/container-scenes.txt"

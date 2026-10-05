@@ -246,6 +246,19 @@ public class GuiShot {
                     mc.startWorld("guishot_world", "guishot", new WorldSettings(Long.parseLong(a[0]),0,false));
                     mc.currentScreen = this;
                     inner = null;
+                } else if (cmd.equals("dropworld")) {
+                    // Quit the scratch world (GuiIngameMenu's changeWorld1(null)) and delete its
+                    // save, so later world lists do not show a folder stamped with the run's clock.
+                    mc.changeWorld1((World)null);
+                    mc.currentScreen = this;
+                    inner = null;
+                    RegionFileCache.clearRegionFileReferences(); // close the region files so they can be deleted
+                    File dir = new File(new File(mc.mcDataDir, "saves"), "guishot_world");
+                    java.nio.file.Path root = dir.toPath();
+                    if (dir.exists()) try (java.util.stream.Stream<java.nio.file.Path> walk = java.nio.file.Files.walk(root)) {
+                        walk.sorted(java.util.Comparator.reverseOrder()).forEach(q -> q.toFile().delete());
+                    }
+                    if (dir.exists()) throw new IllegalStateException("could not delete " + dir);
                 } else if (cmd.equals("pose")) {
                     EntityPlayerSP p=mc.thePlayer;p.ticksExisted=(int)Float.parseFloat(a[0])-1;
                     p.field_703_S=Float.parseFloat(a[1]);p.field_704_R=p.field_705_Q=Float.parseFloat(a[2]);

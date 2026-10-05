@@ -428,6 +428,7 @@ key 28 13
 screenstate open
 mouse 0 0
 shot b181_rename_spaces_disabled
+dropworld
 open select
 mouse 213 50
 click
@@ -444,34 +445,34 @@ screenstate open
 # --- player-gui round 5 HUD (b1.8.1) ---
 world 42
 clear 128
-hud health=20 prev=20 food=20 saturation=5 xp=0 level=0 item=0 armor=0 helmet=-1 creative=0 sleep=0 portal=0 prev_portal=0 nausea=0 pos=0.5,120,0.5 brightness=0.77777773 portal=1 prev_portal=1
+hud health=20 prev=20 food=20 saturation=5 xp=0 level=0 item=0 armor=0 helmet=-1 creative=0 sleep=0 portal=0 prev_portal=0 nausea=0 pos=0.5,120,0.5 brightness=0.0 portal=1 prev_portal=1
 counter 0
 shot b181_hud5_portal_full
-hud health=20 prev=20 food=20 saturation=5 xp=0 level=0 item=0 armor=0 helmet=-1 creative=0 sleep=0 portal=0 prev_portal=0 nausea=0 pos=0.5,120,0.5 brightness=0.77777773 portal=0.5 prev_portal=0.5
+hud health=20 prev=20 food=20 saturation=5 xp=0 level=0 item=0 armor=0 helmet=-1 creative=0 sleep=0 portal=0 prev_portal=0 nausea=0 pos=0.5,120,0.5 brightness=1.0 portal=0.5 prev_portal=0.5
 counter 0
 shot b181_hud5_portal_partial
-hud health=20 prev=20 food=20 saturation=5 xp=0 level=0 item=0 armor=0 helmet=-1 creative=0 sleep=0 portal=0 prev_portal=0 nausea=0 pos=0.5,120,0.5 brightness=0.77777773 portal=1 prev_portal=1 nausea=1
+hud health=20 prev=20 food=20 saturation=5 xp=0 level=0 item=0 armor=0 helmet=-1 creative=0 sleep=0 portal=0 prev_portal=0 nausea=0 pos=0.5,120,0.5 brightness=1.0 portal=1 prev_portal=1 nausea=1
 counter 0
 shot b181_hud5_portal_nausea
-hud health=20 prev=20 food=20 saturation=5 xp=0 level=0 item=0 armor=0 helmet=-1 creative=0 sleep=0 portal=0 prev_portal=0 nausea=0 pos=0.5,120,0.5 brightness=0.77777773 helmet=86 creative=1
+hud health=20 prev=20 food=20 saturation=5 xp=0 level=0 item=0 armor=0 helmet=-1 creative=0 sleep=0 portal=0 prev_portal=0 nausea=0 pos=0.5,120,0.5 brightness=1.0 helmet=86 creative=1
 counter 0
 shot b181_hud5_pumpkin_creative
-hud health=20 prev=20 food=20 saturation=5 xp=0 level=0 item=0 armor=0 helmet=-1 creative=0 sleep=0 portal=0 prev_portal=0 nausea=0 pos=0.5,120,0.5 brightness=0.77777773 sleep=1
+hud health=20 prev=20 food=20 saturation=5 xp=0 level=0 item=0 armor=0 helmet=-1 creative=0 sleep=0 portal=0 prev_portal=0 nausea=0 pos=0.5,120,0.5 brightness=1.0 sleep=1
 counter 0
 shot b181_hud5_sleep_enter
-hud health=20 prev=20 food=20 saturation=5 xp=0 level=0 item=0 armor=0 helmet=-1 creative=0 sleep=0 portal=0 prev_portal=0 nausea=0 pos=0.5,120,0.5 brightness=0.77777773 sleep=100
+hud health=20 prev=20 food=20 saturation=5 xp=0 level=0 item=0 armor=0 helmet=-1 creative=0 sleep=0 portal=0 prev_portal=0 nausea=0 pos=0.5,120,0.5 brightness=1.0 sleep=100
 counter 0
 shot b181_hud5_sleep_full
-hud health=20 prev=20 food=20 saturation=5 xp=0 level=0 item=0 armor=0 helmet=-1 creative=0 sleep=0 portal=0 prev_portal=0 nausea=0 pos=0.5,120,0.5 brightness=0.77777773 sleep=105
+hud health=20 prev=20 food=20 saturation=5 xp=0 level=0 item=0 armor=0 helmet=-1 creative=0 sleep=0 portal=0 prev_portal=0 nausea=0 pos=0.5,120,0.5 brightness=1.0 sleep=105
 counter 0
 shot b181_hud5_sleep_exit
-hud health=20 prev=20 food=20 saturation=5 xp=0 level=0 item=0 armor=0 helmet=-1 creative=0 sleep=0 portal=0 prev_portal=0 nausea=0 pos=0.5,120,0.5 brightness=0.77777773 sleep=110
+hud health=20 prev=20 food=20 saturation=5 xp=0 level=0 item=0 armor=0 helmet=-1 creative=0 sleep=0 portal=0 prev_portal=0 nausea=0 pos=0.5,120,0.5 brightness=1.0 sleep=110
 counter 0
 shot b181_hud5_sleep_end
-hud health=20 prev=20 food=20 saturation=5 xp=0 level=0 item=0 armor=0 helmet=-1 creative=0 sleep=0 portal=0 prev_portal=0 nausea=0 pos=0.5,120,0.5 brightness=0.77777773 xp=2147483647 level=0
+hud health=20 prev=20 food=20 saturation=5 xp=0 level=0 item=0 armor=0 helmet=-1 creative=0 sleep=0 portal=0 prev_portal=0 nausea=0 pos=0.5,120,0.5 brightness=1.0 xp=2147483647 level=0
 counter 0
 shot b181_hud5_xp_overflow
-hud health=20 prev=20 food=20 saturation=5 xp=0 level=0 item=0 armor=0 helmet=-1 creative=0 sleep=0 portal=0 prev_portal=0 nausea=0 pos=0.5,120,0.5 brightness=0.77777773 xp=10 level=2147483647
+hud health=20 prev=20 food=20 saturation=5 xp=0 level=0 item=0 armor=0 helmet=-1 creative=0 sleep=0 portal=0 prev_portal=0 nausea=0 pos=0.5,120,0.5 brightness=1.0 xp=10 level=2147483647
 counter 0
 shot b181_hud5_xp_cap_overflow
 # --- end player-gui round 5 HUD ---
@@ -611,6 +612,7 @@ shot b181_creative_to_inventory
 # --- end player-gui ---
 
 # --- player-gui round 8: GuiSlot, GuiYesNo and GuiRenameWorld ---
+dropworld
 saves ../out/guisaves
 clear 128
 open select
