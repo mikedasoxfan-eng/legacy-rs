@@ -24732,6 +24732,12 @@
   "player-gui b1.8.1: statistics synchronization",
   "player-gui b1.8.1: whole-player ticks"
  ],
+ "GuiAchievements": [
+  "gui181: achievements",
+  "gui181: achievements_hover_locked",
+  "gui181: achievements_hover_open",
+  "player-gui b1.8.1: GUI pixels player-gui3-scenes"
+ ],
  "GuiButton": [
   "player-gui b1.8.1 round 4: chest container lifecycle",
   "player-gui b1.8.1 round 4: controllers, picking and creative reach",
@@ -24924,6 +24930,16 @@
   "gui181: texturepacks",
   "gui181: packs_list",
   "gui181: packs_selected"
+ ],
+ "GuiStats": [
+  "gui181: stats_general",
+  "gui181: stats_items",
+  "gui181: stats_items_sorted",
+  "gui181: stats_items_scrolled",
+  "gui181: stats_blocks",
+  "gui181: stats_blocks_sorted",
+  "gui181: stats_blocks_hover_item",
+  "player-gui b1.8.1 round 4: statistics comparators"
  ],
  "GuiTexturePackSlot": [
   "gui181: texturepacks",

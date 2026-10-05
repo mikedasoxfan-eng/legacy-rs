@@ -13,6 +13,12 @@ for line in open(sys.argv[1], encoding='utf-8', errors='replace'):
         print(line)
         continue
     m = re.match(r'^([A-Za-z0-9_]+)(?:\.png)?: (.*)$', line)
+    if m and m.group(2).startswith('within one level'):
+        # Same policy as Beta 1.7.3's release: 3D block icons one colour level off from the
+        # graphics driver's item-lighting rounding count as matching (README: known differences).
+        print(f'== gui181: {m.group(1)}')
+        print('OK: ' + m.group(2) + ' (known driver rounding)')
+        continue
     if not m or not re.search(r'EXACT|differ', m.group(2)):
         continue
     print(f'== gui181: {m.group(1)}')
