@@ -1,5 +1,8 @@
 {
  "Timer": "only ticksPerSecond's visibility changed (public -> package)",
  "SoundManager": "only the field_587_e -> latestSoundID rename",
- "BlockRedstoneOre": "only the field_468_a -> glowing rename"
+ "BlockRedstoneOre": "only the field_468_a -> glowing rename",
+ "BlockDoor": "func_28107_a -> playAuxSFXAtEntity rename; height bound 127 written as 128 - 1",
+ "BlockCloth": "static dye/block mapping methods renamed (getBlockFromDye/getDyeFromBlock)",
+ "ItemCloth": "calls the renamed BlockCloth.getBlockFromDye"
 }

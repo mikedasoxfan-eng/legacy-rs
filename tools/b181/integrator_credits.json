@@ -17,6 +17,8 @@
  "BlockReed",
  "BlockSign",
  "BlockSnowBlock",
+ "BlockStairs",
+ "BlockStep",
  "BlockTallGrass",
  "BlockTrapDoor",
  "BlockVine",
