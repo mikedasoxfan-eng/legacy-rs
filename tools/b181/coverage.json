@@ -37373,6 +37373,9 @@
   "block showcase: fast off, anaglyph",
   "Nether terrain meshes (fire, glowstone, the Nether light table)"
  ],
+ "TextureCompassFX": [
+  "gui181: textures check"
+ ],
  "TexturedQuad": [
   "entities181: models181"
  ],
