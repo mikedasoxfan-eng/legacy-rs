@@ -5,7 +5,11 @@ fn main() {
         eprintln!("usage: entity_compare181 CASE TICKS ORACLE_FILE");
         process::exit(2);
     }
+    let expected = fs::read(&a[3]).unwrap();
     let actual = match a[1].as_str() {
+        "blockitem6" => worldgen::entity::round6_verify181::block_items_replay(&expected),
+        "spawninputs6" => worldgen::entity::round6_verify181::spawn_inputs_replay(&expected),
+        "livingdamage6" | "living6" | "livingnbt6" | "sleep6" | "dyeproperties6" | "dyeblocks6" | "doorhelper6" | "dooritem6" => worldgen::entity::round6_verify181::replay(&a[1]),
         "recorditem5" | "paintingitem5" | "vehicleriders5" | "dyesheep5" | "potionexpiry5"
         | "watchers5" | "wolfremote5" | "health5" | "wolfattack5" | "wolffollow5"
         | "vehiclecollision5" | "vehicleinteract5" | "skeletondeath5" => {
@@ -26,7 +30,6 @@ fn main() {
         }
         _ => worldgen::entity::verify181::replay(&a[1], a[2].parse().unwrap()),
     };
-    let expected = fs::read(&a[3]).unwrap();
     if actual == expected {
         println!("EXACT: entities181 {} ({} bytes)", a[1], actual.len());
         return;

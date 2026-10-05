@@ -531,7 +531,7 @@ pub fn bed_check(path:&str)->bool {
 
 pub fn player_living_check(path: &str) -> bool {
     use worldgen::entity::{Entity, EntityKind, player::ItemStack};
-    let mut d=Input{data:std::fs::read(path).unwrap(),at:0,checks:0,bad:0};let count=d.u();
+    let mut d=Input{data:std::fs::read(path).unwrap(),at:0,checks:0,bad:0};let header=d.u();let round6=header==0x18160006;let count=if round6 {d.u()}else{header};
     let mut renderer=super::player::Renderer::default();let mut w=worldgen::entity::verify181::world();
     for case in 0..count {
         let c=d.u() as i32;let material=d.u() as i32;let id=d.u() as i32;let arrows=d.u() as i32;let using=d.u()!=0;let partial=d.f();let brightness=d.f();
@@ -540,7 +540,8 @@ pub fn player_living_check(path: &str) -> bool {
         e.living.prev_limb_amount=0.2;e.living.limb_amount=0.9;e.living.limb_swing=3.75;e.ticks_existed=c*127;e.living.prev_swing_progress=0.15;e.living.swing_progress=0.65;
         e.living.hurt_time=if c%4==1 {3}else{0};e.living.death_time=if c%4==2 {c}else{0};e.sneaking=c%3==0;e.riding=if c%2!=0 {Some(100000)}else{None};
         let p=e.player_state_mut().unwrap();p.inventory.main[0]=Some(ItemStack::new(id,1,0));for j in 0..4 {p.inventory.armor[j]=if material==5 {None}else{Some(ItemStack::new(298+material*4+3-j as i32,1,0))};}p.item_use_ticks=if using {20}else{0};
-        let g=renderer.render_lit(&e,partial,[0.0;3],1.0,brightness,0,false);assert_eq!(d.u() as usize,g.draws.len(),"player {case} draw count");for (i,r) in g.draws.iter().enumerate(){d.draw(r,&format!("player {case} draw {i}"));}
+        let (local,bed)=if round6 {let local=d.u()!=0;let bed=d.u() as i32;let sleep=d.u()!=0;e.living.health=d.u() as i32;let p=e.player_state_mut().unwrap();p.sleeping=sleep;p.bed_offset=worldgen::entity::Vec3D::new(0.1f32 as f64,-0.2f32 as f64,0.3f32 as f64);(local,bed)}else{(false,0)};
+        let g=renderer.render_lit(&e,partial,[0.0;3],1.0,brightness,bed,local);assert_eq!(d.u() as usize,g.draws.len(),"player {case} draw count");for (i,r) in g.draws.iter().enumerate(){d.draw(r,&format!("player {case} draw {i}"));}
         assert!(matches!(e.kind,EntityKind::Player(..)));
     }
     assert_eq!(d.at,d.data.len());println!("player renderers: {count} cases, {} values, {} differences",d.checks,d.bad);d.bad==0

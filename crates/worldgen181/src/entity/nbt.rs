@@ -69,10 +69,11 @@ impl Entity {
             }
         }
         if !self.living.effects.is_empty() && self.kind.is_living() {
-            let effects = self
-                .living
-                .effects
-                .iter()
+            let mut ordered: Vec<_> = self.living.effects.iter().collect();
+            let capacity = self.living.effect_capacity;
+            ordered.sort_by_key(|e| ((e.id as u32 ^ (e.id as u32 >> 16)) as usize) & (capacity - 1));
+            let effects = ordered
+                .into_iter()
                 .map(|e| {
                     let mut n = Compound::new();
                     n.put("Id", Tag::Byte(e.id as i8));

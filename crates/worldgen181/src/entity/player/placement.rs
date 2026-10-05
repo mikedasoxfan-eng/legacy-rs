@@ -15,9 +15,6 @@ pub fn offset(x: i32, y: i32, z: i32, side: i32) -> (i32, i32, i32) {
     (x + dx, y + dy, z + dz)
 }
 pub fn can_place(w: &mut World, id: u8, x: i32, y: i32, z: i32, side: i32) -> bool {
-    if y < 0 || y >= 128 {
-        return false;
-    }
     let existing = w.get_block_id(x, y, z);
     if w.block_collision_box(id, x, y, z)
         .is_some_and(|b| !w.check_if_aabb_is_clear(b))
@@ -154,7 +151,7 @@ impl Entity {
                 (volume + 1.0) / 2.0,
                 pitch * 0.8,
             );
-            stack.count -= 1;
+            stack.count = stack.count.wrapping_sub(1);
         }
         true
     }
@@ -233,26 +230,9 @@ impl Entity {
         if !self.can_edit_block181(x,y,z) || !self.can_edit_block181(x,y+1,z) || !can_place_at(w, id, x, y, z, side) {
             return false;
         }
-        let mut dir = floor(((self.yaw + 180.0) * 4.0 / 360.0) as f64 - 0.5) & 3;
-        let (dx, dz) = [(0, 1), (-1, 0), (0, -1), (1, 0)][dir as usize];
-        let left = w.is_block_normal_cube(x - dx, y, z - dz) as i32
-            + w.is_block_normal_cube(x - dx, y + 1, z - dz) as i32;
-        let right = w.is_block_normal_cube(x + dx, y, z + dz) as i32
-            + w.is_block_normal_cube(x + dx, y + 1, z + dz) as i32;
-        let left_door =
-            w.get_block_id(x - dx, y, z - dz) == id || w.get_block_id(x - dx, y + 1, z - dz) == id;
-        let right_door =
-            w.get_block_id(x + dx, y, z + dz) == id || w.get_block_id(x + dx, y + 1, z + dz) == id;
-        if (left_door && !right_door) || right > left {
-            dir = ((dir - 1) & 3) + 4;
-        }
-        w.editing_blocks = true;
-        w.set_block_and_metadata_with_notify(x, y, z, id, dir);
-        w.set_block_and_metadata_with_notify(x, y + 1, z, id, dir + 8);
-        w.editing_blocks = false;
-        w.notify_blocks_of_neighbor_change(x, y, z, id);
-        w.notify_blocks_of_neighbor_change(x, y + 1, z, id);
-        stack.count -= 1;
+        let dir = floor(((self.yaw + 180.0) * 4.0 / 360.0) as f64 - 0.5) & 3;
+        place_door181(w, x, y, z, dir, id);
+        stack.count = stack.count.wrapping_sub(1);
         true
     }
     pub fn place_bed(
@@ -283,4 +263,26 @@ impl Entity {
         stack.count -= 1;
         true
     }
+}
+
+/// ItemDoor.func_35434_a, also used by vanilla structure generation.
+pub fn place_door181(w: &mut World, x: i32, y: i32, z: i32, mut dir: i32, id: u8) {
+        let (dx, dz) = match dir {0=>(0,1),1=>(-1,0),2=>(0,-1),3=>(1,0),_=>(0,0)};
+        let left = w.is_block_normal_cube(x - dx, y, z - dz) as i32
+            + w.is_block_normal_cube(x - dx, y + 1, z - dz) as i32;
+        let right = w.is_block_normal_cube(x + dx, y, z + dz) as i32
+            + w.is_block_normal_cube(x + dx, y + 1, z + dz) as i32;
+        let left_door =
+            w.get_block_id(x - dx, y, z - dz) == id || w.get_block_id(x - dx, y + 1, z - dz) == id;
+        let right_door =
+            w.get_block_id(x + dx, y, z + dz) == id || w.get_block_id(x + dx, y + 1, z + dz) == id;
+        if (left_door && !right_door) || right > left {
+            dir = (dir.wrapping_sub(1) & 3) + 4;
+        }
+        w.editing_blocks = true;
+        w.set_block_and_metadata_with_notify(x, y, z, id, dir);
+        w.set_block_and_metadata_with_notify(x, y + 1, z, id, dir.wrapping_add(8));
+        w.editing_blocks = false;
+        w.notify_blocks_of_neighbor_change(x, y, z, id);
+        w.notify_blocks_of_neighbor_change(x, y + 1, z, id);
 }
