@@ -526,6 +526,10 @@ pub fn run() {
         sky_check(&args);
         return;
     }
+    if args.get(1).map(String::as_str) == Some("--lightmapcheck") {
+        let ok = render::lightmap::check(&args[2]);
+        std::process::exit(if ok { 0 } else { 1 });
+    }
     if args.get(1).map(String::as_str) == Some("--meshcheck") {
         let ok = mesh_check(&args);
         println!("{}", if ok { "MESHES EXACT" } else { "MESHES DIFFER" });

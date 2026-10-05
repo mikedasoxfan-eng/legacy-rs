@@ -82,6 +82,9 @@ pub struct Gpu {
     origins_bind: wgpu::BindGroup,
     origins_buf: wgpu::Buffer,
     origins_cap: usize,
+    lightmap_tex: wgpu::Texture,
+    lightmap_view: wgpu::TextureView,
+    lightmap_sampler: wgpu::Sampler,
     p_opaque: super::color_mask::Pipelines,
     p_water_depth: super::color_mask::Pipelines,
     p_water_color: super::color_mask::Pipelines,
@@ -190,16 +193,35 @@ impl Gpu {
         });
         let layout1 = device.create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor {
             label: Some("layout1"),
-            entries: &[wgpu::BindGroupLayoutEntry {
-                binding: 0,
-                visibility: wgpu::ShaderStages::VERTEX,
-                ty: wgpu::BindingType::Buffer {
-                    ty: wgpu::BufferBindingType::Storage { read_only: true },
-                    has_dynamic_offset: false,
-                    min_binding_size: None,
+            entries: &[
+                wgpu::BindGroupLayoutEntry {
+                    binding: 0,
+                    visibility: wgpu::ShaderStages::VERTEX,
+                    ty: wgpu::BindingType::Buffer {
+                        ty: wgpu::BufferBindingType::Storage { read_only: true },
+                        has_dynamic_offset: false,
+                        min_binding_size: None,
+                    },
+                    count: None,
                 },
-                count: None,
-            }],
+                // b1.8.1 lightmap (texture unit 1 in the original), sampled linearly, clamped.
+                wgpu::BindGroupLayoutEntry {
+                    binding: 1,
+                    visibility: wgpu::ShaderStages::FRAGMENT,
+                    ty: wgpu::BindingType::Texture {
+                        sample_type: wgpu::TextureSampleType::Float { filterable: true },
+                        view_dimension: wgpu::TextureViewDimension::D2,
+                        multisampled: false,
+                    },
+                    count: None,
+                },
+                wgpu::BindGroupLayoutEntry {
+                    binding: 2,
+                    visibility: wgpu::ShaderStages::FRAGMENT,
+                    ty: wgpu::BindingType::Sampler(wgpu::SamplerBindingType::Filtering),
+                    count: None,
+                },
+            ],
         });
         let terrain_layout = device.create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
             label: Some("terrain layout"),
@@ -215,7 +237,7 @@ impl Gpu {
         let vertex_layout = wgpu::VertexBufferLayout {
             array_stride: std::mem::size_of::<Vertex>() as u64,
             step_mode: wgpu::VertexStepMode::Vertex,
-            attributes: &wgpu::vertex_attr_array![0 => Float32x3, 1 => Float32x2, 2 => Unorm8x4],
+            attributes: &wgpu::vertex_attr_array![0 => Float32x3, 1 => Float32x2, 2 => Unorm8x4, 3 => Uint32],
         };
         let alpha_blend = wgpu::BlendState::ALPHA_BLENDING;
         const WEATHER_ATTRIBUTES: [wgpu::VertexAttribute; 3] =
@@ -269,7 +291,7 @@ impl Gpu {
                 multisample: Default::default(),
                 fragment: Some(wgpu::FragmentState {
                     module: &shader,
-                    entry_point: Some("fs_main"),
+                    entry_point: Some(if vs == "vs_terrain" { "fs_terrain" } else { "fs_main" }),
                     compilation_options: Default::default(),
                     targets: &[Some(wgpu::ColorTargetState { format: config.format, blend, write_mask: write_mask & mask })],
                 }),
@@ -359,10 +381,33 @@ impl Gpu {
             usage: wgpu::BufferUsages::STORAGE | wgpu::BufferUsages::COPY_DST,
             mapped_at_creation: false,
         });
+        let lightmap_tex = device.create_texture(&wgpu::TextureDescriptor {
+            label: Some("lightmap"),
+            size: wgpu::Extent3d { width: 16, height: 16, depth_or_array_layers: 1 },
+            mip_level_count: 1,
+            sample_count: 1,
+            dimension: wgpu::TextureDimension::D2,
+            format: wgpu::TextureFormat::Rgba8Unorm,
+            usage: wgpu::TextureUsages::TEXTURE_BINDING | wgpu::TextureUsages::COPY_DST,
+            view_formats: &[],
+        });
+        let lightmap_view = lightmap_tex.create_view(&Default::default());
+        let lightmap_sampler = device.create_sampler(&wgpu::SamplerDescriptor {
+            label: Some("lightmap"),
+            address_mode_u: wgpu::AddressMode::ClampToEdge,
+            address_mode_v: wgpu::AddressMode::ClampToEdge,
+            mag_filter: wgpu::FilterMode::Linear,
+            min_filter: wgpu::FilterMode::Linear,
+            ..Default::default()
+        });
         let origins_bind = device.create_bind_group(&wgpu::BindGroupDescriptor {
             label: Some("origins"),
             layout: &layout1,
-            entries: &[wgpu::BindGroupEntry { binding: 0, resource: origins_buf.as_entire_binding() }],
+            entries: &[
+                wgpu::BindGroupEntry { binding: 0, resource: origins_buf.as_entire_binding() },
+                wgpu::BindGroupEntry { binding: 1, resource: wgpu::BindingResource::TextureView(&lightmap_view) },
+                wgpu::BindGroupEntry { binding: 2, resource: wgpu::BindingResource::Sampler(&lightmap_sampler) },
+            ],
         });
 
         let vbuf = |data: &[Vertex], label: &str| -> (wgpu::Buffer, u32) {
@@ -490,6 +535,9 @@ impl Gpu {
             origins_bind,
             origins_buf,
             origins_cap,
+            lightmap_tex,
+            lightmap_view,
+            lightmap_sampler,
             p_opaque,
             p_water_depth,
             p_water_color,
@@ -663,6 +711,21 @@ impl Gpu {
 
     /// A frame with no world (menus): `overlay` draws everything (the GUI clears itself).
     /// With `capture`, the frame is also returned as an image.
+    /// Upload this frame's lightmap (`func_35808_e` texels, ARGB).
+    pub fn set_lightmap(&self, texels: &[u32; 256]) {
+        self.queue.write_texture(
+            wgpu::TexelCopyTextureInfo {
+                texture: &self.lightmap_tex,
+                mip_level: 0,
+                origin: wgpu::Origin3d::ZERO,
+                aspect: wgpu::TextureAspect::All,
+            },
+            &super::lightmap::rgba(texels),
+            wgpu::TexelCopyBufferLayout { offset: 0, bytes_per_row: Some(64), rows_per_image: Some(16) },
+            wgpu::Extent3d { width: 16, height: 16, depth_or_array_layers: 1 },
+        );
+    }
+
     pub fn render_overlay_only(
         &mut self,
         capture: bool,
@@ -921,7 +984,11 @@ impl Gpu {
             self.origins_bind = self.device.create_bind_group(&wgpu::BindGroupDescriptor {
                 label: Some("origins"),
                 layout: &layout1,
-                entries: &[wgpu::BindGroupEntry { binding: 0, resource: self.origins_buf.as_entire_binding() }],
+                entries: &[
+                    wgpu::BindGroupEntry { binding: 0, resource: self.origins_buf.as_entire_binding() },
+                    wgpu::BindGroupEntry { binding: 1, resource: wgpu::BindingResource::TextureView(&self.lightmap_view) },
+                    wgpu::BindGroupEntry { binding: 2, resource: wgpu::BindingResource::Sampler(&self.lightmap_sampler) },
+                ],
             });
         }
         let origins: Vec<[f32; 4]> = visible

@@ -248,6 +248,9 @@ pub struct App {
     item_fx: Option<render::item_fx::ItemFx>,
     fx_rng: render::fx::Rng,
     cloud_ticks: i64,
+    /// EntityRenderer torch flicker (b1.8.1 lightmap), and its Math.random source.
+    flicker: render::lightmap::Flicker,
+    flicker_rng: worldgen::random::JavaRandom,
     weather: render::weather::Weather,
     weather_terrain: render::weather::Snapshot,
     weather_rng: render::weather::ClientRandom,
@@ -347,6 +350,8 @@ impl App {
             item_fx: None,
             fx_rng: render::fx::Rng::new(0x9E3779B97F4A7C15),
             cloud_ticks: 0,
+            flicker: Default::default(),
+            flicker_rng: worldgen::random::JavaRandom::new(std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).map_or(0, |d| d.as_nanos() as i64)),
             weather: Default::default(),
             weather_terrain: Default::default(),
             weather_rng: render::weather::ClientRandom::new(seed),
@@ -1277,6 +1282,8 @@ impl App {
                         }
                         self.chunks_loaded = chunks;
                         self.cloud_ticks += 1;
+                        let rng = &mut self.flicker_rng;
+                        self.flicker.tick(|| rng.next_double());
                         self.fog_fade[0] = self.fog_fade[1];
                         // EntityRenderer.updateRenderer: distance-dependent fade toward eye brightness.
                         self.fog_fade[1] += (video.fog_target(fog_brightness) - self.fog_fade[1]) * 0.1f32;
@@ -1567,7 +1574,16 @@ impl App {
             player_right,
         };
 
+        // EntityRenderer.func_35808_e: the lightmap, with the world read at partial tick 1.
+        let lightmap = {
+            let dim = if self.nether { worldgen::world::Dimension::Nether } else { worldgen::world::Dimension::Overworld };
+            let angle1 = if self.nether { 0.5 } else { sky::celestial_angle(self.world_time, 1.0) };
+            let sky_factor = render::lightmap::sky_factor(angle1, self.weather.rain_at(1.0), self.weather.thunder_at(1.0));
+            let gamma = 0.0f32; // the Brightness option (field_35380_M) arrives with the b1.8.1 options screen
+            render::lightmap::compute(&dim.light_brightness_table(), sky_factor, self.flicker.x, self.weather.flash > 0, gamma)
+        };
         if let Some(gpu) = &mut self.gpu {
+            gpu.set_lightmap(&lightmap);
             gpu.lit_effect_batches = lit_effect_batches;
             gpu.entities.snapshots = self.entities.clone();
             gpu.entities.pistons = self.pistons.clone();
