@@ -791,6 +791,9 @@ fn material(s: &Snapshot, pos: [f64; 3]) -> u8 {
 
 pub struct EffectRenderer {
     pub layers: [Vec<Particle>; 4],
+    /// EntityFX.interpPos: only renderParticles updates it. The lit pass and
+    /// clearEffects deliberately retain the previous regular pass's origin.
+    pub interp_pos: [f64; 3],
     pub creation_terrain: Snapshot,
     pub cloud_player: Option<[f64; 5]>,
     pub math_random: JavaRandom,
@@ -818,15 +821,43 @@ impl EffectRenderer {
     }
     /// Parallel packed-light output for integrators using the lightmap texture.
     pub fn lightmapped_vertices(&mut self, s: &Snapshot, cam: [f64; 3], yaw: f32, pitch: f32, partial: f32) -> [Vec<(WeatherVertex, i32)>; 3] {
+        let mut out: [Vec<_>; 3] = std::array::from_fn(|_| Vec::new());
+        self.render_particles(s, cam, yaw, pitch, partial, |layer, p, origin, rot, light, _color| {
+            // These FX set the Tessellator color array, which replaces GL's
+            // current material color rather than multiplying it.
+            out[layer].extend(p.vertices(s, origin, rot, partial).into_iter().map(|v| (v, light)));
+        });
+        out
+    }
+    /// Original EffectRenderer.renderParticles dispatch. Brightness is evaluated
+    /// immediately before each callback, including callbacks that emit no quads.
+    pub fn render_particles(&mut self, s: &Snapshot, cam: [f64; 3], yaw: f32, pitch: f32, partial: f32,
+        mut draw: impl FnMut(usize, &mut Particle, [f64; 3], [f32; 5], i32, Option<[f32; 4]>)) {
         let rot = rotation(yaw, pitch);
-        std::array::from_fn(|i| self.layers[i].iter_mut().flat_map(|p| {
+        self.interp_pos = cam;
+        for layer in 0..3 {
+            for (index, p) in self.layers[layer].iter_mut().enumerate() {
+                let light = p.packed_brightness(s, partial);
+                // b1.8.1 resets the GL material color at each nonempty layer;
+                // scalar world brightness must not tint the lightmapped quads.
+                draw(layer, p, cam, rot, light, (index == 0).then_some([1.0; 4]));
+            }
+        }
+    }
+    /// Original func_1187_b: insertion order in layer 3, current camera rotation,
+    /// and the retained interpPos. It does not update the interpolation origin.
+    pub fn render_lit_particles(&mut self, s: &Snapshot, yaw: f32, pitch: f32, partial: f32,
+        mut draw: impl FnMut(&mut Particle, [f64; 3], [f32; 5], i32)) {
+        let rot = rotation(yaw, pitch);
+        for p in &mut self.layers[3] {
             let light = p.packed_brightness(s, partial);
-            p.vertices(s, cam, rot, partial).into_iter().map(move |v| (v, light))
-        }).collect())
+            draw(p, self.interp_pos, rot, light);
+        }
     }
     pub fn new(seed: i64) -> Self {
         Self {
             layers: std::array::from_fn(|_| Vec::new()),
+            interp_pos: [0.0; 3],
             creation_terrain: Snapshot::default(),
             cloud_player: None,
             math_random: JavaRandom::new(seed),
@@ -851,6 +882,12 @@ impl EffectRenderer {
         for l in &mut self.layers {
             l.clear();
         }
+    }
+    /// clearEffects also replaces the world used by subsequent constructors.
+    /// Its RNGs and EntityFX's interpolation origin remain unchanged.
+    pub fn clear_world(&mut self, terrain: Snapshot) {
+        self.clear();
+        self.creation_terrain = terrain;
     }
     pub fn create(&mut self, kind: Kind, p: [f64; 3], v: [f64; 3]) -> Particle {
         let seed = if let Some(source) = self.seed_source.as_mut() {
@@ -944,13 +981,8 @@ impl EffectRenderer {
         pitch: f32,
         partial: f32,
     ) -> [Vec<WeatherVertex>; 3] {
-        let rot = rotation(yaw, pitch);
-        std::array::from_fn(|i| {
-            self.layers[i]
-                .iter_mut()
-                .flat_map(|p| p.vertices(s, cam, rot, partial))
-                .collect()
-        })
+        self.lightmapped_vertices(s, cam, yaw, pitch, partial)
+            .map(|layer| layer.into_iter().map(|(vertex, _)| vertex).collect())
     }
     pub fn destroy(&mut self, cell: [i32; 3], block: u8, metadata: i32) {
         if block == 0 {

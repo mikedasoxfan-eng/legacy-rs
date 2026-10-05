@@ -381,11 +381,54 @@ impl World {
         }
     }
     pub fn create_map(&mut self, stack: &mut ItemStack, player: &Entity) {
+        self.try_create_map(stack, Some(player)).expect("ItemMap.onCreated");
+    }
+    pub fn try_create_map(&mut self, stack: &mut ItemStack, player: Option<&Entity>) -> Result<(), &'static str> {
         self.load_map_counts();
         self.map_id = (self.map_id as i16).wrapping_add(1) as i32;
         stack.damage = self.map_id;
-        self.map_created(self.map_id, player);
+        // setItemData precedes the first player dereference in vanilla.
+        self.maps.data.insert(self.map_id, MapData::default());
         self.save_map_count();
+        let player = player.ok_or("NullPointerException")?;
+        self.map_created(self.map_id, player);
+        Ok(())
+    }
+    /// ItemMap.func_28013_a: unlike the stack lookup, a missing static lookup
+    /// allocates an entirely default MapData, with no spawn/scale/dirty setup.
+    /// Return its storage key, which need not equal the requested short ID.
+    pub fn get_map_by_id(&mut self, id: i16) -> i32 {
+        self.load_map_counts();
+        let id = id as i32;
+        if self.maps.load(self.storage.as_ref().map(|s| s.dir.as_path()), id) {
+            return id;
+        }
+        self.map_id = (self.map_id as i16).wrapping_add(1) as i32;
+        self.maps.data.insert(self.map_id, MapData::default());
+        self.save_map_count();
+        self.map_id
+    }
+    /// ItemMap.onUpdate, including the client guard and non-player entities.
+    /// The inventory tick delegates here; marker updates remain player-only.
+    pub fn update_map_item(&mut self, stack: &mut ItemStack, entity: &Entity, selected: bool) {
+        self.try_update_map_item(stack, Some(entity), selected).expect("ItemMap.onUpdate");
+    }
+    pub fn try_update_map_item(&mut self, stack: &mut ItemStack, entity: Option<&Entity>, selected: bool) -> Result<(), &'static str> {
+        if self.multiplayer_world { return Ok(()); }
+        self.get_map(stack);
+        self.update_loaded_map_item(stack, entity, selected)
+    }
+    /// Shared callback tail after get_map has published the stack's damage.
+    fn update_loaded_map_item(&mut self, stack: &ItemStack, entity: Option<&Entity>, selected: bool) -> Result<(), &'static str> {
+        let mut map = self.maps.data.remove(&stack.damage).unwrap();
+        if let Some(entity) = entity.filter(|e| e.player_state().is_some()) { map.update_markers(self, entity, stack); }
+        let result = if selected {
+            if let Some(entity) = entity { map.update_terrain(self, entity); Ok(()) }
+            else if map.dimension as i32 == if self.dimension.is_hell_world() {-1} else {0} { Err("NullPointerException") }
+            else { Ok(()) }
+        } else { Ok(()) };
+        self.maps.data.insert(stack.damage, map);
+        result
     }
     pub fn map_created(&mut self, id: i32, player: &Entity) {
         self.maps.data.insert(
@@ -432,6 +475,7 @@ impl World {
 }
 impl Entity {
     pub fn update_maps(&mut self, w: &mut World) {
+        if w.multiplayer_world { return; }
         for slot in 0..36 {
             let Some(mut stack) = self
                 .player_state()
@@ -440,14 +484,13 @@ impl Entity {
             else {
                 continue;
             };
+            // Java's callback mutates the inventory's shared ItemStack before
+            // update_markers examines that inventory. Publish the same damage.
             w.get_map(&mut stack);
             self.player_state_mut().unwrap().inventory.main[slot] = Some(stack);
-            let mut map = w.maps.data.remove(&stack.damage).unwrap();
-            map.update_markers(w, self, &stack);
-            if self.player_state().unwrap().inventory.current_item as usize == slot {
-                map.update_terrain(w, self);
-            }
-            w.maps.data.insert(stack.damage, map);
+            let selected = self.player_state().unwrap().inventory.current_item as usize == slot;
+            w.update_loaded_map_item(&stack, Some(self), selected).expect("ItemMap.onUpdate");
+            self.player_state_mut().unwrap().inventory.main[slot] = Some(stack);
         }
     }
 }

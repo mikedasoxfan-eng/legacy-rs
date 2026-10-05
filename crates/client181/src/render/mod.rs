@@ -15,6 +15,7 @@ pub mod texture_check;
 pub mod particles;
 pub mod particle_check;
 pub mod render_list;
+pub mod effect_check8;
 pub mod gpu;
 pub mod map;
 pub mod player_view;
