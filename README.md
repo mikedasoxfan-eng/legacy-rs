@@ -4,6 +4,7 @@
 
 **Minecraft Beta 1.7.3, rewritten in Rust, proven identical to the original.**
 
+[![release](https://img.shields.io/badge/release-v1.0.0-2ea44f?style=flat&labelColor=3b3b3b)](https://github.com/mikedasoxfan-eng/beta-rs/releases/latest)
 [![Minecraft](https://img.shields.io/badge/Minecraft-Beta_1.7.3-6aa84f?style=flat&labelColor=3b3b3b)](#)
 [![Rust](https://img.shields.io/badge/built_with-Rust-b7410e?style=flat&logo=rust&logoColor=white&labelColor=3b3b3b)](#)
 [![wgpu](https://img.shields.io/badge/graphics-wgpu-4b6ec2?style=flat&labelColor=3b3b3b)](#)
@@ -17,7 +18,24 @@
 [![multiplayer](https://img.shields.io/badge/multiplayer-not_planned-9e9e9e?style=flat&labelColor=3b3b3b)](#scope)
 [![Herobrine](https://img.shields.io/badge/Herobrine-not_found-a33?style=flat&labelColor=3b3b3b)](#)
 
+**[Download](#download)** · **[Documentation](docs/README.md)** · **[Changelog](CHANGELOG.md)** · **[How exact is exact?](#how-exact-is-exact)**
+
 </div>
+
+---
+
+## Download
+
+Grab `beta-rs-1.0.0-windows-x64.exe` from the
+[latest release](https://github.com/mikedasoxfan-eng/beta-rs/releases/latest) and run it.
+
+**You need Minecraft Beta 1.7.3 installed through the official launcher first** (Installations →
+tick "Historical versions" → New installation → version "old_beta b1.7.3", then play it once). beta-rs reads the textures, sounds
+and fonts from that installation; it ships none of its own. Windows 10/11 64-bit with a
+DirectX 12, Vulkan or OpenGL capable GPU.
+
+Worlds are saved next to the exe in `saves\`, in the original format: copy a world into
+`%APPDATA%\.minecraft\saves` to open it in the real game, or the other way round.
 
 ---
 
@@ -167,12 +185,15 @@ git), and Mojang's Java 8u51 runtime, which the official launcher installs.
 
 ## Playing
 
+Download the release (above), or build it yourself with
+a current stable [Rust](https://rustup.rs) toolchain:
+
 ```
 cargo build --release -p client
 target\release\beta.exe
 ```
 
-or double-click `play.bat`. The game starts at the title screen: **Singleplayer → Create New
+or double-click `play.bat`. `beta --help` lists the command-line options. The game starts at the title screen: **Singleplayer → Create New
 World**, exactly like the original. Worlds go to `saves\` next to the exe.
 
 ### Controls
@@ -212,7 +233,7 @@ Same as the original's defaults, and rebindable in Options → Controls:
 
 ```
 crates/
-  worldgen/           the simulation (25k lines)
+  worldgen/           the simulation (34k lines)
     overworld.rs      terrain noise, biomes, surface
     caves.rs          the cave carver
     populate.rs       ores, lakes, dungeons, trees, flowers, snow ...
@@ -225,7 +246,7 @@ crates/
                       placement, items, beds, persistence)
     storage.rs        McRegion region files, level.dat, NBT
     bin/compare.rs    the Rust side of every oracle comparison
-  client/             the window (20k lines)
+  client/             the window (30k lines)
     app.rs            Minecraft's main loop: screens, input, camera, HUD wiring
     worker.rs         the world thread: ticks, meshing, entity snapshots, saving
     render/           blocks.rs + blocks_special.rs (RenderBlocks), sky, weather,
@@ -237,6 +258,8 @@ crates/
                       inventory and containers, statistics),
                       ingame.rs (HUD), font, language files, settings
     sound.rs          SoundManager / SoundPool semantics over cpal
+docs/                 design notes and verification coverage per subsystem
+assets/               the exe icon (original pixel art, not a Mojang texture)
 tools/
   verify.sh           the full bit-exact comparison (quick mode: `verify.sh quick`)
   verify_gui.sh       the GUI screenshot diff against the real client
@@ -298,6 +321,15 @@ icons on the achievement and statistics screens can be one colour shade off on a
 pixels, which comes from the graphics driver's own rounding of item lighting (measured, but
 not reproducible bit for bit). Multiplayer, the launcher and online skins were never in
 scope.
+
+---
+
+## License
+
+beta-rs is a personal, unofficial project and is **not** released under an open-source
+license: much of it follows the structure of Mojang's decompiled game code, so the code is
+for personal use only and may not be redistributed. Minecraft's textures, sounds and fonts
+are never included; they are read from your own installation at runtime.
 
 ---
 

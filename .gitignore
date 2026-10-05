@@ -8,3 +8,7 @@
 /tools/oracle/server/build/
 /tools/oracle/gui/build/
 /dist/
+/stats/
+/screenshots/
+/texturepacks/
+options.txt

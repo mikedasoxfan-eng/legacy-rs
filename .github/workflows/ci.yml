@@ -1,0 +1,30 @@
+name: CI
+
+# Builds the game and runs the tests that need no Mojang files. The bit-exact oracle
+# (tools/verify.sh) needs the original jar, its decompiled sources and Mojang's Java 8u51,
+# none of which are in the repository, so it runs locally before every merge.
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build and test (Windows)
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - name: Build
+        run: cargo build --release --workspace
+      - name: Simulation tests
+        run: cargo test --release -p worldgen
+      - name: Version
+        run: target/release/beta.exe --version
+      - uses: actions/upload-artifact@v4
+        with:
+          name: beta-windows-x64
+          path: target/release/beta.exe

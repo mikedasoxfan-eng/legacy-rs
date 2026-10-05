@@ -30,6 +30,30 @@ use winit::event_loop::{ControlFlow, EventLoop};
 use worker::WorldOptions;
 use worldgen::BiomeSource;
 
+const HELP: &str = "\
+beta-rs: Minecraft Beta 1.7.3 in Rust
+
+Usage: beta [options]
+
+Without options the title screen opens, exactly like the original. Textures, sounds and fonts
+are read from your own installation (%APPDATA%\\.minecraft\\versions\\b1.7.3\\b1.7.3.jar).
+
+Options:
+  --seed <number or text>        create and enter a world with this seed
+  --world <name>                 enter (or create) saves\\<name>
+  --world-dir <path>             enter any save folder, including one from the real game
+  --no-save                      play without writing anything to disk
+  --time <ticks>                 start at this time of day
+  --weather <rain,thunder,flash> start with rain/thunder strength (0 to 1 each)
+  --options-dir <path>           read options.txt (and keep stats, screenshots) there
+  --server [--view-distance n]   use the dedicated server's chunk loading
+  --shot <file.png> [--shot-ticks n]
+                                 take a screenshot after n ticks and exit
+  --play-script <file.txt>       drive the player from a script (unattended testing)
+  --version                      print the version
+  --help                         print this help
+";
+
 /// Java's `String.hashCode`, which the world-creation screen uses for non-numeric seeds.
 fn java_string_hash(s: &str) -> i32 {
     s.encode_utf16().fold(0i32, |h, c| h.wrapping_mul(31).wrapping_add(c as i32))
@@ -332,6 +356,17 @@ fn mesh_check(a: &[String]) -> bool {
 
 fn main() {
     let args: Vec<String> = std::env::args().collect();
+    match args.get(1).map(String::as_str) {
+        Some("--version" | "-V") => {
+            println!("beta-rs {} (Minecraft Beta 1.7.3)", env!("CARGO_PKG_VERSION"));
+            return;
+        }
+        Some("--help" | "-h") => {
+            print!("{}", HELP);
+            return;
+        }
+        _ => {}
+    }
     if args.get(1).map(String::as_str) == Some("--skydrawcheck") {
         render::video_check::sky_draw(&args[2]);
         return;

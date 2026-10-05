@@ -116,12 +116,12 @@ Furnace smelting, filled dispenser operation, lit/unlit swaps, machine inventory
 scattering and typed machine NBT are implemented in `crate::container` and
 verified against original bytecode. Container sessions process window-tagged
 open/click/close messages and synchronize real player and tile inventories.
-See `crates/client/src/gui/CONTAINERS.md` for the UI/world-thread contract.
+See `docs/containers.md` for the UI/world-thread contract.
 Maps, fishing rods and signs/paintings
 are not implemented. The requested foods, buckets, flint/steel,
 bow, snowballs/eggs, hoe/seeds, shears and dyes are implemented. Boats and carts
 have simulation, riding, inventory, NBT and renderer ports; see
-[vehicle coverage](../../../../../VEHICLES.md).
+[vehicle coverage](../../../../../docs/vehicles.md).
 
 Finished stages are stored in `target/player-stages` and can be committed with
 `bash target/commit-player.sh` when Git metadata is writable. The script stages
@@ -129,5 +129,5 @@ only captured paths, preserves unrelated staged work, refuses newer uncaptured
 edits, records completed commit IDs, and restores the finished files on failure.
 
 World sound/particle callbacks are now ordered events; notes and records are supported.
-See [the effects coverage report](../../../../../EFFECTS.md) for original-bytecode checks
+See [the effects coverage report](../../../../../docs/effects.md) for original-bytecode checks
 and remaining presentation boundaries.

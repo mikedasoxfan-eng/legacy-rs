@@ -35,9 +35,9 @@ clipped edges into screen-space triangles. Crack drawing retains the original
 Tessellator's disabled vertex color, destination/source-color blend, and polygon
 offset. All vanilla RenderBlocks destruction render types are implemented,
 including doors, rails, stairs, fences, levers, repeaters, beds, and pistons.
-`tools/port_damage.py` regenerates the mechanical Java-to-Rust destruction-face
-ports from the local decompiled `RenderBlocks.java`; the bytecode oracle remains
-the authority for their correctness.
+Cracks are drawn by the same RenderBlocks port as the world, with
+`overrideBlockTexture` set, exactly as the original does; the bytecode oracle is the
+authority for their correctness.
 
 ## Verification
 

@@ -86,9 +86,9 @@ Existing world/terrain/lighting/storage/mesh/server comparisons remain enabled.
 Exactness is established for these replay inputs, not every possible game state.
 The player inventory/controller simulation is now included; see its linked
 README. Unsupported entities include paintings. Boat/cart item use creates simulation
-entities; chest carts expose the existing container API. See [vehicle coverage](../../../../VEHICLES.md).
+entities; chest carts expose the existing container API. See [vehicle coverage](../../../../docs/vehicles.md).
 Existing unsupported block machinery such as full redstone/piston circuits and
 furnace ticking remains outside the entity port; its existing checks remain.
 
 World sound/particle callbacks are now retained and compared per frame. Slime/player
-contact is included in the player replay checks. See [the effects coverage report](../../../../EFFECTS.md).
+contact is included in the player replay checks. See [the effects coverage report](../../../../docs/effects.md).

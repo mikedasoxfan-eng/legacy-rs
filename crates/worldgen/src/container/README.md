@@ -5,7 +5,7 @@ owns main, armor and cursor stacks. `World::container_command` handles window
 messages and synchronizes the views with real player and tile inventories.
 `World::container_snapshot` publishes current contents, furnace progress and
 player-preview animation. See the client integration contract in
-`crates/client/src/gui/CONTAINERS.md`.
+`docs/containers.md`.
 
 The recipe table is extracted from the original bytecode, including the exact
 sorted order and stable registration ties. Regenerate it and the GUI item-name
