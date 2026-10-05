@@ -1,5 +1,5 @@
 //! Beta 1.8.1 DataWatcher wire format and Java object equality semantics.
-use std::{cell::RefCell, io::{self, Read}, rc::Rc};
+use std::{io::{self, Read}, sync::{Arc, Mutex}};
 use crate::world::java_hash::JavaHashSet;
 
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
@@ -25,7 +25,7 @@ pub struct WatchItem { pub id: i32, pub count: i32, pub damage: i32 }
 pub enum Value {
     Byte(i8), Short(i16), Int(i32), Float(f32),
     /// Java strings can contain unpaired UTF-16 surrogates.
-    String(Vec<u16>), Item(Rc<RefCell<WatchItem>>), Coordinates(ChunkCoordinates),
+    String(Vec<u16>), Item(Arc<Mutex<WatchItem>>), Coordinates(ChunkCoordinates),
 }
 fn float_bits(v: f32) -> u32 { if v.is_nan() { 0x7fc00000 } else { v.to_bits() } }
 impl PartialEq for Value {
@@ -33,7 +33,7 @@ impl PartialEq for Value {
         match (self,b) {
             (Self::Byte(a),Self::Byte(b)) => a==b, (Self::Short(a),Self::Short(b)) => a==b,
             (Self::Int(a),Self::Int(b)) => a==b, (Self::Float(a),Self::Float(b)) => float_bits(*a)==float_bits(*b),
-            (Self::String(a),Self::String(b)) => a==b, (Self::Item(a),Self::Item(b)) => Rc::ptr_eq(a,b),
+            (Self::String(a),Self::String(b)) => a==b, (Self::Item(a),Self::Item(b)) => Arc::ptr_eq(a,b),
             (Self::Coordinates(a),Self::Coordinates(b)) => a==b, _ => false,
         }
     }
@@ -46,7 +46,7 @@ pub struct WatchableObject { pub object_type: i32, pub id: i32, pub value: Value
 impl WatchableObject {
     pub fn new(id: i32, value: Value) -> Self { Self {object_type:value.kind(),id,value,watching:true} }
 }
-#[derive(Default)]
+#[derive(Clone, Default)]
 pub struct DataWatcher {
     order: JavaHashSet<i32>,
     objects: std::collections::BTreeMap<i32, WatchableObject>,
@@ -82,7 +82,7 @@ pub fn write_list(list: Option<&[WatchableObject]>) -> io::Result<Vec<u8>> {
             Value::Byte(v)=>out.push(*v as u8), Value::Short(v)=>out.extend(v.to_be_bytes()),
             Value::Int(v)=>out.extend(v.to_be_bytes()), Value::Float(v)=>out.extend(float_bits(*v).to_be_bytes()),
             Value::String(v)=> { if v.len()>32767 {return Err(io::Error::new(io::ErrorKind::InvalidData,"String too big"));}out.extend((v.len() as i16).to_be_bytes());for c in v {out.extend(c.to_be_bytes());} }
-            Value::Item(v)=> {let v=v.borrow();out.extend((v.id as i16).to_be_bytes());out.push(v.count as u8);out.extend((v.damage as i16).to_be_bytes());}
+            Value::Item(v)=> {let v=v.lock().unwrap();out.extend((v.id as i16).to_be_bytes());out.push(v.count as u8);out.extend((v.damage as i16).to_be_bytes());}
             Value::Coordinates(v)=> {for v in [v.x,v.y,v.z] {out.extend(v.to_be_bytes());}}
         }
     }
@@ -98,10 +98,17 @@ pub fn read_list(input: &mut impl Read) -> io::Result<Option<Vec<Option<Watchabl
             0=>Some(Value::Byte(bytes::<1>(input)?[0] as i8)),1=>Some(Value::Short(i16::from_be_bytes(bytes(input)?))),
             2=>Some(Value::Int(i32::from_be_bytes(bytes(input)?))),3=>Some(Value::Float(f32::from_bits(u32::from_be_bytes(bytes(input)?)))),
             4=> {let len=i16::from_be_bytes(bytes(input)?);if !(0..=64).contains(&len){return Err(io::Error::new(io::ErrorKind::InvalidData,"Invalid watcher string length"));}let mut chars=Vec::new();for _ in 0..len{chars.push(u16::from_be_bytes(bytes(input)?));}Some(Value::String(chars))}
-            5=>Some(Value::Item(Rc::new(RefCell::new(WatchItem{id:i16::from_be_bytes(bytes(input)?) as i32,count:bytes::<1>(input)?[0] as i8 as i32,damage:i16::from_be_bytes(bytes(input)?) as i32})))),
+            5=>Some(Value::Item(Arc::new(Mutex::new(WatchItem{id:i16::from_be_bytes(bytes(input)?) as i32,count:bytes::<1>(input)?[0] as i8 as i32,damage:i16::from_be_bytes(bytes(input)?) as i32})))),
             6=>Some(Value::Coordinates(ChunkCoordinates{x:i32::from_be_bytes(bytes(input)?),y:i32::from_be_bytes(bytes(input)?),z:i32::from_be_bytes(bytes(input)?)})),
             _=>None,
         };
         list.get_or_insert_with(Vec::new).push(value.map(|value|WatchableObject {object_type:kind as i32,id,value,watching:true}));
+    }
+}
+
+impl std::fmt::Debug for DataWatcher {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("DataWatcher").field("objects", &self.objects)
+            .field("object_changed", &self.object_changed).finish()
     }
 }

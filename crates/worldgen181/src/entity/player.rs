@@ -365,7 +365,7 @@ impl Entity {
     }
     pub fn heal(&mut self, amount: i32) {
         if self.living.health > 0 {
-            self.living.health = (self.living.health + amount).min(20);
+            self.living.health = self.living.health.wrapping_add(amount).min(20);
             self.living.hearts_life = self.living.hearts_halves_life / 2;
         }
     }

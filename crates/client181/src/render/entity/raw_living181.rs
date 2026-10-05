@@ -317,20 +317,41 @@ fn general(s: &RenderState, camera: [f64; 3], normalize: bool) -> Fixed {
         }
     }
     embedded_arrows(&mut g, &m, s.entity_id, s.arrow_count, s.partial);
-    if let Some(item) = s.held_item {
+    if s.held_stack.is_some() || s.held_item.is_some() {
         g.push();
         special::part(&mut g, &m["bipedRightArm"], true);
         g.translate(-0.0625, 0.4375, 0.0625);
-        if item.icon == 21 {
+        let block_3d = s.held_stack.is_some_and(|item| item.id < 256 && super::inventory::in_3d(item.id as i16));
+        let bow = s.held_stack.map_or_else(|| s.held_item.is_some_and(|item| item.icon == 21), |item| item.id == 261);
+        let full_3d = s.held_stack.map_or_else(|| s.held_item.is_some_and(|item| item.full_3d), |item| super::player::full_3d(item.id));
+        if block_3d {
+            g.translate(0.0, 0.1875, -0.3125);
+            g.rotate(20.0, 1.0, 0.0, 0.0);
+            g.rotate(45.0, 0.0, 1.0, 0.0);
+            g.scale(0.375, -0.375, 0.375);
+        } else if bow {
             g.translate(0.0, 0.125, 0.3125);
             g.rotate(-20.0, 0.0, 1.0, 0.0);
-        } else {
+            g.scale(0.625, -0.625, 0.625);
+            g.rotate(-100.0, 1.0, 0.0, 0.0);
+            g.rotate(45.0, 0.0, 1.0, 0.0);
+        } else if full_3d {
             g.translate(0.0, 0.1875, 0.0);
+            g.scale(0.625, -0.625, 0.625);
+            g.rotate(-100.0, 1.0, 0.0, 0.0);
+            g.rotate(45.0, 0.0, 1.0, 0.0);
+        } else {
+            g.translate(0.25, 0.1875, -0.1875);
+            g.scale(0.375, 0.375, 0.375);
+            g.rotate(60.0, 0.0, 0.0, 1.0);
+            g.rotate(-90.0, 1.0, 0.0, 0.0);
+            g.rotate(20.0, 0.0, 0.0, 1.0);
         }
-        g.scale(0.625, -0.625, 0.625);
-        g.rotate(-100.0, 1.0, 0.0, 0.0);
-        g.rotate(45.0, 0.0, 1.0, 0.0);
-        special::sprite(&mut g, item.icon, item.terrain);
+        if let Some(item) = s.held_stack {
+            crate::render::first_person::item(&mut g, item, 1.0, false);
+        } else if let Some(item) = s.held_item {
+            special::sprite(&mut g, item.icon, item.terrain);
+        }
         g.pop();
     }
     let flash = if s.kind == MobKind::Creeper && (s.creeper_flash * 10.0) as i32 % 2 != 0 {

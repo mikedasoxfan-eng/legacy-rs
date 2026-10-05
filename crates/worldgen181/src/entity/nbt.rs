@@ -365,6 +365,7 @@ impl Entity {
             let direction = s.direction;
             self.set_painting_direction(direction);
         }
+        self.sync_mob_watcher();
         Some(())
     }
 }

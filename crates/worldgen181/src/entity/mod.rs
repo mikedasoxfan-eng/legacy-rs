@@ -19,7 +19,9 @@ pub mod living;
 pub mod mobs181;
 pub mod nbt;
 pub mod network;
+pub mod watcher;
 pub mod round4_verify181;
+pub mod round5_verify181;
 pub mod objects;
 pub mod painting;
 pub mod path;
@@ -224,6 +226,7 @@ impl EntityKind {
 
 #[derive(Clone, Debug)]
 pub struct Entity {
+    pub data_watcher: data_watcher::DataWatcher,
     pub living: living::LivingState,
     pub network: network::NetworkState,
     pub entity_id: i32,
@@ -332,6 +335,7 @@ impl Entity {
         let id = w.next_entity_id;
         w.next_entity_id = id.wrapping_add(1);
         let mut e = Self {
+            data_watcher: Default::default(),
             living: Default::default(),
             network: Default::default(),
             entity_id: id,
@@ -387,6 +391,7 @@ impl Entity {
             rider_pitch_delta: 0.0,
         };
         e.set_position(0.0, 0.0, 0.0);
+        e.init_data_watcher();
         e
     }
     pub fn item(w: &mut World, x: f64, y: f64, z: f64, item: ItemStack) -> Self {
@@ -518,6 +523,7 @@ impl Entity {
                 });
             }
             self.after_special_attack(w, attacker, hit);
+            self.sync_mob_watcher();
             return hit;
         }
         if matches!(self.kind, EntityKind::Fireball(..)) {
@@ -578,6 +584,7 @@ impl Entity {
             EntityKind::Lightning { .. } => self.update_lightning(w),
             _ => self.update_hostile_living(w),
         }
+        self.sync_mob_watcher();
     }
 }
 pub use geometry::{AxisAlignedBB, MovingObjectPosition, Vec3D};

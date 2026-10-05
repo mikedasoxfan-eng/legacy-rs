@@ -530,3 +530,20 @@ pub fn lifecycle_check(path: &str) -> bool {
     println!("EXACT: EffectRenderer lifecycle, {cases} snapshots, 48,036 insertions across four layers");
     true
 }
+
+/// Complete named factory matrix, including admission boundaries and error RNG.
+pub fn factory_check(path: &str) -> bool {
+    use super::particles::EffectRenderer;
+    let mut actual = Vec::new();
+    let names = ["bubble","suspended","depthsuspend","townaura","crit","magicCrit","smoke","note","portal","explode","flame","lava","footstep","splash","largesmoke","cloud","reddust","snowballpoof","snowshovel","slime","heart","largeexplode","hugeexplosion","iconcrack_260","iconcrack_+267","iconcrack_351","tilecrack_1","tilecrack_18","tilecrack_35","tilecrack_98","unknown","iconcrack_foo","tilecrack_","tilecrack_300","tilecrack_111","iconcrack_111"];
+    for name in names { for offset in [0.0,16.0,16.0001,1000.0,f64::NAN] {
+        let mut renderer=EffectRenderer::new(0);renderer.next_seed=100;renderer.math_random.set_seed(200);
+        let error=renderer.try_spawn(name,[-3.5,85.25,4.5],[0.125,-0.1,0.2],[-3.5+offset,85.25,4.5]).err().unwrap_or("");
+        actual.extend((error.len() as i32).to_le_bytes());actual.extend(error.as_bytes());
+        for layer in &renderer.layers { actual.extend((layer.len() as i32).to_le_bytes());for p in layer{actual.extend(state(p,&renderer.math_random));} }
+        actual.extend(renderer.math_random.state().to_le_bytes());actual.extend((renderer.len() as i32).to_le_bytes());
+    }}
+    let expected=std::fs::read(path).unwrap();
+    if actual!=expected {let offset=actual.iter().zip(&expected).position(|(a,b)|a!=b).unwrap_or(actual.len().min(expected.len()));eprintln!("particle factory DIFF byte {offset}: Java {}, Rust {}",expected.len(),actual.len());std::fs::write(std::path::Path::new(path).with_extension("rust.bin"),actual).unwrap();return false;}
+    println!("EXACT: named particle factory, {} cases, {} bytes",names.len()*5,actual.len());true
+}

@@ -23,6 +23,7 @@ pub struct SquidState {
 }
 impl Entity {
     pub fn set_slime_size(&mut self, new_size: i32) {
+        self.data_watcher.update(16, super::data_watcher::Value::Byte(new_size as i8)).unwrap();
         if let EntityKind::Slime { size, .. } = &mut self.kind {
             *size = new_size as i8 as i32;
         }

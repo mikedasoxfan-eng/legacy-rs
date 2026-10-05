@@ -6,11 +6,24 @@ fn main() {
         process::exit(2);
     }
     let actual = match a[1].as_str() {
-        "watchers" | "coordinates" | "light" | "registry" => worldgen::entity::api_verify181::replay(&a[1]),
-        "creeperdeath4" | "sun4" | "network4" | "lightning4" | "retaliation4" | "impact4" | "flying4" | "explosionblocks4" | "creeper4" => worldgen::entity::round4_verify181::replay(&a[1]),
+        "recorditem5" | "paintingitem5" | "vehicleriders5" | "dyesheep5" | "potionexpiry5"
+        | "watchers5" | "wolfremote5" | "health5" | "wolfattack5" | "wolffollow5"
+        | "vehiclecollision5" | "vehicleinteract5" | "skeletondeath5" => {
+            worldgen::entity::round5_verify181::replay(&a[1])
+        }
+        "watchers" | "coordinates" | "light" | "registry" => {
+            worldgen::entity::api_verify181::replay(&a[1])
+        }
+        "creeperdeath4" | "sun4" | "network4" | "lightning4" | "retaliation4" | "impact4"
+        | "flying4" | "explosionblocks4" | "creeper4" => {
+            worldgen::entity::round4_verify181::replay(&a[1])
+        }
         "combat" => worldgen::entity::combat_verify181::replay(),
         "explosion" => worldgen::entity::combat_verify181::explosion_replay(),
-        "slimebranches" | "skeletonbranches" | "wolfbranches" | "vehiclebranches" | "fireballbranches" | "spawnbranches" | "spawnorder" | "factorybranches" => worldgen::entity::branches_verify181::replay(&a[1]),
+        "slimebranches" | "skeletonbranches" | "wolfbranches" | "vehiclebranches"
+        | "fireballbranches" | "spawnbranches" | "spawnorder" | "factorybranches" => {
+            worldgen::entity::branches_verify181::replay(&a[1])
+        }
         _ => worldgen::entity::verify181::replay(&a[1], a[2].parse().unwrap()),
     };
     let expected = fs::read(&a[3]).unwrap();

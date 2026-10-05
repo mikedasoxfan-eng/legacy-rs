@@ -164,6 +164,7 @@ impl Entity {
         self.motion.x += x;
         self.motion.y += y;
         self.motion.z += z;
+        self.velocity_changed = true;
     }
     fn dismount_vehicle_rider(&mut self, w: &mut World) {
         if let Some(id) = self.ridden_by {
@@ -771,6 +772,9 @@ impl Entity {
                 return;
             }
         };
+        if w.multiplayer_world {
+            return;
+        }
         if self.ridden_by == Some(other.entity_id) {
             return;
         }

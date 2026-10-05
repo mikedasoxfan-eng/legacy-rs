@@ -504,7 +504,8 @@ pub fn new_living_check(path:&str)->bool {
  use super::living::{MobKind,RenderState};
  let mut d=Input{data:std::fs::read(path).unwrap(),at:0,checks:0,bad:0};let n=d.u();
  for case in 0..n {let kind=d.u();let c=d.u() as i32;let arrows=d.u() as i32;let partial=d.f();let brightness=d.f();let packed=d.u() as i32;
-  let mut s=RenderState::new(match kind {0=>MobKind::Enderman,1=>MobKind::Silverfish,2=>MobKind::Spider,3=>MobKind::CaveSpider,4=>MobKind::Zombie,5=>MobKind::Skeleton,6=>MobKind::Pig,7=>MobKind::Cow,8=>MobKind::Sheep,9=>MobKind::Chicken,10=>MobKind::Squid,11=>MobKind::Wolf,12=>MobKind::Creeper,13=>MobKind::Ghast,14=>MobKind::PigZombie,15=>MobKind::Giant,16=>MobKind::Slime,_=>panic!("unknown mob kind {kind}")});
+  let mut s=RenderState::new(match kind {0=>MobKind::Enderman,1=>MobKind::Silverfish,2=>MobKind::Spider,3=>MobKind::CaveSpider,4=>MobKind::Zombie,5=>MobKind::Skeleton,6=>MobKind::Pig,7=>MobKind::Cow,8=>MobKind::Sheep,9=>MobKind::Chicken,10=>MobKind::Squid,11=>MobKind::Wolf,12=>MobKind::Creeper,13=>MobKind::Ghast,14=>MobKind::PigZombie,15=>MobKind::Giant,16=>MobKind::Slime,17=>MobKind::Zombie,_=>panic!("unknown mob kind {kind}")});
+  if kind==17 {let id=d.u() as i32;let metadata=d.u() as i32;s.held_item=None;s.held_stack=Some(worldgen::entity::player::ItemStack::new(id,1,metadata));}
   s.entity_id=c*337;s.arrow_count=arrows;s.partial=partial;s.brightness=1.0;s.overlay_brightness=brightness;s.position=[-0.25,10.5,3.75];
   s.body_yaw=-33.0+(17.0 - -33.0)*partial;s.yaw=-75.0+(35.0 - -75.0)*partial;s.pitch=25.0+(-12.0-25.0)*partial;
   s.limb_amount=0.2+(0.9-0.2)*partial;s.limb_swing=3.75-0.9*(1.0-partial);s.age=(c*127) as f32+partial;s.attack=0.15+(0.65-0.15)*partial;
