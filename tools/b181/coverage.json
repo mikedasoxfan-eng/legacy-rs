@@ -4861,6 +4861,17 @@
   "world-blocks b1.8.1: visual",
   "world-blocks b1.8.1: weather"
  ],
+ "BlockVine": [
+  "world-blocks b1.8.1: plants",
+  "world-blocks b1.8.1: geometry",
+  "world-blocks b1.8.1: drops",
+  "world-blocks b1.8.1: visual",
+  "world-blocks b1.8.1: colors",
+  "world-blocks b1.8.1: placement4",
+  "world-blocks b1.8.1: fire4",
+  "world-blocks b1.8.1: harvest4",
+  "BlockVine: random-tick growth, crowding and losing support"
+ ],
  "ChestItemRenderHelper": [
   "entities181: Arrow",
   "entities181: Boat",

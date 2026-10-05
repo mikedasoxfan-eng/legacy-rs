@@ -19,6 +19,7 @@
  "BiomeDecorator 8 fixture 1": true,
  "BiomeDecorator 9 fixture 0": true,
  "BiomeDecorator 9 fixture 1": true,
+ "BlockVine: random-tick growth, crowding and losing support": true,
  "EffectRenderer destruction, hits, tint, eviction and vertex bits": false,
  "EntityPickupFX item and arrow renderer draws": false,
  "Fast and Fancy clouds": true,

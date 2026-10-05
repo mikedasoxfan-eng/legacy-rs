@@ -332,6 +332,43 @@ pub fn replay(kind: &str, ticks: i32) -> Vec<u8> {
     if kind == "explosion" { return super::combat_verify181::explosion_replay(); }
     if kind == "combat" { return super::combat_verify181::replay(); }
     if matches!(kind, "watchers" | "coordinates" | "light" | "registry") { return super::api_verify181::replay(kind); }
+    if kind == "vine" {
+        // BlockVine.updateTick / onNeighborBlockChange in the flat fixture (Mode_vine181).
+        let mut w = world();
+        let raw = |w: &mut World, x: i32, y: i32, z: i32, id: u8, m: i32| {
+            let c = w.chunk_mut(x >> 4, z >> 4);
+            c.blocks[crate::world::chunk::idx(x & 15, y, z & 15)] = id;
+            c.data.set(x & 15, y, z & 15, m);
+        };
+        for x in 0..=6 { for y in 64..=72 { raw(&mut w, x, y, 0, 1, 0); } }
+        for y in 64..=70 { raw(&mut w, 10, y, 3, 1, 0); }
+        for (x, y, z, m) in [(1, 72, 1, 4), (4, 70, 1, 4), (9, 68, 3, 8), (5, 66, -1, 1), (7, 71, 0, 2)] {
+            raw(&mut w, x, y, z, 106, m);
+        }
+        let mut o = Vec::new();
+        for step in 0..40 {
+            for _ in 0..20 {
+                let mut vines = Vec::new();
+                for x in -3..=12 { for y in 60..=80 { for z in -3..=5 {
+                    if w.get_block_id(x, y, z) == 106 { vines.push((x, y, z)); }
+                } } }
+                for (x, y, z) in vines {
+                    if w.get_block_id(x, y, z) == 106 {
+                        crate::world::behavior::update_tick(&mut w, 106, x, y, z, crate::world::RandSel::World);
+                    }
+                }
+            }
+            if step == 20 { w.set_block_with_notify(3, 70, 0, 0); }
+            if step == 30 { w.set_block_with_notify(10, 68, 3, 0); }
+            if step == 35 { w.set_block_with_notify(2, 72, 0, 0); }
+            for x in -3..=12 { for y in 60..=80 { for z in -3..=5 {
+                o.push(w.get_block_id(x, y, z));
+                o.push(w.get_block_metadata(x, y, z) as u8);
+            } } }
+            l(&mut o, w.rand.next_long());
+        }
+        return o;
+    }
     if kind == "displayloop" {
         // World.randomDisplayUpdates: b1.8.1 depthsuspend specks and their World.rand calls.
         let mut w = world();

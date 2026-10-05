@@ -176,6 +176,10 @@ echo "== ScreenShotHelper: numbered and named screenshots, pixel order"
 if "$oracle" screenshot181 "$(cygpath -w "$root/target/shot-java")" "$out/screenshot181.bin" >/dev/null 2>&1 && beta --screenshotcheck "$root/target/shot-rust" "$out/screenshot181.bin"; then :; else fail=1; fi
 rm -f "$out/screenshot181.bin"
 
+echo "== BlockVine: random-tick growth, crowding and losing support"
+if "$oracle" vine181 "$out/vine181.bin" >/dev/null 2>&1 && "$root/target/release/entity_compare181" vine 0 "$out/vine181.bin"; then :; else fail=1; fi
+rm -f "$out/vine181.bin"
+
 # --- render-world (b1.8.1) ---
 echo "== lightmap texels (EntityRenderer.func_35808_e): day, night, rain, thunder, flashes, flicker, brightness"
 if "$oracle" lightmap lightmap_case.bin >/dev/null 2>&1 && beta --lightmapcheck "$out/lightmap_case.bin" | tail -1 | grep -q " 0 differences"; then echo "LIGHTMAP EXACT"; else echo "lightmap DIFFERS"; fail=1; fi
