@@ -4,7 +4,7 @@
 
 use crate::nbt::{self, Compound, Tag};
 use crate::world::chunk::{Chunk, Nibbles};
-use crate::world::tile::{ItemStack, TileEntity};
+use crate::world::tile::TileEntity;
 use std::fs::{File, OpenOptions};
 use std::io::{self, Read, Seek, SeekFrom, Write};
 use std::path::{Path, PathBuf};
@@ -516,7 +516,7 @@ pub fn chunk_to_nbt(c: &Chunk, world_time: i64) -> Compound {
                     if let Some(s) = s {
                         let mut it = Compound::new();
                         it.put("Slot", Tag::Byte(i as i8));
-                        it.put("id", Tag::Short(s.id));
+                        it.put("id", Tag::Short(s.id as i16));
                         it.put("Count", Tag::Byte(s.count as i8));
                         it.put("Damage", Tag::Short(s.damage));
                         items.push(Tag::Compound(it));
@@ -581,37 +581,9 @@ pub fn chunk_from_nbt_for_dimension(
     for t in l.list("TileEntities") {
         let Tag::Compound(t) = t else { continue };
         let (x, y, z) = (t.int("x"), t.int("y"), t.int("z"));
-        let te = match t.string("id").as_str() {
-            "RecordPlayer" => TileEntity::RecordPlayer { record: t.int("Record") },
-            "Sign" => TileEntity::Sign(crate::sign::Sign::from_nbt(t)),
-            "Chest" => {
-                let mut slots = Box::new([None; 27]);
-                for it in t.list("Items") {
-                    let Tag::Compound(it) = it else { continue };
-                    let slot = (it.byte("Slot") as u8) as usize;
-                    if slot < 27 && crate::entity::player::registry::item(it.short("id") as i32).is_some() {
-                        slots[slot] = Some(ItemStack {
-                            id: it.short("id"),
-                            count: it.byte("Count") as i32,
-                            damage: it.short("Damage"),
-                        });
-                    }
-                }
-                TileEntity::Chest(slots)
-            }
-            "MobSpawner" => TileEntity::MobSpawner {
-                mob: t.string("EntityId"),
-                delay: t.short("Delay") as i32,
-            },
-            "Music" => TileEntity::Note(crate::world::notes::Note::from_nbt(t)),
-            "Piston" => TileEntity::Piston(crate::world::pistons::Piston::from_nbt(t)),
-            "Furnace" => TileEntity::Furnace(crate::container::tiles::Furnace::from_nbt(t)),
-            "Trap" => {
-                let mut items = Box::new([None; 9]);
-                crate::container::tiles::read_items(t, items.as_mut());
-                TileEntity::Dispenser(items)
-            }
-            _ => {
+        let te = match TileEntity::create_and_load181(t).ok()? {
+            Some((_, tile)) => tile,
+            None => {
                 // Not modelled yet: keep it for the next save if it sits on a container block.
                 let (lx, lz) = (x - c.x * 16, z - c.z * 16);
                 if (0..16).contains(&lx) && (0..16).contains(&lz) && (0..128).contains(&y) {

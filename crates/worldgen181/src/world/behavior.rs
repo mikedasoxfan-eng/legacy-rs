@@ -919,7 +919,7 @@ pub fn drop_block_with_chance(
     }
     if id==36 {
         if let Some(TileEntity::Piston(p))=w.get_block_tile_entity(x,y,z).cloned() {
-            drop_block_as_item(w,p.block_id,x,y,z,p.block_data);
+            drop_block_as_item(w,p.block_id.try_into().expect("BlockPistonMoving block index"),x,y,z,p.block_data);
         }
         return;
     }

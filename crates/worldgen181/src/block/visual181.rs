@@ -94,11 +94,13 @@ pub fn render_type(id: u8) -> i32 {
     int(base(id, false))
 }
 pub fn texture_from_side(id: u8, side: usize, fancy: bool) -> i32 {
+    if id == 84 { return jukebox_texture181(side as i32); }
     assert!(side < 6);
     if id == 81 {return cactus_texture181(side as i32);}
     if stairs_model181(id).is_some() {return stairs_texture181(id,side as i32,0);}
     int(base(id, fancy) + 4 + side * 4)
 }
+pub fn jukebox_texture181(side: i32) -> i32 { 74 + if side == 1 { 1 } else { 0 } }
 pub fn texture_result(id: u8, side: usize, metadata: usize, fancy: bool) -> Result<i32, ()> {
     assert!(side < 6 && metadata < 16);
     if id == 81 {return Ok(cactus_texture181(side as i32));}

@@ -20,7 +20,7 @@ pub const DIRECTIONS: [(i32, i32, i32); 6] = [
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct Piston {
-    pub block_id: u8,
+    pub block_id: i32,
     pub block_data: i32,
     pub facing: i32,
     pub extending: bool,
@@ -30,14 +30,14 @@ pub struct Piston {
 }
 impl Piston {
     pub fn new(
-        block_id: u8,
+        block_id: impl Into<i32>,
         block_data: i32,
         facing: i32,
         extending: bool,
         render_head: bool,
     ) -> Self {
         Self {
-            block_id,
+            block_id: block_id.into(),
             block_data,
             facing,
             extending,
@@ -51,35 +51,38 @@ impl Piston {
         self.last_progress + (self.progress - self.last_progress) * partial
     }
     pub fn offset(&self, partial: f32) -> [f32; 3] {
+        self.offset181(partial).expect("TileEntityPiston direction index")
+    }
+    pub fn offset181(&self, partial: f32) -> Result<[f32; 3], super::tile_nbt181::TileError181> {
         let p = if self.extending {
             self.progress(partial) - 1.0
         } else {
             1.0 - self.progress(partial)
         };
-        let (x, y, z) = DIRECTIONS[self.facing as usize];
-        [p * x as f32, p * y as f32, p * z as f32]
+        let &(x, y, z) = DIRECTIONS.get(self.facing as usize).ok_or(super::tile_nbt181::TileError181::ArrayIndexOutOfBounds)?;
+        Ok([p * x as f32, p * y as f32, p * z as f32])
     }
     pub fn from_nbt(n: &Compound) -> Self {
-        let mut p = Self::new(
-            n.int("blockId") as u8,
-            n.int("blockData"),
-            n.int("facing"),
-            n.boolean("extending"),
-            false,
-        );
-        p.progress = match n.get("progress") {
-            Some(Tag::Float(v)) => *v,
-            _ => 0.0,
-        };
-        p.last_progress = p.progress;
+        let mut p = Self::new(0,0,0,false,false);
+        p.read_from_nbt181(n).expect("TileEntityPiston.readFromNBT");
         p
+    }
+    pub fn read_from_nbt181(&mut self,n:&Compound) -> Result<(), super::tile_nbt181::TileError181> {
+        use super::tile_nbt181 as tn;
+        self.block_id=tn::int(n,"blockId")?;
+        self.block_data=tn::int(n,"blockData")?;
+        self.facing=tn::int(n,"facing")?;
+        self.progress=tn::float(n,"progress")?;self.last_progress=self.progress;
+        self.extending=tn::byte(n,"extending")?!=0;
+        // render_head is constructor-only; loading into a retained object leaves it alone.
+        Ok(())
     }
     pub fn to_nbt(&self, x: i32, y: i32, z: i32) -> Compound {
         let mut n = super::notes::tile_nbt("Piston", x, y, z);
         n.put("blockId", Tag::Int(self.block_id as i32));
         n.put("blockData", Tag::Int(self.block_data));
         n.put("facing", Tag::Int(self.facing));
-        n.put("progress", Tag::Float(self.last_progress));
+        n.put("progress", Tag::Float(if self.last_progress.is_nan() {f32::NAN}else{self.last_progress}));
         n.put("extending", Tag::Byte(self.extending as i8));
         n
     }
@@ -100,6 +103,16 @@ pub fn mobility(id: u8) -> i32 {
     }
 }
 impl World {
+    fn restore_piston_block181(&mut self,x:i32,y:i32,z:i32,id:i32,metadata:i32)->Result<(),super::tile_nbt181::TileError181> {
+        if !super::in_xz_bounds(x,z) || !(0..128).contains(&y) {return Ok(());}
+        if self.access_chunk(x>>4,z>>4) {
+            if self.chunk_set_block_with_metadata_raw181(x>>4,z>>4,x&15,y,z&15,id,metadata)? {
+                self.update_all_light181(x,y,z);
+                self.notify_blocks_of_neighbor_change(x,y,z,id as u8);
+            } else {self.update_all_light181(x,y,z);}
+        }
+        Ok(())
+    }
     fn piston_can_push(&mut self, id: u8, x: i32, y: i32, z: i32, breaking: bool) -> bool {
         if id == OBSIDIAN {
             return false;
@@ -261,7 +274,7 @@ impl World {
                     {
                         if p.facing == facing && p.extending {
                             self.finish_piston_at(px, py, pz);
-                            stored = p.block_id;
+                            stored = p.block_id.try_into().expect("BlockPistonBase carried block ID");
                             meta = p.block_data;
                             completed = true;
                         }
@@ -333,35 +346,47 @@ impl World {
         }
     }
     pub fn finish_piston_at(&mut self, x: i32, y: i32, z: i32) {
-        let Some(TileEntity::Piston(mut p)) = self.get_block_tile_entity(x, y, z).cloned() else {
+        let Some(TileEntity::Piston(_)) = self.get_block_tile_entity(x, y, z) else {
             return;
         };
+        let id = self.chunk(x >> 4, z >> 4).tile_entity_ids[&(x & 15, y, z & 15)];
+        self.clear_piston_tile181(id).expect("TileEntityPiston.clearPistonTileEntity");
+    }
+    pub fn clear_piston_tile181(&mut self,id:u64)->Result<(),super::tile_nbt181::TileError181> {
+        let Some(TileEntity::Piston(mut p))=self.tile_object(id).cloned() else{panic!("not a piston");};
+        let (x,y,z)=self.tile_objects[&id].position;
         if p.last_progress < 1.0 {
             p.progress = 1.0;
             p.last_progress = 1.0;
-            let id = self.chunk(x >> 4, z >> 4).tile_entity_ids[&(x & 15, y, z & 15)];
             self.update_tile_object(id, TileEntity::Piston(p.clone()));
             self.remove_block_tile_entity(x, y, z);
             self.tile_objects.get_mut(&id).unwrap().invalid = true;
             if self.get_block_id(x, y, z) == PISTON_MOVING {
-                self.set_block_and_metadata_with_notify(x, y, z, p.block_id, p.block_data);
+                self.restore_piston_block181(x, y, z, p.block_id, p.block_data)?;
             }
         }
+        Ok(())
     }
     pub fn moving_piston_box(
         &mut self,
         x: i32,
         y: i32,
         z: i32,
-        stored: u8,
+        stored: impl Into<i32>,
         progress: f32,
         facing: i32,
     ) -> Option<BB> {
-        if stored == 0 || stored == PISTON_MOVING {
-            return None;
+        self.moving_piston_box181(x,y,z,stored.into(),progress,facing).expect("BlockPistonMoving collision")
+    }
+    pub fn moving_piston_box181(&mut self,x:i32,y:i32,z:i32,stored:i32,progress:f32,facing:i32)->Result<Option<BB>,super::tile_nbt181::TileError181> {
+        use super::tile_nbt181::TileError181 as E;
+        if stored == 0 || stored == PISTON_MOVING as i32 {
+            return Ok(None);
         }
-        let mut b = self.block_collision_box(stored, x, y, z)?;
-        let (dx, dy, dz) = DIRECTIONS[facing as usize];
+        let block:u8=stored.try_into().map_err(|_|E::ArrayIndexOutOfBounds)?;
+        if !props(block).exists{return Err(E::NullPointer);}
+        let Some(mut b) = self.block_collision_box(block, x, y, z) else {return Ok(None);};
+        let &(dx,dy,dz)=DIRECTIONS.get(facing as usize).ok_or(E::ArrayIndexOutOfBounds)?;
         let (ox, oy, oz) = (
             (dx as f32 * progress) as f64,
             (dy as f32 * progress) as f64,
@@ -373,7 +398,7 @@ impl World {
         b.max_y -= oy;
         b.min_z -= oz;
         b.max_z -= oz;
-        Some(b)
+        Ok(Some(b))
     }
     fn piston_push_entities(
         &mut self,
@@ -383,13 +408,13 @@ impl World {
         p: &Piston,
         mut progress: f32,
         distance: f32,
-    ) {
+    ) -> Result<(),super::tile_nbt181::TileError181> {
         if !p.extending {
             progress -= 1.0;
         } else {
             progress = 1.0 - progress;
         }
-        if let Some(b) = self.moving_piston_box(x, y, z, p.block_id, progress, p.facing) {
+        if let Some(b) = self.moving_piston_box181(x, y, z, p.block_id, progress, p.facing)? {
             let entities = self.entities_within_aabb(None, b);
             let (dx, dy, dz) = DIRECTIONS[p.facing as usize];
             for id in entities {
@@ -404,17 +429,21 @@ impl World {
                 }
             }
         }
+        Ok(())
     }
     pub(crate) fn tick_piston(&mut self, id: u64, mut p: Piston) {
+        self.tick_piston181(id,&mut p).expect("TileEntityPiston.updateEntity");
+    }
+    pub fn tick_piston181(&mut self, id: u64, p: &mut Piston) -> Result<(),super::tile_nbt181::TileError181> {
         let (x, y, z) = self.tile_objects[&id].position;
         p.last_progress = p.progress;
         if p.last_progress >= 1.0 {
             self.update_tile_object(id, TileEntity::Piston(p.clone()));
-            self.piston_push_entities(x, y, z, &p, 1.0, 0.25);
+            self.piston_push_entities(x, y, z, p, 1.0, 0.25)?;
             self.remove_block_tile_entity(x, y, z);
             self.tile_objects.get_mut(&id).unwrap().invalid = true;
             if self.get_block_id(x, y, z) == PISTON_MOVING {
-                self.set_block_and_metadata_with_notify(x, y, z, p.block_id, p.block_data);
+                self.restore_piston_block181(x, y, z, p.block_id, p.block_data)?;
             }
         } else {
             p.progress += 0.5;
@@ -425,11 +454,12 @@ impl World {
                     x,
                     y,
                     z,
-                    &p,
+                    p,
                     p.progress,
                     p.progress - p.last_progress + 0.0625,
-                );
+                )?;
             }
         }
+        Ok(())
     }
 }

@@ -138,7 +138,7 @@ impl Entity {
                 n.put("Health", Tag::Short(*health as i8 as i16));
                 n.put("Age", Tag::Short(*age as i16));
                 let mut i = Compound::new();
-                i.put("id", Tag::Short(item.id));
+                i.put("id", Tag::Short(item.id as i16));
                 i.put("Count", Tag::Byte(item.count as i8));
                 i.put("Damage", Tag::Short(item.damage));
                 n.put("Item", Tag::Compound(i));

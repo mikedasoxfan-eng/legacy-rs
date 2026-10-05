@@ -1,20 +1,29 @@
 //! TileEntityFurnace updateEntity, including consumed lava buckets (no replacement).
 use super::{ItemStack, recipes::CraftingManager};
 use crate::nbt::{Compound, Tag};
+use crate::world::tile_nbt181::{self as tn, TileError181};
 use crate::{
     World,
     entity::{Entity, EntityKind},
     world::{RandSel, tile::TileEntity},
 };
 pub fn read_items(n: &Compound, items: &mut [Option<ItemStack>]) {
-    for tag in n.list("Items") {
-        if let Tag::Compound(n) = tag {
-            let index = n.byte("Slot") as u8 as usize;
-            if index < items.len() {
-                items[index] = ItemStack::try_from_nbt181(n);
-            }
+    read_items181(n, items, false).expect("TileEntityDispenser.readFromNBT");
+}
+/// readFromNBT allocates a fresh array only after getTagList succeeds.
+pub fn read_items181(n: &Compound, items: &mut [Option<ItemStack>], signed_slot: bool) -> Result<(), TileError181> {
+    let list = tn::list(n, "Items")?;
+    items.fill(None);
+    for tag in list {
+        let n = tn::compound(tag)?;
+        let slot = tn::byte(n, "Slot")?;
+        let index = if signed_slot { slot as i32 } else { slot as u8 as i32 };
+        if index >= 0 && (index as usize) < items.len() {
+            // Assign only after the helper returns, including its null result.
+            items[index as usize] = tn::item(n)?;
         }
     }
+    Ok(())
 }
 pub fn inventory_nbt(id: &str, x: i32, y: i32, z: i32, items: &[Option<ItemStack>]) -> Compound {
     let mut n = Compound::new();
@@ -47,6 +56,27 @@ pub struct Furnace {
     pub cook: i32,
 }
 impl World {
+    pub fn set_dispenser_seed181(&mut self, id: u64, seed: i64) {
+        self.tile_objects.get_mut(&id).unwrap().dispenser_random181 = Some(crate::JavaRandom::new(seed));
+        let (x,y,z)=self.tile_objects[&id].position;
+        if self.chunks.get(&(x>>4,z>>4)).and_then(|c|c.tile_entity_ids.get(&(x&15,y,z&15)))==Some(&id) {
+            self.dispenser_random.remove(&(x,y,z));
+        }
+    }
+    /// TileEntityDispenser owns its Random, even after replacement or unloading.
+    pub fn random_dispenser_stack181(&mut self, id: u64) -> Option<ItemStack> {
+        let TileEntity::Dispenser(items) = self.tile_object(id).unwrap().clone() else { panic!("not a dispenser"); };
+        let rng = self.tile_objects.get_mut(&id).unwrap().dispenser_random181.as_mut().unwrap();
+        let mut selected = None;
+        let mut count = 1;
+        for (slot, item) in items.iter().enumerate() {
+            if item.is_some() {
+                if rng.next_int(count) == 0 { selected = Some(slot); }
+                count += 1;
+            }
+        }
+        selected.and_then(|slot| self.decrement_machine181(id, slot, 1))
+    }
     pub fn tick_furnace181(&mut self, id: u64) {
         let Some(TileEntity::Furnace(mut furnace)) = self.tile_object(id).cloned() else { return; };
         let (transition, dirty) = furnace.tick(self.multiplayer_world);
@@ -135,35 +165,15 @@ impl World {
             _ => (-1, 0),
         };
         if self.get_block_tile_entity(x, y, z).is_none(){return;}
-        let mut rng = self.dispenser_random.remove(&(x, y, z)).unwrap_or_else(|| {
-            crate::JavaRandom::new(crate::entity::EntitySeedSource::Time.next_seed())
-        });
-        let mut selected = None;
-        let mut count = 1;
         let key = (x & 15, y, z & 15);
-        let mut stack = None;
-        if let Some(TileEntity::Dispenser(items)) =
-            self.chunk_mut(x >> 4, z >> 4).tile_entities.get_mut(&key)
-        {
-            for i in 0..items.len() {
-                if items[i].is_some() {
-                    if rng.next_int(count) == 0 {
-                        selected = Some(i);
-                    }
-                    count += 1;
-                }
-            }
-            if let Some(i) = selected {
-                let mut s = items[i].unwrap();
-                if s.count <= 1 {
-                    stack = items[i].take();
-                } else {
-                    stack = Some(s.split(1));
-                    items[i] = Some(s);
-                }
-            }
+        let id = self.chunk(x >> 4, z >> 4).tile_entity_ids[&key];
+        // Existing replay seed injection remains a one-call override; the object
+        // retains the resulting state when the position map no longer owns it.
+        if let Some(rng) = self.dispenser_random.remove(&(x, y, z)) {
+            self.tile_objects.get_mut(&id).unwrap().dispenser_random181 = Some(rng);
         }
-        self.dispenser_random.insert((x, y, z), rng);
+        let stack = self.random_dispenser_stack181(id);
+        self.dispenser_random.insert((x, y, z), self.tile_objects[&id].dispenser_random181.clone().unwrap());
         let px = x as f64 + dx as f64 * 0.6 + 0.5;
         let py = y as f64 + 0.5;
         let pz = z as f64 + dz as f64 * 0.6 + 0.5;
@@ -252,12 +262,19 @@ impl World {
 impl Furnace {
     pub fn from_nbt(n: &Compound) -> Self {
         let mut f = Self::default();
-        read_items(n, &mut f.items);
-        f.burn = n.short("BurnTime") as i32;
-        f.cook = n.short("CookTime") as i32;
-        f.current_fuel = CraftingManager::instance().fuel(f.items[1]);
+        f.read_from_nbt181(n).expect("TileEntityFurnace.readFromNBT");
         f
     }
+    pub fn read_from_nbt181(&mut self, n: &Compound) -> Result<(), TileError181> {
+        read_items181(n, &mut self.items, true)?;
+        self.burn = tn::short(n, "BurnTime")? as i32;
+        self.cook = tn::short(n, "CookTime")? as i32;
+        self.current_fuel = CraftingManager::instance().fuel(self.items[1]);
+        Ok(())
+    }
+    /// IInventory.openChest/closeChest are empty in the original furnace.
+    pub fn open_chest181(&mut self) {}
+    pub fn close_chest181(&mut self) {}
     pub fn to_nbt(&self, x: i32, y: i32, z: i32) -> Compound {
         let mut n = inventory_nbt("Furnace", x, y, z, &self.items);
         n.put("BurnTime", Tag::Short(self.burn as i16));

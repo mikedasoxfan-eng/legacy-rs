@@ -72,5 +72,10 @@ for suite in cake9 plate9 door9 extension9 bed9; do
   echo "== world-blocks b1.8.1: $suite"
   if "$oracle" "wb$suite" "wb181-$suite.bin" && "$cmp" worldblocks181 "$suite" "$out/wb181-$suite.bin"; then :; else fail=1; fi
 done
+# Round ten: nullable machine loads, jukebox, base tiles and piston tiles.
+for suite in furnacetile10 dispensertile10 jukebox10 tileentity10 pistontile10; do
+  echo "== world-blocks b1.8.1: $suite"
+  if "$oracle" "wb$suite" "wb181-$suite.bin" && "$cmp" worldblocks181 "$suite" "$out/wb181-$suite.bin"; then :; else fail=1; fi
+done
 [ $fail -eq 0 ] && echo "WORLD-BLOCKS FOCUSED CASES EXACT" || echo "WORLD-BLOCKS FOCUSED CASES DIFFER"
 exit $fail

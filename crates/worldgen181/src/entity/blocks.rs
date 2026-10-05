@@ -15,8 +15,9 @@ impl World {
             if let Some(crate::world::tile::TileEntity::Piston(p)) =
                 self.get_block_tile_entity(x, y, z).cloned()
             {
-                if p.block_id != 0 && p.block_id != PISTON_MOVING && props(p.block_id).exists {
-                    self.set_block_bounds_based_on_state(p.block_id, x, y, z);
+                let carried: u8=p.block_id.try_into().expect("BlockPistonMoving block index");
+                if carried != 0 && carried != PISTON_MOVING && props(carried).exists {
+                    self.set_block_bounds_based_on_state(carried, x, y, z);
                     let mut b = self.block_bounds[p.block_id as usize];
                     let progress = if p.extending {
                         1.0 - p.progress(0.0)
