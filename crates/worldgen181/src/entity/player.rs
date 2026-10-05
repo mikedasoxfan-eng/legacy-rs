@@ -381,6 +381,10 @@ impl Entity {
         s.prev_render_arm_pitch = s.render_arm_pitch;
         s.render_arm_pitch = (s.render_arm_pitch as f64 + (pitch - s.render_arm_pitch) as f64 * 0.5) as f32;
         s.render_arm_yaw = (s.render_arm_yaw as f64 + (yaw - s.render_arm_yaw) as f64 * 0.5) as f32;
+        // The first-person snapshot aliases these same four SP fields. Update it
+        // only when updateEntityActionState runs (not while dead or sleeping).
+        s.arm_pitch = [s.prev_render_arm_pitch, s.render_arm_pitch];
+        s.arm_yaw = [s.prev_render_arm_yaw, s.render_arm_yaw];
         if s.is_swinging {
             s.swing_ticks += 1;
             if s.swing_ticks >= duration {
@@ -401,13 +405,6 @@ impl Entity {
     }
     pub(super) fn player_before_living(&mut self, w: &mut World) {
         self.update_sprint_and_flight();
-        // EntityPlayerSP.updateEntityActionState: the arm follows the view at half speed.
-        let (yaw, pitch) = (self.yaw, self.pitch);
-        let s = self.player_state_mut().unwrap();
-        s.arm_yaw[0] = s.arm_yaw[1];
-        s.arm_pitch[0] = s.arm_pitch[1];
-        s.arm_pitch[1] = (s.arm_pitch[1] as f64 + (pitch - s.arm_pitch[1]) as f64 * 0.5) as f32;
-        s.arm_yaw[1] = (s.arm_yaw[1] as f64 + (yaw - s.arm_yaw[1]) as f64 * 0.5) as f32;
         if self.player_state().unwrap().in_portal && self.riding.is_some() {
             self.mount_entity(w, None);
         }

@@ -16,10 +16,11 @@ struct VO {
     @location(0) uv: vec2<f32>,
     @location(1) color: vec4<f32>,
     @location(2) flags: vec2<f32>,
+    @location(3) lightmap: vec3<f32>,
 };
 
 @vertex
-fn vs(@location(0) pos: vec3<f32>, @location(1) uv: vec2<f32>, @location(2) color: vec4<f32>, @location(3) flags: vec2<f32>) -> VO {
+fn vs(@location(0) pos: vec3<f32>, @location(1) uv: vec2<f32>, @location(2) color: vec4<f32>, @location(3) flags: vec2<f32>, @location(4) lightmap: vec3<f32>) -> VO {
     var o: VO;
     var c = u.proj * vec4<f32>(pos, 1.0);
     // OpenGL depth range [-1, 1] -> [0, 1].
@@ -28,6 +29,7 @@ fn vs(@location(0) pos: vec3<f32>, @location(1) uv: vec2<f32>, @location(2) colo
     o.uv = uv;
     o.color = color;
     o.flags = flags;
+    o.lightmap = lightmap;
     return o;
 }
 
@@ -38,6 +40,7 @@ fn fs(i: VO) -> @location(0) vec4<f32> {
     if (i.flags.x > 0.5) {
         c = c * t;
     }
+    c = vec4<f32>(c.rgb * i.lightmap, c.a);
     if (i.flags.y >= 0.0 && !(c.a > i.flags.y)) {
         discard;
     }
@@ -306,7 +309,7 @@ impl GuiRenderer {
                     buffers: &[Some(wgpu::VertexBufferLayout {
                         array_stride: std::mem::size_of::<GuiVertex>() as u64,
                         step_mode: wgpu::VertexStepMode::Vertex,
-                        attributes: &wgpu::vertex_attr_array![0 => Float32x3, 1 => Float32x2, 2 => Float32x4, 3 => Float32x2],
+                        attributes: &wgpu::vertex_attr_array![0 => Float32x3, 1 => Float32x2, 2 => Float32x4, 3 => Float32x2, 4 => Float32x3],
                     })],
                 },
                 fragment: Some(wgpu::FragmentState {

@@ -87,6 +87,7 @@ pub fn run(script: &str, out_dir: &std::path::Path) -> Result<(), String> {
     let mut hud: Option<super::ingame::HudPlayer> = None;
     let mut ingame = super::ingame::GuiIngame::new();
     let mut clear_level = 0.0f64;
+    let mut lightmap_pattern: Option<i32> = None;
     let mut container: Option<(
         worldgen::container::Container,
         worldgen::container::InventoryPlayer,
@@ -100,6 +101,7 @@ pub fn run(script: &str, out_dir: &std::path::Path) -> Result<(), String> {
         let (cmd, rest) = line.split_once(' ').unwrap_or((line, ""));
         let arg = |i: usize| rest.split_whitespace().nth(i).unwrap_or("").to_string();
         match cmd {
+            "lightmap" => {lightmap_pattern=Some(rest.parse().map_err(|_| "lightmap pattern")?);}
             "saves" => {
                 // Relative to the script's folder.
                 let base = std::path::Path::new(script)
@@ -374,6 +376,22 @@ pub fn run(script: &str, out_dir: &std::path::Path) -> Result<(), String> {
                 }
             }
             "shot" => {
+                // A normal application frame runs between scripted captures.
+                // It disables unit 1 before GUI drawing; the first capture just
+                // after `world` still precedes its first lightmap binding.
+                sys.ui.gl.lightmap_enabled = false;
+                if let Some(pattern)=lightmap_pattern {
+                    sys.ui.gl.lightmap_texels=Some(Box::new(std::array::from_fn(|i| {
+                        let (x,y)=((i%16) as u32,(i/16) as u32);
+                        let (r,g,b)=match pattern {
+                            0=>(x*17,y*17,(x^y)*17),
+                            1=>(255-x*13,31+y*11,17+x*7+y*3),
+                            2=>(128,64,192),
+                            _=>(x+y*16,255-(x+y*16),(x*19+y*23)&255),
+                        };
+                        0xff000000|(r<<16)|(g<<8)|b
+                    })));
+                }
                 sys.sync_pack_icons(&device, &queue);
                 if sys.ui.actions.iter().any(|a| matches!(a, super::Action::RefreshTextures)) { sys.refresh_textures(&device, &queue)?; }
                 sys.ui.gl.begin_frame();
@@ -407,6 +425,9 @@ pub fn run(script: &str, out_dir: &std::path::Path) -> Result<(), String> {
                 let path = out_dir.join(format!("{}.png", rest.trim()));
                 crate::assets::save_png(&img, &path).map_err(|e| e.to_string())?;
                 println!("rust: {}", path.display());
+                if sys.ui.world_open {
+                    sys.ui.gl.lightmap_texels = Some(Box::new([0xff000000; 256]));
+                }
             }
             other => return Err(format!("unknown script command {other}")),
         }
@@ -424,9 +445,11 @@ pub fn run(script: &str, out_dir: &std::path::Path) -> Result<(), String> {
                     }
                     worldgen::container::ContainerCommand::ScrollCreative {window,position} if window==c.window=>{c.scroll_creative(position);sys.update_container(c.snapshot(p));}
                     worldgen::container::ContainerCommand::Close { window }
+                    | worldgen::container::ContainerCommand::CloseFromGui { window }
                         if window == c.window =>
                     {
                         c.close(p, false);
+                        if matches!(command,worldgen::container::ContainerCommand::CloseFromGui { .. }) {c.close(p,false);}
                     }
                     _ => {}
                 }

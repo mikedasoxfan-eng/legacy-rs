@@ -4,6 +4,7 @@
 
 pub mod achievement_toast;
 pub mod container_api;
+pub mod container_check;
 pub mod stats_table;
 pub mod font;
 pub mod frame_graph;

@@ -1,0 +1,53 @@
+# --- player-gui (b1.8.1), round 6: texture unit 1 ---
+world 42
+clear 128
+mouse -1 -1
+lightmap 0
+open inventory
+shot b181_lightmap0_inventory
+stack 9 35 17 14
+stack 10 264 37 0
+stack 11 61 1 0
+shot b181_lightmap0_items
+pose 27 0.0 0.0 0.0 off off 5
+shot b181_lightmap0_hurt
+open chest
+stack 0 35 17 14
+shot b181_lightmap0_chest
+lightmap 1
+open inventory
+shot b181_lightmap1_inventory
+stack 9 35 17 14
+stack 10 264 37 0
+stack 11 61 1 0
+shot b181_lightmap1_items
+pose 27 0.0 0.0 0.0 off off 5
+shot b181_lightmap1_hurt
+open chest
+stack 0 35 17 14
+shot b181_lightmap1_chest
+lightmap 2
+open inventory
+shot b181_lightmap2_inventory
+stack 9 35 17 14
+stack 10 264 37 0
+stack 11 61 1 0
+shot b181_lightmap2_items
+pose 27 0.0 0.0 0.0 off off 5
+shot b181_lightmap2_hurt
+open chest
+stack 0 35 17 14
+shot b181_lightmap2_chest
+lightmap 3
+open inventory
+shot b181_lightmap3_inventory
+stack 9 35 17 14
+stack 10 264 37 0
+stack 11 61 1 0
+shot b181_lightmap3_items
+pose 27 0.0 0.0 0.0 off off 5
+shot b181_lightmap3_hurt
+open chest
+stack 0 35 17 14
+shot b181_lightmap3_chest
+# --- end player-gui ---

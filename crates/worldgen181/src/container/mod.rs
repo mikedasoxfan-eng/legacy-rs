@@ -631,4 +631,7 @@ pub enum ContainerCommand {
     Close {
         window: i32,
     },
+    /// GuiContainer.onGuiClosed calls onCraftGuiClosed before the controller
+    /// calls it again. Vanilla keeps both callbacks, including their effects.
+    CloseFromGui { window: i32 },
 }

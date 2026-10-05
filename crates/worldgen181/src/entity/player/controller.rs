@@ -23,6 +23,18 @@ impl PlayerControllerSP {
     pub fn block_reach(creative: bool) -> f32 { if creative { 5.0 } else { 4.0 } }
     pub fn should_draw_hud(creative: bool) -> bool { !creative }
     pub fn has_extended_entity_reach(creative: bool) -> bool { creative }
+    /// PlayerControllerTest inherits the base no-op updateController.
+    pub fn updates_each_tick(creative: bool) -> bool {
+        !creative
+    }
+    pub fn update_for_mode(&mut self, creative: bool) -> bool {
+        if Self::updates_each_tick(creative) {
+            self.update();
+            true
+        } else {
+            false
+        }
+    }
     pub fn update(&mut self) {
         self.prev_block_damage = self.cur_block_damage;
     }

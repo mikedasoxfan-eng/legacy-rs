@@ -78,9 +78,13 @@ impl World {
                 }
             }
             ContainerCommand::ScrollCreative {window,position} => {if let Some(c)=session.active.as_mut().filter(|c|c.window==window){c.scroll_creative(position);}}
-            ContainerCommand::Close { window } => {
+            ContainerCommand::Close { window } | ContainerCommand::CloseFromGui { window } => {
                 if session.active.as_ref().is_some_and(|c| c.window == window) {
                     let mut c = session.active.take().unwrap();
+                    if matches!(command, ContainerCommand::CloseFromGui { .. }) {
+                        self.chest_container_use181(&c,false);
+                        c.close(p, false);
+                    }
                     self.chest_container_use181(&c,false);
                     c.close(p, false);
                     self.deliver_container_events(&mut entity, &mut c);

@@ -122,6 +122,7 @@ public class GuiShot {
         }
 
         boolean reported = false;
+        int lightmapPattern=-1;
 
         void step() throws Exception {
             if (!reported) {
@@ -139,7 +140,9 @@ public class GuiShot {
                 String cmd = line.contains(" ") ? line.substring(0, line.indexOf(' ')) : line;
                 String rest = line.contains(" ") ? line.substring(line.indexOf(' ') + 1) : "";
                 String[] a = rest.isEmpty() ? new String[0] : rest.trim().split("\\s+");
-                if (cmd.equals("saves")) {
+                if (cmd.equals("lightmap")) {
+                    lightmapPattern=Integer.parseInt(rest);
+                } else if (cmd.equals("saves")) {
                     // The client lists <data dir>/saves; the script's folder is copied there.
                 } else if (cmd.equals("packs")) {
                     mc.texturePackList = new TexturePackList(mc, new File(scriptDir, rest));
@@ -460,6 +463,7 @@ public class GuiShot {
         }
 
         void shotInto(String name) throws Exception {
+            if(lightmapPattern>=0)GuiLightmapFixture.install(mc.renderEngine,lightmapPattern);
             if (mode.equals("toast")) {
                 toast.updateAchievementWindow();
                 save(name, org.lwjgl.opengl.EXTFramebufferObject.GL_COLOR_ATTACHMENT0_EXT);
