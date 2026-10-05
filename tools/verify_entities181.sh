@@ -17,11 +17,16 @@ beta="$root/target/release/beta.exe"
 fail=0
 for spec in "rules 0" "indirect 20" "stare 10" "starepumpkin 10" "population 0" "carry 500" "allies 40" "attract 100" "Boat 100" "Minecart 100" "Item 100" "Lightning 20" "Snowball 30" "Egg 30" "Fireball 20" "Enderman 100" "teleport 40" "CaveSpider 100" "Silverfish 100" "XPOrb 100" "Arrow 100" "Pig 100" "Cow 100" "Chicken 100" "Sheep 100" "Wolf 100" "Zombie 100" "Skeleton 100" "Spider 100" "Creeper 100" "PigZombie 100" "Ghast 100" "Squid 100" "Slime 100" "potions 100" "damage 100" "poison 40" "kill-Cow 40" "kill-Chicken 40" "kill-Sheep 40" "kill-Zombie 40" "kill-Enderman 40"; do
   read -r kind ticks <<< "$spec"
+  echo "== entities181: $kind"
   if "$oracle" entities181 "$kind" "$ticks" "entity181_${kind}.bin" && "$cmp" "$kind" "$ticks" "$out/entity181_${kind}.bin"; then :; else fail=1; fi
 done
+echo "== entities181: entitygeometry"
 if "$oracle" entitygeometry entitygeometry181.bin && "$root/target/release/compare181.exe" entitygeometry "$out/entitygeometry181.bin"; then :; else fail=1; fi
+echo "== entities181: models181"
 if "$oracle" models181 models181.bin && "$beta" --mc b1.8.1 --modelcheck "$out/models181.bin"; then :; else fail=1; fi
+echo "== entities181: particles181"
 if "$oracle" particles181 particles181.bin && "$beta" --mc b1.8.1 --particlecheck "$out/particles181.bin"; then :; else fail=1; fi
+echo "== entities181: xprender181"
 if "$oracle" xprender181 xprender181.bin && "$beta" --mc b1.8.1 --renderercheck "$out/xprender181.bin"; then :; else fail=1; fi
 [ "$fail" -eq 0 ] && echo "ENTITIES181 ALL FOCUSED CASES EXACT" || echo "ENTITIES181 SOME CASES DIFFER"
 exit "$fail"

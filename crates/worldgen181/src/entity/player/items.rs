@@ -91,9 +91,10 @@ impl Entity {
                     true
                 }
             }
-            295 => {
+            // ItemSeeds: wheat, pumpkin and melon seeds plant their crop or stem on farmland.
+            295 | 361 | 362 => {
                 if side == 1 && w.get_block_id(x, y, z) == 60 && w.get_block_id(x, y + 1, z) == 0 {
-                    w.set_block_with_notify(x, y + 1, z, 59);
+                    w.set_block_with_notify(x, y + 1, z, match stack.id { 361 => 104, 362 => 105, _ => 59 });
                     stack.count -= 1;
                     true
                 } else {

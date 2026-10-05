@@ -36,7 +36,7 @@ def exact_sections(log):
         if line.startswith(b'== '):
             cur = line[3:].strip().decode('utf-8', 'replace')
             out[cur] = [0, 0]
-        elif cur is not None and re.match(rb'^(ALL CASES EXACT|SOME CASES DIFFER|exit [0-9]+)[ \t\r]*$', line):
+        elif cur is not None and re.match(rb'^([A-Z0-9 .()-]*CASES[A-Z ]*(EXACT|DIFFER)|exit [0-9]+)[ \t\r]*$', line):
             cur = None  # the suite's own summary line, not part of the last section
         elif cur is not None:
             if re.search(rb'\b0 (of \d+ \w+ )?differ', line):
