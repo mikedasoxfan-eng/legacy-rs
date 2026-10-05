@@ -4,6 +4,9 @@ import net.minecraft.src.Oracle;
 import net.minecraft.src.RendererOracle;
 /** No GL context: record the original Tessellator immediately before draw resets it. */
 public final class GL11 {
+	public static void glPixelStorei(int a,int b) {}
+	/** Screenshot oracle: a fixed byte pattern stands in for the framebuffer. */
+	public static void glReadPixels(int x,int y,int w,int h,int format,int type,ByteBuffer b) { for(int i=0;i<w*h*3;i++)b.put(i,(byte)(i*37+11)); }
     public static final int GL_DST_ALPHA=772, GL_NORMALIZE=2977, GL_EQUAL=514, GL_LEQUAL=515, GL_COMPILE=4864, GL_QUADS=7;
     public static final int GL_LIGHT0=16384, GL_LIGHT1=16385, GL_FRONT_AND_BACK=1032, GL_AMBIENT_AND_DIFFUSE=5634, GL_POSITION=4611, GL_DIFFUSE=4609, GL_SPECULAR=4610, GL_LIGHT_MODEL_AMBIENT=2899, GL_POLYGON_OFFSET_FILL=32823, GL_DST_COLOR=774, GL_SRC_COLOR=768;
     public static final int GL_GREATER = 516;
