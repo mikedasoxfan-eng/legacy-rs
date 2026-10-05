@@ -3,6 +3,41 @@
 use crate::entity::player::ItemStack;
 const DATA: &[u8] = include_bytes!("visual181.bin");
 const SIZE: usize = 4 + 6 * 4 + 16 * 7 * 4;
+/// Block.func_35274_i, before subclass color overrides.
+pub fn base_color181() -> i32 {
+    0xffffff
+}
+/// Block.func_35276_e reads normal-cube state through the supplied access view.
+pub fn ambient_occlusion181(
+    x: i32, y: i32, z: i32, mut normal_cube: impl FnMut(i32, i32, i32) -> bool,
+) -> f32 {
+    if normal_cube(x, y, z) { 0.2 } else { 1.0 }
+}
+/// Block.getBlockBrightness. Subclass overrides (fluids/stairs) dispatch separately.
+pub fn base_brightness181(
+    id: u8, x: i32, y: i32, z: i32, mut brightness: impl FnMut(i32, i32, i32, i32) -> f32,
+) -> f32 {
+    brightness(x, y, z, super::light_value(id))
+}
+/// Block.func_35275_c supplies emitted light as the minimum lightmap coordinate.
+pub fn base_packed_light181(
+    id: u8, x: i32, y: i32, z: i32, mut light: impl FnMut(i32, i32, i32, i32) -> i32,
+) -> i32 {
+    light(x, y, z, super::light_value(id))
+}
+pub const SLAB_TYPES181: [&str;6]=["stone","sand","wood","cobble","brick","smoothStoneBrick"];
+/// Both BlockCloth conversion methods use this same involution, including signed inputs.
+pub fn cloth_dye181(value:i32)->i32 { !value & 15 }
+pub fn cloth_texture181(metadata:i32)->i32 {
+    if metadata==0 {64} else {let v=!(metadata&15);113+((v&8)>>3)+(v&7)*16}
+}
+pub fn slab_texture181(side:i32,metadata:i32)->i32 {
+    match metadata {
+        0=>if side<=1 {6}else{5},
+        1=>match side {0=>208,1=>176,_=>192},
+        2=>4,3=>16,4=>texture_from_side(45,0,false),5=>texture_from_side(98,0,false),_=>6,
+    }
+}
 fn int(at: usize) -> i32 {
     i32::from_le_bytes(DATA[at..at + 4].try_into().unwrap())
 }
@@ -18,6 +53,8 @@ pub fn texture_from_side(id: u8, side: usize, fancy: bool) -> i32 {
 }
 pub fn texture_result(id: u8, side: usize, metadata: usize, fancy: bool) -> Result<i32, ()> {
     assert!(side < 6 && metadata < 16);
+    if id==35 {return Ok(cloth_texture181(metadata as i32));}
+    if matches!(id,43|44) {return Ok(slab_texture181(side as i32,metadata as i32));}
     let v = int(base(id, fancy) + 28 + metadata * 28 + 4 + side * 4);
     if v == i32::MIN {
         Err(())

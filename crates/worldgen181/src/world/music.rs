@@ -9,6 +9,13 @@ impl World {
         if self.get_block_id(x, y, z) != 84 || self.get_block_metadata(x, y, z) != 0 {
             return false;
         }
+        self.set_record181(x,y,z,record);
+        self.auxiliary_effect(1005, (x, y, z), record);
+        true
+    }
+    /// BlockJukeBox.ejectRecord is the record-setting callback despite its MCP name.
+    pub fn set_record181(&mut self,x:i32,y:i32,z:i32,record:i32) {
+        if self.multiplayer_world {return;}
         if let Some(TileEntity::RecordPlayer { record: stored }) =
             self.get_block_tile_entity(x, y, z)
         {
@@ -22,10 +29,9 @@ impl World {
             }
             self.set_block_metadata_with_notify(x, y, z, 1);
         }
-        self.auxiliary_effect(1005, (x, y, z), record);
-        true
     }
     pub fn eject_record(&mut self, x: i32, y: i32, z: i32) {
+        if self.multiplayer_world {return;}
         let Some(TileEntity::RecordPlayer { record }) = self.get_block_tile_entity(x, y, z) else {
             return;
         };

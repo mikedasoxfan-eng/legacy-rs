@@ -480,13 +480,7 @@ impl World {
                 self.unloaded_entity_list.extend_from_slice(list);
             }
         }
-        if let Some(c) = self.chunks.get_mut(&(cx, cz)) {
-            for (key, id) in &c.tile_entity_ids {
-                let o = self.tile_objects.get_mut(id).unwrap();
-                o.invalid = true;
-                o.detached = c.tile_entities.get(key).cloned();
-            }
-        }
+        self.unload_chunk_tiles181(cx,cz);
         self.spawner_animations
             .retain(|&(x, _, z), _| x >> 4 != cx || z >> 4 != cz);
     }

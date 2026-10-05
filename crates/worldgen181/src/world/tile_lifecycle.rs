@@ -15,6 +15,24 @@ pub struct TileObject {
 }
 
 impl World {
+    /// Chunk.onChunkUnload queues tiles without invalidating them. Their world
+    /// reference and payload survive until World.updateEntities removes the list.
+    pub(crate) fn unload_chunk_tiles181(&mut self,cx:i32,cz:i32) {
+        if let Some(c)=self.chunks.get(&(cx,cz)) {
+            for id in c.tile_entity_ids.values() {
+                self.unloaded_tile_entities181.push(*id);
+            }
+        }
+    }
+    /// Preserve tile payloads only when the provider actually discards the chunk.
+    /// A queued but retained chunk and its tiles still share the same payload.
+    pub fn detach_unloaded_chunk_tiles181(&mut self,cx:i32,cz:i32) {
+        if let Some(c)=self.chunks.get(&(cx,cz)) {
+            for (key,id) in &c.tile_entity_ids {
+                self.tile_objects.get_mut(id).unwrap().detached=c.tile_entities.get(key).cloned();
+            }
+        }
+    }
     pub fn tile_metadata181(&mut self,id:TileId)->i32 {
         if self.tile_objects[&id].cached_metadata == -1 {
             let (x,y,z)=self.tile_objects[&id].position;
@@ -206,7 +224,7 @@ impl World {
             if self.tile_objects[&id].invalid {
                 self.loaded_tile_entities.remove(i);
                 let (x, y, z) = self.tile_objects[&id].position;
-                self.remove_chunk_tile(x, y, z);
+                if self.chunk_exists(x>>4,z>>4) {self.remove_chunk_tile(x, y, z);}
             } else {
                 i += 1;
             }
@@ -215,13 +233,19 @@ impl World {
     }
     pub(crate) fn finish_tile_scan(&mut self) {
         self.scanning_tiles = false;
+        if !self.unloaded_tile_entities181.is_empty() {
+            self.loaded_tile_entities.retain(|id|!self.unloaded_tile_entities181.contains(id));
+            self.unloaded_tile_entities181.clear();
+        }
         let pending = std::mem::take(&mut self.pending_tile_entities);
         for id in pending {
             if !self.tile_objects[&id].invalid {
                 if !self.loaded_tile_entities.contains(&id) {
                     self.loaded_tile_entities.push(id);
                 }
-                self.insert_chunk_tile(id);
+                if self.chunk_exists(self.tile_objects[&id].position.0>>4,self.tile_objects[&id].position.2>>4) {
+                    self.insert_chunk_tile(id);
+                }
                 let (x, _, z) = self.tile_objects[&id].position;
                 self.touch(x >> 4, z >> 4);
             }

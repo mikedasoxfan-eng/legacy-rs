@@ -1,6 +1,59 @@
 # Beta 1.8.1 world-blocks handoff
 
-This remains a verified **partial port** after the approximately one-hour round-five stage. SaveFormatOld now selects the old chunk-directory loader; pistons destroy vines; container removal preserves original retained-stack mutations; chest construction preserves null-neighbor aliasing. Full World/Chunk ticking, conversion compatibility and classes marked Not done below remain unfinished.
+Round six was resumed from the existing uncommitted edits after the interrupted run. The integrator's credits in `../codex/notes/world-blocks-next.md` are authoritative: those classes were not re-audited or reworked during the continuation. The remaining priority classes BlockDispenser, Block and BlockPistonBase now have class-level original-bytecode checks. Other incomplete classes remain identified below.
+
+## Resumed round-six changes and validation
+
+The baseline continuation reran all 64 pre-existing focused suites: **EXACT** (`target/world-blocks6-resume-baseline.log`). Three additional suites bring the focused runner to **67 suites**. The new probes use Mojang Java 8u51 and call the original Beta 1.8.1 bytecode; no shared oracle fixture or dispatch was changed.
+
+| Added check | EXACT bytes | Coverage |
+|---|---:|---|
+| dispenser6 | 141,336 | 2,670 cases: default facing for all support masks/metadata/remote states; valid/invalid and remote activation; repeated addition with retained old tile/inventory; signed/extreme yaw; both power levels, neighbor scheduling and actual update callbacks with valid/invalid tiles |
+| base6 | 570,024 | 630 access cases: emitted-light minimum and exact callback arguments for brightness/packed light, normal-cube ambient occlusion, default white color; 3,840 base harvest cases with all metadata, remote/damage-disabled states, exhaustion limits/NaN/infinity, statistics, drops/events/RNG |
+| piston6 | 828,142 | 6,904 cases: both piston types, horizontal/vertical placement thresholds and signed/extreme yaw; remote guards, ignored neighbor updates, metadata sentinel, all twelve power-query positions, direct added/neighbor callbacks, moving-tile fields and ordered events/RNG |
+
+BlockDispenser now creates a fresh factory tile on each addition, retains the previous tile's validity and inventory, suppresses default facing changes in remote worlds, and suppresses remote inventory activation. Its update/neighbor methods still run their original power logic without an invented remote guard. Existing dispenser4/removal5/textures/definitions proofs complete the class methods.
+
+Block's access-independent helpers in `block::visual181` expose base brightness, packed-light minimum, ambient occlusion and white default color for renderer integration. Subclass dispatch remains with the existing callers. Base harvest suppresses exhaustion remotely while still recording the mining statistic, as EntityPlayer.addExhaustion does in the original. The existing exhaustion API and item implementations were not changed. Definitions/registry/visual/sides/drops6 plus the all-block collision/ray replay cover the other base surfaces.
+
+BlockPistonBase now suppresses state updates remotely at every entry point; onBlockAdded also avoids a remote tile lookup. Existing piston5/push6/visual/sides/geometry proofs cover extension, retraction, push limits, entity displacement, bounds and textures. No credited Chunk/ChunkCache, fluid, vine, chest, terrain, whole-world ticking, renderer or item-class implementation was reworked during the continuation.
+
+The broader `pistons_chunk_nbt` replay exposed a fixture adapter omission from the interrupted unload changes: compare181's `chunkreload` replaced its chunk map before preserving tiles still referenced by the update list. The adapter now calls the same tile-detachment API as the production provider immediately before discarding the old chunk. Old moving tiles retain their 0.5 progress while the newly decoded tiles start at the saved lastProgress value of 0.0; the complete replay is EXACT. No original-bytecode output was changed or filtered.
+
+Final regression: **all 67 focused suites EXACT**, plus **all 21 redstone scripts**, **10,000 collision/ray cases**, music/sound events and **66,146 container click/crafting records EXACT**. Results are in `target/world-blocks6-resume-verify-final.log` and `target/world-blocks6-resume-regressions.log`. The separate 1,000-tick machine replay is not EXACT: it first differs at byte 1,057 (Rust 15,723,484 bytes, Java 15,639,484 bytes). Removing the continuation's dispenser factory replacement produces byte-identical Rust machine output (`target/world-blocks6-resume-container-baseline.log`); the other continuation guards affect only remote worlds, while this fixture is local. This failure predates the continuation. Its broader furnace/dispenser/tile/world-event discrepancy remains an integration follow-up, distinct from the focused class proofs and container click checks. The release build succeeds (`target/world-blocks6-resume-build-final.log`). Only the delimited world-blocks section of verify181.sh is extended through its existing focused runner; the full approximately one-hour whole-game verifier remains the integrator's run. The explicit file list in `target/commit-b181-world-blocks6.sh` includes the interrupted edits and continuation, requested identity and both trailers. Git remains unstaged and uncommitted.
+
+Next uncredited work: resolve the full machine tile replay, finish BlockContainer/TileEntity factory and cache coverage, then the remaining furnace, redstone-wire/repeater and block-specific callbacks. ChunkLoader and SaveConverterMcRegion retain the save/failure gaps listed in the per-class table. Item classes remain owned by the entities worker; credited whole-world, chunk and rendering work remains with integration.
+
+## Round-six changes and validation
+
+Final regression: **all 64 focused suites EXACT** (54 existing plus ten new), recorded in `target/world-blocks6-verify-final.log`. `cargo build --release -p worldgen181 -p client` succeeds (`target/world-blocks6-build-final.log`). The existing `verify181.sh` all-block collision/ray section remains EXACT for 10,000 cases, the container click/crafting replay remains EXACT for 66,146 records, and its original `musicevents` section remains EXACT (`target/world-blocks6-blocks.log`, `target/world-blocks6-containers.log`, `target/world-blocks6-musicevents.log`). The delimited world-blocks section already invokes the extended runner from `tools/verify181.sh`; shared oracle dispatch and fixtures remain untouched. `git diff --check` and shell syntax validation of the commit script pass.
+
+| Added check | EXACT bytes | Coverage |
+|---|---:|---|
+| slabs6 | 180,224 | 2,048 additions: both slab instances, four lower block types and every pair of metadata values |
+| trapdoors6 | 1,570,792 | Both remote states, all metadata, 110 support IDs, four changed-block IDs and 32 direct powered transitions; blocks, drop entities, sounds/events and RNG |
+| doors6 | 471,488 | 4,096 cases: both doors, remote states, metadata, missing halves/floors/power, neighbor/powered/activation callbacks |
+| attached6 | 201,984 | 2,048 button/lever neighbor cases: metadata, 32 support masks, remote states, drop/sound/RNG results |
+| drops6 | 3,055,488 | 27,904 actual drop callbacks: IDs 1..109, metadata, remote states, eight chances including NaN/infinity; complete item construction and world RNG |
+| conversion6 | 10,912 | Eight controlled Alpha conversions; both dimensions, empty worlds, duplicate coordinates, existing region payloads, process-global foreign cache handles, progress/cleanup, WorldInfo fields, decompressed payloads and sector offsets |
+| push6 | 2,299,392 | 576 piston displacement scenes: six directions, extension/retraction, six stored blocks, four tile ticks, nine entities including no-clip, obstacles; exact positions/motions/bounds/collision flags, events and RNG |
+| unload6 | 2,560 | Six note/jukebox/chest worlds: repeated unload, queued payload mutation through the chunk, one final update, reload and subsequent unload; list order/queue counts, retained validity, payloads, chest animation, sounds and RNG |
+| music6 | 2,041,044 | 14,400 note cases plus 384 jukebox cases; signed pitch extrema, metadata, remote states, floors/roofs, activation/click/trigger/redstone/direct-play callbacks, set/eject/remove; cached metadata, retained tile state, entities/events/RNG |
+| materials6 | 2,880 | Both cloth dye mappings, cloth/slab textures with signed/extreme metadata and sides, all six original slab names |
+
+BlockStep.onBlockAdded merges matching lower slabs even when the newly added block is a double slab. The constructor/static opacity discrepancy and original shouldSideBeRendered behavior remain preserved by the existing definitions/sides checks. Wool and slab texture methods now expose literal signed-input helpers; the renderer's existing bounded texture API calls those helpers. No item class was edited.
+
+Powered doors and trapdoors emit the original auxiliary sound. Trapdoor neighbor processing continues its power check after support loss removes the block. Door drops are suppressed in remote worlds. Button/lever support processing preserves short-circuit candidate queries followed by the original repeated support queries; malformed orientations are not replaced with guessed attachments. Base drops suppress remote execution; bed heads bypass even quantity/chance RNG. Redstone wire drops item 331. Original bytecode uses `fcmpl`/`ifle` for chance, so NaN admits the drop, despite the decompiler displaying a misleading <= expression (`target/Block6-bytecode.txt`).
+
+Chunk.onChunkUnload marks tiles unloaded without invalidating them. World removes the queued identities after the tile update pass and before pending insertions. Queued tiles retain a shared payload with a retained chunk; a provider discarding the chunk detaches its payload after saving. Pending/invalid tile processing checks chunk existence before touching chunk storage, avoiding unintended chunk generation. Complete entity unloading, Java map iteration/identity and arbitrary retained external tile references remain unproved.
+
+BlockNote activation/click and jukebox set/eject callbacks preserve multiplayer guards. Note pitch arithmetic promotes the signed byte to int before modulo, then calls TileEntity.onInventoryChanged to refresh cached metadata. The new direct jukebox setter preserves the misleading MCP ejectRecord name's actual insertion semantics; the existing item wrapper continues to emit its own music event. No player-use engine was changed.
+
+Conversion now uses RegionFileCache's process-global handles and clears the cache after each dimension, including an empty list. It preserves filesystem enumeration order before the original stable region sort. This proves the eight controlled layouts in conversion6. Java/Rust compressors, broad historical region sector layouts, directory alias/case/permissions, filesystem exception adapters and SoftReference reclamation remain unproved; SaveConverterMcRegion is not marked complete.
+
+Source differences for 122 world/block/tile classes are in `target/audit6-*.diff`, with `target/audit6-summary.txt`. Normalization applies mapped identifiers while retaining Java keywords and primitive types. The inherited World active-chunk hash still uses the old packed coordinate hash where Beta uses x XOR z; Java 8 tree-bin ties require actual object identity. This remains an integration root cause, with no substitute iteration approximation added. Terrain, entity AI, player item use/hunger, all item classes, Beta 1.7.3 code/verifiers, renderer files and shared Oracle.java/WorldEventOracle/Mode_entities181 fixtures were untouched. Adjacent entity-namespace edits only delegate block callbacks and the Chunk tile-unload hook.
+
+The full approximately one-hour verifier remains the integrator's run. Per-class statuses below distinguish complete block overrides from tested surfaces of incomplete larger classes. Git was not staged or committed. `target/commit-b181-world-blocks6.sh` stages the explicit round-six files and uses the requested author and both trailers.
 
 ## Round-five changes and validation
 
@@ -162,9 +215,9 @@ The final release build and all focused replays are recorded in `target/world-bl
 
 | Class | Status | Proof / remaining scope |
 |---|---|---|
-| World | Not done | lights/helpers/spawn/weather/nextticks/frost EXACT for tested surfaces. Live biome search/flags and global tick-entry IDs are integrated. Active-chunk hash collision/identity ordering, complete block/entity ticking and propagation remain. |
-| Chunk | Not done | lights/helpers/chests/arrays EXACT for tested relight/cache/lazy tile and raw constructor/NBT arrays. Full chunk/entity/save lifecycle remains. |
-| ChunkCache | Not done | cache + emptycache4 EXACT for queried access/light/material/boundaries/lazy tiles and server EmptyChunk reads. Renderer hookup, actual null-provider and error behavior remain. |
+| World | Done | Integrator credit: whole-world tick/new-world replays EXACT; existing focused lights/weather/spawn/nextticks/frost and unload6 proofs retained. |
+| Chunk | Done | Integrator credit: light/array/cache/chest checks, terrain byte-identical saves for six seeds and redstone replays EXACT; unload6 retained. |
+| ChunkCache | Done | Integrator credit: cache/emptycache4 plus renderer exact chunk-mesh access checks. |
 | CompressedStreamTools | Done | saves + storage EXACT: gzip semantics, uncompressed reads/writes, safe replacement, stale temporary files, missing file, invalid root, failed target deletion and ignored rename result. |
 | Particle | Not done | Inherited implementation not fully audited/ported or covered by a current class-level oracle proof. |
 | WorldInfo | Done | saves: game type, missing/default map features, clone, persistence, player dimension and existing level fields. |
@@ -174,39 +227,39 @@ The final release build and all focused replays are recorded in `target/world-bl
 | ChunkLoader | Not done | legacy5/relocation/arrays EXACT for legacy paths, normal/malformed arrays, invalid IDs, overwrite/temp-file failure and relocation. Full entity/tile reconstruction, compressed-byte equality and exception/permission adapters remain. |
 | MathHelper | Done | math + helpers EXACT: all public helpers, 20,000 arbitrary float/double bit patterns, integer extrema, negative zero/NaNs, inclusive Random states; prior 65,536-entry sine table remains exact. |
 | RegionFile | Done | regions: 36 writes/overwrites, sector reuse and size deltas, Java reads Rust and Rust reads Java. |
-| RegionFileCache | Not done | regioncache4 EXACT: process-global synchronized path cache, sharing/size deltas, lazy dirs and global 256-entry/explicit flush. SoftReference GC, Java File aliases and failure paths remain. |
-| WorldBlockPositionType | Not done | Inherited implementation not fully audited/ported or covered by a current class-level oracle proof. |
-| MapStorage | Not done | Inherited implementation not fully audited/ported or covered by a current class-level oracle proof. |
-| SaveConverterMcRegion | Not done | fileclasses EXACT helpers now used in scanning/sorting; matching coordinate overflow throws instead of silently skipping. 289-chunk conversion payload/progress/cleanup replay EXACT, level NBT equal except wall-clock LastPlayed; region sector layout differs. Save-handler players=false corrected. Full API/failure/Nether/cache audit remains. |
+| RegionFileCache | Done | Integrator credit: existing focused and whole-game checks accepted; remaining finalizer/GC/file-alias/interface-only scope resolved by integration. |
+| WorldBlockPositionType | Out of scope | Integrator note: multiplayer-only; this port targets singleplayer. |
+| MapStorage | Done | Integrator credit: existing focused and whole-game checks accepted; remaining finalizer/GC/file-alias/interface-only scope resolved by integration. |
+| SaveConverterMcRegion | Not done | conversion6 EXACT for eight controlled worlds: global region-cache reuse/flush, empty dimensions, duplicate coordinates, existing payloads, progress/cleanup/WorldInfo/payloads/sector offsets. Larger layouts, compression/file alias/failure compatibility remain. |
 | NibbleArray | Done | helpers: both constructors, heights 4..8, every nibble and underlying bytes. |
 | SaveFormatComparator | Done | fileclasses EXACT: fields/getters, newest timestamp first, signed-long limits, Java UTF-16 comparison including supplementary characters and prefixes. |
 | EnumAction | Done | actions: original action ordinals for every registered item. |
 | RegionFileChunkBuffer | Done | regions: original compressed-stream close writes checked against Rust compression/write path. |
-| IBlockAccess | Not done | Inherited implementation not fully audited/ported or covered by a current class-level oracle proof. |
-| SaveFormatOld | Not done | oldformat4/legacy5 EXACT for normal list/read/fallback/rename/delete and correct old ChunkLoader/provider selection. Broader failure/exception compatibility remains. |
-| WorldProvider | Not done | spawn EXACT for grass predicate; brightness tables retained. Terrain provider construction and map-feature propagation remain. |
-| IWorldAccess | Not done | Inherited implementation not fully audited/ported or covered by a current class-level oracle proof. |
-| SaveHandler | Not done | savelife EXACT for optional dirs, session checks, level fallback, failed rename/delete cleanup, DIM-1 and data paths. Player-save API, full failures and Java finalizer timing remain. |
+| IBlockAccess | Done | Integrator credit: existing focused and whole-game checks accepted; remaining finalizer/GC/file-alias/interface-only scope resolved by integration. |
+| SaveFormatOld | Done | Integrator credit: existing focused and whole-game checks accepted; remaining finalizer/GC/file-alias/interface-only scope resolved by integration. |
+| WorldProvider | Done | Integrator credit: existing focused and whole-game checks accepted; remaining finalizer/GC/file-alias/interface-only scope resolved by integration. |
+| IWorldAccess | Done | Integrator credit: existing focused and whole-game checks accepted; remaining finalizer/GC/file-alias/interface-only scope resolved by integration. |
+| SaveHandler | Done | Integrator credit: existing focused and whole-game checks accepted; remaining finalizer/GC/file-alias/interface-only scope resolved by integration. |
 | ChunkFilePattern | Done | fileclasses EXACT: original complete-name regex, lowercase/sign/newline/overflow acceptance; filtering is separate from coordinate parsing. |
 | ChunkFolderPattern | Done | fileclasses EXACT: one/two lowercase base-36 characters, directories only; converter uses this helper. |
-| EmptyChunk | Not done | emptycache4 EXACT for missing-chunk cache IDs, metadata, light and null tiles. Full mutation/entity/save surface remains unaudited. |
-| IChunkProvider | Not done | Inherited implementation not fully audited/ported or covered by a current class-level oracle proof. |
-| ISaveFormat | Not done | Inherited implementation not fully audited/ported or covered by a current class-level oracle proof. |
-| ISaveHandler | Not done | Inherited implementation not fully audited/ported or covered by a current class-level oracle proof. |
-| NextTickListEntry | Not done | nextticks EXACT for tested hash/equality/signed comparison and global-counter queues, including overflow and two interleaved worlds. Queue representation is tuple-based; direct mutable-entry/equal-ID tie semantics still need a class-level audit. |
-| WorldProviderHell | Not done | spawn EXACT for nonair, nonbedrock, opaque spawn predicate; lights brightness EXACT. Full provider generation remains with terrain owner. |
-| WorldProviderSky | Not done | spawn EXACT for material movement-blocking predicate. Live Sky dimension/provider integration remains. |
-| BlockVine | Not done | placement4/fire4/harvest4 EXACT for tested placement, fuel and shearing; prior plants/geometry/drops/visual/colors retained. Full inherited class audit remains. |
-| BlockChest | Not done | chests/chestlife/visual/textures/activation4/chestopen5/removal5 EXACT for tested facing, inventory/cache/lid, nested/null-neighbor wrappers and scattering. Synchronous activation inventory identity and stack-alias semantics remain. |
+| EmptyChunk | Done | Integrator credit: existing focused and whole-game checks accepted; remaining finalizer/GC/file-alias/interface-only scope resolved by integration. |
+| IChunkProvider | Done | Integrator credit: existing focused and whole-game checks accepted; remaining finalizer/GC/file-alias/interface-only scope resolved by integration. |
+| ISaveFormat | Done | Integrator credit: existing focused and whole-game checks accepted; remaining finalizer/GC/file-alias/interface-only scope resolved by integration. |
+| ISaveHandler | Done | Integrator credit: existing focused and whole-game checks accepted; remaining finalizer/GC/file-alias/interface-only scope resolved by integration. |
+| NextTickListEntry | Done | Integrator credit: existing focused and whole-game checks accepted; remaining finalizer/GC/file-alias/interface-only scope resolved by integration. |
+| WorldProviderHell | Done | Integrator credit: whole-world tick/new-world replays EXACT; spawn/lights retained. |
+| WorldProviderSky | Done | Integrator credit: existing focused and whole-game checks accepted; remaining finalizer/GC/file-alias/interface-only scope resolved by integration. |
+| BlockVine | Done | Integrator credit: vine181 EXACT; existing placement/fire/harvest/visual checks retained. No continuation implementation edits. |
+| BlockChest | Done | Integrator credit: chests/chestlife/activation and player-gui chest hooks cover every method; chestopen5/removal5 retained. |
 | BlockStem | Done | plants/geometry/drops/items + visual/colors EXACT: growth, fruit, fertilizer, seed drops, bounds, all metadata colors/textures and neighboring-fruit direction priority. |
 | TileEntityChest | Done | chests + chestlife EXACT: object identity, 36 initial slots/27 loaded slots, signed counts, clamping/splitting including negative amounts, NBT inventory, cached metadata/block, reset/invalidate/validate, adjacency, lids, viewers, sounds/events. Renderer consumes exported state. |
 | ItemDoor | Done | registry/placement4/placepred4/doors4 EXACT for properties, both edit cells, replaceable cells, yaw/hinge priorities, notifications and consumption. |
 | ItemDye | Not done | items/mushrooms/placement4 EXACT for owned plant/huge-mushroom hooks and base edit check. Entity-facing/sheep behavior remains with entities owner. |
-| BlockFluid | Not done | fluids/sides/flow5 EXACT for random display, light/faces and tested velocity-vector calculations. Full dynamic/stationary tick and inherited audit remains. |
+| BlockFluid | Done | Integrator credit: whole-world tick/new-world replays EXACT; fluids/sides/flow5 retained. |
 | BlockPane | Done | definitions/geometry/drops/visual/sides EXACT for both pane IDs, connection/collision/selection, edge/base textures, opacity/render type and same-ID visibility. Renderer must consume exported APIs. |
-| BlockDispenser | Not done | dispenser4/activation4/removal5 EXACT for selection/consumption/RNG, projectile construction/events, null activation and retained-inventory scattering. Full scheduled power/cache audit remains. |
-| Block | Not done | definitions/registry/geometry/drops cover defaults and new block registration. Base render/light/item-use hooks not fully ported. |
-| BlockPistonBase | Not done | piston5 EXACT for both types/all faces, real extension/retraction, 0..13 pushes, immovable/container/new blocks and height limits; vine mobility corrected. Full textures/placement/callback/entity-collision audit remains. |
+| BlockDispenser | Done | dispenser6 + dispenser4/activation4/removal5/definitions/textures EXACT: all class overrides, fresh factory tiles, facing/yaw, remote and null guards, power scheduling/ticks, projectiles, drops and RNG. |
+| Block | Done | base6 + definitions/registry/visual/colors/sides/drops6 and all-block collision/ray EXACT: new lightmap/AO/color methods, harvest exhaustion/statistics, registered defaults and base geometry/drop behavior. Item delegates remain with the entities owner. |
+| BlockPistonBase | Done | piston6 + piston5/push6/definitions/visual/sides/geometry EXACT: placement, every power query, remote/ignore guards, callbacks, extension/retraction/limits, texture/bounds and entity displacement. No changed or added class override remains unported. |
 | BlockMushroom | Done | plants + mushrooms + visual EXACT: density/spread, placement, bonemeal, huge generator checks/caps/stems, failed restoration, metadata and original RNG state. |
 | FoodStats | Done | use/useticks/foodstats EXACT: NBT/defaults, signed overflow and float/NaN arithmetic, exhaustion/saturation depletion, 80-tick healing/starvation and difficulty thresholds. |
 | ItemFood | Done | registry/actions/use/useticks EXACT: all 15 foods, hunger/saturation admission, 32-tick use, effects/RNG/sounds/particles, potion IDs/durations/chances and completion consumption. General player potion engine remains with entities owner. |
@@ -214,31 +267,31 @@ The final release build and all focused replays are recorded in `target/world-bl
 | ItemBow | Done | registry/actions/use/useticks EXACT: hold, release -20..80 elapsed ticks, threshold, speed, full-charge critical flag, arrow construction floats/RNG, sound and arrow consumption. Projectile simulation beyond construction needs entities coverage. |
 | BlockFurnace | Not done | furnace4/activation4/removal5 EXACT for tested ticks/swaps/facing/identity/dirty state/null activation and scattering. Complete cache/inherited audit remains. |
 | Item | Not done | registry/actions EXACT for definitions, use action and duration. Use lifecycle and edit permission support incomplete. |
-| TileEntityPiston | Not done | piston5 EXACT for real progress/update/invalidation, NBT progress and finite/nonfinite interpolation/collision. Entity displacement, raw block-ID narrowing and malformed NBT remain. |
+| TileEntityPiston | Not done | piston5 plus push6 EXACT for tested NBT/interpolation/collision, nonfinite comparison behavior and 576 actual entity displacement scenes. Raw stored IDs still narrow to u8; malformed state, huge/nonfinite scans and full world lifecycle remain. |
 | BlockSilverfish | Done | definitions/geometry/drops + silverfish + visual EXACT: metadata textures, conversion predicates, player-destroy spawn constructor/position/RNG and all 20 explosion particles. Silverfish AI/model/sounds belong to entities owner. |
 | ItemBlock | Not done | placement4/placepred4 EXACT for tested placement, replaceability, survival guard and base edit hook. Full every-block/height/collision replay remains. |
 | ItemStack | Not done | nullable NBT proof retained; use identity tokens now cancel identical replacements while permitting same-object hotbar aliases (useticks EXACT). Copy-based inventory still lacks fully shared mutation of aliased Java stacks; full item delegation/load audit remains. |
-| TileEntity | Not done | chestlife/chestopen5 prove tested metadata/block caches, resets and invalidate/validate ordering. Full factory/persistence surface remains. |
-| BlockTallGrass | Not done | growth4/harvest4 EXACT for tested stay/growth/drop/shears hooks across all metadata. Full inherited class audit remains. |
-| BlockJukeBox | Not done | musicevents/record4 EXACT for insertion/ejection/events/drop construction, typed lazy tiles and null cases. Multiplayer guard and complete removal/failure replay remain. |
+| TileEntity | Not done | chestlife/chestopen5/unload6/music6 prove tested caches, invalidate/validate order, unload queue and inventory-change cache refresh. Full factory/persistence/failure and retained external identity surface remains. |
+| BlockTallGrass | Done | Integrator credit: whole-world tick/new-world replays EXACT; growth4/harvest4/visual/colors retained. |
+| BlockJukeBox | Not done | music6 plus musicevents/record4 EXACT for remote/local activation, set/eject/remove, typed lazy tiles/null cases, cache refresh, retained tile state and drops/events/RNG. Raw out-of-range record drop IDs narrow in the shared ItemStack; exception/alias edges remain. |
 | BlockMushroomCap | Done | definitions/geometry/drops + visual/mushrooms EXACT: every metadata/side texture, drops and huge cap generation. |
 | BlockMelon | Done | definitions/geometry/drops + visual EXACT: render defaults, top/side textures, quantity RNG and metadata drops. |
 | BlockPistonMoving | Not done | piston5/activation4 EXACT for tested tile collision and null-tile activation. Full bounds/selection/removal and invalid tile/NBT audit remains. |
 | ItemVine | Not done | placement4/geometry/items/registry EXACT for tested side placement/properties/shearing. Full metadata/target boundary audit remains. |
-| BlockGrass | Not done | growth4 EXACT for tested light/support/neighbor spread/decay and RNG. Full inherited class audit remains. |
+| BlockGrass | Done | Integrator credit: whole-world tick/new-world replays EXACT; growth4/visual/colors retained. |
 | BlockStoneBrick | Done | definitions/geometry/drops + visual EXACT: all metadata/side textures, subtype drops and original creative variants. |
 | ItemReed | Done | registry/placement4/placepred4 EXACT for all three items, snow/vine replacement, base permission, signed count, surviving-ID callbacks, sound and consumption. |
 | ItemHoe | Done | registry/placement4 EXACT for all hoes, original dirt/grass precedence, occupied/side checks, base permission, sound/replacement/damage. |
-| BlockRedstoneWire | Not done | Inherited implementation not fully audited/ported or covered by a current class-level oracle proof. |
+| BlockRedstoneWire | Not done | drops6 fixes and proves item 331 across all metadata/chance/remote cases. Full power propagation, slope and scheduled callback audit/replay remain. |
 | ItemFlintAndSteel | Done | registry/placement4 EXACT for offset, base permission, air/occupied target, original item-RNG sound, fire placement and damage. |
 | BlockRedstoneRepeater | Not done | Inherited implementation not fully audited/ported or covered by a current class-level oracle proof. |
 | ItemBucket | Not done | Minimal original filled-bucket creative preservation fix ported. Full ray trace/collection/Nether/cow-milk/permission replay remains. |
 | ItemPainting | Not done | Inherited implementation not fully audited/ported or covered by a current class-level oracle proof. |
 | ItemSword | Done | registry/actions/use/useticks/blocking EXACT: properties, use action/duration, hold/cancellation, blocking and armor damage/remainder/exhaustion with bypass flag. Existing environmental attack callers still need DamageSource mapping. |
 | BlockContainer | Not done | direct lazy tile factory path ported; full container class coverage pending. |
-| BlockLeaves | Not done | growth4/harvest4 EXACT for tested decay and all-metadata shears drops; prior plants/visual/colors retained. Full inherited class audit remains. |
+| BlockLeaves | Done | Integrator credit: whole-world tick/new-world replays EXACT; growth4/harvest4/visual/colors retained. |
 | Material | Done | definitions: all 29 material defaults; registry also checks harvest flags and tool behavior. |
-| BlockNote | Not done | musicevents/activation4 EXACT for notes/instruments/events and null activation. Full NBT/inherited edge audit remains. |
+| BlockNote | Not done | music6 plus musicevents/activation4 EXACT for activation/click, signed pitch arithmetic, all instrument floors/roofs, redstone transitions and direct play callbacks, cached metadata/remote guards/events/RNG. Generic inherited container/factory failure surface remains. |
 | ItemRedstone | Done | registry/placement4 EXACT for snow/offset/occupied target, base permission, normal floor, true-without-placement return, consumption and absence of placement sound. |
 | StepSound | Done | sounds4 EXACT for every registered block 1..109 step/break names and volume/pitch bits, including glass and metal; musicevents retained. |
 | BlockStairs | Not done | geometry/drops EXACT including new stairs and model metadata drop quirk. Rendering integration pending. |
@@ -252,8 +305,8 @@ The final release build and all focused replays are recorded in `target/world-bl
 | ItemSlab | Not done | Inherited implementation not fully audited/ported or covered by a current class-level oracle proof. |
 | BlockFence | Done | geometry: original fence/gate connection predicate for IDs 0..109; existing 10,000-case block geometry replay. |
 | ItemLog | Not done | Inherited implementation not fully audited/ported or covered by a current class-level oracle proof. |
-| BlockDoor | Not done | Inherited implementation not fully audited/ported or covered by a current class-level oracle proof. |
-| BlockFire | Not done | fire4 EXACT for vine fuel and tested 80-tick clear-weather replays. Full weather/provider/display/class audit remains. |
+| BlockDoor | Not done | doors6 plus doors4/placepred4/geometry/drops6 EXACT for both door halves, power/activation/neighbor loss, remote suppression, hinges, placement, bounds and drops/sounds/RNG. Full render-dirty/IWorldAccess and malformed side/yaw edges remain. |
+| BlockFire | Done | Integrator credit: whole-world tick/new-world replays EXACT; fire4 retained. |
 | BlockFarmland | Done | plants: water, metadata, crops and both new stems; stem-aware walking hook ported. |
 | BlockFlower | Not done | placepred4/growth4 EXACT for tested placement/stay behavior, including mushroom placement versus light-sensitive stay. Full inherited audit remains. |
 | BlockRedstoneOre | Not done | Inherited implementation not fully audited/ported or covered by a current class-level oracle proof. |
@@ -261,15 +314,15 @@ The final release build and all focused replays are recorded in `target/world-bl
 | ItemSoup | Done | actions/use/useticks EXACT: 32-tick completion, hunger/saturation and bowl replacement. |
 | PistonBlockTextures | Done | piston5 EXACT for all 24 original constants (opposite side and X/Y/Z offsets), plus actual six-direction extension/retraction and interpolation. |
 | BlockCake | Not done | Inherited implementation not fully audited/ported or covered by a current class-level oracle proof. |
-| BlockCloth | Not done | Inherited implementation not fully audited/ported or covered by a current class-level oracle proof. |
+| BlockCloth | Done | materials6 EXACT for both signed dye mappings and signed/extreme texture inputs; visual/definitions/registry/drops6 prove constructor/defaults, all world metadata, textures and metadata-preserving drops. No changed or added class override remains unported. |
 | BlockPressurePlate | Not done | plates4 EXACT for all floors and both metadata states, fence support and removal; existing geometry EXACT. Full entity-trigger/power/tick audit remains. |
-| BlockStep | Not done | Inherited implementation not fully audited/ported or covered by a current class-level oracle proof. |
-| BlockTrapDoor | Not done | Inherited implementation not fully audited/ported or covered by a current class-level oracle proof. |
+| BlockStep | Done | slabs6 + materials6 + definitions/visual/sides/geometry/drops6 EXACT: both constructors, six names, signed textures, instance/static opacity quirk, matching metadata merges for both instances, side culling/bounds, quantity/id/damage drops. No changed or added class override remains unported. |
+| BlockTrapDoor | Not done | trapdoors6 + placepred4/geometry/drops6 EXACT for every support ID/metadata/remote state, unsupported removal, continued power processing, direct powered sound, placement predicates and bounds/drop surfaces. Item bounds, direct placement/click/activation and complete ray replay remain. |
 | BlockWeb | Not done | Inherited implementation not fully audited/ported or covered by a current class-level oracle proof. |
 | ItemCloth | Not done | Inherited implementation not fully audited/ported or covered by a current class-level oracle proof. |
 | ItemMap | Not done | Inherited implementation not fully audited/ported or covered by a current class-level oracle proof. |
 | TileEntitySign | Not done | Inherited implementation not fully audited/ported or covered by a current class-level oracle proof. |
-| BlockBed | Not done | Inherited implementation not fully audited/ported or covered by a current class-level oracle proof. |
+| BlockBed | Not done | drops6 proves head halves bypass quantity/chance RNG; doors/placement checks retained. Sleeping/paired removal/texture/render-dirty and full inherited class audit remain. |
 | BlockCactus | Not done | placepred4/growth4 EXACT for tested floor/neighbor/stay/growth and RNG. Full inherited class audit remains. |
 | BlockMobSpawner | Not done | Inherited implementation not fully audited/ported or covered by a current class-level oracle proof. |
 | BlockReed | Not done | placement4/placepred4/growth4 EXACT for tested water/support/placement/growth and RNG. Full inherited class audit remains. |

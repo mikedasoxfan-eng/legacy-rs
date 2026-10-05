@@ -3,9 +3,8 @@
 //! are opened, exactly as the original converts them.
 
 use crate::scenario::LoadStep;
-use crate::storage::{RegionFile, Storage};
+use crate::storage::Storage;
 use crate::storage181::{ChunkFile181 as ChunkFile,chunk_filename_matches,chunk_folder_matches};
-use std::collections::HashMap;
 use std::io::{Read, Write};
 use std::path::{Path, PathBuf};
 
@@ -26,13 +25,12 @@ fn chunk_coords(name: &str) -> Option<(i32, i32)> {
     ChunkFile::new(PathBuf::from(name)).ok().map(|c| (c.x,c.z))
 }
 
-/// `File.listFiles` in the order Windows returns them (by name).
+/// `File.listFiles` preserves the filesystem's enumeration order. The stable
+/// region sort below must preserve that order within each region.
 fn list(dir: &Path) -> Vec<PathBuf> {
-    let mut v: Vec<PathBuf> = std::fs::read_dir(dir)
+    std::fs::read_dir(dir)
         .map(|r| r.flatten().map(|e| e.path()).collect())
-        .unwrap_or_default();
-    v.sort_by_key(|p| p.file_name().map(|n| n.to_string_lossy().to_lowercase()).unwrap_or_default());
-    v
+        .unwrap_or_default()
 }
 
 /// `func_22183_a`: the chunk files under the two levels of folders, and the top folders.
@@ -60,18 +58,8 @@ fn convert_chunks(
 ) {
     // Collections.sort (stable) by region x, then region z.
     chunks.sort_by(|a, b| a.compare(b).cmp(&0));
-    let mut regions: HashMap<(i32, i32), RegionFile> = HashMap::new();
     for c in chunks {
-        let key = (c.x >> 5, c.z >> 5);
-        if !regions.contains_key(&key) {
-            // RegionFileCache creates the folder with the first region file.
-            let _ = std::fs::create_dir_all(dir.join("region"));
-            let path = dir.join("region").join(format!("r.{}.{}.mcr", key.0, key.1));
-            if let Ok(r) = RegionFile::open(&path) {
-                regions.insert(key, r);
-            }
-        }
-        if let Some(r) = regions.get_mut(&key) {
+        let result=crate::region_cache181::with_region(dir,c.x,c.z,|r| {
             if !r.has_chunk(c.x & 31, c.z & 31) {
                 let mut raw = Vec::new();
                 let read = std::fs::File::open(&c.path)
@@ -90,10 +78,15 @@ fn convert_chunks(
                     Err(e) => eprintln!("{}: {e}", c.path.display()),
                 }
             }
-        }
+            Ok(())
+        });
+        if let Err(e)=result {eprintln!("{e}");}
         *done += 1;
         progress(LoadStep::Progress(java_round(100.0 * *done as f64 / total as f64)));
     }
+    // The original flushes the entire process cache after each dimension, even
+    // an empty chunk list. Other save handlers observe the closed handles.
+    crate::region_cache181::clear();
 }
 
 /// `func_22182_a`: delete the old folders.

@@ -143,6 +143,8 @@ impl World {
         Some((px, py, pz))
     }
     pub(crate) fn piston_update(&mut self, _id: u8, x: i32, y: i32, z: i32) {
+        // All three BlockPistonBase entry points suppress state updates remotely.
+        if self.multiplayer_world { return; }
         let meta = self.get_block_metadata(x, y, z);
         let facing = meta & 7;
         // The original tests power before checking metadata == 7.

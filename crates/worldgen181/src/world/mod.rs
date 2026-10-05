@@ -254,6 +254,8 @@ pub struct World {
     pub block_events: Vec<notes::BlockEvent>,
     pub scanning_tiles: bool,
     pub pending_tile_entities: Vec<tile_lifecycle::TileId>,
+    /// World.field_34900_Q: unloaded tiles still get this pass before removal.
+    pub unloaded_tile_entities181: Vec<tile_lifecycle::TileId>,
     pub dispenser_random: HashMap<(i32, i32, i32), JavaRandom>,
     pub container_drop_random: [JavaRandom; 3], // idle furnace, active furnace, dispenser
     pub keep_furnace_inventory: bool,
@@ -364,6 +366,7 @@ impl World {
             block_events: Vec::new(),
             scanning_tiles: false,
             pending_tile_entities: Vec::new(),
+            unloaded_tile_entities181: Vec::new(),
             dispenser_random: HashMap::new(),
             container_drop_random: std::array::from_fn(|_| {
                 JavaRandom::new(crate::entity::EntitySeedSource::Time.next_seed())
@@ -706,7 +709,7 @@ impl World {
     }
 
     fn notify_block_of_neighbor_change(&mut self, x: i32, y: i32, z: i32, changed: u8) {
-        if !self.editing_blocks {
+        if !self.editing_blocks && !self.multiplayer_world {
             let id = self.get_block_id(x, y, z);
             if id != block::AIR {
                 behavior::on_neighbor_block_change(self, id, x, y, z, changed);

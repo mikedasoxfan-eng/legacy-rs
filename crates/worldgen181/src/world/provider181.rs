@@ -52,6 +52,7 @@ impl World {
             self.unload_chunk_entities(p.0, p.1);
             self.save_chunk(p.0, p.1);
             self.provider.dropped.remove(hash(k), k);
+            self.detach_unloaded_chunk_tiles181(p.0,p.1);
             self.chunks.remove(&p);
             if let Some(i) = self.chunk_list.iter().position(|&v| v == p) {
                 self.chunk_list.remove(i);
