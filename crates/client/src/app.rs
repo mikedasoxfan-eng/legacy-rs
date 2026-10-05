@@ -1159,6 +1159,10 @@ impl App {
                             }
                         }
                         if let Some(g) = &mut self.gui {
+                            // EntityPlayerSP.onLivingUpdate: the inventory hint until it is taken.
+                            if !g.ui.stats.unlocked(0) {
+                                g.toast.queue_information(&g.ui, 0);
+                            }
                             g.ui.player_dead = hud.health <= 0;
                             g.ui.player_score = score;
                             // Minecraft.runTick: no screen and a dead player shows GuiGameOver.
