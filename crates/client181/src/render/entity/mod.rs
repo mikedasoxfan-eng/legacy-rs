@@ -25,3 +25,10 @@ pub mod vehicles;
 mod tests;
 
 pub mod bed_model;
+
+pub mod manager;
+pub mod manager_check9;
+pub mod tile_special;
+pub mod tile_special_check9;
+pub mod tile_manager;
+pub mod tile_manager_check9;

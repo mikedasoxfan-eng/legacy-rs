@@ -490,6 +490,9 @@ bash "$root/tools/verify_drawtrace181.sh" || fail=1
 # Round 9: inventory death/material state and original framebuffer alpha.
 bash tools/verify_player_gui9_181.sh --built || fail=1
 # --- end player-gui ---
+# --- entities (b1.8.1) ---
+bash "$root/tools/verify_entities9_181.sh" --built || fail=1
+# --- end entities ---
 pflush
 [ $fail -eq 0 ] && echo "ALL CASES EXACT" || echo "SOME CASES DIFFER"
 exit $fail

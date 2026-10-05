@@ -537,6 +537,18 @@ pub fn run() {
     if args.get(1).map(String::as_str) == Some("--bedmodelcheck") {std::process::exit(if render::entity::object_check::bed_check(&args[2]) {0}else{1});}
     if args.get(1).map(String::as_str) == Some("--particlefactorycheck") { std::process::exit(if render::particle_check::factory_check(&args[2]) {0}else{1}); }
     if args.get(1).map(String::as_str) == Some("--effectlifecyclecheck") { std::process::exit(if render::particle_check::lifecycle_check(&args[2]) {0}else{1}); }
+    if args.get(1).map(String::as_str) == Some("--managervisual9check") {
+        std::process::exit(if render::entity::object_check::manager_visual_check(&args[2]) {0} else {1});
+    }
+    if args.get(1).map(String::as_str) == Some("--tilespecial9check") {
+        std::process::exit(if render::entity::tile_special_check9::check(&args[2]) {0} else {1});
+    }
+    if args.get(1).map(String::as_str) == Some("--tilemanager9check") {
+        std::process::exit(if render::entity::tile_manager_check9::check(&args[2]) {0} else {1});
+    }
+    if args.get(1).map(String::as_str) == Some("--rendermanager9check") {
+        std::process::exit(if render::entity::manager_check9::check(&args[2]) {0} else {1});
+    }
     if args.get(1).map(String::as_str) == Some("--effectdispatch8check") { std::process::exit(if render::effect_check8::check(&args[2]) {0}else{1}); }
     if args.get(1).map(String::as_str) == Some("--playerlivingcheck") { std::process::exit(if render::entity::object_check::player_living_check(&args[2]) {0}else{1}); }
     if args.get(1).map(String::as_str) == Some("--newlivingcheck") { std::process::exit(if render::entity::object_check::new_living_check(&args[2]) {0}else{1}); }

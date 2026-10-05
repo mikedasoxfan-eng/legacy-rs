@@ -1598,7 +1598,23 @@ impl App {
             gpu.entities.pistons = self.pistons.clone();
             gpu.entities.partial = partial;
             gpu.entities.fancy = self.gui.as_ref().is_none_or(|gui| gui.ui.settings.fancy_graphics);
-            gpu.entities.view = [self.cam.yaw, self.cam.pitch];
+            if let Some(p) = &mut self.player {
+                let mut camera = render::entity::manager::CameraState::from(&p.entity);
+                camera.rotation = [self.look[0], self.look[1]];
+                camera.previous_rotation = [self.look[2], self.look[3]];
+                let bed = if camera.sleeping {p.bed()} else {None};
+                gpu.entities.manager.cache_active_render_info(
+                    render::entity::manager::Context {
+                        world: Some(()), engine: Some(()), font: Some(()),
+                        player: Some(()), options: Some(()),
+                    }, Some(camera), partial,
+                    |_| Ok(bed.map_or((0, 0), |metadata| (26, metadata))),
+                ).expect("active singleplayer render context");
+                gpu.entities.view = gpu.entities.manager.view;
+            } else {
+                gpu.entities.manager.camera = self.cam.pos.to_array();
+                gpu.entities.view = [self.cam.yaw, self.cam.pitch];
+            }
             gpu.entities.angler=self.player.as_ref().map(|p|p.entity.clone());
             gpu.entities.third_person=camera_settings.third_person;
         }

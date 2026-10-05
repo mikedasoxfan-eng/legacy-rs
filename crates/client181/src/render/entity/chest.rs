@@ -15,7 +15,17 @@ pub fn render(s: &ChestState) -> Fixed {
     if s.adjacent[0] || s.adjacent[2] { return g; }
     let large = s.adjacent[1] || s.adjacent[3];
     let mut model = Model::new(if large { ModelKind::LargeChest } else { ModelKind::Chest });
-    g.texture = if large { 32 } else { 31 };
+    {
+        let name = if large { "/item/largechest.png" } else { "/item/chest.png" };
+        let binding = super::tile_special::FixedBinding {
+            target: &mut g,
+            resolve: |_: Option<&str>| Ok(if large {32} else {31}),
+        };
+        let mut context = super::tile_special::Context { render_engine: Some(binding), font_renderer: None::<()> };
+        let mut base = super::tile_special::TileEntitySpecialRenderer::new();
+        base.set_tile_entity_renderer(Some(&mut context));
+        base.bind_texture_by_name(Some(name)).expect("loaded chest texture");
+    }
     g.push();
     g.enable(2, true);
     g.material = [1.0; 4];

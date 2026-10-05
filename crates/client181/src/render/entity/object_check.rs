@@ -552,3 +552,37 @@ pub fn arrow_check(path:&str)->bool {
  for case in 0..n {let yaw=d.f();let pitch=d.f();let shake=d.u() as i32;let partial=d.f();let g=super::objects::render(&ObjectState{kind:ObjectKind::Arrow{yaw,pitch,shake,visible:false},position:[-0.25,10.5,3.75],partial,brightness:1.0},[0.0;3],[0.0;2]);assert_eq!(d.u() as usize,g.draws.len());for (i,r) in g.draws.iter().enumerate(){d.draw(r,&format!("arrow {case} draw {i}"));}}
  assert_eq!(d.at,d.data.len());println!("arrows: {n} cases, {} values, {} differences",d.checks,d.bad);d.bad==0
 }
+
+/// Round 9: the real manager registry's shadow configuration and sprite bridges.
+pub fn manager_visual_check(path: &str) -> bool {
+    use worldgen::entity::{Entity, EntityKind, Vec3D};
+    let mut d = Input { data: std::fs::read(path).unwrap(), at: 0, checks: 0, bad: 0 };
+    assert_eq!(d.u(), 0x3938314d); assert_eq!(d.u(), 1);
+    let n = d.u();
+    let mut w = worldgen::entity::verify181::world();
+    for case in 0..n {
+        let kind = d.u(); let partial = d.f(); let fancy = d.u() != 0;
+        let mut e = match kind {
+            0 => Entity::living(&mut w, "CaveSpider").unwrap(),
+            1 => Entity::living(&mut w, "Silverfish").unwrap(),
+            2 => Entity::xp_orb_base(&mut w),
+            3 | 4 => { let mut e = worldgen::entity::registry::create(&mut w, "Snowball").unwrap(); if kind == 4 {e.kind = EntityKind::Egg(Default::default());} e },
+            _ => unreachable!(),
+        };
+        e.width = d.f(); e.height = d.f(); e.bounding_box.min_y = d.d();
+        e.pos = Vec3D::new(d.d(), d.d(), d.d()); e.last_tick_pos = Vec3D::new(d.d(), d.d(), d.d());
+        let origin = std::array::from_fn(|_| d.d()); let camera = std::array::from_fn(|_| d.d());
+        let view = [d.f(), d.f()];
+        let ns = d.u(); let mut surfaces = Vec::new();
+        for _ in 0..ns { surfaces.push(super::effects::Surface {xyz: [d.u() as i32, d.u() as i32, d.u() as i32], block: d.u() as u8, brightness: d.f()}); }
+        let g = if kind < 3 {
+            if fancy {super::effects::shadow_with_camera(&e, &surfaces, partial, origin, camera)} else {super::fixed::Fixed::new(1.0)}
+        } else {
+            let state = super::bridge::object_state(&e, partial, 1.0, [1.0; 7]).expect("thrown-item bridge");
+            super::objects::render(&state, origin, view)
+        };
+        let nd = d.u() as usize; assert_eq!(nd, g.draws.len(), "manager visuals {case}: draws");
+        for (j, draw) in g.draws.iter().enumerate() { d.draw(draw, &format!("manager visuals {case}, draw {j}")); }
+    }
+    assert_eq!(d.at, d.data.len()); println!("manager visuals: {n} cases, {} comparisons, {} differences", d.checks, d.bad); d.bad == 0
+}
