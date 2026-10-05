@@ -8,6 +8,7 @@
 pub mod behavior;
 pub mod plants181;
 mod blocks181;
+pub mod beds181;
 pub mod verify181;
 mod light181;
 pub mod chests181;
@@ -155,6 +156,12 @@ impl Dimension {
 }
 
 pub struct World {
+    /// Explicit Block callbacks to IWorldAccess.markBlockRangeNeedsUpdate.
+    /// Kept separate from sound/particle events, which have their own replay format.
+    pub block_update_ranges181: Vec<[i32; 6]>,
+    /// Opt-in observer; normal worlds do not retain a history of render requests.
+    pub record_block_update_ranges181: bool,
+    pub piston_extension_texture_override181: i32,
     pub maps:crate::maps::MapStorage,
     /// Ordered IWorldAccess callbacks since the last client tick.
     pub events: Vec<events::WorldEvent>,
@@ -346,6 +353,9 @@ impl World {
             lightning_flash: 0,
             skylight_subtracted: if dimension.is_hell_world() { 11 } else { 0 },
             renderers_dirty: false,
+            block_update_ranges181: Vec::new(),
+            record_block_update_ranges181: false,
+            piston_extension_texture_override181: -1,
             update_lcg: 0,
             sound_counter: 0,
             players: Vec::new(),

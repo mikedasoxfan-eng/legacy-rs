@@ -3,6 +3,47 @@ use super::World;
 use crate::{block::*, entity::AxisAlignedBB as BB};
 
 impl World {
+    pub fn set_piston_extension_texture181(&mut self,texture:i32) {self.piston_extension_texture_override181=texture;}
+    pub fn clear_piston_extension_texture181(&mut self) {self.piston_extension_texture_override181=-1;}
+    pub fn piston_extension_texture181(&self,side:i32,metadata:i32)->Result<i32,()> {
+        crate::block::visual181::piston_extension_texture181(side,metadata,self.piston_extension_texture_override181)
+    }
+    pub fn piston_extension_selected_box181(&self,x:i32,y:i32,z:i32)->BB {
+        self.block_bounds[PISTON_EXTENSION as usize].translated(x as f64,y as f64,z as f64)
+    }
+    pub fn piston_extension_boxes181(&mut self,x:i32,y:i32,z:i32,query:BB)->Vec<BB> {
+        let metadata=self.get_block_metadata(x,y,z) as usize;
+        let boxes=crate::entity::block_table::MULTI_COLLISION[PISTON_EXTENSION as usize][metadata]
+            .iter().map(|b|b.translated(x as f64,y as f64,z as f64)).filter(|b|b.intersects(query)).collect();
+        self.block_bounds[PISTON_EXTENSION as usize]=BB::new(0.0,0.0,0.0,1.0,1.0,1.0);
+        boxes
+    }
+    pub fn door_selected_box181(&mut self,id:u8,x:i32,y:i32,z:i32)->BB {
+        assert!(matches!(id,64|71));
+        self.set_block_bounds_based_on_state(id,x,y,z);
+        self.block_bounds[id as usize].translated(x as f64,y as f64,z as f64)
+    }
+    pub fn set_door_rotation181(&mut self,id:u8,state:i32) {
+        assert!(matches!(id,64|71));
+        self.block_bounds[id as usize]=crate::block::visual181::door_rotation_bounds181(state);
+    }
+    pub fn set_plate_item_bounds181(&mut self,id:u8) {
+        assert!(matches!(id,70|72));
+        self.block_bounds[id as usize]=BB::new(0.0,0.375,0.0,1.0,0.625,1.0);
+    }
+    pub fn mark_blocks_dirty181(&mut self, range: [i32; 6]) {
+        if self.record_block_update_ranges181 {self.block_update_ranges181.push(range);}
+        self.renderers_dirty = true;
+    }
+    pub fn drain_block_update_ranges181(&mut self) -> Vec<[i32; 6]> {
+        std::mem::take(&mut self.block_update_ranges181)
+    }
+    pub fn cake_selected_box181(&mut self, x: i32, y: i32, z: i32) -> BB {
+        crate::block::visual181::cake_box181(x,y,z,self.get_block_metadata(x,y,z),true)
+    }
+    pub fn set_cake_item_bounds181(&mut self) {
+        self.block_bounds[CAKE as usize] = crate::block::visual181::cake_bounds181(0);
+    }
     /// Both registered sign classes refresh state bounds before selection.
     /// The standing sign's state hook leaves its singleton bounds untouched.
     pub fn sign_selected_box181(&mut self, id: u8, x: i32, y: i32, z: i32) -> BB {
@@ -75,6 +116,7 @@ impl World {
         } else if (meta&4!=0)!=powered {
             if self.get_block_id(x,y+1,z)==id { self.set_block_metadata_with_notify(x,y+1,z,(meta^4)+8); }
             self.set_block_metadata_with_notify(x,y,z,meta^4);
+            self.mark_blocks_dirty181([x,y-1,z,x,y,z]);
             self.auxiliary_effect(1003,(x,y,z),0);
         }
     }

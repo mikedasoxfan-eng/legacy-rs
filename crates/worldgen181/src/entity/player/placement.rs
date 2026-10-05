@@ -79,7 +79,7 @@ pub fn can_place_at(w: &mut World, id: u8, x: i32, y: i32, z: i32, side: i32) ->
         86 | 91 => base && w.is_block_normal_cube(x,y-1,z),
         93 | 94 => w.is_block_normal_cube(x, y - 1, z) && base,
         27 | 28 | 66 => w.is_block_normal_cube(x, y - 1, z),
-        92 => mat(w.get_block_material(x, y - 1, z)).is_solid,
+        92 => base && mat(w.get_block_material(x, y - 1, z)).is_solid,
         6 | 31 | 37 | 38 => base && matches!(w.get_block_id(x, y - 1, z), 2 | 3 | 60),
         32 => base && w.get_block_id(x, y - 1, z) == 12,
         39 | 40 => base && opaque_cube_lookup(w.get_block_id(x,y-1,z)),
