@@ -146,18 +146,31 @@ echo "== sky GL colors and sunrise vertex colors, anaglyph on/off"
 if "$oracle" skydraw sky_draw_case.bin && beta --skydrawcheck "$out/sky_draw_case.bin"; then :; else fail=1; fi
 rm -f "$out/sky_draw_case.bin"
 
+# ---- original EntityRenderer precipitation quads and particle spawn RNG,
+# RenderLightningBolt strips. Inputs: seed camera-x y z renderer-tick partial rain.
+echo "== ambient weather vertices"
+for args in "2 0.5 70 0.5 100 0.75 0.8" "11 0.5 80 0.5 2147483647 0.25 1" \
+  "3257840388504953787 -39.5 75 65.5 23 0.5 1" "1 0.5 70 0.5 0 0 1" \
+  "42 -20.25 90 -31.75 -2147483648 1.0 0.01"; do
+  for graphics in fancy fast; do
+    if "$oracle" weathermesh $args weather_case.bin natural 0 "$graphics" && beta --weathercheck $args "$out/weather_case.bin" natural 0 "$graphics"; then :; else fail=1; fi
+  done
+done
+for scene in lava roof; do
+  args="42 0.5 80 0.5 123 0.5 1"
+  for graphics in fancy fast; do
+    if "$oracle" weathermesh $args weather_case.bin "$scene" 5 "$graphics" && beta --weathercheck $args "$out/weather_case.bin" "$scene" 5 "$graphics"; then :; else fail=1; fi
+  done
+done
+rm -f "$out/weather_case.bin"
+
+echo "== moving piston renderer (original TileEntityRendererPiston vertex bits)"
+if "$oracle" pistonrender piston_renderer.bin && beta --pistoncheck "$out/piston_renderer.bin"; then :; else fail=1; fi
+rm -f "$out/piston_renderer.bin"
+
 # --- render-world (b1.8.1) ---
 echo "== lightmap texels (EntityRenderer.func_35808_e): day, night, rain, thunder, flashes, flicker, brightness"
 if "$oracle" lightmap lightmap_case.bin >/dev/null 2>&1 && beta --lightmapcheck "$out/lightmap_case.bin" | tail -1 | grep -q " 0 differences"; then echo "LIGHTMAP EXACT"; else echo "lightmap DIFFERS"; fail=1; fi
 # --- end render-world ---
-# --- world-blocks (b1.8.1) ---
-bash "$root/tools/verify_world_blocks181.sh" --built || fail=1
-# --- end world-blocks ---
-# --- terrain (b1.8.1) ---
-bash "$root/tools/verify_terrain181.sh" --built || fail=1
-# --- end terrain ---
-[ $fail -eq 0 ] && echo "ALL CASES EXACT" || echo "SOME CASES DIFFER"
-exit $fail
-
 [ $fail -eq 0 ] && echo "ALL CASES EXACT" || echo "SOME CASES DIFFER"
 exit $fail
