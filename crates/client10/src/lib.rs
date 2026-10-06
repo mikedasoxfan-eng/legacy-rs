@@ -445,6 +445,12 @@ pub fn run() {
     if args.get(1).map(String::as_str) == Some("--render-round4-check") {
         std::process::exit(if render::round4_check::check(&args[2], &args[3]) {0}else{1});
     }
+    if args.get(1).map(String::as_str) == Some("--worldrenderer4-check") {
+        std::process::exit(if render::world_renderer::check(&args) {0}else{1});
+    }
+    if args.get(1).map(String::as_str) == Some("--render-child4-check") {
+        std::process::exit(if render::entity::object_check::child_living_check(&args[2]) {0}else{1});
+    }
     if args.get(1).map(String::as_str) == Some("--render-biped4-check") {
         std::process::exit(if render::entity::object_check::biped_release_check(&args[2]) {0}else{1});
     }

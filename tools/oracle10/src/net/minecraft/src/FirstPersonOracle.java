@@ -105,6 +105,8 @@ public final class FirstPersonOracle {
             int medium=c%3;p.health=c%7==0?0:20;p.deathTime=c%47;p.sleeping=c%11==0;
             p.prevTimeInPortal=c%6*.13F;p.timeInPortal=c%5*.19F;
             out.i32(0);state(out,p);float t=new float[]{0,.125F,.5F,.9F,1}[c%5];f(out,t);settings(out,p,c);
+            // 1.0: nausea (confusion) slows the portal wobble from 20 to 7 degrees per tick.
+            boolean confused=c%9==4;if(confused)p.addPotionEffect(new PotionEffect(Potion.potionConfusion.id,100,0));out.i32(confused?1:0);
             out.i32(c<256?2:10);block(out,w,0,65,-3,p.sleeping?26:medium==1?9:medium==2?11:0,c%4);block(out,w,0,65,-6,1,0);
             if(c>=256){double range=.5+(c%7)*.5;double dx=-MathHelper.sin(p.rotationYaw/180F*(float)Math.PI)*MathHelper.cos(p.rotationPitch/180F*(float)Math.PI),dz=MathHelper.cos(p.rotationYaw/180F*(float)Math.PI)*MathHelper.cos(p.rotationPitch/180F*(float)Math.PI),dy=-MathHelper.sin(p.rotationPitch/180F*(float)Math.PI);for(int i=0;i<8;i++)block(out,w,MathHelper.floor_double(p.posX-dx*range)+i%2,MathHelper.floor_double(p.posY-dy*range)+i/2%2,MathHelper.floor_double(p.posZ-dz*range)+i/4%2,1,0);}
             start(1);call(p.mc.entityRenderer,"setupCameraTransform",new Class[]{float.class,int.class},t,c%2);stop();

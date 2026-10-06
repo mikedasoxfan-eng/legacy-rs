@@ -5,6 +5,7 @@ pub mod active_info;
 pub mod opengl_helper;
 pub mod render_helper;
 pub mod round4_check;
+pub mod world_renderer;
 pub mod end_portal;
 pub mod lightmap;
 pub mod blocks;

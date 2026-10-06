@@ -355,9 +355,12 @@ pub fn check(path: &str) -> bool {
         let mut w = world();
         match kind {
             0 => {
-                let e = d.entity(&mut w);
+                let mut e = d.entity(&mut w);
                 let t = d.f();
                 let (s, _) = d.settings();
+                if d.i() != 0 {
+                    e.add_potion_effect(worldgen::entity::potion::PotionEffect::new(9, 100, 0));
+                }
                 d.blocks(&mut w);
                 let medium = super::active_info::Info::default().medium(&e, t as f64, &mut w);
                 let fov = camera::fov(&e, medium == camera::Medium::Water, t, &s, true);

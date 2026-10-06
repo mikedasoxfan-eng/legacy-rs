@@ -229,9 +229,11 @@ pub fn transform(e: &Entity, t: f32, s: Settings, distance: f64, bed: Option<i32
         if portal > 0.0 {
             let mut scale = 5.0 / (portal * portal + 5.0) - portal * 0.04;
             scale *= scale;
-            g.rotate((s.ticks as f32 + t) * 20.0, 0.0, 1.0, 1.0);
+            // 1.0: nausea (confusion) turns the wobble at 7 degrees per tick instead of 20.
+            let speed = if e.potion_effect(9).is_some() { 7.0 } else { 20.0 };
+            g.rotate((s.ticks as f32 + t) * speed, 0.0, 1.0, 1.0);
             g.scale(1.0 / scale, 1.0, 1.0);
-            g.rotate(-(s.ticks as f32 + t) * 20.0, 0.0, 1.0, 1.0);
+            g.rotate(-(s.ticks as f32 + t) * speed, 0.0, 1.0, 1.0);
         }
     }
     orient(&mut g, e, t, s, distance, bed);

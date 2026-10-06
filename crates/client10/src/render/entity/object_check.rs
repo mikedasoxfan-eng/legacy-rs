@@ -649,3 +649,46 @@ pub fn biped_release_check(path: &str) -> bool {
     println!("RENDER BIPED10 {}: {n} cases, {glints} glint draws, {} values, {} differences", if d.bad == 0 { "EXACT" } else { "DIFFER" }, d.checks, d.bad);
     d.bad == 0
 }
+
+/// Release 1.0 RenderLiving with baby animals (Mode_render_child4_10).
+pub fn child_living_check(path: &str) -> bool {
+    use super::living::{MobKind, RenderState};
+    let mut d = Input { data: std::fs::read(path).unwrap(), at: 0, checks: 0, bad: 0 };
+    assert_eq!(d.u(), 0x34444843);
+    let n = d.u();
+    let mut children = 0;
+    for case in 0..n {
+        let kind = d.u();
+        let c = d.u() as i32;
+        let child = d.u() != 0;
+        children += child as usize;
+        let partial = d.f();
+        let brightness = d.f();
+        let packed = d.u() as i32;
+        let mut s = RenderState::new(match kind {
+            6 => MobKind::Pig,
+            7 => MobKind::Cow,
+            8 => MobKind::Sheep,
+            9 => MobKind::Chicken,
+            11 => MobKind::Wolf,
+            _ => panic!("child kind {kind}"),
+        });
+        s.is_child = child;
+        s.entity_id = c * 337; s.partial = partial; s.brightness = 1.0; s.overlay_brightness = brightness; s.position = [-0.25, 10.5, 3.75];
+        s.body_yaw = -33.0 + (17.0 - -33.0) * partial; s.yaw = -75.0 + (35.0 - -75.0) * partial; s.pitch = 25.0 + (-12.0 - 25.0) * partial;
+        s.limb_amount = 0.2 + (0.9 - 0.2) * partial; s.limb_swing = 3.75 - 0.9 * (1.0 - partial); s.age = (c * 127) as f32 + partial; s.attack = 0.15 + (0.65 - 0.15) * partial;
+        s.hurt_time = if c % 4 == 1 { 3 } else { 0 }; s.death_time = if c % 4 == 2 { c } else { 0 };
+        s.saddled = c & 1 != 0; s.sheared = c & 1 != 0; s.fleece_color = c as usize;
+        s.chicken_flap = 0.2 + (1.9 - 0.2) * partial; s.chicken_flap_amount = 0.15 + (0.8 - 0.15) * partial;
+        s.wolf.angry = c % 8 & 2 != 0; s.wolf.sitting = c % 8 & 1 != 0; s.wolf_tamed = c % 8 & 4 != 0; s.wolf_health = c + 4; s.wolf.interested = [0.2, 0.8]; s.wolf.shake = [0.1, 0.6];
+        let g = super::raw_living181::render(&s, [0.0; 3], c >= 8);
+        assert_eq!(d.u() as usize, g.draws.len(), "child living {case} draw count");
+        for (i, r) in g.draws.iter().enumerate() { d.draw(r, &format!("child living {case} draw {i}")); }
+        let lights = super::raw_living181::packed_brightnesses(&g.draws, packed);
+        assert_eq!(d.u() as usize, lights.len());
+        for (i, v) in lights.into_iter().enumerate() { d.eq(v as u32, &format!("child living {case} light {i}")); }
+    }
+    assert_eq!(d.at, d.data.len());
+    println!("RENDER LIVING CHILD10 {}: {n} cases ({children} babies), {} values, {} differences", if d.bad == 0 { "EXACT" } else { "DIFFER" }, d.checks, d.bad);
+    d.bad == 0
+}
