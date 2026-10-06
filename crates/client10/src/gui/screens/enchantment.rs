@@ -103,3 +103,62 @@ pub fn offer(cost: i32, level: i32, hovered: bool) -> (i32, i32, i32) {
         (166, 6839882, 8453920)
     }
 }
+use glam::{Mat4, Vec3};
+use crate::gui::Ui;
+
+/// Original GuiEnchantment camera and model inputs. ModelBook is shared with the world renderer.
+pub(crate) fn book_inputs(animation: &EnchantmentAnimation, partial: f32, scaled: crate::gui::ScaledResolution) -> ([i32; 4], Vec<[f32; 5]>, [f32; 6]) {
+    let [a, b, opening] = animation.pose(partial);
+    let viewport = [(scaled.width - 320) / 2 * scaled.scale_factor, (scaled.height - 240) / 2 * scaled.scale_factor, 320 * scaled.scale_factor, 240 * scaled.scale_factor];
+    let ops = vec![
+        [0.0, 0.0, 3.3, -16.0, 0.0],
+        [1.0, 1.0, 1.0, 1.0, 0.0],
+        [1.0, 5.0, 5.0, 5.0, 0.0],
+        [2.0, 180.0, 0.0, 0.0, 1.0],
+        [2.0, 20.0, 1.0, 0.0, 0.0],
+        [0.0, (1.0-opening)*0.2, (1.0-opening)*0.1, (1.0-opening)*0.25, 0.0],
+        [2.0, -(1.0-opening)*90.0-90.0, 0.0, 1.0, 0.0],
+        [2.0, 180.0, 1.0, 0.0, 0.0],
+    ];
+    (viewport, ops, [0.0, a, b, opening, 0.0, 0.0625])
+}
+pub(crate) fn draw_book(ui: &mut Ui, animation: &EnchantmentAnimation, partial: f32) {
+    use crate::render::entity::models::{Model, ModelKind};
+    let (vp, ops, pose) = book_inputs(animation, partial, ui.scaled());
+    let mut parent = Mat4::IDENTITY;
+    for [op,a,b,c,d] in ops {
+        let matrix = match op as i32 {
+            0 => Mat4::from_translation(Vec3::new(a,b,c)),
+            1 => Mat4::from_scale(Vec3::new(a,b,c)),
+            _ => Mat4::from_axis_angle(Vec3::new(b,c,d), a*std::f32::consts::PI/180.0),
+        };
+        parent *= matrix;
+    }
+    // Express the original small GL viewport in the full framebuffer's clip coordinates.
+    let width = ui.display_width as f32;
+    let height = ui.display_height as f32;
+    let viewport = Mat4::from_translation(Vec3::new((2*vp[0]+vp[2]) as f32/width-1.0, (2*vp[1]+vp[3]) as f32/height-1.0, 0.0))
+        * Mat4::from_scale(Vec3::new(vp[2] as f32/width, vp[3] as f32/height, 1.0));
+    let old_projection = ui.gl.proj;
+    ui.gl.push_matrix();
+    ui.gl.set_modelview(Mat4::IDENTITY);
+    ui.gl.proj = viewport * Mat4::from_translation(Vec3::new(-0.34,0.23,0.0)) * Mat4::from_cols_array(&[0.75,0.0,0.0,0.0, 0.0,1.0,0.0,0.0, 0.0,0.0,-89.0/71.0,-1.0, 0.0,0.0,-1440.0/71.0,0.0]);
+    let mut model = Model::new(ModelKind::Book);
+    model.set_rotation_angles(pose);
+    ui.gl.bind_texture(ui.texture("item/book.png"));
+    let lights = [super::inventory_model::light(0.2,-0.7), super::inventory_model::light(-0.2,0.7)];
+    for (part, rotation) in model.render_parts() { super::inventory_model::part(ui, part, parent, rotation, lights, None, true); }
+    ui.gl.proj = old_projection;
+    ui.gl.pop_matrix();
+    ui.gl.color4f(1.0,1.0,1.0,1.0);
+}
+/// GuiEnchantment's ordered rectangle and font calls (galactic split text, then level labels).
+pub(crate) fn offer_draws(seed:i64,costs:[i32;3],level:i32,x:i32,y:i32,mx:i32,my:i32,width:impl Fn(&str)->i32)->(Vec<[i32;6]>,Vec<(String,[i32;5])>) {
+    let mut rectangles=Vec::new();let mut texts=Vec::new();
+    for (n,name) in names(seed).into_iter().enumerate() {
+        let row=19*n as i32;let cost=costs[n];let hovered=mx-x-60>=0&&mx-x-60<108&&my-y-14-row>=0&&my-y-14-row<19;
+        let (v,color,level_color)=offer(cost,level,hovered);rectangles.push([x+60,y+14+row,0,v,108,19]);
+        if cost!=0 {let text=cost.to_string();texts.push((name,[2,x+62,y+16+row,104,color]));texts.push((text.clone(),[1,x+166-width(&text),y+23+row,0,level_color]));}
+    }
+    (rectangles,texts)
+}

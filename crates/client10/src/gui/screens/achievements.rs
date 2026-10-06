@@ -149,9 +149,9 @@ impl GuiAchievements {
             ui.draw_vertical_line(x1, y0, y1, c);
         }
 
-        // glRotatef(180, 1, 0, 0); RenderHelper.enableStandardItemLighting();
+        // RenderHelper.func_41089_c: -30 degrees Y, then 165 degrees X.
         // glEnable(GL_RESCALE_NORMAL)
-        gui_item::set_gui_light_rotation(120.0);
+        gui_item::set_gui_release_lighting();
         gui_item::set_gui_rescale_normal(true);
         let mut hovered = None;
         for (i, a) in ACHIEVEMENTS.iter().enumerate() {

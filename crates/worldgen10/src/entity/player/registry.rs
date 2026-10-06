@@ -1,5 +1,5 @@
-//! Immutable Item/Block defaults extracted from the original bytecode.
-//! Regenerate with tools/oracle181/oracle.sh wbregistry registry.bin.
+//! Immutable release Item/Block defaults extracted from the original bytecode.
+//! Regenerate with tools/oracle10/build_player_registry.py.
 const DATA: &[u8] = include_bytes!("registry.bin");
 const ITEM_SIZE: usize = 16 + 256 * 5;
 fn int(at: usize) -> i32 {

@@ -13,6 +13,10 @@ name = "r10entities2"
 path = "src/bin/r10entities2.rs"
 
 [[bin]]
+name = "r10blocks3"
+path = "src/bin/r10blocks3.rs"
+
+[[bin]]
 name = "playerdamage8_10"
 path = "src/bin/playerdamage8_181.rs"
 

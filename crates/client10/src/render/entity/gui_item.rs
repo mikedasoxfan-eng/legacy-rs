@@ -12,6 +12,7 @@ pub fn geometry(item: &ItemStack, x: i32, y: i32, tint: bool) -> Fixed {
 pub fn geometry_with(item: &ItemStack, x: i32, y: i32, tint: bool, base: Option<[f32; 4]>) -> Fixed {
     let mut g = Fixed::new(1.0);
     g.light_rotation = gui_light_rotation();
+    g.light_transform = LIGHT_TRANSFORM.with(|c|c.get());
     // The calling screen's GL_RESCALE_NORMAL (GuiIngame/GuiContainer/GuiAchievements enable it).
     g.enable(2, gui_rescale_normal());
     if let Some(m) = base {
@@ -73,6 +74,8 @@ pub fn geometry_with(item: &ItemStack, x: i32, y: i32, tint: bool, base: Option<
 }
 thread_local! {
     static LIGHT_ROTATION: std::cell::Cell<f32> = const { std::cell::Cell::new(0.0) };
+    static LIGHT_TRANSFORM: std::cell::Cell<Option<glam::Mat4>> = const { std::cell::Cell::new(None) };
+    static LIGHT_CAPTURE: std::cell::RefCell<Option<Vec<[[f32;4];2]>>> = const { std::cell::RefCell::new(None) };
     static RESCALE_NORMAL: std::cell::Cell<bool> = const { std::cell::Cell::new(false) };
 }
 
@@ -80,6 +83,7 @@ thread_local! {
 /// `enableStandardItemLighting` and whether `GL_RESCALE_NORMAL` is on.
 pub fn set_gui_light_rotation(degrees: f32) {
     LIGHT_ROTATION.with(|c| c.set(degrees));
+    LIGHT_TRANSFORM.with(|c| c.set(None));
 }
 
 pub fn set_gui_rescale_normal(on: bool) {
@@ -174,3 +178,15 @@ pub fn render_item_overlay_into_gui(ui: &mut Ui, item: Option<&ItemStack>, x: i3
         }
     }
 }
+
+/// RenderHelper.func_41089_c (Release 1.0), shared by all GUI item callers.
+pub fn set_gui_release_lighting() {
+    let ops=[[-30.0f32,0.0,1.0,0.0],[165.0,1.0,0.0,0.0]];
+    LIGHT_CAPTURE.with(|c|{if let Some(c)=c.borrow_mut().as_mut(){c.push(ops);}});
+    let mut matrix=glam::Mat4::IDENTITY;
+    for [angle,x,y,z] in ops {matrix*=glam::Mat4::from_axis_angle(glam::Vec3::new(x,y,z),angle.to_radians());}
+    LIGHT_ROTATION.with(|c|c.set(0.0));
+    LIGHT_TRANSFORM.with(|c|c.set(Some(matrix)));
+}
+pub(crate) fn capture_lights(){LIGHT_CAPTURE.with(|c|*c.borrow_mut()=Some(Vec::new()));}
+pub(crate) fn take_light_calls()->Vec<[[f32;4];2]>{LIGHT_CAPTURE.with(|c|c.borrow_mut().take().unwrap_or_default())}

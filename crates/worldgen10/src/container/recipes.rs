@@ -48,46 +48,7 @@ impl CraftingManager {
                 wood.push(r.byte());
             }
             assert!(r.0.is_empty());
-            // The inherited table is already stably sorted. Insert each new
-            // registration beside its predecessor in the same comparator bucket.
-            // A Block ingredient uses the Java shaped-recipe wildcard damage -1.
-            let shaped = |w,h,id,count,ids:Vec<i32>| Recipe {
-                width:w,height:h,shaped:true,output:ItemStack::new(id,count,0),
-                ingredients:ids.into_iter().map(|id|if id==0 {None}else{Some(ItemStack::new(id,1,if id<256 {-1}else{0}))}).collect(),
-            };
-            let after = |recipes:&mut Vec<Recipe>,recipe:Recipe,anchor:i32| {
-                let index=recipes.iter().rposition(|r|r.shaped==recipe.shaped && r.ingredients.len()==recipe.ingredients.len() && r.output.id==anchor).expect("source registration predecessor")+1;
-                recipes.insert(index,recipe);
-            };
-            after(&mut recipes,shaped(3,3,266,1,vec![371;9]),22);
-            // The last ingot unpacking recipe returns nine lapis dyes.
-            let lapis=recipes.iter().position(|r|r.shaped&&r.width==1&&r.height==1&&r.output.id==351&&r.output.count==9).unwrap()+1;
-            recipes.insert(lapis,shaped(1,1,371,9,vec![266]));
-            after(&mut recipes,shaped(3,2,113,6,vec![112;6]),85);
-            after(&mut recipes,shaped(3,2,374,3,vec![20,0,20,0,20,0]),281);
-            after(&mut recipes,shaped(3,3,380,1,vec![265,0,265,265,0,265,265,265,265]),28);
-            after(&mut recipes,shaped(3,2,379,1,vec![0,369,0,4,4,4]),328);
-            after(&mut recipes,shaped(3,3,114,4,vec![112,0,0,112,112,0,112,112,112]),109);
-            after(&mut recipes,shaped(3,3,116,1,vec![0,340,0,264,49,264,49,49,49]),33);
-            let shapeless=|id,count,ids:Vec<i32>|Recipe{width:0,height:0,shaped:false,output:ItemStack::new(id,count,0),ingredients:ids.into_iter().map(|id|Some(ItemStack::new(id,1,0))).collect()};
-            recipes.retain(|r|!(r.shaped&&r.output.id==282));
-            after(&mut recipes,shaped(1,1,361,4,vec![86]),362);
-            let soup=shapeless(282,1,vec![39,40,281]);
-            let index=recipes.iter().position(|r|!r.shaped&&r.ingredients.len()==3).unwrap();
-            recipes.insert(index,soup);
-            after(&mut recipes,shapeless(376,1,vec![375,39,353]),282);
-            for (id,count,ids) in [(382,1,vec![360,371]),(378,1,vec![377,341]),(377,2,vec![369])] {
-                let recipe=shapeless(id,count,ids);
-                let index=recipes.iter().position(|r|!r.shaped&&r.ingredients.len()==recipe.ingredients.len()).unwrap_or(recipes.len());
-                let index=if id==378 {index+1}else{index};
-                recipes.insert(index,recipe);
-            }
-            let eye=shapeless(381,1,vec![368,377]);
-            let index=recipes.iter().rposition(|r|!r.shaped&&r.ingredients.len()==2).unwrap()+1;
-            recipes.insert(index,eye);
-            smelting[16]=Some(ItemStack::new(263,1,0));
-            smelting[73]=Some(ItemStack::new(331,1,0));
-            smelting[21]=Some(ItemStack::new(351,1,4));
+            // All release registrations and their stable sort order come from original bytecode.
             Self {
                 recipes,
                 smelting,

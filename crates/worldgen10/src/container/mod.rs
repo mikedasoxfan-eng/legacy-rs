@@ -91,6 +91,7 @@ pub struct Container {
     pub positions: Vec<(i32, i32, i32)>,
     pub vehicle: Option<i32>,
     pub progress: [i32; 3], // cook, burn, current fuel
+    last_brew_time: i32,
     pub events: Vec<ContainerEvent>,
     pub transaction: i16,
     pub enchanting: Option<enchanting::Enchanting>,
@@ -117,6 +118,7 @@ impl Container {
             positions: Vec::new(),
             vehicle: None,
             progress: [0; 3],
+            last_brew_time: 0,
             events: Vec::new(),
             transaction: 0,
             enchanting: None,bookshelves:0,multiplayer:false,
@@ -256,7 +258,7 @@ impl Container {
         slot: usize,
         mut stack: Option<ItemStack>,
     ) {
-        if self.slots[slot].inventory == Inventory::Tile {
+        if self.slots[slot].inventory == Inventory::Tile && self.kind != ContainerKind::BrewingStand {
             if let Some(s) = &mut stack {
                 s.count = s.count.min(if self.kind==ContainerKind::Enchantment {1}else{64});
             }
@@ -341,6 +343,8 @@ impl Container {
                     354 => Some("bakeCake"),
                     274 => Some("buildBetterPickaxe"),
                     268 => Some("buildSword"),
+                    116 => Some("enchantments"),
+                    47 => Some("bookcase"),
                     _ => None,
                 }
             } else {
@@ -424,7 +428,7 @@ impl Container {
             }
         }
     }
-    fn transfer(&mut self, p: &mut InventoryPlayer, slot: usize) -> Option<ItemStack> {
+    pub fn transfer_stack(&mut self, p: &mut InventoryPlayer, slot: usize) -> Option<ItemStack> {
         let mut s = self.stack(p, slot)?;
         if self.kind==ContainerKind::Creative {return Some(s);}
         let old = copy(s);
@@ -505,9 +509,9 @@ impl Container {
             return None;
         }
         let slot = slot as usize;
-        if shift && self.kind==ContainerKind::Creative {return self.transfer(p,slot);}
+        if shift && self.kind==ContainerKind::Creative {return self.transfer_stack(p,slot);}
         if shift {
-            let transferred = self.transfer(p, slot)?;
+            let transferred = self.transfer_stack(p, slot)?;
             let result = copy(transferred);
             // Beta 1.8.1 recurses while the replenished source retains the same item ID.
             if self
@@ -574,12 +578,12 @@ impl Container {
         if let Some(s) = p.cursor.take() {
             self.events.push(ContainerEvent::Drop(s));
         }
+        if self.kind == ContainerKind::Enchantment && !multiplayer {
+            if let Some(item) = self.tile[0] { self.events.push(ContainerEvent::Drop(item)); }
+        }
         if self.kind == ContainerKind::Player
             || (self.kind == ContainerKind::Workbench && !multiplayer)
         {
-            if self.kind==ContainerKind::Enchantment&&!multiplayer {
-            if let Some(item)=self.tile[0] {self.events.push(ContainerEvent::Drop(item));}
-        }
         for i in 0..self.matrix.len() {
                 if let Some(s) = self.matrix[i] {
                     self.events.push(ContainerEvent::Drop(s));
@@ -590,6 +594,32 @@ impl Container {
                 }
             }
         }
+    }
+    /// Container's default enchant hook, overridden only by ContainerEnchantment.
+    pub fn enchant_item(&mut self, player_level:&mut i32, offer:usize)->bool {
+        let Some(e)=self.enchanting.as_mut() else{return false;};
+        if offer>=3 {return false;}
+        let result=e.enchant(offer,player_level,self.multiplayer,self.bookshelves);
+        self.tile[0]=e.item;self.progress=e.costs;result
+    }
+    /// ICrafting progress notifications in listener order. Enchanting always sends
+    /// all three offers; brewing sends only changed brew time, with one shared cache.
+    pub fn progress_updates(&mut self, listeners:usize)->Vec<[i32;3]> {
+        let mut updates=Vec::new();
+        for listener in 0..listeners {
+            if self.kind==ContainerKind::Enchantment {
+                for id in 0..3 {updates.push([listener as i32,id,self.progress[id as usize]]);}
+            } else if self.kind==ContainerKind::BrewingStand && self.last_brew_time!=self.progress[0] {
+                updates.push([listener as i32,0,self.progress[0]]);
+            }
+        }
+        if self.kind==ContainerKind::BrewingStand {self.last_brew_time=self.progress[0];}
+        updates
+    }
+    pub fn update_progress_bar(&mut self,id:i32,value:i32) {
+        if self.kind==ContainerKind::Enchantment && (0..3).contains(&id) {
+            self.progress[id as usize]=value;self.enchanting.as_mut().unwrap().progress(id,value);
+        } else if self.kind==ContainerKind::BrewingStand && id==0 {self.progress[0]=value;}
     }
     pub fn next_transaction(&mut self) -> i16 {
         self.transaction = self.transaction.wrapping_add(1);

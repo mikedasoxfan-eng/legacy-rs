@@ -66,7 +66,6 @@ pub fn draw(ui: &mut Ui, lines: &[String], rarity: i32, x: i32, mut y: i32) {
         ui.draw_gradient_rect_z(x0, y0, x1, y1, c0, c1, 300.0);
     }
     ui.gl.push_matrix();
-    ui.gl.translatef(0.0, 0.0, 300.0);
     for (i, line) in lines.iter().enumerate() {
         let color = if i == 0 { rarity } else { 7 };
         ui.font

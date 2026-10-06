@@ -105,9 +105,9 @@ fn slot_cell(ui: &mut Ui, x: i32, y: i32, u: i32, v: i32) {
 }
 
 /// `GuiStats.func_27138_c`: the slot background and the item icon.
-fn item_cell(ui: &mut Ui, x: i32, y: i32, item: i32) {
+pub(crate) fn item_cell(ui: &mut Ui, x: i32, y: i32, item: i32) {
     slot_cell(ui, x + 1, y + 1, 0, 0);
-    gui_item::set_gui_light_rotation(120.0);
+    gui_item::set_gui_release_lighting();
     gui_item::set_gui_rescale_normal(true);
     gui_item::render_item_into_gui(ui, Some(&ItemStack::new(item, 1, 0)), x + 2, y + 2);
     gui_item::set_gui_rescale_normal(false);
