@@ -177,10 +177,11 @@ impl Entity {
         if !self.kind.is_living() {
             return None;
         }
-        let cy = math::cos(-self.yaw * PI / 180.0 - PI);
-        let sy = math::sin(-self.yaw * PI / 180.0 - PI);
-        let cp = -math::cos(-self.pitch * PI / 180.0);
-        let sp = math::sin(-self.pitch * PI / 180.0);
+        // 1.0 EntityLiving.getLook(1.0F): angle * ((float)Math.PI / 180.0F), a folded constant.
+        let cy = math::cos(-self.yaw * (PI / 180.0) - PI);
+        let sy = math::sin(-self.yaw * (PI / 180.0) - PI);
+        let cp = -math::cos(-self.pitch * (PI / 180.0));
+        let sp = math::sin(-self.pitch * (PI / 180.0));
         Some(Vec3D::new((sy * cp) as f64, sp as f64, (cy * cp) as f64))
     }
     pub(super) fn fireball_attack(&mut self, w: &World, attacker: Option<i32>) -> bool {

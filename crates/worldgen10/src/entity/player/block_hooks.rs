@@ -192,7 +192,8 @@ pub fn neighbor(w: &mut World, id: u8, x: i32, y: i32, z: i32, changed: u8) -> b
             if w.get_block_id(x, y - 1, z) != id {
                 w.set_block_with_notify(x, y, z, 0);
             }
-            if changed > 0 {
+            // 1.0 BlockDoor: the upper half still forwards only power-providing changes.
+            if changed > 0 && crate::entity::block_hooks::provides_power(changed) {
                 neighbor(w, id, x, y - 1, z, changed);
             }
         } else {
