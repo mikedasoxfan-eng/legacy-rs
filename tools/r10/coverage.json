@@ -16623,6 +16623,71 @@
   "r10world3 world/weather",
   "r10world3 worldheight"
  ],
+ "ModelBase": [
+  "ModelBase_ModelBox_ModelRenderer"
+ ],
+ "ModelBiped": [
+  "ModelBiped_constructor_pose",
+  "ModelBiped_draw"
+ ],
+ "ModelBlaze": [
+  "ModelBlaze_constructor_pose",
+  "ModelBlaze_draw"
+ ],
+ "ModelBook": [
+  "ModelBook_constructor_pose",
+  "ModelBook_draw"
+ ],
+ "ModelBox": [
+  "ModelBase_ModelBox_ModelRenderer"
+ ],
+ "ModelChicken": [
+  "ModelChicken_constructor_pose",
+  "ModelChicken_draw"
+ ],
+ "ModelCow": [
+  "ModelCow_constructor_pose",
+  "ModelCow_draw"
+ ],
+ "ModelDragon": [
+  "ModelDragon_constructor_pose",
+  "ModelDragon_draw"
+ ],
+ "ModelEnderCrystal": [
+  "ModelEnderCrystal_constructor_pose",
+  "ModelEnderCrystal_draw"
+ ],
+ "ModelMagmaCube": [
+  "ModelMagmaCube_constructor_pose",
+  "ModelMagmaCube_draw"
+ ],
+ "ModelPig": [
+  "ModelPig_constructor_pose",
+  "ModelPig_draw"
+ ],
+ "ModelQuadruped": [
+  "ModelQuadruped_constructor_pose",
+  "ModelQuadruped_draw"
+ ],
+ "ModelRenderer": [
+  "ModelBase_ModelBox_ModelRenderer"
+ ],
+ "ModelSkeleton": [
+  "ModelSkeleton_constructor_pose",
+  "ModelSkeleton_draw"
+ ],
+ "ModelSnowMan": [
+  "ModelSnowMan_constructor_pose",
+  "ModelSnowMan_draw"
+ ],
+ "ModelVillager": [
+  "ModelVillager_constructor_pose",
+  "ModelVillager_draw"
+ ],
+ "ModelWolf": [
+  "ModelWolf_constructor_pose",
+  "ModelWolf_draw"
+ ],
  "NoiseGeneratorOctaves": [
   "r10world3 biomecache/-4172144997902289642",
   "r10world3 biomecache/-9223372036854775808",
@@ -18348,6 +18413,96 @@
   "r10world3 world/storage",
   "r10world3 world/weather",
   "r10world3 worldheight"
+ ],
+ "RenderBlaze": [
+  "RenderBlaze"
+ ],
+ "RenderBlocks": [
+  "ModelBase_ModelBox_ModelRenderer",
+  "ModelBiped_constructor_pose",
+  "ModelBiped_draw",
+  "ModelBlaze_constructor_pose",
+  "ModelBlaze_draw",
+  "ModelBook_constructor_pose",
+  "ModelBook_draw",
+  "ModelChicken_constructor_pose",
+  "ModelChicken_draw",
+  "ModelCow_constructor_pose",
+  "ModelCow_draw",
+  "ModelDragon_constructor_pose",
+  "ModelDragon_draw",
+  "ModelEnderCrystal_constructor_pose",
+  "ModelEnderCrystal_draw",
+  "ModelMagmaCube_constructor_pose",
+  "ModelMagmaCube_draw",
+  "ModelPig_constructor_pose",
+  "ModelPig_draw",
+  "ModelQuadruped_constructor_pose",
+  "ModelQuadruped_draw",
+  "ModelSkeleton_constructor_pose",
+  "ModelSkeleton_draw",
+  "ModelSnowMan_constructor_pose",
+  "ModelSnowMan_draw",
+  "ModelVillager_constructor_pose",
+  "ModelVillager_draw",
+  "ModelWolf_constructor_pose",
+  "ModelWolf_draw",
+  "ModelZombie_constructor_pose",
+  "ModelZombie_draw",
+  "RenderBlaze",
+  "RenderBlocks_inventory_lily_pad_dragon_egg",
+  "RenderBlocks_world_fancy_off_anaglyph",
+  "RenderBlocks_world_fancy_off_normal",
+  "RenderBlocks_world_fancy_on_anaglyph",
+  "RenderBlocks_world_fancy_on_normal",
+  "RenderBlocks_world_fast_off_anaglyph",
+  "RenderBlocks_world_fast_off_normal",
+  "RenderBlocks_world_fast_on_anaglyph",
+  "RenderBlocks_world_fast_on_normal",
+  "RenderDragon_boss_overlay",
+  "RenderDragon_crystal_beam",
+  "RenderDragon_death_rays",
+  "RenderDragon_passes",
+  "RenderEnchantmentTable",
+  "RenderEnderCrystal",
+  "RenderFireball",
+  "RenderGlobal_dimension_sky_phases_transforms_horizon",
+  "RenderMagmaCube",
+  "RenderManager_TileEntityRenderer",
+  "RenderMooshroom",
+  "RenderSnowMan",
+  "RenderSnowball",
+  "RenderVillager"
+ ],
+ "RenderDragon": [
+  "RenderDragon_boss_overlay"
+ ],
+ "RenderEnchantmentTable": [
+  "RenderEnchantmentTable"
+ ],
+ "RenderEnderCrystal": [
+  "RenderEnderCrystal"
+ ],
+ "RenderFireball": [
+  "RenderFireball"
+ ],
+ "RenderMagmaCube": [
+  "RenderMagmaCube"
+ ],
+ "RenderManager": [
+  "RenderManager_TileEntityRenderer"
+ ],
+ "RenderMooshroom": [
+  "RenderMooshroom"
+ ],
+ "RenderSnowMan": [
+  "RenderSnowMan"
+ ],
+ "RenderSnowball": [
+  "RenderSnowball"
+ ],
+ "RenderVillager": [
+  "RenderVillager"
  ],
  "SaveConverterMcRegion": [
   "r10world3 biomecache/-4172144997902289642",
@@ -21741,6 +21896,9 @@
   "r10world3 world/storage",
   "r10world3 world/weather",
   "r10world3 worldheight"
+ ],
+ "TileEntityRenderer": [
+  "RenderManager_TileEntityRenderer"
  ],
  "WorldGenBigMushroom": [
   "r10world3 biomecache/-4172144997902289642",
