@@ -14,6 +14,7 @@ pub mod living;
 pub mod models;
 pub mod models_release;
 pub mod models_release_check;
+pub mod world4_check;
 pub mod object_check;
 pub mod objects;
 pub mod pipeline;

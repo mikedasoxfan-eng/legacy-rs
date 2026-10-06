@@ -375,9 +375,9 @@ pub fn read_gzip(bytes: &[u8]) -> io::Result<Compound> {
 }
 
 pub fn write_gzip(root: &Compound) -> io::Result<Vec<u8>> {
-    let mut e = flate2::write::GzEncoder::new(Vec::new(), flate2::Compression::default());
-    write_root(&mut e, root)?;
-    e.finish()
+    let mut raw = Vec::new();
+    write_root(&mut raw, root)?;
+    crate::compression10::gzip(&raw)
 }
 
 #[cfg(test)]

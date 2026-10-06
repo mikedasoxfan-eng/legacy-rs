@@ -531,6 +531,9 @@ bash "$root/tools/verify_r10entities2.sh" --built || fail=1
 
 # Release 1.0 world, round 3.
 bash "$root/tools/verify_r10world3.sh" --built || fail=1
+# Release 1.0 world, round 4.
+bash "$root/tools/verify_r10world4.sh" --built || fail=1
+
 
 # --- rendering (1.0), restored shared-recorder checks ---
 bash "$root/tools/verify_r10render2.sh" --built || fail=1
