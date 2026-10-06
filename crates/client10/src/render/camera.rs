@@ -13,6 +13,8 @@ use worldgen::{
 pub struct Settings {
     pub bobbing: bool,
     pub third_person: bool,
+    /// 1.0 `thirdPersonView == 2`: the camera faces the player.
+    pub front_view: bool,
     pub anaglyph: bool,
     pub eye: i32,
     pub ticks: i32,
@@ -89,15 +91,17 @@ pub fn bob(g: &mut Fixed, e: &Entity, t: f32) {
 }
 /// The eight probes use the current rotation, not the interpolated rotation.
 /// Preserve the extra Z offset in the endpoint's X coordinate.
-pub fn third_distance(e: &Entity, t: f32, w: &mut World) -> f64 {
+pub fn third_distance(e: &Entity, t: f32, w: &mut World, front: bool) -> f64 {
     let off = e.y_offset - 1.62;
     let p = e.view_position(t).add(0.0, -(off as f64), 0.0);
     let mut distance = 4.0;
-    let dx = (-math::sin(e.yaw / 180.0 * PI_F32) * math::cos(e.pitch / 180.0 * PI_F32)) as f64
+    let yaw = e.yaw;
+    let pitch = if front { e.pitch + 180.0 } else { e.pitch };
+    let dx = (-math::sin(yaw / 180.0 * PI_F32) * math::cos(pitch / 180.0 * PI_F32)) as f64
         * distance;
     let dz =
-        (math::cos(e.yaw / 180.0 * PI_F32) * math::cos(e.pitch / 180.0 * PI_F32)) as f64 * distance;
-    let dy = (-math::sin(e.pitch / 180.0 * PI_F32)) as f64 * distance;
+        (math::cos(yaw / 180.0 * PI_F32) * math::cos(pitch / 180.0 * PI_F32)) as f64 * distance;
+    let dy = (-math::sin(pitch / 180.0 * PI_F32)) as f64 * distance;
     for i in 0..8 {
         let x = ((i & 1) * 2 - 1) as f32 * 0.1;
         let y = ((i >> 1 & 1) * 2 - 1) as f32 * 0.1;
@@ -138,11 +142,16 @@ pub fn orient(g: &mut Fixed, e: &Entity, t: f32, s: Settings, distance: f64, bed
             g.rotate(lerp(s.debug_pitch[0], s.debug_pitch[1], t), 1.0, 0.0, 0.0);
             g.rotate(lerp(s.debug_yaw[0], s.debug_yaw[1], t), 0.0, 1.0, 0.0);
         } else {
-            g.rotate(e.pitch - e.pitch, 1.0, 0.0, 0.0);
-            g.rotate(e.yaw - e.yaw, 0.0, 1.0, 0.0);
+            let yaw = e.yaw;
+            let pitch = if s.front_view { e.pitch + 180.0 } else { e.pitch };
+            if s.front_view {
+                g.rotate(180.0, 0.0, 1.0, 0.0);
+            }
+            g.rotate(e.pitch - pitch, 1.0, 0.0, 0.0);
+            g.rotate(e.yaw - yaw, 0.0, 1.0, 0.0);
             g.translate(0.0, 0.0, -distance as f32);
-            g.rotate(e.yaw - e.yaw, 0.0, 1.0, 0.0);
-            g.rotate(e.pitch - e.pitch, 1.0, 0.0, 0.0);
+            g.rotate(yaw - e.yaw, 0.0, 1.0, 0.0);
+            g.rotate(pitch - e.pitch, 1.0, 0.0, 0.0);
         }
     } else {
         g.translate(0.0, 0.0, -0.1);

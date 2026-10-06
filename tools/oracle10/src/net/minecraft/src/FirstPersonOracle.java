@@ -50,6 +50,7 @@ public final class FirstPersonOracle {
         for(double v:new double[]{Trace10.namedDouble("p.posX", p.posX),Trace10.namedDouble("p.posY", p.posY),Trace10.namedDouble("p.posZ", p.posZ),Trace10.namedDouble("p.prevPosX", p.prevPosX),Trace10.namedDouble("p.prevPosY", p.prevPosY),Trace10.namedDouble("p.prevPosZ", p.prevPosZ),Trace10.namedDouble("p.lastTickPosX", p.lastTickPosX),Trace10.namedDouble("p.lastTickPosY", p.lastTickPosY),Trace10.namedDouble("p.lastTickPosZ", p.lastTickPosZ)})d(o,v);
     }
     static void ops(Oracle.DataOut o,ArrayList<float[]> list){o.i32(list.size());for(float[] v:list){o.i32((int)v[0]);for(int i=1;i<5;i++)f(o,v[i]);}}
+    static void textureOps(Oracle.DataOut o){o.i32(GlLog10.drawTexture.size());for(ArrayList<float[]> list:GlLog10.drawTexture)ops(o,list);}
     static void draws(Oracle.DataOut o){o.i32(RendererOracle.count);o.bytes(RendererOracle.draws.buf.toByteArray());o.i32(modes.size());for(int m:modes)o.i32(m);for(float[] matrix:matrices)for(float v:matrix)f(o,v);}
     static void start(float brightness){RendererOracle.reset(brightness);modes.clear();matrices.clear();recording=true;RendererOracle.active=true;}
     static void stop(){RendererOracle.active=false;recording=false;}
@@ -74,7 +75,7 @@ public final class FirstPersonOracle {
         ColorizerGrass.setGrassBiomeColorizer(Oracle.jarImage("misc/grasscolor.png"));ColorizerFoliage.getFoilageBiomeColorizer(Oracle.jarImage("misc/foliagecolor.png"));
         RenderManager m=RendererOracle.manager(p.worldObj);m.livingPlayer=p;RenderManager.instance=m;
         HashMap<Class,Render> renderers=new HashMap<Class,Render>();RenderPlayer rp=new RenderPlayer();rp.setRenderManager(m);renderers.put(EntityPlayer.class,rp);Oracle.setField(m,"entityRenderMap",renderers);
-        Map textures=(Map)Oracle.getField(m.renderEngine,"textureMap");textures.put("/mob/char.png",9);textures.put("/misc/water.png",10);textures.put("/misc/mapbg.png",11);textures.put("/item/chest.png",31);TileEntityRenderer.instance.renderEngine=m.renderEngine;
+        Map textures=(Map)Oracle.getField(m.renderEngine,"textureMap");textures.put("/mob/char.png",9);textures.put("/misc/water.png",10);textures.put("/misc/mapbg.png",11);textures.put("/item/chest.png",31);textures.put("%blur%/misc/glint.png",76);TileEntityRenderer.instance.renderEngine=m.renderEngine;
         String[] names={"cloth","chain","iron","diamond","gold"};for(int a=0;a<5;a++)for(int b=1;b<=2;b++)textures.put("/armor/"+names[a]+"_"+b+".png",20+a*2+b-1);
         Minecraft mc=p.mc;mc.renderViewEntity=p;mc.thePlayer=p;if(mc.playerController==null)mc.playerController=(PlayerController)Oracle.allocate(PlayerControllerSP.class);mc.renderEngine=m.renderEngine;mc.gameSettings=m.options;mc.displayWidth=853;mc.displayHeight=480;
         RenderGlobal global=(RenderGlobal)Oracle.allocate(RenderGlobal.class);Oracle.setField(global,"worldObj",p.worldObj);Oracle.setField(global,"renderEngine",m.renderEngine);Oracle.setField(global,"mc",mc);Oracle.setField(global,"globalRenderBlocks",new RenderBlocks(p.worldObj));mc.renderGlobal=global;
@@ -83,8 +84,8 @@ public final class FirstPersonOracle {
     }
     static void block(Oracle.DataOut o,World w,int x,int y,int z,int id,int meta){o.i32(x);o.i32(y);o.i32(z);o.i32(id);o.i32(meta);EntityOracle.rawBlock(w,x,y,z,id,meta);}
     static void settings(Oracle.DataOut o,PlayerOracle.HeadlessPlayer p,int c)throws Exception {
-        GameSettings s=p.mc.gameSettings;s.viewBobbing=(c&1)!=0;s.thirdPersonView=((c&2)!=0?1:0);s.anaglyph=(c&4)!=0;s.debugCamEnable=(c&8)!=0;s.renderDistance=c%4;s.hideGUI=(c&16)!=0;
-        o.i32((s.viewBobbing?1:0)|((s.thirdPersonView!=0)?2:0)|(s.anaglyph?4:0)|(s.debugCamEnable?8:0)|(s.hideGUI?16:0));o.i32(c%2);o.i32(c*17);o.i32(s.renderDistance);
+        GameSettings s=p.mc.gameSettings;s.viewBobbing=(c&1)!=0;s.thirdPersonView=((c&2)!=0?((c&32)!=0?2:1):0);s.anaglyph=(c&4)!=0;s.debugCamEnable=(c&8)!=0;s.renderDistance=c%4;s.hideGUI=(c&16)!=0;
+        o.i32((s.viewBobbing?1:0)|((s.thirdPersonView!=0)?2:0)|(s.anaglyph?4:0)|(s.debugCamEnable?8:0)|(s.hideGUI?16:0)|(s.thirdPersonView==2?32:0));o.i32(c%2);o.i32(c*17);o.i32(s.renderDistance);
         EntityRenderer er=p.mc.entityRenderer;Oracle.setField(er,"rendererUpdateCount",c*17);
         float[] extras={-.75F,.5F,1.25F,-.35F,-31.25F,12.5F,20.75F,-17.25F};
         String[] fields={"prevCamRoll","camRoll","prevDebugCamFOV","debugCamFOV","prevDebugCamYaw","debugCamYaw","prevDebugCamPitch","debugCamPitch"};
@@ -208,6 +209,62 @@ public final class FirstPersonOracle {
             out.i32(9);out.i32(c);out.i32((c&1)!=0?1:0);out.i32(c%17);
             MapItemRenderer mr=(MapItemRenderer)Oracle.getField(p.mc.entityRenderer.itemRenderer,"mapItemRenderer");MapData data=(MapData)w.loadItemData(MapData.class,"map_"+c);
             start(1);mr.renderMap(p,p.mc.renderEngine,data);stop();draws(out);for(int v:(int[])Oracle.getField(mr,"intArray"))out.i32(v);out.bytes(GL11.uploaded);n++;
+        }
+        // 1.0 RenderPlayer: enchanted armor (pass-15 glint), item use poses, bow and potion passes.
+        int[] heldIds={267,261,373,322,1,346,280,276,268,50,283,0};
+        for(int c=0;c<144;c++) {
+            World w=world();PlayerOracle.HeadlessPlayer p=player(w,c);RenderManager m=setup(p);
+            p.health=20;p.deathTime=0;p.sleeping=false;p.hurtTime=c%6==0?5:0;p.movementInput.sneak=c%5==0;
+            int id=heldIds[c%heldIds.length];int damage=id==373?new int[]{0,16,8193,16385,8226,32767,8270}[c%7]:0;
+            ItemStack held=id==0?null:new ItemStack(id,1,damage);
+            int ench=held!=null&&(c/12)%2==0&&held.getMaxStackSize()==1&&id!=373?1+c%3:0;
+            if(ench>0)held.addEnchantment(Enchantment.sharpness,ench);
+            p.inventory.mainInventory[0]=held;
+            int[] armorEnch=new int[4];
+            for(int a=0;a<4;a++){ItemStack s2=(c+a)%7==6?null:new ItemStack(298+(c+a)%5*4+3-a,1,0);if(s2!=null&&(c+a)%3==0){s2.addEnchantment(Enchantment.protection,1);armorEnch[a]=1;}p.inventory.armorInventory[a]=s2;}
+            int use=-1;
+            if(held!=null&&held.getMaxItemUseDuration()>0&&c%4!=0){use=held.getMaxItemUseDuration()-new int[]{0,1,5,13,14,17,18,25,40}[c%9];if(use<=0)use=1;p.setItemInUse(held,use);}
+            if(id==346&&c%2==0)p.fishEntity=new EntityFishHook(w);
+            out.i32(12);state(out,p);float t=new float[]{0,.25F,.75F,1}[c%4];f(out,t);
+            out.i32(id);out.i32(damage);out.i32(ench);
+            for(int a=0;a<4;a++){ItemStack s2=p.inventory.armorInventory[a];out.i32(s2==null?0:s2.itemID);out.i32(armorEnch[a]);}
+            out.i32(use);out.i32(p.fishEntity==null?0:1);out.i32(p.isSneaking()?1:0);f(out,p.getEntityBrightness(t));
+            double[] camera={-.5,61.25,-3.75};for(double v:camera)d(out,v);
+            GlLog10.reset();GlLog10.active=true;
+            start(p.getEntityBrightness(t));m.getEntityRenderObject(p).doRender(p,p.lastTickPosX+(p.posX-p.lastTickPosX)*t-camera[0],p.lastTickPosY+(p.posY-p.lastTickPosY)*t-camera[1],p.lastTickPosZ+(p.posZ-p.lastTickPosZ)*t-camera[2],0,t);stop();
+            GlLog10.active=false;draws(out);textureOps(out);n++;
+        }
+        // 1.0 ItemRenderer.renderItem(entity, stack, pass): glint, potion passes, bow pull, cast rod.
+        int[] itemIds={267,322,373,373,261,346,1,50,278,280};
+        for(int c=0;c<160;c++) {
+            World w=world();PlayerOracle.HeadlessPlayer p=player(w,c);setup(p);
+            boolean zombie=c%5==4;EntityLiving e=zombie?new EntityZombie(w):p;
+            int id=itemIds[c%itemIds.length];int damage=id==373?new int[]{0,16,8193,16385,8226,32767,8270,8197}[(c/10)%8]:0;
+            ItemStack s2=new ItemStack(id,1,damage);boolean ench=(c/10)%2==0&&(id==267||id==261||id==278||id==346);if(ench)s2.addEnchantment(Enchantment.sharpness,1);
+            int use=-1;if(!zombie&&id==261&&c%3!=0){use=72000-new int[]{0,1,13,14,17,18,30}[c%7];p.setItemInUse(s2,use);}
+            boolean fish=!zombie&&id==346&&c%2==0;if(fish)p.fishEntity=new EntityFishHook(w);
+            int pass=(c/2)%2;
+            out.i32(13);out.i32(zombie?1:0);out.i32(id);out.i32(damage);out.i32(ench?1:0);out.i32(use);out.i32(fish?1:0);out.i32(pass);
+            GlLog10.reset();GlLog10.active=true;
+            start(1);p.mc.entityRenderer.itemRenderer.renderItem(e,s2,pass);stop();
+            GlLog10.active=false;draws(out);textureOps(out);n++;
+        }
+        // 1.0 getMouseOver: creative extendedReach (6) and fireball collision borders (1.0).
+        for(int c=0;c<128;c++) {
+            World w=world();PlayerOracle.HeadlessPlayer p=player(w,c);setup(p);
+            boolean creative=c%2==0;p.mc.playerController=creative?new PlayerControllerCreative(p.mc):new PlayerControllerSP(p.mc);
+            p.rotationYaw=(c%8)*45;p.rotationPitch=(c%5)*25-50;p.prevRotationYaw=p.rotationYaw-30;p.prevRotationPitch=p.rotationPitch+10;
+            out.i32(14);out.i32(p.entityId);state(out,p);float t=(c%5)*.25F;f(out,t);out.i32(creative?1:0);
+            out.i32(c%3==0?2:0);if(c%3==0)for(int b=0;b<2;b++)block(out,w,b,64,-1-(c%4),1,0);
+            out.i32(3);
+            for(int i=0;i<3;i++){
+                int kind=(c+i)%3;Entity x=kind==0?new EntityPig(w):kind==1?new EntityFireball(w):new EntitySmallFireball(w);
+                double dist=1.5+((c*7+i*3)%11)*.5;Vec3D look=p.getLook(t);
+                x.setPosition(.25+look.xCoord*dist+(i-1)*.7,65.5+look.yCoord*dist-.5,-2.75+look.zCoord*dist);w.entityJoinedWorld(x);
+                out.i32(kind);out.i32(x.entityId);for(double v:new double[]{x.posX,x.posY,x.posZ})d(out,v);
+            }
+            p.mc.entityRenderer.getMouseOver(t);MovingObjectPosition hit=p.mc.objectMouseOver;out.i32(hit==null?-1:hit.typeOfHit==EnumMovingObjectType.ENTITY?1:0);
+            if(hit!=null){if(hit.typeOfHit==EnumMovingObjectType.ENTITY)out.i32(hit.entityHit.entityId);else{out.i32(hit.blockX);out.i32(hit.blockY);out.i32(hit.blockZ);out.i32(hit.sideHit);for(double v:new double[]{hit.hitVec.xCoord,hit.hitVec.yCoord,hit.hitVec.zCoord})d(out,v);}}n++;
         }
         Oracle.DataOut file=new Oracle.DataOut();file.bytes(new byte[]{'F','1','7','3'});file.i32(1);file.i32(n);file.bytes(out.buf.toByteArray());try(OutputStream stream=new BufferedOutputStream(new FileOutputStream(path))){file.writeTo(stream);}
         System.out.println("first-person oracle: "+n+" original-bytecode cases");

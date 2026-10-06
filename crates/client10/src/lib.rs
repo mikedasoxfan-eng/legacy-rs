@@ -442,6 +442,9 @@ pub fn run() {
         }
         return;
     }
+    if args.get(1).map(String::as_str) == Some("--render-biped4-check") {
+        std::process::exit(if render::entity::object_check::biped_release_check(&args[2]) {0}else{1});
+    }
     if args.get(1).map(String::as_str) == Some("--render-portal10-check") {
         std::process::exit(if render::entity::models_release_check::portal_check(&args[2]) {0}else{1});
     }

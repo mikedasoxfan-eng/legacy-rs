@@ -368,7 +368,12 @@ fn general(s: &RenderState, camera: [f64; 3], normalize: bool) -> Fixed {
             g.rotate(20.0, 0.0, 0.0, 1.0);
         }
         if let Some(item) = s.held_stack {
-            crate::render::first_person::item(&mut g, item, 1.0, false);
+            // 1.0 RenderBiped: potions get a second renderItem pass (same icon for mobs).
+            let times = crate::render::first_person::current_glint_times();
+            crate::render::first_person::item_pass(&mut g, item, crate::render::first_person::Holder::MOB, 0, times);
+            if item.id == 373 {
+                crate::render::first_person::item_pass(&mut g, item, crate::render::first_person::Holder::MOB, 1, times);
+            }
         } else if let Some(item) = s.held_item {
             special::sprite(&mut g, item.icon, item.terrain);
         }

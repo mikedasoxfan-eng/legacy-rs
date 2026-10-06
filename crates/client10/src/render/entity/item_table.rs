@@ -1,9 +1,10 @@
 //! Item draw properties; release overrides use the original 1.0 item/block methods.
 pub fn properties(id:i16,damage:i16)->(i32,u32,i32) {
  let d=damage as i32;
- if matches!(id,99|100) {return (if d==14 {super::super::rprops(id as u8).tex_index as i32} else {142},0xffffff,0);}
+ // ItemBlock: the icon is getBlockTextureFromSide(2) at construction, independent of damage.
+ if matches!(id,99|100) {return (142,0xffffff,0);}
  if matches!(id,369..=371) {return ([108,123,124][(id-369) as usize],0xffffff,0);}
- if id==115 {return (226+(d&3),0xffffff,0);}
+ if id==115 {return (226,0xffffff,0);}
  if let Some(properties)=worldgen::item10::item_properties(id as i32,d) {return properties;}
  if let Some((icon,color))=worldgen::entity::player::registry::block_item_properties(id as i32,d,true) {return (icon,color,0);}
  match id {

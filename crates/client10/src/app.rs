@@ -1568,6 +1568,7 @@ impl App {
         let camera_settings = render::camera::Settings {
             bobbing: settings.is_none_or(|s| s.view_bobbing),
             third_person: settings.is_some_and(|s| s.third_person_view != 0),
+            front_view: settings.is_some_and(|s| s.third_person_view == 2),
             anaglyph: video.anaglyph,
             distance: video.distance,
             ticks: self.cloud_ticks as i32,

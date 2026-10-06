@@ -146,6 +146,32 @@ pub fn render(s: &ObjectState, camera: [f64; 3], view: [f32; 2]) -> Fixed {
                     inventory::inventory(&mut g, id, item.damage as i32, 1.0, true);
                     g.pop();
                 }
+            } else if item.id == 373 {
+                // 1.0 RenderItem: the tinted liquid (icon 141), then the bottle untinted, both
+                // through func_40267_a, which keeps drawing copies from the same Random.
+                g.scale(0.5, 0.5, 0.5);
+                g.texture = 2;
+                let (icon, color, _) = super::item_table::properties(373, item.damage);
+                for (pass, icon) in [141, icon].into_iter().enumerate() {
+                    g.material = if pass == 0 {
+                        [(color >> 16 & 255) as f32 / 255.0, (color >> 8 & 255) as f32 / 255.0, (color & 255) as f32 / 255.0, 1.0]
+                    } else {
+                        [1.0; 4]
+                    };
+                    for i in 0..copies {
+                        g.push();
+                        if i > 0 {
+                            g.translate(
+                                (rng.next_float() * 2.0 - 1.0) * 0.3,
+                                (rng.next_float() * 2.0 - 1.0) * 0.3,
+                                (rng.next_float() * 2.0 - 1.0) * 0.3,
+                            );
+                        }
+                        g.rotate(180.0 - view[0], 0.0, 1.0, 0.0);
+                        sprite_quad(&mut g, icon);
+                        g.pop();
+                    }
+                }
             } else {
                 g.scale(0.5, 0.5, 0.5);
                 g.texture = if item.id < 256 { 1 } else { 2 };

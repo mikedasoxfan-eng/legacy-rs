@@ -158,7 +158,7 @@ impl View {
         e.prev_pitch = look[3];
         let medium = camera::medium(&e, &mut self.world);
         let d = if s.third_person && !s.debug_camera {
-            camera::third_distance(&e, t, &mut self.world)
+            camera::third_distance(&e, t, &mut self.world, s.front_view)
         } else {
             4.0
         };

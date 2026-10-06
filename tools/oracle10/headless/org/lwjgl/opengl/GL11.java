@@ -72,8 +72,8 @@ public final class GL11 {
     public static int[] viewportInput=new int[4];
     public static void glGetFloat(int name,FloatBuffer values){float[] input=name==GL_MODELVIEW_MATRIX?modelviewInput:projectionInput;for(int i=0;i<16;i++)values.put(i,input[i]);}
     public static void glGetInteger(int name,IntBuffer values){for(int i=0;i<4;i++)values.put(i,viewportInput[i]);}
-    public static void glTexGeni(int coord,int pname,int mode){net.minecraft.src.Mode_render_portal10.command(12,coord,pname,mode,0);}
-    public static void glTexGen(int coord,int pname,FloatBuffer values){net.minecraft.src.Mode_render_portal10.command(13,coord,pname,0,0);net.minecraft.src.Mode_render_portal10.command(14,values.get(0),values.get(1),values.get(2),values.get(3));}
+    public static void glTexGeni(int coord,int pname,int mode){net.minecraft.src.GlLog10.command(12,coord,pname,mode,0);}
+    public static void glTexGen(int coord,int pname,FloatBuffer values){net.minecraft.src.GlLog10.command(13,coord,pname,0,0);net.minecraft.src.GlLog10.command(14,values.get(0),values.get(1),values.get(2),values.get(3));}
     public static int matrixMode=5888;
     public static float[] color = {1,1,1,1};
     public static int texture;
@@ -93,42 +93,42 @@ public final class GL11 {
     public static void glNewList(int id,int mode){RendererOracle.newList(id);}
     public static void glEndList(){RendererOracle.endList();}
     public static void glCallList(int id){RendererOracle.callList(id);}
-    public static void glPushMatrix() { net.minecraft.src.Mode_render_portal10.command(0,0,0,0,0); if(matrixMode==5890)return; RendererOracle.push(); }
-    public static void glPopMatrix() { net.minecraft.src.Mode_render_portal10.command(1,0,0,0,0); if(matrixMode==5890)return; RendererOracle.pop(); }
+    public static void glPushMatrix() { net.minecraft.src.GlLog10.command(0,0,0,0,0); if(matrixMode==5890){net.minecraft.src.GlLog10.texturePush();return;} RendererOracle.push(); }
+    public static void glPopMatrix() { net.minecraft.src.GlLog10.command(1,0,0,0,0); if(matrixMode==5890){net.minecraft.src.GlLog10.texturePop();return;} RendererOracle.pop(); }
     public static void glTranslatef(float x,float y,float z) { FirstPersonOp(0,x,y,z,0); }
     public static void glScalef(float x,float y,float z) { FirstPersonOp(1,x,y,z,0); }
     public static void glRotatef(float a,float x,float y,float z) { FirstPersonOp(2,a,x,y,z); }
     // 1.0: the texture matrix (lightmap scale/translate) is not part of what is recorded.
-    private static void FirstPersonOp(int c,float a,float b,float d,float e) { net.minecraft.src.Mode_render_portal10.command(c+2,a,b,d,e); if(matrixMode==5890)return; if(matrixMode==5889)net.minecraft.src.FirstPersonOracle.projectionOp(c,a,b,d,e);else RendererOracle.op(c,a,b,d,e); }
-    public static void glMatrixMode(int mode){net.minecraft.src.Mode_render_portal10.command(8,mode,0,0,0);matrixMode=mode;}
-    public static void glLoadIdentity(){net.minecraft.src.Mode_render_portal10.command(9,0,0,0,0);if(matrixMode==5890)return; if(matrixMode==5889)net.minecraft.src.FirstPersonOracle.projectionReset();else RendererOracle.identity();}
+    private static void FirstPersonOp(int c,float a,float b,float d,float e) { net.minecraft.src.GlLog10.command(c+2,a,b,d,e); if(matrixMode==5890){net.minecraft.src.GlLog10.textureOp(c,a,b,d,e);return;} if(matrixMode==5889)net.minecraft.src.FirstPersonOracle.projectionOp(c,a,b,d,e);else RendererOracle.op(c,a,b,d,e); }
+    public static void glMatrixMode(int mode){net.minecraft.src.GlLog10.command(8,mode,0,0,0);matrixMode=mode;}
+    public static void glLoadIdentity(){net.minecraft.src.GlLog10.command(9,0,0,0,0);if(matrixMode==5890){net.minecraft.src.GlLog10.textureIdentity();return;} if(matrixMode==5889)net.minecraft.src.FirstPersonOracle.projectionReset();else RendererOracle.identity();}
     public static void glMultMatrix(FloatBuffer matrix){net.minecraft.src.FirstPersonOracle.perspective(matrix);}
     public static void glScaled(double x,double y,double z){FirstPersonOp(1,(float)x,(float)y,(float)z,0);}
-    public static void glLight(int light,int pname,FloatBuffer values){}
-    public static void glLightModel(int pname,FloatBuffer values){}
+    public static void glLight(int light,int pname,FloatBuffer values){net.minecraft.src.GlLog10.command(21,light,pname,0,0);net.minecraft.src.GlLog10.values(values);}
+    public static void glLightModel(int pname,FloatBuffer values){net.minecraft.src.GlLog10.command(23,pname,0,0,0);net.minecraft.src.GlLog10.values(values);}
     public static void glShadeModel(int mode){}
     public static void glLineWidth(float width){}
     public static void glPolygonOffset(float factor,float units){}
-    public static void glDepthMask(boolean b) { if(b)RendererOracle.flags|=32;else RendererOracle.flags&=~32; }
-    public static void glDepthFunc(int f) { RendererOracle.depth=f; }
-    public static void glFog(int name, FloatBuffer values) {}
-    public static void glFogf(int name, float value) {
+    public static void glDepthMask(boolean b) { net.minecraft.src.GlLog10.command(20,b?1:0,0,0,0); if(b)RendererOracle.flags|=32;else RendererOracle.flags&=~32; }
+    public static void glDepthFunc(int f) { net.minecraft.src.GlLog10.command(19,f,0,0,0); RendererOracle.depth=f; }
+    public static void glFog(int name, FloatBuffer values) {net.minecraft.src.GlLog10.command(26,name,0,0,0);net.minecraft.src.GlLog10.values(values);}
+    public static void glFogf(int name, float value) { net.minecraft.src.GlLog10.command(25,name,value,0,0);
         if(name==GL_FOG_START) fogStart=value;
         if(name==GL_FOG_END) fogEnd=value;
         if(name==GL_FOG_DENSITY) fogDensity=value;
     }
-    public static void glFogi(int name,int value) {if(name==GL_FOG_MODE)fogMode=value;}
-    public static void glColorMaterial(int face,int mode) {}
+    public static void glFogi(int name,int value) { net.minecraft.src.GlLog10.command(24,name,value,0,0);if(name==GL_FOG_MODE)fogMode=value;}
+    public static void glColorMaterial(int face,int mode) {net.minecraft.src.GlLog10.command(30,face,mode,0,0);}
     // Texturing switches on the lightmap unit (1.0 texture unit 1) are not the model's texture.
-    public static void glDisable(int x) { net.minecraft.src.Mode_render_portal10.command(5,x,0,0,0); if(RendererOracle.capture10&&x==GL_CULL_FACE)RendererOracle.cull10=0; if(x==GL_TEXTURE_2D&&GL13.activeTexture!=0)return; RendererOracle.enable(x,false); }
-    public static void glEnable(int x) { net.minecraft.src.Mode_render_portal10.command(6,x,0,0,0); if(RendererOracle.capture10&&x==GL_CULL_FACE&&RendererOracle.cull10==0)RendererOracle.cull10=cullFace10; if(x==GL_TEXTURE_2D&&GL13.activeTexture!=0)return; RendererOracle.enable(x,true); }
-    public static void glBlendFunc(int x,int y) { net.minecraft.src.Mode_render_portal10.command(7,x,y,0,0); RendererOracle.src=x;RendererOracle.dst=y; }
-    public static void glAlphaFunc(int x,float y) { if(RendererOracle.capture10)RendererOracle.alpha10=y; }
+    public static void glDisable(int x) { net.minecraft.src.GlLog10.command(5,x,0,0,0); if(RendererOracle.capture10&&x==GL_CULL_FACE)RendererOracle.cull10=0; if(x==GL_TEXTURE_2D&&GL13.activeTexture!=0)return; RendererOracle.enable(x,false); }
+    public static void glEnable(int x) { net.minecraft.src.GlLog10.command(6,x,0,0,0); if(RendererOracle.capture10&&x==GL_CULL_FACE&&RendererOracle.cull10==0)RendererOracle.cull10=cullFace10; if(x==GL_TEXTURE_2D&&GL13.activeTexture!=0)return; RendererOracle.enable(x,true); }
+    public static void glBlendFunc(int x,int y) { net.minecraft.src.GlLog10.command(7,x,y,0,0); RendererOracle.src=x;RendererOracle.dst=y; }
+    public static void glAlphaFunc(int x,float y) { net.minecraft.src.GlLog10.command(29,x,y,0,0); if(RendererOracle.capture10)RendererOracle.alpha10=y; }
     public static void glColorMask(boolean r,boolean g,boolean b,boolean a) {}
-    public static void glNormal3f(float x,float y,float z) { RendererOracle.normal=new float[]{x,y,z}; }
-    public static void glBindTexture(int x,int y) { net.minecraft.src.Mode_render_portal10.command(11,y,0,0,0); if(GL13.activeTexture!=0)return; texture=y; }
-    public static void glColor4f(float r,float g,float b,float a) { color=new float[]{r,g,b,a}; }
-    public static void glClearColor(float r,float g,float b,float a) {clearColor=new float[]{r,g,b,a};}
+    public static void glNormal3f(float x,float y,float z) { net.minecraft.src.GlLog10.command(27,x,y,z,0); RendererOracle.normal=new float[]{x,y,z}; }
+    public static void glBindTexture(int x,int y) { net.minecraft.src.GlLog10.command(11,y,0,0,0); if(GL13.activeTexture!=0)return; texture=y; }
+    public static void glColor4f(float r,float g,float b,float a) { net.minecraft.src.GlLog10.command(18,r,g,b,a); color=new float[]{r,g,b,a}; }
+    public static void glClearColor(float r,float g,float b,float a) { net.minecraft.src.GlLog10.command(28,r,g,b,a);clearColor=new float[]{r,g,b,a};}
     public static void glTexCoordPointer(int a,int b,FloatBuffer c) {}
     public static void glTexCoordPointer(int a,int b,java.nio.ShortBuffer c) {} // 1.0 lightmap coordinates
     public static void glTexCoordPointer(int a,int b,int c,long d) { throw new AssertionError("VBO"); }
