@@ -53,6 +53,7 @@ path = "src/bin/entity_compare181.rs"
 
 [dependencies]
 flate2 = "1.1.10"
+libloading = "0.8.9"
 
 [[bin]]
 name = "terrain_compare10"

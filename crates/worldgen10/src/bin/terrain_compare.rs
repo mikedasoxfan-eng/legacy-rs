@@ -1,6 +1,10 @@
 use worldgen::{genlayer, OverworldGenerator};
 fn main() {
     let a: Vec<String> = std::env::args().skip(1).collect();
+    if a[0] == "world4" {
+        compare(worldgen::world4_verify::dump(&a[1], a[2].parse().unwrap()), std::fs::read(&a[3]).unwrap());
+        return;
+    }
     if a[0] == "world3" {
         compare(worldgen::world3_verify::dump(&a[1], a[2].parse().unwrap()), std::fs::read(&a[3]).unwrap());
         return;

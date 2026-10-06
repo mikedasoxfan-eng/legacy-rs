@@ -599,6 +599,9 @@ pub fn run() {
     if args.get(1).map(String::as_str) == Some("--modelregistrycheck") {
         std::process::exit(if render::entity::check::registry_check(&args[2]) {0} else {1});
     }
+    if args.get(1).map(String::as_str) == Some("--world4geometrycheck") {
+        std::process::exit(if render::entity::world4_check::check(&args[2]) {0} else {1});
+    }
     if args.get(1).map(String::as_str) == Some("--arrowcheck") {std::process::exit(if render::entity::object_check::arrow_check(&args[2]) {0}else{1});}
     if args.get(1).map(String::as_str) == Some("--bedmodelcheck") {std::process::exit(if render::entity::object_check::bed_check(&args[2]) {0}else{1});}
     if args.get(1).map(String::as_str) == Some("--particlefactorycheck") { std::process::exit(if render::particle_check::factory_check(&args[2]) {0}else{1}); }
