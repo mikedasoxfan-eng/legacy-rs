@@ -30,21 +30,14 @@ check() {
   fi
 }
 group="${WORLD4_GROUP:-all}"
-case "$group" in all|new|inherited|gaps) ;; *) echo "unknown WORLD4_GROUP: $group" >&2; exit 2 ;; esac
-# Explicit diagnostics for classes reported Not done. These retain nonzero results;
-# they are not counted as passing regression sections or as exact class evidence.
-if [ "$group" = gaps ]; then
-  for mode in gzipbytes sharedsave; do
-    check "known-gap/$mode" "$terrain" r10world4 "$mode" 42 -- world4 "$mode" 42
-  done
-fi
+case "$group" in all|new|inherited) ;; *) echo "unknown WORLD4_GROUP: $group" >&2; exit 2 ;; esac
 if [ "$group" = all ] || [ "$group" = new ]; then
   check geometry "$root/target/release/beta" r10world4geometry -- --mc 1.0 --world4geometrycheck
   for mode in intcache misc savefolders notify endteleport; do
     check "$mode" "$terrain" r10world4 "$mode" 0 -- world4 "$mode" 0
   done
   for seed in 0 42 -1; do
-    for mode in nbt colors nearest waterlily population hellpopulation providerapi worldinfo; do
+    for mode in nbt gzipbytes colors nearest waterlily population hellpopulation ticks hellticks fortressspawn providerapi worldinfo regionbytes hellregionbytes saveformat; do
       check "$mode/$seed" "$terrain" r10world4 "$mode" "$seed" -- world4 "$mode" "$seed"
     done
   done

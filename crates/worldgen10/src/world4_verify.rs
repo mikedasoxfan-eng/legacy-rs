@@ -148,6 +148,34 @@ fn intcache(o: &mut Vec<u8>) {
         }
     }
 }
+/// Modes whose oracle output starts with the recorded tick-entry identity hashes.
+fn replays_tick_identities(mode: &str) -> bool {
+    matches!(mode, "ticks" | "hellticks" | "regionbytes" | "hellregionbytes")
+}
+static TICK_IDENTITIES: std::sync::Mutex<Option<std::collections::VecDeque<i32>>> =
+    std::sync::Mutex::new(None);
+fn replay_world(seed: i64, dimension: crate::world::Dimension) -> crate::World {
+    let mut w = crate::World::with_dimension(seed, 300, dimension);
+    w.tick_identity_replay10 = TICK_IDENTITIES.lock().unwrap().take();
+    w
+}
+/// `dump` for modes that replay VM identity hashes recorded at the start of `expected`.
+pub fn dump_expected(mode: &str, seed: i64, expected: &[u8]) -> Vec<u8> {
+    if !replays_tick_identities(mode) {
+        return dump(mode, seed);
+    }
+    let n = i32::from_be_bytes(expected[..4].try_into().unwrap()) as usize;
+    let prefix = &expected[..4 + 4 * n];
+    *TICK_IDENTITIES.lock().unwrap() = Some(
+        prefix[4..]
+            .chunks(4)
+            .map(|c| i32::from_be_bytes(c.try_into().unwrap()))
+            .collect(),
+    );
+    let mut o = prefix.to_vec();
+    o.extend(dump(mode, seed));
+    o
+}
 pub fn dump(mode: &str, seed: i64) -> Vec<u8> {
     let mut o = vec![];
     match mode {
@@ -156,7 +184,10 @@ pub fn dump(mode: &str, seed: i64) -> Vec<u8> {
         "nearest" => nearest(&mut o, seed),
         "intcache" => intcache(&mut o),
         "gzipbytes" => gzipbytes(&mut o, seed),
-        "sharedsave" => sharedsave(&mut o),
+        "fortressspawn" => fortressspawn(&mut o, seed),
+        "saveformat" => saveformat(&mut o, seed),
+        "regionbytes" => regionbytes(&mut o, seed, crate::world::Dimension::Overworld),
+        "hellregionbytes" => regionbytes(&mut o, seed, crate::world::Dimension::Nether),
         "misc" => misc(&mut o),
         "providerapi" => providerapi(&mut o, seed),
         "worldinfo" => worldinfo(&mut o, seed),
@@ -166,6 +197,8 @@ pub fn dump(mode: &str, seed: i64) -> Vec<u8> {
         "population" => population(&mut o, seed, crate::world::Dimension::Overworld),
         "hellpopulation" => population(&mut o, seed, crate::world::Dimension::Nether),
         "waterlily" => waterlily(&mut o, seed),
+        "ticks" => ticks(&mut o, seed, crate::world::Dimension::Overworld),
+        "hellticks" => ticks(&mut o, seed, crate::world::Dimension::Nether),
         _ => panic!("unknown world4 mode {mode}"),
     }
     o
@@ -328,7 +361,7 @@ fn providerapi(o: &mut Vec<u8>, seed: i64) {
         for time in [i64::MIN, -24001, -1, 0, 24000, 192000, i64::MAX] {
             i(o, dimension.moon_phase(time));
         }
-        for _ in 0..2 {
+        for _ in 0..3 {
             for [x, y, z] in [[0, 64, 0], [-17, 1, 31], [1024, 127, -512]] {
                 for category in 0..3 {
                     let list = w.provider_spawn_list10(category, x, y, z);
@@ -350,7 +383,7 @@ fn providerapi(o: &mut Vec<u8>, seed: i64) {
                 }
             }
         }
-        for _ in 0..2 {
+        for _ in 0..3 {
             for name in ["Stronghold", "stronghold", "Village", ""] {
                 let p = w.closest_structure10(name, 0, 64, 0);
                 o.push(p.is_some() as u8);
@@ -488,62 +521,260 @@ fn gzipbytes(o: &mut Vec<u8>, seed: i64) {
         i(o, bytes.len() as i32);
         o.extend(bytes);
     }
-}
-fn sharedsave(o: &mut Vec<u8>) {
-    use crate::{
-        threaded_io10::{IThreadedFileIO, ThreadedChunkLoader, FILE_IO},
-        world::chunk::LightKind,
-    };
-    use std::sync::{mpsc, Arc, Mutex};
-    struct Barrier {
-        started: mpsc::Sender<()>,
-        release: Mutex<mpsc::Receiver<()>>,
+    // Large payloads cross the 32 KiB window and the 16 KiB symbol-buffer block limit.
+    for n in 0..10 {
+        let len = if n == 9 { 0 } else { 1 + r.next_int(120000) as usize };
+        let mut b = vec![0u8; len];
+        for j in 0..len {
+            b[j] = match n % 3 {
+                0 => r.next_int_unbounded() as u8,
+                1 => {
+                    if j > 0 && r.next_int(5) != 0 {
+                        let back = r.next_int(if j < 40000 { 300 } else { 40000 }) as i64;
+                        b[(j as i64 - 1 - back).max(0) as usize]
+                    } else {
+                        r.next_int(16) as u8
+                    }
+                }
+                _ => {
+                    if r.next_int(8) == 0 {
+                        r.next_int(3) as u8
+                    } else {
+                        0
+                    }
+                }
+            };
+        }
+        let mut c = Compound::new();
+        c.put("Blocks", Tag::ByteArray(b));
+        c.put("xPos", Tag::Int(n));
+        let bytes = nbt::write_gzip(&c).unwrap();
+        i(o, bytes.len() as i32);
+        o.extend(bytes);
     }
-    impl IThreadedFileIO for Barrier {
-        fn write_next(&self) -> bool {
-            self.started.send(()).unwrap();
-            self.release.lock().unwrap().recv().unwrap();
-            false
+}
+fn write_spawn_list(o: &mut Vec<u8>, list: &[crate::weighted::SpawnListEntry]) {
+    i(o, list.len() as i32);
+    for e in list {
+        nbt::write_utf(
+            o,
+            match e.entity {
+                "LavaSlime" => "MagmaCube",
+                "MushroomCow" => "Mooshroom",
+                name => name,
+            },
+        )
+        .unwrap();
+        for n in [e.weight, e.min, e.max] {
+            i(o, n);
         }
     }
-    FILE_IO.flush();
-    let (started, wait) = mpsc::channel();
-    let (release, blocked) = mpsc::channel();
-    FILE_IO.enqueue(Arc::new(Barrier {
-        started,
-        release: Mutex::new(blocked),
-    }));
-    wait.recv().unwrap();
-    let dir = std::path::Path::new("target/r10/world4/sharedsave-rust");
-    std::fs::create_dir_all(dir).unwrap();
-    let loader = ThreadedChunkLoader::new(dir);
-    let mut w = crate::world3_verify::flat(crate::world::Dimension::Overworld);
-    let mut root = Compound::new();
-    root.put(
-        "Level",
-        Tag::Compound(crate::storage::chunk_to_nbt(w.chunk(0, 0), 0)),
-    );
-    loader.save(0, 0, root);
-    w.set_block_and_metadata(8, 64, 8, 17, 2);
-    w.set_block_metadata(8, 64, 8, 7);
-    w.chunk_mut(0, 0).set_light(LightKind::Sky, 8, 64, 8, 12);
-    w.chunk_mut(0, 0).set_light(LightKind::Block, 8, 64, 8, 3);
-    let root = loader.load_pending(0, 0).unwrap();
-    let level = root.compound("Level").unwrap();
-    for name in ["Blocks", "Data", "SkyLight", "BlockLight", "HeightMap"] {
-        o.extend(level.bytes(name).unwrap());
+}
+/// MapGenNetherBridge.canSpawnStructureAtCoords.
+fn fortress_candidate(seed: i64, x: i32, z: i32) -> bool {
+    let (rx, rz) = (x >> 4, z >> 4);
+    let mut r = JavaRandom::new(((rx ^ (rz << 4)) as i64) ^ seed);
+    r.next_int_unbounded();
+    r.next_int(3) == 0
+        && x == (rx << 4).wrapping_add(4).wrapping_add(r.next_int(8))
+        && z == (rz << 4).wrapping_add(4).wrapping_add(r.next_int(8))
+}
+fn fortressspawn(o: &mut Vec<u8>, seed: i64) {
+    let mut w = crate::World::with_dimension(seed, 300, crate::world::Dimension::Nether);
+    w.entity_seed_source = crate::entity::EntitySeedSource::Deterministic(500);
+    w.next_entity_id = 100;
+    let (mut bx, mut bz, mut best) = (0, 0, i32::MAX);
+    for cx in -40..40i32 {
+        for cz in -40..40i32 {
+            if cx.abs() + cz.abs() < best && fortress_candidate(seed, cx, cz) {
+                best = cx.abs() + cz.abs();
+                bx = cx;
+                bz = cz;
+            }
+        }
     }
-    loader.write_next();
-    release.send(()).unwrap();
-    FILE_IO.flush();
-    let bytes = crate::region_cache181::read_chunk(dir, 0, 0)
+    i(o, bx);
+    i(o, bz);
+    for x in bx - 3..=bx + 3 {
+        for z in bz - 3..=bz + 3 {
+            w.load_chunk(x, z);
+        }
+    }
+    o.extend(w.prand().state().to_be_bytes());
+    o.extend(w.rand.state().to_be_bytes());
+    let crate::entity::EntitySeedSource::Deterministic(next) = w.entity_seed_source else {
+        unreachable!()
+    };
+    o.extend(next.to_be_bytes());
+    i(o, w.next_entity_id);
+    let mut hits = 0;
+    for x in (bx * 16 - 96..=bx * 16 + 112).step_by(5) {
+        for z in (bz * 16 - 96..=bz * 16 + 112).step_by(5) {
+            for y in [34, 40, 48, 56, 64, 72, 80, 90] {
+                let list = w.provider_spawn_list10(0, x, y, z);
+                let inside = list.first().is_some_and(|e| e.entity == "Blaze");
+                hits += inside as i32;
+                o.push(inside as u8);
+                write_spawn_list(o, &list);
+            }
+        }
+    }
+    i(o, hits);
+    println!("fortress chunk {bx},{bz}: {hits} query points inside");
+    for x in bx - 3..=bx + 3 {
+        for z in bz - 3..=bz + 3 {
+            let c = w.chunk(x, z);
+            o.push(c.populated as u8);
+            o.extend(&*c.blocks);
+            o.extend(&*c.data.0);
+        }
+    }
+}
+/// Region files with the wall-clock timestamp table cleared.
+fn region_files(o: &mut Vec<u8>, dir: &std::path::Path, dimension: crate::world::Dimension) {
+    use crate::world::Dimension;
+    let region = dir.join(match dimension {
+        Dimension::Overworld => "region",
+        Dimension::Nether => "DIM-1/region",
+        Dimension::End => "DIM1/region",
+    });
+    let mut names: Vec<String> = std::fs::read_dir(&region)
         .unwrap()
-        .unwrap();
-    let root = nbt::read_root(&mut &bytes[..]).unwrap();
-    let level = root.compound("Level").unwrap();
-    for name in ["Blocks", "Data", "SkyLight", "BlockLight", "HeightMap"] {
-        o.extend(level.bytes(name).unwrap());
+        .map(|e| e.unwrap().file_name().into_string().unwrap())
+        .collect();
+    names.sort();
+    i(o, names.len() as i32);
+    for name in names {
+        let mut bytes = std::fs::read(region.join(&name)).unwrap();
+        for b in bytes.iter_mut().take(8192).skip(4096) {
+            *b = 0;
+        }
+        nbt::write_utf(o, &name).unwrap();
+        i(o, bytes.len() as i32);
+        o.extend(bytes);
+    }
+}
+fn regionbytes(o: &mut Vec<u8>, seed: i64, dimension: crate::world::Dimension) {
+    use crate::world::Dimension;
+    let dir = std::env::current_dir()
+        .unwrap()
+        .join("target/r10/world4/regionbytes-rust");
+    if dir.exists() {
+        std::fs::remove_dir_all(&dir).unwrap();
+    }
+    let mut w = replay_world(seed, dimension);
+    w.entity_seed_source = crate::entity::EntitySeedSource::Deterministic(500);
+    w.next_entity_id = 100;
+    let storage = crate::storage::Storage::open(&dir).unwrap();
+    w.storage = Some(if dimension == Dimension::Overworld {
+        storage
+    } else {
+        storage.for_dimension(dimension).unwrap()
+    });
+    for x in -2..=2 {
+        for z in -2..=2 {
+            w.load_chunk(x, z);
+        }
+    }
+    w.save_world(true);
+    crate::threaded_io10::FILE_IO.flush();
+    region_files(o, &dir, dimension);
+    let mut r = JavaRandom::new(seed);
+    for _ in 0..3 {
+        for x in -2..=2 {
+            for z in -2..=2 {
+                let kind = r.next_int(4);
+                if kind == 0 {
+                    continue;
+                }
+                let c = w.chunk_mut(x, z);
+                for b in c.blocks.iter_mut() {
+                    if kind == 1 {
+                        if r.next_int(6) == 0 {
+                            *b = (1 + r.next_int(90)) as u8;
+                        }
+                    } else if kind == 2 {
+                        *b = 0;
+                    } else if r.next_int(3) == 0 {
+                        *b = r.next_int(100) as u8;
+                    }
+                }
+                c.modified = true;
+            }
+        }
+        w.save_world(true);
+        crate::threaded_io10::FILE_IO.flush();
+        region_files(o, &dir, dimension);
     }
     crate::region_cache181::clear();
-    std::fs::remove_dir_all(dir).unwrap();
+    region_files(o, &dir, dimension);
+    drop(w);
+    std::fs::remove_dir_all(&dir).unwrap();
+}
+fn ticks(o: &mut Vec<u8>, seed: i64, dimension: crate::world::Dimension) {
+    let mut w = replay_world(seed, dimension);
+    w.entity_seed_source = crate::entity::EntitySeedSource::Deterministic(500);
+    w.next_entity_id = 100;
+    for x in -2..=2 {
+        for z in -2..=2 {
+            w.load_chunk(x, z);
+        }
+    }
+    let tree: Vec<_> = w.tick_order.iter().map(|&(t, _, k)| (k, t)).collect();
+    let set: Vec<_> = w
+        .scheduled_tick_set10
+        .iter()
+        .map(|k| (k, w.pending_ticks[&k].0))
+        .collect();
+    for list in [tree, set] {
+        i(o, list.len() as i32);
+        for (k, t) in list {
+            for n in [k.x, k.y, k.z, k.block] {
+                i(o, n);
+            }
+            o.extend(t.to_be_bytes());
+        }
+    }
+    for x in -2..=2 {
+        for z in -2..=2 {
+            i(o, w.pending_chunk_ticks(x, z, false).map_or(-1, |l| l.len() as i32));
+        }
+    }
+}
+fn saveformat(o: &mut Vec<u8>, seed: i64) {
+    let root = std::env::current_dir()
+        .unwrap()
+        .join("target/r10/world4/saveformat-rust");
+    let _ = std::fs::remove_dir_all(&root);
+    let format = crate::save_format_old181::SaveFormatOld181::new(&root);
+    let mut r = JavaRandom::new(seed);
+    for n in 1..=6 {
+        let dir = root.join(format!("World{n}"));
+        std::fs::create_dir_all(&dir).unwrap();
+        let mut data = Compound::new();
+        data.put("RandomSeed", Tag::Long(r.next_long()));
+        data.put("GameType", Tag::Int(r.next_int(3) - 1));
+        data.put("LastPlayed", Tag::Long(r.next_int(4) as i64 * 1000));
+        data.put("SizeOnDisk", Tag::Long(r.next_int(1 << 20) as i64));
+        if n % 3 != 0 {
+            data.put("hardcore", Tag::Byte((n % 3 == 1) as i8));
+        }
+        data.put("LevelName", Tag::String(format!("name\u{e9}{n}")));
+        let mut tag = Compound::new();
+        tag.put("Data", Tag::Compound(data));
+        std::fs::write(dir.join("level.dat"), nbt::write_gzip(&tag).unwrap()).unwrap();
+    }
+    let mut worlds = format.worlds();
+    // Collections.sort: a stable sort by compareTo.
+    worlds.sort_by(|a, b| a.compare(b).cmp(&0));
+    i(o, worlds.len() as i32);
+    for w in worlds {
+        nbt::write_utf(o, &w.file_name).unwrap();
+        nbt::write_utf(o, &w.display_name).unwrap();
+        o.extend(w.last_played.to_be_bytes());
+        i(o, w.game_type);
+        o.push(w.requires_conversion as u8);
+        o.push(w.hardcore as u8);
+    }
+    std::fs::remove_dir_all(&root).unwrap();
 }

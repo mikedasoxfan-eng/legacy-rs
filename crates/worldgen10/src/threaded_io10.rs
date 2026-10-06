@@ -1,6 +1,6 @@
 //! ThreadedFileIOBase and ThreadedChunkLoader's synchronized queues.
 use crate::nbt::{self, Compound};
-use std::{collections::HashSet, io::{self, Write}, path::{Path, PathBuf}, sync::{Arc, LazyLock, Mutex}, time::Duration};
+use std::{collections::HashSet, io, path::{Path, PathBuf}, sync::{Arc, LazyLock, Mutex}, time::Duration};
 
 pub trait IThreadedFileIO: Send + Sync {
     /// True after processing an entry; false only when called on an empty queue.
