@@ -21,6 +21,7 @@ pub mod map;
 pub mod player_view;
 pub mod sky;
 pub mod sky_release;
+pub mod sky_release_check;
 pub mod potion_color;
 pub mod table;
 pub mod targeting;

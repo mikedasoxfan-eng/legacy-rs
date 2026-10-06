@@ -1,5 +1,32 @@
 //! Release RenderGlobal geometry before the GL model-view transforms.
 use super::Vertex;
+use super::entity::fixed::{self, Op};
+
+pub fn sun_quad() -> [Vertex; 6] {
+    let points = [[-30.0,100.0,-30.0],[30.0,100.0,-30.0],[30.0,100.0,30.0],[-30.0,100.0,30.0]];
+    let uv = [[0.0,0.0],[1.0,0.0],[1.0,1.0],[0.0,1.0]];
+    [0,1,2,0,2,3].map(|i| Vertex {pos: points[i],uv: uv[i],color:[255;4],light:0})
+}
+
+pub fn celestial_operations(angle: f32) -> [Op; 3] {
+    [Op{code:0,args:[0.0;4]}, Op{code:2,args:[-90.0,0.0,1.0,0.0]},
+     Op{code:2,args:[angle*360.0,1.0,0.0,0.0]}]
+}
+
+pub fn sunrise_operations(angle: f32) -> [Op; 3] {
+    let z = if worldgen::math::sin(angle*std::f32::consts::PI*2.0)<0.0 {180.0}else{0.0};
+    [Op{code:2,args:[90.0,1.0,0.0,0.0]}, Op{code:2,args:[z,0.0,0.0,1.0]},
+     Op{code:2,args:[90.0,0.0,0.0,1.0]}]
+}
+
+pub fn end_operations(face: usize) -> Vec<Op> {
+    match face {
+        0 => vec![],
+        1..=3 => vec![Op {code:2,args:[[90.0,-90.0,180.0][face-1],1.0,0.0,0.0]}],
+        4..=5 => vec![Op {code:2,args:[if face==4 {90.0}else{-90.0},0.0,0.0,1.0]}],
+        _ => unreachable!(),
+    }
+}
 
 pub fn moon_phase(world_time: i64) -> i32 {
     (world_time / 24000) as i32 % 8
@@ -45,15 +72,7 @@ pub fn end_quad() -> [Vertex; 6] {
 
 /// The six independent push/rotate/pop calls, in source order.
 pub fn end_rotation(face: usize) -> glam::Mat4 {
-    match face {
-        0 => glam::Mat4::IDENTITY,
-        1 => glam::Mat4::from_rotation_x(90.0f32.to_radians()),
-        2 => glam::Mat4::from_rotation_x(-90.0f32.to_radians()),
-        3 => glam::Mat4::from_rotation_x(180.0f32.to_radians()),
-        4 => glam::Mat4::from_rotation_z(90.0f32.to_radians()),
-        5 => glam::Mat4::from_rotation_z(-90.0f32.to_radians()),
-        _ => unreachable!(),
-    }
+    fixed::matrix(&end_operations(face))
 }
 
 #[cfg(test)]

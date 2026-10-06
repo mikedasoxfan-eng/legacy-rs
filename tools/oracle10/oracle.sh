@@ -28,7 +28,10 @@ if [ ! -f "$input/.compiled" ] || find "$here/headless/org/lwjgl/input" "$here/h
   touch "$input/.compiled"
 fi
 if [ ! -f "$here/build/.compiled" ] || find "$here/src" "$here/headless" -name '*.java' -newer "$here/build/.compiled" -print -quit | grep -q .; then
-  javac -nowarn -cp "$input;$jar$libs" -d "$here/build" $(ls "$here"/src/net/minecraft/src/*.java | grep -v ModelShot.java) "$here"/headless/org/lwjgl/opengl/*.java
+  # Windows caps the command line; javac's argument file also preserves paths with spaces.
+  sources="$here/build/sources.args"
+  find "$here/src/net/minecraft/src" "$here/headless/org/lwjgl/opengl" -name '*.java' ! -name ModelShot.java | while IFS= read -r path; do printf '"%s"\n' "$path"; done > "$sources"
+  javac -nowarn -cp "$input;$jar$libs" -d "$here/build" "@$sources"
   touch "$here/build/.compiled"
 fi
 if [ ! -f "$here/build/net/minecraft/src/Explosion.class" ] || [ ! -f "$here/build/net/minecraft/src/Entity.class" ] || [ "$here/build_entity.py" -nt "$here/build/net/minecraft/src/Entity.class" ] || [ "$here/src/net/minecraft/src/OracleHooks.java" -nt "$here/build/net/minecraft/src/Entity.class" ]; then

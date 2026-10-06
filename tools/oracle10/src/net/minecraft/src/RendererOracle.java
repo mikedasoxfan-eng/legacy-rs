@@ -5,6 +5,52 @@ import java.util.*;
 import org.lwjgl.opengl.GL11;
 /** Execute original renderer bytecode and record GL inputs + original Tessellator bytes. */
 public final class RendererOracle {
+    /** Opt-in extended snapshots for release models. The legacy wire format stays unchanged. */
+    public static boolean capture10;
+    public static int cull10;
+    public static float alpha10=.1F;
+    public static final ArrayList<Draw10> draws10=new ArrayList<Draw10>();
+    public static final class Op10 {
+        public int code;public float[] args;
+        Op10(float[] op){code=(int)op[0];args=Arrays.copyOfRange(op,1,5);}
+    }
+    public static ArrayList<Op10> operations10(){
+        ArrayList<Op10> result=new ArrayList<Op10>();
+        for(float[] op:ops)result.add(new Op10(op));return result;
+    }
+    public static final class Face10 {
+        public final ArrayList<float[]> vertices=new ArrayList<float[]>();
+        public final ArrayList<Integer> colors=new ArrayList<Integer>();
+        public final ArrayList<Integer> normals=new ArrayList<Integer>();
+        public int normal,mode;
+        Face10(Raw raw){
+            mode=raw.mode;
+            for(int i=0;i<raw.n;i++){
+                float[] vertex=new float[5];
+                for(int j=0;j<5;j++)vertex[j]=j>=3&&(raw.mask&512)==0?0:Float.intBitsToFloat(raw.data[i*8+j]);
+                vertices.add(vertex);colors.add((raw.mask&64)==0?0:raw.data[i*8+5]);
+                int n=(raw.mask&128)==0?0:raw.data[i*8+6];
+                normals.add(n);if(i==0)normal=n;
+            }
+        }
+    }
+    public static final class Draw10 {
+        public ArrayList<Op10> ops=operations10();
+        public Face10 face;
+        public int cull,flags,texture,src,dst,depth;
+        public float alpha;public float[] material;
+        Draw10(Raw raw){
+            face=new Face10(raw);cull=cull10;flags=RendererOracle.flags|raw.mask;
+            texture=GL11.texture;src=RendererOracle.src;dst=RendererOracle.dst;depth=RendererOracle.depth;
+            alpha=alpha10;material=GL11.color.clone();
+        }
+    }
+    public static void reset10(){
+        capture10=true;active=true;GL11.matrixMode=5888;GL13Reset10();
+        ops.clear();stack.clear();draws10.clear();flags=297;src=1;dst=0;depth=515;
+        cull10=0;alpha10=.1F;GL11.color=new float[]{1,1,1,1};GL11.texture=0;normal=new float[]{0,0,1};
+    }
+    static void GL13Reset10(){org.lwjgl.opengl.GL13.activeTexture=0;}
     public static boolean active=false;
     public static boolean pistonCapture=false;
     static Raw pistonRaw;
@@ -31,11 +77,12 @@ public final class RendererOracle {
     public static int genLists(int n){int id=nextList;nextList+=n;return id;}
     public static void newList(int id){compiling=id;lists.put(id,new ArrayList<Raw>());}
     public static void endList(){compiling=0;}
+    public static void listsDelete10(int id,int count){if(capture10)for(int i=0;i<count;i++)lists.remove(id+i);}
     public static void callList(int id){if(active)for(Raw r:lists.get(id)){if(r.command==null)emit(r);else{float[] c=r.command;if(c[0]==3)color3(c[1],c[2],c[3]);else op((int)c[0],c[1],c[2],c[3],c[4]);}}}
     public static void record(int mode,int n) {
         if(!active && compiling==0 && !pistonCapture)return;
         try {
-            if(mode!=7 && mode!=1 && mode!=3 && !(pistonCapture && mode==4))throw new AssertionError("unexpected primitive "+mode);
+            if(!capture10 && mode!=7 && mode!=1 && mode!=3 && !(pistonCapture && mode==4))throw new AssertionError("unexpected primitive "+mode);
             Tessellator t=Tessellator.instance;
             boolean color=field("hasColor").getBoolean(t),normalArray=field("hasNormals").getBoolean(t),uv=field("hasTexture").getBoolean(t);
             int[] raw=(int[])field("rawBuffer").get(t);
@@ -45,6 +92,7 @@ public final class RendererOracle {
         }catch(Exception e){throw new RuntimeException(e);}
     }
     static void emit(Raw r) {
+        if(capture10){draws10.add(new Draw10(r));return;}
         Mode_drawtrace10.emitted(r);
         FirstPersonOracle.recordMode(r.mode);
         FirstPersonOracle.recordMatrix();

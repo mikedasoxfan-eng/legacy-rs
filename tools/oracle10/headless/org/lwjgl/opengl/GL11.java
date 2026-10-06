@@ -62,6 +62,9 @@ public final class GL11 {
     public static final int GL_VENDOR = 7936;
     public static final int GL_VERSION = 7938;
     public static final int GL_ZERO = 0;
+    private static int cullFace10=2;
+    public static void glCullFace(int face){if(RendererOracle.capture10){cullFace10=face==GL_FRONT?1:2;if(RendererOracle.cull10!=0)RendererOracle.cull10=cullFace10;}}
+    public static void glDeleteLists(int id,int count) { RendererOracle.listsDelete10(id,count); }
     public static int matrixMode=5888;
     public static float[] color = {1,1,1,1};
     public static int texture;
@@ -108,10 +111,10 @@ public final class GL11 {
     public static void glFogi(int name,int value) {if(name==GL_FOG_MODE)fogMode=value;}
     public static void glColorMaterial(int face,int mode) {}
     // Texturing switches on the lightmap unit (1.0 texture unit 1) are not the model's texture.
-    public static void glDisable(int x) { if(x==GL_TEXTURE_2D&&GL13.activeTexture!=0)return; RendererOracle.enable(x,false); }
-    public static void glEnable(int x) { if(x==GL_TEXTURE_2D&&GL13.activeTexture!=0)return; RendererOracle.enable(x,true); }
+    public static void glDisable(int x) { if(RendererOracle.capture10&&x==GL_CULL_FACE)RendererOracle.cull10=0; if(x==GL_TEXTURE_2D&&GL13.activeTexture!=0)return; RendererOracle.enable(x,false); }
+    public static void glEnable(int x) { if(RendererOracle.capture10&&x==GL_CULL_FACE&&RendererOracle.cull10==0)RendererOracle.cull10=cullFace10; if(x==GL_TEXTURE_2D&&GL13.activeTexture!=0)return; RendererOracle.enable(x,true); }
     public static void glBlendFunc(int x,int y) { RendererOracle.src=x;RendererOracle.dst=y; }
-    public static void glAlphaFunc(int x,float y) {}
+    public static void glAlphaFunc(int x,float y) { if(RendererOracle.capture10)RendererOracle.alpha10=y; }
     public static void glColorMask(boolean r,boolean g,boolean b,boolean a) {}
     public static void glNormal3f(float x,float y,float z) { RendererOracle.normal=new float[]{x,y,z}; }
     public static void glBindTexture(int x,int y) { if(GL13.activeTexture!=0)return; texture=y; }

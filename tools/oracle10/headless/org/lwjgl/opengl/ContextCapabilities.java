@@ -4,4 +4,5 @@ public final class ContextCapabilities {
     public boolean OpenGL13 = true;
     public boolean GL_ARB_vertex_buffer_object = false;
     public boolean GL_NV_fog_distance = false;
+    public boolean GL_ARB_occlusion_query = false;
 }

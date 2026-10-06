@@ -243,12 +243,13 @@ impl<'a, 'b> RenderBlocks<'a, 'b> {
             true
         } else if id == 0 {
             false
-        } else if provides_power(id) {
+        } else if provides_power(id) && dir != -1 {
             true
         } else if id != 93 && id != 94 {
             false
         } else {
-            dir == BED_OPPOSITE[(self.w.meta(x, y, z) & 3) as usize] as i32
+            let orientation = self.w.meta(x, y, z) & 3;
+            dir == orientation || dir == BED_OPPOSITE[orientation as usize] as i32
         }
     }
 

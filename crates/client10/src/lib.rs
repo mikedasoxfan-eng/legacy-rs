@@ -374,6 +374,7 @@ fn mesh_check(a: &[String]) -> bool {
         .map(|i| format!("{}:{}", worldgen::block::props(i as u8).name, seen[i]))
         .collect();
     println!("blocks covered: {}", kinds.join(" "));
+    assert_eq!(o, data.len(), "mesh dump EOF");
     ok
 }
 
@@ -440,6 +441,12 @@ pub fn run() {
             std::process::exit(1);
         }
         return;
+    }
+    if args.get(1).map(String::as_str) == Some("--render-global10-check") {
+        std::process::exit(if render::entity::models_release_check::global_sky_check(&args[2]) {0}else{1});
+    }
+    if args.get(1).map(String::as_str) == Some("--render-blockinventory10-check") {
+        std::process::exit(if render::entity::models_release_check::block_inventory_check(&args[2]) {0}else{1});
     }
     if args.get(1).map(String::as_str) == Some("--release-modelshot") {
         if let Err(e) = render::entity::shot::release_shot(std::path::Path::new(&args[2])) {eprintln!("{e}");std::process::exit(1);}

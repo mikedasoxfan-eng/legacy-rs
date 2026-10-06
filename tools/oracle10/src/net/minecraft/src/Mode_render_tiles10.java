@@ -22,7 +22,7 @@ public final class Mode_render_tiles10 {
         for(int c=0;c<64;c++){
             double x=(random.nextDouble()-.5)*128,y=(random.nextDouble()-.5)*128,z=(random.nextDouble()-.5)*128;
             float partial=c%4*.25F;int ticks=c==63?16777219:random.nextInt(200000)-100000;
-            d(x);d(y);d(z);f(partial);i(ticks);GL11.reset();texture=null;
+            d(x);d(y);d(z);f(partial);i(ticks);RendererOracle.reset10();texture=null;
             if(kind==0){
                 float[] values={random.nextFloat()*40-20,random.nextFloat()*40-20,random.nextFloat()*20-10,random.nextFloat()*20-10,random.nextFloat()*2-1,random.nextFloat()*2-1};
                 if(c<4){values[0]=0;values[1]=new float[]{(float)Math.PI,-(float)Math.PI,(float)Math.PI*2,-(float)Math.PI*2}[c];}
