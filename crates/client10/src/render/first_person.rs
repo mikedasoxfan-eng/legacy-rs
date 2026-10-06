@@ -67,20 +67,32 @@ impl Equip {
         camera::lerp(self.previous, self.progress, t)
     }
 }
-pub fn item(g: &mut Fixed, item: ItemStack, brightness: f32, fishing: bool) {
+pub fn millis() -> u64 {std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap_or_default().as_millis() as u64}
+pub fn item(g:&mut Fixed,item:ItemStack,brightness:f32,fishing:bool) {item_pass(g,item,brightness,fishing,0,None,glint_times(millis()));}
+pub fn glint_times(time:u64) -> [f32;2] {[(time%3000) as f32/3000.0*8.0,(time%4873) as f32/4873.0*8.0]}
+pub fn item_pass(g:&mut Fixed,item:ItemStack,brightness:f32,fishing:bool,pass:i32,bow:Option<i32>,times:[f32;2]) {
     if inventory::in_3d(item.id as i16) {
-        g.push();
-        g.texture = 1;
-        // ItemRenderer's RenderBlocks keeps useInventoryTint on (b1.8.1: grass tops tinted).
-        inventory::inventory(g, item.id as u8, item.damage as i32, brightness, true);
-        g.pop();
+        g.push();g.texture=1;inventory::inventory(g,item.id as u8,item.damage,brightness,true);g.pop();
     } else {
-        let icon = if fishing && item.id == 346 {
-            item_table::properties(346, item.damage as i16).0 + 16
-        } else {
-            item_table::properties(item.id as i16, item.damage as i16).0
-        };
-        special::sprite(g, icon, item.id < 256);
+        let mut icon=item_table::properties(item.id as i16,item.damage as i16).0;
+        if fishing && item.id==346 {icon+=16;}
+        else if item.id==373 && pass==0 {icon=141;}
+        else if item.id==261 {if let Some(duration)=bow {icon=if duration>=18 {133} else if duration>13 {117} else if duration>0 {101} else {icon};}}
+        let start=g.draws.len();
+        special::sprite(g,icon,item.id<256);
+        if worldgen::item10::glint(item) && pass==0 {
+            // Reuse the extrusion transform, as vanilla calls its geometry method in-place.
+            g.push();g.ops=g.draws[start].ops.clone();g.enable(2,true);
+            g.depth=514;g.enable(1,false);g.texture=76;g.enable(16,true);g.src=768;g.dst=1;
+            g.material=[0.5*0.76,0.25*0.76,0.8*0.76,1.0];
+            for i in 0..2 {
+                g.texture_ops=vec![super::entity::fixed::Op{code:1,args:[0.125,0.125,0.125,0.0]},
+                    super::entity::fixed::Op{code:0,args:[if i==0 {times[i]} else {-times[i]},0.0,0.0,0.0]},
+                    super::entity::fixed::Op{code:2,args:[if i==0 {-50.0} else {10.0},0.0,0.0,1.0]}];
+                special::sprite_geometry(g,[0.0,0.0,1.0,1.0]);
+            }
+            g.texture_ops.clear();g.enable(16,false);g.enable(1,true);g.depth=515;g.enable(2,false);g.pop();
+        }
     }
 }
 pub fn hand(g: &mut Fixed) {
@@ -223,7 +235,7 @@ pub fn render_with_map(
             use worldgen::entity::player::registry::ItemUseAction;
             g.push();
             if let Some((ticks, max, action)) = in_use {
-                if action == ItemUseAction::Eat {
+                if matches!(action, ItemUseAction::Eat | ItemUseAction::Drink) {
                     let f18 = ticks as f32 - t + 1.0f32;
                     let f10 = 1.0f32 - f18 / max as f32;
                     let mut f12 = 1.0f32 - f10;
@@ -281,7 +293,10 @@ pub fn render_with_map(
             if held.id == 346 {
                 g.rotate(180.0, 0.0, 1.0, 0.0);
             }
-            item(&mut g, held, block_brightness, e.player_state().is_some_and(|p|p.fish_entity.is_some()));
+            let fish=e.player_state().is_some_and(|p|p.fish_entity.is_some());
+            let bow=in_use.map(|(ticks,max,_)|max-ticks);
+            item_pass(&mut g,held,block_brightness,fish,0,bow,glint_times(millis()));
+            if held.id==373 {g.material=[brightness,brightness,brightness,1.0];item_pass(&mut g,held,block_brightness,fish,1,bow,glint_times(millis()));}
             g.pop();
         }
     } else {
@@ -459,7 +474,7 @@ pub fn opaque_textures(e: &Entity, w: &mut worldgen::World) -> Vec<i32> {
             }
         }
     }
-    if super::rprops(id).exists {
+    if id!=0 && super::rprops(id).exists {
         textures.push(super::rprops(id).textures[0][2] as i32);
     }
     textures

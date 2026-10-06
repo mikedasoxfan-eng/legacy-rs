@@ -69,6 +69,7 @@ public final class FirstPersonOracle {
         return p;
     }
     static RenderManager setup(PlayerOracle.HeadlessPlayer p)throws Exception {
+        OpenGlHelper.initializeTextures();org.lwjgl.opengl.GL13.activeTexture=0;
         // The client loads the biome colour maps at startup; 1.0 grass item tops read them.
         ColorizerGrass.setGrassBiomeColorizer(Oracle.jarImage("misc/grasscolor.png"));ColorizerFoliage.getFoilageBiomeColorizer(Oracle.jarImage("misc/foliagecolor.png"));
         RenderManager m=RendererOracle.manager(p.worldObj);m.livingPlayer=p;RenderManager.instance=m;
@@ -180,7 +181,7 @@ public final class FirstPersonOracle {
             Oracle.setField(er,"fogColor2",old);Oracle.setField(er,"fogColor1",newer);Oracle.setField(er,"farPlaneDistance",far);
             out.i32(6);state(out,p);f(out,t);out.i32(c%4);out.i32((c&4)!=0?1:0);out.i32((c&8)!=0?1:0);out.i32(mode);f(out,far);f(out,old);f(out,newer);
             Vec3D sky=w.getSkyColor(p,t),fog=w.getFogColor(t);for(double v:new double[]{sky.xCoord,sky.yCoord,sky.zCoord,fog.xCoord,fog.yCoord,fog.zCoord})f(out,(float)v);
-            f(out,w.getRainStrength(t));f(out,w.getWeightedThunderStrength(t));out.i32(p.isInsideOfMaterial(Material.water)?1:p.isInsideOfMaterial(Material.lava)?2:0);f(out,w.getCelestialAngle(t));out.i32(p.getEntityBrightnessForRender(t));
+            f(out,w.getRainStrength(t));f(out,w.getWeightedThunderStrength(t));int active=ActiveRenderInfo.func_41066_a(w,p,t);out.i32(active!=0&&Block.blocksList[active].blockMaterial==Material.water?1:active!=0&&Block.blocksList[active].blockMaterial==Material.lava?2:0);f(out,w.getCelestialAngle(t));out.i32(p.getEntityBrightnessForRender(t));
             start(1);call(er,"updateFogColor",new Class[]{float.class},t);call(er,"setupFog",new Class[]{int.class,float.class},mode,t);stop();
             for(int i=0;i<3;i++)f(out,GL11.clearColor[i]);out.i32(GL11.fogMode);if(GL11.fogMode==GL11.GL_EXP){f(out,GL11.fogDensity);}else{f(out,GL11.fogStart);f(out,GL11.fogEnd);}n++;
         }

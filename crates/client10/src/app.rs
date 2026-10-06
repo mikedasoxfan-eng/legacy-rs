@@ -1238,7 +1238,7 @@ impl App {
                             gui.ui.world_saved = done;
                         }
                     }
-                    Ok(FromWorker::ReleaseTiles(books)) => {gpu.entities.books = books;}
+                    Ok(FromWorker::ReleaseTiles(books,portals)) => {gpu.entities.books = books;gpu.entities.portals=portals;}
                     Ok(FromWorker::DragonCrystals(crystals)) => {gpu.entities.dragon_crystals = crystals.into_iter().map(|(id, position, rotation)| (id, (position, rotation))).collect();}
                     Ok(FromWorker::Signs(signs,chests,spawners)) => {gpu.entities.signs=signs;gpu.entities.chests=chests;gpu.entities.spawners=spawners;}
                     Ok(FromWorker::Mesh { cx, cz, opaque, translucent }) => {
@@ -1510,7 +1510,7 @@ impl App {
             let angle1 = if self.nether { 0.5 } else { sky::celestial_angle(self.world_time, 1.0) };
             let sky_factor = render::lightmap::sky_factor(angle1, self.weather.rain_at(1.0), self.weather.thunder_at(1.0));
             let gamma = self.gui.as_ref().map_or(0.0, |g| g.ui.settings.gamma);
-            let texels = render::lightmap::compute(&dim.light_brightness_table(), sky_factor, self.flicker.x, self.weather.flash > 0, gamma);
+            let texels = render::lightmap::compute_dimension(&dim.light_brightness_table(), sky_factor, self.flicker.x, self.weather.flash > 0, gamma, self.player.as_ref().and_then(|p| p.entity.player_state()).is_some_and(|s| s.dimension == 1));
             let mut out: [Vec<render::weather::WeatherVertex>; 2] = [Vec::new(), Vec::new()];
             for (tex, mut v, light) in render::weather::precipitation181(
                 &self.weather_terrain,
@@ -1547,7 +1547,7 @@ impl App {
             let sky_factor = render::lightmap::sky_factor(angle1, self.weather.rain_at(1.0), self.weather.thunder_at(1.0));
             // The Brightness option (GameSettings.field_35380_M).
             let gamma = self.gui.as_ref().map_or(0.0, |g| g.ui.settings.gamma);
-            render::lightmap::compute(&dim.light_brightness_table(), sky_factor, self.flicker.x, self.weather.flash > 0, gamma)
+            render::lightmap::compute_dimension(&dim.light_brightness_table(), sky_factor, self.flicker.x, self.weather.flash > 0, gamma, self.player.as_ref().and_then(|p| p.entity.player_state()).is_some_and(|s| s.dimension == 1))
         };
         let particles = self.particles.vertices(
             self.cam.pos.to_array(),

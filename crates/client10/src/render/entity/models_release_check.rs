@@ -857,3 +857,29 @@ pub fn global_sky_check(path: &str) -> bool {
     println!("GLOBAL SKY10 {}: {count} cases, {} raw-bit comparisons, {} mismatches",if d.bad==0 {"EXACT"}else{"DIFFER"},d.checks,d.bad);
     d.bad==0
 }
+
+
+pub fn portal_check(path:&str) -> bool {
+    let mut d=Dump{bytes:std::fs::read(path).expect("portal dump"),at:0,checks:0,bad:0};
+    assert_eq!(d.int(),0x34315045);assert_eq!(d.int(),1);let n=d.int();
+    for c in 0..n {
+        let position=std::array::from_fn(|_|f64::from_bits(u64::from_le_bytes(d.take())));
+        let player=std::array::from_fn(|_|f64::from_bits(u64::from_le_bytes(d.take())));
+        let active=std::array::from_fn(|_|d.float());
+        let count=d.int();
+        let commands:Vec<_>=(0..count).map(|_|crate::render::end_portal::Command{code:d.int(),args:std::array::from_fn(|_|d.float())}).collect();
+        let mut times=[0.0;16];let mut at=0;
+        for pair in commands.windows(2) {if pair[0].code==9 && pair[1].code==2 {times[at]=pair[1].args[1];at+=1;}}
+        assert_eq!(at,16);
+        let portal=crate::render::end_portal::render(position,player,active,times);
+        assert_eq!(commands.len(),portal.commands.len());
+        for (j,r) in commands.iter().zip(&portal.commands) {
+            d.equal(j.code as u64,r.code as u64,"portal command");
+            for (j,r) in j.args.iter().zip(r.args) {d.equal(j.to_bits() as u64,r.to_bits() as u64,"portal GL argument");}
+        }
+        d.full_draws(&portal.gl,&format!("portal {c}"));
+    }
+    assert_eq!(d.at,d.bytes.len());
+    println!("END PORTAL10 {}: {n} cases, {} raw-bit comparisons, {} mismatches",if d.bad==0 {"EXACT"} else {"DIFFER"},d.checks,d.bad);
+    d.bad==0
+}

@@ -59,6 +59,10 @@ pub struct EntityPipeline {
     /// Batches whose vertices carry their own lightmap brightness (batch index, per vertex).
     vertex_lights: Vec<(usize, Vec<u32>)>,
     pub books: Vec<super::render_release::BookTile>,
+    pub portals: Vec<[i32;3]>,
+    pub active_info: crate::render::active_info::Info,
+    projective_uvs: Vec<(usize,Vec<[f32;3]>)>,
+    uvq: wgpu::Buffer,
     pub dragon_crystals: std::collections::HashMap<i32, ([f64; 3], i32)>,
     pub chests: Vec<super::chest::Tile>,
     pub spawners: Vec<crate::render::spawner::Snapshot>,
@@ -176,6 +180,7 @@ impl EntityPipeline {
                             step_mode: wgpu::VertexStepMode::Vertex,
                             attributes: &wgpu::vertex_attr_array![3=>Uint32,4=>Float32],
                         }),
+                        Some(wgpu::VertexBufferLayout {array_stride:12,step_mode:wgpu::VertexStepMode::Vertex,attributes:&wgpu::vertex_attr_array![5=>Float32x3]}),
                     ],
                 },
                 primitive: wgpu::PrimitiveState { topology: if label=="fishing line" {wgpu::PrimitiveTopology::LineStrip}else{wgpu::PrimitiveTopology::TriangleList}, cull_mode: cull, ..Default::default() },
@@ -411,6 +416,10 @@ impl EntityPipeline {
             signs: Vec::new(),
             vertex_lights: Vec::new(),
             books: Vec::new(),
+            portals: Vec::new(),
+            active_info: Default::default(),
+            projective_uvs: Vec::new(),
+            uvq: device.create_buffer(&wgpu::BufferDescriptor {label:Some("projective UV"),size:12,usage:wgpu::BufferUsages::VERTEX|wgpu::BufferUsages::COPY_DST,mapped_at_creation:false}),
             dragon_crystals: std::collections::HashMap::new(),
             chests: Vec::new(),
             spawners: Vec::new(),
@@ -611,6 +620,15 @@ impl EntityPipeline {
             }));
         }
         lights.resize(batches.len(), NO_LIGHTMAP);
+        let millis=std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap_or_default().as_millis() as u64;
+        for position in &self.portals {
+            let relative=std::array::from_fn(|i|position[i] as f64-camera[i]);
+            let portal=crate::render::end_portal::render(relative,camera.to_array(),self.active_info.offset,[crate::render::end_portal::time_fraction(millis);16]);
+            for (layer,draw) in portal.gl.draws.iter().enumerate() {
+                self.projective_uvs.push((batches.len(),portal.projective_uv(layer,self.fog_view)));
+                batches.push(draw.batch());lights.push(NO_LIGHTMAP);
+            }
+        }
         for tile in &self.books {
             let relative = std::array::from_fn(|i| tile.position[i] as f64 - camera.to_array()[i]);
             let g = super::render_release::book(tile.state, relative, self.partial);
@@ -707,9 +725,12 @@ impl EntityPipeline {
         self.draws.clear();
         let mut all = Vec::new();
         let mut light_of: Vec<[u32; 2]> = Vec::new();
+        let mut uvq=Vec::new();
+        let mut projected:HashMap<usize,Vec<[f32;3]>>=std::mem::take(&mut self.projective_uvs).into_iter().collect();
         let mut per_vertex: std::collections::HashMap<usize, Vec<u32>> = std::mem::take(&mut self.vertex_lights).into_iter().collect();
         for (i, b) in batches.into_iter().enumerate() {
             let start = all.len() as u32;
+            uvq.extend(projected.remove(&i).unwrap_or_else(||b.vertices.iter().map(|v|[v.uv[0],v.uv[1],1.0]).collect()));
             all.extend_from_slice(&b.vertices);
             match per_vertex.remove(&i) {
                 Some(l) if l.len() == b.vertices.len() => light_of.extend(l.into_iter().map(|l| [l, b.alpha_cutoff.to_bits()])),
@@ -730,6 +751,7 @@ impl EntityPipeline {
                 usage: wgpu::BufferUsages::VERTEX | wgpu::BufferUsages::COPY_DST,
                 mapped_at_creation: false,
             });
+            self.uvq=device.create_buffer(&wgpu::BufferDescriptor {label:Some("projective UV"),size:(self.capacity*12) as u64,usage:wgpu::BufferUsages::VERTEX|wgpu::BufferUsages::COPY_DST,mapped_at_creation:false});
             self.lights = device.create_buffer(&wgpu::BufferDescriptor {
                 label: Some("entity lights"),
                 size: (self.capacity * 8) as u64,
@@ -738,6 +760,7 @@ impl EntityPipeline {
             });
         }
         if !all.is_empty() {
+            queue.write_buffer(&self.uvq,0,bytemuck::cast_slice(&uvq));
             queue.write_buffer(&self.vertices, 0, bytemuck::cast_slice(&all));
             queue.write_buffer(&self.lights, 0, bytemuck::cast_slice(&light_of));
         }
@@ -751,6 +774,7 @@ impl EntityPipeline {
         rp.set_bind_group(0, &self.frame_bind, &[]);
         rp.set_vertex_buffer(0, self.vertices.slice(..));
         rp.set_vertex_buffer(1, self.lights.slice(..));
+        rp.set_vertex_buffer(2,self.uvq.slice(..));
         for d in &self.draws {
             rp.set_pipeline((match d.pass {
                 Pass::Line => &self.line,

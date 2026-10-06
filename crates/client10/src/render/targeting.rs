@@ -46,7 +46,7 @@ pub fn selection_bounds(w: &mut World, x: i32, y: i32, z: i32) -> Option<BB> {
             )
         }
         // Stairs delegate selection to their model block (a complete cube).
-        53 | 67 => BB::new(
+        53 | 67 | 108 | 109 | 114 => BB::new(
             x as f64,
             y as f64,
             z as f64,

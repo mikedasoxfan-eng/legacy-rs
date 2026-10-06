@@ -20,10 +20,11 @@ struct In {
     @location(2) color: vec4<f32>,
     @location(3) light: u32,
     @location(4) cutoff: f32,
+    @location(5) uvq: vec3<f32>,
 };
 struct Out {
     @builtin(position) clip: vec4<f32>,
-    @location(0) uv: vec2<f32>,
+    @location(0) uv: vec3<f32>,
     @location(1) color: vec4<f32>,
     @location(2) dist: f32,
     @location(3) lm: vec2<f32>,
@@ -33,7 +34,7 @@ struct Out {
 @vertex fn vs_main(v: In) -> Out {
     var o: Out;
     o.clip = u.view_proj * vec4<f32>(v.pos,1.0);
-    o.uv = v.uv;
+    o.uv = v.uvq;
     o.cutoff = v.cutoff;
     o.color = v.color;
     o.dist = length((u.fog_view * vec4<f32>(v.pos,1.0)).xyz);
@@ -52,10 +53,10 @@ fn fog(c: vec4<f32>, dist: f32) -> vec4<f32> {
     return vec4<f32>(mix(u.fog_color.rgb,c.rgb,f),c.a);
 }
 @fragment fn fs_test(i: Out) -> @location(0) vec4<f32> {
-    let c = textureSample(tex,samp,i.uv)*i.color*light(i);
+    let c = textureSample(tex,samp,i.uv.xy/i.uv.z)*i.color*light(i);
     if c.a <= i.cutoff { discard; }
     return fog(c,i.dist);
 }
 @fragment fn fs_main(i: Out) -> @location(0) vec4<f32> {
-    return fog(textureSample(tex,samp,i.uv)*i.color*light(i),i.dist);
+    return fog(textureSample(tex,samp,i.uv.xy/i.uv.z)*i.color*light(i),i.dist);
 }

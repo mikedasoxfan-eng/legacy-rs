@@ -1,6 +1,8 @@
 //! Rendering: block meshing (a port of `RenderBlocks`), sky, and the GPU side.
 
 pub mod access;
+pub mod active_info;
+pub mod end_portal;
 pub mod lightmap;
 pub mod blocks;
 pub mod camera;

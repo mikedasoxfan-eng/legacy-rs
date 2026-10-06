@@ -96,6 +96,7 @@ impl Input {
                 alpha_cutoff: 0.1,
                 ops,
                 texture,
+                texture_ops:vec![],
                 material,
                 normal,
                 flags,
@@ -311,7 +312,7 @@ pub fn check(path: &str) -> bool {
                 let t = d.f();
                 let (s, _) = d.settings();
                 d.blocks(&mut w);
-                let medium = camera::medium(&e, &mut w);
+                let medium = super::active_info::Info::default().medium(&e, t as f64, &mut w);
                 let fov = camera::fov(&e, medium == camera::Medium::Water, t, &s, true);
                 d.eq(fov.to_bits(), "fov");
                 let j = d.ops();
@@ -524,9 +525,10 @@ pub fn check(path: &str) -> bool {
                     d.eq(v.to_bits(), "fog color");
                 }
                 let fog = camera::fog(medium, far, mode < 0, nether, camera::void_factor(light, eye_y));
-                d.eq(if fog[2] == 2.0 { 2048 } else { 9729 }, "fog mode");
+                let mode = d.u();
+                d.compare(mode, if fog[2] == 2.0 { 2048 } else { 9729 }, "fog mode");
                 d.eq(fog[0].to_bits(), "fog start/density");
-                if fog[2] != 2.0 {
+                if mode != 2048 {
                     d.eq(fog[1].to_bits(), "fog end");
                 }
             }
