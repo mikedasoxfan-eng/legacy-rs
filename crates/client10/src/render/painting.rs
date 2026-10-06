@@ -27,7 +27,10 @@ pub fn light_positions(e: &Entity) -> Vec<[i32; 3]> {
     }
     result
 }
-pub fn render(e: &Entity, relative: [f64; 3], lights: &[f32]) -> Fixed {
+/// RenderPainting.func_159_a. 1.0 lights each tile through the lightmap
+/// (`lights`: World.getLightBrightnessForSkyBlocks(x, y, z, 0) per tile, in
+/// `light_positions` order) with glColor3f(1, 1, 1).
+pub fn render(e: &Entity, relative: [f64; 3], lights: &[i32]) -> Fixed {
     let EntityKind::Painting(s) = &e.kind else {
         return Fixed::new(1.0);
     };
@@ -46,8 +49,8 @@ pub fn render(e: &Entity, relative: [f64; 3], lights: &[f32]) -> Fixed {
             let x0 = (-(art.width as f32) / 2.0) + (tx * 16) as f32;
             let y1 = (-(art.height as f32) / 2.0) + ((ty + 1) * 16) as f32;
             let y0 = (-(art.height as f32) / 2.0) + (ty * 16) as f32;
-            let light = lights[(tx * (art.height / 16) + ty) as usize];
-            g.material = [light, light, light, 1.0];
+            g.set_packed_lightmap(lights[(tx * (art.height / 16) + ty) as usize]);
+            g.material = [1.0, 1.0, 1.0, 1.0];
             let u0 = (art.u + art.width - tx * 16) as f32 / 256.0;
             let u1 = (art.u + art.width - (tx + 1) * 16) as f32 / 256.0;
             let v0 = (art.v + art.height - ty * 16) as f32 / 256.0;
@@ -68,7 +71,7 @@ pub fn render(e: &Entity, relative: [f64; 3], lights: &[f32]) -> Fixed {
                 [[x1, y1, 0.5], [x0, y1, 0.5], [x0, y0, 0.5], [x1, y0, 0.5]],
                 [[0.75, 0.0], [0.8125, 0.0], [0.8125, 0.0625], [0.75, 0.0625]],
             );
-            g.set_normal(0.0, -1.0, 0.0);
+            g.set_normal(0.0, 1.0, 0.0);
             g.quad(
                 [[x1, y1, -0.5], [x0, y1, -0.5], [x0, y1, 0.5], [x1, y1, 0.5]],
                 [
@@ -78,7 +81,7 @@ pub fn render(e: &Entity, relative: [f64; 3], lights: &[f32]) -> Fixed {
                     [0.75, 0.001953125],
                 ],
             );
-            g.set_normal(0.0, 1.0, 0.0);
+            g.set_normal(0.0, -1.0, 0.0);
             g.quad(
                 [[x1, y0, 0.5], [x0, y0, 0.5], [x0, y0, -0.5], [x1, y0, -0.5]],
                 [

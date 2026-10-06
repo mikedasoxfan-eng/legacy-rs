@@ -217,8 +217,11 @@ pub fn painting_check(path: &str) -> bool {
         }
         e.set_painting_direction(dir);
         let a = worldgen::entity::painting::ARTS[art];
-        let lights: Vec<_> = (0..a.width / 16 * (a.height / 16)).map(|_| d.f()).collect();
-        let g = crate::render::painting::render(&e, [-0.25, 10.5, 3.75], &lights);
+        // The legacy dump records scalar tile brightness; 1.0 draws with glColor 1
+        // and the lightmap (checked by the renderfx painting fixture).
+        let tiles = (a.width / 16 * (a.height / 16)) as usize;
+        for _ in 0..tiles { d.f(); }
+        let g = crate::render::painting::render(&e, [-0.25, 10.5, 3.75], &vec![0; tiles]);
         assert_eq!(d.u() as usize, g.draws.len(), "painting {case} draw count");
         for (i, r) in g.draws.iter().enumerate() {
             d.draw(r, &format!("painting {case} draw {i}"));
@@ -241,7 +244,8 @@ pub fn vehicle_check(path: &str) -> bool {
         bad: 0,
     };
     assert_eq!(d.u(), u32::from_le_bytes(*b"V173"));
-    assert_eq!(d.u(), 1);
+    let version = d.u();
+    assert!(version == 1 || version == 2);
     let n = d.u();
     let mut w = worldgen::World::new(0, 300);
     let mut draws = 0;
@@ -251,6 +255,7 @@ pub fn vehicle_check(path: &str) -> bool {
         let hit = d.u() as i32;
         let damage = d.u() as i32;
         let dir = d.u() as i32;
+        let entity_id = if version >= 2 { Some(d.u() as i32) } else { None };
         let partial = d.f();
         let brightness = d.f();
         let prev_yaw = d.f();
@@ -266,6 +271,7 @@ pub fn vehicle_check(path: &str) -> bool {
             Entity::minecart(&mut w, pos[0], pos[1], pos[2], t)
         };
         e.set_position(pos[0], pos[1], pos[2]);
+        if let Some(id) = entity_id { e.entity_id = id; }
         e.last_tick_pos = worldgen::entity::Vec3D::new(last[0], last[1], last[2]);
         e.prev_yaw = prev_yaw;
         e.yaw = yaw;

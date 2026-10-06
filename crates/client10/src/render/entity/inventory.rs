@@ -260,10 +260,13 @@ pub fn inventory(gl: &mut Fixed, id: u8, meta: i32, brightness: f32, tint: bool)
     }
 }
 /// Brightness order: own, below, above, -z, +z, -x, +x.
-pub fn falling(gl: &mut Fixed, id: u8, light: [f32; 7]) {
+/// 1.0 RenderBlocks.renderBlockFallingSand: fixed face shades (the brightness
+/// factor is the constant 1.0); light comes from one packed brightness,
+/// getMixedBrightnessForBlock at the entity's cell, through the lightmap.
+pub fn falling(gl: &mut Fixed, id: u8) {
     gl.begin();
     for side in 0..6 {
-        let f = [0.5, 1.0, 0.8, 0.8, 0.6, 0.6][side] * light[side + 1].max(light[0]);
+        let f = [0.5f32, 1.0, 0.8, 0.8, 0.6, 0.6][side] * 1.0;
         gl.color([f, f, f, 1.0]);
         Faces { b: bounds(rprops(id).bounds), gl, offset: [-0.5; 3] }.face(side, rprops(id).textures[0][side] as i32);
     }

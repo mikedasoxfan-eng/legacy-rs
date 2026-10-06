@@ -549,9 +549,12 @@ impl EntityPipeline {
                                 let p=super::bridge::position(e,self.partial);let relative=std::array::from_fn(|i|p[i]-camera[i]);let g=crate::render::fishing::render(e,owner,relative,self.partial,snapshot.brightness,self.view,self.third_person);batches.extend(g.draws.iter().map(|d|d.batch()));
                             }
                             if matches!(e.kind,worldgen::entity::EntityKind::Painting(_)) {
-                                let lights:Vec<_>=crate::render::painting::light_positions(e).iter().map(|p|snapshot.surfaces.iter().find(|s|s.xyz==*p&&s.block==0).map_or(snapshot.brightness,|s|s.brightness)).collect();
+                                // 1.0 RenderPainting: glColor 1, each tile through the lightmap at its own light.
+                                let fallback=snapshot.light.unwrap_or(0) as i32;
+                                let lights:Vec<_>=(0..crate::render::painting::light_positions(e).len()).map(|i|snapshot.tile_lights.get(i).copied().unwrap_or(fallback)).collect();
                                 let p=super::bridge::position(e,self.partial);let relative=std::array::from_fn(|i|p[i]-camera[i] as f64);
                                 let g=crate::render::painting::render(e,relative,&lights);batches.extend(g.draws.iter().map(|d|d.batch()));
+                                explicit_lights.extend(g.draw_lightmaps.iter().map(|l|(l[0] as u32)+(l[1] as u32)*65536));
                             }
                             if let Some(mut s) = super::bridge::render_state(e, self.partial, snapshot.brightness) {
                                 if let Some(crystal_id) = s.dragon.as_ref().and_then(|d| d.healing_crystal) {
@@ -581,7 +584,30 @@ impl EntityPipeline {
                                         d.flags |= 4;
                                     }
                                 }
-                                batches.extend(g.draws.iter().map(|d| d.batch()));
+                                // 1.0 RenderFallingSand: Tessellator brightness (per vertex) is the
+                                // block's packed light at its cell; the GL lightmap state is untouched.
+                                let falling_light = if matches!(e.kind, worldgen::entity::EntityKind::FallingSand { .. }) { snapshot.tile_lights.first().copied() } else { None };
+                                for d in &g.draws {
+                                    let batch = d.batch();
+                                    if let Some(l) = falling_light { self.vertex_lights.push((batches.len(), vec![l as u32; batch.vertices.len()])); }
+                                    batches.push(batch);
+                                }
+                                if !snapshot.block_mesh.is_empty() {
+                                    // The dragon egg: world-lit RenderBlocks quads under glTranslatef(relative).
+                                    let p = super::bridge::position(e, self.partial);
+                                    let rel: [f32; 3] = std::array::from_fn(|i| (p[i] - camera.to_array()[i]) as f32);
+                                    let mut vertices = Vec::with_capacity(snapshot.block_mesh.len() / 4 * 6);
+                                    let mut vertex_lights = Vec::with_capacity(vertices.capacity());
+                                    for quad in snapshot.block_mesh.chunks_exact(4) {
+                                        for i in [0, 1, 2, 0, 2, 3] {
+                                            let v = quad[i];
+                                            vertices.push(living::EntityVertex { pos: std::array::from_fn(|k| v.pos[k] + rel[k]), uv: v.uv, color: v.color.map(|c| c as f32 / 255.0) });
+                                            vertex_lights.push(v.light);
+                                        }
+                                    }
+                                    self.vertex_lights.push((batches.len(), vertex_lights));
+                                    batches.push(Batch { alpha_cutoff: 0.1, cull: 0, texture: Some("terrain.png"), pass: Pass::Alpha, vertices });
+                                }
                             }
                         }
                         super::manager::Event::ShadowAndFire(_, _) => {
