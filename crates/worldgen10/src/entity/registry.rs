@@ -222,7 +222,7 @@ pub fn create(w: &mut crate::World, name: &str) -> Option<super::Entity> {
         "EyeOfEnderSignal" => super::Entity::ender_eye_base(w),
         "Fireball" => super::Entity::fireball_base(w, false),
         "SmallFireball" => super::Entity::fireball_base(w, true),
-        "EnderCrystal" => super::Entity::ender_crystal(w, super::Vec3D::default()),
+        "EnderCrystal" => super::Entity::ender_crystal_base(w),
         "Painting" => super::Entity::painting_base(w),
         "Minecart" => super::Entity::minecart_base(w),
         "Boat" => super::Entity::boat_base(w),

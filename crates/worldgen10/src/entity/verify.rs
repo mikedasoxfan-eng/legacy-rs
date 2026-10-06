@@ -589,6 +589,8 @@ pub fn object_bytes(scenario: &str, ticks: i32) -> Vec<u8> {
                 c.sky_light.0.fill(255);
                 c.height_map.fill(if scenario == "slimes" { 8 } else { 64 });
             }
+            // new Chunk(world, ...) reads world.worldProvider.hasNoSky (1.0 Chunk.getBlockLightValue).
+            c.has_no_sky10 = w.dimension.has_no_sky();
             c.loaded = true;
             c.populated = true;
             w.chunks.insert((cx, cz), Box::new(c));

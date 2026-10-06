@@ -102,7 +102,14 @@ impl Entity {
         self.no_clip = true;
         self.immune_to_fire = true;
     }
+    /// EntityEnderCrystal(World, x, y, z).
     pub fn ender_crystal(w: &mut World, p: Vec3D) -> Self {
+        let mut e = Self::ender_crystal_base(w);
+        e.set_position(p.x, p.y, p.z);
+        e
+    }
+    /// EntityEnderCrystal(World): setSize does not move the box Entity's constructor placed.
+    pub fn ender_crystal_base(w: &mut World) -> Self {
         let mut e = Self::base(
             w,
             EntityKind::EnderCrystal {
@@ -119,7 +126,6 @@ impl Entity {
             rotation,
             health: 5,
         };
-        e.set_position(p.x, p.y, p.z);
         e
     }
     pub(super) fn update_ender_crystal(&mut self, w: &mut World) {

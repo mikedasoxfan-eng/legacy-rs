@@ -76,7 +76,7 @@ pub fn state_bytes(s: &super::PlayerState, e: &crate::entity::Entity, out: &mut 
         s.sleep_timer,
         s.inventory.armor_value(),
         s.inventory.current_item,
-        s.damage_remainder,
+        e.living.damage_remainder,
     ] {
         out.extend_from_slice(&v.to_le_bytes());
     }
@@ -427,11 +427,8 @@ pub fn player_bytes(scenario: &str, ticks: i32) -> Vec<u8> {
                         p.wake_up(&mut w, false, true);
                     }
                 }
-                if scenario == "night" && t == 100 {
-                    w.entities.insert(id, p.clone());
-                    w.perform_sleep_spawning();
-                    p = w.entities.remove(&id).unwrap();
-                }
+                // "night" t==100: SpawnerAnimals.performSleepSpawning was removed in 1.0,
+                // so the inherited call spawns nothing.
                 if scenario == "portal" {
                     let s = p.player_state_mut().unwrap();
                     s.input.forward = false;

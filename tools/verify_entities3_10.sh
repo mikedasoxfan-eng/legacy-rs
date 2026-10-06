@@ -22,9 +22,13 @@ for kind in slimebranches skeletonbranches wolfbranches vehiclebranches fireball
   echo "== entities3: $kind"
   if r10_oracle "$oracle" entitybranches181 "$kind" 0 "${kind}181.bin" && r10_compare "$cmp" "$kind" 0 "$out/${kind}181.bin"; then :; else fail=1; fi
 done
+echo "== entities3: model registry"
 if r10_oracle "$oracle" modelregistry3_181 modelregistry3_181.bin && r10_client "$beta" --mc 1.0 --modelregistrycheck "$out/modelregistry3_181.bin"; then :; else fail=1; fi
+echo "== entities3: new living renderers"
 if r10_oracle "$oracle" generaliving181 generaliving181.bin && r10_client "$beta" --mc 1.0 --newlivingcheck "$out/generaliving181.bin"; then :; else fail=1; fi
+echo "== entities3: sign renderers"
 if r10_oracle "$oracle" signrenderers sign-renderers.bin && r10_client "$beta" --mc 1.0 --signrenderercheck "$out/sign-renderers.bin"; then :; else fail=1; fi
+echo "== entities3: fish renderers"
 if r10_oracle "$oracle" fishrenderers fish-renderers.bin && r10_client "$beta" --mc 1.0 --fishrenderercheck "$out/fish-renderers.bin"; then :; else fail=1; fi
 [ "$fail" -eq 0 ] && echo "ENTITIES3 ALL FOCUSED CASES EXACT" || echo "ENTITIES3 SOME CASES DIFFER"
 exit "$fail"

@@ -17,7 +17,7 @@ public final class Mode_modelregistry10 {
    EntityOracle.i(o,20);
    for(int kind=0;kind<20;kind++) {
     ModelBase m=create(kind);EntityOracle.i(o,kind);EntityOracle.i(o,Trace10.namedInt("m.boxList.size()", m.boxList.size()));for(Object p:m.boxList)part((ModelRenderer)p,o);
-    Random r=new Random(42);for(int i=0;i<256;i++) {part(Harness10.removedRandomModel(m,r),o);EntityOracle.l(o,Trace10.namedLong("EntityOracle.rngState(r)", EntityOracle.rngState(r)));}
+    // ModelBase.func_35393_a (random part) was removed in 1.0; only the registered parts remain.
    }
   }
  }
