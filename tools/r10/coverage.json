@@ -11055,6 +11055,67 @@
   "r10world3 world/weather",
   "r10world3 worldheight"
  ],
+ "Container": [
+  "r10gui2 backgrounds original bytecode",
+  "r10gui2 boss original bytecode",
+  "r10gui2 brewing original bytecode",
+  "r10gui2 disconnected original bytecode",
+  "r10gui2 enchantment original bytecode",
+  "r10gui2 font original bytecode",
+  "r10gui2 gameover original bytecode",
+  "r10gui2 gradient original bytecode",
+  "r10gui2 hardcore original bytecode",
+  "r10gui2 inventory original bytecode",
+  "r10gui2 itemnames original bytecode",
+  "r10gui2 menudraw original bytecode",
+  "r10gui2 menustate original bytecode",
+  "r10gui2 registry original bytecode",
+  "r10gui2 settings original bytecode",
+  "r10gui2 slot original bytecode",
+  "r10gui2 statformats original bytecode",
+  "r10gui2 video original bytecode",
+  "r10gui2 win original bytecode",
+  "r10gui2 worldslot original bytecode",
+  "r10gui3 containerdraw original bytecode",
+  "r10gui3 containers original bytecode",
+  "r10gui3 creative original bytecode",
+  "r10gui3 creativegui original bytecode",
+  "r10gui3 dynamic original bytecode",
+  "r10gui3 enchantclick original bytecode",
+  "r10gui3 enchanting original bytecode",
+  "r10gui3 enchantmentdraw original bytecode",
+  "r10gui3 endcopy original bytecode",
+  "r10gui3 hud original bytecode",
+  "r10gui3 lifecycle original bytecode",
+  "r10gui3 lighting original bytecode",
+  "r10gui3 progress original bytecode",
+  "r10gui3 recipes original bytecode",
+  "r10gui3 regression boss original bytecode",
+  "r10gui3 regression brewing original bytecode",
+  "r10gui3 regression enchantment original bytecode",
+  "r10gui3 regression font original bytecode",
+  "r10gui3 regression registry original bytecode",
+  "r10gui3 regression win original bytecode",
+  "r10gui3 slots original bytecode",
+  "r10gui3 winflow original bytecode"
+ ],
+ "ContainerBrewingStand": [
+  "r10gui3 containers original bytecode",
+  "r10gui3 progress original bytecode"
+ ],
+ "ContainerCreative": [
+  "r10gui3 creative original bytecode",
+  "r10gui3 creativegui original bytecode"
+ ],
+ "ContainerEnchantment": [
+  "r10gui3 containers original bytecode",
+  "r10gui3 enchanting original bytecode",
+  "r10gui3 lifecycle original bytecode",
+  "r10gui3 progress original bytecode"
+ ],
+ "CraftingManager": [
+  "r10gui3 recipes original bytecode"
+ ],
  "DamageSource": [
   "entities2: damagesources",
   "entities2: dragondamage",
@@ -14906,7 +14967,8 @@
   "blocks3: release block and geometry definitions",
   "blocks3: sounds",
   "blocks3: stackdata11",
-  "blocks3: stacknbt11"
+  "blocks3: stacknbt11",
+  "r10gui3 recipes original bytecode"
  ],
  "GameSettings": [
   "r10gui2 registry original bytecode",
@@ -16735,12 +16797,24 @@
  "Gui": [
   "r10gui2 gradient original bytecode"
  ],
+ "GuiAchievement": [
+  "r10gui3 lighting original bytecode"
+ ],
+ "GuiAchievements": [
+  "r10gui3 lighting original bytecode"
+ ],
  "GuiBrewingStand": [
   "r10gui2 backgrounds original bytecode",
   "r10gui2 brewing original bytecode"
  ],
  "GuiChest": [
   "r10gui2 backgrounds original bytecode"
+ ],
+ "GuiContainer": [
+  "r10gui3 containerdraw original bytecode"
+ ],
+ "GuiContainerCreative": [
+  "r10gui3 creativegui original bytecode"
  ],
  "GuiCrafting": [
   "r10gui2 backgrounds original bytecode"
@@ -16753,6 +16827,12 @@
  ],
  "GuiDispenser": [
   "r10gui2 backgrounds original bytecode"
+ ],
+ "GuiEnchantment": [
+  "r10gui2 enchantment original bytecode",
+  "r10gui3 enchantclick original bytecode",
+  "r10gui3 enchantmentdraw original bytecode",
+  "r10gui3 regression enchantment original bytecode"
  ],
  "GuiFurnace": [
   "r10gui2 backgrounds original bytecode"
@@ -16774,9 +16854,20 @@
   "r10gui2 slot original bytecode",
   "r10gui2 worldslot original bytecode"
  ],
+ "GuiStats": [
+  "r10gui3 lighting original bytecode"
+ ],
  "GuiVideoSettings": [
   "r10gui2 registry original bytecode",
   "r10gui2 video original bytecode"
+ ],
+ "GuiWinGame": [
+  "r10gui2 brewing original bytecode",
+  "r10gui2 win original bytecode",
+  "r10gui3 endcopy original bytecode",
+  "r10gui3 regression brewing original bytecode",
+  "r10gui3 regression win original bytecode",
+  "r10gui3 winflow original bytecode"
  ],
  "GuiWorldSlot": [
   "r10gui2 worldslot original bytecode"
@@ -20976,7 +21067,8 @@
   "blocks3: release block and geometry definitions",
   "blocks3: sounds",
   "blocks3: stackdata11",
-  "blocks3: stacknbt11"
+  "blocks3: stacknbt11",
+  "r10gui3 recipes original bytecode"
  ],
  "RecipesIngots": [
   "blocks3: animation",
@@ -21003,7 +21095,8 @@
   "blocks3: release block and geometry definitions",
   "blocks3: sounds",
   "blocks3: stackdata11",
-  "blocks3: stacknbt11"
+  "blocks3: stacknbt11",
+  "r10gui3 recipes original bytecode"
  ],
  "RegionFileCache": [
   "r10world3 biomecache/-4172144997902289642",
@@ -21333,6 +21426,9 @@
  ],
  "RenderEnderCrystal": [
   "RenderEnderCrystal"
+ ],
+ "RenderEngine": [
+  "r10gui3 dynamic original bytecode"
  ],
  "RenderFireball": [
   "RenderFireball"
@@ -21900,7 +21996,8 @@
   "blocks3: release block and geometry definitions",
   "blocks3: sounds",
   "blocks3: stackdata11",
-  "blocks3: stacknbt11"
+  "blocks3: stacknbt11",
+  "r10gui3 slots original bytecode"
  ],
  "SlotBrewingStandPotion": [
   "blocks3: animation",
@@ -21927,7 +22024,17 @@
   "blocks3: release block and geometry definitions",
   "blocks3: sounds",
   "blocks3: stackdata11",
-  "blocks3: stacknbt11"
+  "blocks3: stacknbt11",
+  "r10gui3 slots original bytecode"
+ ],
+ "SlotCrafting": [
+  "r10gui3 slots original bytecode"
+ ],
+ "SlotEnchantment": [
+  "r10gui3 slots original bytecode"
+ ],
+ "SlotEnchantmentTable": [
+  "r10gui3 lifecycle original bytecode"
  ],
  "SpawnerAnimals": [
   "entities2: fortressspawns",
