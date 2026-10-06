@@ -1,0 +1,95 @@
+[package]
+name = "worldgen10"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+repository.workspace = true
+publish.workspace = true
+description = "Bit-exact port of the Minecraft 1.0 simulation: world generation, ticking, entities, the player, saves"
+autobins = false
+
+[[bin]]
+name = "playerdamage8_10"
+path = "src/bin/playerdamage8_181.rs"
+
+[[bin]]
+name = "controllerlife10"
+path = "src/bin/controllerlife181.rs"
+
+[[bin]]
+name = "inventorybounds10"
+path = "src/bin/inventorybounds181.rs"
+
+[[bin]]
+name = "playersp10"
+path = "src/bin/playersp181.rs"
+
+[[bin]]
+name = "guichest10"
+path = "src/bin/guichest181.rs"
+
+[[bin]]
+name = "controllermode10"
+path = "src/bin/controllermode181.rs"
+
+[lib]
+name = "worldgen"
+
+[[bin]]
+name = "compare10"
+path = "src/bin/compare.rs"
+
+[[bin]]
+name = "container_compare10"
+path = "src/bin/container_compare.rs"
+
+[[bin]]
+name = "entity_compare10"
+path = "src/bin/entity_compare181.rs"
+
+[dependencies]
+flate2 = "1.1.10"
+
+[[bin]]
+name = "terrain_compare10"
+path = "src/bin/terrain_compare.rs"
+
+[[bin]]
+name = "playercore10"
+path = "src/bin/playercore.rs"
+
+[[bin]]
+name = "creative10"
+path = "src/bin/creative.rs"
+
+[[bin]]
+name = "playertick10"
+path = "src/bin/playertick181.rs"
+
+[[bin]]
+name = "playerlist10"
+path = "src/bin/playerlist181.rs"
+
+[[bin]]
+name = "playercombat10"
+path = "src/bin/playercombat181.rs"
+
+[[bin]]
+name = "controller10"
+path = "src/bin/controller181.rs"
+
+[[bin]]
+name = "chesthooks10"
+path = "src/bin/chesthooks181.rs"
+
+[[bin]]
+name = "playerstate10"
+path = "src/bin/playerstate181.rs"
+
+[[bin]]
+name = "controllerinput10"
+path = "src/bin/controllerinput181.rs"
+
+[[bin]]
+name = "inventoryinterfaces10"
+path = "src/bin/inventoryinterfaces181.rs"

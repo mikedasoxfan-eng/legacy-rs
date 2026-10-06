@@ -28,22 +28,23 @@ impl Screen for GuiVersionSelect {
         let (w, h) = (self.base.width, self.base.height);
         self.base.buttons.push(GuiButton::new(0, w / 2 - 100, h / 4 + 48, "Minecraft Beta 1.7.3"));
         self.base.buttons.push(GuiButton::new(1, w / 2 - 100, h / 4 + 72, "Minecraft Beta 1.8.1"));
-        self.base.buttons.push(GuiButton::new(3, w / 2 - 100, h / 4 + 96, "Minecraft Beta 1.8.1 Enhanced"));
-        self.base.buttons.push(GuiButton::new(2, w / 2 - 100, h / 4 + 120 + 12, "Quit"));
+        self.base.buttons.push(GuiButton::new(4, w / 2 - 100, h / 4 + 96, "Minecraft 1.0"));
+        self.base.buttons.push(GuiButton::new(3, w / 2 - 100, h / 4 + 120, "Minecraft Beta 1.8.1 Enhanced"));
+        self.base.buttons.push(GuiButton::new(2, w / 2 - 100, h / 4 + 144 + 12, "Quit"));
     }
 
     fn action_performed(&mut self, ui: &mut Ui, id: i32) {
         match id {
             // No world is open, so closing this screen shows the b1.7.3 title screen.
             0 => ui.display(None),
-            1 | 3 => {
-                let version = if id == 3 { "b1.8.1e" } else { "b1.8.1" };
+            1 | 3 | 4 => {
+                let version = match id { 3 => "b1.8.1e", 4 => "1.0", _ => "b1.8.1" };
                 let started = std::env::current_exe()
                     .map_err(|e| e.to_string())
                     .and_then(|exe| std::process::Command::new(exe).args(["--mc", version]).spawn().map_err(|e| e.to_string()));
                 match started {
                     Ok(_) => ui.actions.push(Action::Shutdown),
-                    Err(e) => self.error = Some(format!("Could not start Beta 1.8.1: {e}")),
+                    Err(e) => self.error = Some(format!("Could not start {version}: {e}")),
                 }
             }
             2 => ui.actions.push(Action::Shutdown),

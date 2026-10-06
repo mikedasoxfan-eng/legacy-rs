@@ -1,0 +1,681 @@
+//! `beta --guishot <script> <outdir>`: drive the GUI from a scene script and save each `shot`
+//! as a PNG, rendered off-screen at 854x480. `tools/oracle/guishot.sh` runs the same script
+//! through the original client, so the two sets of images can be diffed pixel for pixel.
+//!
+//! Script lines (whitespace separated, `#` comments):
+//!   saves <dir>                   world list folder
+//!   millis <n>                    System.currentTimeMillis() for animations
+//!   splash <text...>              title-screen splash text for the next `open title`
+//!   open title|options|video|controls|select|create|texturepacks
+//!   open rename <folder>          GuiRenameWorld for a save folder
+//!   mojang                        draw the startup Mojang logo instead of a screen
+//!   loading <progress> <title>|<text>
+//!   mouse <x> <y>                 GUI-scaled mouse position
+//!   down / up                     left button state (Mouse.isButtonDown)
+//!   click / release               mouseClicked / mouseMovedOrUp with button 0
+//!   key <lwjgl code> <char code>  keyTyped
+//!   update [n]                    updateScreen n times
+//!   shot <name>                   draw a frame and capture it
+
+use super::gl::Gl;
+use super::loading::LoadingScreen;
+use super::screens;
+use super::system::{GuiSystem, Resources};
+use crate::render::gpu::Image;
+
+pub const SIZE: (u32, u32) = (854, 480);
+
+pub fn run(script: &str, out_dir: &std::path::Path) -> Result<(), String> {
+    let text = std::fs::read_to_string(script).map_err(|e| format!("{script}: {e}"))?;
+    std::fs::create_dir_all(out_dir).map_err(|e| e.to_string())?;
+    let mut jar = crate::assets::Jar::open()?;
+    let (images, font_txt, lang, splashes) = super::load_resources(&mut jar)?;
+    let instance =
+        wgpu::Instance::new(wgpu::InstanceDescriptor::new_without_display_handle_from_env());
+    let adapter =
+        pollster::block_on(instance.request_adapter(&wgpu::RequestAdapterOptions::default()))
+            .map_err(|e| format!("no GPU adapter: {e}"))?;
+    let (device, queue) = pollster::block_on(adapter.request_device(&Default::default()))
+        .map_err(|e| e.to_string())?;
+    eprintln!(
+        "guishot: {:?} on {}",
+        adapter.get_info().backend,
+        adapter.get_info().name
+    );
+    let format = wgpu::TextureFormat::Rgba8Unorm;
+    let target = device.create_texture(&wgpu::TextureDescriptor {
+        label: Some("guishot"),
+        size: wgpu::Extent3d {
+            width: SIZE.0,
+            height: SIZE.1,
+            depth_or_array_layers: 1,
+        },
+        mip_level_count: 1,
+        sample_count: 1,
+        dimension: wgpu::TextureDimension::D2,
+        format,
+        usage: wgpu::TextureUsages::RENDER_ATTACHMENT | wgpu::TextureUsages::COPY_SRC,
+        view_formats: &[],
+    });
+    let view = target.create_view(&Default::default());
+    let mut sys = GuiSystem::new(
+        &device,
+        &queue,
+        format,
+        Resources {
+            images,
+            font_txt,
+            lang,
+            splashes,
+        },
+        Default::default(),
+        (SIZE.0 as i32, SIZE.1 as i32),
+        "saves".into(),
+        0,
+        std::env::var("GUI_MSAA")
+            .ok()
+            .and_then(|v| v.parse().ok())
+            .unwrap_or(1),
+    );
+    sys.ui.fixed_date = true;
+    sys.renderer.gl_orientation = true;
+    let mut splash = String::from("missingno");
+    let (mut mx, mut my) = (-1, -1);
+    let mut loading: Option<LoadingScreen> = None;
+    let mut mojang = false;
+    // GuiShot keeps one EntityPlayerSP and one world for the whole script: hud fields that a
+    // command does not set keep their previous values, and `water` places a block at the eye.
+    let mut hud_player: Option<super::ingame::HudPlayer> = None;
+    let mut hud_water: std::collections::HashSet<(i32, i32, i32)> = Default::default();
+    let mut toast_mode = false;
+    let mut hud: Option<super::ingame::HudPlayer> = None;
+    let mut ingame = super::ingame::GuiIngame::new();
+    let mut clear_level = 0.0f64;
+    let mut lightmap_pattern: Option<i32> = None;
+    // Script commands run inside the current frame's GUI callback. Settings
+    // changed by them affect the world-renderer mask on the following frame.
+    let mut frame_anaglyph = false;
+    let mut container: Option<(
+        worldgen::container::Container,
+        worldgen::container::InventoryPlayer,
+    )> = None;
+    let mut preview = worldgen::container::PlayerPreview::default();
+    for line in text.lines() {
+        let line = line.split('#').next().unwrap().trim();
+        if line.is_empty() {
+            continue;
+        }
+        let (cmd, rest) = line.split_once(' ').unwrap_or((line, ""));
+        let arg = |i: usize| rest.split_whitespace().nth(i).unwrap_or("").to_string();
+        match cmd {
+            "lightmap" => {lightmap_pattern=Some(rest.parse().map_err(|_| "lightmap pattern")?);}
+            "inventorymode" => {
+                sys.ui.container_snapshot.as_mut().ok_or("inventorymode requires container")?.creative = rest == "creative";
+            }
+            "saves" => {
+                // Relative to the script's folder.
+                let base = std::path::Path::new(script)
+                    .parent()
+                    .unwrap_or(std::path::Path::new("."));
+                sys.ui.saves_dir = base.join(rest);
+            }
+            "packs" => {
+                let base = std::path::Path::new(script).parent().unwrap_or(std::path::Path::new("."));
+                sys.ui.packs = crate::texture_packs::TexturePackList::new(&base.join(rest), &sys.ui.settings.skin);
+            }
+            "pack" => {
+                sys.ui.packs.update();
+                let i = sys.ui.packs.available.iter().position(|p| p.name == rest).ok_or("pack missing")?;
+                sys.ui.packs.select(i);
+                sys.refresh_textures(&device, &queue)?;
+            }
+            "repeatstate" => {
+                let expected = rest == "on";
+                if sys.screen.as_ref().is_some_and(|s| s.repeats_keys()) != expected { return Err("keyboard repeat state differs".into()); }
+            }
+            "fontstart" => {
+                sys.ui.settings.anaglyph = rest == "on";
+                let mut jar = crate::assets::Jar::open()?;
+                sys.ui.font = super::font::FontRenderer::new_with_anaglyph(&jar.image("font/default.png")?, sys.ui.texture("font/default.png"), &jar.text("font.txt")?, sys.ui.settings.anaglyph);
+                sys.refresh_textures(&device, &queue)?;
+            }
+            "message" => ingame.add_chat_message(&sys.ui, rest.into()),
+            "anaglyph" => {
+                sys.ui.settings.anaglyph = rest == "on";
+                sys.refresh_textures(&device, &queue)?;
+            }
+            "sessionless" | "texturecheck" => {},
+            "millis" => sys.ui.millis = rest.parse().map_err(|_| "millis")?,
+            "toast" => {
+                toast_mode = true;
+                sys.toast = Default::default();
+                let index = arg(1).parse().map_err(|_| "toast index")?;
+                if arg(0) == "information" { sys.toast.queue_information(&sys.ui,index); }
+                else { sys.toast.queue_taken(&sys.ui,index); }
+            }
+            "splash" => splash = rest.to_string(),
+            "mojang" => {
+                mojang = true;
+                loading = None;
+            }
+            "loading" => {
+                let progress: i32 = arg(0).parse().map_err(|_| "loading progress")?;
+                let (t, s) = rest
+                    .split_once(' ')
+                    .map(|(_, r)| r)
+                    .unwrap_or("")
+                    .split_once('|')
+                    .unwrap_or(("", ""));
+                loading = Some(LoadingScreen {
+                    title: t.into(),
+                    text: s.into(),
+                    progress,
+                });
+                mojang = false;
+            }
+            "open" => {
+                toast_mode = false;
+                mojang = false;
+                loading = None;
+                hud = None;
+                let title: Box<dyn super::Screen> =
+                    Box::new(screens::main_menu::GuiMainMenu::with_splash(&splash));
+                let s: Box<dyn super::Screen> = match arg(0).as_str() {
+                    "creative" | "inventory" | "crafting" | "chest" | "largechest" | "furnace" | "dispenser" => {
+                        preview = Default::default();
+                        use worldgen::container::*;
+                        let kind = match arg(0).as_str() {
+                            "inventory" => ContainerKind::Player,
+                            "creative" => ContainerKind::Creative,
+                            "crafting" => ContainerKind::Workbench,
+                            "chest" => ContainerKind::Chest { rows: 3 },
+                            "largechest" => ContainerKind::Chest { rows: 6 },
+                            "furnace" => ContainerKind::Furnace,
+                            _ => ContainerKind::Dispenser,
+                        };
+                        let c = Container::new(kind, 0);
+                        let p = InventoryPlayer::default();
+                        let snapshot = c.snapshot(&p);
+                        let screen = Box::new(screens::container::GuiContainer::new(&snapshot));
+                        sys.ui.container_snapshot = Some(snapshot);
+                        sys.ui.world_open = true;
+                        container = Some((c, p));
+                        screen
+                    }
+                    "chat" => { sys.ui.world_open = true; Box::new(screens::chat::GuiChat::default()) },
+                    "title" => title,
+                    "sign" => {sys.ui.world_open=true;Box::new(screens::edit_sign::GuiEditSign::new((0,64,0),arg(1).parse().map_err(|_|"sign block")?,arg(2).parse().map_err(|_|"sign metadata")?,Default::default()))},
+                    "options" => Box::new(screens::options::GuiOptions::new(title)),
+                    "video" => Box::new(screens::options::GuiVideoSettings::new(title)),
+                    "controls" => Box::new(screens::options::GuiControls::new(title)),
+                    "select" => Box::new(screens::select_world::GuiSelectWorld::new(title)),
+                    "create" => Box::new(screens::select_world::GuiCreateWorld::new(title)),
+                    "rename" => Box::new(screens::select_world::GuiRenameWorld::new(title, arg(1))),
+                    "texturepacks" => Box::new(screens::texture_packs::GuiTexturePacks::new(title)),
+                    "achievements" => {
+                        sys.ui.world_open = true;
+                        Box::new(screens::achievements::GuiAchievements::new())
+                    }
+                    "gameover" => Box::new(screens::game_over::GuiGameOver::new()),
+                    "stats" => {
+                        sys.ui.world_open = true;
+                        Box::new(screens::stats::GuiStats::new(title))
+                    }
+                    other => return Err(format!("unknown screen {other}")),
+                };
+                let mut acts = Vec::new();
+                sys.display_gui_screen(Some(s), &mut acts);
+            }
+            // GuiShot's world command reopens the same save with the same EntityPlayerSP, so hud
+            // state and placed water survive it; it installs a new PlayerControllerSP (survival)
+            // and changeWorld calls preparePlayerToSpawn (health 20).
+            "world" => {
+                sys.ui.world_open = true;
+                if let Some(p) = &mut hud_player {
+                    p.survival = true;
+                    p.health = 20;
+                }
+            }
+            // GuiShot quits (changeWorld1(null) drops EntityPlayerSP) and deletes its scratch
+            // world, so the next world starts with a new player and no placed water; the port's
+            // world command never writes a save.
+            "dropworld" => {
+                sys.ui.world_open = false;
+                hud_player = None;
+                hud_water.clear();
+            }
+            "statsreset" => sys.ui.stats = Default::default(),
+            "stat" => {
+                let id: i32 = arg(0).parse().map_err(|_| "stat id")?;
+                sys.ui.stats.add(id, arg(1).parse().map_err(|_| "stat value")?);
+            }
+            "stack" => {
+                let (c, p) = container.as_mut().ok_or("stack requires container")?;
+                let id: i32 = arg(1).parse().map_err(|_| "stack id")?;
+                let stack = if id < 0 {
+                    None
+                } else {
+                    Some(worldgen::container::ItemStack::new(
+                        id,
+                        arg(2).parse().map_err(|_| "stack count")?,
+                        arg(3).parse().map_err(|_| "stack damage")?,
+                    ))
+                };
+                c.put_stack(p, arg(0).parse().map_err(|_| "stack slot")?, stack);
+                sys.ui.container_snapshot = Some(c.snapshot(p));
+            }
+            "cursor" => {
+                let (c, p) = container.as_mut().ok_or("cursor requires container")?;
+                let id: i32 = arg(0).parse().map_err(|_| "cursor id")?;
+                p.cursor = if id < 0 {
+                    None
+                } else {
+                    Some(worldgen::container::ItemStack::new(
+                        id,
+                        arg(1).parse().map_err(|_| "cursor count")?,
+                        arg(2).parse().map_err(|_| "cursor damage")?,
+                    ))
+                };
+                sys.ui.container_snapshot = Some(c.snapshot(p));
+            }
+            "furnace" => {
+                let (c, p) = container.as_mut().ok_or("furnace requires container")?;
+                for i in 0..3 {
+                    c.progress[i] = arg(i).parse().map_err(|_| "furnace progress")?;
+                }
+                sys.ui.container_snapshot = Some(c.snapshot(p));
+            }
+            "pose" => {
+                preview = worldgen::container::PlayerPreview {
+                    age: arg(0).parse().map_err(|_| "pose age")?,
+                    limb_swing: arg(1).parse().map_err(|_| "pose swing")?,
+                    limb_amount: arg(2).parse().map_err(|_| "pose amount")?,
+                    attack: arg(3).parse().map_err(|_| "pose attack")?,
+                    riding: arg(4) == "on",
+                    sneak: arg(5) == "on",
+                    hurt_time: if arg(6).is_empty() {
+                        0
+                    } else {
+                        arg(6).parse().map_err(|_| "pose hurt")?
+                    },
+                    brightness: preview.brightness,
+                    death_time: if arg(7).is_empty() { 0 } else { arg(7).parse().map_err(|_| "pose death")? },
+                };
+            }
+            "previewlight" => {
+                let level: usize = rest.parse().map_err(|_| "previewlight level")?;
+                if level > 15 { return Err("previewlight level out of range".into()); }
+                let f = 1.0f32 - level as f32 / 15.0;
+                preview.brightness = (1.0 - f) / (f * 3.0 + 1.0);
+            }
+            "screenstate" => {
+                if sys.screen.is_some() != (rest == "open") { return Err(format!("screen state differs: {rest}")); }
+            }
+            "hud" => {
+                mojang = false;
+                loading = None;
+                let mut p = hud_player.clone().unwrap_or_default();
+                let mut water: Option<bool> = None;
+                for kv in rest.split_whitespace() {
+                    let (k, v) = kv.split_once('=').ok_or("hud key=value")?;
+                    let i = || v.parse::<i32>().map_err(|_| format!("hud {k}"));
+                    match k {
+                        "health" => p.health = i()?,
+                        "food" => p.food_level = i()?,
+                        "saturation" => p.food_saturation = v.parse().map_err(|_| "hud saturation")?,
+                        "xp" => p.xp_points = i()?,
+                        "level" => p.xp_level = i()?,
+                        "seed" => p.seed = v.parse().map_err(|_| "hud seed")?,
+                        "armor" => p.armor = i()?,
+                        "air" => p.air = i()?,
+                        "water" => water = Some(i()? != 0),
+                        "creative" => p.survival = i()? == 0,
+                        "poison" => p.poison = i()? != 0,
+                        "hunger" => p.hunger = i()? != 0,
+                        "regen" => p.regeneration = i()? != 0,
+                        "nausea" => p.nausea = i()? != 0,
+                        "portal" => p.time_in_portal = v.parse().map_err(|_| "hud portal")?,
+                        "prev_portal" => p.prev_time_in_portal = v.parse().map_err(|_| "hud prev_portal")?,
+                        "sleep" => p.sleep_timer = i()?,
+                        "prev" => p.prev_health = i()?,
+                        "hearts_life" => p.hearts_life = i()?,
+                        "item" => p.current_item = i()?,
+                        "helmet" => p.helmet = Some(i()?).filter(|&id| id >= 0),
+                        "brightness" => p.brightness = v.parse().map_err(|_| "hud brightness")?,
+                        "pos" => {let pos:Vec<_>=v.split(',').map(str::parse::<f64>).collect::<Result<_,_>>().map_err(|_|"hud pos")?;p.pos=pos.try_into().map_err(|_|"hud pos requires three coordinates")?;}
+                        _ => return Err(format!("unknown hud field {k}")),
+                    }
+                }
+                // EntityPlayer.getEyeHeight is 0.12; the block at the eye decides isInsideOfMaterial.
+                let eye = (p.pos[0].floor() as i32, (p.pos[1] + 0.12f32 as f64).floor() as i32, p.pos[2].floor() as i32);
+                match water {
+                    Some(true) => { hud_water.insert(eye); }
+                    Some(false) => { hud_water.remove(&eye); }
+                    None => {}
+                }
+                p.head_in_water = hud_water.contains(&eye);
+                hud_player = Some(p.clone());
+                hud = Some(p);
+            }
+            "clear" => clear_level = rest.parse::<f64>().map_err(|_| "clear")? / 255.0,
+            "white" => {
+                let (w, h) = if rest == "mob/char.png" {
+                    (64, 32)
+                } else {
+                    (256, 256)
+                };
+                sys.renderer.update_texture(
+                    &queue,
+                    sys.ui.texture(rest),
+                    &Image {
+                        width: w,
+                        height: h,
+                        rgba: vec![255; (w * h * 4) as usize],
+                    },
+                );
+            }
+            "counter" => ingame.set_update_counter(rest.parse().map_err(|_| "counter")?),
+            "mouse" => {
+                mx = arg(0).parse().map_err(|_| "mouse x")?;
+                my = arg(1).parse().map_err(|_| "mouse y")?;
+            }
+            "down" => sys.ui.mouse_down = true,
+            "up" => sys.ui.mouse_down = false,
+            "click" => {
+                sys.mouse_event(
+                    mx,
+                    my,
+                    if rest.is_empty() {
+                        0
+                    } else {
+                        rest.parse().map_err(|_| "click button")?
+                    },
+                    true,
+                );
+                let acts = sys.process_actions();
+                if acts.iter().any(|a| matches!(a, super::system::GameAction::RefreshTextures)) { sys.refresh_textures(&device, &queue)?; }
+            }
+            "wheel" => {if let Some(s)=sys.screen.as_mut(){s.mouse_scrolled(&mut sys.ui,rest.parse().map_err(|_|"wheel")?);}},
+            "shift" => sys.ui.shift_down = rest == "on",
+            "release" => {
+                sys.mouse_event(mx, my, 0, false);
+                let acts = sys.process_actions();
+                if acts.iter().any(|a| matches!(a, super::system::GameAction::RefreshTextures)) { sys.refresh_textures(&device, &queue)?; }
+            }
+            "key" => {
+                let code: i32 = arg(0).parse().map_err(|_| "key code")?;
+                let ch: u32 = arg(1).parse().map_err(|_| "key char")?;
+                sys.key_event(char::from_u32(ch).unwrap_or('\0'), code);
+                let acts = sys.process_actions();
+                if acts.iter().any(|a| matches!(a, super::system::GameAction::RefreshTextures)) { sys.refresh_textures(&device, &queue)?; }
+            }
+            "update" => {
+                let n: usize = if rest.is_empty() {
+                    1
+                } else {
+                    rest.parse().map_err(|_| "update n")?
+                };
+                for _ in 0..n {
+                    sys.update_screen();
+                    if sys.ui.actions.iter().any(|a| matches!(a,super::Action::RedirectInventory)) {
+                        sys.process_actions();
+                        if let Some(s)=sys.ui.container_snapshot.as_ref() {
+                            container=Some((worldgen::container::Container::new(s.kind,s.window),s.player_inventory.clone()));
+                        }
+                    }
+                }
+            }
+            "shot" => {
+                // A normal application frame runs between scripted captures.
+                // It disables unit 1 before GUI drawing; the first capture just
+                // after `world` still precedes its first lightmap binding.
+                sys.ui.gl.lightmap_enabled = false;
+                // The intervening original world frame leaves the stereo RGB
+                // mask active. glClear and the title's first cube sample use it.
+                if sys.ui.world_open {
+                    sys.ui.gl.color_mask = if frame_anaglyph { 7 } else { 15 };
+                }
+                if let Some(pattern)=lightmap_pattern {
+                    sys.ui.gl.lightmap_texels=Some(Box::new(std::array::from_fn(|i| {
+                        let (x,y)=((i%16) as u32,(i/16) as u32);
+                        let (r,g,b)=match pattern {
+                            0=>(x*17,y*17,(x^y)*17),
+                            1=>(255-x*13,31+y*11,17+x*7+y*3),
+                            2=>(128,64,192),
+                            _=>(x+y*16,255-(x+y*16),(x*19+y*23)&255),
+                        };
+                        0xff000000|(r<<16)|(g<<8)|b
+                    })));
+                }
+                sys.sync_pack_icons(&device, &queue);
+                if sys.ui.actions.iter().any(|a| matches!(a, super::Action::RefreshTextures)) { sys.refresh_textures(&device, &queue)?; }
+                sys.ui.gl.begin_frame();
+                let clear;
+                if toast_mode {
+                    sys.toast.draw(&mut sys.ui);
+                    clear = Some([clear_level, clear_level, clear_level, 0.0]);
+                } else if mojang {
+                    sys.draw_mojang_logo();
+                    clear = Some([clear_level, clear_level, clear_level, 0.0]);
+                } else if let Some(p) = &hud {
+                    ingame = super::ingame::GuiIngame::new_with_counter(&ingame);
+                    ingame.render_game_overlay(&mut sys.ui, 0.0, false, p, &Default::default());
+                    clear = Some([clear_level, clear_level, clear_level, 0.0]);
+                } else if let Some(l) = &loading {
+                    l.draw(&mut sys.ui);
+                    clear = Some([clear_level, clear_level, clear_level, 0.0]);
+                } else {
+                    // In game, renderWorld and the HUD leave depth testing on before the screen draws.
+                    if sys.ui.world_open {
+                        sys.ui.gl.depth_test = true;
+                    }
+                    sys.draw_screen(mx, my, 0.0);
+                    let acts = sys.process_actions();
+                if acts.iter().any(|a| matches!(a, super::system::GameAction::RefreshTextures)) { sys.refresh_textures(&device, &queue)?; }
+                    clear = Some([clear_level, clear_level, clear_level, 0.0]);
+                }
+                sys.renderer
+                    .render(&device, &queue, &view, SIZE, &sys.ui.gl, clear);
+                let mut img = read_back(&device, &queue, &target);
+                if std::env::var_os("GUI_CAPTURE_ALPHA").is_some() {
+                    let alpha: Vec<_> = img.rgba.chunks_exact(4).map(|p| p[3]).collect();
+                    std::fs::write(out_dir.join(format!("{}.alpha", rest.trim())), alpha).map_err(|e| e.to_string())?;
+                }
+                for px in img.rgba.chunks_exact_mut(4) { px[3] = 255; }
+                let path = out_dir.join(format!("{}.png", rest.trim()));
+                crate::assets::save_png(&img, &path).map_err(|e| e.to_string())?;
+                println!("rust: {}", path.display());
+                if sys.ui.world_open {
+                    sys.ui.gl.lightmap_texels = Some(Box::new([0xff000000; 256]));
+                }
+                frame_anaglyph = sys.ui.settings.anaglyph;
+            }
+            other => return Err(format!("unknown script command {other}")),
+        }
+        for command in sys.take_container_commands() {
+            if let Some((c, p)) = container.as_mut() {
+                match command {
+                    worldgen::container::ContainerCommand::Click {
+                        window,
+                        slot,
+                        button,
+                        shift,
+                    } if window == c.window => {
+                        c.slot_click(p, slot, button, shift);
+                        sys.update_container(c.snapshot(p));
+                    }
+                    worldgen::container::ContainerCommand::ScrollCreative {window,position} if window==c.window=>{c.scroll_creative(position);sys.update_container(c.snapshot(p));}
+                    worldgen::container::ContainerCommand::Close { window }
+                    | worldgen::container::ContainerCommand::CloseFromGui { window }
+                        if window == c.window =>
+                    {
+                        c.close(p, false);
+                        if matches!(command,worldgen::container::ContainerCommand::CloseFromGui { .. }) {c.close(p,false);}
+                    }
+                    _ => {}
+                }
+            }
+        }
+        if let Some(s) = sys.ui.container_snapshot.as_mut() {
+            s.preview = preview;
+        }
+    }
+    let _ = Gl::new;
+    Ok(())
+}
+
+pub(crate) fn read_back(device: &wgpu::Device, queue: &wgpu::Queue, tex: &wgpu::Texture) -> Image {
+    let (w, h) = (tex.width(), tex.height());
+    let row = (w * 4).div_ceil(256) * 256;
+    let buf = device.create_buffer(&wgpu::BufferDescriptor {
+        label: Some("guishot readback"),
+        size: (row * h) as u64,
+        usage: wgpu::BufferUsages::COPY_DST | wgpu::BufferUsages::MAP_READ,
+        mapped_at_creation: false,
+    });
+    let mut enc = device.create_command_encoder(&Default::default());
+    enc.copy_texture_to_buffer(
+        wgpu::TexelCopyTextureInfo {
+            texture: tex,
+            mip_level: 0,
+            origin: wgpu::Origin3d::ZERO,
+            aspect: wgpu::TextureAspect::All,
+        },
+        wgpu::TexelCopyBufferInfo {
+            buffer: &buf,
+            layout: wgpu::TexelCopyBufferLayout {
+                offset: 0,
+                bytes_per_row: Some(row),
+                rows_per_image: Some(h),
+            },
+        },
+        wgpu::Extent3d {
+            width: w,
+            height: h,
+            depth_or_array_layers: 1,
+        },
+    );
+    queue.submit([enc.finish()]);
+    let slice = buf.slice(..);
+    slice.map_async(wgpu::MapMode::Read, |_| {});
+    let _ = device.poll(wgpu::PollType::wait_indefinitely());
+    let data = slice.get_mapped_range().expect("mapped");
+    let mut rgba = Vec::with_capacity((w * h * 4) as usize);
+    for y in 0..h {
+        let r = &data[(y * row) as usize..(y * row + w * 4) as usize];
+        rgba.extend_from_slice(r);
+    }
+    {
+        // Rendered in OpenGL orientation (see GuiRenderer::gl_orientation): flip back.
+        let row = (w * 4) as usize;
+        let mut flipped = Vec::with_capacity(rgba.len());
+        for y in (0..h as usize).rev() {
+            flipped.extend_from_slice(&rgba[y * row..(y + 1) * row]);
+        }
+        rgba = flipped;
+    }
+    Image {
+        width: w,
+        height: h,
+        rgba,
+    }
+}
+
+/// `beta --guidiff <java dir> <rust dir> [diff dir]`: compare same-named PNGs pixel by pixel.
+/// Differences are drawn red over a dimmed copy of the Java image in the diff dir.
+pub fn diff(
+    java_dir: &std::path::Path,
+    rust_dir: &std::path::Path,
+    diff_dir: Option<&std::path::Path>,
+) -> bool {
+    let list = |d: &std::path::Path| -> Vec<String> {
+        std::fs::read_dir(d)
+            .map(|rd| {
+                rd.filter_map(|e| e.ok())
+                    .map(|e| e.file_name().to_string_lossy().into_owned())
+                    .filter(|n| n.ends_with(".png"))
+                    .collect()
+            })
+            .unwrap_or_default()
+    };
+    let mut names = list(java_dir);
+    names.extend(list(rust_dir));
+    names.sort();
+    names.dedup();
+    let mut all = true;
+    let mut near: Vec<String> = Vec::new();
+    for n in names {
+        let load = |p: std::path::PathBuf| -> Option<Image> {
+            let bytes = std::fs::read(p).ok()?;
+            Some(crate::assets::decode_png_pub(&bytes))
+        };
+        let (Some(j), Some(r)) = (load(java_dir.join(&n)), load(rust_dir.join(&n))) else {
+            println!("{n}: missing on one side");
+            all = false;
+            continue;
+        };
+        if (j.width, j.height) != (r.width, r.height) {
+            println!(
+                "{n}: size differs ({}x{} vs {}x{})",
+                j.width, j.height, r.width, r.height
+            );
+            all = false;
+            continue;
+        }
+        let mut bad = 0usize;
+        let mut max = 0u8;
+        let mut first = None;
+        let mut out = Image {
+            width: j.width,
+            height: j.height,
+            rgba: j.rgba.clone(),
+        };
+        for i in 0..(j.width * j.height) as usize {
+            let a = &j.rgba[i * 4..i * 4 + 3];
+            let b = &r.rgba[i * 4..i * 4 + 3];
+            let d = a.iter().zip(b).map(|(x, y)| x.abs_diff(*y)).max().unwrap();
+            if d > 0 {
+                bad += 1;
+                max = max.max(d);
+                if first.is_none() {
+                    first = Some((
+                        i as u32 % j.width,
+                        i as u32 / j.width,
+                        [a[0], a[1], a[2]],
+                        [b[0], b[1], b[2]],
+                    ));
+                }
+                out.rgba[i * 4..i * 4 + 4].copy_from_slice(&[255, 0, 0, 255]);
+            } else {
+                for c in &mut out.rgba[i * 4..i * 4 + 3] {
+                    *c /= 3;
+                }
+            }
+        }
+        if bad == 0 {
+            println!("{n}: EXACT");
+        } else if max <= 1 && bad <= 500 {
+            // GPU lighting arithmetic on lit 3D item icons can round a few pixels by one level
+            // (about 66 pixels per block icon at a 180 degree light rotation). Reported apart.
+            near.push(n.clone());
+            println!("{n}: within one level ({bad} pixels)");
+        } else {
+            all = false;
+            let (x, y, a, b) = first.unwrap();
+            println!(
+                "{n}: {bad} pixels differ (max channel diff {max}); first at ({x},{y}) java {a:?} rust {b:?}"
+            );
+            if let Some(d) = diff_dir {
+                let _ = std::fs::create_dir_all(d);
+                let _ = crate::assets::save_png(&out, &d.join(&n));
+            }
+        }
+    }
+    if all && !near.is_empty() {
+        println!(
+            "(exact except {} scene(s) within one color level)",
+            near.len()
+        );
+    }
+    all
+}
