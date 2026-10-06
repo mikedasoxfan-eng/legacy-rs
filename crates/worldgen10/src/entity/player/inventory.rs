@@ -30,6 +30,9 @@ impl ItemStack {
             animations: 0,
         }
     }
+    pub fn copy_stack(&self) -> Self {
+        Self::new(self.id, self.count, self.damage)
+    }
     pub fn same_object(self, other: Self) -> bool { self.identity == other.identity }
     pub fn max_stack(&self) -> i32 {
         self.max_stack_checked181().expect("ItemStack.getMaxStackSize")
@@ -111,6 +114,30 @@ impl InventoryPlayer {
     pub fn contains_item(&self, id: i32) -> bool {
         self.main.iter().any(|s| s.is_some_and(|s| s.id == id))
     }
+    pub fn select_item(&mut self, id: i32, damage: i32, subtypes: bool, _creative: bool) {
+        if let Some(slot) = self
+            .main
+            .iter()
+            .position(|s| s.is_some_and(|s| s.id == id && (!subtypes || s.damage == damage)))
+        {
+            if slot < 9 {
+                self.current_item = slot as i32;
+            }
+        }
+    }
+    pub fn copy_from_inventory(&mut self, other: &Self) {
+        self.main = other.main.map(|s| s.map(|s| s.copy_stack()));
+        self.armor = other.armor.map(|s| s.map(|s| s.copy_stack()));
+    }
+    pub fn add_with_creative(&mut self, item: &mut ItemStack, creative: bool) -> bool {
+        let added = self.add(item);
+        if !added && creative {
+            item.count = 0;
+            true
+        } else {
+            added
+        }
+    }
     pub fn set_current_item(&mut self, id: i32) {
         if let Some(slot) = self.main.iter().position(|s| s.is_some_and(|s| s.id == id)) {
             if slot < 9 { self.current_item = slot as i32; }
@@ -155,6 +182,13 @@ impl InventoryPlayer {
         }
     }
     fn store_partial(&mut self, item: &ItemStack) -> i32 {
+        if item.max_stack() == 1 {
+            if let Some(slot) = self.main.iter().position(Option::is_none) {
+                self.main[slot] = Some(item.copy_stack());
+                return 0;
+            }
+            return item.count;
+        }
         let found = self.main.iter().position(|s| {
             s.is_some_and(|s| {
                 s.id == item.id
@@ -205,25 +239,14 @@ impl InventoryPlayer {
             }
         }
     }
-    pub fn armor_value(&self) -> i32 {
-        let (mut protection, mut remaining, mut total) = (0, 0, 0);
-        for s in self.armor.iter().flatten() {
-            if let Some(i) = registry::item(s.id) {
-                if i.armor > 0 {
-                    protection += i.armor;
-                    remaining += i.durability - s.damage;
-                    total += i.durability;
-                }
-            }
-        }
-        if total == 0 {
-            0
-        } else {
-            (protection - 1) * remaining / total + 1
-        }
+    pub fn armor_value(&self) -> i32 { self.armor.iter().flatten()
+            .filter_map(|s| registry::item(s.id))
+            .map(|i| i.armor).sum
+            ()
     }
     /// `damageArmor`: returns the ids of pieces that broke, in slot order.
     pub fn damage_armor(&mut self, amount: i32) -> Vec<i32> {
+        let amount = (amount / 4).max(1);
         let mut broken = Vec::new();
         for slot in &mut self.armor {
             if let Some(s) = slot {

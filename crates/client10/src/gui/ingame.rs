@@ -9,7 +9,7 @@ use super::Ui;
 pub struct HudPlayer {
     pub food_level: i32,
     pub food_saturation: f32,
-    pub xp_points: i32,
+    pub xp_points: f32,
     pub xp_level: i32,
     pub seed: i64,
     pub poison: bool,
@@ -49,7 +49,7 @@ impl Default for HudPlayer {
         HudPlayer {
             food_level: 20,
             food_saturation: 5.0,
-            xp_points: 0,
+            xp_points: 0.0,
             xp_level: 0,
             seed: 0,
             poison: false,
@@ -169,7 +169,7 @@ impl GuiIngame {
             self.add_chat_message(ui, head);
             s = cs[n..].iter().collect();
         }
-        self.chat.insert(0, ChatLine { message: s, update_counter: 0 });
+        self.chat.insert(0, ChatLine { message: s, update_counter: 0, },);
         self.chat.truncate(50);
     }
 
@@ -208,7 +208,7 @@ impl GuiIngame {
         ui.gl.bind_texture(gui_tex);
         let z = -90.0;
         ui.draw_textured_modal_rect_z(w / 2 - 91, h - 22, 0, 0, 182, 22, z);
-        ui.draw_textured_modal_rect_z(w / 2 - 91 - 1 + p.current_item * 20, h - 22 - 1, 0, 22, 24, 22, z);
+        ui.draw_textured_modal_rect_z(w / 2 - 91 - 1 + p.current_item * 20, h - 22 - 1, 0, 22, 24, 22, z,);
         let icons = ui.texture("gui/icons.png");
         ui.gl.bind_texture(icons);
         ui.gl.blend = true;
@@ -226,9 +226,9 @@ impl GuiIngame {
         if p.survival {
             let left = w / 2 - 91;
             let right = w / 2 + 91;
-            let cap = p.xp_level.wrapping_add(1).wrapping_mul(10);
+            let cap = 7i32.wrapping_add( p.xp_level.wrapping_mul(7) >> 1);
             if cap > 0 {
-                let fill = p.xp_points.wrapping_mul(183) / cap;
+                let fill = ( p.xp_points * 183.0) as i32;
                 ui.draw_textured_modal_rect_z(left, h - 29, 0, 64, 182, 5, z);
                 if fill > 0 { ui.draw_textured_modal_rect_z(left, h - 29, 0, 69, fill, 5, z); }
             }
@@ -302,12 +302,12 @@ impl GuiIngame {
 
         if ui.settings.show_debug_info {
             ui.gl.push_matrix();
-            ui.draw_string(&format!("Minecraft Beta 1.8.1 ({})", debug.fps_line), 2, 2, 16777215);
+            ui.draw_string(&format!("Minecraft Beta 1.8.1 ({})", debug.fps_line), 2, 2, 16777215,);
             ui.draw_string(&debug.renders, 2, 12, 16777215);
             ui.draw_string(&debug.entities, 2, 22, 16777215);
             ui.draw_string(&debug.particles, 2, 32, 16777215);
             ui.draw_string(&debug.chunks, 2, 42, 16777215);
-            let (max, total, free) = (debug.max_memory.max(1), debug.total_memory, debug.free_memory);
+            let (max, total, free) = (debug.max_memory.max(1), debug.total_memory, debug.free_memory,);
             let used = total - free;
             let s = format!("Used memory: {}% ({}MB) of {}MB", used * 100 / max, used / 1024 / 1024, max / 1024 / 1024);
             let sw = ui.string_width(&s);

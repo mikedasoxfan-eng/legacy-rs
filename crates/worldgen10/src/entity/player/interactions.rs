@@ -3,7 +3,7 @@ use crate::entity::{living::Target, AxisAlignedBB};
 impl Entity {
     /// ItemDye.saddleEntity: its signed stack decrement happens even on clients.
     pub fn dye_sheep(&mut self, stack: &mut ItemStack) {
-        if let EntityKind::Sheep { sheared, fleece_color } = &mut self.kind {
+        if let EntityKind::Sheep { sheared, fleece_color, } = &mut self.kind {
             let color = (!stack.damage & 15) as u8;
             if !*sheared && *fleece_color != color {
                 *fleece_color = color;
@@ -17,30 +17,37 @@ impl Entity {
             return;
         };
         let mut damage = registry::attack_damage(self.held_item().map_or(-1, |s| s.id));
+        damage = self.potion_attack_damage(damage);
         if damage > 0 {
-            let critical = self.motion.y < 0.0 && !self.on_ground
-                && !self.is_on_ladder(w) && !self.in_water;
+            let critical = self.fall_distance > 0.0 && !self.on_ground
+                && !self.is_on_ladder(w) && !self.in_water
+                && self.potion_effect(15).is_none()
+                && self.riding.is_none()
+                && target.kind.is_living();
             if critical {
-                damage = damage.wrapping_mul(3) / 2 + 1;
+                damage = damage.wrapping_add(self.rand.next_int(damage / 2 + 2));
             }
             // Vanilla passes the live player object to attackEntityFrom.
             w.entities.insert(self.entity_id, self.clone());
             let hit = target.attack_from(w, crate::entity::damage::DamageSource::entity(
-                crate::entity::damage::DamageKind::Player, Some(self.entity_id)), damage);
+                crate::entity::damage::DamageKind::Player, Some(self.entity_id),), damage,);
             if let Some(player) = w.entities.remove(&self.entity_id) {
                 *self = player;
             }
             if hit && self.player_state().unwrap().sprinting {
                 let yaw = self.yaw * math::PI_F32 / 180.0;
-                target.add_velocity(w, (-math::sin(yaw) * 1.0) as f64, 0.1,
-                    (math::cos(yaw) * 1.0) as f64);
+                target.add_velocity(w, (-math::sin(yaw) * 0.5) as f64, 0.1,
+                    (math::cos(yaw) * 0.5) as f64,);
                 target.velocity_changed = true;
                 self.motion.x *= 0.6;
                 self.motion.z *= 0.6;
                 self.set_sprinting(false);
             }
+            if hit && damage >= 18 {
+                self.add_stat(5242880 + 25, 1);
+            }
             if hit && critical {
-                self.player_state_mut().unwrap().events.push(PlayerEvent::CriticalHit { target: Box::new(target.clone()) });
+                self.player_state_mut().unwrap().events.push(PlayerEvent::CriticalHit { target: Box::new(target.clone()), });
             }
             if target.kind.is_living() {
                 if let Some(s) = self.held_item() {
@@ -118,7 +125,11 @@ impl Entity {
                 handled = true;
             }
         }
-        if matches!(target.kind, EntityKind::Pig { saddled: true })
+        if matches!(target.kind, EntityKind::Pig { .. }) {
+            handled = target.feed_animal(w, self);
+        }
+        if !handled
+            && matches!(target.kind, EntityKind::Pig { saddled: true })
             && (target.ridden_by.is_none() || target.ridden_by == Some(self.entity_id))
         {
             w.entities.insert(id, target.clone());
@@ -149,7 +160,43 @@ impl Entity {
                 self.damage_held(1);
             }
         }
-        if matches!(target.kind, EntityKind::Cow) && held.is_some_and(|s| s.id == 325) {
+        if matches!(target.kind, EntityKind::Mooshroom) && target.living.growing_age >= 0 {
+            if held.is_some_and(|s| s.id == 281) {
+                let inv = &mut self.player_state_mut().unwrap().inventory;
+                inv.main[inv.current_item as usize] = Some(ItemStack::new(282, 1, 0));
+                handled = true;
+            } else if held.is_some_and(|s| s.id == 359) {
+                target.dead = true;
+                let mut cow = Entity::living(w, "Cow").unwrap();
+                cow.set_location_and_angles(
+                    target.pos.x,
+                    target.pos.y,
+                    target.pos.z,
+                    target.yaw,
+                    target.pitch,
+                );
+                cow.set_entity_health(target.living.health);
+                cow.living.render_yaw_offset = target.living.render_yaw_offset;
+                w.entity_joined_world(cow);
+                w.spawn_particle(
+                    "largeexplode",
+                    target.pos.add(0.0, (target.height / 2.0) as f64, 0.0),
+                    Vec3D::default(),
+                );
+                for _ in 0..5 {
+                    let item = Entity::item(
+                        w,
+                        target.pos.x,
+                        target.pos.y + target.height as f64,
+                        target.pos.z,
+                        crate::world::tile::ItemStack::new(40, 1, 0),
+                    );
+                    w.entity_joined_world(item);
+                }
+                handled = true;
+            }
+        }
+        if matches!(target.kind, EntityKind::Cow | EntityKind::Mooshroom) && held.is_some_and(|s| s.id == 325) {
             let inv = &mut self.player_state_mut().unwrap().inventory;
             inv.main[inv.current_item as usize] = Some(ItemStack::new(335, 1, 0));
             handled = true;
@@ -207,6 +254,9 @@ impl Entity {
                 }
                 handled = true;
             }
+        }
+        if !handled {
+            handled = target.feed_animal(w, self);
         }
         if !handled {
             if let Some(stack) = self.held_item() {

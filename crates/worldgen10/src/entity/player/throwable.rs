@@ -60,8 +60,16 @@ impl Entity {
         self.last_tick_pos = self.pos;
         self.on_entity_update(w);
         let egg = matches!(self.kind, EntityKind::Egg(..));
+        let pearl = matches!(self.kind, EntityKind::EnderPearl(..));
+        let potion = if let EntityKind::Potion(_, metadata) = self.kind {
+            Some(metadata)
+        } else {
+            None
+        };
         let mut s = match &self.kind {
-            EntityKind::Snowball(s) | EntityKind::Egg(s) => s.clone(),
+            EntityKind::Snowball(s) | EntityKind::Egg(s)
+            | EntityKind::EnderPearl(s)
+            | EntityKind::Potion(s, _) => s.clone(),
             _ => return,
         };
         if s.shake > 0 {
@@ -73,11 +81,7 @@ impl Entity {
                 if s.ticks_ground == 1200 {
                     self.dead = true;
                 }
-                self.kind = if egg {
-                    EntityKind::Egg(s)
-                } else {
-                    EntityKind::Snowball(s)
-                };
+                self.store_throwable_state(s);
                 return;
             }
             s.in_ground = false;
@@ -97,6 +101,7 @@ impl Entity {
             _ => end,
         };
         let mut closest = 0.0;
+        if !w.multiplayer_world {
         for id in w.entities_within_aabb(
             Some(self.entity_id),
             self.bounding_box
@@ -118,7 +123,11 @@ impl Entity {
                 }
             }
         }
+        }
         if let Some(hit) = hit {
+            if let Some(metadata) = potion {
+                self.splash_potion(w, &hit, s.owner, metadata);
+            } else {
             if let Hit::Entity { id, .. } = hit {
                 if let Some(mut e) = w.entities.remove(&id) {
                     e.attack_from(
@@ -128,34 +137,68 @@ impl Entity {
                             self.entity_id,
                             s.owner,
                         ),
-                        0,
+                            if !egg && !pearl && matches!(e.kind, EntityKind::Blaze(..)) {
+                                3
+                            } else {
+                        0
+                            },
                     );
                     w.entities.insert(id, e);
                 }
             }
-            if egg && self.rand.next_int(8) == 0 {
+            if !w.multiplayer_world && egg && self.rand.next_int(8) == 0 {
                 let n = if self.rand.next_int(32) == 0 { 4 } else { 1 };
                 for _ in 0..n {
                     let mut e = Entity::living(w, "Chicken").unwrap();
-                    e.set_location_and_angles(self.pos.x, self.pos.y, self.pos.z, self.yaw, 0.0);
+                    e.set_growing_age(-24000);
+                        e.set_location_and_angles(self.pos.x, self.pos.y, self.pos.z, self.yaw, 0.0,);
                     w.entity_joined_world(e);
                 }
             }
+                if pearl {
+                    for _ in 0..32 {
+                        let p = self.pos.add(0.0, self.rand.next_double() * 2.0, 0.0);
+                        let v =
+                            Vec3D::new(self.rand.next_gaussian(), 0.0, self.rand.next_gaussian());
+                        w.spawn_particle("portal", p, v);
+                    }
+                    if !w.multiplayer_world {
+                        if let Some(mut owner) = s.owner.and_then(|id| w.entities.remove(&id)) {
+                            owner.set_location_and_angles(
+                                self.pos.x,
+                                self.pos.y,
+                                self.pos.z,
+                                owner.yaw,
+                                owner.pitch,
+                            );
+                            owner.fall_distance = 0.0;
+                            owner.attack_from(
+                                w,
+                                crate::entity::damage::DamageSource::new(
+                                    crate::entity::damage::DamageKind::Fall,
+                                ),
+                                5,
+                            );
+                            w.entities.insert(owner.entity_id, owner);
+                        }
+                    }
+                } else {
             for _ in 0..8 {
                 w.spawn_particle("snowballpoof", self.pos, Vec3D::default());
             }
+                }
+                if !w.multiplayer_world {
             self.dead = true;
+                }
+            }
         }
         self.projectile_advance(
             w,
             if self.in_water { 0.8 } else { 0.99 },
-            0.03,
+            if potion.is_some() { 0.05 } else {
+            0.03 },
             Vec3D::default(),
         );
-        self.kind = if egg {
-            EntityKind::Egg(s)
-        } else {
-            EntityKind::Snowball(s)
-        };
+        self.store_throwable_state(s);
     }
 }

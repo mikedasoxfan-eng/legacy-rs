@@ -40,9 +40,23 @@ fn tick_rate(id: u8) -> i32 {
 // ---------------------------------------------------------------- dispatch
 
 pub fn on_block_added(w: &mut World, id: u8, x: i32, y: i32, z: i32) {
-    if matches!(id,43|44) { w.slab_added181(x,y,z); return; }
+    // Dragon exit creation enables BlockEndPortal.field_41051_a.
+    if id == 119 {
+        return;
+    }
+    if id == 122 {
+        w.schedule_block_update(x, y, z, id, 3);
+        return;
+    }
+    if matches!(id, 43 | 44) {
+        w.slab_added181(x, y, z);
+        return;
+    }
     // Structure placement reaches BlockTorch with metadata zero and no support.
-    if id == 50 { w.torch_added(id,x,y,z); return; }
+    if id == 50 {
+        w.torch_added(id, x, y, z);
+        return;
+    }
     if crate::entity::player::block_hooks::added(w, id, x, y, z) {
         return;
     }
@@ -68,13 +82,13 @@ pub fn on_block_added(w: &mut World, id: u8, x: i32, y: i32, z: i32) {
         66 | 27 | 28 => w.rail_added(x, y, z),
         75 | 76 => w.redstone_torch_added(id, x, y, z),
         29 | 33 => {
-            if !w.multiplayer_world && w.get_block_tile_entity(x,y,z).is_none() { w.piston_update(id,x,y,z); }
+            if !w.multiplayer_world && w.get_block_tile_entity(x, y, z).is_none() {
+                w.piston_update(id, x, y, z);
+            }
         }
         34 | 36 => {}
-        block::CHEST => w.chest_added181(x,y,z),
-        25 | block::MOB_SPAWNER => {
-            w.set_block_tile_entity(x, y, z, TileEntity::for_block(id))
-        }
+        block::CHEST => w.chest_added181(x, y, z),
+        25 | block::MOB_SPAWNER => w.set_block_tile_entity(x, y, z, TileEntity::for_block(id)),
         // BlockSponge.onBlockAdded reads the 5x5x5 materials (it absorbs nothing; the reads
         // still reach the chunk provider).
         19 => {
@@ -91,7 +105,10 @@ pub fn on_block_added(w: &mut World, id: u8, x: i32, y: i32, z: i32) {
 }
 
 pub fn on_block_removal(w: &mut World, id: u8, x: i32, y: i32, z: i32) {
-    if matches!(id, 63 | 68) { w.remove_block_tile_entity(x,y,z); return; }
+    if matches!(id, 63 | 68) {
+        w.remove_block_tile_entity(x, y, z);
+        return;
+    }
     if crate::entity::player::block_hooks::removed(w, id, x, y, z) {
         return;
     }
@@ -136,12 +153,18 @@ pub fn on_block_removal(w: &mut World, id: u8, x: i32, y: i32, z: i32) {
                 w.notify_blocks_of_neighbor_change(x, y - 1, z, id);
             }
         }
-        25 => w.remove_block_tile_entity(x,y,z),
-        29 | 33 => {},
-        34 => w.piston_head_removed(x,y,z),
+        25 => w.remove_block_tile_entity(x, y, z),
+        29 | 33 => {}
+        34 => w.piston_head_removed(x, y, z),
         36 => {
-            if matches!(w.get_block_tile_entity(x,y,z),Some(TileEntity::Piston(_))) { w.finish_piston_at(x,y,z); }
-            else { w.remove_block_tile_entity(x,y,z); }
+            if matches!(
+                w.get_block_tile_entity(x, y, z),
+                Some(TileEntity::Piston(_))
+            ) {
+                w.finish_piston_at(x, y, z);
+            } else {
+                w.remove_block_tile_entity(x, y, z);
+            }
         }
         block::CHEST => w.scatter_chest_contents(x, y, z),
         block::MOB_SPAWNER => w.remove_block_tile_entity(x, y, z),
@@ -161,12 +184,33 @@ pub fn on_block_removal(w: &mut World, id: u8, x: i32, y: i32, z: i32) {
 }
 
 pub fn on_neighbor_block_change(w: &mut World, id: u8, x: i32, y: i32, z: i32, _changed: u8) {
-    if matches!(id,69|77) {w.attached_control_neighbor181(id,x,y,z); return;}
-    if id == 19 { return; } // BlockSponge inherits the empty neighbor callback.
-    if id == 96 { w.trapdoor_neighbor181(x,y,z,_changed); return; }
-    if id == 50 { w.torch_neighbor_change(id,x,y,z); return; }
-    if id == 106 { crate::features181::vine_neighbor(w,x,y,z); return; }
-    if matches!(id, 63 | 68) { crate::sign::neighbor(w,id,x,y,z); return; }
+    if id == 122 {
+        w.schedule_block_update(x, y, z, id, 3);
+        return;
+    }
+    if matches!(id, 69 | 77) {
+        w.attached_control_neighbor181(id, x, y, z);
+        return;
+    }
+    if id == 19 {
+        return;
+    } // BlockSponge inherits the empty neighbor callback.
+    if id == 96 {
+        w.trapdoor_neighbor181(x, y, z, _changed);
+        return;
+    }
+    if id == 50 {
+        w.torch_neighbor_change(id, x, y, z);
+        return;
+    }
+    if id == 106 {
+        crate::features181::vine_neighbor(w, x, y, z);
+        return;
+    }
+    if matches!(id, 63 | 68) {
+        crate::sign::neighbor(w, id, x, y, z);
+        return;
+    }
     if id != 26 && crate::entity::player::block_hooks::neighbor(w, id, x, y, z, _changed) {
         return;
     }
@@ -206,9 +250,11 @@ pub fn on_neighbor_block_change(w: &mut World, id: u8, x: i32, y: i32, z: i32, _
         | block::MUSHROOM_RED
         | block::TALL_GRASS
         | block::DEAD_BUSH
-        | block::SAPLING | block::PUMPKIN_STEM | block::MELON_STEM => check_flower(w, id, x, y, z),
+        | block::SAPLING
+        | block::PUMPKIN_STEM
+        | block::MELON_STEM => check_flower(w, id, x, y, z),
         block::VINE => super::plants181::vine_neighbor(w, x, y, z),
-        block::CHEST => w.chest_neighbor181(x,y,z),
+        block::CHEST => w.chest_neighbor181(x, y, z),
         block::REED => {
             if !reed_can_place(w, x, y, z) {
                 let meta = w.get_block_metadata(x, y, z);
@@ -231,10 +277,16 @@ pub fn on_neighbor_block_change(w: &mut World, id: u8, x: i32, y: i32, z: i32, _
             }
         }
         block::FIRE => tb::fire_neighbor(w, x, y, z),
-        25 => w.note_neighbor(x,y,z,_changed),
-        29 | 33 => { if !w.piston_guard[(id==29) as usize] { w.piston_update(id,x,y,z); } },
-        34 => w.piston_head_neighbor(x,y,z,_changed),
-        36 => { w.get_block_tile_entity(x,y,z); },
+        25 => w.note_neighbor(x, y, z, _changed),
+        29 | 33 => {
+            if !w.piston_guard[(id == 29) as usize] {
+                w.piston_update(id, x, y, z);
+            }
+        }
+        34 => w.piston_head_neighbor(x, y, z, _changed),
+        36 => {
+            w.get_block_tile_entity(x, y, z);
+        }
         55 => w.wire_neighbor_change(x, y, z),
         66 | 27 | 28 => w.rail_neighbor_change(id, x, y, z, _changed),
         75 | 76 => w.redstone_torch_neighbor_change(id, x, y, z),
@@ -248,7 +300,7 @@ pub fn on_neighbor_block_change(w: &mut World, id: u8, x: i32, y: i32, z: i32, _
             }
         }
         70 | 72 => {
-            if !w.is_block_normal_cube(x, y - 1, z) && w.get_block_id(x,y-1,z)!=85 {
+            if !w.is_block_normal_cube(x, y - 1, z) && w.get_block_id(x, y - 1, z) != 85 {
                 let m = w.get_block_metadata(x, y, z);
                 drop_block_as_item(w, id, x, y, z, m);
                 w.set_block_with_notify(x, y, z, 0);
@@ -270,7 +322,9 @@ pub static TICK_COUNTS: [std::sync::atomic::AtomicU32; 256] =
 
 pub fn update_tick(w: &mut World, id: u8, x: i32, y: i32, z: i32, rs: RandSel) {
     // All four registered stair models inherit the empty Block.updateTick.
-    if crate::block::visual181::stairs_model181(id).is_some() {return;}
+    if crate::block::visual181::stairs_model181(id).is_some() {
+        return;
+    }
     if crate::entity::player::block_hooks::tick(w, id, x, y, z, rs) {
         return;
     }
@@ -340,7 +394,8 @@ fn warn_once(id: u8, hook: &str) {
 fn assert_plain(id: u8, hook: &str) {
     let plain = matches!(
         id,
-        45 | 57 | 95 | 97..=109 | block::STONE
+        119 | 121 | 122 | 45 | 57 | 95 | 97
+            ..=109 | block::STONE
             | block::FENCE
             | block::STAIRS_WOOD
             | block::STAIRS_COBBLESTONE
@@ -829,7 +884,8 @@ pub fn quantity_dropped(w: &mut World, id: u8) -> i32 {
         | 46
         | 47
         | 52
-        | 92 | 34 => 0,
+        | 92
+        | 34 => 0,
         43 => 2,
         tb::SNOW_BLOCK => 4,
         block::ORE_LAPIS => 4 + w.rand.next_int(5),
@@ -932,16 +988,34 @@ pub fn drop_block_with_chance(
     meta: i32,
     chance: f32,
 ) {
-    if w.multiplayer_world { return; }
-    if id==26 && meta&8!=0 { return; } // BlockBed skips the base drop method for its head.
-    if matches!(id, 53 | 67 | 108 | 109) {
-        let model=match id {53=>5,67=>4,108=>45,_=>98};
-        drop_block_with_chance(w,model,x,y,z,meta,chance);
+    if w.multiplayer_world {
         return;
     }
-    if id==36 {
-        if let Some(TileEntity::Piston(p))=w.get_block_tile_entity(x,y,z).cloned() {
-            drop_block_as_item(w,p.block_id.try_into().expect("BlockPistonMoving block index"),x,y,z,p.block_data);
+    if id == 26 && meta & 8 != 0 {
+        return;
+    } // BlockBed skips the base drop method for its head.
+    if matches!(id, 53 | 67 | 108 | 109) {
+        let model = match id {
+            53 => 5,
+            67 => 4,
+            108 => 45,
+            _ => 98,
+        };
+        drop_block_with_chance(w, model, x, y, z, meta, chance);
+        return;
+    }
+    if id == 36 {
+        if let Some(TileEntity::Piston(p)) = w.get_block_tile_entity(x, y, z).cloned() {
+            drop_block_as_item(
+                w,
+                p.block_id
+                    .try_into()
+                    .expect("BlockPistonMoving block index"),
+                x,
+                y,
+                z,
+                p.block_data,
+            );
         }
         return;
     }
@@ -1000,7 +1074,15 @@ pub fn drop_block_with_chance(
                     (x as f32 + ox) as f64,
                     (y as f32 + oy) as f64,
                     (z as f32 + oz) as f64,
-                    ItemStack::new(match id { block::PUMPKIN_STEM => 361, block::MELON_STEM => 362, _ => 295 }, 1, 0),
+                    ItemStack::new(
+                        match id {
+                            block::PUMPKIN_STEM => 361,
+                            block::MELON_STEM => 362,
+                            _ => 295,
+                        },
+                        1,
+                        0,
+                    ),
                 );
                 if let crate::entity::EntityKind::Item { pickup_delay, .. } = &mut e.kind {
                     *pickup_delay = 10;

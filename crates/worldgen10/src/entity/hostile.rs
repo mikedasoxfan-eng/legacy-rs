@@ -5,6 +5,16 @@ use crate::{
 };
 impl Entity {
     pub fn brightness(&self, w: &mut World) -> f32 {
+        if matches!(
+            self.kind,
+            EntityKind::Fireball(..)
+                | EntityKind::SmallFireball(..)
+                | EntityKind::EnderEye(..)
+                | EntityKind::MagmaCube { .. }
+                | EntityKind::Blaze(..)
+        ) {
+            return 1.0;
+        }
         let b = self.bounding_box;
         if w.block_exists(floor(self.pos.x), 64, floor(self.pos.z)) {
             w.get_light_brightness(
@@ -17,11 +27,21 @@ impl Entity {
         }
     }
     pub fn packed_brightness(&self, w: &mut World, _partial: f32) -> i32 {
+        if matches!(
+            self.kind,
+            EntityKind::Fireball(..)
+                | EntityKind::SmallFireball(..)
+                | EntityKind::EnderEye(..)
+                | EntityKind::MagmaCube { .. }
+                | EntityKind::Blaze(..)
+        ) {
+            return 15728880;
+        }
         let (x, z) = (floor(self.pos.x), floor(self.pos.z));
-        let y = floor(self.pos.y - self.y_offset as f64 + (self.bounding_box.max_y - self.bounding_box.min_y) * 0.66);
+        let y = floor(self.pos.y - self.y_offset as f64 + (self.bounding_box.max_y - self.bounding_box.min_y) * 0.66,);
         let base = if w.block_exists(x,64,z) { w.packed_light181(x, y, z, 0) } else { 0 };
         if matches!(self.kind, EntityKind::XPOrb(_)) {
-            ((base & 255) + 180).min(240) | (base & 0xff0000)
+            ((base & 255) + 120).min(240) | (base & 0xff0000)
         } else { base }
     }
     pub(super) fn update_hostile_living(&mut self, w: &mut World) {
@@ -64,6 +84,20 @@ impl Entity {
         }
         self.update_living(w);
         self.wolf_update(w);
+        if !w.multiplayer_world && matches!(self.kind, EntityKind::Spider | EntityKind::CaveSpider)
+        {
+            let flags = self.data_watcher.byte(16).unwrap();
+            self.data_watcher
+                .update(
+                    16,
+                    super::data_watcher::Value::Byte(if self.collided_horizontally {
+                        flags | 1
+                    } else {
+                        flags & !1
+                    }),
+                )
+                .unwrap();
+        }
         if self.kind.is_mob() && w.difficulty == 0 {
             self.dead = true;
         }
@@ -91,7 +125,7 @@ impl Entity {
                 && w.can_block_see_the_sky(floor(self.pos.x), floor(self.pos.y), floor(self.pos.z))
                 && self.rand.next_float() * 30.0 < (light - 0.4) * 2.0
             {
-                self.fire = 300;
+                self.set_fire_seconds(8);
             }
         }
         if self.kind.is_mob() && self.brightness(w) > 0.5 {
@@ -99,9 +133,12 @@ impl Entity {
         }
     }
     pub(super) fn find_attack_target(&mut self, w: &mut World) -> Option<Target> {
+        if self.kind.is_animal() && !matches!(self.kind, EntityKind::Wolf(..)) {
+            return self.animal_find_target(w);
+        }
         if let EntityKind::Wolf(s) = &self.kind {
             return if s.flags & 2 != 0 {
-                w.closest_player(self.pos, 16.0).map(Target::Player)
+                w.closest_vulnerable_player(self.pos, 16.0).map(Target::Player)
             } else {
                 None
             };
@@ -110,7 +147,7 @@ impl Entity {
             return self.enderman_find_target(w);
         }
         if matches!(self.kind, EntityKind::Silverfish { .. }) {
-            return w.closest_player(self.pos, 8.0).map(Target::Player);
+            return w.closest_vulnerable_player(self.pos, 8.0).map(Target::Player);
         }
         if !self.kind.is_mob() {
             return None;
@@ -122,7 +159,7 @@ impl Entity {
         if spider && self.brightness(w) >= 0.5 {
             return None;
         }
-        let t = w.closest_player(self.pos, 16.0).map(Target::Player);
+        let t = w.closest_vulnerable_player(self.pos, 16.0).map(Target::Player);
         if spider {
             t
         } else {
@@ -130,6 +167,18 @@ impl Entity {
         }
     }
     pub fn attack_target(&mut self, w: &mut World, target: Target, distance: f32, visible: bool) {
+        if self.kind.is_animal() && !matches!(self.kind, EntityKind::Wolf(..)) {
+            if visible {
+                self.animal_attack_target(w, target, distance);
+            }
+            return;
+        }
+        if matches!(self.kind, EntityKind::Blaze(..) | EntityKind::Snowman) {
+            if visible {
+                self.new_mob_attack(w, target, distance);
+            }
+            return;
+        }
         if let EntityKind::Creeper {
             ignition, state, ..
         } = &mut self.kind
@@ -244,13 +293,14 @@ impl Entity {
                 };
                 if max > self.bounding_box.min_y && min < self.bounding_box.max_y {
                     self.living.attack_time = 20;
-                    let damage = match self.kind {
-                        EntityKind::Zombie | EntityKind::PigZombie { .. } => 5,
-                        EntityKind::Enderman(..) => 5,
-                        EntityKind::Silverfish { .. } => 0,
+                    let mut damage = match self.kind {
+                        EntityKind::Zombie => 4, EntityKind::PigZombie { .. } => 5,
+                        EntityKind::Enderman(..) => 7,
+                        EntityKind::Silverfish { .. } => 1,
                         EntityKind::Giant => 50,
                         _ => 2,
                     };
+                    damage = self.potion_attack_damage(damage);
                     if let Some(id) = w.target_entity_id(target) {
                         if let Some(mut e) = w.entities.remove(&id) {
                             w.entities.insert(self.entity_id, self.clone());

@@ -1,3 +1,4 @@
+mod support;
 use worldgen::{
     entity::{Entity, EntityKind},
     nbt::{Compound, Tag},
@@ -55,10 +56,11 @@ fn region_roundtrip_simulates_supported_entities_and_preserves_unknown_tags() {
     let id = w.loaded_entity_list[0];
     assert_eq!(w.entities[&id].to_nbt().unwrap(), expected);
     assert_eq!(w.chunk(0, 0).entity_lists[4], vec![id]);
-    assert_eq!(
-        w.chunk(0, 0).raw_entities,
-        vec![Tag::Compound(unsupported.clone())]
-    );
+    assert_eq!(w.chunk(0, 0).raw_entities.len(), 1);
+    let Tag::Compound(raw) = &w.chunk(0, 0).raw_entities[0] else {
+        panic!("entity compound")
+    };
+    assert_eq!(support::canonical(raw), support::canonical(&unsupported));
     w.world_time = 240;
     w.set_block_with_notify(8, 64, 8, 52);
     w.spawner_animations.insert((8, 64, 8), (123.0, 122.0));
@@ -79,8 +81,9 @@ fn region_roundtrip_simulates_supported_entities_and_preserves_unknown_tags() {
     let mut s = Storage::open(&dir).unwrap();
     let saved = s.load_chunk(0, 0).unwrap();
     assert_eq!(saved.raw_entities.len(), 2);
-    assert!(saved.raw_entities.contains(&Tag::Compound(unsupported)));
-    assert!(saved.raw_entities.contains(&Tag::Compound(expected)));
+    for expected in [unsupported, expected] {
+        assert!(saved.raw_entities.iter().any(|tag| matches!(tag,Tag::Compound(raw) if support::canonical(raw)==support::canonical(&expected))));
+    }
 }
 
 #[test]

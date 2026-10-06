@@ -7,7 +7,34 @@ impl Entity {
     pub(super) fn init_data_watcher(&mut self) {
         let w = &mut self.data_watcher;
         w.add(0, Value::Byte(0)).unwrap();
+        w.add(1, Value::Short(300)).unwrap();
+        if self.kind.is_living() {
+            w.add(8, Value::Int(0)).unwrap();
+        }
+        if self.kind.is_animal() {
+            w.add(12, Value::Int(0)).unwrap();
+        }
         match self.kind {
+            EntityKind::Minecart(..) => {
+                w.add(16, Value::Byte(0)).unwrap();
+                w.add(17, Value::Int(0)).unwrap();
+                w.add(18, Value::Int(1)).unwrap();
+                w.add(19, Value::Int(0)).unwrap();
+            }
+            EntityKind::Boat(..) => {
+                w.add(17, Value::Int(0)).unwrap();
+                w.add(18, Value::Int(1)).unwrap();
+                w.add(19, Value::Int(0)).unwrap();
+            }
+            EntityKind::Dragon(..) => {
+                w.add(16, Value::Int(0)).unwrap();
+            }
+            EntityKind::EnderCrystal { .. } => {
+                w.add(8, Value::Int(0)).unwrap();
+            }
+            EntityKind::Spider | EntityKind::CaveSpider | EntityKind::Blaze(..) => {
+                w.add(16, Value::Byte(0)).unwrap();
+            }
             EntityKind::Creeper { .. } => {
                 w.add(16, Value::Byte(-1)).unwrap();
                 w.add(17, Value::Byte(0)).unwrap();
@@ -19,7 +46,7 @@ impl Entity {
             EntityKind::Ghast(..) | EntityKind::Pig { .. } | EntityKind::Sheep { .. } => {
                 w.add(16, Value::Byte(0)).unwrap();
             }
-            EntityKind::Slime { .. } => {
+            EntityKind::Slime { .. } | EntityKind::MagmaCube { .. } => {
                 w.add(16, Value::Byte(1)).unwrap();
             }
             EntityKind::Wolf(..) => {
@@ -49,8 +76,25 @@ impl Entity {
     /// Packet metadata replaces values without marking them changed, as in DataWatcher.
     pub fn apply_watcher_list(&mut self, values: &[WatchableObject]) {
         self.data_watcher.update_from_list(values);
+        self.air = self.data_watcher.short(1).unwrap() as i32;
+        if self.kind.is_animal() {
+            self.living.growing_age = self.data_watcher.int(12).unwrap();
+        }
         self.sneaking = self.entity_flag(1);
         self.sprinting = self.entity_flag(3);
+        match &mut self.kind {
+            EntityKind::Minecart(s) => {
+                s.time_since_hit = self.data_watcher.int(17).unwrap();
+                s.rock_direction = self.data_watcher.int(18).unwrap();
+                s.damage = self.data_watcher.int(19).unwrap();
+            }
+            EntityKind::Boat(s) => {
+                s.time_since_hit = self.data_watcher.int(17).unwrap();
+                s.rock_direction = self.data_watcher.int(18).unwrap();
+                s.damage = self.data_watcher.int(19).unwrap();
+            }
+            _ => {}
+        }
         let byte = |id| self.data_watcher.byte(id).unwrap_or(0);
         match &mut self.kind {
             EntityKind::Creeper { state, powered, .. } => {
@@ -76,7 +120,9 @@ impl Entity {
                 s.watched_health = self.data_watcher.int(18).unwrap();
             }
             // Slime metadata does not call setSlimeSize (no health/size side effects).
-            EntityKind::Slime { size, .. } => *size = byte(16) as i32,
+            EntityKind::Slime { size, .. } | EntityKind::MagmaCube { size, .. } => {
+                *size = byte(16) as i32
+            }
             _ => {}
         }
     }
@@ -122,7 +168,9 @@ impl Entity {
                 }
                 values.push((18, Value::Int(s.watched_health)));
             }
-            EntityKind::Slime { size, .. } => values.push((16, Value::Byte(*size as i8))),
+            EntityKind::Slime { size, .. } | EntityKind::MagmaCube { size, .. } => {
+                values.push((16, Value::Byte(*size as i8)))
+            }
             _ => {}
         }
         for (id, value) in values {

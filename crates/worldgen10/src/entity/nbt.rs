@@ -18,7 +18,8 @@ impl Entity {
         if self.dead
             || matches!(
                 self.kind,
-                EntityKind::Fireball(..)
+                EntityKind::DragonPart { .. }
+                    | EntityKind::Potion(..)
                     | EntityKind::Egg(..)
                     | EntityKind::Lightning { .. }
                     | EntityKind::Fish(..)
@@ -56,7 +57,7 @@ impl Entity {
         );
         n.put("FallDistance", Tag::Float(self.fall_distance));
         n.put("Fire", Tag::Short(self.fire as i16));
-        n.put("Air", Tag::Short(self.air as i16));
+        n.put("Air", Tag::Short(self.data_watcher.short(1).unwrap()));
         n.put("OnGround", Tag::Byte(self.on_ground as i8));
         if self.kind.is_living() {
             for (key, val) in [
@@ -84,7 +85,12 @@ impl Entity {
                 .collect();
             n.put("ActiveEffects", Tag::List(10, effects));
         }
+        if self.kind.is_animal() {
+            n.put("Age", Tag::Int(self.living.growing_age));
+            n.put("InLove", Tag::Int(self.living.in_love));
+        }
         match &self.kind {
+            EntityKind::Villager { profession } => n.put("Profession", Tag::Int(*profession)),
             EntityKind::XPOrb(s) => {
                 n.put("Health", Tag::Short(s.health as i8 as i16));
                 n.put("Age", Tag::Short(s.age as i16));
@@ -154,15 +160,22 @@ impl Entity {
                 n.put("Color", Tag::Byte(*fleece_color as i8));
             }
             EntityKind::Creeper { powered: true, .. } => n.put("powered", Tag::Byte(1)),
-            EntityKind::Slime { size, .. } => n.put("Size", Tag::Int(*size - 1)),
+            EntityKind::Slime { size, .. } | EntityKind::MagmaCube { size, .. } => { n.put("Size", Tag::Int(*size - 1))
+            }
             EntityKind::PigZombie { anger, .. } => n.put("Anger", Tag::Short(*anger as i16)),
             EntityKind::Wolf(s) => {
                 n.put("Angry", Tag::Byte((s.flags & 2 != 0) as i8));
                 n.put("Sitting", Tag::Byte((s.flags & 1 != 0) as i8));
                 n.put("Owner", Tag::String(s.owner.clone()));
             }
+            EntityKind::Fireball(s) | EntityKind::SmallFireball(s) => {
+                write_projectile(&mut n, &s.arrow, false);
+                n.0.retain(|(key, _)| key != "shake");
+            }
             EntityKind::Arrow(s) => write_projectile(&mut n, s, true),
-            EntityKind::Snowball(s) | EntityKind::Egg(s) => write_projectile(&mut n, s, false),
+            EntityKind::Snowball(s) | EntityKind::Egg(s)
+            | EntityKind::EnderPearl(s)
+            | EntityKind::Potion(s, _) => write_projectile(&mut n, s, false),
             _ => {}
         }
         Some(n)
@@ -237,7 +250,7 @@ impl Entity {
             _ => 0.0,
         };
         self.fire = n.short("Fire") as i32;
-        self.air = n.short("Air") as i32;
+        self.set_air( n.short("Air") as i32);
         self.on_ground = n.boolean("OnGround");
         self.yaw %= 360.0;
         self.pitch %= 360.0;
@@ -245,7 +258,7 @@ impl Entity {
             self.living.health = if n.has("Health") {
                 n.short("Health") as i32
             } else {
-                10
+                self.max_health()
             };
             self.living.hurt_time = n.short("HurtTime") as i32;
             self.living.death_time = n.short("DeathTime") as i32;
@@ -270,7 +283,12 @@ impl Entity {
                 }
             }
         }
+        if self.kind.is_animal() {
+            self.set_growing_age(n.int("Age"));
+            self.living.in_love = n.int("InLove");
+        }
         match &mut self.kind {
+            EntityKind::Villager { profession } => *profession = n.int("Profession"),
             EntityKind::XPOrb(s) => {
                 s.health = n.short("Health") as i32 & 255;
                 s.age = n.short("Age") as i32;
@@ -278,7 +296,7 @@ impl Entity {
             }
             EntityKind::Enderman(s) => {
                 s.carried = n.short("carried") as i8;
-                s.carried_data = n.short("carryingData") as i8;
+                s.carried_data = n.short("carriedData") as i8;
             }
 
             EntityKind::Minecart(s) => {
@@ -340,8 +358,10 @@ impl Entity {
                 }
             }
             EntityKind::Arrow(s) => *s = read_projectile(n, true),
-            EntityKind::Snowball(s) | EntityKind::Egg(s) => *s = read_projectile(n, false),
-            EntityKind::Fireball(s) => {
+            EntityKind::Snowball(s) | EntityKind::Egg(s)
+            | EntityKind::EnderPearl(s)
+            | EntityKind::Potion(s, _) => *s = read_projectile(n, false),
+            EntityKind::Fireball(s) | EntityKind::SmallFireball(s) => {
                 *s = FireballState {
                     arrow: read_projectile(n, false),
                     acceleration: Vec3D::default(),
@@ -349,7 +369,7 @@ impl Entity {
             }
             _ => {}
         }
-        if matches!(self.kind, EntityKind::Slime { .. }) {
+        if matches!(self.kind, EntityKind::Slime { .. } | EntityKind::MagmaCube { .. }) {
             self.set_slime_size(n.int("Size").wrapping_add(1));
         }
         if matches!(self.kind, EntityKind::Player(..)) {

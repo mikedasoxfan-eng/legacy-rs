@@ -23,7 +23,12 @@ pub fn finish_chunk_identity_replay181() {
     });
 }
 fn replay_identity181() -> Option<i32> {
-    REPLAY_IDENTITIES.with(|stream| stream.borrow_mut().as_mut().map(|s| s.next().expect("chunk identity stream exhausted")))
+    REPLAY_IDENTITIES.with(|stream| {
+        stream
+            .borrow_mut()
+            .as_mut()
+            .map(|s| s.next().expect("chunk identity stream exhausted"))
+    })
 }
 
 pub use super::java_hash::JavaHashSet;
@@ -79,7 +84,7 @@ impl World {
     /// `calculateSkylightSubtracted`
     pub fn calculate_skylight_subtracted(&self, partial: f32) -> i32 {
         // WorldProviderHell.calculateCelestialAngle is a constant 0.5.
-        let angle = self.dimension.celestial_angle(self.world_time,partial);
+        let angle = self.dimension.celestial_angle(self.world_time, partial);
         let mut v =
             1.0f32 - (math::cos(angle * std::f64::consts::PI as f32 * 2.0f32) * 2.0f32 + 0.5f32);
         v = v.clamp(0.0, 1.0);
@@ -206,6 +211,9 @@ impl World {
 
     /// `World.tick` (no sleeping players or mob spawning yet).
     pub fn tick(&mut self) {
+        if self.info.hardcore {
+            self.difficulty = 3;
+        }
         self.terrain.biome_source.cleanup_cache();
         self.update_weather();
         self.tick_sleeping_players();
@@ -230,7 +238,11 @@ impl World {
 
     /// `TickUpdates`: run due scheduled block updates, at most 1000 per tick.
     pub fn tick_updates(&mut self, all: bool) -> bool {
-        assert_eq!(self.tick_order.len(),self.pending_ticks.len(),"TickNextTick list out of synch");
+        assert_eq!(
+            self.tick_order.len(),
+            self.pending_ticks.len(),
+            "TickNextTick list out of synch"
+        );
         let n = self.tick_order.len().min(1000);
         for _ in 0..n {
             let &(time, id, key) = self.tick_order.iter().next().expect("tick queue");
@@ -279,19 +291,29 @@ impl World {
         let list: Vec<(i32, i32)> = positions.iter().collect();
         self.positions_to_update = positions;
 
-        self.tick_active_chunks181(&list, |w,x,z|biome_snows(w.terrain.biome_source.biome_at(x,z)));
+        self.tick_active_chunks181(&list, |w, x, z| {
+            biome_snows(w.terrain.biome_source.biome_at(x, z))
+        });
     }
 
     /// The per-chunk half of updateBlocksAndPlayCaveSounds. Supplying the biome
     /// flag separately also permits original-bytecode fixtures with custom biomes.
-    pub(crate) fn tick_active_chunks181(&mut self, list:&[(i32,i32)],mut snows:impl FnMut(&mut World,i32,i32)->bool) {
-        if self.sound_counter > 0 { self.sound_counter -= 1; }
+    pub(crate) fn tick_active_chunks181(
+        &mut self,
+        list: &[(i32, i32)],
+        mut snows: impl FnMut(&mut World, i32, i32) -> bool,
+    ) {
+        if self.sound_counter > 0 {
+            self.sound_counter -= 1;
+        }
 
         for &(cx, cz) in list {
             let (x0, z0) = (cx * 16, cz * 16);
             // getChunkFromChunkCoords: singleplayer loads (and generates) it here.
             let real = self.access_chunk_pub(cx, cz);
-            if real {self.recheck_skylight181(cx,cz);}
+            if real {
+                self.recheck_skylight181(cx, cz);
+            }
             let block_at = |w: &World, x: i32, y: i32, z: i32| {
                 if real {
                     w.chunk(cx, cz).block(x, y, z)
@@ -345,7 +367,7 @@ impl World {
                 let v = self.update_lcg >> 2;
                 let (x, z) = (v & 15, v >> 8 & 15);
                 let y = self.precipitation_height181(x + x0, z + z0);
-                if snows(self,x+x0,z+z0) && y >= 0 && y < 128 {
+                if snows(self, x + x0, z + z0) && y >= 0 && y < 128 {
                     let block_light = if real {
                         self.chunk(cx, cz).saved_light(LightKind::Block, x, y, z)
                     } else {
@@ -368,9 +390,14 @@ impl World {
                         } else {
                             0
                         };
-                        if below == block::WATER_STILL && below_meta == 0
-                            && [(-1,0),(1,0),(0,-1),(0,1)].into_iter().any(|(dx,dz)|
-                                self.get_block_material(x+x0+dx,y-1,z+z0+dz) != block::MAT_WATER)
+                        if below == block::WATER_STILL
+                            && below_meta == 0
+                            && [(-1, 0), (1, 0), (0, -1), (0, 1)]
+                                .into_iter()
+                                .any(|(dx, dz)| {
+                                    self.get_block_material(x + x0 + dx, y - 1, z + z0 + dz)
+                                        != block::MAT_WATER
+                                })
                         {
                             self.set_block_with_notify(x + x0, y - 1, z + z0, block::ICE);
                         }
@@ -378,10 +405,10 @@ impl World {
                 }
             }
 
-            let light_x=x0+self.rand.next_int(16);
-            let light_y=self.rand.next_int(128);
-            let light_z=z0+self.rand.next_int(16);
-            self.update_all_light181(light_x,light_y,light_z);
+            let light_x = x0 + self.rand.next_int(16);
+            let light_y = self.rand.next_int(128);
+            let light_z = z0 + self.rand.next_int(16);
+            self.update_all_light181(light_x, light_y, light_z);
 
             for _ in 0..80 {
                 self.update_lcg = self.update_lcg.wrapping_mul(3).wrapping_add(1013904223);

@@ -31,7 +31,8 @@ impl Entity {
                 } else {
                     w.players
                         .get(i)
-                        .map(|&(x, y, z)| (Vec3D::new(x, y, z), STAND_IN_EYE_HEIGHT.with(|eye| eye.get()), true))
+                        .map(|&(x, y, z)| { (Vec3D::new(x, y, z), STAND_IN_EYE_HEIGHT.with(|eye| eye.get()), true,)
+                    })
                 }
             }
             Target::Entity(id) => w.entities.get(&id).map(|e| {
@@ -68,27 +69,29 @@ impl Entity {
         }
     }
     pub fn despawn(&mut self, w: &World) {
-        if matches!(
+        let can_despawn = ! matches!(
             self.kind,
             EntityKind::Pig { .. }
                 | EntityKind::Sheep { .. }
                 | EntityKind::Cow
+                | EntityKind::Mooshroom
+                | EntityKind::Snowman
+                | EntityKind::Villager { .. }
                 | EntityKind::Chicken { .. }
-        ) || matches!(&self.kind, EntityKind::Wolf(s) if s.flags & 4 != 0) {
-            return;
-        }
+        ) && ! matches!(&self.kind, EntityKind::Wolf(s) if s.flags & 2 == 0);
         if let Some(i) = w.closest_player(self.pos, -1.0) {
             let (x, y, z) = w.players[i];
             let d = Vec3D::new(x, y, z).square_distance(self.pos);
-            if d > 16384.0 {
+            if can_despawn && d > 16384.0 {
                 self.dead = true;
             }
-            if self.living.entity_age > 600 && self.rand.next_int(800) == 0 {
+            if self.living.entity_age > 600 && self.rand.next_int(800) == 0
+                && d > 1024.0
+                && can_despawn {
+                self.dead = true;
+            } else
                 if d < 1024.0 {
                     self.living.entity_age = 0;
-                } else {
-                    self.dead = true;
-                }
             }
         }
     }
@@ -141,6 +144,7 @@ impl Entity {
         }
     }
     pub fn block_path_weight(&self, w: &mut World, x: i32, y: i32, z: i32) -> f32 {
+        if matches!(self.kind,EntityKind::Snowman|EntityKind::Villager {..}) {return 0.0;}
         if matches!(self.kind, EntityKind::Silverfish { .. }) && w.get_block_id(x, y - 1, z) == 1 {
             return 10.0;
         }
@@ -212,9 +216,10 @@ impl Entity {
             || (self.living.path.is_some() && self.rand.next_int(20) != 0)
         {
             if !self.living.has_attacked
-                && ((self.living.path.is_none() && self.rand.next_int(80) == 0)
-                    || self.living.flee_ticks > 0
-                    || self.rand.next_int(80) == 0)
+                && ((self.living.path.is_none() && self.rand.next_int(180) == 0)
+                    || self.rand.next_int(120) == 0
+                    || self.living.flee_ticks > 0)
+                && self.living.entity_age < 100
             {
                 self.wander(w);
             }

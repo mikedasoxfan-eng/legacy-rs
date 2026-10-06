@@ -1,7 +1,7 @@
 use worldgen::{
     entity::{
+        player::{ controller::PlayerControllerSP, inventory::ItemStack, InventoryPlayer},
         Entity,
-        player::{InventoryPlayer, controller::PlayerControllerSP, inventory::ItemStack},
     },
     nbt::Tag,
 };
@@ -118,9 +118,10 @@ fn main() {
         let points = r.next_int_unbounded();
         let total = r.next_int_unbounded();
         let level = r.next_int_unbounded();
-        p.set_player_experience(points, total, level);
+        p.set_player_experience(points as f32, total, level);
         let xp = p.player_state().unwrap().experience;
-        for n in [xp.points, xp.total, xp.level, xp.bar_cap()] {
+        out.extend(xp.points.to_le_bytes());
+        for n in [ xp.total, xp.level, xp.bar_cap()] {
             i(&mut out, n);
         }
     }

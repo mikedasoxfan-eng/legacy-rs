@@ -125,16 +125,6 @@ impl World {
             }
         }
         let destroyed_blocks: Vec<_> = blocks.iter().collect();
-        if flaming {
-            for &(x, y, z) in destroyed_blocks.iter().rev() {
-                if self.get_block_id(x, y, z) == 0
-                    && opaque_cube_lookup(self.get_block_id(x, y - 1, z))
-                    && rng.next_int(3) == 0
-                {
-                    self.set_block_with_notify(x, y, z, FIRE);
-                }
-            }
-        }
         let pitch = (1.0 + (self.rand.next_float() - self.rand.next_float()) * 0.2) * 0.7;
         self.play_sound("random.explode", pos, 4.0, pitch);
         self.spawn_particle("hugeexplosion", pos, Vec3D::default());
@@ -180,6 +170,16 @@ impl World {
                         *f = fuse;
                     }
                     self.entity_joined_world(e);
+                }
+            }
+        }
+        if flaming {
+            for &(x, y, z) in destroyed_blocks.iter().rev() {
+                if self.get_block_id(x, y, z) == 0
+                    && opaque_cube_lookup(self.get_block_id(x, y - 1, z))
+                    && rng.next_int(3) == 0
+                {
+                    self.set_block_with_notify(x, y, z, FIRE);
                 }
             }
         }

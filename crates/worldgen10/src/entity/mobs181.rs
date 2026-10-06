@@ -15,51 +15,20 @@ pub struct EndermanState {
 }
 pub fn enderman_can_carry(block: u8) -> bool {
     matches!(
-        block,
-        1 | 2
+        block, 2
             | 3
-            | 4
-            | 5
             | 12
             | 13
-            | 14
-            | 15
-            | 16
-            | 17
-            | 18
-            | 19
-            | 20
-            | 21
-            | 22
-            | 24
-            | 35
             | 37
             | 38
             | 39
             | 40
-            | 41
-            | 42
-            | 45
             | 46
-            | 47
-            | 48
-            | 56
-            | 57
-            | 58
-            | 73
-            | 74
-            | 79
             | 81
             | 82
             | 86
-            | 87
-            | 88
-            | 89
-            | 91
-            | 98
-            | 99
-            | 100
             | 103
+            | 110
     )
 }
 impl Entity {
@@ -82,8 +51,8 @@ impl Entity {
         let look = look.normalize();
         let direction = Vec3D::new(
             self.pos.x - player.pos.x,
-            self.bounding_box.min_y + (self.height / 2.0) as f64 - player.pos.y
-                + player.eye_height() as f64,
+            self.bounding_box.min_y + (self.height / 2.0) as f64 - ( player.pos.y
+                + player.eye_height() as f64),
             self.pos.z - player.pos.z,
         );
         let distance = direction.length();
@@ -92,7 +61,7 @@ impl Entity {
             && self.can_see_target(w, target)
     }
     pub(super) fn enderman_find_target(&mut self, w: &mut World) -> Option<Target> {
-        let target = w.closest_player(self.pos, 64.0).map(Target::Player)?;
+        let target = w.closest_vulnerable_player(self.pos, 64.0).map(Target::Player)?;
         let stared = self.enderman_is_stared_at(w, target);
         if let EntityKind::Enderman(s) = &mut self.kind {
             if stared {
@@ -119,7 +88,7 @@ impl Entity {
             s.screaming = self.living.target.is_some();
         }
         self.living.move_speed = if self.living.target.is_some() {
-            4.5
+            6.5
         } else {
             0.3
         };
@@ -128,6 +97,7 @@ impl Entity {
         } else {
             0
         };
+        if !w.multiplayer_world {
         if carried == 0 {
             if self.rand.next_int(20) == 0 {
                 let x = floor(self.pos.x - 2.0 + self.rand.next_double() * 4.0);
@@ -161,6 +131,7 @@ impl Entity {
                 }
             }
         }
+        }
         for _ in 0..2 {
             let p = Vec3D::new(
                 self.pos.x + (self.rand.next_double() - 0.5) * self.width as f64,
@@ -174,18 +145,26 @@ impl Entity {
             );
             w.spawn_particle("portal", p, v);
         }
-        if w.skylight_subtracted < 4 {
+        if !w.multiplayer_world && w.skylight_subtracted < 4 {
             let light = self.brightness(w);
             if light > 0.5
                 && w.can_block_see_the_sky(floor(self.pos.x), floor(self.pos.y), floor(self.pos.z))
                 && self.rand.next_float() * 30.0 < (light - 0.4) * 2.0
             {
-                self.fire = 300;
+                self.living.target = None;
+                self.enderman_teleport_random(w);
             }
+        }
+        if self.is_wet(w) {
+            self.living.target = None;
+            self.enderman_teleport_random(w);
         }
         self.living.is_jumping = false;
         if let Some(target) = self.living.target {
             self.face_target(w, target, 100.0, 100.0);
+        }
+        if !w.multiplayer_world && (!self.dead && self.living.health > 0) {
+            if let Some(target) = self.living.target {
             if matches!(target, Target::Player(_)) && self.enderman_is_stared_at(w, target) {
                 self.living.move_strafing = 0.0;
                 self.living.move_forward = 0.0;
@@ -218,6 +197,7 @@ impl Entity {
             }
         } else if let EntityKind::Enderman(s) = &mut self.kind {
             s.teleport_ticks = 0;
+            }
         }
     }
     pub fn enderman_teleport_random(&mut self, w: &mut World) -> bool {
@@ -289,6 +269,8 @@ impl Entity {
             );
             w.spawn_particle("portal", p, v);
         }
+        w.play_sound("mob.endermen.portal", old, 1.0, 1.0);
+        w.play_sound_at_entity(self, "mob.endermen.portal", 1.0, 1.0);
         true
     }
     pub(super) fn silverfish_after_action(&mut self, w: &mut World) {

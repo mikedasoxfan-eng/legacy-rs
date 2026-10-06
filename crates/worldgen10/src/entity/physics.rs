@@ -16,6 +16,9 @@ impl Entity {
         w.handle_material_acceleration(b, MAT_WATER, &mut self.motion)
     }
     pub fn handle_lava_movement(&mut self, w: &mut World) -> bool {
+        if matches!(self.kind, EntityKind::MagmaCube { .. }) {
+            return false;
+        }
         w.is_material_in_bb(
             self.bounding_box
                 .expand(-0.1f32 as f64, -0.4f32 as f64, -0.1f32 as f64),
@@ -127,13 +130,16 @@ impl Entity {
                 self.fire -= 1;
             }
         }
-        if self.handle_lava_movement(w) && !self.immune_to_fire {
+        if self.handle_lava_movement(w) {
+            self.fall_distance *= 0.5;
+            if !self.immune_to_fire {
             self.attack_from(
                 w,
                 super::damage::DamageSource::new(super::damage::DamageKind::Lava),
                 4,
             );
-            self.fire = 600;
+            self.set_fire_seconds(15);
+            }
         }
         if self.pos.y < -64.0 {
             if self.kind.is_living() {
@@ -364,11 +370,14 @@ impl Entity {
                 floor(self.pos.z),
             );
             let mut id = w.get_block_id(x, y, z);
-            if w.get_block_id(x, y - 1, z) == FENCE {
+            if id == 0 && w.get_block_id(x, y - 1, z) == FENCE {
                 id = FENCE;
             }
             if self.distance_walked > self.next_step_distance as f32 && id > 0 {
                 self.next_step_distance = self.distance_walked as i32 + 1;
+                if matches!(self.kind, EntityKind::Silverfish { .. }) {
+                    w.play_sound_at_entity(self, "mob.silverfish.step", 1.0, 1.0);
+                } else
                 if w.get_block_id(x, y + 1, z) == SNOW {
                     self.play_step_sound(w, SNOW, 0.15, 1.0);
                 } else if !mat(material_of(id)).is_liquid {
@@ -408,7 +417,7 @@ impl Entity {
             if !wet {
                 self.fire += 1;
                 if self.fire == 0 {
-                    self.fire = 300;
+                    self.set_fire_seconds(8);
                 }
             }
         } else if self.fire <= 0 {
@@ -439,7 +448,7 @@ impl Entity {
             w.activate_redstone_ore181(id,x,y,z);
         }
     }
-    pub(crate) fn on_entity_collided_with_block(&mut self, w: &mut World, id: u8, x: i32, y: i32, z: i32) {
+    pub(crate) fn on_entity_collided_with_block(&mut self, w: &mut World, id: u8, x: i32, y: i32, z: i32,) {
         match id {
             28 => {
                 if w.get_block_metadata(x, y, z) & 8 == 0 {
@@ -475,10 +484,10 @@ impl Entity {
             _ => {}
         }
     }
-    pub fn push_out_of_blocks(&mut self, w: &mut World, x: f64, y: f64, z: f64) {
+    pub fn push_out_of_blocks(&mut self, w: &mut World, x: f64, y: f64, z: f64) -> bool {
         let (bx, by, bz) = (floor(x), floor(y), floor(z));
         if !w.is_block_normal_cube(bx, by, bz) {
-            return;
+            return false;
         }
         let empty = [
             !w.is_block_normal_cube(bx - 1, by, bz),
@@ -514,6 +523,7 @@ impl Entity {
             Some(5) => self.motion.z = push as f64,
             _ => {}
         }
+        true
     }
 }
 
@@ -525,6 +535,10 @@ impl Entity {
         if self.player_state().is_some_and(|s| s.capabilities.allow_flying) { return; }
         if matches!(
             self.kind,
+            EntityKind::MagmaCube { .. }
+                | EntityKind::Blaze(..)
+                | EntityKind::Snowman
+                |
             EntityKind::Ghast(..) | EntityKind::Chicken { .. }
         ) {
             return;
@@ -543,6 +557,16 @@ impl Entity {
         if self.kind.is_living() {
             let damage = (distance - 3.0).ceil() as i32;
             if damage > 0 {
+                w.play_sound_at_entity(
+                    self,
+                    if damage > 4 {
+                        "damage.fallbig"
+                    } else {
+                        "damage.fallsmall"
+                    },
+                    1.0,
+                    1.0,
+                );
                 self.attack_from(
                     w,
                     super::damage::DamageSource::new(super::damage::DamageKind::Fall),

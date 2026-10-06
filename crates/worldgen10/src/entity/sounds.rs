@@ -3,23 +3,30 @@ use crate::{world::events::step_sound, World};
 impl Entity {
     pub fn sound_volume(&self) -> f32 {
         match self.kind {
-            EntityKind::Cow | EntityKind::Wolf(..) | EntityKind::Squid(..) => 0.4,
+            EntityKind::Cow | EntityKind::Mooshroom
+            | EntityKind::Wolf(..) | EntityKind::Squid(..) => 0.4,
             EntityKind::Ghast(..) => 10.0,
-            EntityKind::Slime { .. } => 0.6,
+            EntityKind::Slime { .. } | EntityKind::MagmaCube { .. } => match self.kind {
+                EntityKind::Slime { size, .. } | EntityKind::MagmaCube { size, .. } => { 0.4 * size as f32
+                }
+                _ => unreachable!(),
+            },
             _ => 1.0,
         }
     }
     pub fn living_sound(&mut self) -> Option<&'static str> {
         Some(match &self.kind {
+            EntityKind::Blaze(..) => "mob.blaze.breathe",
+            EntityKind::Snowman => "none",
+            EntityKind::Villager { .. } => "mob.villager.default",
             EntityKind::Pig { .. } => "mob.pig",
-            EntityKind::Cow => "mob.cow",
+            EntityKind::Cow | EntityKind::Mooshroom => "mob.cow",
             EntityKind::Sheep { .. } => "mob.sheep",
             EntityKind::Chicken { .. } => "mob.chicken",
-            EntityKind::Zombie | EntityKind::Enderman(..) => "mob.zombie",
+            EntityKind::Enderman(..) => "mob.endermen.idle",
+            EntityKind::Zombie => "mob.zombie",
             EntityKind::Skeleton => "mob.skeleton",
-            EntityKind::Spider | EntityKind::CaveSpider | EntityKind::Silverfish { .. } => {
-                "mob.spider"
-            }
+            EntityKind::Spider | EntityKind::CaveSpider => "mob.spider", EntityKind::Silverfish { .. } => "mob.silverfish.say",
             EntityKind::PigZombie { .. } => "mob.zombiepig.zpig",
             EntityKind::Ghast(..) => "mob.ghast.moan",
             EntityKind::Wolf(s) => {
@@ -40,6 +47,21 @@ impl Entity {
     }
     pub fn damage_sound(&self, death: bool) -> &'static str {
         match self.kind {
+            EntityKind::Blaze(..) => {
+                if death {
+                    "mob.blaze.death"
+                } else {
+                    "mob.blaze.hit"
+                }
+            }
+            EntityKind::Snowman => "none",
+            EntityKind::Villager { .. } => {
+                if death {
+                    "mob.villager.defaultdeath"
+                } else {
+                    "mob.villager.defaulthurt"
+                }
+            }
             EntityKind::Pig { .. } => {
                 if death {
                     "mob.pigdeath"
@@ -47,10 +69,24 @@ impl Entity {
                     "mob.pig"
                 }
             }
-            EntityKind::Cow => "mob.cowhurt",
+            EntityKind::Cow | EntityKind::Mooshroom => "mob.cowhurt",
             EntityKind::Sheep { .. } => "mob.sheep",
             EntityKind::Chicken { .. } => "mob.chickenhurt",
-            EntityKind::Zombie | EntityKind::Enderman(..) => {
+            EntityKind::Enderman(..) => {
+                if death {
+                    "mob.endermen.death"
+                } else {
+                    "mob.endermen.hit"
+                }
+            }
+            EntityKind::Silverfish { .. } => {
+                if death {
+                    "mob.silverfish.kill"
+                } else {
+                    "mob.silverfish.hit"
+                }
+            }
+            EntityKind::Zombie => {
                 if death {
                     "mob.zombiedeath"
                 } else {
@@ -58,7 +94,7 @@ impl Entity {
                 }
             }
             EntityKind::Skeleton => "mob.skeletonhurt",
-            EntityKind::Spider | EntityKind::CaveSpider | EntityKind::Silverfish { .. } => {
+            EntityKind::Spider | EntityKind::CaveSpider => {
                 if death {
                     "mob.spiderdeath"
                 } else {
@@ -93,8 +129,8 @@ impl Entity {
                     "mob.ghast.scream"
                 }
             }
-            EntityKind::Slime { .. } => "mob.slime",
-            _ => "random.hurt",
+            EntityKind::Slime { .. } | EntityKind::MagmaCube { .. } => "mob.slime",
+            _ => "damage.hurtflesh",
         }
     }
     pub fn play_step_sound(&self, w: &mut World, block: u8, volume: f32, pitch: f32) {

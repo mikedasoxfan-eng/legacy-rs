@@ -129,7 +129,7 @@ impl PlayerControllerSP {
             self.target = (x, y, z);
         }
     }
-    fn creative_remove(&mut self,_p:&mut Entity,w:&mut World,x:i32,y:i32,z:i32,side:i32)->bool {
+    fn creative_remove(&mut self,_p:&mut Entity,w:&mut World,x:i32,y:i32,z:i32,side:i32,)->bool {
         let (fx,fy,fz)=super::placement::offset(x,y,z,side);
         if w.get_block_id(fx,fy,fz)==FIRE {w.auxiliary_effect(1004,(fx,fy,fz),0);w.set_block_with_notify(fx,fy,fz,0);}
         let id=w.get_block_id(x,y,z);if id==0{return false;}
@@ -207,17 +207,17 @@ impl Entity {
             1.0 / hardness / 100.0
         } else {
             let mut strength = registry::strength(self.held_item().map_or(-1, |s| s.id), id);
-            if self.is_inside_material(w, MAT_WATER) {
-                strength /= 5.0;
-            }
-            if !self.on_ground {
-                strength /= 5.0;
-            }
             if let Some(effect) = self.potion_effect(3) {
                 strength *= 1.0 + effect.amplifier.wrapping_add(1) as f32 * 0.2;
             }
             if let Some(effect) = self.potion_effect(4) {
                 strength *= 1.0 - effect.amplifier.wrapping_add(1) as f32 * 0.2;
+            }
+            if self.is_inside_material(w, MAT_WATER) {
+                strength /= 5.0;
+            }
+            if !self.on_ground {
+                strength /= 5.0;
             }
             strength / hardness / 30.0
         }
@@ -253,7 +253,7 @@ impl Entity {
             self.add_stat(super::stat::mine(id as i32), 1);
         }
         if matches!(id,18|31|106) && self.held_item().is_some_and(|s| s.id == 359) {
-            super::block_hooks::drop_stack(w, x, y, z, ItemStack::new(id as i32, 1, if id==18 {meta & 3}else{meta}));
+            super::block_hooks::drop_stack(w, x, y, z, ItemStack::new(id as i32, 1, if id==18 {meta & 3}else{meta}),);
         } else if id == 78 {
             super::block_hooks::drop_stack(w, x, y, z, ItemStack::new(332, 1, 0));
             self.add_stat(super::stat::mine(78), 1);

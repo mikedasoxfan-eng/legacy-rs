@@ -6,6 +6,27 @@ use crate::{
     World,
 };
 use std::collections::HashMap;
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct ChunkPosition {
+    pub x: i32,
+    pub y: i32,
+    pub z: i32,
+}
+impl ChunkPosition {
+    pub fn from_vec(v: Vec3D) -> Self {
+        Self {
+            x: floor(v.x),
+            y: floor(v.y),
+            z: floor(v.z),
+        }
+    }
+    pub fn hash_code(self) -> i32 {
+        self.x
+            .wrapping_mul(8976890)
+            .wrapping_add(self.y.wrapping_mul(981131))
+            .wrapping_add(self.z)
+    }
+}
 #[derive(Clone, Debug)]
 pub struct PathEntity {
     pub points: Vec<[i32; 3]>,

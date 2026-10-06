@@ -70,13 +70,18 @@ impl Entity {
         self.motion.y *= 0.98f32 as f64;
         self.motion.z *= 0.98f32 as f64;
         let (x, y, z) = (floor(self.pos.x), floor(self.pos.y), floor(self.pos.z));
-        if w.get_block_id(x, y, z) == block {
+        if fall_time == 1 && w.get_block_id(x, y, z) == block {
             w.set_block_with_notify(x, y, z, 0);
+        } else if !w.multiplayer_world && fall_time == 1 {
+            self.dead = true;
         }
         if self.on_ground {
             self.motion.x *= 0.7f32 as f64;
             self.motion.z *= 0.7f32 as f64;
             self.motion.y *= -0.5;
+            if w.get_block_id(x, y, z) == 36 {
+                return;
+            }
             self.dead = true;
             let cur = w.get_block_id(x, y, z);
             let replace = cur == 0
@@ -88,9 +93,11 @@ impl Entity {
                 || crate::world::behavior::can_fall_below(w, x, y - 1, z)
                 || !w.set_block_with_notify(x, y, z, block)
             {
+                if !w.multiplayer_world {
                 self.drop_item(w, block as i32, 1, 0, 0.0);
             }
-        } else if fall_time > 100 {
+        }
+        } else if fall_time > 100 && !w.multiplayer_world {
             self.drop_item(w, block as i32, 1, 0, 0.0);
             self.dead = true;
         }
@@ -244,7 +251,7 @@ impl super::Entity {
             return;
         }
         if !self.immune_to_fire {
-            self.attack_from(w, super::damage::DamageSource::new(super::damage::DamageKind::InFire), 5);
+            self.attack_from(w, super::damage::DamageSource::new(super::damage::DamageKind::InFire), 5,);
         }
         self.fire += 1;
         if self.fire == 0 {

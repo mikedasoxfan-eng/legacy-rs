@@ -121,7 +121,7 @@ pub fn run(script: &str, out_dir: &std::path::Path) -> Result<(), String> {
             }
             "packs" => {
                 let base = std::path::Path::new(script).parent().unwrap_or(std::path::Path::new("."));
-                sys.ui.packs = crate::texture_packs::TexturePackList::new(&base.join(rest), &sys.ui.settings.skin);
+                sys.ui.packs = crate::texture_packs::TexturePackList::new(&base.join(rest), &sys.ui.settings.skin,);
             }
             "pack" => {
                 sys.ui.packs.update();
@@ -136,7 +136,7 @@ pub fn run(script: &str, out_dir: &std::path::Path) -> Result<(), String> {
             "fontstart" => {
                 sys.ui.settings.anaglyph = rest == "on";
                 let mut jar = crate::assets::Jar::open()?;
-                sys.ui.font = super::font::FontRenderer::new_with_anaglyph(&jar.image("font/default.png")?, sys.ui.texture("font/default.png"), &jar.text("font.txt")?, sys.ui.settings.anaglyph);
+                sys.ui.font = super::font::FontRenderer::new_with_anaglyph(&jar.image("font/default.png")?, sys.ui.texture("font/default.png"), &jar.text("font.txt")?, sys.ui.settings.anaglyph,);
                 sys.refresh_textures(&device, &queue)?;
             }
             "message" => ingame.add_chat_message(&sys.ui, rest.into()),
@@ -144,7 +144,7 @@ pub fn run(script: &str, out_dir: &std::path::Path) -> Result<(), String> {
                 sys.ui.settings.anaglyph = rest == "on";
                 sys.refresh_textures(&device, &queue)?;
             }
-            "sessionless" | "texturecheck" => {},
+            "sessionless" | "texturecheck" => {}
             "millis" => sys.ui.millis = rest.parse().map_err(|_| "millis")?,
             "toast" => {
                 toast_mode = true;
@@ -202,9 +202,9 @@ pub fn run(script: &str, out_dir: &std::path::Path) -> Result<(), String> {
                         container = Some((c, p));
                         screen
                     }
-                    "chat" => { sys.ui.world_open = true; Box::new(screens::chat::GuiChat::default()) },
+                    "chat" => { sys.ui.world_open = true; Box::new(screens::chat::GuiChat::default()) }
                     "title" => title,
-                    "sign" => {sys.ui.world_open=true;Box::new(screens::edit_sign::GuiEditSign::new((0,64,0),arg(1).parse().map_err(|_|"sign block")?,arg(2).parse().map_err(|_|"sign metadata")?,Default::default()))},
+                    "sign" => {sys.ui.world_open=true;Box::new(screens::edit_sign::GuiEditSign::new((0,64,0),arg(1).parse().map_err(|_|"sign block")?,arg(2).parse().map_err(|_|"sign metadata")?,Default::default(),))}
                     "options" => Box::new(screens::options::GuiOptions::new(title)),
                     "video" => Box::new(screens::options::GuiVideoSettings::new(title)),
                     "controls" => Box::new(screens::options::GuiControls::new(title)),
@@ -322,8 +322,9 @@ pub fn run(script: &str, out_dir: &std::path::Path) -> Result<(), String> {
                     match k {
                         "health" => p.health = i()?,
                         "food" => p.food_level = i()?,
-                        "saturation" => p.food_saturation = v.parse().map_err(|_| "hud saturation")?,
-                        "xp" => p.xp_points = i()?,
+                        "saturation" => { p.food_saturation = v.parse().map_err(|_| "hud saturation")?
+                        }
+                        "xp" => p.xp_points = v.parse().map_err(|_| "hud xp")?,
                         "level" => p.xp_level = i()?,
                         "seed" => p.seed = v.parse().map_err(|_| "hud seed")?,
                         "armor" => p.armor = i()?,
@@ -335,7 +336,8 @@ pub fn run(script: &str, out_dir: &std::path::Path) -> Result<(), String> {
                         "regen" => p.regeneration = i()? != 0,
                         "nausea" => p.nausea = i()? != 0,
                         "portal" => p.time_in_portal = v.parse().map_err(|_| "hud portal")?,
-                        "prev_portal" => p.prev_time_in_portal = v.parse().map_err(|_| "hud prev_portal")?,
+                        "prev_portal" => { p.prev_time_in_portal = v.parse().map_err(|_| "hud prev_portal")?
+                        }
                         "sleep" => p.sleep_timer = i()?,
                         "prev" => p.prev_health = i()?,
                         "hearts_life" => p.hearts_life = i()?,
@@ -347,7 +349,7 @@ pub fn run(script: &str, out_dir: &std::path::Path) -> Result<(), String> {
                     }
                 }
                 // EntityPlayer.getEyeHeight is 0.12; the block at the eye decides isInsideOfMaterial.
-                let eye = (p.pos[0].floor() as i32, (p.pos[1] + 0.12f32 as f64).floor() as i32, p.pos[2].floor() as i32);
+                let eye = (p.pos[0].floor() as i32, (p.pos[1] + 0.12f32 as f64).floor() as i32, p.pos[2].floor() as i32,);
                 match water {
                     Some(true) => { hud_water.insert(eye); }
                     Some(false) => { hud_water.remove(&eye); }
@@ -395,7 +397,7 @@ pub fn run(script: &str, out_dir: &std::path::Path) -> Result<(), String> {
                 let acts = sys.process_actions();
                 if acts.iter().any(|a| matches!(a, super::system::GameAction::RefreshTextures)) { sys.refresh_textures(&device, &queue)?; }
             }
-            "wheel" => {if let Some(s)=sys.screen.as_mut(){s.mouse_scrolled(&mut sys.ui,rest.parse().map_err(|_|"wheel")?);}},
+            "wheel" => {if let Some(s)=sys.screen.as_mut(){s.mouse_scrolled(&mut sys.ui,rest.parse().map_err(|_|"wheel")?);}}
             "shift" => sys.ui.shift_down = rest == "on",
             "release" => {
                 sys.mouse_event(mx, my, 0, false);
@@ -420,7 +422,7 @@ pub fn run(script: &str, out_dir: &std::path::Path) -> Result<(), String> {
                     if sys.ui.actions.iter().any(|a| matches!(a,super::Action::RedirectInventory)) {
                         sys.process_actions();
                         if let Some(s)=sys.ui.container_snapshot.as_ref() {
-                            container=Some((worldgen::container::Container::new(s.kind,s.window),s.player_inventory.clone()));
+                            container=Some((worldgen::container::Container::new(s.kind,s.window),s.player_inventory.clone(),));
                         }
                     }
                 }

@@ -8,6 +8,61 @@ pub struct Entry {
 }
 pub const ENTRIES: &[Entry] = &[
     Entry {
+        class: "EntityMagmaCube",
+        name: "LavaSlime",
+        id: 62,
+    },
+    Entry {
+        class: "EntityBlaze",
+        name: "Blaze",
+        id: 61,
+    },
+    Entry {
+        class: "EntityMooshroom",
+        name: "MushroomCow",
+        id: 96,
+    },
+    Entry {
+        class: "EntitySnowman",
+        name: "SnowMan",
+        id: 97,
+    },
+    Entry {
+        class: "EntityVillager",
+        name: "Villager",
+        id: 120,
+    },
+    Entry {
+        class: "EntityFireball",
+        name: "Fireball",
+        id: 12,
+    },
+    Entry {
+        class: "EntitySmallFireball",
+        name: "SmallFireball",
+        id: 13,
+    },
+    Entry {
+        class: "EntityEnderPearl",
+        name: "ThrownEnderpearl",
+        id: 14,
+    },
+    Entry {
+        class: "EntityEnderEye",
+        name: "EyeOfEnderSignal",
+        id: 15,
+    },
+    Entry {
+        class: "EntityDragon",
+        name: "EnderDragon",
+        id: 63,
+    },
+    Entry {
+        class: "EntityEnderCrystal",
+        name: "EnderCrystal",
+        id: 200,
+    },
+    Entry {
         class: "EntityItem",
         name: "Item",
         id: 1,
@@ -163,6 +218,11 @@ pub fn by_kind(kind: &EntityKind) -> Option<&'static Entry> {
 pub fn create(w: &mut crate::World, name: &str) -> Option<super::Entity> {
     by_name(name)?;
     let e = match name {
+        "ThrownEnderpearl" => super::Entity::pearl_base(w),
+        "EyeOfEnderSignal" => super::Entity::ender_eye_base(w),
+        "Fireball" => super::Entity::fireball_base(w, false),
+        "SmallFireball" => super::Entity::fireball_base(w, true),
+        "EnderCrystal" => super::Entity::ender_crystal(w, super::Vec3D::default()),
         "Painting" => super::Entity::painting_base(w),
         "Minecart" => super::Entity::minecart_base(w),
         "Boat" => super::Entity::boat_base(w),
