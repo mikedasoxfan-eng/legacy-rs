@@ -26,6 +26,12 @@ pub enum MobKind {
     Enderman,
     Silverfish,
     CaveSpider,
+    Mooshroom,
+    Villager,
+    SnowMan,
+    Blaze,
+    MagmaCube,
+    Dragon,
 }
 
 /// Interpolated `EntityLiving` inputs. The simulation can fill this at partialTicks:
@@ -34,6 +40,14 @@ pub enum MobKind {
 /// limbSwing = S-R*(1-partial), age = ticksExisted+partial, attack = getSwingProgress.
 #[derive(Clone, Debug)]
 pub struct RenderState {
+    pub profession: i32,
+    pub health: i32,
+    pub boss_health: i32,
+    pub dragon: Option<Box<worldgen::entity::dragon::DragonState>>,
+    pub dragon_crystal: Option<([f64; 3], i32)>,
+    pub previous_position: [f64; 3],
+    pub current_position: [f64; 3],
+    pub ticks: i32,
     pub entity_id: i32,
     pub arrow_count: i32,
     pub carried_block: u8,
@@ -59,6 +73,10 @@ pub struct RenderState {
     pub hurt_time: i32,
     pub death_time: i32,
     pub brightness: f32,
+    pub is_child: bool,
+    pub held_left_pose: i32,
+    pub held_right_pose: i32,
+    pub aimed_bow: bool,
     pub riding: bool,
     pub sneak: bool,
     pub held_left: bool,
@@ -92,6 +110,14 @@ pub struct RenderState {
 impl RenderState {
     pub fn new(kind: MobKind) -> Self {
         Self {
+            profession: 0,
+            health: 200,
+            boss_health: 200,
+            dragon: None,
+            dragon_crystal: None,
+            previous_position: [0.0; 3],
+            current_position: [0.0; 3],
+            ticks: 0,
             entity_id: 0,
             arrow_count: 0,
             carried_block: 0,
@@ -127,6 +153,10 @@ impl RenderState {
             hurt_time: 0,
             death_time: 0,
             brightness: 1.0,
+            is_child: false,
+            held_left_pose: 0,
+            held_right_pose: 0,
+            aimed_bow: false,
             riding: false,
             sneak: false,
             held_left: false,
@@ -186,10 +216,12 @@ pub struct EntityVertex {
 pub enum Pass {
     Line,
     Opaque,
+    OpaqueEqual,
     Alpha,
     Eyes,
     EyesOverlay,
     Additive,
+    Rays,
     Overlay,
     TntFlash,
     Shadow,
@@ -200,6 +232,9 @@ pub enum Pass {
 
 #[derive(Clone)]
 pub struct Batch {
+    pub alpha_cutoff: f32,
+    /// GL culling: 0 disabled, 1 front, 2 back.
+    pub cull: u8,
     /// `None` is GL_TEXTURE_2D disabled (hurt/flash), represented by a white texel.
     pub texture: Option<&'static str>,
     pub pass: Pass,
@@ -208,6 +243,23 @@ pub struct Batch {
 
 /// All jar resources used by the models, including the powered creeper pass.
 pub const TEXTURES: &[&str] = &[
+    "mob/redcow.png",
+    "mob/snowman.png",
+    "mob/fire.png",
+    "mob/lava.png",
+    "mob/villager/villager.png",
+    "mob/villager/farmer.png",
+    "mob/villager/librarian.png",
+    "mob/villager/priest.png",
+    "mob/villager/smith.png",
+    "mob/villager/butcher.png",
+    "mob/enderdragon/ender.png",
+    "mob/enderdragon/ender_eyes.png",
+    "mob/enderdragon/shuffle.png",
+    "mob/enderdragon/beam.png",
+    "mob/enderdragon/crystal.png",
+    "item/book.png",
+    "misc/glint.png",
     "mob/enderman.png",
     "mob/enderman_eyes.png",
     "mob/cavespider.png",
@@ -244,6 +296,12 @@ pub const TEXTURES: &[&str] = &[
 
 pub fn model_kind(kind: MobKind) -> ModelKind {
     match kind {
+        MobKind::Mooshroom => ModelKind::Cow,
+        MobKind::Villager => ModelKind::Villager,
+        MobKind::SnowMan => ModelKind::SnowMan,
+        MobKind::Blaze => ModelKind::Blaze,
+        MobKind::MagmaCube => ModelKind::MagmaCube,
+        MobKind::Dragon => ModelKind::Dragon,
         MobKind::Enderman => ModelKind::Enderman,
         MobKind::Silverfish => ModelKind::Silverfish,
         MobKind::CaveSpider => ModelKind::Spider,
@@ -267,6 +325,12 @@ pub fn model_kind(kind: MobKind) -> ModelKind {
 
 fn texture(s: &RenderState) -> &'static str {
     match s.kind {
+        MobKind::Mooshroom => "mob/redcow.png",
+        MobKind::Villager => match s.profession {0 => "mob/villager/farmer.png", 1 => "mob/villager/librarian.png", 2 => "mob/villager/priest.png", 3 => "mob/villager/smith.png", 4 => "mob/villager/butcher.png", _ => "mob/villager/villager.png"},
+        MobKind::SnowMan => "mob/snowman.png",
+        MobKind::Blaze => "mob/fire.png",
+        MobKind::MagmaCube => "mob/lava.png",
+        MobKind::Dragon => "mob/enderdragon/ender.png",
         MobKind::Enderman => "mob/enderman.png",
         MobKind::Silverfish => "mob/silverfish.png",
         MobKind::CaveSpider => "mob/cavespider.png",
@@ -462,7 +526,8 @@ fn part_triangles(
     let normal_matrix = inverse.transpose();
     // GL_RESCALE_NORMAL: reciprocal length of the inverse modelview's third row.
     let rescale = 1.0 / inverse.row(2).truncate().length();
-    for face in &part.faces {
+    let list = part.compiled(1.0 / 16.0);
+    for face in &list.faces {
         let mut n = normal_matrix.transform_vector3(tessellator_normal(face));
         if normalize {
             n = n.normalize_or_zero();
@@ -482,9 +547,9 @@ fn part_triangles(
             out.push(v[i]);
         }
     }
-    for child in &part.children {
+    if !with_rotation { for child in &part.children {
         part_triangles(child, m, false, color, lit, normalize, uv_offset, out);
-    }
+    } }
 }
 
 fn batch(
@@ -497,7 +562,7 @@ fn batch(
     normalize: bool,
     uv_offset: f32,
 ) -> Batch {
-    let mut b = Batch {
+    let mut b = Batch { alpha_cutoff: 0.1, cull: 0,
         texture,
         pass,
         vertices: Vec::new(),
@@ -505,7 +570,7 @@ fn batch(
     for (part, r) in m.render_parts() {
         part_triangles(
             part,
-            transform,
+            transform * super::fixed::matrix(&m.child_ops(part, 1.0 / 16.0)),
             r,
             color,
             lit,
@@ -530,6 +595,9 @@ fn render_with_lighting(s: &RenderState, camera: DVec3, normalize: bool) -> Vec<
         }
         g.draws.iter().map(|d| d.batch()).collect()
     };
+    if matches!(s.kind, MobKind::Mooshroom | MobKind::Villager | MobKind::SnowMan | MobKind::Blaze | MobKind::MagmaCube | MobKind::Dragon) {
+        return prefixed(super::raw_living181::render(s, camera.to_array(), normalize));
+    }
     if matches!(s.kind, MobKind::Enderman | MobKind::Silverfish | MobKind::Spider | MobKind::CaveSpider) {
         return prefixed(super::raw_living181::render(s, camera.to_array(), normalize));
     }
@@ -540,6 +608,10 @@ fn render_with_lighting(s: &RenderState, camera: DVec3, normalize: bool) -> Vec<
     let mut main = Model::new(model_kind(s.kind));
     main.on_ground = s.attack;
     main.is_riding = s.riding;
+    main.is_child = s.is_child;
+    main.held_left_pose = s.held_left_pose;
+    main.held_right_pose = s.held_right_pose;
+    main.aimed_bow = s.aimed_bow;
     main.is_sneak = s.sneak;
     main.carrying = s.carrying;
     main.screaming = s.screaming;
@@ -550,7 +622,7 @@ fn render_with_lighting(s: &RenderState, camera: DVec3, normalize: bool) -> Vec<
         amount = 1.0;
     }
     let pose = [
-        s.limb_swing,
+        s.limb_swing * if s.is_child {3.0} else {1.0},
         amount,
         animation_age(s),
         s.yaw - s.body_yaw,
@@ -626,6 +698,7 @@ fn render_with_lighting(s: &RenderState, camera: DVec3, normalize: bool) -> Vec<
     if let Some(m) = &mut pass_model {
         m.on_ground = s.attack;
         m.is_riding = s.riding;
+        m.is_child = s.is_child;
         m.set_rotation_angles(pose);
         let offset = if pass == Pass::Additive {
             s.age * 0.01

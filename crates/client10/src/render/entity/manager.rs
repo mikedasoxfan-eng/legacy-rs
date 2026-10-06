@@ -59,8 +59,19 @@ pub const RENDERERS: &[Renderer] = &[
     renderer("EntityFallingSand", "RenderFallingSand", 0.5),
     renderer("EntityMinecart", "RenderMinecart", 0.5),
     renderer("EntityBoat", "RenderBoat", 0.5),
-    renderer("EntityFish", "RenderFish", 0.0),
+    renderer("EntityFishHook", "RenderFish", 0.0),
     renderer("EntityLightningBolt", "RenderLightningBolt", 0.0),
+    renderer("EntityMooshroom", "RenderMooshroom", 0.7),
+    renderer("EntityVillager", "RenderVillager", 0.5),
+    renderer("EntitySnowman", "RenderSnowMan", 0.5),
+    renderer("EntityBlaze", "RenderBlaze", 0.5),
+    renderer("EntityMagmaCube", "RenderMagmaCube", 0.25),
+    renderer("EntityDragon", "RenderDragon", 0.5),
+    renderer("EntityEnderCrystal", "RenderEnderCrystal", 0.5),
+    renderer("EntityEnderPearl", "RenderSnowball", 0.0),
+    renderer("EntityEnderEye", "RenderSnowball", 0.0),
+    renderer("EntityPotion", "RenderSnowball", 0.0),
+    renderer("EntitySmallFireball", "RenderFireball", 0.0),
 ];
 const fn renderer(
     entity_class: &'static str,
@@ -77,10 +88,12 @@ const fn renderer(
 
 pub fn class(e: &Entity) -> &'static str {
     match &e.kind {
+        EntityKind::DragonPart {..} => "Entity",
+        EntityKind::Snowman => "EntitySnowman",
         EntityKind::Giant => "EntityGiantZombie",
         EntityKind::Tnt { .. } => "EntityTNTPrimed",
         EntityKind::Egg(_) => "EntityEgg",
-        EntityKind::Fish(_) => "EntityFish",
+        EntityKind::Fish(_) => "EntityFishHook",
         EntityKind::PigZombie { .. } => "EntityPigZombie",
         _ => {
             RENDERERS
@@ -181,6 +194,11 @@ impl<T> Default for RenderManager<T> {
             parents: HashMap::new(),
         };
         for (name, parent) in [
+            ("EntityMooshroom", "EntityCow"), ("EntityVillager", "EntityLiving"),
+            ("EntitySnowman", "EntityLiving"), ("EntityBlaze", "EntityMob"),
+            ("EntityMagmaCube", "EntitySlime"), ("EntityDragon", "EntityLiving"),
+            ("EntityEnderCrystal", "Entity"), ("EntityEnderPearl", "Entity"),
+            ("EntityEnderEye", "Entity"), ("EntityPotion", "Entity"), ("EntitySmallFireball", "Entity"),
             ("EntitySpider", "EntityMob"),
             ("EntityCaveSpider", "EntitySpider"),
             ("EntityPig", "EntityAnimal"),
@@ -210,7 +228,7 @@ impl<T> Default for RenderManager<T> {
             ("EntityFallingSand", "Entity"),
             ("EntityMinecart", "Entity"),
             ("EntityBoat", "Entity"),
-            ("EntityFish", "Entity"),
+            ("EntityFishHook", "Entity"),
             ("EntityLightningBolt", "EntityWeatherEffect"),
             ("Entity", "Object"),
             ("Object", ""),

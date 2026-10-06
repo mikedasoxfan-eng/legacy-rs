@@ -223,6 +223,7 @@ impl GuiIngame {
         let health = p.health;
         let prev = p.prev_health;
         self.rand.set_seed(self.update_counter.wrapping_mul(312871) as i64);
+        crate::render::entity::render_release::boss_overlay(ui, z);
         if p.survival {
             let left = w / 2 - 91;
             let right = w / 2 + 91;

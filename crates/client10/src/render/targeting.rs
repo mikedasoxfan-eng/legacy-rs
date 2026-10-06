@@ -160,7 +160,7 @@ pub fn frame(
 /// Expand vanilla's width-2 line strips in screen space. Keep raw GL vertices
 /// untouched for the oracle; wgpu doesn't expose glLineWidth.
 pub fn line_batches(g: &Fixed, vp: Mat4, width: u32, height: u32) -> Vec<Batch> {
-    let mut b = Batch {
+    let mut b = Batch { alpha_cutoff: 0.1, cull: 0,
         texture: None,
         pass: Pass::Shadow,
         vertices: vec![],

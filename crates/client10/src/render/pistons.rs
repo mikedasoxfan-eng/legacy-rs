@@ -114,7 +114,7 @@ impl Snapshot {
                 lights.push(v.light);
             }
         }
-        let batch = Batch {
+        let batch = Batch { alpha_cutoff: 0.1, cull: 0,
             texture: Some("terrain.png"),
             pass: Pass::Alpha,
             vertices,

@@ -25,6 +25,12 @@ pub fn render_state(e: &Entity, partial: f32, brightness: f32) -> Option<RenderS
         EntityKind::Pig { .. } => MobKind::Pig,
         EntityKind::Sheep { .. } => MobKind::Sheep,
         EntityKind::Cow => MobKind::Cow,
+        EntityKind::Mooshroom => MobKind::Mooshroom,
+        EntityKind::Villager {..} => MobKind::Villager,
+        EntityKind::Snowman => MobKind::SnowMan,
+        EntityKind::Blaze(_) => MobKind::Blaze,
+        EntityKind::MagmaCube {..} => MobKind::MagmaCube,
+        EntityKind::Dragon(_) => MobKind::Dragon,
         EntityKind::Chicken { .. } => MobKind::Chicken,
         EntityKind::Squid(_) => MobKind::Squid,
         EntityKind::Slime { .. } => MobKind::Slime,
@@ -37,6 +43,9 @@ pub fn render_state(e: &Entity, partial: f32, brightness: f32) -> Option<RenderS
     s.overlay_brightness = brightness;
     // RenderManager: lastTickPos + (pos - lastTickPos) * partialTicks.
     s.position = position(e, partial);
+    s.previous_position = [e.prev_pos.x, e.prev_pos.y, e.prev_pos.z];
+    s.current_position = [e.pos.x, e.pos.y, e.pos.z];
+    s.ticks = e.ticks_existed;
     let l = &e.living;
     s.yaw = lerp(e.prev_yaw, e.yaw, partial);
     s.body_yaw = lerp(l.prev_render_yaw_offset, l.render_yaw_offset, partial);
@@ -56,9 +65,13 @@ pub fn render_state(e: &Entity, partial: f32, brightness: f32) -> Option<RenderS
         s.carrying = state.carried > 0;
         s.screaming = state.screaming;
     }
+    s.is_child = e.is_child();
+    s.health = e.living.health;
     s.riding = e.riding.is_some();
     s.sneak = e.sneaking;
     match &e.kind {
+        EntityKind::Dragon(state) => {s.dragon = Some(state.clone());s.boss_health = e.data_watcher.int(16).expect("dragon watched health");},
+        EntityKind::Villager {profession} => s.profession = *profession,
         EntityKind::Ghast(g) => {
             s.ghast_attack = g.prev_attack_counter as f32
                 + (g.attack_counter - g.prev_attack_counter) as f32 * partial;
@@ -81,7 +94,7 @@ pub fn render_state(e: &Entity, partial: f32, brightness: f32) -> Option<RenderS
             squish,
             prev_squish,
             ..
-        } => {
+        } | EntityKind::MagmaCube {size, squish, prev_squish, ..} => {
             s.slime_size = *size;
             s.slime_squish = lerp(*prev_squish, *squish, partial);
         }
@@ -167,10 +180,15 @@ pub fn object_state(
             shake: a.shake,
             visible: e.prev_yaw != 0.0 || e.prev_pitch != 0.0,
         },
+        EntityKind::EnderCrystal {rotation, ..} => ObjectKind::EnderCrystal {rotation: *rotation},
+        EntityKind::EnderPearl(_) => ObjectKind::Sprite {icon: 107, scale: 0.5},
+        EntityKind::EnderEye(_) => ObjectKind::Sprite {icon: 155, scale: 0.5},
+        EntityKind::SmallFireball(_) => ObjectKind::Sprite {icon: 46, scale: 0.5},
+        EntityKind::Potion(_, damage) => ObjectKind::Potion {damage: *damage},
         EntityKind::Snowball(_) => ObjectKind::Sprite { icon: 14, scale: 0.5 },
         EntityKind::Egg(_) => ObjectKind::Sprite { icon: 12, scale: 0.5 },
         EntityKind::Fireball(_) => ObjectKind::Sprite {
-            icon: 14,
+            icon: 46,
             scale: 2.0,
         },
         _ => return None,

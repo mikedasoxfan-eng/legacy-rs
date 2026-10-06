@@ -11,6 +11,8 @@ pub const RENDERERS: &[(&str, &str)] = &[
     ("TileEntityMobSpawner", "TileEntityMobSpawnerRenderer"),
     ("TileEntityPiston", "TileEntityRendererPiston"),
     ("TileEntityChest", "TileEntityChestRenderer"),
+    ("TileEntityEnchantmentTable", "RenderEnchantmentTable"),
+    ("TileEntityEndPortal", "RenderEndPortal"),
 ];
 struct Class {
     name: String,

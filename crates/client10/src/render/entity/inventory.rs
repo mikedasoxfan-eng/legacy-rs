@@ -173,6 +173,18 @@ pub fn inventory(gl: &mut Fixed, id: u8, meta: i32, brightness: f32, tint: bool)
         ];
     }
     let rt = item_props(id).render_type;
+    if rt == 1 {
+        let texture = item_props(id).textures[(meta & 15) as usize][0] as i32;
+        let u0 = (((texture & 15) << 4) as f32 / 256.0) as f64;
+        let u1 = ((((texture & 15) << 4) as f32 + 15.99) / 256.0) as f64;
+        let v0 = ((texture & 240) as f32 / 256.0) as f64;
+        let v1 = (((texture & 240) as f32 + 15.99) / 256.0) as f64;
+        gl.begin();gl.set_normal(0.0, -1.0, 0.0);
+        for (x0, z0, x1, z1) in [(-0.45, -0.45, 0.45, 0.45), (0.45, 0.45, -0.45, -0.45), (-0.45, 0.45, 0.45, -0.45), (0.45, -0.45, -0.45, 0.45)] {
+            for (position, uv) in [([x0, 0.5, z0], [u0, v0]), ([x0, -0.5, z0], [u0, v1]), ([x1, -0.5, z1], [u1, v1]), ([x1, 0.5, z1], [u1, v0])] {gl.vertex(position, uv);}
+        }
+        gl.end();return;
+    }
     if rt == 23 { return; } // Vanilla's inventory lily-pad branch emits no vertices.
     if rt == 27 {
         gl.translate(-0.5, -0.5, -0.5);

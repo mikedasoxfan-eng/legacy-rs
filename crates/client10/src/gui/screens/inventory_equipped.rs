@@ -57,7 +57,7 @@ pub fn render_item(
     let inv = m.inverse();
     let normal_matrix = inv.transpose();
     let rescale = 1.0 / inv.row(2).truncate().length();
-    let mut b = Batch {
+    let mut b = Batch { alpha_cutoff: 0.1, cull: 0,
         texture: Some(if item.terrain {
             "terrain.png"
         } else {

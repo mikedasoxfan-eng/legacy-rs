@@ -4,6 +4,8 @@ use worldgen::world::tile::ItemStack;
 use worldgen::{math, JavaRandom};
 #[derive(Clone, Debug)]
 pub enum ObjectKind {
+    EnderCrystal {rotation: i32},
+    Potion {damage: i32},
     XPOrb {
         value: i32,
         ticks: i32,
@@ -44,6 +46,19 @@ pub fn render(s: &ObjectState, camera: [f64; 3], view: [f32; 2]) -> Fixed {
     let [x, y, z] = std::array::from_fn(|i| (s.position[i] - camera[i]) as f32);
     let partial = s.partial;
     match s.kind {
+        ObjectKind::EnderCrystal {rotation} => {
+            g.push();g.translate(x, y, z);g.texture = 74;
+            let age = rotation as f32 + partial;
+            let mut bob = math::sin(age * 0.2) / 2.0 + 0.5;bob += bob * bob;
+            super::models::Model::new(super::models::ModelKind::EnderCrystal).crystal_render(&mut g, age * 3.0, bob * 0.2, 0.0625);g.pop();
+        }
+        ObjectKind::Potion {damage} => {
+            g.push();g.translate(x, y, z);g.enable(2, true);g.scale(0.5, 0.5, 0.5);g.texture = 2;
+            let (color, _) = crate::render::potion_color::properties(damage);
+            g.material = [(color >> 16 & 255) as f32 / 255.0, (color >> 8 & 255) as f32 / 255.0, (color & 255) as f32 / 255.0, 1.0];
+            g.push();g.rotate(180.0 - view[0], 0.0, 1.0, 0.0);g.rotate(-view[1], 1.0, 0.0, 0.0);sprite_quad(&mut g, 141);g.pop();
+            g.material = [1.0; 4];g.rotate(180.0 - view[0], 0.0, 1.0, 0.0);g.rotate(-view[1], 1.0, 0.0, 0.0);sprite_quad(&mut g, 154);g.enable(2, false);g.pop();
+        }
         ObjectKind::XPOrb { value, ticks } => {
             g.push();
             g.translate(x, y, z);

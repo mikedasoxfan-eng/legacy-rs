@@ -83,7 +83,7 @@ pub fn states(variants: bool) -> Vec<RenderState> {
 
 pub fn batches(states: &[RenderState], camera: DVec3) -> Vec<Batch> {
     // Stone tiles on a flat lit floor, directly in the entity pipeline's format.
-    let mut floor = Batch { texture: Some("terrain.png"), pass: Pass::Opaque, vertices: Vec::new() };
+    let mut floor = Batch { alpha_cutoff: 0.1, cull: 0, texture: Some("terrain.png"), pass: Pass::Opaque, vertices: Vec::new() };
     for x in -20..20 {
         for z in -5..5 {
             let p = [
@@ -180,6 +180,23 @@ pub fn renderer_shot(path: &std::path::Path) -> Result<(), String> {
     let view = crate::render::gpu::perspective(FOV.to_radians(), WIDTH as f32 / HEIGHT as f32, 0.05, FAR * 2.0)
         * Mat4::from_rotation_x(PITCH.to_radians());
     save_batches(path, all, view)
+}
+
+/// Release model and attachment visual QA through the same pipelines as the live frame.
+pub fn release_shot(path: &std::path::Path) -> Result<(), String> {
+    let camera = DVec3::from_array(CAMERA);
+    let mut all = batches(&[], camera);
+    for (i, kind) in [MobKind::Mooshroom, MobKind::Villager, MobKind::SnowMan, MobKind::Blaze, MobKind::MagmaCube].into_iter().enumerate() {
+        let mut s = RenderState::new(kind);s.position[0] = (i as f64 - 2.0) * 4.0;
+        s.body_yaw = -25.0;s.yaw = -10.0;s.age = 37.5;s.partial = 0.5;s.slime_size = 2;s.slime_squish = 0.4;
+        let min = living::render_living(&s, DVec3::ZERO).iter().flat_map(|b| &b.vertices).map(|v| v.pos[1]).fold(f32::INFINITY, f32::min);
+        s.position[1] = -min as f64 + 0.015625;all.extend(living::render_living(&s, camera));
+    }
+    let crystal = super::objects::ObjectState {kind: super::objects::ObjectKind::EnderCrystal {rotation: 37}, position: [12.0, 0.0, 0.0], partial: 0.5, brightness: 1.0};
+    all.extend(super::objects::render(&crystal, camera.to_array(), [0.0, PITCH]).draws.iter().map(|d| d.batch()));
+    let book = super::render_release::BookState {ticks: 37, rotation: [0.25, 0.5], pages: [0.2, 0.7], opening: [0.8, 1.0]};
+    all.extend(super::render_release::book(book, [-12.0 - CAMERA[0], 0.0 - CAMERA[1], -CAMERA[2]], 0.5).draws.iter().map(|d| d.batch()));
+    save_batches(path, all, view_proj())
 }
 
 fn save_batches(path: &std::path::Path, batches: Vec<Batch>, view_proj: Mat4) -> Result<(), String> {

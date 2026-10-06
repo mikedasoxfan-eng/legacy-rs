@@ -16,6 +16,8 @@ pub struct RawVertex {
 }
 #[derive(Clone, Debug)]
 pub struct Draw {
+    pub alpha_cutoff: f32,
+    pub cull: u8,
     pub ops: Vec<Op>,
     pub texture: u32,
     pub material: [f32; 4],
@@ -32,6 +34,9 @@ pub struct Draw {
 /// Flag bits, in order: lighting, rescale, normalize, texturing, blending,
 /// depth-write, vertex-color, vertex-normal, depth-test, vertex-UV.
 pub struct Fixed {
+    pub alpha_cutoff: f32,
+    pub culling: bool,
+    pub cull_face: u8,
     pub draws: Vec<Draw>,
     pub ops: Vec<Op>,
     stack: Vec<Vec<Op>>,
@@ -54,6 +59,9 @@ pub struct Fixed {
 impl Fixed {
     pub fn new(brightness: f32) -> Self {
         Self {
+            alpha_cutoff: 0.1,
+            culling: false,
+            cull_face: 2,
             draws: vec![],
             ops: vec![],
             stack: vec![],
@@ -147,6 +155,8 @@ impl Fixed {
             | if self.vertex_color.is_some() { 64 } else { 0 }
             | if self.vertex_normal.is_some() { 128 } else { 0 };
         self.draws.push(Draw {
+            alpha_cutoff: self.alpha_cutoff,
+            cull: if self.culling {self.cull_face} else {0},
             ops: self.ops.clone(),
             texture: self.texture,
             material: self.material,
@@ -194,7 +204,6 @@ impl Draw {
                 17 => "particles.png",
                 18 => "item/cart.png",
                 19 => "item/boat.png",
-                31 => "item/chest.png",
                 30 => "item/xporb.png",
                 31 => "item/chest.png",
                 32 => "item/largechest.png",
@@ -205,6 +214,9 @@ impl Draw {
                 44 => "mob/spider_eyes.png",
                 45 => "mob/cavespider.png",
                 46 => "mob/skeleton.png",47 => "mob/pig.png",48 => "mob/saddle.png",49 => "mob/cow.png",50 => "mob/sheep.png",51 => "mob/sheep_fur.png",52 => "mob/chicken.png",53 => "mob/squid.png",54 => "mob/wolf.png",55 => "mob/wolf_tame.png",56 => "mob/wolf_angry.png",57 => "mob/creeper.png",58 => "armor/power.png",59 => "mob/slime.png",
+                60 => "mob/redcow.png", 61 => "mob/snowman.png", 62 => "mob/fire.png", 63 => "mob/lava.png",
+                64 => "mob/villager/villager.png", 65 => "mob/villager/farmer.png", 66 => "mob/villager/librarian.png", 67 => "mob/villager/priest.png", 68 => "mob/villager/smith.png", 69 => "mob/villager/butcher.png",
+                70 => "mob/enderdragon/ender.png", 71 => "mob/enderdragon/ender_eyes.png", 72 => "mob/enderdragon/shuffle.png", 73 => "mob/enderdragon/beam.png", 74 => "mob/enderdragon/crystal.png", 75 => "item/book.png", 76 => "misc/glint.png",
                 20..=29 => super::player::ARMOR[(self.texture - 20) as usize],
                 _ => "__white",
             })
@@ -213,6 +225,10 @@ impl Draw {
             Pass::Line
         } else if self.texture == 12 {
             Pass::UntestedAlpha
+        } else if self.src == 770 && self.dst == 1 {
+            Pass::Rays
+        } else if self.depth == 514 && self.flags & 16 == 0 {
+            Pass::OpaqueEqual
         } else if self.depth == 514 {
             if self.src == 1 && self.dst == 1 {Pass::EyesOverlay} else {Pass::Overlay}
         } else if self.flags & 16 == 0 {
@@ -262,15 +278,13 @@ impl Draw {
             })
             .collect();
         let mut vertices = Vec::with_capacity(verts.len() / 4 * 6);
-        for q in verts.chunks_exact(4) {
-            for i in [0, 1, 2, 0, 2, 3] {
-                vertices.push(q[i]);
-            }
+        match self.mode {
+            3 => vertices = verts,
+            5 => {for i in 2..verts.len() {let idx = if i % 2 == 0 {[i-2, i-1, i]} else {[i-1, i-2, i]}; for j in idx {vertices.push(verts[j]);}}},
+            6 => {for i in 2..verts.len() {for j in [0, i-1, i] {vertices.push(verts[j]);}}},
+            _ => {for q in verts.chunks_exact(4) {for i in [0, 1, 2, 0, 2, 3] {vertices.push(q[i]);}}},
         }
-        if self.mode == 3 {
-            vertices = verts;
-        }
-        Batch {
+        Batch { alpha_cutoff: self.alpha_cutoff, cull: self.cull,
             texture,
             pass,
             vertices,

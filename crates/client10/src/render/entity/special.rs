@@ -6,100 +6,29 @@ use super::{
     living::{MobKind, RenderState},
     models::Model,
 };
-use worldgen::math::PI_F32;
-fn angles(g: &mut Fixed, p: &ModelRenderer) {
-    if p.rotate_angle_z != 0.0 {
-        g.rotate(p.rotate_angle_z * (180.0 / PI_F32), 0.0, 0.0, 1.0);
-    }
-    if p.rotate_angle_y != 0.0 {
-        g.rotate(p.rotate_angle_y * (180.0 / PI_F32), 0.0, 1.0, 0.0);
-    }
-    if p.rotate_angle_x != 0.0 {
-        g.rotate(p.rotate_angle_x * (180.0 / PI_F32), 1.0, 0.0, 0.0);
-    }
-}
 pub(crate) fn part(g: &mut Fixed, p: &ModelRenderer, post: bool) {
-    if p.hidden || !p.show_model {
-        return;
-    }
-    let rotated = p.rotate_angle_x != 0.0 || p.rotate_angle_y != 0.0 || p.rotate_angle_z != 0.0;
-    let moved = p.rotation_point_x != 0.0 || p.rotation_point_y != 0.0 || p.rotation_point_z != 0.0;
-    if rotated && !post {
-        g.push();
-    }
-    if rotated || moved {
-        g.translate(
-            p.rotation_point_x * 0.0625,
-            p.rotation_point_y * 0.0625,
-            p.rotation_point_z * 0.0625,
-        );
-    }
-    if rotated {
-        angles(g, p);
-    }
-    if !post {
-        for face in &p.faces {
-            g.begin();
-            let n = face.normal();
-            g.set_normal(n.x, n.y, n.z);
-            for v in &face.vertices {
-                g.vertex(
-                    v.pos.map(|x| (x as f32 * 0.0625) as f64),
-                    v.uv.map(|x| x as f64),
-                );
-            }
-            g.end();
-        }
-        if rotated {
-            g.pop();
-        } else if moved {
-            g.translate(
-                -p.rotation_point_x * 0.0625,
-                -p.rotation_point_y * 0.0625,
-                -p.rotation_point_z * 0.0625,
-            );
-        }
-    }
+    p.render_fixed(g, 0.0625, if post {2} else {0});
 }
-pub(crate) fn model(g: &mut Fixed, m: &Model) {
-    for (p, with_rotation) in m.render_parts() {
-        if with_rotation {
-            if p.hidden || !p.show_model {
-                continue;
-            }
+pub(crate) fn model(g: &mut Fixed, m: &Model) {model_scaled(g, m, 0.0625);}
+pub(crate) fn model_scaled(g: &mut Fixed, m: &Model, scale: f32) {
+    let parts = m.render_parts();
+    let split = match m.kind {
+        super::models::ModelKind::Chicken => Some(3),
+        super::models::ModelKind::Wolf | super::models::ModelKind::Cow | super::models::ModelKind::Pig | super::models::ModelKind::Quadruped | super::models::ModelKind::Sheep | super::models::ModelKind::SheepFur => Some(1),
+        _ => None,
+    }.filter(|_| m.is_child);
+    if let Some(split) = split {
+        for range in [0..split, split..parts.len()] {
             g.push();
-            g.translate(
-                p.rotation_point_x * 0.0625,
-                p.rotation_point_y * 0.0625,
-                p.rotation_point_z * 0.0625,
-            );
-            for (angle, axis) in [
-                (p.rotate_angle_y, [0.0, 1.0, 0.0]),
-                (p.rotate_angle_x, [1.0, 0.0, 0.0]),
-                (p.rotate_angle_z, [0.0, 0.0, 1.0]),
-            ] {
-                if angle != 0.0 {
-                    g.rotate(angle * (180.0 / PI_F32), axis[0], axis[1], axis[2]);
-                }
-            }
-            for face in &p.faces {
-                g.begin();
-                let n = face.normal();
-                g.set_normal(n.x, n.y, n.z);
-                for v in &face.vertices {
-                    g.vertex(
-                        v.pos.map(|x| (x as f32 * 0.0625) as f64),
-                        v.uv.map(|x| x as f64),
-                    );
-                }
-                g.end();
-            }
+            g.ops.extend(m.child_ops(parts[range.start].0, scale));
+            for &(p, with_rotation) in &parts[range] {p.render_fixed(g, scale, if with_rotation {1} else {0});}
             g.pop();
-        } else {
-            part(g, p, false);
         }
+    } else {
+        for (p, with_rotation) in parts {p.render_fixed(g, scale, if with_rotation {1} else {0});}
     }
 }
+
 pub fn render(s: &RenderState, camera: [f64; 3], normalize: bool) -> Fixed {
     let mut g = Fixed::new(s.brightness);
     if normalize {
@@ -108,8 +37,9 @@ pub fn render(s: &RenderState, camera: [f64; 3], normalize: bool) -> Fixed {
     let mut m = Model::new(super::living::model_kind(s.kind));
     m.on_ground = s.attack;
     m.is_riding = s.riding;
+    m.is_child = s.is_child;
     let pose = [
-        s.limb_swing,
+        s.limb_swing * if s.is_child {3.0} else {1.0},
         s.limb_amount.min(1.0),
         s.age,
         s.yaw - s.body_yaw,

@@ -111,7 +111,7 @@ pub fn check(file: &mut impl std::io::Read) -> Result<(), String> {
         pipeline.upload(
             &device,
             &queue,
-            vec![Batch { texture: None, pass: Pass::TntFlash, vertices }],
+            vec![Batch { alpha_cutoff: 0.1, cull: 0, texture: None, pass: Pass::TntFlash, vertices }],
             glam::Mat4::IDENTITY,
             [0.0; 3],
             0.0,

@@ -70,10 +70,16 @@ pub fn render(s: &RenderState, camera: [f64; 3], normalize: bool) -> Fixed {
     let mut m = Model::new(super::living::model_kind(s.kind));
     m.on_ground = s.attack;
     m.is_riding = s.riding;
+    m.is_child = s.is_child;
+    m.held_left = s.held_left;
+    m.held_right = s.held_right;
+    m.held_left_pose = s.held_left_pose;
+    m.held_right_pose = s.held_right_pose;
+    m.aimed_bow = s.aimed_bow;
     m.carrying = s.carrying;
     m.screaming = s.screaming;
     let pose = [
-        s.limb_swing,
+        s.limb_swing * if s.is_child {3.0} else {1.0},
         s.limb_amount.min(1.0),
         s.age,
         s.yaw - s.body_yaw,
@@ -81,6 +87,7 @@ pub fn render(s: &RenderState, camera: [f64; 3], normalize: bool) -> Fixed {
         0.0625,
     ];
     m.set_rotation_angles(pose);
+    if s.kind == MobKind::MagmaCube {m.magma_animation(s.slime_squish, s.slime_squish, 0.0);}
     g.push();
     g.translate(
         (s.position[0] - camera[0] + s.scream_jitter[0]) as f32,
@@ -112,6 +119,7 @@ pub fn render(s: &RenderState, camera: [f64; 3], normalize: bool) -> Fixed {
         };
         g.scale(scale, scale, scale);
     }
+    if s.kind == MobKind::Villager {g.scale(0.9375, 0.9375, 0.9375);}
     g.translate(0.0, -24.0 * 0.0625 - 0.0078125, 0.0);
     g.texture = match s.kind {
         MobKind::Enderman => 40,
@@ -131,7 +139,7 @@ pub fn render(s: &RenderState, camera: [f64; 3], normalize: bool) -> Fixed {
         special::model(&mut g, &m);
         g.enable(16, false);
     }
-    embedded_arrows(&mut g, &m, s.entity_id, s.arrow_count, s.partial);
+
     if s.kind == MobKind::Enderman && s.carried_block > 0 {
         g.enable(2, true);
         g.push();
@@ -171,6 +179,7 @@ pub fn render(s: &RenderState, camera: [f64; 3], normalize: bool) -> Fixed {
 
 /// RenderLiving and the animal/biped callbacks, using the same models as the frame.
 fn general(s: &RenderState, camera: [f64; 3], normalize: bool) -> Fixed {
+    if s.kind == MobKind::Dragon {return super::render_release::dragon(s, camera, normalize);}
     let mut g = Fixed::new(s.brightness);
     if normalize {
         g.enable(4, true);
@@ -178,6 +187,12 @@ fn general(s: &RenderState, camera: [f64; 3], normalize: bool) -> Fixed {
     let mut m = Model::new(super::living::model_kind(s.kind));
     m.on_ground = s.attack;
     m.is_riding = s.riding;
+    m.is_child = s.is_child;
+    m.held_left = s.held_left;
+    m.held_right = s.held_right;
+    m.held_left_pose = s.held_left_pose;
+    m.held_right_pose = s.held_right_pose;
+    m.aimed_bow = s.aimed_bow;
     let age = match s.kind {
         MobKind::Chicken => (worldgen::math::sin(s.chicken_flap) + 1.0) * s.chicken_flap_amount,
         MobKind::Squid => s.tentacle_angle,
@@ -193,7 +208,7 @@ fn general(s: &RenderState, camera: [f64; 3], normalize: bool) -> Fixed {
         _ => s.age,
     };
     let pose = [
-        s.limb_swing,
+        s.limb_swing * if s.is_child {3.0} else {1.0},
         s.limb_amount.min(1.0),
         age,
         s.yaw - s.body_yaw,
@@ -202,6 +217,7 @@ fn general(s: &RenderState, camera: [f64; 3], normalize: bool) -> Fixed {
     ];
     m.set_living_animations(pose[0], pose[1], s.partial, &s.wolf);
     m.set_rotation_angles(pose);
+    if s.kind == MobKind::MagmaCube {m.magma_animation(s.slime_squish, s.slime_squish, 0.0);}
     g.push();
     g.translate(
         (s.position[0] - camera[0]) as f32,
@@ -239,12 +255,13 @@ fn general(s: &RenderState, camera: [f64; 3], normalize: bool) -> Fixed {
         g.material = [1.0; 4];
     } else if s.kind == MobKind::Giant {
         g.scale(6.0, 6.0, 6.0);
-    } else if s.kind == MobKind::Slime {
+    } else if matches!(s.kind, MobKind::Slime | MobKind::MagmaCube) {
         let squish = s.slime_squish / (s.slime_size as f32 * 0.5 + 1.0);
         let scale = 1.0 / (squish + 1.0);
         let size = s.slime_size as f32;
         g.scale(scale * size, 1.0 / scale * size, scale * size);
     }
+    if s.kind == MobKind::Villager {g.scale(0.9375, 0.9375, 0.9375);}
     g.translate(0.0, -24.0 * 0.0625 - 0.0078125, 0.0);
     g.texture = match s.kind {
         MobKind::Ghast => if s.ghast_attacking { 6 } else { 5 },
@@ -268,6 +285,8 @@ fn general(s: &RenderState, camera: [f64; 3], normalize: bool) -> Fixed {
             }
         }
         MobKind::Creeper => 57,
+        MobKind::Mooshroom => 60, MobKind::SnowMan => 61, MobKind::Blaze => 62, MobKind::MagmaCube => 63,
+        MobKind::Villager => if (0..5).contains(&s.profession) {65 + s.profession as u32} else {64},
         _ => unreachable!(),
     };
     special::model(&mut g, &m);
@@ -290,6 +309,7 @@ fn general(s: &RenderState, camera: [f64; 3], normalize: bool) -> Fixed {
     let mut pass = pass.map(|(texture, mut model)| {
         model.on_ground = s.attack;
         model.is_riding = s.riding;
+        model.is_child = s.is_child;
         model.set_rotation_angles(pose);
         (texture, model)
     });
@@ -316,7 +336,7 @@ fn general(s: &RenderState, camera: [f64; 3], normalize: bool) -> Fixed {
             g.enable(16, false);
         }
     }
-    embedded_arrows(&mut g, &m, s.entity_id, s.arrow_count, s.partial);
+
     if s.held_stack.is_some() || s.held_item.is_some() {
         g.push();
         special::part(&mut g, &m["bipedRightArm"], true);
@@ -354,6 +374,7 @@ fn general(s: &RenderState, camera: [f64; 3], normalize: bool) -> Fixed {
         }
         g.pop();
     }
+    super::render_release::equipped(&mut g, &m, s);
     let flash = if s.kind == MobKind::Creeper && (s.creeper_flash * 10.0) as i32 % 2 != 0 {
         (s.creeper_flash * 0.2 * 255.0) as i32
     } else {
@@ -394,7 +415,7 @@ pub fn packed_brightnesses(draws: &[super::fixed::Draw], base: i32) -> Vec<i32> 
     draws
         .iter()
         .map(|d| {
-            if matches!(d.texture, 41 | 44) {
+            if matches!(d.texture, 41 | 44 | 71) {
                 value = 61680;
             } else if d.texture == 1 {
                 value = base;
