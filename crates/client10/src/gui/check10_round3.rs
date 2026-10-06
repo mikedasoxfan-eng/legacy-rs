@@ -192,10 +192,11 @@ pub fn check(mode: &str, path: &str) -> bool {
                     i(out, v);
                 }
                 out.extend(p.experience.points.to_le_bytes());
-                for v in [p.food.level, p.food.tick_timer, p.food.prev_level] {
+                let food = p.food.snapshot();
+                for v in [food.level, food.tick_timer, food.prev_level] {
                     i(out, v);
                 }
-                for v in [p.food.saturation, p.food.exhaustion] {
+                for v in [food.saturation, food.exhaustion] {
                     out.extend(v.to_le_bytes());
                 }
                 for s in p.inventory.main.iter().chain(p.inventory.armor.iter()) {
@@ -217,10 +218,13 @@ pub fn check(mode: &str, path: &str) -> bool {
                 s.score = r.next_int_unbounded();
                 s.inventory.current_item = r.next_int(9);
                 s.inventory.cursor = Some(ItemStack::new(264, 5, 0));
-                s.food.level = r.next_int(21);
-                s.food.saturation = r.next_float() * 5.0;
-                s.food.exhaustion = r.next_float() * 4.0;
-                s.food.tick_timer = r.next_int(80);
+                {
+                    let mut food = s.food.write();
+                    food.level = r.next_int(21);
+                    food.saturation = r.next_float() * 5.0;
+                    food.exhaustion = r.next_float() * 4.0;
+                    food.tick_timer = r.next_int(80);
+                }
                 for k in 0..40 {
                     if r.next_bool() {
                         let ids = [1, 264, 276, 306];
