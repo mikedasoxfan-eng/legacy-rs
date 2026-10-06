@@ -50,7 +50,7 @@ pub fn equipped(g: &mut Fixed, m: &Model, s: &RenderState) {
 }
 
 pub fn dragon(s: &RenderState, camera: [f64; 3], normalize: bool) -> Fixed {
-    BOSS_HEALTH.with(|health| health.set(Some(s.boss_health)));
+    submit_boss_health(s.boss_health);
     let mut g = Fixed::new(s.brightness);
     if normalize {
         g.enable(4, true);
@@ -163,12 +163,12 @@ pub fn boss_plan(width: i32, font_width: i32, health: i32) -> BossPlan {
     }
 }
 /// The HUD consumes the last dragon submitted to RenderDragon once, as in 1.0.
+pub(crate) fn submit_boss_health(health: i32) { BOSS_HEALTH.with(|slot| slot.set(Some(health))); }
+pub(crate) fn take_boss_plan(width: i32, font_width: i32) -> Option<BossPlan> {
+    BOSS_HEALTH.with(|slot| slot.take()).map(|health| boss_plan(width, font_width, health))
+}
 pub fn boss_overlay(ui: &mut crate::gui::Ui, z: f32) {
-    let Some(health) = BOSS_HEALTH.with(|health| health.take()) else {
-        return;
-    };
-    let width = ui.scaled().width;
-    let plan = boss_plan(width, ui.string_width("Boss health"), health);
+    let Some(plan) = take_boss_plan(ui.scaled().width, ui.string_width("Boss health")) else { return; };
     for [x, y, u, v, width, height] in plan.rectangles {
         ui.draw_textured_modal_rect_z(x, y, u, v, width, height, z);
     }

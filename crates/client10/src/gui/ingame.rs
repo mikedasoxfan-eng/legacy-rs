@@ -108,7 +108,6 @@ pub struct GuiIngame {
     record_rainbow: bool,
     prev_vignette_brightness: f32,
     rand: worldgen::JavaRandom,
-    last_rendered_dragon: Option<(i32, i32)>,
 }
 
 impl Default for GuiIngame {
@@ -127,31 +126,6 @@ impl GuiIngame {
             record_rainbow: false,
             prev_vignette_brightness: 1.0,
             rand: worldgen::JavaRandom::new(0),
-            last_rendered_dragon: None,
-        }
-    }
-
-    /// RenderDragon's handoff: only a dragon rendered this frame supplies the boss bar.
-    pub fn dragon_rendered(&mut self, dragon: &worldgen::entity::Entity) {
-        self.last_rendered_dragon = Some((dragon.data_watcher.int(16).expect("dragon health watcher"), dragon.max_health()));
-    }
-
-    pub(crate) fn take_boss_rectangles(&mut self, width: i32) -> Option<Vec<[i32; 6]>> {
-        self.last_rendered_dragon.take().map(|(health, max)| {
-            let x = width / 2 - 91;
-            let fill = (health as f32 / max as f32 * 183.0) as i32;
-            let mut rects = vec![[x, 12, 0, 74, 182, 5]; 2];
-            if fill > 0 { rects.push([x, 12, 0, 79, fill, 5]); }
-            rects
-        })
-    }
-
-    fn render_boss(&mut self, ui: &mut Ui, width: i32) {
-        if let Some(rectangles) = self.take_boss_rectangles(width) {
-            for [x, y, u, v, w, h] in rectangles { ui.draw_textured_modal_rect_z(x, y, u, v, w, h, -90.0); }
-            ui.draw_centered_string("Boss health", width / 2, 2, 16711935);
-            ui.gl.color4f(1.0, 1.0, 1.0, 1.0);
-            let icons = ui.texture("gui/icons.png"); ui.gl.bind_texture(icons);
         }
     }
 
@@ -164,6 +138,8 @@ impl GuiIngame {
     pub fn set_update_counter(&mut self, n: i32) {
         self.update_counter = n;
     }
+
+    pub(crate) fn next_hud_random_long(&mut self) -> i64 { self.rand.next_long() }
 
     /// `updateTick`
     pub fn update_tick(&mut self) {
@@ -307,7 +283,7 @@ impl GuiIngame {
         }
         ui.gl.blend = false;
         // GL_RESCALE_NORMAL on, the item light rotated 120 degrees about X.
-        crate::render::entity::gui_item::set_gui_light_rotation(120.0);
+        crate::render::entity::gui_item::set_gui_release_lighting();
         crate::render::entity::gui_item::set_gui_rescale_normal(true);
         for i in 0..9 {
             let x = w / 2 - 90 + i * 20 + 2;

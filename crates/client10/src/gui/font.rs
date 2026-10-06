@@ -111,11 +111,13 @@ impl FontRenderer {
     }
 
     pub fn draw_string_with_shadow(&self, gl: &mut Gl, s: &str, x: i32, y: i32, color: i32) {
+        super::draw_trace10::record(||super::draw_trace10::Call::Text(s.into(),[1,x,y,0,color]));
         self.render_string(gl, s, x + 1, y + 1, color, true);
-        self.draw_string(gl, s, x, y, color);
+        self.render_string(gl, s, x, y, color, false);
     }
 
     pub fn draw_string(&self, gl: &mut Gl, s: &str, x: i32, y: i32, color: i32) {
+        super::draw_trace10::record(||super::draw_trace10::Call::Text(s.into(),[0,x,y,0,color]));
         self.render_string(gl, s, x, y, color, false);
     }
 
