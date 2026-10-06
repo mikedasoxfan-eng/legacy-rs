@@ -15,15 +15,17 @@ pub fn grow_mushroom(w:&mut World,x:i32,y:i32,z:i32,rs:RandSel)->bool {
 pub fn big_mushroom(w:&mut World,x:i32,y:i32,z:i32,kind:i32,rs:RandSel)->bool {
     let mut chosen=w.rng(rs).next_int(2);if kind>=0 {chosen=kind;}
     let height=w.rng(rs).next_int(3)+4;
-    if y<1 || y+height+1>128 {return false;}
+    if y<1 || y+height+1>w.height10 {return false;}
     let mut clear=true;
     for by in y..=y+height+1 {
         let radius=if by==y {0}else{3};
         for bx in x-radius..=x+radius {if !clear {break;} for bz in z-radius..=z+radius {if !clear {break;}
-            if !(0..128).contains(&by) || !matches!(w.get_block_id(bx,by,bz),AIR|LEAVES) {clear=false;}
+            if by<0 || by>=w.height10 || !matches!(w.get_block_id(bx,by,bz),AIR|LEAVES) {clear=false;}
         }}
     }
-    if !clear || !mat(material_of(w.get_block_id(x,y,z))).ground_cover || !props(w.get_block_id(x,y-1,z)).opaque_cube {return false;}
+    if !clear {return false;}
+    if !matches!(w.get_block_id(x,y-1,z),DIRT|GRASS|110) {return false;}
+    if !crate::entity::player::placement::can_place_at(w,39,x,y,z,1) {return false;}
     w.set_block(x,y-1,z,DIRT);
     let top=y+height;let start=if chosen==1 {top-3}else{top};
     for by in start..=top {
@@ -159,7 +161,7 @@ pub fn vine(w: &mut World, x: i32, y: i32, z: i32) {
     let m = w.get_block_metadata(x, y, z);
     let side = w.rand.next_int(6);
     let direction = [-1, -1, 2, 0, 1, 3][side as usize];
-    if side == 1 && y < 127 && w.is_air_block(x, y + 1, z) {
+    if side == 1 && y < w.height10.wrapping_sub(1) && w.is_air_block(x, y + 1, z) {
         if crowded {
             return;
         }

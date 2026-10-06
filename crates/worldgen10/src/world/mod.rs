@@ -293,6 +293,8 @@ pub struct World {
     pub difficulty: i32,
     /// World.multiplayerWorld: remote simulation guards in entity callbacks.
     pub multiplayer_world: bool,
+    /// Release 1.0 World.field_35472_c, consulted by ItemBlock's top-layer guard.
+    pub height10: i32,
     pub spawn_hostile_mobs: bool,
     pub spawn_peaceful_mobs: bool,
     pub block_bounds: [crate::entity::AxisAlignedBB; 256],
@@ -418,6 +420,7 @@ impl World {
             next_entity_id: 0,
             difficulty: 2,
             multiplayer_world: false,
+            height10: 128,
             spawn_hostile_mobs: true,
             spawn_peaceful_mobs: true,
             block_bounds: {let mut bounds=crate::entity::block_table::INITIAL_BOUNDS;for id in 110..=122 {if let Some(b)=blocks10::initial_bounds(id){bounds[id as usize]=b;}}bounds},

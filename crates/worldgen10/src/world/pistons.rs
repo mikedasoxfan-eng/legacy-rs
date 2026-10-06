@@ -135,7 +135,7 @@ impl World {
         let (dx, dy, dz) = DIRECTIONS[facing as usize];
         let (mut px, mut py, mut pz) = (x + dx, y + dy, z + dz);
         for count in 0..13 {
-            if py <= 0 || py >= 127 {
+            if py <= 0 || py >= self.height10.wrapping_sub(1) {
                 return None;
             }
             let id = self.get_block_id(px, py, pz);

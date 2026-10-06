@@ -187,9 +187,14 @@ impl World {
                     e
                 }
                 344 | 332 => Entity::throwable_at(self, px, py, pz, s.id == 344),
+                373 if crate::container::brewing::splash(s.damage) =>
+                    Entity::potion_at(self, crate::entity::Vec3D::new(px, py, pz), s.damage),
                 _ => Entity::item(self, px, py - 0.3, pz, s.into()),
             };
-            let effect = if matches!(s.id, 262 | 344 | 332) {
+            let effect = if s.id == 373 && crate::container::brewing::splash(s.damage) {
+                e.set_arrow_heading(dx as f64, 0.1f32 as f64, dz as f64, 1.375, 3.0);
+                1002
+            } else if matches!(s.id, 262 | 344 | 332) {
                 e.set_arrow_heading(dx as f64, 0.1f32 as f64, dz as f64, 1.1, 6.0);
                 1002
             } else {

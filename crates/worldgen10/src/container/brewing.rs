@@ -24,8 +24,8 @@ fn changed(old: i32, new: i32) -> bool {
     if !splash(old) && splash(new) {
         return true;
     }
-    let a = ph::effects(old, false);
-    let b = ph::effects(new, false);
+    let a = crate::item10::potion_effects_snapshot(old);
+    let b = crate::item10::potion_effects_snapshot(new);
     // The cache returns the same List for the same metadata; all null lists
     // are also reference-equal. Otherwise List.equals compares PotionEffects.
     let same_reference = old == new || (a.is_none() && b.is_none());
@@ -82,8 +82,8 @@ impl BrewingStand {
             }
             let old = s.damage;
             let new = ph::brew(old, recipe);
-            let a = ph::effects(old, false);
-            let b = ph::effects(new, false);
+            let a = crate::item10::potion_effects_snapshot(old);
+            let b = crate::item10::potion_effects_snapshot(new);
             let same_reference = old == new || (a.is_none() && b.is_none());
             if (old > 0 && same_reference) || (a.is_some() && (a == b || b.is_none())) {
                 if !splash(old) && splash(new) {

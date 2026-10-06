@@ -162,7 +162,7 @@ impl PlayerControllerSP {
         }
         if removed && id == 97 {w.silverfish_destroyed181(x,y,z);}
         let can = p.can_harvest(id);
-        p.destroy_held_block181(id);
+        p.destroy_held_block10(w, id);
         if removed && can {
             p.harvest_block(w, id, x, y, z, meta);
         }
@@ -170,6 +170,28 @@ impl PlayerControllerSP {
     }
 }
 impl Entity {
+    pub fn destroy_held_block10(&mut self, w: &mut World, id: u8) {
+        if let Some(stack) = self.held_item() {
+            let tool = matches!(stack.id, 256..=258 | 269..=271 | 273..=275 | 277..=279 | 284..=286);
+            let sword = crate::enchantment::is_sword(stack.id);
+            let shears = stack.id == 359 && matches!(id, 18 | 30 | 31 | 106);
+            if tool || sword || shears {
+                self.damage_held10(w, if sword { 2 } else { 1 });
+                self.add_stat(super::stat::used(stack.id), 1);
+            }
+            let inv = &mut self.player_state_mut().unwrap().inventory;
+            if inv.held().is_some_and(|s| s.count == 0) {
+                inv.main[inv.current_item as usize] = None;
+            }
+        }
+    }
+    pub fn damage_held10(&mut self, w: &mut World, amount: i32) {
+        if let Some(mut stack) = self.held_item() {
+            stack.damage_item10(amount, self, w);
+            let inv = &mut self.player_state_mut().unwrap().inventory;
+            inv.main[inv.current_item as usize] = (stack.count != 0).then_some(stack);
+        }
+    }
     /// ItemStack.onDestroyBlock: delegate durability, then count successful item hooks.
     pub fn destroy_held_block181(&mut self,id:u8) {
         if let Some(s) = self.held_item() {
@@ -209,13 +231,18 @@ impl Entity {
             1.0 / hardness / 100.0
         } else {
             let mut strength = registry::strength(self.held_item().map_or(-1, |s| s.id), id);
+            let efficiency = crate::enchantment::level(32, self.held_item());
+            if efficiency > 0 && self.can_harvest(id) {
+                strength += efficiency.wrapping_mul(efficiency).wrapping_add(1) as f32;
+            }
             if let Some(effect) = self.potion_effect(3) {
                 strength *= 1.0 + effect.amplifier.wrapping_add(1) as f32 * 0.2;
             }
             if let Some(effect) = self.potion_effect(4) {
                 strength *= 1.0 - effect.amplifier.wrapping_add(1) as f32 * 0.2;
             }
-            if self.is_inside_material(w, MAT_WATER) {
+            if self.is_inside_material(w, MAT_WATER)
+                && crate::enchantment::max_level(6, &self.player_state().unwrap().inventory.armor) <= 0 {
                 strength /= 5.0;
             }
             if !self.on_ground {

@@ -5,6 +5,39 @@ use crate::{
     potion_helper as ph, World,
 };
 use std::{collections::HashMap, sync::Arc};
+/// ItemColored retains the constructor's Block and the supplied name array.
+#[derive(Clone, Debug)]
+pub struct ColoredItem {
+    pub block: Option<u8>,
+    pub subtypes: bool,
+    pub names: Option<Arc<std::sync::Mutex<Vec<Option<String>>>>>,
+}
+impl ColoredItem {
+    pub fn new(block: Option<u8>, subtypes: bool) -> Self {
+        Self { block, subtypes, names: None }
+    }
+    pub fn set_names(&mut self, names: Option<Arc<std::sync::Mutex<Vec<Option<String>>>>>) -> &mut Self {
+        self.names = names;
+        self
+    }
+    pub fn color(&self, damage: i32, render_color: impl FnOnce(u8, i32) -> i32) -> i32 {
+        render_color(self.block.expect("NullPointerException"), damage)
+    }
+    pub fn icon(&self, damage: i32, texture: impl FnOnce(u8, i32, i32) -> i32) -> i32 {
+        texture(self.block.expect("NullPointerException"), 0, damage)
+    }
+    pub fn placed_metadata(&self, damage: i32) -> i32 { damage }
+    pub fn name(&self, stack: Option<&ItemStack>, base: impl FnOnce() -> Option<String>) -> Option<String> {
+        let Some(names) = &self.names else { return base(); };
+        let damage = stack.expect("NullPointerException").damage;
+        let valid = damage >= 0 && (damage as usize) < names.lock().unwrap().len();
+        if valid {
+            let base = base();
+            let suffix = names.lock().unwrap()[damage as usize].clone();
+            Some(format!("{}.{}", base.as_deref().unwrap_or("null"), suffix.as_deref().unwrap_or("null")))
+        } else { base() }
+    }
+}
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Rarity {
     Common,
@@ -43,23 +76,35 @@ pub fn glint(stack: ItemStack) -> bool {
     if stack.id == 322 {
         true
     } else if stack.id == 373 {
-        ph::effects(stack.damage, false).is_some_and(|e| !e.is_empty())
+        potion_effects_snapshot(stack.damage).is_some_and(|e| !e.is_empty())
     } else {
         stack.is_enchanted()
     }
 }
 #[derive(Default)]
 pub struct PotionItem {
-    cache: HashMap<i32, Option<Arc<[PotionEffect]>>>,
+    cache: HashMap<i32, Option<PotionEffects>>,
+}
+pub type PotionEffects = Arc<std::sync::Mutex<Vec<PotionEffect>>>;
+/// Item.potion owns one cache, shared by drinking, brewing and projectiles.
+pub fn potion_effects(damage: i32) -> Option<PotionEffects> {
+    static ITEM: std::sync::OnceLock<std::sync::Mutex<PotionItem>> = std::sync::OnceLock::new();
+    ITEM.get_or_init(Default::default).lock().unwrap_or_else(|e| e.into_inner()).effects(damage)
+}
+pub fn potion_effects_snapshot(damage: i32) -> Option<Vec<PotionEffect>> {
+    potion_effects(damage).map(|effects| effects.lock().unwrap_or_else(|e| e.into_inner()).clone())
 }
 impl PotionItem {
-    pub fn effects(&mut self, damage: i32) -> Option<Arc<[PotionEffect]>> {
+    pub fn effects(&mut self, damage: i32) -> Option<PotionEffects> {
         if let Some(Some(effects)) = self.cache.get(&damage) {
             return Some(effects.clone());
         }
-        let effects = ph::effects(damage, false).map(Arc::from);
+        let effects = ph::effects(damage, false).map(|effects| Arc::new(std::sync::Mutex::new(effects)));
         self.cache.insert(damage, effects.clone());
         effects
+    }
+    fn effects_snapshot(&mut self, damage: i32) -> Option<Vec<PotionEffect>> {
+        self.effects(damage).map(|effects| effects.lock().unwrap_or_else(|e| e.into_inner()).clone())
     }
     pub fn icon(damage: i32) -> i32 {
         if damage & 16384 != 0 {
@@ -69,7 +114,7 @@ impl PotionItem {
         }
     }
     pub fn has_instant(&mut self, damage: i32) -> bool {
-        self.effects(damage)
+        self.effects_snapshot(damage)
             .is_some_and(|e| e.iter().any(|e| matches!(e.id, 6 | 7)))
     }
     pub fn drink(
@@ -81,7 +126,7 @@ impl PotionItem {
     ) -> ItemStack {
         stack.count = stack.count.wrapping_sub(1);
         if !multiplayer {
-            if let Some(effects) = self.effects(stack.damage) {
+            if let Some(effects) = self.effects_snapshot(stack.damage) {
                 for &effect in effects.iter() {
                     apply(effect);
                 }
@@ -101,42 +146,42 @@ impl PotionItem {
         translate: impl Fn(&str) -> String,
     ) -> String {
         if damage == 0 {
-            return translate("item.emptyPotion.name").trim().into();
+            return translate("item.emptyPotion.name").trim_matches(|c: char| c <= '\u{20}').into();
         }
         let base = if damage & 16384 != 0 {
             format!(
                 "{} {}",
-                translate("potion.prefix.grenade").trim(),
+                translate("potion.prefix.grenade").trim_matches(|c: char| c <= '\u{20}'),
                 base_name
             )
         } else {
             base_name.into()
         };
-        if let Some(effects) = self.effects(damage).filter(|e| !e.is_empty()) {
+        if let Some(effects) = self.effects_snapshot(damage).filter(|e| !e.is_empty()) {
             format!(
                 "{} {}",
                 base,
-                translate(&format!("{}.postfix", potion_name(effects[0].id))).trim()
+                translate(&format!("{}.postfix", potion_name(effects[0].id))).trim_matches(|c: char| c <= '\u{20}')
             )
         } else {
-            format!("{} {}", translate(&ph::prefix(damage)).trim(), base)
+            format!("{} {}", translate(&ph::prefix(damage)).trim_matches(|c: char| c <= '\u{20}'), base)
         }
     }
     pub fn tooltip(&mut self, damage: i32, translate: impl Fn(&str) -> String) -> Vec<String> {
         if damage == 0 {
             return Vec::new();
         }
-        let Some(effects) = self.effects(damage).filter(|e| !e.is_empty()) else {
-            return vec![format!("§7{}", translate("potion.empty").trim())];
+        let Some(effects) = self.effects_snapshot(damage).filter(|e| !e.is_empty()) else {
+            return vec![format!("§7{}", translate("potion.empty").trim_matches(|c: char| c <= '\u{20}'))];
         };
         effects
             .iter()
             .map(|e| {
-                let mut name = translate(potion_name(e.id)).trim().to_string();
+                let mut name = translate(potion_name(e.id)).trim_matches(|c: char| c <= '\u{20}').to_string();
                 if e.amplifier > 0 {
                     name.push_str(&format!(
                         " {}",
-                        translate(&format!("potion.potency.{}", e.amplifier)).trim()
+                        translate(&format!("potion.potency.{}", e.amplifier)).trim_matches(|c: char| c <= '\u{20}')
                     ));
                 }
                 if e.duration > 20 {
@@ -157,19 +202,10 @@ impl PotionItem {
     }
 }
 pub fn potion_name(id: i32) -> &'static str {
-    match id {
-        1 => "potion.moveSpeed",
-        2 => "potion.moveSlowdown",
-        5 => "potion.damageBoost",
-        6 => "potion.heal",
-        7 => "potion.harm",
-        10 => "potion.regeneration",
-        12 => "potion.fireResistance",
-        18 => "potion.weakness",
-        19 => "potion.poison",
-        _ => panic!("potion without brewing requirement"),
-    }
+    crate::entity::potion::POTIONS.iter().find(|p| p.id == id)
+        .expect("NullPointerException").name
 }
+
 impl Entity {
     /// Item.func_40402_a uses !liquids for ignoreBlockWithoutBoundingBox.
     pub fn item_ray10(&self, w: &mut World, liquids: bool) -> Option<MovingObjectPosition> {
@@ -211,7 +247,7 @@ impl Entity {
     pub fn drink_potion10(&mut self, w: &mut World, mut stack: ItemStack) -> ItemStack {
         stack.count -= 1;
         if !w.multiplayer_world {
-            if let Some(effects) = ph::effects(stack.damage, false) {
+            if let Some(effects) = potion_effects_snapshot(stack.damage) {
                 for e in effects {
                     self.add_potion_effect(e);
                 }

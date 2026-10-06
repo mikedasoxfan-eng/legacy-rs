@@ -138,6 +138,7 @@ pub fn added(w: &mut World, id: u8, x: i32, y: i32, z: i32) -> bool {
     match id {
         116 | 117 => w.container_added181(id, x, y, z),
         119 => {
+            w.container_added181(id, x, y, z);
             if !END_PORTAL_ALLOW.load(std::sync::atomic::Ordering::Relaxed)
                 && w.dimension != super::Dimension::Overworld
             {
@@ -154,6 +155,7 @@ pub fn removed(w: &mut World, id: u8, x: i32, y: i32, z: i32) -> bool {
     match id {
         117 => {
             if let Some(TileEntity::BrewingStand(b)) = w.get_block_tile_entity(x, y, z).cloned() {
+                let tile_id = w.chunk(x >> 4, z >> 4).tile_entity_ids[&(x & 15, y, z & 15)];
                 static RNG: std::sync::OnceLock<std::sync::Mutex<crate::JavaRandom>> =
                     std::sync::OnceLock::new();
                 let mut rng = RNG
@@ -164,13 +166,18 @@ pub fn removed(w: &mut World, id: u8, x: i32, y: i32, z: i32) -> bool {
                     })
                     .lock()
                     .unwrap();
-                for mut stack in b.items.into_iter().flatten() {
+                for (slot, stack) in b.items.into_iter().enumerate() {
+                    let Some(mut stack) = stack else { continue; };
                     let ox = rng.next_float() * 0.8 + 0.1;
                     let oy = rng.next_float() * 0.8 + 0.1;
                     let oz = rng.next_float() * 0.8 + 0.1;
                     while stack.count > 0 {
                         let count = (rng.next_int(21) + 10).min(stack.count);
                         stack.count -= count;
+                        if let Some(TileEntity::BrewingStand(mut live)) = w.tile_object(tile_id).cloned() {
+                            live.items[slot].as_mut().unwrap().count = stack.count;
+                            w.update_tile_object(tile_id, TileEntity::BrewingStand(live));
+                        }
                         let mut e = Entity::item(
                             w,
                             (x as f32 + ox) as f64,

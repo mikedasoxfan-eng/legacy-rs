@@ -246,7 +246,7 @@ impl Container {
             Inventory::Result => self.result = stack,
             Inventory::Tile => {
                 self.tile[s.index] = stack;
-                if let Some(e)=&mut self.enchanting {e.item=stack;e.changed(self.multiplayer,self.bookshelves);self.progress=e.costs;}
+                if let Some(e)=&mut self.enchanting {e.item=stack;}
             },
         }
     }
@@ -262,18 +262,29 @@ impl Container {
             }
         }
         self.store(p, slot, stack);
+        if self.kind == ContainerKind::Enchantment && slot == 0 {
+            self.enchantment_inventory_changed10();
+        }
         if self.slots[slot].inventory == Inventory::Matrix {
             self.matrix_changed();
         }
         self.changed(p, slot);
     }
     fn changed(&mut self, p: &mut InventoryPlayer, slot: usize) {
+        if self.kind == ContainerKind::Enchantment && slot == 0 {
+            self.enchantment_inventory_changed10();
+        }
         if matches!(
             self.slots[slot].inventory,
             Inventory::Main | Inventory::Armor
         ) {
             p.changed = true;
         }
+    }
+    fn enchantment_inventory_changed10(&mut self) {
+        let e = self.enchanting.as_mut().unwrap();
+        e.changed(self.multiplayer, self.bookshelves);
+        self.progress = e.costs;
     }
     pub fn matrix_changed(&mut self) {
         if !self.matrix.is_empty() {
@@ -298,6 +309,9 @@ impl Container {
         }
         if self.slots[slot].inventory == Inventory::Matrix {
             self.matrix_changed();
+        }
+        if self.kind == ContainerKind::Enchantment && slot == 0 {
+            self.enchantment_inventory_changed10();
         }
         Some(s)
     }
@@ -415,10 +429,7 @@ impl Container {
         if self.kind==ContainerKind::Creative {return Some(s);}
         let old = copy(s);
         if self.kind==ContainerKind::Enchantment && slot!=0 {
-            if self.tile[0].is_some() {return None;}
-            let mut transferred=if s.has_tag()&&s.count==1 {s.copy_stack181()}else{ItemStack::new(s.id,1,s.damage)};
-            transferred.count=1;self.put_stack(p,0,Some(transferred));s.count-=1;
-            self.store(p,slot,if s.count==0{None}else{Some(s)});self.changed(p,slot);self.pickup(p,slot,s);return Some(old);
+            return None;
         }
         let (start, end, reverse) = match self.kind {
             ContainerKind::BrewingStand => brewing::transfer_range(slot,s)?,

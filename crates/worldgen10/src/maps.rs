@@ -172,7 +172,7 @@ impl MapData {
         }
     }
     pub fn update_terrain(&mut self, w: &mut World, player: &Entity) {
-        let dimension = if w.dimension.is_hell_world() { -1 } else { 0 };
+        let dimension = w.dimension.id() as i8;
         if dimension != self.dimension {
             return;
         }
@@ -415,7 +415,7 @@ impl World {
         if let Some(entity) = entity.filter(|e| e.player_state().is_some()) { map.update_markers(self, entity, stack); }
         let result = if selected {
             if let Some(entity) = entity { map.update_terrain(self, entity); Ok(()) }
-            else if map.dimension as i32 == if self.dimension.is_hell_world() {-1} else {0} { Err("NullPointerException") }
+            else if map.dimension as i32 == self.dimension.id() { Err("NullPointerException") }
             else { Ok(()) }
         } else { Ok(()) };
         self.maps.data.insert(stack.damage, map);
@@ -427,11 +427,7 @@ impl World {
             MapData {
                 center: [floor(player.pos.x), floor(player.pos.z)],
                 scale: 3,
-                dimension: if self.dimension.is_hell_world() {
-                    -1
-                } else {
-                    0
-                },
+                dimension: self.dimension.id() as i8,
                 dirty: true,
                 ..Default::default()
             },
@@ -452,11 +448,7 @@ impl World {
             MapData {
                 center: [self.spawn.0, self.spawn.2],
                 scale: 3,
-                dimension: if self.dimension.is_hell_world() {
-                    -1
-                } else {
-                    0
-                },
+                dimension: self.dimension.id() as i8,
                 dirty: true,
                 ..Default::default()
             },
