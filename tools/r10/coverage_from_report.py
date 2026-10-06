@@ -32,7 +32,7 @@ for line in open(report, encoding='utf-8'):
         continue
     if not status.startswith('done'):
         continue
-    keys = set(re.findall(r'([A-Za-z][\w/+-]*?)\s*:', proof)) | set(re.findall(r'\b(\w+181)\b', proof))
+    keys = set(re.findall(r'([A-Za-z][\w/+-]*?)\s*:', proof)) | set(re.findall(r'\b(\w+181)\b', proof)) | set(re.findall(r'`([A-Za-z]\w*)`', proof))
     keys = {k.lower() for k in keys for k in re.split(r'[/+]', k) if len(k) > 2}
     hit = [s for s in sections if any(k in s.lower().replace(' ', '') or k in s.lower() for k in keys)]
     cov[cls] = sorted(set(cov.get(cls, [])) | set(hit or sections))

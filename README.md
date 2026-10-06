@@ -65,7 +65,7 @@ The port of **Minecraft 1.0** is under way, next to the finished Beta 1.7.3 and 
 (both stay exact). Run it with `beta.exe --mc 1.0`.
 
 ```
-Minecraft 1.0  ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░  0.0 %  (0 / 16,910 lines)
+Minecraft 1.0  █░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░  2.1 %  (363 / 16,910 lines)
 ```
 
 Exact, not estimated: the work is every class that 1.0 added or changed (compared
@@ -86,8 +86,10 @@ matching. Every other screen is compared with zero tolerance.
 | Mobs and entities (Ender Dragon, blazes, magma cubes, mooshrooms, snow golems, villagers, breeding) | 0.0 % | 0 / 3,693 | 0 / 59 |
 | Player (enchanting levels, hardcore mode) | 0.0 % | 0 / 430 | 0 / 9 |
 | Blocks and items (enchanting, brewing and potions, End portals, cauldrons, nether wart, lily pads) | 0.0 % | 0 / 3,018 | 0 / 136 |
-| Screens and HUD (enchanting table, brewing stand, hardcore) | 0.0 % | 0 / 1,332 | 0 / 45 |
+| Screens and HUD (enchanting table, brewing stand, hardcore) | 27.3 % | 363 / 1,332 | 23 / 45 |
 | Rendering (dragon, blaze, End sky, End portal, enchantment glint, potion colours) | 0.0 % | 0 / 3,853 | 0 / 83 |
+
+Oracle checks (`tools/verify10.sh`): **20 of 20** sections exact.
 <!-- r10-progress:end -->
 
 ---

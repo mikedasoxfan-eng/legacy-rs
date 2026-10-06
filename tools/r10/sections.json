@@ -1,1 +1,22 @@
-{}
+{
+ "r10gui2 backgrounds original bytecode": true,
+ "r10gui2 boss original bytecode": true,
+ "r10gui2 brewing original bytecode": true,
+ "r10gui2 disconnected original bytecode": true,
+ "r10gui2 enchantment original bytecode": true,
+ "r10gui2 font original bytecode": true,
+ "r10gui2 gameover original bytecode": true,
+ "r10gui2 gradient original bytecode": true,
+ "r10gui2 hardcore original bytecode": true,
+ "r10gui2 inventory original bytecode": true,
+ "r10gui2 itemnames original bytecode": true,
+ "r10gui2 menudraw original bytecode": true,
+ "r10gui2 menustate original bytecode": true,
+ "r10gui2 registry original bytecode": true,
+ "r10gui2 settings original bytecode": true,
+ "r10gui2 slot original bytecode": true,
+ "r10gui2 statformats original bytecode": true,
+ "r10gui2 video original bytecode": true,
+ "r10gui2 win original bytecode": true,
+ "r10gui2 worldslot original bytecode": true
+}

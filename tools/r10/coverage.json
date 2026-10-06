@@ -1,1 +1,79 @@
-{}
+{
+ "AchievementList": [
+  "r10gui2 registry original bytecode"
+ ],
+ "EnumOptions": [
+  "r10gui2 registry original bytecode",
+  "r10gui2 settings original bytecode",
+  "r10gui2 video original bytecode"
+ ],
+ "EnumOptionsMappingHelper": [
+  "r10gui2 registry original bytecode",
+  "r10gui2 settings original bytecode"
+ ],
+ "FontRenderer": [
+  "r10gui2 font original bytecode"
+ ],
+ "GameSettings": [
+  "r10gui2 registry original bytecode",
+  "r10gui2 settings original bytecode"
+ ],
+ "Gui": [
+  "r10gui2 gradient original bytecode"
+ ],
+ "GuiBrewingStand": [
+  "r10gui2 backgrounds original bytecode",
+  "r10gui2 brewing original bytecode"
+ ],
+ "GuiChest": [
+  "r10gui2 backgrounds original bytecode"
+ ],
+ "GuiCrafting": [
+  "r10gui2 backgrounds original bytecode"
+ ],
+ "GuiCreateWorld": [
+  "r10gui2 hardcore original bytecode"
+ ],
+ "GuiDisconnected": [
+  "r10gui2 disconnected original bytecode"
+ ],
+ "GuiDispenser": [
+  "r10gui2 backgrounds original bytecode"
+ ],
+ "GuiFurnace": [
+  "r10gui2 backgrounds original bytecode"
+ ],
+ "GuiGameOver": [
+  "r10gui2 gameover original bytecode"
+ ],
+ "GuiInventory": [
+  "r10gui2 inventory original bytecode"
+ ],
+ "GuiMainMenu": [
+  "r10gui2 menudraw original bytecode",
+  "r10gui2 menustate original bytecode"
+ ],
+ "GuiOptions": [
+  "r10gui2 hardcore original bytecode"
+ ],
+ "GuiSlot": [
+  "r10gui2 slot original bytecode",
+  "r10gui2 worldslot original bytecode"
+ ],
+ "GuiVideoSettings": [
+  "r10gui2 registry original bytecode",
+  "r10gui2 video original bytecode"
+ ],
+ "GuiWorldSlot": [
+  "r10gui2 worldslot original bytecode"
+ ],
+ "StatTypeDistance": [
+  "r10gui2 statformats original bytecode"
+ ],
+ "StatTypeSimple": [
+  "r10gui2 statformats original bytecode"
+ ],
+ "StatTypeTime": [
+  "r10gui2 statformats original bytecode"
+ ]
+}
