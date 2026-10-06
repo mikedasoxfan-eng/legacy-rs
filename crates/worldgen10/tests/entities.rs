@@ -115,3 +115,13 @@ fn force_gate_refiling_and_unloaded_removal_keep_chunk_membership_consistent() {
     assert!(!w.entity_joined_world(rejected));
     assert_eq!(w.chunks.len(), 2);
 }
+
+// NBT compounds are maps; their serialized Hashtable order need not match
+// the insertion order of a manually assembled fixture.
+fn same_compound(tag:&Tag,expected:&Compound)->bool {
+    let Tag::Compound(actual)=tag else{return false;};
+    let mut a=Vec::new();let mut b=Vec::new();
+    worldgen::nbt::write_root_canonical(&mut a,actual).unwrap();
+    worldgen::nbt::write_root_canonical(&mut b,expected).unwrap();
+    a==b
+}

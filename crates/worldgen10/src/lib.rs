@@ -9,6 +9,10 @@
 //!   chunk load order and lighting timing; `scenario` replays vanilla's orders.
 
 pub mod biome;
+pub mod potion_helper;
+pub mod enchantment;
+mod stack_tags;
+pub mod item10;
 pub mod genlayer;
 mod intcache;
 pub mod block;

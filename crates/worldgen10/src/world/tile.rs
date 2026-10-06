@@ -1,15 +1,20 @@
 //! World-generation and live block-container tile entities.
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug)]
 pub struct ItemStack {
+    pub identity:u64,
     pub id: i32,
     pub count: i32,
     pub damage: i16,
 }
 
+impl PartialEq for ItemStack {fn eq(&self,other:&Self)->bool {self.id==other.id&&self.count==other.count&&self.damage==other.damage&&crate::entity::player::ItemStack::from(*self).tags_equal(&crate::entity::player::ItemStack::from(*other))}}
+impl Eq for ItemStack {}
+
 impl ItemStack {
     pub fn new(id: i32, count: i32, damage: i32) -> Self {
         ItemStack {
+            identity:crate::entity::player::ItemStack::new(id,count,damage).identity,
             id,
             count,
             damage: damage as i16,
@@ -28,6 +33,9 @@ pub enum TileEntity {
     MobSpawner { mob: String, delay: i32 },
     Furnace(crate::container::tiles::Furnace),
     Dispenser(Box<[Option<crate::entity::player::ItemStack>; 9]>),
+    BrewingStand(crate::container::brewing::BrewingStand),
+    EnchantmentTable(crate::container::enchanting::EnchantmentTable),
+    EndPortal,
 }
 
 impl TileEntity {
@@ -36,6 +44,7 @@ impl TileEntity {
             Self::Furnace(_) => "Furnace", Self::Chest(_) => "Chest", Self::RecordPlayer { .. } => "RecordPlayer",
             Self::Dispenser(_) => "Trap", Self::Sign(_) => "Sign", Self::MobSpawner { .. } => "MobSpawner",
             Self::Note(_) => "Music", Self::Piston(_) => "Piston",
+            Self::BrewingStand(_) => "Cauldron",Self::EnchantmentTable(_) => "EnchantTable",Self::EndPortal => "Airportal",
         }
     }
     /// TileEntity.createAndLoadEntity: lookup precedes coordinate/subclass reads.
@@ -46,10 +55,12 @@ impl TileEntity {
             "Furnace" => Self::for_block(61), "Chest" => Self::for_block(54), "RecordPlayer" => Self::for_block(84),
             "Trap" => Self::for_block(23), "Sign" => Self::for_block(63), "MobSpawner" => Self::for_block(52),
             "Music" => Self::for_block(25), "Piston" => Self::Piston(super::pistons::Piston::new(0,0,0,false,false)),
+            "Cauldron"=>Self::for_block(117),"EnchantTable"=>Self::for_block(116),"Airportal"=>Self::EndPortal,
             _ => return Ok(None),
         };
         let mut base=tn::TileBase181::default();base.read_from_nbt(n)?;
         match &mut tile {
+            Self::BrewingStand(b)=>b.read_nbt(n)?,Self::EnchantmentTable(_)|Self::EndPortal=>{},
             Self::Furnace(_) | Self::Dispenser(_) => tile.read_machine_nbt181(&mut base.position,n)?,
             Self::Chest(slots) => {
                 let mut items=[None;27];crate::container::tiles::read_items181(n,&mut items,false)?;
@@ -70,6 +81,7 @@ impl TileEntity {
         use crate::nbt::Tag;
         let (x,y,z)=position;
         match self {
+            Self::BrewingStand(b)=>b.to_nbt(position),Self::EnchantmentTable(_)=>super::notes::tile_nbt("EnchantTable",x,y,z),Self::EndPortal=>super::notes::tile_nbt("Airportal",x,y,z),
             Self::Furnace(f) => f.to_nbt(x,y,z),
             Self::Dispenser(items) => crate::container::tiles::inventory_nbt("Trap",x,y,z,&**items),
             Self::Chest(slots) => {
@@ -115,6 +127,7 @@ impl TileEntity {
             },
             61 | 62 => TileEntity::Furnace(Default::default()),
             23 => TileEntity::Dispenser(Box::new([None; 9])),
+            116=>TileEntity::EnchantmentTable(Default::default()),117=>TileEntity::BrewingStand(Default::default()),119=>TileEntity::EndPortal,
             _ => panic!("tile entity for block {id} not ported"),
         }
     }

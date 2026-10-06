@@ -100,8 +100,8 @@ impl World {
         }
     }
     pub(crate) fn note_neighbor(&mut self, x: i32, y: i32, z: i32, changed: u8) {
-        if changed > 0 && crate::entity::block_hooks::provides_power(changed) {
-            let powered = self.is_block_getting_powered(x, y, z);
+        if changed > 0 {
+            let powered = self.is_block_indirectly_getting_powered(x, y, z);
             let previous = match self.get_block_tile_entity(x, y, z) {
                 Some(TileEntity::Note(n)) => n.powered,
                 _ => return,

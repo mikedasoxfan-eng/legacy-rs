@@ -18,9 +18,18 @@ impl Entity {
     /// Item.onItemUse, before ItemStack's statistics and the controller's creative restore.
     pub fn item_use_on_block181(&mut self, w: &mut World, stack: &mut ItemStack, x: i32, y: i32, z: i32, side: i32) -> bool {
         match stack.id {
+            381 => self.insert_ender_eye10(w,stack,x,y,z),
+            44 if side==1 && w.get_block_id(x,y,z)==44 && w.get_block_metadata(x,y,z)==stack.damage => {
+                if stack.count==0||!self.can_edit_block181(x,y,z){return false;}
+                if w.set_block_and_metadata_with_notify(x,y,z,43,stack.damage) {
+                    let(name,volume,pitch)=crate::world::events::step_sound(43);
+                    w.play_sound(name,Vec3D::new((x as f32+0.5) as f64,(y as f32+0.5) as f64,(z as f32+0.5) as f64),(volume+1.0)/2.0,pitch*0.8);
+                    stack.count-=1;
+                }true
+            },
             323 => self.place_sign(w, stack, x, y, z, side),
             321 => self.place_painting(w, stack, x, y, z, side),
-            2256 | 2257 => {
+            2256..=2266 => {
                 if w.get_block_id(x, y, z) != 84 || w.get_block_metadata(x, y, z) != 0 {
                     return false;
                 }
@@ -107,9 +116,9 @@ impl Entity {
                 }
             }
             // ItemSeeds: wheat, pumpkin and melon seeds plant their crop or stem on farmland.
-            295 | 361 | 362 => {
-                if side == 1 && self.can_edit_block181(x,y,z) && self.can_edit_block181(x,y+1,z) && w.get_block_id(x, y, z) == 60 && w.get_block_id(x, y + 1, z) == 0 {
-                    w.set_block_with_notify(x, y + 1, z, match stack.id { 361 => 104, 362 => 105, _ => 59 });
+            295 | 361 | 362 | 372 => {
+                if side == 1 && self.can_edit_block181(x,y,z) && self.can_edit_block181(x,y+1,z) && w.get_block_id(x, y, z) == if stack.id==372 {88}else{60} && w.get_block_id(x, y + 1, z) == 0 {
+                    w.set_block_with_notify(x, y + 1, z, match stack.id { 361 => 104, 362 => 105, 372=>115, _ => 59 });
                     stack.count -= 1;
                     true
                 } else {
@@ -127,10 +136,11 @@ impl Entity {
                 }
                 true
             }
-            338 | 354 | 356 => {
+            338 | 354 | 356 | 379 | 380 => {
                 let block = match stack.id {
                     338 => 83,
                     354 => 92,
+                    379=>117,380=>118,
                     _ => 93,
                 };
                 let side = if w.get_block_id(x, y, z) == 78 {
@@ -175,7 +185,10 @@ impl Entity {
             return false;
         };
         let original = stack;
-        if super::mechanics::food_value(stack.id).is_some() {
+        if stack.id==374 {stack=self.glass_bottle_right_click10(w,stack);}
+        else if stack.id==111 {stack=self.lily_pad_right_click10(w,stack);}
+        else if stack.id==335 || (stack.id==373 && stack.damage&16384==0) {self.start_item_use(stack,32);}
+        else if super::mechanics::food_value(stack.id).is_some() {
             let s = self.player_state().unwrap();
             if (stack.id == 322 || s.food.needs_food()) && !s.capabilities.disable_damage {
                 self.start_item_use(stack, 32);
@@ -185,15 +198,14 @@ impl Entity {
         } else if stack.id == 346 {
             self.use_fishing_rod(w, &mut stack);
         } else if stack.id == 261 {
-            if self.player_state().unwrap().inventory.contains_item(262) {
+            if self.player_state().unwrap().capabilities.creative || self.player_state().unwrap().inventory.contains_item(262) {
                 self.start_item_use(stack, 72000);
             }
         } else if matches!(stack.id, 332 | 344) {
-            stack.count -= 1;
+            if !self.player_state().unwrap().capabilities.creative {stack.count -= 1;}
             let pitch = 0.4 / (w.item_random.next_float() * 0.4 + 0.8);
             w.play_sound_at_entity(self, "random.bow", 0.5, pitch);
-            let projectile = Entity::throwable(w, self, stack.id == 344);
-            w.entity_joined_world(projectile);
+            if !w.multiplayer_world {let projectile = Entity::throwable(w, self, stack.id == 344);w.entity_joined_world(projectile);}
         } else if stack.id == 333 {
             let start = Vec3D::new(
                 self.prev_pos.x + (self.pos.x - self.prev_pos.x),
@@ -209,6 +221,8 @@ impl Entity {
                     false,
                 )
             {
+                let blocked=w.entities.values().any(|e|e.entity_id!=self.entity_id && e.bounding_box.intersects(self.bounding_box.add_coord(look.x*5.0,look.y*5.0,look.z*5.0).expand(1.0,1.0,1.0)) && e.can_be_collided_with() && e.bounding_box.expand(0.1f32 as f64,0.1f32 as f64,0.1f32 as f64).contains(start));
+                if blocked {return false;}
                 if w.get_block_id(x, y, z) == 78 {
                     y -= 1;
                 }
@@ -223,9 +237,11 @@ impl Entity {
                             (z as f32 + 0.5) as f64,
                         ),
                     });
-                let boat=Entity::boat(w,(x as f32+0.5) as f64,(y as f32+1.0) as f64,(z as f32+0.5) as f64);
-                w.entity_joined_world(boat);
-                stack.count -= 1;
+                if !w.multiplayer_world {
+                    let boat=Entity::boat(w,(x as f32+0.5) as f64,(y as f32+1.0) as f64,(z as f32+0.5) as f64);
+                    w.entity_joined_world(boat);
+                }
+                if !self.player_state().unwrap().capabilities.creative {stack.count -= 1;}
             }
         } else if matches!(stack.id, 325..=327 | 335) {
             let full = match stack.id {

@@ -6,6 +6,8 @@ use crate::{
     nbt::{Compound, Tag},
 };
 
+pub static IGNORE_UPDATES:std::sync::atomic::AtomicBool=std::sync::atomic::AtomicBool::new(false);
+
 /// PistonBlockTextures.field_31057_a.
 pub const OPPOSITE_SIDES: [i32; 6] = [1, 0, 3, 2, 5, 4];
 
@@ -96,7 +98,7 @@ pub fn mobility(id: u8) -> i32 {
         _ => match material_of(id) {
             MAT_WATER | MAT_LAVA | MAT_LEAVES | MAT_PLANTS | MAT_FIRE | MAT_CIRCUITS
             | MAT_UNUSED | MAT_SNOW | MAT_CACTUS | MAT_PUMPKIN | MAT_CAKEMATERIAL
-            | MAT_WEB | MAT_VINE => 1,
+            | MAT_WEB | MAT_VINE | 29 => 1,
             MAT_PORTAL | MAT_PISTON => 2,
             _ => 0,
         },
@@ -127,7 +129,7 @@ impl World {
         {
             return false;
         }
-        self.get_block_tile_entity(x, y, z).is_none()
+        !props(id).container
     }
     fn piston_push_end(&mut self, x: i32, y: i32, z: i32, facing: i32) -> Option<(i32, i32, i32)> {
         let (dx, dy, dz) = DIRECTIONS[facing as usize];
@@ -157,7 +159,7 @@ impl World {
     }
     pub(crate) fn piston_update(&mut self, _id: u8, x: i32, y: i32, z: i32) {
         // All three BlockPistonBase entry points suppress state updates remotely.
-        if self.multiplayer_world { return; }
+        if self.multiplayer_world || IGNORE_UPDATES.load(std::sync::atomic::Ordering::Relaxed) { return; }
         let meta = self.get_block_metadata(x, y, z);
         let facing = meta & 7;
         // The original tests power before checking metadata == 7.
@@ -239,8 +241,7 @@ impl World {
         event: i32,
         facing: i32,
     ) {
-        let guard = (id == PISTON_STICKY_BASE) as usize;
-        self.piston_guard[guard] = true;
+        IGNORE_UPDATES.store(true,std::sync::atomic::Ordering::Relaxed);
         let (dx, dy, dz) = DIRECTIONS[facing as usize];
         if event == 0 {
             if self.piston_extend(id, x, y, z, facing) {
@@ -253,7 +254,7 @@ impl World {
                         pitch,
                     });
                 self.play_sound("tile.piston.out", crate::entity::Vec3D::new(x as f64 + 0.5, y as f64 + 0.5, z as f64 + 0.5), 0.5, pitch);
-            }
+            } else {self.set_block_metadata(x,y,z,facing);}
         } else if event == 1 {
             self.finish_piston_at(x + dx, y + dy, z + dz);
             self.set_block_and_metadata(x, y, z, PISTON_MOVING, facing);
@@ -287,14 +288,11 @@ impl World {
                         && !matches!(stored, PISTON_BASE | PISTON_STICKY_BASE))
                 {
                     if !completed {
-                        self.piston_guard[guard] = false;
+                        IGNORE_UPDATES.store(false,std::sync::atomic::Ordering::Relaxed);
                         self.set_block_with_notify(x + dx, y + dy, z + dz, 0);
-                        self.piston_guard[guard] = true;
+                        IGNORE_UPDATES.store(true,std::sync::atomic::Ordering::Relaxed);
                     }
                 } else {
-                    self.piston_guard[guard] = false;
-                    self.set_block_with_notify(px, py, pz, 0);
-                    self.piston_guard[guard] = true;
                     x += dx;
                     y += dy;
                     z += dz;
@@ -305,11 +303,14 @@ impl World {
                         z,
                         TileEntity::Piston(Piston::new(stored, meta, facing, false, false)),
                     );
+                    IGNORE_UPDATES.store(false,std::sync::atomic::Ordering::Relaxed);
+                    self.set_block_with_notify(px,py,pz,0);
+                    IGNORE_UPDATES.store(true,std::sync::atomic::Ordering::Relaxed);
                 }
             } else {
-                self.piston_guard[guard] = false;
+                IGNORE_UPDATES.store(false,std::sync::atomic::Ordering::Relaxed);
                 self.set_block_with_notify(x + dx, y + dy, z + dz, 0);
-                self.piston_guard[guard] = true;
+                IGNORE_UPDATES.store(true,std::sync::atomic::Ordering::Relaxed);
             }
             let pitch = self.rand.next_float() * 0.15 + 0.6;
             self.block_events
@@ -320,7 +321,7 @@ impl World {
                 });
             self.play_sound("tile.piston.in", crate::entity::Vec3D::new(x as f64 + 0.5, y as f64 + 0.5, z as f64 + 0.5), 0.5, pitch);
         }
-        self.piston_guard[guard] = false;
+        IGNORE_UPDATES.store(false,std::sync::atomic::Ordering::Relaxed);
     }
     pub(crate) fn piston_head_removed(&mut self, x: i32, y: i32, z: i32) {
         let facing = self.get_block_metadata(x, y, z) & 7;

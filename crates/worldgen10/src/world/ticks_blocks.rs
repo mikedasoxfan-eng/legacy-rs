@@ -27,25 +27,7 @@ fn fire_rates(id: u8) -> (i32, i32) {
 
 /// `BlockGrass.updateTick`
 pub fn grass(w: &mut World, x: i32, y: i32, z: i32, rs: RandSel) {
-    let above = w.get_block_id(x, y + 1, z);
-    if w.get_block_light_value(x, y + 1, z) < 4 && block::light_opacity(above) > 2 {
-        if w.rng(rs).next_int(4) != 0 {
-            return;
-        }
-        w.set_block_with_notify(x, y, z, block::DIRT);
-    } else if w.get_block_light_value(x, y + 1, z) >= 9 {
-        let r = w.rng(rs);
-        let nx = x + r.next_int(3) - 1;
-        let ny = y + r.next_int(5) - 3;
-        let nz = z + r.next_int(3) - 1;
-        let above = w.get_block_id(nx, ny + 1, nz);
-        if w.get_block_id(nx, ny, nz) == block::DIRT
-            && w.get_block_light_value(nx, ny + 1, nz) >= 4
-            && block::light_opacity(above) <= 2
-        {
-            w.set_block_with_notify(nx, ny, nz, block::GRASS);
-        }
-    }
+    super::blocks10::spread(w,block::GRASS,x,y,z,rs);
 }
 
 /// `BlockLeaves.updateTick`: decay leaves flagged by a removed log once no log is within
@@ -170,7 +152,7 @@ pub(crate) fn fire_can_place(w: &mut World, x: i32, y: i32, z: i32) -> bool {
 
 /// `BlockFire.onBlockAdded`
 pub fn fire_added(w: &mut World, x: i32, y: i32, z: i32) {
-    if w.get_block_id(x, y - 1, z) != block::OBSIDIAN || !try_to_create_portal(w, x, y, z) {
+    if w.dimension.id()>0 || w.get_block_id(x, y - 1, z) != block::OBSIDIAN || !try_to_create_portal(w, x, y, z) {
         if !w.is_block_normal_cube(x, y - 1, z) && !fire_has_fuel(w, x, y, z) {
             w.set_block_with_notify(x, y, z, block::AIR);
         } else {
@@ -450,7 +432,7 @@ pub fn melt_ice(w: &mut World, x: i32, y: i32, z: i32) {
 
 /// The rest of `BlockSapling.updateTick` (after BlockFlower's check).
 pub fn sapling(w: &mut World, x: i32, y: i32, z: i32, rs: RandSel) {
-    if w.get_block_light_value(x, y + 1, z) >= 9 && w.rng(rs).next_int(30) == 0 {
+    if w.get_block_light_value(x, y + 1, z) >= 9 && w.rng(rs).next_int(7) == 0 {
         let meta = w.get_block_metadata(x, y, z);
         if meta & 8 == 0 {
             w.set_block_metadata_with_notify(x, y, z, meta | 8);

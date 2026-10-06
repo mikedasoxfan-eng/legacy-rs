@@ -32,6 +32,7 @@ pub struct Item {
     has_subtypes: bool,
     container: Option<ItemHandle>,
     name: Option<String>,
+    potion_recipe: Option<String>,
 }
 impl Item {
     pub fn defaults(shifted_index: i32) -> Self {
@@ -44,12 +45,20 @@ impl Item {
             has_subtypes: false,
             container: None,
             name: None,
+            potion_recipe: None,
         }
     }
     pub fn set_icon_index(&mut self, value: i32) -> &mut Self {
         self.icon_index = value;
         self
     }
+    pub fn set_potion_recipe(&mut self,recipe:Option<&str>)->&mut Self {self.potion_recipe=recipe.map(str::to_owned);self}
+    pub fn potion_recipe(&self)->Option<&str>{self.potion_recipe.as_deref()}
+    pub fn is_potion_ingredient(&self)->bool{self.potion_recipe.is_some()}
+    pub fn has_effect(&self,stack:&ItemStack)->bool{stack.is_enchanted()}
+    pub fn rarity(&self,stack:&ItemStack)->crate::item10::Rarity{if stack.is_enchanted(){crate::item10::Rarity::Rare}else{crate::item10::Rarity::Common}}
+    pub fn is_enchantable(&self)->bool{self.max_stack_size==1&&self.is_damageable()}
+    pub fn enchantability(&self)->i32{0}
     pub fn set_icon_coord(&mut self, x: i32, y: i32) -> &mut Self {
         self.set_icon_index(x.wrapping_add(y.wrapping_mul(16)))
     }
@@ -136,6 +145,16 @@ impl Item {
     pub fn stat_name(&self, translate: impl FnOnce(&str) -> String) -> String {
         Self::stat_name_with(|| self.name.clone(), translate)
     }
+    /// func_40400_h invokes the virtual stack name before translating it.
+    pub fn localized_name_with(name:impl FnOnce()->Option<String>,translate:impl FnOnce(&str)->String)->String {
+        name().map_or_else(String::new,|name|translate(&name))
+    }
+    /// func_40397_d translates the localized name again through translateNamedKey.
+    pub fn display_name_with(name:impl FnOnce()->Option<String>,local:impl FnOnce(&str)->String,named:impl FnOnce(&str)->String)->String {
+        let localized=Self::localized_name_with(name,local);
+        named(&localized).trim_matches(|c:char|c<='\u{20}').to_string()
+    }
+    pub fn additional_information(&self,_stack:&ItemStack,_lines:&mut Vec<String>) {}
     pub fn placed_metadata(&self, _damage: i32) -> i32 {
         0
     }

@@ -96,3 +96,6 @@ pub fn light_value(id: u8) -> i32 {
 pub fn opaque_cube_lookup(id: u8) -> bool {
     BLOCKS[id as usize].opaque_cube
 }
+
+/// Block.useNeighborBrightness, initialized from stairs, both slabs and farmland.
+pub fn use_neighbor_brightness(id:u8)->bool {matches!(id,43|44|53|60|67|108|109|114)}

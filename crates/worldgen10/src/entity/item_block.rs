@@ -11,6 +11,8 @@ pub trait BlockItemProperties {
 }
 pub trait BlockItemContext {
     type Block: Copy;
+    /// The world area can override the Release 1.0 field_35472_c height.
+    fn height(&self)->i32 {128}
     fn get_block_id(&mut self, position: [i32; 3]) -> Result<i32, ItemError>;
     fn can_edit(&mut self, position: [i32; 3], stack: &mut ItemStack) -> Result<bool, ItemError>;
     fn solid(&mut self, block: i32) -> Result<bool, ItemError>;
@@ -97,7 +99,7 @@ impl BlockItem {
         if !context.can_edit(position, stack)? {
             return Ok(false);
         }
-        if position[1] == 127 && context.solid(self.block_id)? {
+        if position[1] == context.height().wrapping_sub(1) && context.solid(self.block_id)? {
             return Ok(false);
         }
         if !context.can_place(self.block_id, position, side)? {

@@ -95,6 +95,10 @@ pub trait StackContext {
         stack: &mut ItemStack,
     ) -> Result<StackValue, StackError>;
     fn entity_is_player(&self) -> bool;
+    /// Source dependency: EnchantmentHelper reads the player's equipped stack,
+    /// then one World.rand.nextInt(level+1) draw can skip the entire damage call.
+    fn skip_damage10(&mut self,_amount:i32,_stack:&mut ItemStack)->Result<bool,StackError>{Ok(false)}
+    fn break_animation10(&mut self,_stack:&mut ItemStack)->Result<(),StackError>{Ok(())}
     fn stat(
         &mut self,
         kind: StackStat,
@@ -212,7 +216,9 @@ impl ItemStack {
     /// Java copy(), unlike borrowing a value, allocates a new identity and
     /// resets animations. Animation state is not part of any Java equality.
     pub fn copy_stack181(&self) -> Self {
-        Self::new(self.id, self.count, self.damage)
+        let copy=Self::new(self.id, self.count, self.damage);
+        copy.set_tag(self.tag());
+        copy
     }
     pub fn copy_nullable181(stack: Option<&Self>) -> Option<Self> {
         stack.map(Self::copy_stack181)
@@ -225,7 +231,7 @@ impl ItemStack {
         }
     }
     pub fn stack_equal181(&self, other: &Self) -> bool {
-        self.id == other.id && self.count == other.count && self.damage == other.damage
+        self.id == other.id && self.count == other.count && self.damage == other.damage && self.tags_equal(other)
     }
     pub fn item_equal181(&self, other: Option<&Self>) -> Result<bool, StackError> {
         let other = other.ok_or(StackError::NullPointer)?;
@@ -242,7 +248,12 @@ impl ItemStack {
             } else {
                 n.short(key) as i32
             })
-        })
+        })?;
+        if n.has("tag") {
+            let Some(tag)=n.compound("tag") else{return Err(StackError::ClassCast);};
+            self.set_tag(Some(tag.clone()));
+        }
+        Ok(())
     }
     /// NBTTagCompound getters are virtual. Each assignment happens only after
     /// its getter returns, and earlier assignments survive a later exception.
@@ -280,6 +291,7 @@ impl ItemStack {
         n.put("id", Tag::Short(self.id as i16));
         n.put("Count", Tag::Byte(self.count as i8));
         n.put("Damage", Tag::Short(self.damage as i16));
+        if let Some(tag)=self.tag(){n.put("tag",Tag::Compound(tag));}
         Ok(n)
     }
     pub fn get_item181<C: StackContext>(
@@ -318,8 +330,10 @@ impl ItemStack {
             )),
             Damage { amount } => {
                 if self.dispatch181(context, Damageable)?.boolean() {
+                    if amount>0 && context.entity_is_player() && context.skip_damage10(amount,self)? {return Ok(StackValue::Unit);}
                     self.damage = self.damage.wrapping_add(amount);
                     if self.damage > self.item_callback181(context, MaxDamage)?.int() {
+                        context.break_animation10(self)?;
                         if context.entity_is_player() {
                             context.stat(StackStat::Break, self.id, 1, self)?;
                         }

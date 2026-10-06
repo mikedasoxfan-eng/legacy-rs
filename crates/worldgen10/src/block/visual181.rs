@@ -25,7 +25,7 @@ pub fn base_packed_light181(
 ) -> i32 {
     light(x, y, z, super::light_value(stairs_model181(id).unwrap_or(id)))
 }
-pub fn stairs_model181(id: u8) -> Option<u8> {match id {53=>Some(5),67=>Some(4),108=>Some(45),109=>Some(98),_=>None}}
+pub fn stairs_model181(id: u8) -> Option<u8> {match id {53=>Some(5),67=>Some(4),108=>Some(45),109=>Some(98),114=>Some(112),_=>None}}
 /// Stairs discard metadata before calling the registered model's texture method.
 pub fn stairs_texture181(id: u8, _side: i32, _metadata: i32) -> i32 {
     texture_from_side(stairs_model181(id).expect("stairs block"),0,false)
@@ -91,9 +91,11 @@ fn base(id: u8, fancy: bool) -> usize {
     (fancy as usize * 256 + id as usize) * SIZE
 }
 pub fn render_type(id: u8) -> i32 {
+    if id>=110{return match id {111=>23,113=>11,114=>10,115=>6,117=>25,118=>24,119=>-1,120=>26,122=>27,_=>0};}
     int(base(id, false))
 }
 pub fn texture_from_side(id: u8, side: usize, fancy: bool) -> i32 {
+    if let Some(v)=crate::world::blocks10::texture(id,side as i32,0){return v;}
     if id == 84 { return jukebox_texture181(side as i32); }
     assert!(side < 6);
     if id == 81 {return cactus_texture181(side as i32);}
@@ -103,6 +105,9 @@ pub fn texture_from_side(id: u8, side: usize, fancy: bool) -> i32 {
 pub fn jukebox_texture181(side: i32) -> i32 { 74 + if side == 1 { 1 } else { 0 } }
 pub fn texture_result(id: u8, side: usize, metadata: usize, fancy: bool) -> Result<i32, ()> {
     assert!(side < 6 && metadata < 16);
+    if let Some(v)=crate::world::blocks10::texture(id,side as i32,metadata as i32){return Ok(v);}
+    if matches!(id,99|100)&&metadata==14{return Ok(126+(id-99) as i32);}
+    if matches!(id,99|100)&&metadata==15{return Ok(141);}
     if id == 81 {return Ok(cactus_texture181(side as i32));}
     if stairs_model181(id).is_some() {return Ok(stairs_texture181(id,side as i32,metadata as i32));}
     if id==35 {return Ok(cloth_texture181(metadata as i32));}
@@ -124,9 +129,9 @@ pub fn texture_at(
     id: u8, side: usize, metadata: usize, fancy: bool,
     x: i32, y: i32, z: i32, mut block_at: impl FnMut(i32,i32,i32)->u8,
 ) -> Result<i32, ()> {
-    if id == 2 && side > 1 {
+    if matches!(id,2|110) && side > 1 {
         let above = super::material_of(block_at(x,y+1,z));
-        return Ok(if matches!(above, super::MAT_SNOW | super::MAT_CRAFTEDSNOW) {68} else {3});
+        return Ok(if matches!(above, super::MAT_SNOW | super::MAT_CRAFTEDSNOW) {68} else {if id==110 {77}else{3}});
     }
     if matches!(id, 23 | 61 | 62) {
         return Ok(if side <= 1 {62}
@@ -220,6 +225,8 @@ pub fn should_side_render(
 }
 pub fn render_color(id: u8, metadata: usize, grass: &[u32]) -> i32 {
     assert!(metadata < 16);
+    if id==111{return 2129968;}
+    if id>=110{return 0xffffff;}
     if id == 2 {
         lookup(grass, 0.5, 1.0) as i32
     } else {
@@ -262,13 +269,14 @@ pub fn color_multiplier(
     id: u8,
     metadata: i32,
     x: i32,
-    y: i32,
+    _y: i32,
     z: i32,
     grass: &[u32],
     foliage: &[u32],
     mut climate: impl FnMut(i32, i32) -> (f32, f32),
 ) -> i32 {
     match id {
+        111=>2129968,
         55 => 8388608,
         104 | 105 => {
             let r = metadata.wrapping_mul(32);
@@ -280,19 +288,6 @@ pub fn color_multiplier(
         18 if metadata & 2 != 0 => 8431445,
         31 if metadata == 0 => 16777215,
         2 | 18 | 31 | 106 => {
-            let (mut x, mut z) = (x, z);
-            if id == 31 {
-                let mut n = x
-                    .wrapping_mul(3129871)
-                    .wrapping_add(z.wrapping_mul(6129781))
-                    .wrapping_add(y) as i64;
-                n = n
-                    .wrapping_mul(n)
-                    .wrapping_mul(42317861)
-                    .wrapping_add(n.wrapping_mul(11));
-                x = x.wrapping_add(((n >> 14 & 31) - 16) as i32);
-                z = z.wrapping_add(((n >> 24 & 31) - 16) as i32);
-            }
             let (t, r) = climate(x, z);
             lookup(
                 if matches!(id, 18 | 106) {
@@ -306,4 +301,14 @@ pub fn color_multiplier(
         }
         _ => 16777215,
     }
+}
+
+/// Block color dispatch over the 1.0 biome-owned color callbacks. The world
+/// owner supplies biome colors, including subclass-specific swamp behavior.
+pub fn color_multiplier10(id:u8,metadata:i32,x:i32,y:i32,z:i32,
+    mut biome_color:impl FnMut(i32,i32,i32,bool)->i32,water_color:impl FnOnce(i32,i32)->i32)->i32 {
+    match id {111=>2129968,18 if metadata&1!=0=>6396257,18 if metadata&2!=0=>8431445,
+        31 if metadata==0=>16777215,2|31=>biome_color(x,y,z,false),18|106=>biome_color(x,y,z,true),
+        8|9=>water_color(x,z),104|105=>(metadata*32)<<16 | (255-metadata*8)<<8 | metadata*4,
+        _=>16777215}
 }

@@ -90,6 +90,7 @@ impl World {
         r: &mut crate::JavaRandom,
     ) {
         let zero = Vec3D::default();
+        if crate::world::blocks10::display(self,id,x,y,z,r){return;}
         match id {
             50 | 76 => {
                 let m = self.get_block_metadata(x, y, z);
@@ -169,7 +170,7 @@ impl World {
                     self.play_sound(
                         "portal.portal",
                         Vec3D::new(x as f64 + 0.5, y as f64 + 0.5, z as f64 + 0.5),
-                        1.0,
+                        0.5,
                         pitch,
                     );
                 }
@@ -332,6 +333,10 @@ impl World {
                 }
             }
             _ => {}
+        }
+        if matches!(id,8..=11)&&r.next_int(10)==0&&self.is_block_normal_cube(x,y-1,z)&&!crate::block::mat(self.get_block_material(x,y-2,z)).blocks_movement {
+            let p=Vec3D::new((x as f32+r.next_float()) as f64,y as f64-1.05,(z as f32+r.next_float()) as f64);
+            self.spawn_particle(if id<=9 {"dripWater"}else{"dripLava"},p,zero);
         }
     }
 }

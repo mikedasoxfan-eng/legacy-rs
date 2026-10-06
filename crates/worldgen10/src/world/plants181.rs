@@ -7,7 +7,6 @@ const DIR: [(i32, i32); 4] = [(0, 1), (-1, 0), (0, -1), (1, 0)];
 /// BlockMushroom's bonemeal path restores both id and metadata on failure.
 pub fn grow_mushroom(w:&mut World,x:i32,y:i32,z:i32,rs:RandSel)->bool {
     let id=w.get_block_id(x,y,z);
-    if !matches!(w.get_block_id(x,y-1,z),DIRT|GRASS) {return false;}
     let meta=w.get_block_metadata(x,y,z);w.set_block(x,y,z,AIR);
     if matches!(id,39|40) && big_mushroom(w,x,y,z,(id-39) as i32,rs) {true}
     else {w.set_block_and_metadata(x,y,z,id,meta);false}
@@ -79,7 +78,7 @@ pub fn stem(w: &mut World, id: u8, x: i32, y: i32, z: i32, rs: RandSel) {
     if diagonal || horizontal && vertical {
         growth /= 2.0;
     }
-    if w.rng(rs).next_int((100.0f32 / growth) as i32) != 0 {
+    if w.rng(rs).next_int((25.0f32 / growth) as i32+1) != 0 {
         return;
     }
     let m = w.get_block_metadata(x, y, z);
@@ -139,7 +138,7 @@ pub fn vine_neighbor(w: &mut World, x: i32, y: i32, z: i32) {
 
 pub fn vine(w: &mut World, x: i32, y: i32, z: i32) {
     // Vanilla ignores the supplied updateTick Random and draws from World.rand.
-    if w.rand.next_int(16) != 0 {
+    if w.multiplayer_world || w.rand.next_int(4) != 0 {
         return;
     }
     let mut remaining = 5;

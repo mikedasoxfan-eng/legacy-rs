@@ -60,7 +60,7 @@ impl World {
     pub fn trapdoor_can_place_on_side181(&mut self, x: i32, y: i32, z: i32, side: i32) -> bool {
         if side == 0 || side == 1 { return false; }
         let (dx,dz)=match side {2=>(0,1),3=>(0,-1),4=>(1,0),5=>(-1,0),_=>(0,0)};
-        self.is_block_normal_cube(x.wrapping_add(dx),y,z.wrapping_add(dz))
+        self.trapdoor_support10(x.wrapping_add(dx),y,z.wrapping_add(dz))
     }
     /// Original item bounds are singleton fields, consumed by selection/rendering.
     pub fn set_trapdoor_item_bounds181(&mut self) {
@@ -92,14 +92,7 @@ impl World {
         }
     }
     /// BlockStep.onBlockAdded runs for both slab instances, including double slabs.
-    pub fn slab_added181(&mut self,x:i32,y:i32,z:i32) {
-        let below=self.get_block_id(x,y-1,z);
-        let meta=self.get_block_metadata(x,y,z);
-        if meta==self.get_block_metadata(x,y-1,z) && below==44 {
-            self.set_block_with_notify(x,y,z,0);
-            self.set_block_and_metadata_with_notify(x,y-1,z,43,meta);
-        }
-    }
+    pub fn slab_added181(&mut self,_x:i32,_y:i32,_z:i32) {}
     /// BlockTrapDoor.onPoweredBlockChange.
     pub fn trapdoor_powered181(&mut self,x:i32,y:i32,z:i32,powered:bool) {
         let meta=self.get_block_metadata(x,y,z);
@@ -125,18 +118,17 @@ impl World {
         if self.multiplayer_world { return; }
         let meta=self.get_block_metadata(x,y,z);
         let (dx,dz)=[(0,1),(0,-1),(1,0),(-1,0)][(meta&3) as usize];
-        if !self.is_block_normal_cube(x+dx,y,z+dz) {
+        if !self.trapdoor_support10(x+dx,y,z+dz) {
             self.set_block_with_notify(x,y,z,0);
             super::behavior::drop_block_as_item(self,96,x,y,z,meta);
         }
-        if changed>0 && crate::entity::block_hooks::provides_power(changed) {
-            let powered=self.is_block_indirectly_getting_powered(x,y,z);
-            self.trapdoor_powered181(x,y,z,powered);
+        if changed>0 {let powered=self.is_block_indirectly_getting_powered(x,y,z);
+            if powered || crate::entity::block_hooks::provides_power(changed) {self.trapdoor_powered181(x,y,z,powered);}
         }
     }
     /// BlockFence.func_35303_f: gates join fences in the new renderer.
     pub fn fence_connects181(&mut self, x: i32, y: i32, z: i32) -> bool {
-        matches!(self.get_block_id(x, y, z), 85 | 107)
+        self.fence_connects10(85,x,y,z)
     }
     fn pane_connections(&mut self, id: u8, x: i32, y: i32, z: i32) -> [bool; 4] {
         [(0, -1), (0, 1), (-1, 0), (1, 0)].map(|(dx, dz)| {

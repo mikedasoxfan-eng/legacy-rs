@@ -136,6 +136,7 @@ impl PlayerControllerSP {
         let meta=w.get_block_metadata(x,y,z);w.auxiliary_effect(2001,(x,y,z),id as i32+meta*256);
         let removed=w.set_block_with_notify(x,y,z,0);
         if removed && id==46 && meta&1!=0 {w.ignite_tnt(x,y,z);}
+        if removed && id==94 {w.notify_blocks_of_neighbor_change(x,y+1,z,id);}
         if removed && id==97 {w.silverfish_destroyed181(x,y,z);}
         removed
     }
@@ -155,6 +156,7 @@ impl PlayerControllerSP {
         let meta = w.get_block_metadata(x, y, z);
         w.auxiliary_effect(2001, (x, y, z), id as i32 + meta * 256);
         let removed = w.set_block_with_notify(x, y, z, 0);
+        if removed && id==94 {w.notify_blocks_of_neighbor_change(x,y+1,z,id);}
         if removed && id == 46 && meta & 1 != 0 {
             w.ignite_tnt(x, y, z);
         }
@@ -240,7 +242,7 @@ impl Entity {
     pub fn block_clicked(&mut self, w: &mut World, id: u8, x: i32, y: i32, z: i32) {
         if id==25 && !w.multiplayer_world { w.trigger_note(x,y,z); }
         // BlockCake.onBlockClicked eats a slice, like blockActivated.
-        if matches!(id, 64 | 71 | 69 | 77 | 92 | 96) {
+        if matches!(id, 64 | 71 | 69 | 77 | 92 | 96 | 122) {
             self.activate_block(w, x, y, z);
         }
         if matches!(id, 73 | 74) {
@@ -253,7 +255,7 @@ impl Entity {
             self.add_stat(super::stat::mine(id as i32), 1);
         }
         if matches!(id,18|31|106) && self.held_item().is_some_and(|s| s.id == 359) {
-            super::block_hooks::drop_stack(w, x, y, z, ItemStack::new(id as i32, 1, if id==18 {meta & 3}else{meta}),);
+            super::block_hooks::drop_stack(w, x, y, z, ItemStack::new(id as i32, 1, if id==18 {meta & 3}else if id==106 {0}else{meta}));
         } else if id == 78 {
             super::block_hooks::drop_stack(w, x, y, z, ItemStack::new(332, 1, 0));
             self.add_stat(super::stat::mine(78), 1);
@@ -261,7 +263,16 @@ impl Entity {
             // EntityPlayer.addExhaustion skips remote worlds; this block-owned
             // callback already has the World needed to preserve that guard.
             if !w.multiplayer_world { self.add_exhaustion(0.025); }
-            crate::world::behavior::drop_block_as_item(w, id, x, y, z, meta);
+            let silk=crate::enchantment::level(33,self.held_item())>0;
+            let harvestable=crate::block::props(id).normal_render&&!crate::block::props(id).container;
+            if silk&&harvestable {
+                if matches!(id,46|79) {return;}
+                let damage=if id==43 {meta}else if registry::item(id as i32).is_some_and(|i|i.subtypes){meta}else{0};
+                super::block_hooks::drop_stack(w,x,y,z,ItemStack::new(if id==43 {44}else if id==97 {match meta{1=>4,2=>98,_=>1}}else{id as i32},1,if id==97 {0}else{damage}));
+            }else {
+                let fortune=crate::enchantment::level(35,self.held_item());
+                crate::world::behavior::drop_block_as_item_fortune(w,id,x,y,z,meta,fortune);
+            }
         }
         if id == 79 {
             let m = mat(w.get_block_material(x, y - 1, z));

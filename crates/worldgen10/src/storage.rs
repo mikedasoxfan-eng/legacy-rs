@@ -530,6 +530,7 @@ pub fn chunk_to_nbt(c: &Chunk, world_time: i64) -> Compound {
         let mut t = Compound::new();
         let (x, y, z) = (c.x * 16 + k.0, k.1, c.z * 16 + k.2);
         match te {
+            TileEntity::BrewingStand(_)|TileEntity::EnchantmentTable(_)|TileEntity::EndPortal=>{t=te.write_nbt181((x,y,z));},
             TileEntity::RecordPlayer { record } => {
                 t = crate::world::notes::tile_nbt("RecordPlayer", x, y, z);
                 if *record > 0 {
@@ -553,11 +554,8 @@ pub fn chunk_to_nbt(c: &Chunk, world_time: i64) -> Compound {
                 let mut items = Vec::new();
                 for (i, s) in slots.iter().enumerate() {
                     if let Some(s) = s {
-                        let mut it = Compound::new();
-                        it.put("Slot", Tag::Byte(i as i8));
-                        it.put("id", Tag::Short(s.id as i16));
-                        it.put("Count", Tag::Byte(s.count as i8));
-                        it.put("Damage", Tag::Short(s.damage));
+                        let mut it=crate::entity::player::ItemStack::from(*s).to_nbt();
+                        it.put("Slot",Tag::Byte(i as i8));
                         items.push(Tag::Compound(it));
                     }
                 }

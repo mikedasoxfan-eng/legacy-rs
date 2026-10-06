@@ -13,33 +13,12 @@ pub struct ItemDefinition {
     pub armor: i32,
 }
 pub fn item(id: i32) -> Option<ItemDefinition> {
-    // Minimal ItemArmor/EnumArmorMaterial adapter for InventoryPlayer's release armor rules.
-    if (298..=317).contains(&id) {
-        let material = ((id - 298) / 4) as usize;
-        let slot = ((id - 298) % 4) as usize;
-        let armor = [
-            [1, 3, 2, 1],
-            [2, 5, 4, 1],
-            [2, 6, 5, 2],
-            [3, 8, 6, 3],
-            [2, 5, 3, 1],
-        ][material][slot];
-        let durability = [11, 16, 15, 13][slot] * [5, 15, 15, 33, 7][material];
-        return Some(ItemDefinition {
-            max_stack: 1,
-            durability,
-            subtypes: false,
-            armor,
-        });
+    if let Some((material,slot))=crate::enchantment::armor(id) {return Some(ItemDefinition{max_stack:1,durability:material.durability(slot),subtypes:false,armor:material.reduction(slot)});}
+    if (110..=122).contains(&id)||(372..=382).contains(&id)||(2258..=2266).contains(&id) {
+        return Some(ItemDefinition{max_stack:if id==373||id>=2258 {1}else{64},durability:0,subtypes:id==373,armor:0});
     }
-    if (369..=382).contains(&id) {
-        return Some(ItemDefinition {
-            max_stack: if id == 373 { 1 } else { 64 },
-            durability: 0,
-            subtypes: id == 373,
-            armor: 0,
-        });
-    }
+    if id==261{return Some(ItemDefinition{max_stack:1,durability:384,subtypes:false,armor:0});}
+    if id==368{return Some(ItemDefinition{max_stack:16,durability:0,subtypes:false,armor:0});}
     if !(0..=2257).contains(&id) {
         return None;
     }
@@ -59,24 +38,33 @@ pub fn strength(id: i32, block: u8) -> f32 {
     if item(id).is_none() {
         return 1.0;
     }
+    if matches!(id,256|269|273|277|284)&&matches!(block,88|110) {return crate::item10::item_tool_efficiency(id);}
+    if matches!(id,257|270|274|278|285)&&(matches!(crate::block::material_of(block),crate::block::MAT_ROCK|crate::block::MAT_IRON)||matches!(block,27|28|66)) {return crate::item10::item_tool_efficiency(id);}
+    if matches!(id,258|271|275|279|286)&&(crate::block::material_of(block)==crate::block::MAT_WOOD||matches!(block,43|44|86|91)) {return crate::item10::item_tool_efficiency(id);}
+
+
+
+    if id>2257||(110..=122).contains(&id)||id>=372{return 1.0;}
     f32::from_bits(int(id as usize * ITEM_SIZE + 16 + block as usize * 5) as u32)
 }
 pub fn can_harvest(id: i32, block: u8) -> bool {
-    harvestable(block)
-        || (item(id).is_some() && DATA[id as usize * ITEM_SIZE + 20 + block as usize * 5] != 0)
+    harvestable(block) || if matches!(id,257|270|274|278|285)&&block>=110 {matches!(crate::block::material_of(block),crate::block::MAT_ROCK|crate::block::MAT_IRON)}else{item(id).is_some()&&id<=2257&&DATA[id as usize * ITEM_SIZE + 20 + block as usize * 5]!=0}
 }
 pub fn harvestable(block: u8) -> bool {
+    if block>=110{return !matches!(block,112..=114|116..=118|121);}
+    if block==89{return true;}
     DATA[2258 * ITEM_SIZE + block as usize * 5 + 4] != 0
 }
 pub fn hardness(block: u8) -> f32 {
+    if block==49{return 50.0;}
+    if block>=110{return [0.6,0.0,2.0,2.0,2.0,0.0,5.0,0.5,2.0,-1.0,-1.0,3.0,3.0].get((block-110) as usize).copied().unwrap_or(0.0);}
     f32::from_bits(int(2258 * ITEM_SIZE + block as usize * 5) as u32)
 }
 pub fn attack_damage(id: i32) -> i32 {
-    if (369..=382).contains(&id) {
-        return 1;
-    }
-    if item(id).is_none() {
+    if id>2257||id>=372&&id<2256||item(id).is_none() {
         1
+    } else if crate::enchantment::is_sword(id) {
+        match id {267=>6,268|283=>4,272=>5,276=>7,_=>1}
     } else {
         int(2258 * ITEM_SIZE + 256 * 5 + id as usize * 4)
     }
@@ -85,14 +73,12 @@ pub fn attack_damage(id: i32) -> i32 {
 /// EnumAction in the original declaration order.
 #[derive(Clone,Copy,Debug,Default,PartialEq,Eq)]
 #[repr(i32)]
-pub enum ItemUseAction {#[default] None=0,Eat=1,Block=2,Bow=3,
-    Drink = 4,}
+pub enum ItemUseAction {#[default] None=0,Eat=1,Drink=2,Block=3,Bow=4}
 pub fn use_action(id:i32)->ItemUseAction {
-    match id {
-        373 => ItemUseAction::Drink,260|282|297|319|320|322|349|350|357|360|363..=367=>ItemUseAction::Eat,
-        267|268|272|276|283=>ItemUseAction::Block,261=>ItemUseAction::Bow,_=>crate::entity::item::Item::defaults(id).use_action(None),}
+    match id {373|335=>ItemUseAction::Drink,375=>ItemUseAction::Eat,260|282|297|319|320|322|349|350|357|360|363..=367=>ItemUseAction::Eat,
+        267|268|272|276|283=>ItemUseAction::Block,261=>ItemUseAction::Bow,_=>crate::entity::item::Item::defaults(id).use_action(None)}
 }
-pub fn use_duration(id:i32)->i32 {match use_action(id){ItemUseAction::Eat | ItemUseAction::Drink=>32,ItemUseAction::Block|ItemUseAction::Bow=>72000,ItemUseAction::None=>0,}}
+pub fn use_duration(id:i32)->i32 {match use_action(id){ItemUseAction::Eat|ItemUseAction::Drink=>32,ItemUseAction::Block|ItemUseAction::Bow=>72000,ItemUseAction::None=>0}}
 /// ItemBow's release calculation; None means the shot is too weak to fire.
 pub fn bow_charge(remaining:i32)->Option<f32>{
     let mut f=72000i32.wrapping_sub(remaining) as f32/20.0f32;
@@ -104,7 +90,7 @@ pub fn bow_charge(remaining:i32)->Option<f32>{
 /// signed ItemStack damage until World writes its metadata nibble.
 pub fn placed_block_metadata(id: i32, damage: i32) -> i32 {
     match id {
-        6 | 17 | 31 | 35 | 44 | 98 | 106 => damage,
+        6 | 17 | 31 | 35 | 44 | 98 | 106 |111 => damage,
         18 => damage | 4,
         29 | 33 => 7,
         _ => crate::entity::item::Item::defaults(id).placed_metadata(damage),
@@ -115,14 +101,14 @@ pub fn placed_block_metadata(id: i32, damage: i32) -> i32 {
 /// None means the existing item/block renderer supplies the property.
 pub fn block_item_properties(id: i32, damage: i32, fancy: bool) -> Option<(i32, u32)> {
     Some(match id {
+        111 => (76,2129968),
         31 | 106 => {
             let item=VineItem::new(id as u8,id==31);
             (item.icon(damage,|block,side,damage| {
                 debug_assert_eq!(side,0);
-                if block==106 {143} else {match damage {0=>55,2=>56,_=>39,}}
-            }),item.color(|block| {if block==106 {4764952} else {0xff7cbd6bu32 as i32}
-                }) as u32,)
-        }
+                if block==106 {143} else {match damage {0=>55,2=>56,_=>39}}
+            }),item.color(|block|if block==106 || damage!=0 {4764952} else {16777215}) as u32)
+        },
         17 | 98 => {
             let item=LogItem::new(Some(id as u8));
             (item.icon(damage,|block,side,damage| {
@@ -169,6 +155,7 @@ impl VineItem {
 /// BlockCloth.getBlockFromDye, including signed and oversized damage.
 pub fn block_item_name(id: i32, damage: i32) -> Option<String> {
     match id {
+        31=>Some(if (0..3).contains(&damage){format!("tile.tallgrass.{}",["shrub","grass","fern"][damage as usize])}else{"tile.tallgrass".into()}),
         44 => {
             let names=["stone","sand","wood","cobble","brick","smoothStoneBrick",];
             Some(format!("tile.stoneSlab.{}",names.get(damage as usize).unwrap_or(&names[0])))
