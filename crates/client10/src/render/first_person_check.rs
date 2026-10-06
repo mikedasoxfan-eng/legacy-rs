@@ -96,6 +96,7 @@ impl Input {
                 alpha_cutoff: 0.1,
                 ops,
                 texture,
+                texture_ops:vec![],
                 material,
                 normal,
                 flags,
@@ -171,6 +172,20 @@ impl Input {
             }
         }
     }
+    /// The texture matrix in effect for each draw (GlLog10.drawTexture).
+    fn texture_ops(&mut self, r: &Fixed) {
+        let n = self.u();
+        self.compare(n, r.draws.len() as u32, "texture-matrix draw count");
+        for i in 0..n as usize {
+            let j = self.ops();
+            let empty = Vec::new();
+            let r = r.draws.get(i).map_or(&empty, |d| &d.texture_ops);
+            self.compare_ops(&j, r, &format!("draw {i} texture matrix"));
+        }
+    }
+    fn entity_default(&mut self, w: &mut World) -> Entity {
+        Entity::player(w, "Player")
+    }
     fn entity(&mut self, w: &mut World) -> Entity {
         let mut e = Entity::player(w, "Player");
         e.living.health = self.i();
@@ -231,6 +246,7 @@ impl Input {
             Settings {
                 bobbing: flags & 1 != 0,
                 third_person: flags & 2 != 0,
+                front_view: flags & 32 != 0,
                 anaglyph: flags & 4 != 0,
                 debug_camera: flags & 8 != 0,
                 eye,
@@ -257,7 +273,7 @@ impl Input {
         }
     }
 }
-fn world() -> World {
+pub(crate) fn world() -> World {
     let mut w = World::new(0, 0);
     w.skylight_subtracted = 0;
     for x in -3..=3 {
@@ -273,13 +289,42 @@ fn world() -> World {
     }
     w
 }
-fn raw(w: &mut World, x: i32, y: i32, z: i32, id: u8, m: i32) {
+pub(crate) fn raw(w: &mut World, x: i32, y: i32, z: i32, id: u8, m: i32) {
     let c = w
         .chunks
         .entry((x >> 4, z >> 4))
         .or_insert_with(|| Box::new(Chunk::new(x >> 4, z >> 4, Box::new([0; 32768]))));
     c.blocks[idx(x & 15, y, z & 15)] = id;
     c.data.set(x & 15, y, z & 15, m);
+}
+/// The original's currentTimeMillis glint offsets, read from the texture matrices it recorded
+/// after the draws: [scale 1/8, translate(t0), rotate -50], then translate(-t1).
+fn glint_times_after_draws(d: &Input) -> Option<[f32; 2]> {
+    let mut probe = Input { data: d.data.clone(), at: d.at, checks: 0, bad: 0, label: String::new() };
+    // Skip the legacy draw records.
+    let n = probe.u();
+    for _ in 0..n {
+        probe.at += 48;
+        let ops = probe.u() as usize;
+        probe.at += ops * 20;
+        let nv = probe.u() as usize;
+        probe.at += nv * 4 * 7;
+    }
+    let nm = probe.u() as usize;
+    probe.at += nm * 4 + nm * 64;
+    let lists = probe.u();
+    let mut times = [None, None];
+    for _ in 0..lists {
+        let ops = probe.ops();
+        if ops.len() == 3 && ops[0].code == 1 && ops[0].args[0] == 0.125 && ops[1].code == 0 && ops[2].code == 2 {
+            if ops[2].args[0] == -50.0 && times[0].is_none() {
+                times[0] = Some(ops[1].args[0]);
+            } else if ops[2].args[0] == 10.0 && times[1].is_none() {
+                times[1] = Some(-ops[1].args[0]);
+            }
+        }
+    }
+    Some([times[0]?, times[1]?])
 }
 pub fn check(path: &str) -> bool {
     let mut d = Input {
@@ -300,18 +345,24 @@ pub fn check(path: &str) -> bool {
     let mut bounds = worldgen::entity::block_table::INITIAL_BOUNDS;
     let mut equip = Equip::default();
     let mut persistent = super::entity::player::Renderer::default();
+    let mut per_kind = std::collections::HashMap::<u32, u32>::new();
     for case in 0..n {
         let kind = d.u();
-        d.label = format!("case {case} kind {kind}");
+        let index = per_kind.entry(kind).or_insert(0);
+        d.label = format!("case {case} kind {kind} #{index}");
+        *index += 1;
         let before = d.bad;
         let mut w = world();
         match kind {
             0 => {
-                let e = d.entity(&mut w);
+                let mut e = d.entity(&mut w);
                 let t = d.f();
                 let (s, _) = d.settings();
+                if d.i() != 0 {
+                    e.add_potion_effect(worldgen::entity::potion::PotionEffect::new(9, 100, 0));
+                }
                 d.blocks(&mut w);
-                let medium = camera::medium(&e, &mut w);
+                let medium = super::active_info::Info::default().medium(&e, t as f64, &mut w);
                 let fov = camera::fov(&e, medium == camera::Medium::Water, t, &s, true);
                 d.eq(fov.to_bits(), "fov");
                 let j = d.ops();
@@ -331,7 +382,7 @@ pub fn check(path: &str) -> bool {
                 }
                 let j = d.ops();
                 let distance = if s.third_person && !s.debug_camera {
-                    camera::third_distance(&e, t, &mut w)
+                    camera::third_distance(&e, t, &mut w, s.front_view)
                 } else {
                     4.0
                 };
@@ -524,9 +575,10 @@ pub fn check(path: &str) -> bool {
                     d.eq(v.to_bits(), "fog color");
                 }
                 let fog = camera::fog(medium, far, mode < 0, nether, camera::void_factor(light, eye_y));
-                d.eq(if fog[2] == 2.0 { 2048 } else { 9729 }, "fog mode");
+                let mode = d.u();
+                d.compare(mode, if fog[2] == 2.0 { 2048 } else { 9729 }, "fog mode");
                 d.eq(fog[0].to_bits(), "fog start/density");
-                if fog[2] != 2.0 {
+                if mode != 2048 {
                     d.eq(fog[1].to_bits(), "fog end");
                 }
             }
@@ -644,6 +696,123 @@ pub fn check(path: &str) -> bool {
                         u32::from_le_bytes(rgba.try_into().unwrap()),
                         "map upload RGBA",
                     );
+                }
+            }
+            12 => {
+                let mut e = d.entity(&mut w);
+                let t = d.f();
+                let (id, damage, ench) = (d.i(), d.i(), d.i());
+                d.label.push_str(&format!(" item {id}:{damage}"));
+                let p = e.player_state_mut().unwrap();
+                p.inventory.main[0] = (id != 0).then(|| {
+                    let s = ItemStack::new(id, 1, damage);
+                    if ench > 0 {
+                        s.add_enchantment(16, ench);
+                    }
+                    s
+                });
+                for a in 0..4 {
+                    let (aid, aench) = (d.i(), d.i());
+                    p.inventory.armor[a] = (aid != 0).then(|| {
+                        let s = ItemStack::new(aid, 1, 0);
+                        if aench != 0 {
+                            s.add_enchantment(0, 1);
+                        }
+                        s
+                    });
+                }
+                let used = d.i();
+                if used >= 0 {
+                    p.item_in_use = p.inventory.main[0];
+                    p.item_use_ticks = used;
+                }
+                if d.i() != 0 {
+                    p.fish_entity = Some(-1);
+                }
+                e.sneaking = d.i() != 0;
+                let brightness = d.f();
+                let camera = std::array::from_fn(|_| d.d());
+                super::first_person::override_glint_times(glint_times_after_draws(&d));
+                let r = super::entity::player::Renderer::default().render(&e, t, camera, brightness, 0);
+                super::first_person::override_glint_times(None);
+                if std::env::var("FP_STATS").is_ok() {
+                    eprintln!("{}: {} draws, {} glint", d.label, r.draws.len(), r.draws.iter().filter(|x| x.texture == 76).count());
+                }
+                d.draws(&r);
+                d.texture_ops(&r);
+            }
+            13 => {
+                let mut e = d.entity_default(&mut w);
+                let zombie = d.i() != 0;
+                let (id, damage, ench, used, fish, pass) = (d.i(), d.i(), d.i(), d.i(), d.i() != 0, d.i());
+                d.label.push_str(&format!(" item {id}:{damage} pass {pass}"));
+                let stack = ItemStack::new(id, 1, damage);
+                if ench != 0 {
+                    stack.add_enchantment(16, 1);
+                }
+                let p = e.player_state_mut().unwrap();
+                if used >= 0 {
+                    p.item_in_use = Some(stack);
+                    p.item_use_ticks = used;
+                }
+                if fish {
+                    p.fish_entity = Some(-1);
+                }
+                let holder = if zombie { super::first_person::Holder::MOB } else { super::first_person::Holder::player(&e) };
+                let times = glint_times_after_draws(&d).unwrap_or([0.0; 2]);
+                let mut g = Fixed::new(1.0);
+                super::first_person::item_pass(&mut g, stack, holder, pass, times);
+                if std::env::var("FP_STATS").is_ok() {
+                    eprintln!("{}: {} draws, {} glint", d.label, g.draws.len(), g.draws.iter().filter(|x| x.texture == 76).count());
+                }
+                d.draws(&g);
+                d.texture_ops(&g);
+            }
+            14 => {
+                let id = d.i();
+                let mut e = d.entity(&mut w);
+                e.entity_id = id;
+                let t = d.f();
+                e.player_state_mut().unwrap().capabilities.creative = d.i() != 0;
+                d.blocks(&mut w);
+                let n = d.u();
+                for _ in 0..n {
+                    let kind = d.i();
+                    let id = d.i();
+                    let mut x = match kind {
+                        0 => Entity::living(&mut w, "Pig").unwrap(),
+                        1 => Entity::fireball_base(&mut w, false),
+                        _ => Entity::fireball_base(&mut w, true),
+                    };
+                    x.entity_id = id;
+                    x.set_position(d.d(), d.d(), d.d());
+                    w.entity_joined_world(x);
+                }
+                let hit = e.mouse_over(&mut w, t);
+                let kind = d.i();
+                let rk = match hit {
+                    None => -1,
+                    Some(worldgen::entity::MovingObjectPosition::Block { .. }) => 0,
+                    Some(worldgen::entity::MovingObjectPosition::Entity { .. }) => 1,
+                };
+                d.compare(kind as u32, rk as u32, "pick type");
+                if kind == 1 {
+                    let expected = d.i();
+                    if let Some(worldgen::entity::MovingObjectPosition::Entity { id, .. }) = hit {
+                        d.compare(expected as u32, id as u32, "picked entity");
+                    }
+                } else if kind == 0 {
+                    let j = [d.i(), d.i(), d.i(), d.i()];
+                    let v = [d.d(), d.d(), d.d()];
+                    if let Some(worldgen::entity::MovingObjectPosition::Block { x, y, z, side, hit }) = hit {
+                        for (j, r) in j.into_iter().zip([x, y, z, side]) {
+                            d.compare(j as u32, r as u32, "picked block");
+                        }
+                        for (j, r) in v.into_iter().zip([hit.x, hit.y, hit.z]) {
+                            d.compare((j.to_bits() >> 32) as u32, (r.to_bits() >> 32) as u32, "hit high");
+                            d.compare(j.to_bits() as u32, r.to_bits() as u32, "hit low");
+                        }
+                    }
                 }
             }
             _ => panic!("case kind {kind}"),

@@ -26,6 +26,7 @@ fail=0
 if [ "$quick" = render ]; then
   bash "$root/tools/verify_r10render2.sh" --built || fail=1
   bash "$root/tools/verify_r10render3.sh" --built || fail=1
+  bash "$root/tools/verify_r10render4.sh" --built || fail=1
   [ "$fail" = 0 ] && echo "ALL RENDER CASES EXACT" || echo "SOME RENDER CASES DIFFER"
   exit "$fail"
 fi
@@ -551,6 +552,10 @@ bash "$root/tools/verify_r10gui3.sh" --built || fail=1
 # --- renderfx (1.0), round 1: particles, EffectRenderer and the simple entity renderers ---
 bash "$root/tools/verify_r10renderfx1.sh" --built || fail=1
 # --- end renderfx ---
+
+# --- rendering (1.0), round 4: the big renderers ---
+bash "$root/tools/verify_r10render4.sh" --built || fail=1
+# --- end rendering round 4 ---
 
 pflush
 [ $fail -eq 0 ] && echo "ALL CASES EXACT" || echo "SOME CASES DIFFER"

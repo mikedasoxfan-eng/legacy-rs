@@ -9,9 +9,9 @@ public final class GL13 {
     public static int activeTexture;
     /** Last glMultiTexCoord2f on unit 1: the lightmap coordinates. */
     public static float lightmapU, lightmapV;
-    public static void glActiveTexture(int unit) { activeTexture = unit - GL_TEXTURE0; }
-    public static void glClientActiveTexture(int unit) {}
-    public static void glMultiTexCoord2f(int unit, float s, float t) {
+    public static void glActiveTexture(int unit) { net.minecraft.src.GlLog10.command(15,unit,0,0,0); activeTexture = unit - GL_TEXTURE0; }
+    public static void glClientActiveTexture(int unit) { net.minecraft.src.GlLog10.command(16,unit,0,0,0); }
+    public static void glMultiTexCoord2f(int unit, float s, float t) { net.minecraft.src.GlLog10.command(17,unit,s,t,0);
         if (unit == GL_TEXTURE1) { lightmapU = s; lightmapV = t; }
     }
 }

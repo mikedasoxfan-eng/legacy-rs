@@ -241,7 +241,8 @@ pub fn inventory(gl: &mut Fixed, id: u8, meta: i32, brightness: f32, tint: bool)
             }
             gl.begin();
             gl.set_normal(n[0], n[1], n[2]);
-            let tex = item_props(id).textures[if rt == 0 || rt == 16 { (meta & 15) as usize } else { 0 }][side] as i32;
+            // Block.getBlockTextureFromSideAndMetadata, from the 1.0 render-property table.
+            let tex = crate::render::rprops(id).textures[if rt == 0 || rt == 16 { (meta & 15) as usize } else { 0 }][side] as i32;
             let offset = if rt == 13 {
                 match side {
                     2 => [0.0, 0.0, 0.0625],

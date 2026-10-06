@@ -134,6 +134,7 @@ fn cache(out: &mut Vec<u8>) {
                             context,
                             (sleep != 2).then_some(player),
                             partial,
+                            false,
                             |xyz| {
                                 if world.is_none() {
                                     return Err(Error::NullPointer);

@@ -31,17 +31,6 @@ const STAT_START_GAME: i32 = 1000;
 const STAT_CREATE_WORLD: i32 = 1001;
 const STAT_LOAD_WORLD: i32 = 1002;
 
-/// `MouseFilter.func_22386_a` (smooth camera).
-fn mouse_filter(f: &mut [f32; 3], v: f32, k: f32) -> f32 {
-    f[0] += v;
-    let mut v = (f[0] - f[1]) * k;
-    f[2] += (v - f[2]) * 0.5;
-    if v > 0.0 && v > f[2] || v < 0.0 && v < f[2] {
-        v = f[2];
-    }
-    f[1] += v;
-    v
-}
 
 /// `Entity.setAngles` on (yaw, pitch, prevYaw, prevPitch).
 fn set_angles(look: &mut [f32; 4], yaw: f32, pitch: f32) {
@@ -272,8 +261,8 @@ pub struct App {
     /// `MovementInputFromOptions.movementKeyStates`: set by key events, cleared when a screen
     /// takes the focus (`resetPlayerKeyState`).
     move_keys: [bool; 6],
-    /// `EntityRenderer.mouseFilterXAxis/YAxis` for smoothCamera.
-    mouse_filter: [[f32; 3]; 2],
+    /// `EntityRenderer`'s smooth (cinematic) camera state.
+    smooth_camera: render::camera::SmoothCamera,
     input_seq: u64,
     /// Look deltas the world thread may not have applied yet when its last message left.
     pending_look: Vec<(u64, f32, f32)>,
@@ -345,7 +334,7 @@ impl App {
             mouse_delta: (0.0, 0.0),
             mouse_held: [false; 2],
             move_keys: [false; 6],
-            mouse_filter: [[0.0; 3]; 2],
+            smooth_camera: Default::default(),
             input_seq: 0,
             pending_look: Vec::new(),
             look: [0.0; 4],
@@ -1247,7 +1236,7 @@ impl App {
                             gui.ui.world_saved = done;
                         }
                     }
-                    Ok(FromWorker::ReleaseTiles(books)) => {gpu.entities.books = books;}
+                    Ok(FromWorker::ReleaseTiles(books,portals)) => {gpu.entities.books = books;gpu.entities.portals=portals;}
                     Ok(FromWorker::DragonCrystals(crystals)) => {gpu.entities.dragon_crystals = crystals.into_iter().map(|(id, position, rotation)| (id, (position, rotation))).collect();}
                     Ok(FromWorker::Signs(signs,chests,spawners)) => {gpu.entities.signs=signs;gpu.entities.chests=chests;gpu.entities.spawners=spawners;}
                     Ok(FromWorker::Mesh { cx, cz, opaque, translucent }) => {
@@ -1267,6 +1256,10 @@ impl App {
                         self.chunks_loaded = chunks;
                         self.loaded_entities=loaded_entities;
                         self.cloud_ticks += 1;
+                        // EntityRenderer.updateRenderer: the smooth camera's filters advance per tick.
+                        if let Some(g) = self.gui.as_ref().filter(|g| g.ui.settings.smooth_camera) {
+                            self.smooth_camera.tick(g.ui.settings.mouse_sensitivity);
+                        }
                         let rng = &mut self.flicker_rng;
                         self.flicker.tick(|| rng.next_double());
                         self.fog_fade[0] = self.fog_fade[1];
@@ -1293,6 +1286,7 @@ impl App {
                             self.cloud_ticks as i32,
                             weather.rain_at(1.0),
                             video.fancy,
+                            self.gui.as_ref().map_or(0, |g| g.ui.settings.particles),
                             &mut self.weather_rng,
                             &mut self.rain_sound_counter,
                         );
@@ -1387,8 +1381,8 @@ impl App {
                     let mut x = dx as i32 as f32 * k;
                     let mut y = dy as i32 as f32 * k;
                     if s.smooth_camera {
-                        x = mouse_filter(&mut self.mouse_filter[0], x, 0.05 * k);
-                        y = mouse_filter(&mut self.mouse_filter[1], y, 0.05 * k);
+                        let partial = if self.paused { 0.0 } else { ((now - self.last_tick).as_secs_f32() * 20.0).min(1.0) };
+                        (x, y) = self.smooth_camera.frame(x, y, partial);
                     }
                     f.yaw_delta = x;
                     f.pitch_delta = y * invert;
@@ -1519,9 +1513,9 @@ impl App {
             let angle1 = if self.nether { 0.5 } else { sky::celestial_angle(self.world_time, 1.0) };
             let sky_factor = render::lightmap::sky_factor(angle1, self.weather.rain_at(1.0), self.weather.thunder_at(1.0));
             let gamma = self.gui.as_ref().map_or(0.0, |g| g.ui.settings.gamma);
-            let texels = render::lightmap::compute(&dim.light_brightness_table(), sky_factor, self.flicker.x, self.weather.flash > 0, gamma);
+            let texels = render::lightmap::compute_dimension(&dim.light_brightness_table(), sky_factor, self.flicker.x, self.weather.flash > 0, gamma, self.player.as_ref().and_then(|p| p.entity.player_state()).is_some_and(|s| s.dimension == 1));
             let mut out: [Vec<render::weather::WeatherVertex>; 2] = [Vec::new(), Vec::new()];
-            for (tex, mut v, light) in render::weather::precipitation181(
+            for (tex, mut v, light) in render::weather::precipitation10(
                 &self.weather_terrain,
                 self.cam.pos.to_array(),
                 self.cloud_ticks as i32,
@@ -1556,7 +1550,7 @@ impl App {
             let sky_factor = render::lightmap::sky_factor(angle1, self.weather.rain_at(1.0), self.weather.thunder_at(1.0));
             // The Brightness option (GameSettings.field_35380_M).
             let gamma = self.gui.as_ref().map_or(0.0, |g| g.ui.settings.gamma);
-            render::lightmap::compute(&dim.light_brightness_table(), sky_factor, self.flicker.x, self.weather.flash > 0, gamma)
+            render::lightmap::compute_dimension(&dim.light_brightness_table(), sky_factor, self.flicker.x, self.weather.flash > 0, gamma, self.player.as_ref().and_then(|p| p.entity.player_state()).is_some_and(|s| s.dimension == 1))
         };
         let particles = self.particles.vertices(
             self.cam.pos.to_array(),
@@ -1570,12 +1564,18 @@ impl App {
         let camera_settings = render::camera::Settings {
             bobbing: settings.is_none_or(|s| s.view_bobbing),
             third_person: settings.is_some_and(|s| s.third_person_view != 0),
+            front_view: settings.is_some_and(|s| s.third_person_view == 2),
             anaglyph: video.anaglyph,
             distance: video.distance,
             ticks: self.cloud_ticks as i32,
             zoom: 1.0,
             ..Default::default()
         };
+        if let (Some(p), Some(gpu)) = (self.player.as_mut(), self.gpu.as_ref()) {
+            let (w, h) = gpu.size();
+            p.viewport = [0, 0, w as i32, h as i32];
+            p.far = video.far();
+        }
         let player_frame = self.player.as_mut().map(|p| {
             p.fov_option=settings.map_or(0.0,|s|s.fov);
             p.frame(
@@ -1601,14 +1601,14 @@ impl App {
             moon_phase: render::sky_release::moon_phase(self.world_time),
             end: self.player.as_ref().and_then(|p| p.entity.player_state()).is_some_and(|s| s.dimension == 1),
             sky_color: sky::sky_color(angle, temp, rain, thunder, self.weather.flash, partial),
-            fog_color: render::camera::fog_color(
+            fog_color: render::camera::fog_color_release(
                 if self.nether {
                     let sky = sky::sky_color(angle, temp, rain, thunder, self.weather.flash, partial);
                     sky::nether_fog_color(sky, video.distance, rain, thunder)
                 } else {
                     sky::fog_color(angle, temp, video.distance, rain, thunder, self.weather.flash, partial, sky::look(self.cam.yaw, self.cam.pitch, self.cam.yaw, self.cam.pitch, partial))
                 },
-                player_frame.as_ref().map_or(render::camera::Medium::Air, |v| v.medium),
+                &player_frame.as_ref().map_or_else(Default::default, |v| v.fog),
                 self.fog_fade[0] + (self.fog_fade[1] - self.fog_fade[0]) * partial,
                 video.anaglyph,
                 self.cam.pos.y,
@@ -1642,7 +1642,7 @@ impl App {
                     render::entity::manager::Context {
                         world: Some(()), engine: Some(()), font: Some(()),
                         player: Some(()), options: Some(()),
-                    }, Some(camera), partial,
+                    }, Some(camera), partial, camera_settings.front_view,
                     |_| Ok(bed.map_or((0, 0), |metadata| (26, metadata))),
                 ).expect("active singleplayer render context");
                 gpu.entities.view = gpu.entities.manager.view;

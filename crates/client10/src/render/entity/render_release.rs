@@ -42,8 +42,7 @@ pub fn equipped(g: &mut Fixed, m: &Model, s: &RenderState) {
         crate::render::first_person::item(
             g,
             worldgen::container::ItemStack::new(86, 1, 0),
-            1.0,
-            false,
+            crate::render::first_person::Holder::MOB,
         );
         g.pop();
     }

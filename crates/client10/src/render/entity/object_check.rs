@@ -116,8 +116,9 @@ pub fn check(path: &str) -> bool {
                 value: id as i32,
                 ticks: age,
             },
+            // 1.0 RenderFireball draws the fire charge icon (46) regardless of the entity.
             4 => ObjectKind::Sprite {
-                icon: 14,
+                icon: 46,
                 scale: 2.0,
             },
             5 => ObjectKind::Sprite {
@@ -591,4 +592,103 @@ pub fn manager_visual_check(path: &str) -> bool {
         for (j, draw) in g.draws.iter().enumerate() { d.draw(draw, &format!("manager visuals {case}, draw {j}")); }
     }
     assert_eq!(d.at, d.data.len()); println!("manager visuals: {n} cases, {} comparisons, {} differences", d.checks, d.bad); d.bad == 0
+}
+
+/// Release 1.0 RenderBiped held items (potion second pass, glint) against
+/// Mode_render_biped4_10; texture matrices come first so the glint clock can be replayed.
+pub fn biped_release_check(path: &str) -> bool {
+    use super::living::{MobKind, RenderState};
+    let mut d = Input { data: std::fs::read(path).unwrap(), at: 0, checks: 0, bad: 0 };
+    assert_eq!(d.u(), 0x34425052);
+    let n = d.u();
+    let mut glints = 0;
+    for case in 0..n {
+        let c = d.u() as i32;
+        let partial = d.f();
+        let brightness = d.f();
+        let packed = d.u() as i32;
+        let (id, metadata, ench) = (d.u() as i32, d.u() as i32, d.u() != 0);
+        let lists: Vec<Vec<super::fixed::Op>> = (0..d.u())
+            .map(|_| (0..d.u()).map(|_| super::fixed::Op { code: d.u(), args: std::array::from_fn(|_| d.f()) }).collect())
+            .collect();
+        let mut times = [0.0f32; 2];
+        for ops in &lists {
+            if ops.len() == 3 && ops[0].code == 1 && ops[0].args[0] == 0.125 && ops[1].code == 0 && ops[2].code == 2 {
+                if ops[2].args[0] == -50.0 { times[0] = ops[1].args[0]; } else if ops[2].args[0] == 10.0 { times[1] = -ops[1].args[0]; }
+            }
+        }
+        let mut s = RenderState::new(MobKind::Zombie);
+        let stack = worldgen::entity::player::ItemStack::new(id, 1, metadata);
+        if ench { stack.add_enchantment(16, 2); }
+        s.held_item = None;
+        s.held_stack = Some(stack);
+        s.entity_id = c * 337; s.partial = partial; s.brightness = 1.0; s.overlay_brightness = brightness; s.position = [-0.25, 10.5, 3.75];
+        s.body_yaw = -33.0 + (17.0 - -33.0) * partial; s.yaw = -75.0 + (35.0 - -75.0) * partial; s.pitch = 25.0 + (-12.0 - 25.0) * partial;
+        s.limb_amount = 0.2 + (0.9 - 0.2) * partial; s.limb_swing = 3.75 - 0.9 * (1.0 - partial); s.age = (c * 127) as f32 + partial; s.attack = 0.15 + (0.65 - 0.15) * partial;
+        s.hurt_time = if c % 4 == 1 { 3 } else { 0 }; s.death_time = if c % 4 == 2 { c } else { 0 };
+        crate::render::first_person::override_glint_times(Some(times));
+        let g = super::raw_living181::render(&s, [0.0; 3], c >= 8);
+        crate::render::first_person::override_glint_times(None);
+        glints += g.draws.iter().filter(|x| x.texture == 76).count();
+        let nd = d.u() as usize;
+        d.checks += 1;
+        if nd != g.draws.len() { d.bad += 1; eprintln!("biped {case} ({id}:{metadata}) draw count: java {nd}, rust {}", g.draws.len()); return false; }
+        for (i, r) in g.draws.iter().enumerate() { d.draw(r, &format!("biped {case} draw {i}")); }
+        let lights = super::raw_living181::packed_brightnesses(&g.draws, packed);
+        assert_eq!(d.u() as usize, lights.len());
+        for (i, v) in lights.into_iter().enumerate() { d.eq(v as u32, &format!("biped {case} light {i}")); }
+        d.checks += 1;
+        if lists.len() != g.draws.len() { d.bad += 1; eprintln!("biped {case}: texture-matrix lists {}", lists.len()); continue; }
+        for (i, (j, r)) in lists.iter().zip(&g.draws).enumerate() {
+            d.checks += 1;
+            let same = j.len() == r.texture_ops.len() && j.iter().zip(&r.texture_ops).all(|(a, b)| a.code == b.code && a.args.map(f32::to_bits) == b.args.map(f32::to_bits));
+            if !same { d.bad += 1; if d.bad < 16 { eprintln!("biped {case} draw {i} texture matrix: java {j:?}, rust {:?}", r.texture_ops); } }
+        }
+    }
+    assert_eq!(d.at, d.data.len());
+    println!("RENDER BIPED10 {}: {n} cases, {glints} glint draws, {} values, {} differences", if d.bad == 0 { "EXACT" } else { "DIFFER" }, d.checks, d.bad);
+    d.bad == 0
+}
+
+/// Release 1.0 RenderLiving with baby animals (Mode_render_child4_10).
+pub fn child_living_check(path: &str) -> bool {
+    use super::living::{MobKind, RenderState};
+    let mut d = Input { data: std::fs::read(path).unwrap(), at: 0, checks: 0, bad: 0 };
+    assert_eq!(d.u(), 0x34444843);
+    let n = d.u();
+    let mut children = 0;
+    for case in 0..n {
+        let kind = d.u();
+        let c = d.u() as i32;
+        let child = d.u() != 0;
+        children += child as usize;
+        let partial = d.f();
+        let brightness = d.f();
+        let packed = d.u() as i32;
+        let mut s = RenderState::new(match kind {
+            6 => MobKind::Pig,
+            7 => MobKind::Cow,
+            8 => MobKind::Sheep,
+            9 => MobKind::Chicken,
+            11 => MobKind::Wolf,
+            _ => panic!("child kind {kind}"),
+        });
+        s.is_child = child;
+        s.entity_id = c * 337; s.partial = partial; s.brightness = 1.0; s.overlay_brightness = brightness; s.position = [-0.25, 10.5, 3.75];
+        s.body_yaw = -33.0 + (17.0 - -33.0) * partial; s.yaw = -75.0 + (35.0 - -75.0) * partial; s.pitch = 25.0 + (-12.0 - 25.0) * partial;
+        s.limb_amount = 0.2 + (0.9 - 0.2) * partial; s.limb_swing = 3.75 - 0.9 * (1.0 - partial); s.age = (c * 127) as f32 + partial; s.attack = 0.15 + (0.65 - 0.15) * partial;
+        s.hurt_time = if c % 4 == 1 { 3 } else { 0 }; s.death_time = if c % 4 == 2 { c } else { 0 };
+        s.saddled = c & 1 != 0; s.sheared = c & 1 != 0; s.fleece_color = c as usize;
+        s.chicken_flap = 0.2 + (1.9 - 0.2) * partial; s.chicken_flap_amount = 0.15 + (0.8 - 0.15) * partial;
+        s.wolf.angry = c % 8 & 2 != 0; s.wolf.sitting = c % 8 & 1 != 0; s.wolf_tamed = c % 8 & 4 != 0; s.wolf_health = c + 4; s.wolf.interested = [0.2, 0.8]; s.wolf.shake = [0.1, 0.6];
+        let g = super::raw_living181::render(&s, [0.0; 3], c >= 8);
+        assert_eq!(d.u() as usize, g.draws.len(), "child living {case} draw count");
+        for (i, r) in g.draws.iter().enumerate() { d.draw(r, &format!("child living {case} draw {i}")); }
+        let lights = super::raw_living181::packed_brightnesses(&g.draws, packed);
+        assert_eq!(d.u() as usize, lights.len());
+        for (i, v) in lights.into_iter().enumerate() { d.eq(v as u32, &format!("child living {case} light {i}")); }
+    }
+    assert_eq!(d.at, d.data.len());
+    println!("RENDER LIVING CHILD10 {}: {n} cases ({children} babies), {} values, {} differences", if d.bad == 0 { "EXACT" } else { "DIFFER" }, d.checks, d.bad);
+    d.bad == 0
 }

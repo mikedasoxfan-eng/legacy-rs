@@ -43,6 +43,10 @@ pub struct Column {
     /// b1.8.1 BiomeGenBase.canSpawnLightningBolt / getEnableSnow for renderRainSnow.
     pub rain: bool,
     pub snow: bool,
+    /// 1.0 `func_40539_b` (smoothed climate temperature) for this column: rain at >= 0.15.
+    pub temperature: f32,
+    /// 1.0 `func_35554_b` (the biome cache's temperature): rain splashes need > 0.2.
+    pub cache_temperature: f32,
     pub blocks: [u8; 128],
     pub meta: [u8; 128],
     pub brightness: [f32; 129],
@@ -269,10 +273,50 @@ pub fn precipitation(
     out
 }
 
+/// `EntityRenderer.renderRainSnow` (1.0): z-major column order (fixing b1.8.1's transposed
+/// biome lookup) and rain or snow chosen by the column temperature (>= 0.15 rains).
+pub fn precipitation10(
+    s: &Snapshot,
+    cam: [f64; 3],
+    tick: i32,
+    partial: f32,
+    rain: f32,
+    fancy: bool,
+    rng: &mut ClientRandom,
+) -> Vec<(u8, WeatherVertex, u32)> {
+    let (bx, bz) = (math::floor_double(cam[0]), math::floor_double(cam[2]));
+    let radius = if fancy { 10 } else { 5 };
+    let mut ordered = Snapshot::default();
+    for z in bz - radius..=bz + radius {
+        for x in bx - radius..=bx + radius {
+            if let Some(c) = s.column(x, z) {
+                let mut c = c.clone();
+                // precipitation181 tests the flags; 1.0 picks the texture by temperature.
+                c.snow = c.rain || c.snow;
+                c.rain = c.snow && c.temperature >= 0.15;
+                c.snow = c.snow && !c.rain;
+                ordered.columns.push(c);
+            }
+        }
+    }
+    precipitation_ordered(&ordered, cam, tick, partial, rain, fancy, rng)
+}
+
 /// `EntityRenderer.renderRainSnow` (b1.8.1): one pass in x-major column order, quads turned to
 /// face the camera column, Tessellator byte colours and per-column lightmap brightness. Each
 /// vertex comes with its texture (0 snow, 1 rain) and packed light.
 pub fn precipitation181(
+    s: &Snapshot,
+    cam: [f64; 3],
+    tick: i32,
+    partial: f32,
+    rain: f32,
+    fancy: bool,
+    rng: &mut ClientRandom,
+) -> Vec<(u8, WeatherVertex, u32)> {
+    precipitation_ordered(s, cam, tick, partial, rain, fancy, rng)
+}
+fn precipitation_ordered(
     s: &Snapshot,
     cam: [f64; 3],
     tick: i32,
@@ -380,12 +424,15 @@ pub struct RainSound {
 }
 
 /// EntityRenderer.addRainParticles, including reservoir sampling and sound-counter RNG.
+/// 1.0: `particles` is the Particles option (Decreased halves, Minimal skips the spawns) and
+/// splashes also need the biome cache temperature above 0.2.
 pub fn add_rain_particles(
     s: &Snapshot,
     cam: [f64; 3],
     tick: i32,
     rain: f32,
     fancy: bool,
+    particles: i32,
     rng: &mut ClientRandom,
     sound_counter: &mut i32,
 ) -> (Vec<Splash>, Option<RainSound>) {
@@ -402,7 +449,13 @@ pub fn add_rain_particles(
     );
     let mut count = 0;
     let mut sound_pos = [0.0; 3];
-    for _ in 0..(100.0f32 * rain * rain) as i32 {
+    let mut spawns = (100.0f32 * rain * rain) as i32;
+    if particles == 1 {
+        spawns >>= 1;
+    } else if particles == 2 {
+        spawns = 0;
+    }
+    for _ in 0..spawns {
         let x = cx + rng.random.next_int(10) - rng.random.next_int(10);
         let z = cz + rng.random.next_int(10) - rng.random.next_int(10);
         let Some(c) = s.column(x, z) else {
@@ -414,7 +467,7 @@ pub fn add_rain_particles(
         } else {
             0
         };
-        if y <= cy + 10 && y >= cy - 10 && c.particle_rain {
+        if y <= cy + 10 && y >= cy - 10 && c.particle_rain && c.cache_temperature > 0.2 {
             let fx = rng.random.next_float();
             let fz = rng.random.next_float();
             if id > 0 {

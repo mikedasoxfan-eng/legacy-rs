@@ -36,12 +36,13 @@ impl Default for Renderer {
     }
 }
 impl Renderer {
-    fn armor_pass(&mut self, g: &mut Fixed, e: &Entity, pass: usize, pose: [f32; 6]) -> bool {
+    /// `setArmorModel`: -1 without armor, 1 for armor, 15 for enchanted armor (the glint pass).
+    fn armor_pass(&mut self, g: &mut Fixed, e: &Entity, pass: usize, pose: [f32; 6]) -> i32 {
         let Some(item) = e.player_state().and_then(|p| p.inventory.armor[3 - pass]) else {
-            return false;
+            return -1;
         };
         if !(298..=317).contains(&item.id) {
-            return false;
+            return -1;
         }
         let material = (item.id - 298) / 4;
         g.texture = (20 + material * 2 + if pass == 2 { 1 } else { 0 }) as u32;
@@ -60,7 +61,41 @@ impl Renderer {
         self.pass = Some(pass == 2);
         m.set_rotation_angles(pose);
         special::model(g, m);
-        true
+        if item.is_enchanted() {
+            15
+        } else {
+            1
+        }
+    }
+    /// RenderLiving's pass-15 enchantment glint over the armor model just drawn.
+    fn armor_glint(&mut self, g: &mut Fixed, age: f32) {
+        use super::fixed::Op;
+        let m = if self.pass == Some(true) { &self.armor } else { &self.chest };
+        g.texture = 76;
+        g.enable(16, true);
+        g.material = [0.5, 0.5, 0.5, 1.0];
+        g.depth = 514;
+        g.enable(32, false);
+        for i in 0..2 {
+            g.enable(1, false);
+            g.material = [0.5 * 0.76, 0.25 * 0.76, 0.8 * 0.76, 1.0];
+            g.src = 768;
+            g.dst = 1;
+            let offset = age * (0.001 + i as f32 * 0.003) * 20.0;
+            let third = 1.0f32 / 3.0;
+            g.texture_ops = vec![
+                Op { code: 1, args: [third, third, third, 0.0] },
+                Op { code: 2, args: [30.0 - i as f32 * 60.0, 0.0, 0.0, 1.0] },
+                Op { code: 0, args: [0.0, offset, 0.0, 0.0] },
+            ];
+            special::model(g, m);
+        }
+        g.material = [1.0; 4];
+        g.enable(32, true);
+        g.texture_ops.clear();
+        g.enable(1, true);
+        g.enable(16, false);
+        g.depth = 515;
     }
     pub fn render(
         &mut self,
@@ -82,8 +117,19 @@ impl Renderer {
         let p = e.player_state().expect("player");
         let held = p.inventory.held();
         let sneaking = e.sneaking && (!local_player || !p.sleeping);
+        // 1.0 renderPlayer: held pose 1, 3 while blocking; aimed bow while drawing.
+        use worldgen::entity::player::registry::{use_action, ItemUseAction};
+        let action = held.filter(|_| p.item_use_ticks > 0).map(|h| use_action(h.id));
+        let held_pose = match (held, action) {
+            (None, _) => 0,
+            (Some(_), Some(ItemUseAction::Block)) => 3,
+            _ => 1,
+        };
+        let aimed_bow = action == Some(ItemUseAction::Bow);
         for m in [&mut self.main, &mut self.chest, &mut self.armor] {
-            m.held_right = held.is_some();
+            m.held_right = false;
+            m.held_right_pose = held_pose;
+            m.aimed_bow = aimed_bow;
             m.is_sneak = sneaking;
         }
         self.main.on_ground = e.swing_progress(t);
@@ -145,7 +191,9 @@ impl Renderer {
         g.texture = 9;
         special::model(&mut g, &self.main);
         for pass in 0..4 {
-            self.armor_pass(&mut g, e, pass, pose);
+            if self.armor_pass(&mut g, e, pass, pose) == 15 {
+                self.armor_glint(&mut g, e.ticks_existed as f32 + t);
+            }
         }
         if let Some(helmet) = p.inventory.armor[3].filter(|s| s.id < 256) {
             g.push();
@@ -155,7 +203,7 @@ impl Renderer {
                 g.rotate(180.0, 0.0, 1.0, 0.0);
                 g.scale(0.625, -0.625, 0.625);
             }
-            first_person::item(&mut g, helmet, 1.0, false); // b1.8.1 renderItem: brightness 1, lit by the lightmap
+            first_person::item(&mut g, helmet, first_person::Holder::player(e));
             g.pop();
         }
         if let Some(mut item) = held {
@@ -163,18 +211,29 @@ impl Renderer {
             special::part(&mut g, &self.main["bipedRightArm"], true);
             g.translate(-0.0625, 0.4375, 0.0625);
             if p.fish_entity.is_some() {item=worldgen::entity::player::ItemStack::new(280,1,0);}
+            let action = (p.item_use_ticks > 0).then(|| use_action(item.id));
             if inventory::in_3d(item.id as i16) {
+                let scale = 0.5f32 * 0.75;
                 g.translate(0.0, 0.1875, -0.3125);
                 g.rotate(20.0, 1.0, 0.0, 0.0);
                 g.rotate(45.0, 0.0, 1.0, 0.0);
-                g.scale(0.375, -0.375, 0.375);
+                g.scale(scale, -scale, scale);
+            } else if item.id == 261 {
+                g.translate(0.0, 0.125, 0.3125);
+                g.rotate(-20.0, 0.0, 1.0, 0.0);
+                g.scale(0.625, -0.625, 0.625);
+                g.rotate(-100.0, 1.0, 0.0, 0.0);
+                g.rotate(45.0, 0.0, 1.0, 0.0);
             } else if full_3d(item.id) {
                 if item.id == 346 {
                     g.rotate(180.0, 0.0, 0.0, 1.0);
                     g.translate(0.0, -0.125, 0.0);
                 }
-                if p.item_use_ticks > 0 && matches!(item.id,267|268|272|276|283) {
-                    g.translate(0.05, 0.0, -0.1);g.rotate(-60.0,0.0,1.0,0.0);g.rotate(-20.0,1.0,0.0,0.0);
+                if action == Some(ItemUseAction::Block) {
+                    g.translate(0.05, 0.0, -0.1);
+                    g.rotate(-50.0, 0.0, 1.0, 0.0);
+                    g.rotate(-10.0, 1.0, 0.0, 0.0);
+                    g.rotate(-60.0, 0.0, 0.0, 1.0);
                 }
                 g.translate(0.0, 0.1875, 0.0);
                 g.scale(0.625, -0.625, 0.625);
@@ -187,7 +246,17 @@ impl Renderer {
                 g.rotate(-90.0, 1.0, 0.0, 0.0);
                 g.rotate(20.0, 0.0, 0.0, 1.0);
             }
-            first_person::item(&mut g, item, 1.0, false); // b1.8.1 renderItem: brightness 1, lit by the lightmap
+            let holder = first_person::Holder::player(e);
+            let times = first_person::current_glint_times();
+            if item.id == 373 {
+                let c = super::item_table::properties(373, item.damage as i16).1;
+                g.material = [(c >> 16 & 255) as f32 / 255.0, (c >> 8 & 255) as f32 / 255.0, (c & 255) as f32 / 255.0, 1.0];
+                first_person::item_pass(&mut g, item, holder, 0, times);
+                g.material = [1.0; 4];
+                first_person::item_pass(&mut g, item, holder, 1, times);
+            } else {
+                first_person::item_pass(&mut g, item, holder, 0, times);
+            }
             g.pop();
         }
         if l.hurt_time > 0 || l.death_time > 0 {
@@ -210,8 +279,10 @@ impl Renderer {
         g.enable(2, false);
         g.pop();
         for m in [&mut self.main, &mut self.chest, &mut self.armor] {
-            m.held_right = false;
+            m.aimed_bow = false;
             m.is_sneak = false;
+            m.held_right = false;
+            m.held_right_pose = 0;
         }
         g
     }

@@ -12,6 +12,8 @@ pub fn check(path: &str) -> bool {
         top: 0,
         rain: false,
         snow: false,
+        temperature: 0.8,
+        cache_temperature: 0.8,
         blocks: [0; 128],
         meta: [0; 128],
         brightness: [0.0; 129],

@@ -20,6 +20,9 @@ const CLASSES: &[(&str, Option<&str>)] = &[
     ("ProbeTile", Some("TileEntitySign")),
     ("Unknown", Some("ProbeTile")),
     ("SignBase", Some("TileEntitySign")),
+    // 1.0 registers the enchanting-table book and End portal renderers too.
+    ("TileEntityEnchantmentTable", Some("TileEntity")),
+    ("TileEntityEndPortal", Some("TileEntity")),
 ];
 fn i(out: &mut Vec<u8>, v: i32) {
     out.extend(v.to_le_bytes());
@@ -64,7 +67,8 @@ fn lookup(m: &mut Manager, class: Option<&str>, out: &mut Vec<u8>) {
 fn registry(hashes: &[i32], out: &mut Vec<u8>) {
     let mut m = manager(hashes);
     i(out, m.cached_count() as i32);
-    for (j, &(_, name)) in RENDERERS.iter().enumerate() {
+    // The fixture inspects the four Beta-era renderers; 1.0 adds two more to the map.
+    for (j, &(_, name)) in RENDERERS.iter().take(4).enumerate() {
         i(out, name.len() as i32);
         out.extend(name.as_bytes());
         i(out, 1);
@@ -122,6 +126,10 @@ fn state(m: &Manager, out: &mut Vec<u8>) {
     }
 }
 fn notify(out: &mut Vec<u8>, slot: usize, world: Option<&i32>, fault: i32) -> Result<(), Error> {
+    // The book and End portal renderers keep TileEntitySpecialRenderer's empty onWorldChange.
+    if slot >= 4 {
+        return Ok(());
+    }
     i(out, 30);
     i(out, slot as i32);
     i(out, world.copied().unwrap_or(0));
