@@ -536,6 +536,8 @@ bash "$root/tools/verify_r10world3.sh" --built || fail=1
 bash "$root/tools/verify_r10render2.sh" --built || fail=1
 bash "$root/tools/verify_r10render3.sh" --built || fail=1
 
+# Release 1.0 entities, round 3.
+bash "$root/tools/verify_r10entities3.sh" --built || fail=1
 pflush
 [ $fail -eq 0 ] && echo "ALL CASES EXACT" || echo "SOME CASES DIFFER"
 exit $fail

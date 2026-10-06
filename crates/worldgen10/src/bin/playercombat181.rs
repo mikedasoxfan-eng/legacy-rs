@@ -52,7 +52,7 @@ fn main() {
         }
         out.push(p.player_state().unwrap().sprinting as u8);
         out.push(target.velocity_changed as u8);
-        out.extend(p.player_state().unwrap().food.exhaustion.to_le_bytes());
+        out.extend(p.player_state().unwrap().food.read().exhaustion.to_le_bytes());
         stack(&mut out, p.held_item());
         let stats = &p.player_state().unwrap().stat_log;
         out.extend((stats.len() as i32).to_le_bytes());

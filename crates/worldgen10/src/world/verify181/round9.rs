@@ -671,8 +671,8 @@ pub(super) fn cake(o: &mut Vec<u8>) {
                         raw(&mut w, 8, 63, 8, 1, 0);
                         raw(&mut w, 8, 64, 8, 92, m);
                         w.multiplayer_world = remote;
-                        p.player_state_mut().unwrap().food.level = food;
-                        p.player_state_mut().unwrap().food.saturation = 4.5;
+                        p.player_state_mut().unwrap().food.write().level = food;
+                        p.player_state_mut().unwrap().food.write().saturation = 4.5;
                         p.player_state_mut().unwrap().capabilities.disable_damage = creative;
                         w.loaded_entity_list.clear();
                         round6::seed(&mut w);
@@ -682,11 +682,11 @@ pub(super) fn cake(o: &mut Vec<u8>) {
                         } else {
                             o.push(p.activate_block(&mut w, 8, 64, 8) as u8);
                         }
-                        i(o, p.player_state().unwrap().food.level);
+                        i(o, p.player_state().unwrap().food.read().level);
                         o.extend(
                             p.player_state()
                                 .unwrap()
-                                .food
+                                .food.read()
                                 .saturation
                                 .to_bits()
                                 .to_le_bytes(),

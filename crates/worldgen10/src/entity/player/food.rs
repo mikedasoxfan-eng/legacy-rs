@@ -1,4 +1,4 @@
-//! Beta 1.8.1 `FoodStats`. Arithmetic and the one-exhaustion-step-per-tick bug
+//! Release 1.0 `FoodStats`. Arithmetic and the one-exhaustion-step-per-tick bug
 //! deliberately follow the original (regeneration does not add exhaustion).
 use crate::nbt::{Compound, Tag};
 
@@ -184,4 +184,22 @@ mod release_tests {
         abilities.read_nbt(&n);
         assert!(abilities.flying);
     }
+}
+
+/// Java FoodStats object identity. Replacement players retain the same object;
+/// HUD snapshots explicitly copy its value before crossing the worker boundary.
+#[derive(Clone, Debug, Default)]
+pub struct SharedFoodStats(std::sync::Arc<std::sync::Mutex<FoodStats>>);
+impl SharedFoodStats {
+    pub fn share(&self) -> Self { Self(self.0.clone()) }
+    pub fn same_object(&self, other: &Self) -> bool { std::sync::Arc::ptr_eq(&self.0, &other.0) }
+    pub fn read(&self) -> std::sync::MutexGuard<'_, FoodStats> { self.0.lock().expect("FoodStats lock") }
+    pub fn write(&self) -> std::sync::MutexGuard<'_, FoodStats> { self.read() }
+    pub fn snapshot(&self) -> FoodStats { self.read().clone() }
+    pub fn add_food(&self, amount: i32, modifier: f32) { self.write().add_food(amount, modifier); }
+    pub fn add_exhaustion(&self, amount: f32) { self.write().add_exhaustion(amount); }
+    pub fn needs_food(&self) -> bool { self.read().needs_food() }
+    pub fn tick(&self, difficulty: i32, health: i32) -> FoodAction { self.write().tick(difficulty, health) }
+    pub fn read_nbt(&self, n: &Compound) { self.write().read_nbt(n); }
+    pub fn write_nbt(&self, n: &mut Compound) { self.read().write_nbt(n); }
 }

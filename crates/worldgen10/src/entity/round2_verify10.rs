@@ -24,7 +24,7 @@ fn d(o: &mut Vec<u8>, v: f64) {
         } as i64,
     );
 }
-fn entity(e: &Entity, o: &mut Vec<u8>) {
+pub(super) fn entity(e: &Entity, o: &mut Vec<u8>) {
     i(o, e.entity_id);
     for p in [e.pos, e.motion, e.prev_pos] {
         for v in [p.x, p.y, p.z] {
@@ -836,7 +836,7 @@ fn run_breeding() -> Vec<u8> {
     }
     o
 }
-fn world_state(w: &mut World, o: &mut Vec<u8>) {
+pub(super) fn world_state(w: &mut World, o: &mut Vec<u8>) {
     l(o, w.rand.state());
     l(o, w.math_random.state());
     let super::EntitySeedSource::Deterministic(seed) = w.entity_seed_source else {

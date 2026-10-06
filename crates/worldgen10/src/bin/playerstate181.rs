@@ -113,7 +113,7 @@ fn main() {
         ] {
             i(&mut out, n);
         }
-        out.extend(p.player_state().unwrap().food.exhaustion.to_le_bytes());
+        out.extend(p.player_state().unwrap().food.read().exhaustion.to_le_bytes());
         stack(&mut out, p.player_state().unwrap().inventory.armor[0]);
         let points = r.next_int_unbounded();
         let total = r.next_int_unbounded();

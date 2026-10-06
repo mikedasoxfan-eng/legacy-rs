@@ -137,7 +137,7 @@ impl Entity {
     pub fn player_hud(&self, w: &mut World, partial: f32) -> Option<PlayerHud> {
         let s = self.player_state()?;
         Some(PlayerHud {
-            food: s.food.clone(),
+            food: s.food.snapshot(),
             experience: s.experience,
             capabilities: s.capabilities,
             fov_multiplier: self.fov_multiplier(),
