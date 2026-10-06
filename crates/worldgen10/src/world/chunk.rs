@@ -64,6 +64,8 @@ pub struct Chunk {
     pub precipitation_height: [i32;256],
     pub skylight_occlusion: [bool;256],
     pub skylight_updated: bool,
+    pub skylight_pending10: bool,
+    pub has_no_sky10: bool,
     pub data: Nibbles,
     pub sky_light: Nibbles,
     pub block_light: Nibbles,
@@ -88,6 +90,7 @@ pub struct Chunk {
     pub has_entities: bool,
     /// Unsupported entities from a save; written back unchanged.
     pub raw_entities: Vec<crate::nbt::Tag>,
+    pub tile_ticks10: Option<Vec<crate::nbt::Compound>>,
     pub entity_lists: [Vec<i32>; 8],
     /// Tile entities of kinds not modelled yet (furnaces, signs...); written back unchanged.
     pub raw_tile_entities: Vec<crate::nbt::Compound>,
@@ -109,6 +112,8 @@ impl Chunk {
             precipitation_height: [-999;256],
             skylight_occlusion: [false;256],
             skylight_updated: false,
+            skylight_pending10: false,
+            has_no_sky10: false,
             data,
             sky_light,
             block_light,
@@ -126,6 +131,7 @@ impl Chunk {
             has_entities: false,
             entity_lists: Default::default(),
             raw_entities: Vec::new(),
+            tile_ticks10: None,
             raw_tile_entities: Vec::new(),
         }
     }
@@ -146,8 +152,25 @@ impl Chunk {
         self.init_height_and_sky_for_dimension(super::Dimension::Overworld);
     }
 
+    /// Chunk.generateHeightMap also invalidates every cached precipitation column.
+    pub fn generate_height_map10(&mut self) {
+        let mut lowest = 127;
+        for x in 0..16 {
+            for z in 0..16 {
+                self.precipitation_height[(x + z * 16) as usize] = -999;
+                let mut height = 127;
+                while height > 0 && light_opacity(self.block(x, height - 1, z)) == 0 { height -= 1; }
+                self.height_map[(z * 16 + x) as usize] = height as u8;
+                lowest = lowest.min(height);
+            }
+        }
+        self.lowest_block_height = lowest;
+        self.modified = true;
+    }
+
     /// `func_1024_c` with the provider's `hasNoSky` guard.
     pub fn init_height_and_sky_for_dimension(&mut self, dimension: super::Dimension) {
+        self.has_no_sky10 = dimension.has_no_sky();
         let mut lowest = 127;
         for x in 0..16 {
             for z in 0..16 {
@@ -178,6 +201,7 @@ impl Chunk {
         }
         self.lowest_block_height = lowest;
         self.skylight_occlusion.fill(true);
+        self.skylight_pending10 = true;
         self.modified=true;
     }
 
@@ -195,14 +219,15 @@ impl Chunk {
 
     pub fn set_light(&mut self, kind: LightKind, x: i32, y: i32, z: i32, v: i32) {
         match kind {
-            LightKind::Sky => self.sky_light.set(x, y, z, v),
+            LightKind::Sky => { if !self.has_no_sky10 { self.sky_light.set(x, y, z, v); } },
             LightKind::Block => self.block_light.set(x, y, z, v),
         }
     }
 
     /// `getBlockLightValue(x, y, z, skylightSubtracted)`
     pub fn block_light_value(&self, x: i32, y: i32, z: i32, subtracted: i32) -> i32 {
-        let mut v = self.sky_light.get(x, y, z) - subtracted;
+        let mut v = if self.has_no_sky10 { 0 } else { self.sky_light.get(x, y, z) };
+        v -= subtracted;
         let b = self.block_light.get(x, y, z);
         if b > v {
             v = b;

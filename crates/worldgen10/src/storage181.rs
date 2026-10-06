@@ -61,7 +61,7 @@ impl ChunkFile181 {
 #[derive(Clone,Debug)]
 pub struct SaveFormatComparator181 {
     pub file_name:String,pub display_name:String,pub last_played:i64,
-    pub size_on_disk:i64,pub game_type:i32,pub requires_conversion:bool,
+    pub size_on_disk:i64,pub game_type:i32,pub requires_conversion:bool,pub hardcore:bool,
 }
 impl SaveFormatComparator181 {
     pub fn compare(&self,other:&Self)->i32 {

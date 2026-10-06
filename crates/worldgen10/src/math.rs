@@ -65,3 +65,8 @@ pub fn bucket_int(a:i32,b:i32)->i32 {
     if a<0 {a.wrapping_neg().wrapping_sub(1).wrapping_div(b).wrapping_neg().wrapping_sub(1)}else{a.wrapping_div(b)}
 }
 pub fn string_null_or_empty(s:Option<&str>)->bool {s.is_none_or(str::is_empty)}
+
+/// MathHelper.func_40346_b: fast truncation with the original offset and overflow.
+pub fn truncate_offset10(v:f64)->i32 { ((v+1024.0) as i32).wrapping_sub(1024) }
+/// MathHelper.func_41084_a (preserves the source behavior for reversed bounds).
+pub fn clamp_int10(v:i32,min:i32,max:i32)->i32 {if v<min {min} else if v>max {max} else {v}}

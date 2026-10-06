@@ -36,13 +36,13 @@ fn nether_chunks_start_with_uninitialized_height_and_light() {
     w.load_chunk(0, 0);
     let c = w.chunk(0, 0);
     assert!(c.blocks.iter().any(|&b| b == block::NETHERRACK));
-    assert_eq!(c.height_map, [0; 256]);
+    assert_eq!(&*c.height_map, &[0; 256]);
     assert!(c.sky_light.0.iter().all(|&v| v == 0));
     assert!(c.block_light.0.iter().all(|&v| v == 0));
     assert!(w.light_queue.is_empty());
     assert_eq!(w.light_brightness_table[0].to_bits(), 0.1f32.to_bits());
     assert_eq!(w.light_brightness_table[15].to_bits(), 1.0f32.to_bits());
-    assert_eq!(World::new(0, 1).light_brightness_table[0].to_bits(), 0.05f32.to_bits());
+    assert_eq!(World::new(0, 1).light_brightness_table[0].to_bits(), 0.0f32.to_bits());
 }
 
 #[test]
@@ -54,11 +54,10 @@ fn only_metadata_writes_skip_relighting_in_hell() {
     assert_eq!(w.chunk(0, 0).height(4, 4), 0);
     assert!(w.set_block(5, 70, 4, block::NETHERRACK));
     assert_eq!(w.chunk(0, 0).height(5, 4), 71);
-    // Removing that block lowers the height and fills the exposed skylight,
-    // even though hasNoSky suppresses every skylight schedule.
+    // Release 1.0 lowers the height without writing sky light in a no-sky world.
     assert!(w.set_block(5, 70, 4, block::AIR));
     assert_eq!(w.chunk(0, 0).height(5, 4), 0);
-    assert_eq!(w.get_saved_light_value(LightKind::Sky, 5, 69, 4), 15);
+    assert_eq!(w.get_saved_light_value(LightKind::Sky, 5, 69, 4), 0);
     assert!(w.light_queue.iter().all(|u| u.kind == LightKind::Block));
     let n = w.light_queue.len();
     w.schedule_lighting_update(LightKind::Sky, 4, 64, 4, 4, 80, 4);
@@ -67,13 +66,16 @@ fn only_metadata_writes_skip_relighting_in_hell() {
 }
 
 #[test]
-fn repairing_a_saved_chunk_honors_the_provider() {
+fn missing_saved_light_arrays_are_non_null_and_keep_the_provider_flag() {
     let mut nbt = Compound::new();
     nbt.put("Blocks", Tag::ByteArray(vec![0; CHUNK_VOLUME]));
-    // Missing HeightMap/SkyLight forces ChunkLoader's func_1024_c repair path.
+    // NBTTagCompound.getByteArray returns a non-null empty array for absent tags;
+    // NibbleArray.isValid checks null, so Java does not enter the repair path.
     let hell = worldgen::storage::chunk_from_nbt_for_dimension(&nbt, Dimension::Nether).unwrap();
     let overworld = worldgen::storage::chunk_from_nbt(&nbt).unwrap();
     assert!(hell.sky_light.0.iter().all(|&v| v == 0));
-    assert_eq!(overworld.sky_light.get(0, 127, 0), 15);
+    assert!(overworld.sky_light.0.is_empty());
+    assert!(hell.has_no_sky10);
+    assert!(!overworld.has_no_sky10);
     assert_eq!(hell.height_map, overworld.height_map);
 }

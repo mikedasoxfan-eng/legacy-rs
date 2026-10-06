@@ -129,6 +129,7 @@ impl World {
         if let Some(index) = e.player_state().and_then(|s| s.player_index) {
             self.players[index] = (e.pos.x, e.pos.y, e.pos.z);
         }
+        crate::profiler::start_section("chunkCheck");
         let (cx, cy, cz) = (
             floor(e.pos.x / 16.0),
             floor(e.pos.y / 16.0),
@@ -142,6 +143,7 @@ impl World {
                 e.added_to_chunk = false;
             }
         }
+        crate::profiler::end_section();
         if force && e.added_to_chunk {
             if let Some(id) = e.ridden_by {
                 if let Some(mut rider) = self.entities.remove(&id) {
@@ -161,6 +163,8 @@ impl World {
         }
     }
     pub fn update_entities(&mut self) {
+        crate::profiler::start_section("entities");
+        crate::profiler::start_section("global");
         let effects = std::mem::take(&mut self.weather_effects);
         for mut e in effects {
             e.on_update(self);
@@ -168,6 +172,7 @@ impl World {
                 self.weather_effects.push(e);
             }
         }
+        crate::profiler::end_start_section("remove");
         let unloaded = std::mem::take(&mut self.unloaded_entity_list);
         for id in unloaded {
             if let Some(e) = self.entities.remove(&id) {
@@ -176,6 +181,7 @@ impl World {
             }
             self.loaded_entity_list.retain(|v| *v != id);
         }
+        crate::profiler::end_start_section("regular");
         let mut i = 0;
         // Re-read length: entities appended by an onUpdate tick this same frame.
         while i < self.loaded_entity_list.len() {
@@ -205,6 +211,7 @@ impl World {
             if let Some(index) = e.player_state().and_then(|s| s.player_index) {
                 self.players[index] = (e.pos.x, e.pos.y, e.pos.z);
             }
+            crate::profiler::start_section("remove");
             if e.dead {
                 self.unfile_entity(&e);
                 self.loaded_entity_list.remove(i);
@@ -217,8 +224,12 @@ impl World {
                 self.entities.insert(id, e);
                 i += 1;
             }
+            crate::profiler::end_section();
         }
+        crate::profiler::end_start_section("tileEntities");
         self.tick_entity_tiles();
+        crate::profiler::end_section();
+        crate::profiler::end_section();
     }
     // Tile entities update after the entity list, including newly joined mobs next frame.
     pub fn join_entity_in_surroundings(&mut self, pos: Vec3D) {

@@ -1,4 +1,6 @@
-//! Village piece factory, pending-road expansion and population.
+#[derive(Clone,Debug)]
+pub struct VillagerSpawn10 {pub position:[f64;3],pub profession:i32}
+// Village piece factory, pending-road expansion and population.
 use super::{component::Component, long_map_order::LongMapOrder, BoundingBox as B, Piece};
 use crate::{BiomeSource, JavaRandom, World};
 use std::collections::HashMap;
@@ -38,6 +40,7 @@ pub struct VillagePiece {
     pub flag: bool,
     pub style: i32,
     pub length: i32,
+    pub villagers10:i32,
 }
 impl VillagePiece {
     fn new(kind: usize, depth: i32, bounds: B, orientation: i32, r: &mut JavaRandom) -> Self {
@@ -54,10 +57,20 @@ impl VillagePiece {
                 depth,
             },
             kind,
+            villagers10:0,
             height: -1,
             flag,
             style,
             length: bounds.sizes()[0].max(bounds.sizes()[2]),
+        }
+    }
+    fn spawn_villagers10(&mut self,w:&mut World,clip:B,x:i32,y:i32,z:i32,count:i32) {
+        for n in self.villagers10..count {
+            let (x,y,z)=self.component.position(x+n,y,z);
+            if !clip.contains(x,y,z) {break;}
+            self.villagers10+=1;
+            let profession=match self.kind {1=>2,2=>1,7=>3,4 if n==0=>4,_=>0};
+            w.villager_spawns10.push(VillagerSpawn10 {position:[x as f64+0.5,y as f64,z as f64+0.5],profession});
         }
     }
     pub fn name(&self) -> &'static str {

@@ -27,6 +27,17 @@ impl World {
     /// `func_4107_a` for an entity at `pos` (`posX/posY/posZ`): where it is placed, or
     /// `None` if it stays.
     pub fn teleport_position(&mut self, pos: (f64, f64, f64), rand: &mut JavaRandom) -> Option<(f64, f64, f64)> {
+        if self.dimension == super::Dimension::End {
+            let (x, y, z) = (floor_double(pos.0), floor_double(pos.1) - 1, floor_double(pos.2));
+            for a in -2..=2 {
+                for b in -2..=2 {
+                    for c in -1..3 {
+                        self.set_block_with_notify(x + b, y + c, z - a, if c < 0 { OBSIDIAN } else { 0 });
+                    }
+                }
+            }
+            return Some((x as f64, y as f64, z as f64));
+        }
         if let Some(p) = self.find_portal(pos) {
             return Some(p);
         }

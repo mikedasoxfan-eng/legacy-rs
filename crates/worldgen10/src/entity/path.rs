@@ -339,6 +339,7 @@ impl World {
         range: f32,
         padding: f32,
     ) -> Option<PathEntity> {
+        crate::profiler::start_section("pathfind");
         let x = floor(e.pos.x);
         let z = floor(e.pos.z);
         let r = (range + padding) as i32;
@@ -371,7 +372,9 @@ impl World {
             floor(target.y),
             floor(target.z - (e.width / 2.0) as f64),
         ]);
-        finder.find(start, end, range)
+        let result=finder.find(start,end,range);
+        crate::profiler::end_section();
+        result
     }
     pub fn get_light_brightness(&mut self, x: i32, y: i32, z: i32) -> f32 {
         let light = self.get_block_light_value(x, y, z);

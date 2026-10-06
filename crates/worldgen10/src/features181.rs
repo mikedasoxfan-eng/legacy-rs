@@ -132,6 +132,20 @@ pub fn vine_neighbor(w: &mut World, x: i32, y: i32, z: i32) {
         w.set_block_metadata_with_notify(x, y, z, meta);
     }
 }
+/// MapGenWaterlily.generate. BlockFlower.canPlaceBlockAt checks the block ID
+/// below (still water), rather than BlockLilyPad.canBlockStay's metadata test.
+pub fn waterlily(w: &mut World, x: i32, y: i32, z: i32) -> bool {
+    for _ in 0..10 {
+        let bx = x + w.prand().next_int(8) - w.prand().next_int(8);
+        let by = y + w.prand().next_int(4) - w.prand().next_int(4);
+        let bz = z + w.prand().next_int(8) - w.prand().next_int(8);
+        if w.get_block_id(bx, by, bz) == 0 && w.get_block_id(bx, by - 1, bz) == block::WATER_STILL {
+            w.set_block(bx, by, bz, 111);
+        }
+    }
+    true
+}
+
 pub fn big_mushroom(w: &mut World, kind: Option<i32>, x: i32, y: i32, z: i32) -> bool {
     let random_kind = w.prand().next_int(2);
     let kind = kind.unwrap_or(random_kind);
@@ -158,7 +172,8 @@ pub fn big_mushroom(w: &mut World, kind: Option<i32>, x: i32, y: i32, z: i32) ->
             }
         }
     }
-    if !clear || !opaque_cube_lookup(w.get_block_id(x, y - 1, z)) {
+    let below = w.get_block_id(x, y - 1, z);
+    if !clear || !matches!(below, 2 | 3 | 110) || !opaque_cube_lookup(below) {
         return false;
     }
     let current = w.get_block_id(x, y, z);

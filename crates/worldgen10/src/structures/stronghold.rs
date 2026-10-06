@@ -8,7 +8,9 @@ use crate::{BiomeSource, JavaRandom, World};
 use std::collections::HashMap;
 #[path = "stronghold_generated.rs"]
 mod generated;
-const NAMES: [&str; 11] = [
+#[path = "stronghold10.rs"]
+mod release10;
+const NAMES: [&str; 13] = [
     "ComponentStrongholdStraight",
     "ComponentStrongholdPrison",
     "ComponentStrongholdLeftTurn",
@@ -20,6 +22,8 @@ const NAMES: [&str; 11] = [
     "ComponentStrongholdLibrary",
     "ComponentStrongholdCorridor",
     "ComponentStrongholdStairs2",
+    "ComponentStrongholdChestCorridor",
+    "ComponentStrongholdPortalRoom",
 ];
 const BOXES: [[i32; 6]; 9] = [
     [-1, -1, 0, 5, 5, 7],
@@ -67,7 +71,7 @@ pub struct StrongholdPiece {
 }
 impl StrongholdPiece {
     pub fn new(kind: usize, depth: i32, bounds: B, orientation: i32, r: &mut JavaRandom) -> Self {
-        let door = if kind == 9 || kind == 10 {
+        let door = if kind == 9 || kind == 10 || kind == 12 {
             Door::Opening
         } else {
             match r.next_int(5) {
@@ -84,9 +88,8 @@ impl StrongholdPiece {
                 flags[1] = r.next_int(2) == 0;
             }
             7 => {
-                for f in &mut flags {
-                    *f = r.next_bool();
-                }
+                for f in &mut flags[..3] { *f = r.next_bool(); }
+                flags[3] = r.next_int(3) > 0;
             }
             8 => flags[0] = bounds.sizes()[1] > 6,
             10 => flags[0] = true,
@@ -184,6 +187,8 @@ impl Piece for StrongholdPiece {
             7 => self.generate_7(w, r, clip),
             8 => self.generate_8(w, r, clip),
             9 => self.generate_9(w, r, clip),
+            11 => self.generate_chest10(w, r, clip),
+            12 => self.generate_portal10(w, r, clip),
             _ => unreachable!(),
         }
     }
@@ -194,6 +199,9 @@ pub struct StrongholdStart {
     weights: Vec<Weight>,
     pub previous: Option<usize>,
     pending: Vec<usize>,
+    forced: Option<usize>,
+    pub portal_room: Option<usize>,
+    pub portal_center10: Option<[i32;3]>,
 }
 struct Weight {
     kind: usize,
@@ -213,32 +221,17 @@ impl StrongholdStart {
             orientation,
             r,
         );
-        let weights = [
-            (40, 0),
-            (5, 5),
-            (20, 0),
-            (20, 0),
-            (10, 6),
-            (5, 10),
-            (5, 10),
-            (5, 4),
-            (10, 1),
-        ]
-        .into_iter()
-        .enumerate()
-        .map(|(kind, (weight, limit))| Weight {
-            kind,
-            weight,
-            limit,
-            spawned: 0,
-        })
-        .collect();
+        let weights = [(0,40,0),(1,5,5),(2,20,0),(3,20,0),(4,10,6),(5,5,5),(6,5,5),(7,5,4),(11,5,4),(8,10,2),(12,20,1)]
+            .into_iter().map(|(kind, weight, limit)| Weight { kind, weight, limit, spawned: 0 }).collect();
         let mut s = Self {
             pieces: vec![root],
             bounds: B::empty(),
             weights,
             previous: None,
             pending: vec![],
+            forced: None,
+            portal_room: None,
+            portal_center10: None,
         };
         s.expand(0, r);
         while !s.pending.is_empty() {
@@ -258,6 +251,7 @@ impl StrongholdStart {
         for p in &mut s.pieces {
             p.component.bounds.offset(0, dy, 0);
         }
+        s.portal_center10=s.portal_room.map(|i|s.pieces[i].bounds().center());
         s
     }
     fn factory(
@@ -270,7 +264,7 @@ impl StrongholdStart {
         dir: i32,
         depth: i32,
     ) -> Option<StrongholdPiece> {
-        let [dx, dy, dz, sx, sy, sz] = BOXES[kind];
+        let [dx, dy, dz, sx, sy, sz] = match kind { 11 => [-1,-1,0,5,5,7], 12 => [-4,-1,0,11,8,16], _ => BOXES[kind] };
         let mut b = B::oriented(x, y, z, dx, dy, dz, sx, sy, sz, dir);
         let valid = |b: B| b.min_y > 10 && !self.pieces.iter().any(|p| p.bounds().intersects(b));
         if !valid(b) {
@@ -323,6 +317,9 @@ impl StrongholdStart {
             return None;
         }
         let total = self.weights.iter().map(|w| w.weight).sum();
+        if let Some(kind) = self.forced.take() {
+            if let Some(piece) = self.factory(kind, r, x, y, z, dir, depth) { return Some(piece); }
+        }
         for _ in 0..5 {
             let mut n = r.next_int(total);
             for i in 0..self.weights.len() {
@@ -331,6 +328,7 @@ impl StrongholdStart {
                 if n < 0 {
                     if (w.limit > 0 && w.spawned >= w.limit)
                         || (w.kind == 8 && depth <= 4)
+                        || (w.kind == 12 && depth <= 5)
                         || self.previous == Some(w.kind)
                     {
                         break;
@@ -437,7 +435,9 @@ impl StrongholdStart {
                     self.connect(&p, r, 2, 1, 2);
                 }
             }
-            1 | 5 | 6 | 10 => self.connect(&p, r, 0, 1, 1),
+            1 | 5 | 6 | 11 => self.connect(&p, r, 0, 1, 1),
+            10 => { self.forced = Some(7); self.connect(&p, r, 0, 1, 1); }
+            12 => self.portal_room = Some(index),
             2 | 3 => {
                 let normal = p.component.orientation != 2 && p.component.orientation != 3;
                 let side = if normal ^ (p.kind == 3) { 2 } else { 1 };
@@ -450,7 +450,8 @@ impl StrongholdStart {
             }
             7 => {
                 self.connect(&p, r, 0, 5, 1);
-                for (i, (side, a, b)) in [(1, 3, 1), (1, 5, 7), (2, 3, 1), (2, 5, 7)]
+                let (low, high) = if matches!(p.component.orientation, 1 | 2) { (5, 3) } else { (3, 5) };
+                for (i, (side, a, b)) in [(1, low, 1), (1, high, 7), (2, low, 1), (2, high, 7)]
                     .into_iter()
                     .enumerate()
                 {
@@ -498,13 +499,42 @@ impl StrongholdGenerator {
                         self.candidates = Some(super::locations::strongholds(seed, biomes, &mut r));
                     }
                     if self.candidates.unwrap().contains(&(x, z)) {
-                        let s = StrongholdStart::new(&mut r, x, z);
-                        self.merge_start(key, s);
+                        loop {
+                            let s = StrongholdStart::new(&mut r, x, z);
+                            if !s.pieces.is_empty() && s.portal_room.is_some() { self.merge_start(key, s); break; }
+                        }
                     }
                 }
             }
         }
         r.state()
+    }
+    pub fn contains(&self,x:i32,y:i32,z:i32)->bool {
+        self.starts.values().any(|s|s.bounds.intersects_region(x,z,x,z)&&s.pieces.iter().any(|p|p.bounds().contains(x,y,z)))
+    }
+    /// MapGenStructure.func_40484_a retains its original integer-distance bug.
+    pub fn nearest(&mut self,seed:i64,biomes:&BiomeSource,x:i32,y:i32,z:i32)->Option<[i32;3]> {
+        let mut r=JavaRandom::new(seed);let mx=r.next_long();let mz=r.next_long();
+        let (cx,cz)=(x>>4,z>>4);let key=super::ChunkCoordIntPair{x:cx,z:cz}.packed();
+        if !self.starts.contains_key(&key) {
+            r.set_seed((cx as i64).wrapping_mul(mx)^(cz as i64).wrapping_mul(mz)^seed);r.next_int_unbounded();
+            if self.candidates.is_none() {self.candidates=Some(super::locations::strongholds(seed,biomes,&mut r));}
+            if self.candidates.unwrap().contains(&(cx,cz)) {loop {
+                let s=StrongholdStart::new(&mut r,cx,cz);
+                if !s.pieces.is_empty()&&s.portal_room.is_some() {self.merge_start(key,s);break;}
+            }}
+        }
+        let distance=|p:[i32;3]| {let dx=p[0].wrapping_sub(x);let dy=p[1].wrapping_sub(y);let dz=p[2].wrapping_sub(z);
+            dx.wrapping_add(dx.wrapping_mul(dy).wrapping_mul(dy)).wrapping_add(dz.wrapping_mul(dz)) as f64};
+        let mut best=None;let mut score=f64::MAX;
+        for key in self.order.iter() {let s=&self.starts[&key];let p=s.portal_center10.unwrap_or_else(||s.pieces[0].bounds().center());let d=distance(p);
+            if d<score {score=d;best=Some(p);}
+        }
+        if best.is_some() {return best;}
+        if let Some(candidates)=self.candidates {for (cx,cz) in candidates {
+            let p=super::ChunkCoordIntPair{x:cx,z:cz}.center(64);let d=distance(p);if d<score {score=d;best=Some(p);}
+        }}
+        best
     }
     pub fn populate(&mut self, w: &mut World, r: &mut JavaRandom, cx: i32, cz: i32) -> bool {
         let epoch = w.structure_rng_epoch.replace(w.generator_epoch);

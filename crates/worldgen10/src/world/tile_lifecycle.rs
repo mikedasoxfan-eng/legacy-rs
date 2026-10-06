@@ -23,6 +23,12 @@ impl std::ops::DerefMut for TileObject {
 }
 
 impl World {
+    fn tile_id10(&mut self, x: i32, y: i32, z: i32) -> Option<TileId> {
+        self.chunk(x >> 4, z >> 4).tile_entity_ids.get(&(x & 15, y, z & 15)).copied()
+            .or_else(|| self.pending_tile_entities.iter().copied().find(|id| {
+                let o = &self.tile_objects[id]; !o.invalid && o.position == (x, y, z)
+            }))
+    }
     pub fn container_added181(&mut self, block: u8, x: i32, y: i32, z: i32) {
         if block != 36 { self.set_block_tile_entity(x, y, z, TileEntity::for_block(block)); }
     }
@@ -30,7 +36,7 @@ impl World {
     pub fn container_play181(&mut self, x: i32, y: i32, z: i32, event: i32, value: i32) {
         let chest = matches!(self.get_block_tile_entity(x,y,z),Some(TileEntity::Chest(_)));
         if chest && event == 1 {
-            let id = self.chunk(x >> 4,z >> 4).tile_entity_ids[&(x & 15,y,z & 15)];
+            let id = self.tile_id10(x, y, z).unwrap();
             self.chest_animations.get_mut(&id).unwrap().users = value;
         }
     }
@@ -42,7 +48,7 @@ impl World {
             if !present && props(block).container && block != 36 {
                 self.set_block_tile_entity(x, y, z, TileEntity::for_block(block));
             } else if present {
-                let id = self.chunk(cx, cz).tile_entity_ids[&(x, y, z)];
+                let id = self.tile_id10(cx * 16 + x, y, cz * 16 + z).unwrap();
                 self.reset_tile_cache181(id);
             }
         }
@@ -196,18 +202,23 @@ impl World {
         let key = (x & 15, y, z & 15);
         if !self.chunk(x >> 4, z >> 4).tile_entities.contains_key(&key) {
             let block = self.chunk(x >> 4, z >> 4).block(x & 15, y, z & 15);
-            if !props(block).container || block==36 {
-                return None;
+            if props(block).container && block != 36 {
+                self.set_block_tile_entity(x,y,z,TileEntity::for_block(block));
             }
-            self.set_block_tile_entity(x,y,z,TileEntity::for_block(block));
         }
         if let Some(&id) = self.chunk(x >> 4, z >> 4).tile_entity_ids.get(&key) {
             if self.tile_objects[&id].invalid {
                 self.detach_chunk_tile(x, y, z);
-                return None;
             }
         }
-        self.chunk_mut(x >> 4, z >> 4).tile_entities.get_mut(&key)
+        if self.chunk(x >> 4, z >> 4).tile_entity_ids.contains_key(&key) {
+            return self.chunk_mut(x >> 4, z >> 4).tile_entities.get_mut(&key);
+        }
+        let pending = self.pending_tile_entities.iter().copied().find(|id| {
+            let o = &self.tile_objects[id];
+            !o.invalid && o.position == (x, y, z)
+        });
+        pending.and_then(|id| self.tile_objects.get_mut(&id).unwrap().detached.as_mut())
     }
     pub fn set_block_tile_entity(&mut self, x: i32, y: i32, z: i32, te: TileEntity) {
         let id = self.new_tile_object((x, y, z), te);
@@ -230,12 +241,12 @@ impl World {
             return;
         }
         self.get_block_tile_entity(x, y, z);
-        let id = self
-            .chunk(x >> 4, z >> 4)
-            .tile_entity_ids
-            .get(&(x & 15, y, z & 15))
-            .copied();
+        let id = self.chunk(x >> 4, z >> 4).tile_entity_ids.get(&(x & 15, y, z & 15)).copied()
+            .or_else(|| self.pending_tile_entities.iter().copied().find(|id| {
+                let o = &self.tile_objects[id]; !o.invalid && o.position == (x, y, z)
+            }));
         if let Some(id) = id {
+            self.pending_tile_entities.retain(|p| *p != id);
             if self.scanning_tiles {
                 self.invalidate_tile181(id);
                 return;
@@ -253,7 +264,8 @@ impl World {
         let mut i = 0;
         while i < self.loaded_tile_entities.len() {
             let id = self.loaded_tile_entities[i];
-            if !self.tile_objects[&id].invalid {
+            let (x, y, z) = self.tile_objects[&id].position;
+            if !self.tile_objects[&id].invalid && self.tile_objects[&id].world_attached181 && self.block_exists(x, y, z) {
                 update(self, id);
             }
             if self.tile_objects[&id].invalid {
@@ -266,12 +278,19 @@ impl World {
         }
         self.finish_tile_scan();
     }
+    /// World.func_35455_a queues removal after the current tile pass.
+    pub fn defer_tile_entity_removal10(&mut self,id:TileId) {self.tile_entity_removal10.push(id);}
     pub(crate) fn finish_tile_scan(&mut self) {
         self.scanning_tiles = false;
         if !self.unloaded_tile_entities181.is_empty() {
             self.loaded_tile_entities.retain(|id|!self.unloaded_tile_entities181.contains(id));
             self.unloaded_tile_entities181.clear();
         }
+        if !self.tile_entity_removal10.is_empty() {
+            self.loaded_tile_entities.retain(|id|!self.tile_entity_removal10.contains(id));
+            self.tile_entity_removal10.clear();
+        }
+        crate::profiler::end_start_section("pendingTileEntities");
         let pending = std::mem::take(&mut self.pending_tile_entities);
         for id in pending {
             if !self.tile_objects[&id].invalid {

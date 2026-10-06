@@ -6,6 +6,7 @@
 //! scheduling and chunk loading all have side effects that later code observes.
 
 pub mod behavior;
+pub mod release10;
 pub mod plants181;
 mod blocks181;
 pub mod beds181;
@@ -123,17 +124,20 @@ fn in_xz_bounds(x: i32, z: i32) -> bool {
 pub enum Dimension {
     Overworld,
     Nether,
-    Sky,
+    End,
 }
 
 impl Dimension {
+    /// Compatibility name retained for the copied 1.8.1 callers. Dimension 1 is the End.
+    #[allow(non_upper_case_globals)]
+    pub const Sky: Self = Self::End;
     /// `WorldProvider.hasNoSky`
     pub fn has_no_sky(self) -> bool {
-        self == Self::Nether
+        self != Self::Overworld
     }
     /// `WorldProvider.isHellWorld`
     pub fn is_hell_world(self) -> bool {
-        self == Self::Nether
+        self != Self::Overworld
     }
     pub fn id(self) -> i32 { match self { Self::Nether => -1, Self::Overworld => 0, Self::Sky => 1 } }
     pub fn from_id(id:i32) -> Option<Self> { match id { -1=>Some(Self::Nether),0=>Some(Self::Overworld),1=>Some(Self::Sky),_=>None } }
@@ -142,7 +146,7 @@ impl Dimension {
     /// `WorldProvider.generateLightBrightnessTable` and the Hell override.
     pub fn light_brightness_table(self) -> [f32; 16] {
         // b1.8.1: the overworld minimum dropped from 0.05 to 0 (the lightmap adds its own floor).
-        let ambient = if self.is_hell_world() {
+        let ambient = if self == Self::Nether {
             0.1f32
         } else {
             0.0f32
@@ -172,6 +176,7 @@ pub struct World {
     pub terrain: OverworldGenerator,
     pub(crate) mineshafts: crate::structures::MineshaftGenerator,
     pub(crate) villages: crate::structures::village::VillageGenerator,
+    pub(crate) nether_bridges10: crate::structures::nether10::NetherBridgeGenerator,
     pub(crate) strongholds: crate::structures::stronghold::StrongholdGenerator,
     pub(crate) structure_locations: crate::structures::locations::Locations,
     pub(crate) generator_epoch: u64,
@@ -179,14 +184,19 @@ pub struct World {
     pub dimension: Dimension,
     pub light_brightness_table: [f32; 16],
     nether: Option<crate::nether::NetherGenerator>,
-    pub(crate) sky: Option<crate::sky::SkyGenerator>,
+    pub(crate) sky: Option<crate::end::EndGenerator>,
     pub chunks: ChunkMap,
     /// `World.rand`
     pub rand: JavaRandom,
+    pub(crate) population_uses_world10: bool,
+    /// Entity classes belong to the entities area; requests preserve generation decisions.
+    pub villager_spawns10: Vec<crate::structures::village::VillagerSpawn10>,
+    pub end_entity_spawns10: Vec<crate::end::EndEntitySpawn>,
     /// `World.lightingToUpdate`
     pub light_queue: Vec<LightUpdate>,
     /// `scheduledTickSet`: entry -> (scheduled time, `tickEntryID`).
     pub pending_ticks: HashMap<TickKey, (i64, i64)>,
+    pub(crate) scheduled_tick_set10: java_hash::JavaHashSet<TickKey>,
     /// `scheduledTickTreeSet`, ordered like `NextTickListEntry.compareTo`.
     pub tick_order: std::collections::BTreeSet<(i64, i64, TickKey)>,
     pub world_time: i64,
@@ -264,6 +274,7 @@ pub struct World {
     pub pending_tile_entities: Vec<tile_lifecycle::TileId>,
     /// World.field_34900_Q: unloaded tiles still get this pass before removal.
     pub unloaded_tile_entities181: Vec<tile_lifecycle::TileId>,
+    pub(crate) tile_entity_removal10: Vec<tile_lifecycle::TileId>,
     pub dispenser_random: HashMap<(i32, i32, i32), JavaRandom>,
     pub container_drop_random: [JavaRandom; 3], // idle furnace, active furnace, dispenser
     pub keep_furnace_inventory: bool,
@@ -295,7 +306,7 @@ impl World {
     /// Construct with `WorldProvider`/`WorldProviderHell`, before any chunks are loaded.
     pub fn with_dimension(seed: i64, world_rand_seed: i64, dimension: Dimension) -> Self {
         let mut terrain = OverworldGenerator::new(seed);
-        if dimension.is_hell_world() {
+        if dimension == Dimension::Nether {
             terrain.biome_source = crate::biome::BiomeSource::hell();
         } else if dimension == Dimension::Sky {
             terrain.biome_source = crate::biome::BiomeSource::sky();
@@ -307,23 +318,28 @@ impl World {
             seed,
             dimension,
             light_brightness_table: dimension.light_brightness_table(),
-            nether: if dimension.is_hell_world() {
+            nether: if dimension == Dimension::Nether {
                 Some(crate::nether::NetherGenerator::new(seed))
             } else {
                 None
             },
             terrain,
-            sky: if dimension == Dimension::Sky {Some(crate::sky::SkyGenerator::new(seed))} else {None},
+            sky: if dimension == Dimension::Sky {Some(crate::end::EndGenerator::new(seed))} else {None},
             mineshafts: Default::default(),
             villages: Default::default(),
+            nether_bridges10: Default::default(),
             strongholds: Default::default(),
             structure_locations: Default::default(),
             generator_epoch: 0,
             structure_rng_epoch: None,
             chunks: ChunkMap::default(),
             rand: JavaRandom::new(world_rand_seed),
+            population_uses_world10: false,
+            villager_spawns10: Vec::new(),
+            end_entity_spawns10: Vec::new(),
             light_queue: Vec::new(),
             pending_ticks: HashMap::new(),
+            scheduled_tick_set10: Default::default(),
             tick_order: Default::default(),
             world_time: 0,
             immediate_updates: false,
@@ -352,7 +368,7 @@ impl World {
             prev_thundering_strength: 0.0,
             lightning_sky_flash: 0,
             lightning_flash: 0,
-            skylight_subtracted: if dimension.is_hell_world() { 11 } else { 0 },
+            skylight_subtracted: if dimension == Dimension::Nether { 11 } else { 0 },
             renderers_dirty: false,
             block_update_ranges181: Vec::new(),
             record_block_update_ranges181: false,
@@ -378,6 +394,7 @@ impl World {
             scanning_tiles: false,
             pending_tile_entities: Vec::new(),
             unloaded_tile_entities181: Vec::new(),
+            tile_entity_removal10: Vec::new(),
             dispenser_random: HashMap::new(),
             container_drop_random: std::array::from_fn(|_| {
                 JavaRandom::new(crate::entity::EntitySeedSource::Time.next_seed())
@@ -458,6 +475,7 @@ impl World {
     /// The population RNG (`ChunkProviderGenerate.rand` / `ChunkProviderHell.hellRNG`).
     #[inline]
     pub fn prand(&mut self) -> &mut JavaRandom {
+        if self.population_uses_world10 { return &mut self.rand; }
         if let Some(gen) = &mut self.sky {return gen.rand_mut();}
         match &mut self.nether {
             Some(gen) => gen.rand_mut(),
@@ -504,6 +522,12 @@ impl World {
             .as_mut()
             .and_then(|s| s.load_chunk_for_dimension(cx, cz, self.dimension));
         if let Some(mut c) = saved {
+            if let Some(ticks) = &c.tile_ticks10 {
+                for tick in ticks {
+                    self.schedule_block_update_from_load(tick.int("x"), tick.int("y"), tick.int("z"), tick.int("i"), tick.int("t"));
+                }
+            }
+            c.has_no_sky10 = self.dimension.has_no_sky();
             c.last_save_time = self.world_time;
             c.loaded = true;
             self.chunks.insert((cx, cz), Box::new(c));
@@ -519,17 +543,19 @@ impl World {
                 None => self.terrain.generate(cx, cz),
             }};
             if self.dimension == Dimension::Overworld && self.info.map_features {
-                self.strongholds.generate(self.seed, cx, cz, &self.terrain.biome_source);
-                self.structure_locations.strongholds = self.strongholds.candidates;
                 self.mineshafts.generate(self.seed,cx,cz);
                 self.villages.generate(self.seed,cx,cz,&self.terrain.biome_source,&mut self.rand);
+                self.strongholds.generate(self.seed, cx, cz, &self.terrain.biome_source);
+                self.structure_locations.strongholds = self.strongholds.candidates;
             }
+            if self.dimension == Dimension::Nether { self.nether_bridges10.generate(self.seed,cx,cz); }
             self.generator_epoch=self.generator_epoch.wrapping_add(1);
             let mut c = Box::new(Chunk::new(cx, cz, raw.blocks));
+            c.has_no_sky10 = self.dimension.has_no_sky();
             // ChunkProviderHell returns a new Chunk without func_1024_c. Its
             // height/skylight arrays remain zero until individual block writes.
-            if !self.dimension.is_hell_world() {
-                c.init_height_and_sky();
+            if self.dimension != Dimension::Nether {
+                c.init_height_and_sky_for_dimension(self.dimension);
                 // func_1024_c's neighbour pass runs before the chunk is in the map, so
                 // its own columns read as height 0 through the world.
                 for x in 0..16 {
@@ -582,10 +608,10 @@ impl World {
         self.provide_chunk(cx, cz);
         if !self.chunk(cx, cz).populated {
             self.chunk_mut(cx, cz).populated = true;
-            if self.dimension.is_hell_world() {
+            if self.dimension == Dimension::Nether {
                 crate::nether::populate::populate(self, cx, cz);
             } else if self.dimension == Dimension::Sky {
-                crate::sky::populate(self,cx,cz);
+                crate::end::populate(self,cx,cz);
             } else {
                 crate::populate::populate(self, cx, cz);
             }
@@ -661,7 +687,11 @@ impl World {
             return false;
         }
         if !self.access_chunk(x >> 4, z >> 4) {
-            return true; // EmptyChunk.setBlockMetadata does nothing
+            return false; // EmptyChunk.setBlockMetadata
+        }
+        self.chunk_mut(x >> 4, z >> 4).modified = true;
+        if self.chunk(x >> 4, z >> 4).data.get(x & 15, y, z & 15) == meta {
+            return false;
         }
         self.chunk_mut(x >> 4, z >> 4)
             .data
@@ -758,6 +788,7 @@ impl World {
         self.schedule_lighting_update(LightKind::Sky, wx, y, wz, wx, y, wz);
         self.schedule_lighting_update(LightKind::Block, wx, y, wz, wx, y, wz);
         self.chunk_mut(cx,cz).skylight_occlusion[(x+z*16) as usize]=true;
+        self.chunk_mut(cx,cz).skylight_pending10 = true;
         if id != block::AIR && !self.multiplayer_world {
             behavior::on_block_added(self, id, wx, y, wz);
         }
@@ -796,7 +827,11 @@ impl World {
             else if raw_id!=0 && !block::props(id).exists && !self.multiplayer_world {Some(tile_nbt181::TileError181::NullPointer)}else{None};
         if failure.is_none() {self.touch(cx,cz);}
         if old != block::AIR {
-            behavior::on_block_removal(self, old, wx, y, wz);
+            if !self.multiplayer_world {
+                behavior::on_block_removal(self, old, wx, y, wz);
+            } else if block::props(old).container {
+                self.remove_block_tile_entity(wx, y, wz);
+            }
         }
         self.chunk_mut(cx, cz).data.set(x, y, z, meta);
         if !self.dimension.has_no_sky() {
@@ -811,6 +846,7 @@ impl World {
         }
         self.schedule_lighting_update(LightKind::Block, wx, y, wz, wx, y, wz);
         self.chunk_mut(cx,cz).skylight_occlusion[(x+z*16) as usize]=true;
+        self.chunk_mut(cx,cz).skylight_pending10 = true;
         self.chunk_mut(cx, cz).data.set(x, y, z, meta);
         if id != block::AIR && !self.multiplayer_world {
             if let Some(e)=failure {return Err(e);}
@@ -1045,6 +1081,7 @@ impl World {
             let t = if id>0 {self.world_time.wrapping_add(delay as i64)} else {0};
             if let std::collections::hash_map::Entry::Vacant(e) = self.pending_ticks.entry(key) {
                 e.insert((t, entry_id));
+                self.scheduled_tick_set10.insert(key.java_hash181(), key);
                 self.tick_order.insert((t, entry_id, key));
             }
         }
@@ -1071,11 +1108,21 @@ impl World {
         }
         let tags = self.chunk_entity_nbt(cx, cz);
         let has_entities = !tags.is_empty();
+        let ticks = self.pending_chunk_ticks(cx, cz, false).map(|ticks| ticks.into_iter().map(|(key, scheduled)| {
+            let mut tag = crate::nbt::Compound::new();
+            tag.put("i", crate::nbt::Tag::Int(key.block));
+            tag.put("x", crate::nbt::Tag::Int(key.x));
+            tag.put("y", crate::nbt::Tag::Int(key.y));
+            tag.put("z", crate::nbt::Tag::Int(key.z));
+            tag.put("t", crate::nbt::Tag::Int(scheduled.wrapping_sub(time) as i32));
+            tag
+        }).collect());
         let storage = self.storage.as_mut().unwrap();
         let c = self
             .chunks
             .get_mut(&(cx, cz))
             .expect("saving unloaded chunk");
+        let raw_ticks = std::mem::replace(&mut c.tile_ticks10, ticks);
         let raw = std::mem::replace(&mut c.raw_entities, tags);
         c.last_save_time = time;
         match storage.save_chunk(c, time) {
@@ -1083,6 +1130,7 @@ impl World {
             Err(e) => eprintln!("saving chunk {cx},{cz}: {e}"),
         }
         c.raw_entities = raw;
+        c.tile_ticks10 = raw_ticks;
         c.has_entities = has_entities;
     }
 

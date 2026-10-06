@@ -92,51 +92,11 @@ impl Entity {
 }
 /// Original b1.8.1 biome IDs, independent of the terrain worker's biome implementation.
 pub fn spawn_list181(biome: i32, category: i32) -> Vec<(&'static str, i32, i32, i32)> {
-    if biome == 8 {
-        return if category == 0 {
-            vec![("Ghast", 10, 4, 4), ("PigZombie", 10, 4, 4)]
-        } else {
-            vec![]
-        };
-    }
-    if biome == 9 {
-        return if category == 1 {
-            vec![("Chicken", 10, 4, 4)]
-        } else {
-            vec![]
-        };
-    }
-    match category {
-        0 => vec![
-            ("Spider", 10, 4, 4),
-            ("Zombie", 10, 4, 4),
-            ("Skeleton", 10, 4, 4),
-            ("Creeper", 10, 4, 4),
-            ("Slime", 10, 4, 4),
-            ("Enderman", 2, 4, 4),
-        ],
-        1 => {
-            if matches!(biome, 0 | 2 | 7) {
-                return vec![];
-            }
-            let mut list = vec![
-                ("Sheep", 12, 4, 4),
-                ("Pig", 10, 4, 4),
-                ("Chicken", 10, 4, 4),
-                ("Cow", 8, 4, 4),
-            ];
-            if biome == 4 {
-                list.push(("Wolf", 5, 4, 4));
-            }
-            if biome == 5 {
-                list.push(("Wolf", 8, 4, 4));
-            }
-            list
-        }
-        2 => vec![("Squid", 10, 4, 4)],
-        _ => vec![],
-    }
+    let biome = Biome::from_id(biome);
+    let entries = match category {0=>crate::weighted::monsters(biome),1=>crate::weighted::creatures(biome),2=>crate::weighted::water_creatures(biome),_=>vec![]};
+    entries.into_iter().map(|e|(e.entity,e.weight,e.min,e.max)).collect()
 }
+
 fn spawn_list(biome: Biome, category: i32) -> Vec<(&'static str, i32)> {
     spawn_list181(biome as i32, category)
         .into_iter()
@@ -264,7 +224,7 @@ impl World {
                         if dx * dx + dy * dy + dz * dz < 576.0 {
                             continue;
                         }
-                        let mut e = Entity::living(self, name).unwrap();
+                        let Some(mut e) = Entity::living(self, name) else { return 0; };
                         e.set_location_and_angles(
                             pos.x,
                             pos.y,

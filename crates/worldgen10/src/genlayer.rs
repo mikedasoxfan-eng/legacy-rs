@@ -1,4 +1,4 @@
-//! Beta 1.8.1's integer biome graph. Arrays use `x + z * width`.
+//! Release 1.0's integer biome graph. Arrays use `x + z * width`.
 //! Java's wrapping LCG and the climate mix layers' unseeded second parents are intentional.
 use std::sync::{
     atomic::{AtomicI64, Ordering},
@@ -7,6 +7,25 @@ use std::sync::{
 
 const A: i64 = 6364136223846793005;
 const B: i64 = 1442695040888963407;
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    #[test]
+    fn biome_queries_agree_across_negative_coordinate_tiles() {
+        let layers = stack(-7654321);
+        for l in &layers[..2] {
+            let whole = l.get(-37, -23, 28, 20);
+            for (x, z, width, height) in [(-37, -23, 13, 9), (-24, -23, 15, 9), (-37, -14, 28, 11)] {
+                let part = l.get(x, z, width, height);
+                for dz in 0..height { for dx in 0..width {
+                    assert_eq!(part[(dx + dz * width) as usize], whole[((x + 37 + dx) + (z + 23 + dz) * 28) as usize]);
+                } }
+            }
+            assert!(whole.iter().all(|&id| (0..=15).contains(&id)));
+        }
+    }
+}
 fn advance(s: i64, add: i64) -> i64 {
     s.wrapping_mul(s.wrapping_mul(A).wrapping_add(B))
         .wrapping_add(add)
@@ -15,6 +34,9 @@ fn advance(s: i64, add: i64) -> i64 {
 enum Kind {
     Land,
     Island,
+    Snow,
+    MushroomIsland,
+    Shore,
     Zoom,
     Fuzzy,
     Voronoi,
@@ -114,10 +136,14 @@ pub fn stack(seed: i64) -> [Arc<Layer>; 4] {
     let mut p = layer(Kind::Land, 1, None, None);
     p = unary(Kind::Fuzzy, 2000, p);
     p = unary(Kind::Island, 1, p);
-    for (salt, island) in [(2001, 2), (2002, 3), (2003, 3), (2004, 3)] {
-        p = unary(Kind::Zoom, salt, p);
-        p = unary(Kind::Island, island, p);
-    }
+    p = unary(Kind::Zoom, 2001, p);
+    p = unary(Kind::Island, 2, p);
+    p = unary(Kind::Snow, 2, p);
+    p = unary(Kind::Zoom, 2002, p);
+    p = unary(Kind::Island, 3, p);
+    p = unary(Kind::Zoom, 2003, p);
+    p = unary(Kind::Island, 4, p);
+    p = unary(Kind::MushroomIsland, 5, p);
     let river = unary(Kind::RiverInit, 100, p.clone());
     let river = zoom(river, 1000, 6, Kind::Zoom);
     let river = unary(Kind::Smooth, 1000, unary(Kind::River, 1, river));
@@ -128,6 +154,7 @@ pub fn stack(seed: i64) -> [Arc<Layer>; 4] {
         biome = unary(Kind::Zoom, 1000 + i as i64, biome);
         if i == 0 {
             biome = unary(Kind::Island, 3, biome);
+            biome = unary(Kind::Shore, 1000, biome);
         }
         temp = layer(
             Kind::TemperatureMix(i),
@@ -157,15 +184,7 @@ pub fn stack(seed: i64) -> [Arc<Layer>; 4] {
     [biome, voronoi, temp, rain]
 }
 pub fn climate(id: i32, temperature: bool) -> i32 {
-    let (t, r): (f32, f32) = match id {
-        1 => (0.8, 0.4),
-        2 => (2.0, 0.0),
-        3 => (0.2, 0.3),
-        4 => (0.7, 0.8),
-        5 => (0.3, 0.8),
-        6 => (0.8, 0.9),
-        _ => (0.5, 0.5),
-    };
+    let (t, r) = crate::biome::Biome::from_id(id).climate();
     ((if temperature { t } else { r }) * 65536.0) as i32
 }
 impl Layer {
@@ -333,7 +352,7 @@ impl Layer {
                         .copy_from_slice(&big[start..start + w as usize]);
                 }
             }
-            Kind::Island | Kind::River | Kind::Smooth => {
+            Kind::Island | Kind::Snow | Kind::MushroomIsland | Kind::Shore | Kind::River | Kind::Smooth => {
                 let pw = w + 2;
                 let p = parent(x.wrapping_sub(1), z.wrapping_sub(1), pw, h + 2, cache);
                 (out, allocation) = cache.allocate((w * h) as usize);
@@ -345,10 +364,24 @@ impl Layer {
                         if matches!(self.kind, Kind::Island) {
                             let corners = [at(0, 0), at(2, 0), at(0, 2), at(2, 2)];
                             if c == 0 && corners.iter().any(|&v| v != 0) {
-                                c = r.next(3) / 2;
-                            } else if c == 1 && corners.iter().any(|&v| v != 1) {
-                                c = 1 - r.next(5) / 4;
+                                let mut chosen = 1;
+                                let mut count = 1;
+                                for value in corners {
+                                    if value != 0 {
+                                        if r.next(count) == 0 { chosen = value; }
+                                        count += 1;
+                                    }
+                                }
+                                c = if r.next(3) == 0 { chosen } else if chosen == 12 { 10 } else { 0 };
+                            } else if c > 0 && corners.contains(&0) && r.next(5) == 0 {
+                                c = if c == 12 { 10 } else { 0 };
                             }
+                        } else if matches!(self.kind, Kind::Snow) {
+                            if c != 0 { c = if r.next(5) == 0 { 12 } else { 1 }; }
+                        } else if matches!(self.kind, Kind::MushroomIsland) {
+                            if c == 0 && [at(0, 0), at(2, 0), at(0, 2), at(2, 2)] == [0; 4] && r.next(100) == 0 { c = 14; }
+                        } else if matches!(self.kind, Kind::Shore) {
+                            if c == 14 && [at(1, 0), at(2, 1), at(0, 1), at(1, 2)].contains(&0) { c = 15; }
                         } else {
                             let a = at(0, 1);
                             let b = at(2, 1);
@@ -400,10 +433,10 @@ impl Layer {
                                 }
                             }
                             Kind::Landscape => {
-                                if p[k] > 0 {
-                                    [2, 4, 3, 6, 1, 5][r.next(6) as usize]
-                                } else {
-                                    0
+                                match p[k] {
+                                    0 | 14 => p[k],
+                                    1 => [2, 4, 3, 6, 1, 5][r.next(6) as usize],
+                                    _ => 12,
                                 }
                             }
                             Kind::Temperature => climate(p[k], true),
@@ -422,7 +455,7 @@ impl Layer {
                             if p[k] == 0 {
                                 p[k]
                             } else if other[k] >= 0 {
-                                other[k]
+                                match p[k] { 12 => 11, 14 | 15 => 15, _ => other[k] }
                             } else {
                                 p[k]
                             }

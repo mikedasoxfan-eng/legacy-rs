@@ -9,6 +9,13 @@
 //!   chunk load order and lighting timing; `scenario` replays vanilla's orders.
 
 pub mod biome;
+pub mod end;
+pub mod decorator10;
+pub mod direction10;
+pub mod saved_data10;
+pub mod hashmap10;
+pub mod profiler;
+pub mod threaded_io10;
 pub mod genlayer;
 mod intcache;
 pub mod block;
@@ -23,7 +30,6 @@ pub mod terrain_verify;
 pub mod weighted;
 pub mod structures;
 pub mod sky;
-mod sky_populate;
 pub mod jmath;
 pub mod math;
 pub mod maps;

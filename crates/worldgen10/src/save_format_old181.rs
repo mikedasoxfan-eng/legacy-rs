@@ -40,6 +40,7 @@ impl SaveFormatOld181 {
                     size_on_disk: info.size_on_disk,
                     game_type: info.game_type,
                     requires_conversion: false,
+                    hardcore: info.hardcore,
                 })
             })
             .collect()

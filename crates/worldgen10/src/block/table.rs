@@ -175,18 +175,18 @@ pub const BLOCKS: [BlockProps; 256] = [
     BlockProps { exists: true, material: 3, light_opacity: 0, light_value: 0, opaque_cube: false, normal_render: false, container: false, ticks: false, tick_rate: 10, name: "tile.fenceGate" }, // 107
     BlockProps { exists: true, material: 4, light_opacity: 255, light_value: 0, opaque_cube: false, normal_render: false, container: false, ticks: false, tick_rate: 10, name: "tile.stairsBrick" }, // 108
     BlockProps { exists: true, material: 4, light_opacity: 255, light_value: 0, opaque_cube: false, normal_render: false, container: false, ticks: false, tick_rate: 10, name: "tile.stairsStoneBrickSmooth" }, // 109
-    BlockProps::NONE, // 110
-    BlockProps::NONE, // 111
-    BlockProps::NONE, // 112
-    BlockProps::NONE, // 113
-    BlockProps::NONE, // 114
-    BlockProps::NONE, // 115
+    BlockProps { exists: true, material: MAT_GRASS, light_opacity: 255, light_value: 0, opaque_cube: true, normal_render: true, container: false, ticks: true, tick_rate: 10, name: "tile.mycel" }, // 110
+    BlockProps { exists: true, material: MAT_PLANTS, light_opacity: 0, light_value: 0, opaque_cube: false, normal_render: false, container: false, ticks: true, tick_rate: 10, name: "tile.waterlily" }, // 111
+    BlockProps { exists: true, material: MAT_ROCK, light_opacity: 255, light_value: 0, opaque_cube: true, normal_render: true, container: false, ticks: false, tick_rate: 10, name: "tile.netherBrick" }, // 112
+    BlockProps { exists: true, material: MAT_ROCK, light_opacity: 0, light_value: 0, opaque_cube: false, normal_render: false, container: false, ticks: false, tick_rate: 10, name: "tile.netherFence" }, // 113
+    BlockProps { exists: true, material: MAT_ROCK, light_opacity: 255, light_value: 0, opaque_cube: false, normal_render: false, container: false, ticks: false, tick_rate: 10, name: "tile.stairsNetherBrick" }, // 114
+    BlockProps { exists: true, material: MAT_PLANTS, light_opacity: 0, light_value: 0, opaque_cube: false, normal_render: false, container: false, ticks: true, tick_rate: 10, name: "tile.netherStalk" }, // 115
     BlockProps::NONE, // 116
     BlockProps::NONE, // 117
     BlockProps::NONE, // 118
     BlockProps::NONE, // 119
-    BlockProps::NONE, // 120
-    BlockProps::NONE, // 121
+    BlockProps { exists: true, material: MAT_ROCK, light_opacity: 255, light_value: 1, opaque_cube: false, normal_render: false, container: false, ticks: false, tick_rate: 10, name: "tile.endPortalFrame" }, // 120
+    BlockProps { exists: true, material: MAT_ROCK, light_opacity: 255, light_value: 0, opaque_cube: true, normal_render: true, container: false, ticks: false, tick_rate: 10, name: "tile.whiteStone" }, // 121
     BlockProps::NONE, // 122
     BlockProps::NONE, // 123
     BlockProps::NONE, // 124

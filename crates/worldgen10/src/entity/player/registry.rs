@@ -52,12 +52,12 @@ pub fn attack_damage(id: i32) -> i32 {
 /// EnumAction in the original declaration order.
 #[derive(Clone,Copy,Debug,Default,PartialEq,Eq)]
 #[repr(i32)]
-pub enum ItemUseAction {#[default] None=0,Eat=1,Block=2,Bow=3}
+pub enum ItemUseAction {#[default] None=0,Eat=1,Drink=2,Block=3,Bow=4}
 pub fn use_action(id:i32)->ItemUseAction {
     match id {260|282|297|319|320|322|349|350|357|360|363..=367=>ItemUseAction::Eat,
         267|268|272|276|283=>ItemUseAction::Block,261=>ItemUseAction::Bow,_=>crate::entity::item::Item::defaults(id).use_action(None)}
 }
-pub fn use_duration(id:i32)->i32 {match use_action(id){ItemUseAction::Eat=>32,ItemUseAction::Block|ItemUseAction::Bow=>72000,ItemUseAction::None=>0}}
+pub fn use_duration(id:i32)->i32 {match use_action(id){ItemUseAction::Eat|ItemUseAction::Drink=>32,ItemUseAction::Block|ItemUseAction::Bow=>72000,ItemUseAction::None=>0}}
 /// ItemBow's release calculation; None means the shot is too weak to fire.
 pub fn bow_charge(remaining:i32)->Option<f32>{
     let mut f=72000i32.wrapping_sub(remaining) as f32/20.0f32;

@@ -4,6 +4,7 @@ pub mod component;
 pub mod locations;
 pub(crate) mod long_map_order;
 pub mod mineshaft;
+pub mod nether10;
 pub mod stronghold;
 pub mod verify;
 pub mod village;
@@ -80,6 +81,7 @@ impl ChunkCoordIntPair {
     pub fn packed(self) -> i64 {
         ((self.x as u32 as u64) | ((self.z as u32 as u64) << 32)) as i64
     }
+    pub fn center(self,y:i32)->[i32;3] { [(self.x<<4).wrapping_add(8),y,(self.z<<4).wrapping_add(8)] }
     pub fn java_hash(self) -> i32 {
         self.x ^ self.z
     }
@@ -149,6 +151,13 @@ impl StructureStart {
         for p in &mut self.pieces {
             p.bounds_mut().offset(0, dy, 0);
         }
+    }
+    pub fn move_to_height10(&mut self,r:&mut JavaRandom,min:i32,max:i32) {
+        let bounds=self.bounding_box.as_mut().expect("uninitialized structure bounds");
+        let room=max.wrapping_sub(min).wrapping_add(1).wrapping_sub(bounds.sizes()[1]);
+        let y=if room>1 {min.wrapping_add(r.next_int(room))} else {min};
+        let dy=y.wrapping_sub(bounds.min_y);bounds.offset(0,dy,0);
+        for p in &mut self.pieces {p.bounds_mut().offset(0,dy,0);}
     }
     pub fn sizeable(&self) -> bool {
         true
@@ -317,6 +326,10 @@ impl BoundingBox {
             && z <= self.max_z
             && y >= self.min_y
             && y <= self.max_y
+    }
+    pub fn center(self)->[i32;3] {
+        let [x,y,z]=self.sizes();
+        [self.min_x.wrapping_add(x/2),self.min_y.wrapping_add(y/2),self.min_z.wrapping_add(z/2)]
     }
     pub fn sizes(self) -> [i32; 3] {
         [

@@ -139,6 +139,7 @@ impl<'a> Access<'a> {
 
     /// b1.8.1 `WorldChunkManager.func_35554_b` / `func_35558_c`: the column's cached
     /// temperature and rainfall (BiomeCache), as the colour multipliers read them.
+    pub fn biome_tint10(&self,color:u32,x:i32,z:i32)->u32 {self.biomes.borrow_mut().biome_at(x,z).tint_color10(color)}
     pub fn climate(&self, x: i32, z: i32) -> (f64, f64) {
         let bs = self.biomes.borrow();
         (bs.raw_temperature(x, z), bs.raw_rainfall(x, z))
@@ -152,7 +153,7 @@ impl<'a> Access<'a> {
             return if sky { 15 } else { 0 };
         }
         let id = self.block(x, y, z);
-        if !matches!(id, 44 | 60 | 67 | 53) {
+        if !matches!(id, 43 | 44 | 60 | 67 | 53 | 108 | 109 | 114) {
             return self.saved_light_raw(sky, x, y, z);
         }
         let mut v = self.saved_light_raw(sky, x, y + 1, z);

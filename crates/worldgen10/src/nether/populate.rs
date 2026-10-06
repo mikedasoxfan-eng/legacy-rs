@@ -7,6 +7,15 @@ use crate::world::{behavior, RandSel, World};
 
 pub fn populate(w: &mut World, cx: i32, cz: i32) {
     w.sand_fall_instantly = true;
+    let mut structures = std::mem::take(&mut w.nether_bridges10);
+    let mut random = w.prand().clone();
+    structures.populate(w,&mut random,cx,cz);
+    *w.prand() = random;
+    for key in w.nether_bridges10.keys() {
+        let start = w.nether_bridges10.starts.remove(&key).unwrap();
+        structures.merge_start(key,start);
+    }
+    w.nether_bridges10 = structures;
     let x0 = cx * 16;
     let z0 = cz * 16;
     for _ in 0..8 {
