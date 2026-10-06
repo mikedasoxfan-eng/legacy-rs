@@ -12,6 +12,8 @@ pub fn check(path: &str) -> bool {
         top: 0,
         rain: false,
         snow: false,
+        temperature: 0.8,
+        cache_temperature: 0.8,
         blocks: [0; 128],
         meta: [0; 128],
         brightness: [0.0; 129],
@@ -108,8 +110,7 @@ pub fn check(path: &str) -> bool {
                         r.render_particles(
                             &terrain,
                             origin(partial),
-                            yaw,
-                            pitch,
+                            super::particles::active_render_rotation(yaw, pitch, count == 6),
                             partial,
                             |layer, p, cam, rot, light, material| {
                                 if let Some(material) = material {
@@ -172,8 +173,7 @@ pub fn check(path: &str) -> bool {
                         r.render_particles(
                             &terrain,
                             origin(partial),
-                            -yaw,
-                            -pitch,
+                            super::particles::active_render_rotation(-yaw, -pitch, count == 6),
                             partial,
                             |layer, p, cam, rot, light, material| {
                                 if let Some(material) = material {

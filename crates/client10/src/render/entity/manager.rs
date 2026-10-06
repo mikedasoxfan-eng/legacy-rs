@@ -95,6 +95,8 @@ pub fn class(e: &Entity) -> &'static str {
         EntityKind::Egg(_) => "EntityEgg",
         EntityKind::Fish(_) => "EntityFishHook",
         EntityKind::PigZombie { .. } => "EntityPigZombie",
+        // The simulation names the mooshroom by its save id; its class is EntityMooshroom.
+        EntityKind::Mooshroom => "EntityMooshroom",
         _ => {
             RENDERERS
                 .iter()
@@ -279,6 +281,7 @@ impl<T> RenderManager<T> {
         context: Context<T>,
         player: Option<CameraState>,
         partial: f32,
+        front_view: bool,
         block: impl FnOnce([i32; 3]) -> Result<(i32, i32), Error>,
     ) -> Result<(), Error> {
         // Assign all five references before invoking isPlayerSleeping.
@@ -295,6 +298,13 @@ impl<T> RenderManager<T> {
             // A missing bed preserves both previous angles.
         } else {
             self.view = rotation(player.previous_rotation, player.rotation, partial);
+        }
+        // 1.0: options.thirdPersonView == 2 turns billboards to face the front camera.
+        if self.context.options.is_none() {
+            return Err(Error::NullPointer);
+        }
+        if front_view {
+            self.view[0] += 180.0;
         }
         self.camera = position(player.last, player.position, partial);
         Ok(())

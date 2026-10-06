@@ -241,7 +241,8 @@ pub fn inventory(gl: &mut Fixed, id: u8, meta: i32, brightness: f32, tint: bool)
             }
             gl.begin();
             gl.set_normal(n[0], n[1], n[2]);
-            let tex = item_props(id).textures[if rt == 0 || rt == 16 { (meta & 15) as usize } else { 0 }][side] as i32;
+            // Block.getBlockTextureFromSideAndMetadata, from the 1.0 render-property table.
+            let tex = crate::render::rprops(id).textures[if rt == 0 || rt == 16 { (meta & 15) as usize } else { 0 }][side] as i32;
             let offset = if rt == 13 {
                 match side {
                     2 => [0.0, 0.0, 0.0625],
@@ -260,10 +261,13 @@ pub fn inventory(gl: &mut Fixed, id: u8, meta: i32, brightness: f32, tint: bool)
     }
 }
 /// Brightness order: own, below, above, -z, +z, -x, +x.
-pub fn falling(gl: &mut Fixed, id: u8, light: [f32; 7]) {
+/// 1.0 RenderBlocks.renderBlockFallingSand: fixed face shades (the brightness
+/// factor is the constant 1.0); light comes from one packed brightness,
+/// getMixedBrightnessForBlock at the entity's cell, through the lightmap.
+pub fn falling(gl: &mut Fixed, id: u8) {
     gl.begin();
     for side in 0..6 {
-        let f = [0.5, 1.0, 0.8, 0.8, 0.6, 0.6][side] * light[side + 1].max(light[0]);
+        let f = [0.5f32, 1.0, 0.8, 0.8, 0.6, 0.6][side] * 1.0;
         gl.color([f, f, f, 1.0]);
         Faces { b: bounds(rprops(id).bounds), gl, offset: [-0.5; 3] }.face(side, rprops(id).textures[0][side] as i32);
     }

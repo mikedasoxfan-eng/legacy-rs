@@ -217,7 +217,7 @@ impl World {
             // (the server only saves when it shuts down). func_594_b("Saving level") keeps
             // the old title, then "Saving chunks".
             progress(LoadStep::Text("Saving chunks"));
-            w.save_world(true);
+            w.save_world_indirectly();
         }
         Ok((w, is_new))
     }

@@ -20,6 +20,7 @@ pub struct Draw {
     pub cull: u8,
     pub ops: Vec<Op>,
     pub texture: u32,
+    pub texture_ops: Vec<Op>,
     pub material: [f32; 4],
     pub normal: [f32; 3],
     pub flags: u32,
@@ -41,6 +42,7 @@ pub struct Fixed {
     pub ops: Vec<Op>,
     stack: Vec<Vec<Op>>,
     pub texture: u32,
+    pub texture_ops: Vec<Op>,
     pub material: [f32; 4],
     pub normal: [f32; 3],
     pub flags: u32,
@@ -55,8 +57,17 @@ pub struct Fixed {
     /// Degrees the GUI rotated the lights about X before enabling them (0 in the world).
     pub light_rotation: f32,
     pub light_transform: Option<Mat4>,
+    /// Current lightmap coordinates (OpenGlHelper.setLightmapTextureCoords on
+    /// unit 1), recorded per draw in `draw_lightmaps` (parallel to `draws` for
+    /// draws made through `end`).
+    pub lightmap: [f32; 2],
+    pub draw_lightmaps: Vec<[f32; 2]>,
 }
 impl Fixed {
+    /// Lightmap coordinates of a packed brightness, as 1.0 renderers pass them.
+    pub fn set_packed_lightmap(&mut self, packed: i32) {
+        self.lightmap = [(packed % 65536) as f32, (packed / 65536) as f32];
+    }
     pub fn new(brightness: f32) -> Self {
         Self {
             alpha_cutoff: 0.1,
@@ -66,6 +77,7 @@ impl Fixed {
             ops: vec![],
             stack: vec![],
             texture: 0,
+            texture_ops: vec![],
             material: [brightness, brightness, brightness, 1.0],
             normal: [0.0, 0.0, 1.0],
             flags: 1 | 8 | 32 | 256,
@@ -79,6 +91,8 @@ impl Fixed {
             textured: false,
             light_rotation: 0.0,
             light_transform: None,
+            lightmap: [0.0; 2],
+            draw_lightmaps: vec![],
         }
     }
     pub fn push(&mut self) {
@@ -154,11 +168,13 @@ impl Fixed {
             | if self.textured { 512 } else { 0 }
             | if self.vertex_color.is_some() { 64 } else { 0 }
             | if self.vertex_normal.is_some() { 128 } else { 0 };
+        self.draw_lightmaps.push(self.lightmap);
         self.draws.push(Draw {
             alpha_cutoff: self.alpha_cutoff,
             cull: if self.culling {self.cull_face} else {0},
             ops: self.ops.clone(),
             texture: self.texture,
+            texture_ops: self.texture_ops.clone(),
             material: self.material,
             normal: self.normal,
             flags,
@@ -217,6 +233,7 @@ impl Draw {
                 60 => "mob/redcow.png", 61 => "mob/snowman.png", 62 => "mob/fire.png", 63 => "mob/lava.png",
                 64 => "mob/villager/villager.png", 65 => "mob/villager/farmer.png", 66 => "mob/villager/librarian.png", 67 => "mob/villager/priest.png", 68 => "mob/villager/smith.png", 69 => "mob/villager/butcher.png",
                 70 => "mob/enderdragon/ender.png", 71 => "mob/enderdragon/ender_eyes.png", 72 => "mob/enderdragon/shuffle.png", 73 => "mob/enderdragon/beam.png", 74 => "mob/enderdragon/crystal.png", 75 => "item/book.png", 76 => "misc/glint.png",
+                80=>"misc/tunnel.png",83=>"misc/particlefield.png",
                 20..=29 => super::player::ARMOR[(self.texture - 20) as usize],
                 _ => "__white",
             })
@@ -272,7 +289,7 @@ impl Draw {
                 }
                 EntityVertex {
                     pos: m.transform_point3(Vec3::from_array(v.pos)).to_array(),
-                    uv: v.uv,
+                    uv: {let t=matrix(&self.texture_ops)*glam::Vec4::new(v.uv[0],v.uv[1],0.0,1.0);[t.x,t.y]},
                     color,
                 }
             })

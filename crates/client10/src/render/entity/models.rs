@@ -223,21 +223,21 @@ impl Model {
         let tex = if large { 128.0 } else { 64.0 };
         for (name, uv, pos, dim, point) in [
             (
-                "field_35405_a",
+                "chestLid",
                 [0, 0],
                 [0.0, -5.0, -14.0],
                 [width, 5, 14],
                 [1.0, 7.0, 15.0],
             ),
             (
-                "field_35404_c",
+                "chestKnob",
                 [0, 0],
                 [-1.0, -2.0, -15.0],
                 [2, 4, 1],
                 [if large { 16.0 } else { 8.0 }, 7.0, 15.0],
             ),
             (
-                "field_35403_b",
+                "chestBelow",
                 [0, 19],
                 [0.0, 0.0, 0.0],
                 [width, 10, 14],
@@ -410,7 +410,7 @@ impl Model {
             let mut r = ModelRenderer::new(uv[i][0], uv[i][1]);
             r.add_box(x as f32 * -0.5, 0.0, d as f32 * -0.5, x, y, d, 0.0);
             r.set_rotation_point(0.0, (24 - y) as f32, z);
-            self.insert_part(format!("field_35400_a[{i}]"), r);
+            self.insert_part(format!("silverfishBodyParts[{i}]"), r);
             zs[i] = z;
             if i < 6 {
                 z += (d + sizes[i + 1][2]) as f32 * 0.5;
@@ -424,12 +424,12 @@ impl Model {
             let mut r = ModelRenderer::new(uv[0], uv[1]);
             r.add_box(x as f32 * -0.5, 0.0, -1.5, x, y, d, 0.0);
             r.set_rotation_point(0.0, (24 - y) as f32, z);
-            self.insert_part(format!("field_35398_b[{i}]"), r);
+            self.insert_part(format!("silverfishWings[{i}]"), r);
         }
     }
     fn pose_silverfish(&mut self, age: f32) {
         for i in 0i32..7 {
-            let r = self.parts.get_mut(&format!("field_35400_a[{i}]")).unwrap();
+            let r = self.parts.get_mut(&format!("silverfishBodyParts[{i}]")).unwrap();
             r.rotate_angle_y = math::cos(age * 0.9 + i as f32 * 0.15 * PI_F32)
                 * PI_F32
                 * 0.05
@@ -440,8 +440,8 @@ impl Model {
                 * (i - 2).abs() as f32;
         }
         for (i, src) in [(0, 2), (1, 4), (2, 1)] {
-            let r = self.parts[&format!("field_35400_a[{src}]")].clone();
-            let wing = self.parts.get_mut(&format!("field_35398_b[{i}]")).unwrap();
+            let r = self.parts[&format!("silverfishBodyParts[{src}]")].clone();
+            let wing = self.parts.get_mut(&format!("silverfishWings[{i}]")).unwrap();
             wing.rotate_angle_y = r.rotate_angle_y;
             if i > 0 {
                 wing.rotation_point_x = r.rotation_point_x;
@@ -590,8 +590,6 @@ impl Model {
         self.insert_part("body".into(), ModelRenderer::new(28, 8));
         self["body"].add_box(-4.0f32, -10.0f32, -7.0f32, 8, 16, 6, 1.75f32);
         self["body"].set_rotation_point(0.0f32, 5.0f32, 2.0f32);
-        self["body"].set_texture_offset(52, 0).add_box(-2.0, 2.0, -8.0, 4, 6, 1, 0.0);
-        self.child_head_z += 2.0;
         let mut var1: f32 = 0.5f32;
         self.insert_part("leg1".into(), ModelRenderer::new(0, 16));
         self["leg1"].add_box(-2.0f32, 0.0f32, -2.0f32, 4, 6, 4, var1);
@@ -617,8 +615,6 @@ impl Model {
         self.insert_part("body".into(), ModelRenderer::new(28, 8));
         self["body"].add_box(-4.0f32, -10.0f32, -7.0f32, 8, 16, 6, 0.0f32);
         self["body"].set_rotation_point(0.0f32, 5.0f32, 2.0f32);
-        self["body"].set_texture_offset(52, 0).add_box(-2.0, 2.0, -8.0, 4, 6, 1, 0.0);
-        self.child_head_z += 2.0;
     }
 
     /// `ModelChicken` constructor.
@@ -1145,9 +1141,9 @@ impl Model {
                 ("wolfMane", false),
             ],
             ModelKind::Chest | ModelKind::LargeChest => &[
-                ("field_35405_a", false),
-                ("field_35404_c", false),
-                ("field_35403_b", false),
+                ("chestLid", false),
+                ("chestKnob", false),
+                ("chestBelow", false),
             ],
             ModelKind::Squid | ModelKind::Ghast | ModelKind::Silverfish
                 | ModelKind::Minecart | ModelKind::Boat | ModelKind::Sign | ModelKind::Dragon | ModelKind::Villager | ModelKind::SnowMan | ModelKind::Blaze | ModelKind::MagmaCube | ModelKind::EnderCrystal | ModelKind::Book => &[],
@@ -1170,10 +1166,10 @@ impl Model {
         }
         if self.kind == ModelKind::Silverfish {
             for i in 0..7 {
-                parts.push((&self.parts[&format!("field_35400_a[{i}]")], false));
+                parts.push((&self.parts[&format!("silverfishBodyParts[{i}]")], false));
             }
             for i in 0..3 {
-                parts.push((&self.parts[&format!("field_35398_b[{i}]")], false));
+                parts.push((&self.parts[&format!("silverfishWings[{i}]")], false));
             }
         }
         parts

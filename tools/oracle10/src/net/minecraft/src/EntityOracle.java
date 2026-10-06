@@ -8,7 +8,9 @@ import java.util.concurrent.atomic.AtomicLong;
 /** Entity oracle cases always execute the original jar, except the independent Entity/Explosion RNG seed hooks. */
 public final class EntityOracle {
     static final class FlatProvider implements IChunkProvider {
- public java.util.List func_40377_a(EnumCreatureType type,int x,int y,int z){return java.util.Collections.emptyList();}
+ // Like ChunkProviderGenerate/ChunkProviderHell.func_40377_a (a flat world has no nether fortress):
+ // the biome's spawn list, so SpawnerAnimals chooses mobs exactly as in the real game.
+ public java.util.List func_40377_a(EnumCreatureType type,int x,int y,int z){WorldChunkManager m=world.getWorldChunkManager();if(m==null)return null;BiomeGenBase b=m.getBiomeGenAtChunkCoord(new ChunkCoordIntPair(x>>4,z>>4));return b==null?null:b.getSpawnableList(type);}
  public ChunkPosition func_40376_a(World world,String structure,int x,int y,int z){return null;}
 
         final World world; final Map<Long,Chunk> chunks=new HashMap<>();

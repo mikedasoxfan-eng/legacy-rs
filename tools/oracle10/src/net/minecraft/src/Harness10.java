@@ -47,7 +47,9 @@ final class Harness10 {
         return result.toArray(new TexturedQuad[result.size()]);
     }
     static boolean removedSleepSpawning(World world, List players) {
-        throw new UnsupportedOperationException("performSleepSpawning was removed in Minecraft 1.0");
+        // SpawnerAnimals.performSleepSpawning was removed in Minecraft 1.0: sleeping players
+        // never cause a spawn, so the inherited call site spawns nothing and reports false.
+        return false;
     }
     static float removedOrbPhase(EntityXPOrb orb) {
         // Reserved slot for the removed Beta orbital phase, to retain dump offsets.

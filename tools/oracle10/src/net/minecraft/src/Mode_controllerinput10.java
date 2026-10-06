@@ -36,8 +36,9 @@ public final class Mode_controllerinput10 {
                     KeyBinding.setKeyBindState(-100,attack);KeyBinding.setKeyBindState(-99,use);
                     for(int n=0;n<(phase==0?2:phase==55?1:0);n++)KeyBinding.onTick(-100);
                     for(int n=0;n<(phase==20?2:phase==30?1:0);n++)KeyBinding.onTick(-99);
-                    if(phase==25||phase==50)KeyBinding.onTick(-98);
-                    if(p.isUsingItem()) {if(!use)controller.onStoppedUsingItem(p);} else {
+                    // A pick press on a block broken earlier in the cast would read Item.itemsList[0] (1.0 NPE).
+                    if((phase==25||phase==50)&&(mc.objectMouseOver==null||w.getBlockId(4,64,4)!=0))KeyBinding.onTick(-98);
+                    if(p.isUsingItem()) {if(!use)controller.onStoppedUsingItem(p);while(mc.gameSettings.keyBindAttack.isPressed());while(mc.gameSettings.keyBindUseItem.isPressed());while(mc.gameSettings.keyBindPickBlock.isPressed());} else { // 1.0 runTick drains the presses while using
                         while(mc.gameSettings.keyBindAttack.isPressed())click.invoke(mc,0);
                         while(mc.gameSettings.keyBindUseItem.isPressed())click.invoke(mc,1);
                         while(mc.gameSettings.keyBindPickBlock.isPressed())pick.invoke(mc);

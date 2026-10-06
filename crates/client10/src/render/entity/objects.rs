@@ -68,7 +68,11 @@ pub fn render(s: &ObjectState, camera: [f64; 3], view: [f32; 2]) -> Fixed {
             let u1 = (index % 4 * 16 + 16) as f32 / 64.0;
             let v0 = (index / 4 * 16) as f32 / 64.0;
             let v1 = (index / 4 * 16 + 16) as f32 / 64.0;
-            let bright = s.brightness * 255.0;
+            // 1.0: lit through the lightmap at the orb's own packed brightness
+            // (the value RenderManager already set), glColor4f(1, 1, 1, 1) and a
+            // constant 255 colour scale instead of getEntityBrightness * 255.
+            g.material = [1.0; 4];
+            let bright = 255.0f32;
             let phase = (ticks as f32 + partial) / 2.0;
             let r = ((math::sin(phase) + 1.0) * 0.5 * bright) as i32;
             let green = bright as i32;
@@ -146,6 +150,32 @@ pub fn render(s: &ObjectState, camera: [f64; 3], view: [f32; 2]) -> Fixed {
                     inventory::inventory(&mut g, id, item.damage as i32, 1.0, true);
                     g.pop();
                 }
+            } else if item.id == 373 {
+                // 1.0 RenderItem: the tinted liquid (icon 141), then the bottle untinted, both
+                // through func_40267_a, which keeps drawing copies from the same Random.
+                g.scale(0.5, 0.5, 0.5);
+                g.texture = 2;
+                let (icon, color, _) = super::item_table::properties(373, item.damage);
+                for (pass, icon) in [141, icon].into_iter().enumerate() {
+                    g.material = if pass == 0 {
+                        [(color >> 16 & 255) as f32 / 255.0, (color >> 8 & 255) as f32 / 255.0, (color & 255) as f32 / 255.0, 1.0]
+                    } else {
+                        [1.0; 4]
+                    };
+                    for i in 0..copies {
+                        g.push();
+                        if i > 0 {
+                            g.translate(
+                                (rng.next_float() * 2.0 - 1.0) * 0.3,
+                                (rng.next_float() * 2.0 - 1.0) * 0.3,
+                                (rng.next_float() * 2.0 - 1.0) * 0.3,
+                            );
+                        }
+                        g.rotate(180.0 - view[0], 0.0, 1.0, 0.0);
+                        sprite_quad(&mut g, icon);
+                        g.pop();
+                    }
+                }
             } else {
                 g.scale(0.5, 0.5, 0.5);
                 g.texture = if item.id < 256 { 1 } else { 2 };
@@ -173,12 +203,14 @@ pub fn render(s: &ObjectState, camera: [f64; 3], view: [f32; 2]) -> Fixed {
             g.enable(2, false);
             g.pop();
         }
-        ObjectKind::Falling { block, light } => {
+        ObjectKind::Falling { block, light: _ } => {
             g.push();
             g.translate(x, y, z);
             g.texture = 1;
             g.enable(1, false);
-            inventory::falling(&mut g, block, light);
+            // The dragon egg is drawn from world-lit RenderBlocks geometry instead
+            // (render::falling::egg_vertices, carried in the entity snapshot).
+            if block != crate::render::falling::DRAGON_EGG { inventory::falling(&mut g, block); }
             g.enable(1, true);
             g.pop();
         }

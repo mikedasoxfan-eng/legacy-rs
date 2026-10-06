@@ -283,7 +283,7 @@ pub fn check(path: &str) -> bool {
                 display += 1;
             }
             if policy.world {
-                mobs = difficulty > 0;
+                mobs = policy.difficulty > 0; // 1.0: theWorld.difficultySetting (1 in multiplayer)
                 animals = true;
                 world_ticks += 1;
             }

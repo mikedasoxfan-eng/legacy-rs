@@ -51,6 +51,15 @@ pub struct VehicleState {
     pub pitch: f32,
     pub position: [f64; 3],
     pub track: [Option<Vec3D>; 3],
+    /// Entity.entityId: 1.0 RenderMinecart offsets each cart by a hash of it.
+    pub entity_id: i32,
+}
+/// 1.0 RenderMinecart's per-entity translation (anti z-fighting between carts).
+pub fn minecart_jitter(entity_id: i32) -> [f32; 3] {
+    let mut v = (entity_id as i64).wrapping_mul(493286711);
+    v = v.wrapping_mul(v).wrapping_mul(4392167121).wrapping_add(v.wrapping_mul(98761));
+    let c = |shift: u32| ((((v >> shift) & 7) as f32 + 0.5) / 8.0 - 0.5) * 0.004;
+    [c(16), c(20), c(24)]
 }
 pub fn state(e: &Entity, partial: f32) -> Option<VehicleState> {
     let (cart_type, time_since_hit, damage, rock_direction) = match &e.kind {
@@ -72,6 +81,7 @@ pub fn state(e: &Entity, partial: f32) -> Option<VehicleState> {
         pitch: e.prev_pitch + (e.pitch - e.prev_pitch) * partial,
         position: super::bridge::position(e, partial),
         track: [None; 3],
+        entity_id: e.entity_id,
     })
 }
 pub(super) fn model_parts(cart: bool) -> Vec<ModelRenderer> {
@@ -157,6 +167,10 @@ pub fn render(
     brightness: f32,
 ) {
     g.push();
+    if s.cart_type.is_some() {
+        let [x, y, z] = minecart_jitter(s.entity_id);
+        g.translate(x, y, z);
+    }
     let mut yaw = s.yaw;
     let mut pitch = s.pitch;
     if s.cart_type.is_some() {
@@ -199,6 +213,8 @@ pub fn render(
         }
         g.rotate(-90.0, 0.0, 1.0, 0.0);
         if t==1 {g.translate(0.5,0.0,-0.5);} else {g.translate(0.0,-0.3125,0.0);}
+        // 1.0: glColor4f(1, 1, 1, 1) after the chest/furnace block.
+        if t == 1 || t == 2 { g.material = [1.0; 4]; }
         g.scale(1.0 / 0.75, 1.0 / 0.75, 1.0 / 0.75);
     } else if s.cart_type.is_none() {
         g.texture = 1;

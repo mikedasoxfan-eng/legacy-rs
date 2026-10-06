@@ -39,6 +39,8 @@ public final class RendererOracle {
         public Face10 face;
         public int cull,flags,texture,src,dst,depth;
         public float alpha;public float[] material;
+        /** Unit-1 lightmap coordinates in force at the draw (renderfx fixtures). */
+        public float lightmapU=org.lwjgl.opengl.GL13.lightmapU,lightmapV=org.lwjgl.opengl.GL13.lightmapV;
         Draw10(Raw raw){
             face=new Face10(raw);cull=cull10;flags=RendererOracle.flags|raw.mask;
             texture=GL11.texture;src=RendererOracle.src;dst=RendererOracle.dst;depth=RendererOracle.depth;
@@ -92,7 +94,8 @@ public final class RendererOracle {
         }catch(Exception e){throw new RuntimeException(e);}
     }
     static void emit(Raw r) {
-        if(capture10){draws10.add(new Draw10(r));return;}
+        if(capture10){draws10.add(new Draw10(r));GlLog10.drawn();return;}
+        GlLog10.drawn();
         Mode_drawtrace10.emitted(r);
         FirstPersonOracle.recordMode(r.mode);
         FirstPersonOracle.recordMatrix();
@@ -110,6 +113,8 @@ public final class RendererOracle {
         draws=new Oracle.DataOut();count=0;
     }
     static RenderManager manager(World w) throws Exception {
+        // Minecraft.startGame selects the lightmap texture units before any renderer runs.
+        OpenGlHelper.initializeTextures();org.lwjgl.opengl.GL13.activeTexture=0;
         RenderManager m=(RenderManager)Oracle.allocate(RenderManager.class);
         m.worldObj=w;m.playerViewY=37.25F;m.playerViewX=-21.5F;
         m.options=(GameSettings)Oracle.allocate(GameSettings.class);m.options.fancyGraphics=true;
@@ -120,7 +125,7 @@ public final class RendererOracle {
         textures.put("/mob/ghast.png",5);textures.put("/mob/ghast_fire.png",6);textures.put("/mob/zombie.png",7);textures.put("/mob/pigzombie.png",8);
         textures.put("/terrain.png",1);textures.put("/gui/items.png",2);textures.put("/item/arrows.png",3);textures.put("%clamp%/misc/shadow.png",4);
         textures.put("/item/cart.png",18);textures.put("/item/boat.png",19);
-        textures.put("/item/chest.png",31);
+        textures.put("/item/chest.png",31);textures.put("%blur%/misc/glint.png",76);
         Oracle.setField(m.renderEngine,"urlToImageDataMap",new HashMap());Oracle.setField(m.renderEngine,"textureMap",textures);
         // In the game RenderGlobal.renderEntities caches the engine in TileEntityRenderer every frame.
         TileEntityRenderer.instance.renderEngine=m.renderEngine;
@@ -154,14 +159,14 @@ public final class RendererOracle {
             if(type<0){EntityBoat b=(EntityBoat)e;b.func_41019_c(hit);b.func_41015_b(damage);b.func_41017_d(direction);}
             else {EntityMinecart c=(EntityMinecart)e;c.func_41028_c(hit);c.func_41024_b(damage);c.func_41029_h(direction);}
             float brightness=e.getEntityBrightness(partial);
-            cases.i32(type);cases.i32(meta);cases.i32(hit);cases.i32(damage);cases.i32(direction);
+            cases.i32(type);cases.i32(meta);cases.i32(hit);cases.i32(damage);cases.i32(direction);cases.i32(e.entityId);
             for(float v:new float[]{partial,brightness,e.prevRotationYaw,e.rotationYaw,e.prevRotationPitch,e.rotationPitch})Oracle.modelFloat(cases,v);
             for(double v:new double[]{e.lastTickPosX,e.lastTickPosY,e.lastTickPosZ,e.posX,e.posY,e.posZ,-.25,10.5,3.75})cases.i64(Double.doubleToRawLongBits(v));
             Render r=type<0?new RenderBoat():new RenderMinecart();r.setRenderManager(manager);
             reset(brightness);active=true;r.doRender(e,-.25,10.5,3.75,e.prevRotationYaw+(e.rotationYaw-e.prevRotationYaw)*partial,partial);active=false;
             cases.i32(count);cases.bytes(draws.buf.toByteArray());n++;
         }
-        Oracle.DataOut out=new Oracle.DataOut();out.i32(0x33373156);out.i32(1);out.i32(n);out.bytes(cases.buf.toByteArray());
+        Oracle.DataOut out=new Oracle.DataOut();out.i32(0x33373156);out.i32(2);out.i32(n);out.bytes(cases.buf.toByteArray());
         try(OutputStream os=new FileOutputStream(path)){out.writeTo(os);}System.out.println("vehicles: "+n+" renderer cases");
     }
     public static void run(String path) throws Exception {

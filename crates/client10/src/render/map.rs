@@ -71,6 +71,8 @@ pub fn image(data: &Data, anaglyph: bool) -> Image {
 pub fn render(g: &mut Fixed, data: &Data) {
     g.texture = 12;
     g.enable(16, true);
+    g.src = 1;
+    g.dst = 771;
     g.begin();
     g.quad(
         [

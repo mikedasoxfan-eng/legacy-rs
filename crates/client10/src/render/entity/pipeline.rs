@@ -59,6 +59,10 @@ pub struct EntityPipeline {
     /// Batches whose vertices carry their own lightmap brightness (batch index, per vertex).
     vertex_lights: Vec<(usize, Vec<u32>)>,
     pub books: Vec<super::render_release::BookTile>,
+    pub portals: Vec<[i32;3]>,
+    pub active_info: crate::render::active_info::Info,
+    projective_uvs: Vec<(usize,Vec<[f32;3]>)>,
+    uvq: wgpu::Buffer,
     pub dragon_crystals: std::collections::HashMap<i32, ([f64; 3], i32)>,
     pub chests: Vec<super::chest::Tile>,
     pub spawners: Vec<crate::render::spawner::Snapshot>,
@@ -176,6 +180,7 @@ impl EntityPipeline {
                             step_mode: wgpu::VertexStepMode::Vertex,
                             attributes: &wgpu::vertex_attr_array![3=>Uint32,4=>Float32],
                         }),
+                        Some(wgpu::VertexBufferLayout {array_stride:12,step_mode:wgpu::VertexStepMode::Vertex,attributes:&wgpu::vertex_attr_array![5=>Float32x3]}),
                     ],
                 },
                 primitive: wgpu::PrimitiveState { topology: if label=="fishing line" {wgpu::PrimitiveTopology::LineStrip}else{wgpu::PrimitiveTopology::TriangleList}, cull_mode: cull, ..Default::default() },
@@ -411,6 +416,10 @@ impl EntityPipeline {
             signs: Vec::new(),
             vertex_lights: Vec::new(),
             books: Vec::new(),
+            portals: Vec::new(),
+            active_info: Default::default(),
+            projective_uvs: Vec::new(),
+            uvq: device.create_buffer(&wgpu::BufferDescriptor {label:Some("projective UV"),size:12,usage:wgpu::BufferUsages::VERTEX|wgpu::BufferUsages::COPY_DST,mapped_at_creation:false}),
             dragon_crystals: std::collections::HashMap::new(),
             chests: Vec::new(),
             spawners: Vec::new(),
@@ -549,9 +558,12 @@ impl EntityPipeline {
                                 let p=super::bridge::position(e,self.partial);let relative=std::array::from_fn(|i|p[i]-camera[i]);let g=crate::render::fishing::render(e,owner,relative,self.partial,snapshot.brightness,self.view,self.third_person);batches.extend(g.draws.iter().map(|d|d.batch()));
                             }
                             if matches!(e.kind,worldgen::entity::EntityKind::Painting(_)) {
-                                let lights:Vec<_>=crate::render::painting::light_positions(e).iter().map(|p|snapshot.surfaces.iter().find(|s|s.xyz==*p&&s.block==0).map_or(snapshot.brightness,|s|s.brightness)).collect();
+                                // 1.0 RenderPainting: glColor 1, each tile through the lightmap at its own light.
+                                let fallback=snapshot.light.unwrap_or(0) as i32;
+                                let lights:Vec<_>=(0..crate::render::painting::light_positions(e).len()).map(|i|snapshot.tile_lights.get(i).copied().unwrap_or(fallback)).collect();
                                 let p=super::bridge::position(e,self.partial);let relative=std::array::from_fn(|i|p[i]-camera[i] as f64);
                                 let g=crate::render::painting::render(e,relative,&lights);batches.extend(g.draws.iter().map(|d|d.batch()));
+                                explicit_lights.extend(g.draw_lightmaps.iter().map(|l|(l[0] as u32)+(l[1] as u32)*65536));
                             }
                             if let Some(mut s) = super::bridge::render_state(e, self.partial, snapshot.brightness) {
                                 if let Some(crystal_id) = s.dragon.as_ref().and_then(|d| d.healing_crystal) {
@@ -581,7 +593,30 @@ impl EntityPipeline {
                                         d.flags |= 4;
                                     }
                                 }
-                                batches.extend(g.draws.iter().map(|d| d.batch()));
+                                // 1.0 RenderFallingSand: Tessellator brightness (per vertex) is the
+                                // block's packed light at its cell; the GL lightmap state is untouched.
+                                let falling_light = if matches!(e.kind, worldgen::entity::EntityKind::FallingSand { .. }) { snapshot.tile_lights.first().copied() } else { None };
+                                for d in &g.draws {
+                                    let batch = d.batch();
+                                    if let Some(l) = falling_light { self.vertex_lights.push((batches.len(), vec![l as u32; batch.vertices.len()])); }
+                                    batches.push(batch);
+                                }
+                                if !snapshot.block_mesh.is_empty() {
+                                    // The dragon egg: world-lit RenderBlocks quads under glTranslatef(relative).
+                                    let p = super::bridge::position(e, self.partial);
+                                    let rel: [f32; 3] = std::array::from_fn(|i| (p[i] - camera.to_array()[i]) as f32);
+                                    let mut vertices = Vec::with_capacity(snapshot.block_mesh.len() / 4 * 6);
+                                    let mut vertex_lights = Vec::with_capacity(vertices.capacity());
+                                    for quad in snapshot.block_mesh.chunks_exact(4) {
+                                        for i in [0, 1, 2, 0, 2, 3] {
+                                            let v = quad[i];
+                                            vertices.push(living::EntityVertex { pos: std::array::from_fn(|k| v.pos[k] + rel[k]), uv: v.uv, color: v.color.map(|c| c as f32 / 255.0) });
+                                            vertex_lights.push(v.light);
+                                        }
+                                    }
+                                    self.vertex_lights.push((batches.len(), vertex_lights));
+                                    batches.push(Batch { alpha_cutoff: 0.1, cull: 0, texture: Some("terrain.png"), pass: Pass::Alpha, vertices });
+                                }
                             }
                         }
                         super::manager::Event::ShadowAndFire(_, _) => {
@@ -611,6 +646,15 @@ impl EntityPipeline {
             }));
         }
         lights.resize(batches.len(), NO_LIGHTMAP);
+        let millis=std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap_or_default().as_millis() as u64;
+        for position in &self.portals {
+            let relative=std::array::from_fn(|i|position[i] as f64-camera[i]);
+            let portal=crate::render::end_portal::render(relative,camera.to_array(),self.active_info.offset,[crate::render::end_portal::time_fraction(millis);16]);
+            for (layer,draw) in portal.gl.draws.iter().enumerate() {
+                self.projective_uvs.push((batches.len(),portal.projective_uv(layer,self.fog_view)));
+                batches.push(draw.batch());lights.push(NO_LIGHTMAP);
+            }
+        }
         for tile in &self.books {
             let relative = std::array::from_fn(|i| tile.position[i] as f64 - camera.to_array()[i]);
             let g = super::render_release::book(tile.state, relative, self.partial);
@@ -707,9 +751,12 @@ impl EntityPipeline {
         self.draws.clear();
         let mut all = Vec::new();
         let mut light_of: Vec<[u32; 2]> = Vec::new();
+        let mut uvq=Vec::new();
+        let mut projected:HashMap<usize,Vec<[f32;3]>>=std::mem::take(&mut self.projective_uvs).into_iter().collect();
         let mut per_vertex: std::collections::HashMap<usize, Vec<u32>> = std::mem::take(&mut self.vertex_lights).into_iter().collect();
         for (i, b) in batches.into_iter().enumerate() {
             let start = all.len() as u32;
+            uvq.extend(projected.remove(&i).unwrap_or_else(||b.vertices.iter().map(|v|[v.uv[0],v.uv[1],1.0]).collect()));
             all.extend_from_slice(&b.vertices);
             match per_vertex.remove(&i) {
                 Some(l) if l.len() == b.vertices.len() => light_of.extend(l.into_iter().map(|l| [l, b.alpha_cutoff.to_bits()])),
@@ -730,6 +777,7 @@ impl EntityPipeline {
                 usage: wgpu::BufferUsages::VERTEX | wgpu::BufferUsages::COPY_DST,
                 mapped_at_creation: false,
             });
+            self.uvq=device.create_buffer(&wgpu::BufferDescriptor {label:Some("projective UV"),size:(self.capacity*12) as u64,usage:wgpu::BufferUsages::VERTEX|wgpu::BufferUsages::COPY_DST,mapped_at_creation:false});
             self.lights = device.create_buffer(&wgpu::BufferDescriptor {
                 label: Some("entity lights"),
                 size: (self.capacity * 8) as u64,
@@ -738,6 +786,7 @@ impl EntityPipeline {
             });
         }
         if !all.is_empty() {
+            queue.write_buffer(&self.uvq,0,bytemuck::cast_slice(&uvq));
             queue.write_buffer(&self.vertices, 0, bytemuck::cast_slice(&all));
             queue.write_buffer(&self.lights, 0, bytemuck::cast_slice(&light_of));
         }
@@ -751,6 +800,7 @@ impl EntityPipeline {
         rp.set_bind_group(0, &self.frame_bind, &[]);
         rp.set_vertex_buffer(0, self.vertices.slice(..));
         rp.set_vertex_buffer(1, self.lights.slice(..));
+        rp.set_vertex_buffer(2,self.uvq.slice(..));
         for d in &self.draws {
             rp.set_pipeline((match d.pass {
                 Pass::Line => &self.line,

@@ -17,7 +17,10 @@ public final class Mode_rendermanager9_10 {
   EntitySquid.class,EntityLiving.class,Entity.class,EntityPainting.class,EntityArrow.class,
   EntitySnowball.class,EntityEgg.class,EntityFireball.class,EntityItem.class,EntityXPOrb.class,
   EntityTNTPrimed.class,EntityFallingSand.class,EntityMinecart.class,EntityBoat.class,
-  EntityFishHook.class,EntityLightningBolt.class
+  EntityFishHook.class,EntityLightningBolt.class,
+  // 1.0 registrations, in RenderManager's constructor order.
+  EntityMooshroom.class,EntityVillager.class,EntitySnowman.class,EntityBlaze.class,EntityMagmaCube.class,EntityDragon.class,
+  EntityEnderCrystal.class,EntityEnderPearl.class,EntityEnderEye.class,EntityPotion.class,EntitySmallFireball.class
  };
  static void i(int v)throws IOException{EntityOracle.i(out,v);}
  static void f(float v)throws IOException{EntityOracle.f(out,v);}
@@ -137,7 +140,7 @@ public final class Mode_rendermanager9_10 {
    }
  }
  public static void main(String[] a)throws Exception{
-  Mode_entities10.world();
+  Mode_entities10.world();OpenGlHelper.initializeTextures();GL13.activeTexture=0;
   try(DataOutputStream o=new DataOutputStream(new BufferedOutputStream(new FileOutputStream(a[1])))){
    out=o;registry();cache();dispatch();
   }

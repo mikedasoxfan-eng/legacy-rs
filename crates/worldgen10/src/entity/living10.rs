@@ -17,11 +17,13 @@ impl Entity {
         }
         damage
     }
-    pub fn is_burning(&self, w: &World) -> bool {
+    pub fn is_burning(&self, _w: &World) -> bool {
         match self.kind {
             EntityKind::Blaze(..) => self.data_watcher.byte(16).unwrap() & 1 != 0,
             EntityKind::MagmaCube { .. } => false,
-            _ => self.fire > 0 || (w.multiplayer_world && self.entity_flag(0)),
+            // Entity.isBurning: fire > 0 || getEntityFlag(0); the flag is the value onEntityUpdate
+            // stored, so it stays set for the rest of a tick in which water put the fire out.
+            _ => self.fire > 0 || self.entity_flag(0),
         }
     }
     pub fn max_health(&self) -> i32 {

@@ -46,7 +46,7 @@ fn value(o: &mut Vec<u8>, n: Option<i32>) {
         i(o, n);
     }
 }
-fn flat(dimension: Dimension) -> World {
+pub(crate) fn flat(dimension: Dimension) -> World {
     let mut w = World::with_dimension(0, 300, dimension);
     for x in -3..=3 {
         for z in -3..=3 {

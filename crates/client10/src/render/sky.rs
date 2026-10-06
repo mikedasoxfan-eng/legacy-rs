@@ -165,8 +165,9 @@ pub fn fog_color(
 /// directly `look` faces the sun (`World.func_35456_d` picks the east or west horizon).
 pub fn sunrise_fog(mut f: [f32; 3], angle: f32, render_distance: i32, look: [f64; 3]) -> [f32; 3] {
     if render_distance < 2 {
-        let sun_z = if math::sin(angle * std::f32::consts::PI * 2.0f32) > 0.0 { 1.0f64 } else { -1.0 };
-        let mut d = (look[0] * 0.0 + look[1] * 0.0 + look[2] * sun_z) as f32;
+        // 1.0 faces the sunrise along x: (-1, 0, 0) while the sun is up, else (1, 0, 0).
+        let sun_x = if math::sin(angle * std::f32::consts::PI * 2.0f32) > 0.0 { -1.0f64 } else { 1.0 };
+        let mut d = (look[0] * sun_x + look[1] * 0.0 + look[2] * 0.0) as f32;
         if d < 0.0 {
             d = 0.0;
         }

@@ -23,6 +23,7 @@ pub enum Kind {
     RedDust,
     Heart,
     Lava,
+    Breaking { icon: i32, velocity: bool },
     Snowball,
     Slime,
     SnowShovel,
@@ -107,6 +108,7 @@ pub struct Particle {
     pub rand: JavaRandom,
     pub pickup: Option<Box<worldgen::entity::Entity>>,
     pub target: i32,
+    pub emitter_name: &'static str,
     pub cloud_player: Option<[f64; 5]>,
     pub duration: i32,
     pub emitted: Vec<(&'static str, [f64; 3], [f64; 3])>,
@@ -115,8 +117,8 @@ impl Particle {
     /// Scalar counterpart to the new particle packed-light overrides.
     pub fn brightness_from(&self, base: f32) -> f32 {
         match self.kind {
-            Kind::DripLava => 1.0,
-            Kind::Enchantment => {
+            Kind::DripLava | Kind::Lava => 1.0,
+            Kind::Enchantment | Kind::Portal => {
                 let mut t = self.age as f32 / self.max_age as f32;
                 t *= t;
                 t *= t;
@@ -124,6 +126,14 @@ impl Particle {
             }
             _ => base,
         }
+    }
+    pub fn scalar_brightness(&self, terrain: &Snapshot, partial: f32) -> f32 {
+        let base = terrain.brightness([self.pos[0], self.pos[1] - self.y_offset as f64
+            + (self.bounds[4] - self.bounds[1]) * 0.66, self.pos[2]]);
+        if self.kind == Kind::Flame {
+            let t = ((self.age as f32 + partial) / self.max_age as f32).clamp(0.0, 1.0);
+            base * t + (1.0 - t)
+        } else { self.brightness_from(base) }
     }
     /// Entity.func_35115_a and the three particle overrides. The partial tick
     /// affects Flame, but Portal deliberately uses the integer age alone.
@@ -177,7 +187,8 @@ impl Particle {
         let mut r = JavaRandom::new(seed);
         let input = if matches!(
             kind,
-            Kind::Crit
+            Kind::Breaking { .. }
+                | Kind::Crit
                 | Kind::MobSpell
                 | Kind::DripWater
                 | Kind::DripLava
@@ -246,6 +257,7 @@ impl Particle {
             rand: r,
             pickup: None,
             target: 0,
+            emitter_name: "crit",
             cloud_player: None,
             duration: 0,
             emitted: Vec::new(),
@@ -453,6 +465,10 @@ impl Particle {
                 p.max_age = (16.0 / (m.next_double() * 0.8 + 0.2)) as i32;
                 p.texture = 49;
             }
+            Kind::Breaking { icon, velocity: explicit } => {
+                p.texture = icon; p.gravity = 1.0; p.scale /= 2.0;
+                if explicit { for i in 0..3 { p.motion[i] = p.motion[i] * 0.1f32 as f64 + velocity[i]; } }
+            }
             Kind::Snowball | Kind::Slime => {
                 p.texture = if kind == Kind::Snowball { 14 } else { 30 };
                 p.gravity = 1.0;
@@ -489,7 +505,7 @@ impl Particle {
     pub fn layer(&self) -> usize {
         match self.kind {
             Kind::Digging { .. } | Kind::HugeExplode => 1,
-            Kind::Slime | Kind::Snowball => 2,
+            Kind::Breaking { .. } | Kind::Slime | Kind::Snowball => 2,
             Kind::Footstep | Kind::Pickup | Kind::LargeExplode | Kind::CritEmitter => 3,
             _ => 0,
         }
@@ -521,7 +537,7 @@ impl Particle {
                         let pos = [target.pos.x + v[0] * target.width as f64 / 4.0,
                             target.bounding_box.min_y + (target.height / 2.0) as f64 + v[1] * target.height as f64 / 4.0,
                             target.pos.z + v[2] * target.width as f64 / 4.0];
-                        self.emitted.push(("crit", pos, [v[0], v[1] + 0.2, v[2]]));
+                        self.emitted.push((self.emitter_name, pos, [v[0], v[1] + 0.2, v[2]]));
                     }
                 }
             }
@@ -666,7 +682,7 @@ impl Particle {
                 }
                 self.motion[1] -= 0.03;
             }
-            Kind::Base | Kind::Digging { .. } | Kind::Slime | Kind::Snowball => {
+            Kind::Base | Kind::Digging { .. } | Kind::Breaking { .. } | Kind::Slime | Kind::Snowball => {
                 self.motion[1] -= 0.04 * self.gravity as f64
             }
             _ => {}
@@ -817,7 +833,7 @@ impl Particle {
         let color = packed_color(self.color, 1.0);
         let fragment = matches!(
             self.kind,
-            Kind::Digging { .. } | Kind::Snowball | Kind::Slime
+            Kind::Digging { .. } | Kind::Breaking { .. } | Kind::Snowball | Kind::Slime
         );
         let frame = ((self.timer as f32 + partial) * 15.0 / self.duration as f32) as i32;
         if self.kind == Kind::LargeExplode && frame > 15 { return Vec::new(); }
@@ -886,6 +902,27 @@ pub fn rotation(yaw: f32, pitch: f32) -> [f32; 5] {
         cy * sp,
     ]
 }
+/// ActiveRenderInfo.func_41067_a's billboard statics, in renderParticle
+/// argument order (field_41070_d, _41071_e, _41068_f, _41069_g, _41078_h).
+/// `mirror` is GameSettings.thirdPersonView == 2.
+pub fn active_render_rotation(yaw: f32, pitch: f32, mirror: bool) -> [f32; 5] {
+    let m = (1 - mirror as i32 * 2) as f32;
+    let d = math::cos(yaw * math::PI_F32 / 180.0) * m;
+    let f = math::sin(yaw * math::PI_F32 / 180.0) * m;
+    let g = -f * math::sin(pitch * math::PI_F32 / 180.0) * m;
+    let h = d * math::sin(pitch * math::PI_F32 / 180.0) * m;
+    let e = math::cos(pitch * math::PI_F32 / 180.0);
+    [d, e, f, g, h]
+}
+/// Tessellator brightness each EntityFX's quads carry. EntityFootStepFX
+/// restarts the Tessellator without brightness; EntityLargeExplodeFX sets 240.
+pub fn tessellator_brightness(kind: Kind, packed: i32) -> Option<i32> {
+    match kind {
+        Kind::Footstep => None,
+        Kind::LargeExplode => Some(240),
+        _ => Some(packed),
+    }
+}
 fn packed_color(rgb: [f32; 3], alpha: f32) -> [f32; 4] {
     let c = |v: f32| ((v * 255.0) as i32).clamp(0, 255) as f32 / 255.0;
     [c(rgb[0]), c(rgb[1]), c(rgb[2]), c(alpha)]
@@ -921,8 +958,13 @@ impl EffectRenderer {
     /// EntityCrit2FX constructs at the target's center and emits its first
     /// burst immediately, then follows the target for two more updates.
     pub fn critical_hit(&mut self, target: &worldgen::entity::Entity, view: [f64; 3]) {
+        self.critical_hit_named(target, view, "crit");
+    }
+    /// The 1.0 three-argument EntityCrit2FX constructor: the emitted particle name.
+    pub fn critical_hit_named(&mut self, target: &worldgen::entity::Entity, view: [f64; 3], name: &'static str) {
         let pos = [target.pos.x, target.bounding_box.min_y + (target.height / 2.0) as f64, target.pos.z];
         let mut p = self.create(Kind::CritEmitter, pos, [target.motion.x, target.motion.y, target.motion.z]);
+        p.emitter_name = name;
         p.pickup = Some(Box::new(target.clone()));
         p.target = target.entity_id;
         p.tick(&self.creation_terrain, &mut self.math_random);
@@ -936,9 +978,9 @@ impl EffectRenderer {
         }
     }
     /// Parallel packed-light output for integrators using the lightmap texture.
-    pub fn lightmapped_vertices(&mut self, s: &Snapshot, cam: [f64; 3], yaw: f32, pitch: f32, partial: f32) -> [Vec<(WeatherVertex, i32)>; 3] {
+    pub fn lightmapped_vertices(&mut self, s: &Snapshot, cam: [f64; 3], rot: [f32; 5], partial: f32) -> [Vec<(WeatherVertex, i32)>; 3] {
         let mut out: [Vec<_>; 3] = std::array::from_fn(|_| Vec::new());
-        self.render_particles(s, cam, yaw, pitch, partial, |layer, p, origin, rot, light, _color| {
+        self.render_particles(s, cam, rot, partial, |layer, p, origin, rot, light, _color| {
             // These FX set the Tessellator color array, which replaces GL's
             // current material color rather than multiplying it.
             out[layer].extend(p.vertices(s, origin, rot, partial).into_iter().map(|v| (v, light)));
@@ -947,9 +989,10 @@ impl EffectRenderer {
     }
     /// Original EffectRenderer.renderParticles dispatch. Brightness is evaluated
     /// immediately before each callback, including callbacks that emit no quads.
-    pub fn render_particles(&mut self, s: &Snapshot, cam: [f64; 3], yaw: f32, pitch: f32, partial: f32,
+    /// 1.0 reads the billboard axes from ActiveRenderInfo's statics (see
+    /// `active_render_rotation`) instead of the view entity's rotation.
+    pub fn render_particles(&mut self, s: &Snapshot, cam: [f64; 3], rot: [f32; 5], partial: f32,
         mut draw: impl FnMut(usize, &mut Particle, [f64; 3], [f32; 5], i32, Option<[f32; 4]>)) {
-        let rot = rotation(yaw, pitch);
         self.interp_pos = cam;
         for layer in 0..3 {
             for (index, p) in self.layers[layer].iter_mut().enumerate() {
@@ -1102,11 +1145,10 @@ impl EffectRenderer {
         &mut self,
         s: &Snapshot,
         cam: [f64; 3],
-        yaw: f32,
-        pitch: f32,
+        rot: [f32; 5],
         partial: f32,
     ) -> [Vec<WeatherVertex>; 3] {
-        self.lightmapped_vertices(s, cam, yaw, pitch, partial)
+        self.lightmapped_vertices(s, cam, rot, partial)
             .map(|layer| layer.into_iter().map(|(vertex, _)| vertex).collect())
     }
     pub fn destroy(&mut self, cell: [i32; 3], block: u8, metadata: i32) {
@@ -1198,7 +1240,7 @@ fn move_particle(p: &mut Particle, s: &Snapshot) -> bool {
                 if !(0..128).contains(&y) {
                     continue;
                 }
-                for b in collision_boxes(c.blocks[y as usize], c.meta[y as usize], [x, y, z]) {
+                for b in collision_boxes(s, c.blocks[y as usize], c.meta[y as usize], [x, y, z]) {
                     if intersects(b, sweep) {
                         boxes.push(b);
                     }
@@ -1258,11 +1300,104 @@ fn move_particle(p: &mut Particle, s: &Snapshot) -> bool {
     delta[1] != original[1] && original[1] < 0.0
 }
 
+fn block_at(s: &Snapshot, x: i32, y: i32, z: i32) -> u8 {
+    if !(0..128).contains(&y) {
+        return 0;
+    }
+    s.column(x, z).map_or(0, |c| c.blocks[y as usize])
+}
+/// The 1.0 blocks whose collision boxes the worldgen collision code
+/// (World.block_collision_box / get_colliding_bounding_boxes) handles specially.
+fn release_collision_boxes(s: &Snapshot, id: u8, meta: u8, pos: [i32; 3]) -> Option<Vec<[f64; 6]>> {
+    use worldgen::block::{mat, props, MAT_PUMPKIN};
+    let [x, y, z] = pos;
+    let translate = |b: [f64; 6]| -> [f64; 6] { std::array::from_fn(|i| pos[i % 3] as f64 + b[i]) };
+    Some(match id {
+        // BlockFence / nether brick fence: a post joined to fences, gates and solid cubes.
+        85 | 113 => {
+            let joins = |dx: i32, dz: i32| {
+                let other = block_at(s, x + dx, y, z + dz);
+                if other == id || other == 107 {
+                    return true;
+                }
+                let p = props(other);
+                p.exists && mat(p.material).translucent_solid && p.normal_render && p.material != MAT_PUMPKIN
+            };
+            let (north, south, west, east) = (joins(0, -1), joins(0, 1), joins(-1, 0), joins(1, 0));
+            let b = [
+                if west { 0.0f32 } else { 0.375 },
+                0.0,
+                if north { 0.0 } else { 0.375 },
+                if east { 1.0 } else { 0.625 },
+                1.5,
+                if south { 1.0 } else { 0.625 },
+            ];
+            // Float addition before promotion, except the minimum y.
+            vec![[
+                (x as f32 + b[0]) as f64,
+                y as f64,
+                (z as f32 + b[2]) as f64,
+                (x as f32 + b[3]) as f64,
+                (y as f32 + b[4]) as f64,
+                (z as f32 + b[5]) as f64,
+            ]]
+        }
+        // BlockFenceGate: open gates have no box; closed ones are 1.5 tall.
+        107 if meta & 4 != 0 => Vec::new(),
+        107 => vec![[x as f64, y as f64, z as f64, (x + 1) as f64, (y as f32 + 1.5) as f64, (z + 1) as f64]],
+        // BlockPane: thin slabs towards panes, glass and opaque cubes.
+        101 | 102 => {
+            let joins = |dx: i32, dz: i32| {
+                let other = block_at(s, x + dx, y, z + dz);
+                props(other).opaque_cube || other == id || other == 20
+            };
+            let (n, so, w, e) = (joins(0, -1), joins(0, 1), joins(-1, 0), joins(1, 0));
+            let any = n || so || w || e;
+            let mut boxes = Vec::new();
+            if w && e || !any {
+                boxes.push(translate([0.0, 0.0, 0.4375, 1.0, 1.0, 0.5625]));
+            } else if w {
+                boxes.push(translate([0.0, 0.0, 0.4375, 0.5, 1.0, 0.5625]));
+            } else if e {
+                boxes.push(translate([0.5, 0.0, 0.4375, 1.0, 1.0, 0.5625]));
+            }
+            if n && so || !any {
+                boxes.push(translate([0.4375, 0.0, 0.0, 0.5625, 1.0, 1.0]));
+            } else if n {
+                boxes.push(translate([0.4375, 0.0, 0.0, 0.5625, 1.0, 0.5]));
+            } else if so {
+                boxes.push(translate([0.4375, 0.0, 0.5, 0.5625, 1.0, 1.0]));
+            }
+            boxes
+        }
+        // Stairs (nether brick stairs use the cobblestone table).
+        108 | 109 | 114 => worldgen::entity::block_table::MULTI_COLLISION[if id == 114 { 67 } else { id as usize }][meta as usize & 15]
+            .iter()
+            .map(|b| translate([b.min_x, b.min_y, b.min_z, b.max_x, b.max_y, b.max_z]))
+            .collect(),
+        // Brewing stand, cauldron, end portal (frame): several boxes or none.
+        117..=120 => worldgen::world::blocks10::multi_boxes(id, meta as i32)
+            .unwrap_or_default()
+            .into_iter()
+            .map(|b| translate([b.min_x, b.min_y, b.min_z, b.max_x, b.max_y, b.max_z]))
+            .collect(),
+        // Stems, vines and nether wart have no collision box.
+        104..=106 | 115 => Vec::new(),
+        110..=122 => vec![translate(match worldgen::world::blocks10::initial_bounds(id) {
+            Some(b) => [b.min_x, b.min_y, b.min_z, b.max_x, b.max_y, b.max_z],
+            None => [0.0, 0.0, 0.0, 1.0, 1.0, 1.0],
+        })],
+        _ => return None,
+    })
+}
 /// Block collision boxes used by ambient particles. No step-up (EntityFX.stepHeight=0).
-fn collision_boxes(id: u8, meta: u8, pos: [i32; 3]) -> Vec<[f64; 6]> {
+fn collision_boxes(s: &Snapshot, id: u8, meta: u8, pos: [i32; 3]) -> Vec<[f64; 6]> {
     if matches!(id, 0 | 6 | 8..=11 | 27 | 28 | 30..=32 | 36 | 37..=40 | 50 | 51 | 55 | 59 | 63 | 66 | 68..=70 | 72 | 75..=77 | 83 | 90)
     {
         return Vec::new();
+    }
+    if let Some(boxes) = release_collision_boxes(s, id, meta, pos) {
+        return boxes;
     }
     let mut b = rprops(id).bounds;
     let mut shapes = Vec::new();

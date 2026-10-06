@@ -115,9 +115,9 @@ fn draw_item(ui: &mut Ui, s: Option<ItemStack>, x: i32, y: i32, z: f32) {
     let count = s.map_or(0, |s| s.count);
     let s = s.map(worldgen::world::tile::ItemStack::from);
     if let Some(s) = s.as_ref() {
-        let g = gui_item::geometry(s, x, y, true);
+        // RenderItem.field_40268_b is the slot's zLevel: icons, blocks and glint use it directly.
+        let g = gui_item::render_item_geometry(s, x, y, true, None, z, gui_item::gui_glint_offsets(crate::render::first_person::millis()));
         ui.gl.push_matrix();
-        ui.gl.translatef(0.0, 0.0, z);
         for d in &g.draws {
             let mut batch = d.batch();
             if d.flags & 1 != 0 && d.flags & 128 != 0 {
@@ -153,7 +153,7 @@ fn draw_item(ui: &mut Ui, s: Option<ItemStack>, x: i32, y: i32, z: f32) {
             }
             ui.gl.texture_2d = batch.texture.is_some();
             if let Some(t) = batch.texture {
-                ui.gl.bind_texture(ui.texture(t));
+                ui.gl.bind_texture(ui.texture(gui_item::gui_texture_name(t)));
             }
             if matches!(s.id,18|20) {
                 let mut front=Vec::new();
@@ -162,7 +162,7 @@ fn draw_item(ui: &mut Ui, s: Option<ItemStack>, x: i32, y: i32, z: f32) {
                     if (b[0]-a[0])*(c[1]-a[1])-(b[1]-a[1])*(c[0]-a[0])<0.0 {front.extend_from_slice(t);}
                 }
                 ui.gl.triangles(&front);
-            }else {ui.gl.triangles(&batch.vertices);}
+            }else {gui_item::glint_state(ui, d, |ui| ui.gl.triangles(&batch.vertices));}
         }
         ui.gl.pop_matrix();
         ui.gl.color = g.material;

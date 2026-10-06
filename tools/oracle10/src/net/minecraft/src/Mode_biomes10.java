@@ -18,7 +18,11 @@ public final class Mode_biomes10 {
             List allowed=Arrays.asList(BiomeGenBase.forest,BiomeGenBase.swampland,BiomeGenBase.taiga);
             Random rand=new Random(seed);
             for(int radius:new int[]{4,64,256,16,0}) {
-                ChunkPosition p=m.func_35556_a(-17,31,radius,allowed,rand);Trace10.writeBoolean(out, "p!=null", p!=null);
+                // 1.0's func_35556_a scans the whole IntCache array, including stale padding,
+                // and BiomeGenBase.biomeList[stale] can throw: record that as an outcome.
+                ChunkPosition p=null;boolean threw=false;
+                try{p=m.func_35556_a(-17,31,radius,allowed,rand);}catch(ArrayIndexOutOfBoundsException e){threw=true;}
+                Trace10.writeBoolean(out, "threw", threw);Trace10.writeBoolean(out, "p!=null", p!=null);
                 if(p!=null) {Trace10.writeInt(out, "p.x", p.x);Trace10.writeInt(out, "p.z", p.z);}
                 Trace10.writeLong(out, "EntityOracle.rngState(rand)", EntityOracle.rngState(rand));Trace10.writeBoolean(out, "m.areBiomesViable(-17,31,radius,allowed)", m.areBiomesViable(-17,31,radius,allowed));
             }

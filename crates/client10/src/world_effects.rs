@@ -16,6 +16,10 @@ pub struct Effects {
     pub fancy: bool,
     biomes: BiomeSource,
     pub collector: Option<worldgen::entity::Entity>,
+    /// Checks: the RenderGlobal.playAuxSFX sounds (name, position, volume, pitch) and the
+    /// World.rand state each auxiliary effect leaves behind.
+    pub sound_log: Option<Vec<(String, [f64; 3], f32, f32)>>,
+    pub last_random: Option<worldgen::JavaRandom>,
 }
 
 #[cfg(test)]
@@ -110,6 +114,8 @@ impl Effects {
             fancy: true,
             collector: None,
             biomes: BiomeSource::new(seed),
+            sound_log: None,
+            last_random: None,
         }
     }
     pub fn change_world(&mut self, seed: i64) {
@@ -145,14 +151,13 @@ impl Effects {
     pub fn vertices(
         &mut self,
         cam: [f64; 3],
-        yaw: f32,
-        pitch: f32,
+        rot: [f32; 5],
         partial: f32,
         lightmap: &[u32; 256],
     ) -> [Vec<WeatherVertex>; 3] {
-        // b1.8.1 EntityFX: Tessellator brightness from func_35115_a, drawn through the lightmap.
+        // EntityFX: Tessellator brightness from getEntityBrightnessForRender, drawn through the lightmap.
         self.renderer
-            .lightmapped_vertices(&self.terrain, cam, yaw, pitch, partial)
+            .lightmapped_vertices(&self.terrain, cam, rot, partial)
             .map(|layer| {
                 layer
                     .into_iter()
@@ -452,6 +457,9 @@ impl Effects {
                         )),
                         _ => None,
                     };
+                    if let (Some(log), Some((n, p, v, f))) = (self.sound_log.as_mut(), sound) {
+                        log.push((n.to_string(), p, v, f));
+                    }
                     if let (Some(s), Some((n, p, v, f))) = (snd.as_deref_mut(), sound) {
                         crate::app::play_world_sound(s, glam::DVec3::from_array(view), n, p, v, f);
                     }
@@ -502,9 +510,9 @@ impl Effects {
                             for _ in 0..100 {
                                 let radius=r.next_double()*4.0;
                                 let angle=r.next_double()*std::f64::consts::PI*2.0;
-                                let dx=angle.cos()*radius;
+                                let dx=worldgen::jmath::java_cos(angle)*radius;
                                 let dy=0.01+r.next_double()*0.5;
-                                let dz=angle.sin()*radius;
+                                let dz=worldgen::jmath::java_sin(angle)*radius;
                                 if let Some((layer,index))=self.renderer.try_spawn_return(name,
                                     [p[0]+dx*0.1,p[1]+0.3,p[2]+dz*0.1],[dx,dy,dz],view,&mut r).expect("spell factory") {
                                     let tint=12.0f32/16.0+r.next_float()*0.25;
@@ -514,15 +522,16 @@ impl Effects {
                                 }
                             }
                             let pitch=r.next_float()*0.1+0.9;
+                            if let Some(log)=self.sound_log.as_mut() {log.push(("random.glass".to_string(),center,1.0,pitch));}
                             if let Some(s)=snd.as_deref_mut() {
                                 crate::app::play_world_sound(s,glam::DVec3::from_array(view),"random.glass",center,1.0,pitch);
                             }
                         } else {
                             let mut angle=0.0f64;
                             while angle<std::f64::consts::PI*2.0 {
-                                let pos=[origin[0]+angle.cos()*5.0,origin[1]-0.4,origin[2]+angle.sin()*5.0];
+                                let pos=[origin[0]+worldgen::jmath::java_cos(angle)*5.0,origin[1]-0.4,origin[2]+worldgen::jmath::java_sin(angle)*5.0];
                                 for speed in [-5.0,-7.0] {
-                                    self.renderer.try_spawn_return("portal",pos,[angle.cos()*speed,0.0,angle.sin()*speed],view,&mut r).expect("portal factory");
+                                    self.renderer.try_spawn_return("portal",pos,[worldgen::jmath::java_cos(angle)*speed,0.0,worldgen::jmath::java_sin(angle)*speed],view,&mut r).expect("portal factory");
                                 }
                                 angle+=std::f64::consts::PI*0.05;
                             }
@@ -550,6 +559,7 @@ impl Effects {
                         }
                         self.fragments(block, data >> 8 & 255, [x, y, z], None);
                     }
+                    self.last_random = Some(r);
                 }
             }
         }

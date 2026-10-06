@@ -57,7 +57,7 @@ impl Entity {
         let player = w.closest_vulnerable_player(self.pos, 16.0);
         let magma = matches!(self.kind, EntityKind::MagmaCube { .. });
         if let Some(p) = player {
-            self.face_target(w, Target::Player(p), 10.0, 0.0);
+            self.face_target(w, Target::Player(p), 10.0, 20.0);
         }
         if let EntityKind::Slime {
             size,

@@ -65,7 +65,7 @@ The port of **Minecraft 1.0** is under way, next to the finished Beta 1.7.3 and 
 (both stay exact). Run it with `beta.exe --mc 1.0`.
 
 ```
-Minecraft 1.0  ███████████████████████████░░░░░░░░░░░░░  67.0 %  (11,332 / 16,910 lines)
+Minecraft 1.0  █████████████████████████████████████░░░  92.4 %  (15,622 / 16,910 lines)
 ```
 
 Exact, not estimated: the work is every class that 1.0 added or changed (compared
@@ -81,15 +81,15 @@ matching. Every other screen is compared with zero tolerance.
 
 | Area | Done | Lines | Classes |
 |---|---:|---:|---:|
-| World generation (the End, Nether fortresses, mushroom islands, shores, snow biomes) | 62.4 % | 1,148 / 1,840 | 55 / 73 |
-| World, chunks, lighting, saves (the End dimension, threaded saving) | 58.6 % | 1,607 / 2,744 | 33 / 66 |
+| World generation (the End, Nether fortresses, mushroom islands, shores, snow biomes) | 100.0 % | 1,840 / 1,840 | 73 / 73 |
+| World, chunks, lighting, saves (the End dimension, threaded saving) | 100.0 % | 2,744 / 2,744 | 66 / 66 |
 | Mobs and entities (Ender Dragon, blazes, magma cubes, mooshrooms, snow golems, villagers, breeding) | 100.0 % | 3,693 / 3,693 | 59 / 59 |
 | Player (enchanting levels, hardcore mode) | 100.0 % | 430 / 430 | 9 / 9 |
 | Blocks and items (enchanting, brewing and potions, End portals, cauldrons, nether wart, lily pads) | 57.3 % | 1,730 / 3,018 | 83 / 136 |
-| Screens and HUD (enchanting table, brewing stand, hardcore) | 30.9 % | 411 / 1,332 | 28 / 45 |
-| Rendering (dragon, blaze, End sky, End portal, enchantment glint, potion colours) | 60.0 % | 2,313 / 3,853 | 30 / 83 |
+| Screens and HUD (enchanting table, brewing stand, hardcore) | 100.0 % | 1,332 / 1,332 | 45 / 45 |
+| Rendering (dragon, blaze, End sky, End portal, enchantment glint, potion colours) | 100.0 % | 3,853 / 3,853 | 83 / 83 |
 
-Oracle checks (`tools/verify10.sh`): **535 of 535** sections exact.
+Oracle checks (`tools/verify10.sh`): **740 of 740** sections exact.
 <!-- r10-progress:end -->
 
 ---

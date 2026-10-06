@@ -234,7 +234,7 @@ pub enum Loading {
 
 pub enum FromWorker {
     MinecraftActions { actions:Vec<crate::minecraft_input::Action>, settings:crate::gui::settings::GameSettings, },
-    ReleaseTiles(Vec<crate::render::entity::render_release::BookTile>),
+    ReleaseTiles(Vec<crate::render::entity::render_release::BookTile>,Vec<[i32;3]>),
     DragonCrystals(Vec<(i32, [f64; 3], i32)>),
     Signs(Vec<crate::render::sign::Snapshot>, Vec<crate::render::entity::chest::Tile>, Vec<crate::render::spawner::Snapshot>,),
     /// Ordered after old meshes, before meshes using the new settings.
@@ -753,6 +753,15 @@ fn run(opts: WorldOptions, mut col: Colorizers, mut video: VideoSettings, rx: Re
             for id in near {
                 let e = world.entities[&id].clone();
                 let b = living_brightness(&mut world, &e);
+                // 1.0 RenderPainting: getLightBrightnessForSkyBlocks(x, y, z, 0) per tile.
+                let mut tile_lights: Vec<i32> = crate::render::painting::light_positions(&e).into_iter()
+                    .map(|[x, y, z]| world.packed_light181(x, y, z, 0)).collect();
+                // 1.0 RenderBlocks.renderBlockFallingSand: getMixedBrightnessForBlock at the cell.
+                let falling_block = match e.kind { worldgen::entity::EntityKind::FallingSand { block, .. } => Some(block), _ => None };
+                if let Some(block) = falling_block {
+                    let fl = worldgen::math::floor_double;
+                    tile_lights.push(world.packed_light181(fl(e.pos.x), fl(e.pos.y), fl(e.pos.z), worldgen::block::light_value(block)));
+                }
                 let biomes = RefCell::new(biome_source(&world));
                 let access = Access::new(&world, e.chunk_x, e.chunk_z, world.skylight_subtracted, &biomes,);
                 let fl = worldgen::math::floor_double;
@@ -784,7 +793,15 @@ fn run(opts: WorldOptions, mut col: Colorizers, mut video: VideoSettings, rx: Re
                 for xyz in crate::render::painting::light_positions(&e) {
                     let [x,y,z]=xyz;surfaces.push(crate::render::entity::effects::Surface{xyz,block:0,brightness:world.light_brightness_table[access.light_value(x,y,z) as usize],});
                 }
+                // 1.0 RenderFallingSand: a falling dragon egg renders as a world block.
+                let block_mesh = if falling_block == Some(crate::render::falling::DRAGON_EGG) {
+                    let fl = worldgen::math::floor_double;
+                    let egg_access = Access::new(&world, fl(e.pos.x) >> 4, fl(e.pos.z) >> 4, world.skylight_subtracted, &biomes);
+                    crate::render::falling::egg_vertices(&egg_access, &col, video.ao, [e.pos.x, e.pos.y, e.pos.z])
+                } else { Vec::new() };
                 snapshot.push(crate::render::entity::effects::Snapshot {
+                    tile_lights,
+                    block_mesh,
                     vehicle_rails: if matches!(e.kind,worldgen::entity::EntityKind::Minecart(..)) {
                         Some(crate::render::entity::vehicles::RailSnapshot::capture(&e,|x,y,z|(access.block(x,y,z),access.meta(x,y,z)),))
                     } else {None},
@@ -804,6 +821,8 @@ fn run(opts: WorldOptions, mut col: Colorizers, mut video: VideoSettings, rx: Re
                 falling_light: [1.0; 7],
                 vehicle_rails: None,
                 surfaces: Vec::new(),
+                tile_lights: Vec::new(),
+                block_mesh: Vec::new(),
                 }
             }));
             let _ = tx.send(FromWorker::Entities(snapshot));
@@ -869,15 +888,17 @@ fn run(opts: WorldOptions, mut col: Colorizers, mut video: VideoSettings, rx: Re
                 spawners.push(crate::render::spawner::Snapshot{position:[x,y,z],mob,yaw,prev_yaw,light:world.packed_light181(x,y,z,0) as u32,});
             }
             let mut books = Vec::new();
+            let mut portals = Vec::new();
             for id in world.loaded_tile_entities.iter().copied().filter(|id| !world.tile_objects[id].invalid).collect::<Vec<_>>() {
                 let (x,y,z) = world.tile_objects[&id].position;
                 let distance = (x as f64+0.5-cam.0).powi(2)+(y as f64+0.5-cam.1).powi(2)+(z as f64+0.5-cam.2).powi(2);
                 if distance >= 4096.0 {continue;}
+                if matches!(world.tile_object(id),Some(worldgen::world::tile::TileEntity::EndPortal)) {portals.push([x,y,z]);continue;}
                 let Some(worldgen::world::tile::TileEntity::EnchantmentTable(tile)) = world.tile_object(id) else {continue;};
                 let state = crate::render::entity::render_release::BookState::from(tile);
                 books.push(crate::render::entity::render_release::BookTile {position: [x,y,z], light: world.packed_light181(x,y,z,0) as u32, state});
             }
-            let _ = tx.send(FromWorker::ReleaseTiles(books));
+            let _ = tx.send(FromWorker::ReleaseTiles(books,portals));
             let _=tx.send(FromWorker::Signs(signs,chests,spawners));
             if let Some(id) = player {
                 let events = world.take_player_events(id);
@@ -1096,12 +1117,16 @@ fn weather_snapshot_radius(world: &mut World, cam: (f64, f64, f64), radius: i32,
     let mut bs = biome_source(world);
     let mut biomes = Vec::new();
     bs.biomes(&mut biomes, cx - radius, cz - radius, radius * 2 + 1, radius * 2 + 1,);
+    let mut temperatures = Vec::new();
+    bs.temperatures(&mut temperatures, cx - radius, cz - radius, radius * 2 + 1, radius * 2 + 1);
     let mut columns = Vec::with_capacity(((radius * 2 + 1) * (radius * 2 + 1)) as usize);
     for x in cx - radius..=cx + radius {
         for z in cz - radius..=cz + radius {
+            // 1.0 reads the biome and temperature arrays at the column's own (z-major) index.
+            let index = ((z - (cz - radius)) * (radius * 2 + 1) + x - (cx - radius)) as usize;
             // b1.8.1 func_35461_e: the cached precipitation height.
             let top = world.precipitation_height181(x, z);
-            let biome = biomes[columns.len()];
+            let biome = biomes[index];
             let mut c = Column {
                 x,
                 z,
@@ -1109,6 +1134,8 @@ fn weather_snapshot_radius(world: &mut World, cam: (f64, f64, f64), radius: i32,
                 biome,
                 rain: biome.enable_rain(),
                 snow: biome.enable_snow(),
+                temperature: temperatures[index] as f32,
+                cache_temperature: bs.temperature_at_height(x, 64, z),
                 particle_rain: crate::render::weather::rains(bs.biome_at(x, z)),
                 blocks: [0; 128],
                 meta: [0; 128],

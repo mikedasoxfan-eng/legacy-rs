@@ -27,12 +27,15 @@ pub fn check(a: &[String]) {
         let blocks = d.bytes(128).try_into().unwrap();
         let meta = d.bytes(128).try_into().unwrap();
         let brightness = std::array::from_fn(|_| f32::from_bits(d.i32() as u32));
-        s.columns.push(Column { x, z, top, biome, rain: kind == 1, snow: kind == 0, packed_light: light.map(|l: u32| l as i32), particle_rain, blocks, meta, brightness });
+        let temperature = f32::from_bits(d.i32() as u32);
+        let cache_temperature = f32::from_bits(d.i32() as u32);
+        s.columns.push(Column { x, z, top, biome, rain: kind == 1, snow: kind == 0, temperature, cache_temperature, packed_light: light.map(|l: u32| l as i32), particle_rain, blocks, meta, brightness });
     }
     let mut rng = ClientRandom::new(0);
-    let rain_snow = super::weather::precipitation181(&s, cam, tick, partial, rain, fancy, &mut rng);
+    let particles: i32 = a.get(13).and_then(|v| v.parse().ok()).unwrap_or(0);
+    let rain_snow = super::weather::precipitation10(&s, cam, tick, partial, rain, fancy, &mut rng);
     let mut counter = initial_counter;
-    let (splashes, sound) = add_rain_particles(&s, cam, tick, rain, fancy, &mut rng, &mut counter);
+    let (splashes, sound) = add_rain_particles(&s, cam, tick, rain, fancy, particles, &mut rng, &mut counter);
     assert_eq!(splashes.len(), d.i32() as usize, "splash count");
     for (i, p) in splashes.iter().enumerate() {
         assert_eq!(p.smoke, d.bytes(1)[0] != 0, "particle kind {i}");

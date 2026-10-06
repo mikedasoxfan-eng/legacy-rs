@@ -45,6 +45,9 @@ pub fn sky_factor(celestial: f32, rain: f32, thunder: f32) -> f32 {
 /// `flash`: `World.field_27172_i > 0` (lightning lights the sky fully); `gamma`: the brightness
 /// option (`field_35380_M`).
 pub fn compute(table: &[f32; 16], sky: f32, flicker_x: f32, flash: bool, gamma: f32) -> [u32; 256] {
+    compute_dimension(table,sky,flicker_x,flash,gamma,false)
+}
+pub fn compute_dimension(table: &[f32;16], sky:f32, flicker_x:f32, flash:bool, gamma:f32, end:bool) -> [u32;256] {
     let mut out = [0u32; 256];
     for (i, texel) in out.iter_mut().enumerate() {
         let var3 = sky * 0.95f32 + 0.05f32;
@@ -63,6 +66,7 @@ pub fn compute(table: &[f32; 16], sky: f32, flicker_x: f32, flash: bool, gamma: 
         r = r * 0.96f32 + 0.03f32;
         g = g * 0.96f32 + 0.03f32;
         b = b * 0.96f32 + 0.03f32;
+        if end {r=0.22+var5*0.75;g=0.28+var10*0.75;b=0.25+var11*0.75;}
         if r > 1.0 {
             r = 1.0;
         }

@@ -155,6 +155,19 @@ impl Biome {
     }
     pub fn water_color10(self)->i32 {if self==Self::Swampland {14745456} else {16777215}}
     pub fn tint_color10(self,color:u32)->u32 {if self==Self::Swampland {((color&16711422)+5115470)/2} else {color}}
+    /// BiomeGenBase grass/foliage getters use cached float climate, widened to double.
+    pub fn grass_color10(self, source: &BiomeSource, x: i32, y: i32, z: i32, colors: &[u32]) -> u32 {
+        self.climate_color10(source, x, y, z, colors)
+    }
+    pub fn foliage_color10(self, source: &BiomeSource, x: i32, y: i32, z: i32, colors: &[u32]) -> u32 {
+        self.climate_color10(source, x, y, z, colors)
+    }
+    fn climate_color10(self, source: &BiomeSource, x: i32, y: i32, z: i32, colors: &[u32]) -> u32 {
+        let temperature = source.temperature_at_height(x, y, z) as f64;
+        let rainfall = (source.raw_rainfall(x, z) as f32) as f64 * temperature;
+        let index = (((1.0 - rainfall) * 255.0) as usize) << 8 | ((1.0 - temperature) * 255.0) as usize;
+        self.tint_color10(colors[index])
+    }
     pub fn enable_snow(self) -> bool {
         false
     }
@@ -395,15 +408,30 @@ impl BiomeSource {
         allowed: &[Biome],
         rand: &mut JavaRandom,
     ) -> Option<(i32, i32)> {
+        self.find_position10(x, z, r, allowed, rand)
+            .expect("WorldChunkManager.func_35556_a: ArrayIndexOutOfBoundsException")
+    }
+    /// WorldChunkManager.func_35556_a. Release 1.0 iterates the complete IntCache array,
+    /// stale padding included: unused ids (null biomes) never match, and an id outside
+    /// biomeList (0..256) throws ArrayIndexOutOfBoundsException (`Err`) after the
+    /// draws already made.
+    pub fn find_position10(
+        &self,
+        x: i32,
+        z: i32,
+        r: i32,
+        allowed: &[Biome],
+        rand: &mut JavaRandom,
+    ) -> Result<Option<(i32, i32)>, ()> {
         if let Some(b) = self.fixed {
-            return if allowed.contains(&b) {
+            return Ok(if allowed.contains(&b) {
                 Some((
                     x - r + rand.next_int(r * 2 + 1),
                     z - r + rand.next_int(r * 2 + 1),
                 ))
             } else {
                 None
-            };
+            });
         }
         let (x0, z0, x1, z1) = ((x - r) >> 2, (z - r) >> 2, (x + r) >> 2, (z + r) >> 2);
         let w = x1 - x0 + 1;
@@ -415,15 +443,19 @@ impl BiomeSource {
         };
         let mut found = None;
         let mut count = 0;
-        for (i, b) in values.iter().enumerate() {
-            if allowed.contains(&Biome::from_id(*b))
+        for (i, &b) in values.iter().enumerate() {
+            if !(0..256).contains(&b) {
+                return Err(());
+            }
+            if b < 16
+                && allowed.contains(&Biome::from_id(b))
                 && (found.is_none() || rand.next_int(count + 1) == 0)
             {
                 found = Some(((x0 + i as i32 % w) << 2, (z0 + i as i32 / w) << 2));
                 count += 1;
             }
         }
-        found
+        Ok(found)
     }
 }
 

@@ -148,6 +148,7 @@ impl World {
         let mut eligible = std::mem::take(&mut self.spawn_eligible_chunks);
         eligible.clear();
         let mut interior = std::collections::HashSet::new();
+        let mut present = std::collections::HashSet::new();
         for &(x, _, z) in &self.players {
             let cx = floor(x / 16.0);
             let cz = floor(z / 16.0);
@@ -156,7 +157,11 @@ impl World {
                     let key = (cx + dx, cz + dz);
                     if dx != -8 && dx != 8 && dz != -8 && dz != 8 {
                         interior.insert(key);
+                    } else if present.contains(&key) {
+                        // 1.0: an edge chunk is only put (as true) when the map lacks it.
+                        continue;
                     }
+                    present.insert(key);
                     eligible.insert_with_identity(key.0 ^ key.1, identity(key.0, key.1), key);
                 }
             }

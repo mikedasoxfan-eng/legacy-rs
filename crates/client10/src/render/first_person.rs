@@ -67,20 +67,109 @@ impl Equip {
         camera::lerp(self.previous, self.progress, t)
     }
 }
-pub fn item(g: &mut Fixed, item: ItemStack, brightness: f32, fishing: bool) {
+pub fn millis() -> u64 {std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap_or_default().as_millis() as u64}
+/// The entity passed to `ItemRenderer.renderItem`: `EntityPlayer.getItemIcon` swaps the cast
+/// fishing rod, the potion liquid (pass 0) and the bow pull frames; other mobs use the icon.
+#[derive(Clone, Copy, Debug, Default)]
+pub struct Holder {
+    pub player: bool,
+    pub fishing: bool,
+    /// `getMaxItemUseDuration() - itemInUseCount` while `itemInUse` is set.
+    pub bow_use: Option<i32>,
+}
+impl Holder {
+    pub const MOB: Holder = Holder { player: false, fishing: false, bow_use: None };
+    pub fn player(e: &Entity) -> Holder {
+        let p = e.player_state();
+        Holder {
+            player: true,
+            fishing: p.is_some_and(|p| p.fish_entity.is_some()),
+            bow_use: p.and_then(|p| p.item_in_use.map(|i| worldgen::entity::player::registry::use_duration(i.id) - p.item_use_ticks)),
+        }
+    }
+    /// `getItemIcon(stack, pass)`.
+    pub fn icon(&self, item: ItemStack, pass: i32) -> i32 {
+        let base = item_table::properties(item.id as i16, item.damage as i16).0;
+        if !self.player {
+            return base;
+        }
+        if item.id == 346 && self.fishing {
+            return base + 16;
+        }
+        if item.id == 373 {
+            return if pass == 1 { base } else { 141 };
+        }
+        if let (Some(d), 261) = (self.bow_use, item.id) {
+            if d >= 18 {
+                return 133;
+            }
+            if d > 13 {
+                return 117;
+            }
+            if d > 0 {
+                return 101;
+            }
+        }
+        base
+    }
+}
+pub fn item(g: &mut Fixed, item: ItemStack, holder: Holder) {
+    item_pass(g, item, holder, 0, current_glint_times());
+}
+thread_local! {
+    /// Checks replay the original's `System.currentTimeMillis` glint offsets.
+    static GLINT_OVERRIDE: std::cell::Cell<Option<[f32; 2]>> = const { std::cell::Cell::new(None) };
+}
+pub fn override_glint_times(times: Option<[f32; 2]>) {
+    GLINT_OVERRIDE.with(|c| c.set(times));
+}
+/// The glint offsets for this frame (or the replayed ones in a check).
+pub fn current_glint_times() -> [f32; 2] {
+    GLINT_OVERRIDE.with(|c| c.get()).unwrap_or_else(|| glint_times(millis()))
+}
+/// The two glint texture offsets: `currentTimeMillis % 3000 / 3000 * 8` and `% 4873 / 4873 * 8`.
+pub fn glint_times(time: u64) -> [f32; 2] {
+    [(time % 3000) as f32 / 3000.0 * 8.0, (time % 4873) as f32 / 4873.0 * 8.0]
+}
+/// `ItemRenderer.renderItem(entity, stack, pass)` (1.0).
+pub fn item_pass(g: &mut Fixed, item: ItemStack, holder: Holder, pass: i32, times: [f32; 2]) {
     if inventory::in_3d(item.id as i16) {
         g.push();
         g.texture = 1;
-        // ItemRenderer's RenderBlocks keeps useInventoryTint on (b1.8.1: grass tops tinted).
-        inventory::inventory(g, item.id as u8, item.damage as i32, brightness, true);
+        inventory::inventory(g, item.id as u8, item.damage, 1.0, true);
         g.pop();
     } else {
-        let icon = if fishing && item.id == 346 {
-            item_table::properties(346, item.damage as i16).0 + 16
-        } else {
-            item_table::properties(item.id as i16, item.damage as i16).0
-        };
+        let icon = holder.icon(item, pass);
+        let start = g.draws.len();
         special::sprite(g, icon, item.id < 256);
+        if pass == 0 && worldgen::item10::glint(item) {
+            // func_40686_a runs again inside the sprite's transform, still with RESCALE_NORMAL.
+            g.push();
+            g.ops = g.draws[start].ops.clone();
+            g.enable(2, true);
+            g.depth = 514;
+            g.enable(1, false);
+            g.texture = 76;
+            g.enable(16, true);
+            g.src = 768;
+            g.dst = 1;
+            g.material = [0.5 * 0.76, 0.25 * 0.76, 0.8 * 0.76, 1.0];
+            for i in 0..2 {
+                use super::entity::fixed::Op;
+                g.texture_ops = vec![
+                    Op { code: 1, args: [0.125, 0.125, 0.125, 0.0] },
+                    Op { code: 0, args: [if i == 0 { times[i] } else { -times[i] }, 0.0, 0.0, 0.0] },
+                    Op { code: 2, args: [if i == 0 { -50.0 } else { 10.0 }, 0.0, 0.0, 1.0] },
+                ];
+                special::sprite_geometry(g, [0.0, 0.0, 1.0, 1.0]);
+            }
+            g.texture_ops.clear();
+            g.enable(16, false);
+            g.enable(1, true);
+            g.depth = 515;
+            g.enable(2, false);
+            g.pop();
+        }
     }
 }
 pub fn hand(g: &mut Fixed) {
@@ -113,7 +202,7 @@ pub fn render_with_map(
     // b1.8.1 ItemRenderer: getLightBrightness is read but overwritten with 1; the light comes
     // from the lightmap (func_35451_b at the player), and items render at brightness 1.
     let _ = (brightness, block_brightness);
-    let (brightness, block_brightness) = (1.0f32, 1.0f32);
+    let brightness = 1.0f32;
     let mut g = Fixed::new(brightness);
     if s.anaglyph {
         g.translate((s.eye * 2 - 1) as f32 * 0.1, 0.0, 0.0);
@@ -223,7 +312,7 @@ pub fn render_with_map(
             use worldgen::entity::player::registry::ItemUseAction;
             g.push();
             if let Some((ticks, max, action)) = in_use {
-                if action == ItemUseAction::Eat {
+                if matches!(action, ItemUseAction::Eat | ItemUseAction::Drink) {
                     let f18 = ticks as f32 - t + 1.0f32;
                     let f10 = 1.0f32 - f18 / max as f32;
                     let mut f12 = 1.0f32 - f10;
@@ -281,7 +370,13 @@ pub fn render_with_map(
             if held.id == 346 {
                 g.rotate(180.0, 0.0, 1.0, 0.0);
             }
-            item(&mut g, held, block_brightness, e.player_state().is_some_and(|p|p.fish_entity.is_some()));
+            let holder = Holder::player(e);
+            let times = current_glint_times();
+            item_pass(&mut g, held, holder, 0, times);
+            if held.id == 373 {
+                g.material = [brightness, brightness, brightness, 1.0];
+                item_pass(&mut g, held, holder, 1, times);
+            }
             g.pop();
         }
     } else {
@@ -420,9 +515,10 @@ pub fn opaque_textures(e: &Entity, w: &mut worldgen::World) -> Vec<i32> {
     }
     let mut inside = false;
     for i in 0..8 {
-        let x = ((i % 2) as f32 - 0.5) * e.width * 0.9;
+        // 1.0 Entity.isEntityInsideOpaqueBlock narrowed the probe from 0.9 to 0.8 widths.
+        let x = ((i % 2) as f32 - 0.5) * e.width * 0.8;
         let y = ((i / 2 % 2) as f32 - 0.5) * 0.1;
-        let z = ((i / 4 % 2) as f32 - 0.5) * e.width * 0.9;
+        let z = ((i / 4 % 2) as f32 - 0.5) * e.width * 0.8;
         if w.is_block_normal_cube(
             math::floor_double(e.pos.x + x as f64),
             math::floor_double(e.pos.y + e.eye_height() as f64 + y as f64),
@@ -459,7 +555,7 @@ pub fn opaque_textures(e: &Entity, w: &mut worldgen::World) -> Vec<i32> {
             }
         }
     }
-    if super::rprops(id).exists {
+    if id!=0 && super::rprops(id).exists {
         textures.push(super::rprops(id).textures[0][2] as i32);
     }
     textures

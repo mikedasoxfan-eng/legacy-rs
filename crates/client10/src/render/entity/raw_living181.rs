@@ -149,7 +149,8 @@ pub fn render(s: &RenderState, camera: [f64; 3], normalize: bool) -> Fixed {
         g.scale(0.5, -0.5, 0.5);
         g.material = [1.0; 4];
         g.texture = 1;
-        super::inventory::inventory(&mut g, s.carried_block, s.carried_data, 1.0, false);
+        // Render.renderBlocks keeps useInventoryTint: leaves/grass are coloured.
+        super::inventory::inventory(&mut g, s.carried_block, s.carried_data, 1.0, true);
         g.pop();
         g.enable(2, false);
     }
@@ -368,7 +369,12 @@ fn general(s: &RenderState, camera: [f64; 3], normalize: bool) -> Fixed {
             g.rotate(20.0, 0.0, 0.0, 1.0);
         }
         if let Some(item) = s.held_stack {
-            crate::render::first_person::item(&mut g, item, 1.0, false);
+            // 1.0 RenderBiped: potions get a second renderItem pass (same icon for mobs).
+            let times = crate::render::first_person::current_glint_times();
+            crate::render::first_person::item_pass(&mut g, item, crate::render::first_person::Holder::MOB, 0, times);
+            if item.id == 373 {
+                crate::render::first_person::item_pass(&mut g, item, crate::render::first_person::Holder::MOB, 1, times);
+            }
         } else if let Some(item) = s.held_item {
             special::sprite(&mut g, item.icon, item.terrain);
         }
@@ -394,6 +400,8 @@ fn general(s: &RenderState, camera: [f64; 3], normalize: bool) -> Fixed {
                     if s.kind != MobKind::Slime { g.texture = *texture; }
                     special::model(&mut g, model);
                 }
+                // RenderSlime.func_40287_a for inherited pass 1: blend off, glColor4f(1, 1, 1, 1).
+                if s.kind == MobKind::Slime { g.enable(16, false); g.material = [1.0; 4]; }
             }
         }
         if flash > 0 {

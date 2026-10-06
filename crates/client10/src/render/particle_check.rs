@@ -27,7 +27,7 @@ impl Reader {
         f32::from_bits(self.i() as u32)
     }
 }
-fn state(p: &Particle, m: &JavaRandom) -> Vec<u8> {
+pub(crate) fn state(p: &Particle, m: &JavaRandom) -> Vec<u8> {
     let mut o = Vec::new();
     for v in p
         .pos
@@ -79,7 +79,8 @@ pub fn check(path: &str) -> bool {
         at: 0,
     };
     let magic = d.bytes::<8>();
-    let light = magic == *b"B181PRT2";
+    let release = magic == *b"R10PRT03";
+    let light = release || magic == *b"B181PRT2";
     assert!(light || magic == *b"B173PRT1");
     let mut s = Snapshot::default();
     let width = d.i();
@@ -92,6 +93,8 @@ pub fn check(path: &str) -> bool {
         s.columns.push(Column {
             rain: false,
             snow: false,
+            temperature: 0.8,
+            cache_temperature: 0.8,
             x,
             z,
             top,
@@ -112,7 +115,8 @@ pub fn check(path: &str) -> bool {
         let mathseed = d.l();
         let pos = std::array::from_fn(|_| d.d());
         let velocity = std::array::from_fn(|_| d.d());
-        let block = d.i() as u8;
+        let item_or_block = d.i();
+        let block = item_or_block as u8;
         let metadata = d.i();
         let frames = d.i();
         let kind = match id {
@@ -140,6 +144,9 @@ pub fn check(path: &str) -> bool {
             21 => Kind::Aura,
             22 => Kind::Suspend,
             23 => Kind::LargeExplode,
+            24 => Kind::DripWater, 25 => Kind::DripLava, 26 => Kind::Enchantment,
+            27 => Kind::Spell, 28 => Kind::InstantSpell, 29 => Kind::MobSpell,
+            30 | 31 => Kind::Breaking { icon: super::entity::item_table::properties(item_or_block as i16, 0).0, velocity: id == 31 },
             _ => panic!(),
         };
         let mut m = JavaRandom::new(mathseed);
@@ -147,7 +154,7 @@ pub fn check(path: &str) -> bool {
         if id == 20 {
             p.cloud_player = Some([0.5, 64.1, 1.5, 64.1 - 1.62f32 as f64, 0.0]);
         }
-        if id == 16 && case % 8 == 7 {
+        if id == 16 && (if release { case == 7 } else { case % 8 == 7 }) {
             p.multiply_velocity(0.2);
             p.multiply_scale(0.6);
         }
@@ -170,6 +177,10 @@ pub fn check(path: &str) -> bool {
                     let rust = p.packed_brightness(&s, partial);
                     if rust != java { if bad < 12 { eprintln!("particle {kind:?} tick {tick} light {rust:08x}/{java:08x}"); } bad += 1; }
                 }
+                if release {
+                    let java = d.f(); let rust = p.scalar_brightness(&s, partial);
+                    if rust.to_bits() != java.to_bits() { if bad < 12 { eprintln!("particle {kind:?} tick {tick} scalar {rust}/{java}"); } bad += 1; }
+                }
                 let vs = p.vertices(&s, [0.125, 65.0, -0.25], rotation(37.25, -21.5), partial);
                 if light { assert_eq!(d.i() as usize, vs.len(), "particle vertex count"); }
                 for v in vs {
@@ -187,6 +198,11 @@ pub fn check(path: &str) -> bool {
                             }
                             bad += 1;
                         }
+                    }
+                    if release {
+                        let java = d.i();
+                        let rust = super::particles::tessellator_brightness(p.kind, p.packed_brightness(&s, partial)).unwrap_or(-1);
+                        if rust != java { if bad < 12 { eprintln!("particle {kind:?} tick {tick} vertex brightness {rust:08x}/{java:08x}"); } bad += 1; }
                     }
                     vertices += 1;
                 }
@@ -289,6 +305,8 @@ pub fn effects_check(path: &str) -> bool {
             terrain.columns.push(Column {
                 rain: false,
                 snow: false,
+                temperature: 0.8,
+                cache_temperature: 0.8,
                     x,
                 z,
                 top,
@@ -461,7 +479,10 @@ pub fn emitter_check(path: &str) -> bool {
     let mut r = Reader { data: std::fs::read(path).unwrap(), at: 0 };
     let cases = r.i(); let mut bad = 0;
     for case in 0..cases {
-        let kind = if r.i() == 0 { Kind::HugeExplode } else { Kind::CritEmitter };
+        // 0 HugeExplode, 1 EntityCrit2FX(world, target), 2/3 the 1.0 named
+        // constructor with "magicCrit"/"crit".
+        let code = r.i();
+        let kind = if code == 0 { Kind::HugeExplode } else { Kind::CritEmitter };
         let seed = r.l(); let mathseed = r.l();
         let mut w = worldgen::entity::verify181::world();
         let mut target = worldgen::entity::Entity::living(&mut w, "Pig").unwrap();
@@ -471,6 +492,7 @@ pub fn emitter_check(path: &str) -> bool {
         let mut m = JavaRandom::new(mathseed);
         let terrain = Snapshot::default();
         let mut p = Particle::new(kind,pos,motion,&mut m,seed);
+        if code == 2 { p.emitter_name = "magicCrit"; }
         if kind == Kind::CritEmitter { p.pickup=Some(Box::new(target.clone()));p.tick(&terrain,&mut m); }
         for tick in 0..10 {
             let mut bytes = state(&p,&m);

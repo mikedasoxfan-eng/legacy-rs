@@ -382,7 +382,8 @@ pub fn replay(kind: &str) -> Vec<u8> {
                         w.entity_joined_world(q);
                     }
                     w.rand.set_seed(seed);
-                    o.push(w.perform_sleep_spawning() as u8);
+                    // performSleepSpawning was removed in 1.0: nothing spawns.
+                    o.push(0);
                     for id in w.loaded_entity_list.clone() {
                         let e = w.entities[&id].clone();
                         super::verify181::state(&mut w, &e, &mut o);

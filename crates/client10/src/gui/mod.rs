@@ -90,6 +90,8 @@ pub const TEXTURES: &[&str] = &[
     "armor/diamond_2.png",
     "armor/gold_1.png",
     "armor/gold_2.png",
+    // RenderItem's enchantment glint over GUI items.
+    "%blur%/misc/glint.png",
 ];
 
 /// A texture name without `RenderEngine`'s `%blur%` / `%clamp%` prefixes, and the flags.

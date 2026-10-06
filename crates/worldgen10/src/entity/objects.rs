@@ -255,7 +255,8 @@ impl super::Entity {
         }
         self.fire += 1;
         if self.fire == 0 {
-            self.fire = 300;
+            // 1.0 Entity.onStruckByLightning: func_40046_d(8), i.e. 160 ticks.
+            self.set_fire_seconds(8);
         }
         if let super::EntityKind::Creeper { powered, .. } = &mut self.kind {
             *powered = true;

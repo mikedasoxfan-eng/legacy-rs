@@ -29,6 +29,16 @@ public final class Mode_effectdispatch8_10 {
    }catch(Exception ex){throw new RuntimeException(ex);}
   }
  }
+ /** 1.0 EffectRenderer.renderParticles reads ActiveRenderInfo's statics, which
+  * EntityRenderer sets once per frame from thePlayer (mirrored in front view). */
+ static void active(float yaw,float pitch,boolean mirror){
+  int m=mirror?1:0;
+  ActiveRenderInfo.field_41070_d=MathHelper.cos(yaw*(float)Math.PI/180.0F)*(float)(1-m*2);
+  ActiveRenderInfo.field_41068_f=MathHelper.sin(yaw*(float)Math.PI/180.0F)*(float)(1-m*2);
+  ActiveRenderInfo.field_41069_g=-ActiveRenderInfo.field_41068_f*MathHelper.sin(pitch*(float)Math.PI/180.0F)*(float)(1-m*2);
+  ActiveRenderInfo.field_41078_h=ActiveRenderInfo.field_41070_d*MathHelper.sin(pitch*(float)Math.PI/180.0F)*(float)(1-m*2);
+  ActiveRenderInfo.field_41071_e=MathHelper.cos(pitch*(float)Math.PI/180.0F);
+ }
  static void fill(EffectRenderer r,World w,int mask,int count){
   // Deliberately interleave admission; renderer must regroup ordinary layers,
   // while retaining insertion order within each layer (including layer 3).
@@ -49,11 +59,11 @@ public final class Mode_effectdispatch8_10 {
       org.lwjgl.opengl.GL11.color=new float[]{.25F,.5F,.75F,.125F};
       view.rotationYaw=yaw;view.rotationPitch=pitch;
       view.lastTickPosX=-1e8;view.posX=.125;view.lastTickPosY=85.1;view.posY=80.7;view.lastTickPosZ=-3.75;view.posZ=7.1;
-      r.func_1187_b(view,partial);r.renderParticles(view,partial);r.func_1187_b(view,partial);
+      r.func_1187_b(view,partial);active(yaw,pitch,count==6);r.renderParticles(view,partial);r.func_1187_b(view,partial);
       r.clearEffects(null);r.func_1187_b(view,partial);
       fill(r,w,mask,count);r.func_1187_b(view,partial);
       view.rotationYaw=-yaw;view.rotationPitch=-pitch;
-      r.renderParticles(view,1-partial);r.func_1187_b(view,1-partial);
+      active(-yaw,-pitch,count==6);r.renderParticles(view,1-partial);r.func_1187_b(view,1-partial);
       cases++;
      }
    System.out.println("effectdispatch8: "+cases+" original-bytecode pass sequences");

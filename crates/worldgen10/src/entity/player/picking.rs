@@ -28,14 +28,15 @@ impl Entity {
         let p = -math::cos(pitch);
         Vec3D::new((s * p) as f64, math::sin(pitch) as f64, (c * p) as f64)
     }
-    /// Existing getMouseOver policy: creative blocks reach 5, entities reach 32.
+    /// EntityRenderer.getMouseOver (1.0): creative blocks reach 5 and entities 6
+    /// (`extendedReach`); fireballs widen their box by `getCollisionBorderSize` 1.0.
     pub fn mouse_over(&self, w: &mut World, partial: f32) -> Option<MovingObjectPosition> {
         let start = self.view_position(partial);
         let look = self.look(partial);
         let creative = self.player_state().is_some_and(|s| s.capabilities.creative);
         let block_reach = controller::PlayerControllerSP::block_reach(creative) as f64;
         let block = w.ray_trace_blocks(start, start.add(look.x * block_reach, look.y * block_reach, look.z * block_reach));
-        let reach = if controller::PlayerControllerSP::has_extended_entity_reach(creative) { 32.0 } else { block
+        let reach = if controller::PlayerControllerSP::has_extended_entity_reach(creative) { 6.0 } else { block
             .as_ref()
             .map_or(block_reach, |hit| match hit {
                 MovingObjectPosition::Block { hit, .. } => hit.distance(start),
@@ -55,9 +56,10 @@ impl Entity {
             if !e.can_be_collided_with() {
                 continue;
             }
+            let border = if matches!(e.kind, crate::entity::EntityKind::Fireball(..) | crate::entity::EntityKind::SmallFireball(..)) { 1.0f32 } else { 0.1f32 };
             let b = e
                 .bounding_box
-                .expand(0.1f32 as f64, 0.1f32 as f64, 0.1f32 as f64);
+                .expand(border as f64, border as f64, border as f64);
             if b.contains(start) {
                 if 0.0 < distance || distance == 0.0 {
                     pointed = Some(id);
@@ -83,6 +85,11 @@ impl Entity {
         let Some(hit) = hit else { return; };
         let (x,y,z) = match hit { MovingObjectPosition::Block {x,y,z,..} => (x,y,z), _ => (0,0,0) };
         let block = match w.get_block_id(x,y,z) { 2=>3,43=>44,7=>1,b=>b as i32 };
-        self.player_state_mut().unwrap().inventory.set_current_item(block);
+        // 1.0: Item.itemsList[block].getHasSubtypes() selects by metadata too (ItemCloth, the log and
+        // stone-brick ItemMetadata, ItemSlab, ItemSapling, ItemLeaves, tall grass ItemColored).
+        let subtypes = matches!(block, 6 | 17 | 18 | 31 | 35 | 44 | 98);
+        let damage = if subtypes { w.get_block_metadata(x,y,z) } else { 0 };
+        let creative = self.player_state().unwrap().capabilities.creative;
+        self.player_state_mut().unwrap().inventory.select_item(block, damage, subtypes, creative);
     }
 }

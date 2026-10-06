@@ -132,6 +132,13 @@ pub(crate) fn sprite(g: &mut Fixed, icon: i32, terrain: bool) {
     let u1 = ((icon % 16 * 16) as f32 + 15.99) / 256.0;
     let v0 = (icon / 16 * 16) as f32 / 256.0;
     let v1 = ((icon / 16 * 16) as f32 + 15.99) / 256.0;
+    sprite_geometry(g,[u1,v0,u0,v1]);
+    g.enable(2, false);
+    g.pop();
+}
+
+pub(crate) fn sprite_geometry(g:&mut Fixed, uv:[f32;4]) {
+    let [u1,v0,u0,v1]=uv;
     let t = 0.0625;
     g.begin();
     g.set_normal(0.0, 0.0, 1.0);
@@ -193,6 +200,4 @@ pub(crate) fn sprite(g: &mut Fixed, icon: i32, terrain: bool) {
         }
         g.end();
     }
-    g.enable(2, false);
-    g.pop();
 }

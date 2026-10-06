@@ -1,6 +1,12 @@
 //! Rendering: block meshing (a port of `RenderBlocks`), sky, and the GPU side.
 
 pub mod access;
+pub mod active_info;
+pub mod opengl_helper;
+pub mod render_helper;
+pub mod round4_check;
+pub mod world_renderer;
+pub mod end_portal;
 pub mod lightmap;
 pub mod blocks;
 pub mod camera;
@@ -14,6 +20,8 @@ pub mod item_fx;
 pub mod texture_check;
 pub mod particles;
 pub mod particle_check;
+pub mod falling;
+pub mod renderfx_check;
 pub mod render_list;
 pub mod effect_check8;
 pub mod gpu;
@@ -84,6 +92,8 @@ pub struct Tessellator {
     color: [u8; 4],
     /// `setBrightness` value (raw[7]); written into every following vertex.
     pub brightness: u32,
+    /// `hasBrightness`: setBrightness was called since the last draw.
+    pub has_brightness: bool,
     /// `xOffset`/`yOffset`/`zOffset`: starts at minus the chunk origin, like WorldRenderer's
     /// `setTranslationD`, and the cactus renderer nudges it with `setTranslationF`.
     offset: [f64; 3],
@@ -91,7 +101,7 @@ pub struct Tessellator {
 
 impl Tessellator {
     pub fn new(origin: [f64; 3]) -> Self {
-        Tessellator { raw_positions:None, verts: Vec::new(), color: [255; 4], brightness: 0, offset: [-origin[0], -origin[1], -origin[2]] }
+        Tessellator { raw_positions:None, verts: Vec::new(), color: [255; 4], brightness: 0, has_brightness: false, offset: [-origin[0], -origin[1], -origin[2]] }
     }
 
     #[inline]
@@ -113,7 +123,26 @@ impl Tessellator {
     /// `setBrightness` (func_35835_b).
     #[inline]
     pub fn set_brightness(&mut self, b: i32) {
+        self.has_brightness = true;
         self.brightness = b as u32;
+    }
+
+    /// 1.0 `draw()`'s return value: `rawBufferIndex * 4`, eight ints per vertex.
+    pub fn bytes_drawn(&self) -> i32 {
+        (self.verts.len() * 8 * 4) as i32
+    }
+
+    /// The client texture-unit switches `draw()` makes around the lightmap coordinates.
+    pub fn draw_calls(&self) -> Vec<opengl_helper::Call> {
+        if self.verts.is_empty() || !self.has_brightness {
+            return Vec::new();
+        }
+        // Enable the lightmap coordinate array, then disable it after glDrawArrays.
+        let pair = [
+            opengl_helper::set_client_active_texture(opengl_helper::LIGHTMAP_ENABLED),
+            opengl_helper::set_client_active_texture(opengl_helper::LIGHTMAP_DISABLED),
+        ];
+        [pair, pair].concat()
     }
 
     /// `setTranslationF` adds to the current translation (as used by the cactus renderer).

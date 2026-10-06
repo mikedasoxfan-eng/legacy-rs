@@ -36,7 +36,7 @@ for seed in 0 42 3257840388504953787 -4172144997902289642 9223372036854775807 -9
   world_cmp="$root/target/release/compare10"
   echo "== independently populated region NBT seed $seed (pinned entity/item RNGs)"
   if r10_oracle "$oracle" terrainsave181 "$seed" 1 "$(cygpath -w "$java_save")" terrain-round3-save.bin >/dev/null \
-     && "$world_cmp" terrain-makesave "$seed" 1 "$rust_save" \
+     && "$world_cmp" terrain-makesave "$seed" 1 "$rust_save" "$root/tools/oracle10/out/terrain-round3-save.bin.tickids" \
      && python "$root/tools/oracle10/compare_regions.py" "$java_save" "$rust_save"; then
     echo "INDEPENDENT SAVES EXACT"
   else fail=1; fi

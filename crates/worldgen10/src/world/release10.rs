@@ -8,7 +8,7 @@ pub(crate) fn use_neighbor_brightness(id: u8) -> bool {
 
 impl super::Dimension {
     pub fn can_respawn_here(self) -> bool { self == Self::Overworld }
-    pub fn is_surface_world(self) -> bool { self == Self::Overworld }
+    pub fn is_surface_world(self) -> bool { self != Self::End }
     pub fn cloud_height(self) -> f32 { if self == Self::End { 8.0 } else { 128.0 } }
     pub fn fixed_spawn(self) -> Option<(i32, i32, i32)> {
         (self == Self::End).then_some((100, 50, 0))
