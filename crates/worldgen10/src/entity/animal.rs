@@ -77,7 +77,7 @@ impl Entity {
         for id in w.entities_within_aabb(None, self.bounding_box.add_coord(8.0, 8.0, 8.0)) {
             let e = &w.entities[&id];
             if self.living.in_love > 0 {
-                if id != self.entity_id && e.kind.name() == self.kind.name() && e.living.in_love > 0
+                if id != self.entity_id && self.animal_class_accepts(&e.kind) && e.living.in_love > 0
                 {
                     return Some(Target::Entity(id));
                 }
@@ -87,13 +87,19 @@ impl Entity {
                 }
             } else if self.living.growing_age > 0
                 && id != self.entity_id
-                && e.kind.name() == self.kind.name()
+                && self.animal_class_accepts(&e.kind)
                 && e.living.growing_age < 0
             {
                 return Some(Target::Entity(id));
             }
         }
         None
+    }
+    fn animal_class_accepts(&self, other: &EntityKind) -> bool {
+        // Class.isAssignableFrom: MushroomCow extends Cow. A Cow search includes
+        // mushroom cows, while a MushroomCow search excludes ordinary cows.
+        self.kind.name() == other.name()
+            || matches!((&self.kind, other), (EntityKind::Cow, EntityKind::Mooshroom))
     }
     pub(super) fn animal_attack_target(&mut self, w: &mut World, t: Target, distance: f32) {
         let Some(id) = w.target_entity_id(t) else {

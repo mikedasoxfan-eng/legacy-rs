@@ -9,6 +9,10 @@ description = "Bit-exact port of the Minecraft 1.0 simulation: world generation,
 autobins = false
 
 [[bin]]
+name = "r10entities2"
+path = "src/bin/r10entities2.rs"
+
+[[bin]]
 name = "playerdamage8_10"
 path = "src/bin/playerdamage8_181.rs"
 

@@ -41,7 +41,7 @@ pub fn replay(kind: &str) -> Vec<u8> {
                 e.set_location_and_angles(-3.5, 70.25, 4.5, 395.0, -377.0);
                 e.motion = Vec3D::new(11.0, -0.25, -10.0);
                 e.fire = 71;
-                e.air = 137;
+                e.set_air(137);
                 e.on_ground = true;
                 if let EntityKind::Item { item, .. } = &mut e.kind {
                     *item = crate::world::tile::ItemStack::new(35, 7, 12);

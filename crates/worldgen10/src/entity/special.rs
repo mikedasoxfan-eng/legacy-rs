@@ -175,6 +175,7 @@ impl Entity {
         if parent.dead {
             self.riding = None;
             if self.kind.is_living() {
+                self.fall_distance = 0.0;
                 self.living.prev_walk_animation=self.living.walk_animation;
                 self.living.walk_animation=0.0;
             }
@@ -208,6 +209,7 @@ impl Entity {
             self.pitch = (self.pitch as f64 + pitch) as f32;
         }
         if self.kind.is_living() {
+            self.fall_distance = 0.0;
             self.living.prev_walk_animation=self.living.walk_animation;
             self.living.walk_animation=0.0;
         }

@@ -554,7 +554,7 @@ impl Entity {
             }
         }
     }
-    fn player_pickup(&mut self, w: &mut World, e: &mut Entity) {
+    pub(super) fn player_pickup(&mut self, w: &mut World, e: &mut Entity) {
         // EntitySlime.onCollideWithPlayer runs in the same player collision pass as pickups.
         if let EntityKind::Slime { size, .. } | EntityKind::MagmaCube { size, .. } = e.kind {
             let delta = Vec3D::new(
@@ -590,6 +590,9 @@ impl Entity {
             return;
         }
         let creative = self.player_state().unwrap().capabilities.creative;
+        if w.multiplayer_world && matches!(e.kind, EntityKind::Item { .. }) {
+            return;
+        }
         let mut pickup = None;
         if let EntityKind::Item {
             item, pickup_delay, ..
@@ -872,37 +875,38 @@ impl Entity {
         }
     }
     pub fn sleep_in_bed(&mut self, w: &mut World, x: i32, y: i32, z: i32) -> SleepStatus {
-        if self.player_state().unwrap().sleeping || self.living.health <= 0 || self.dead {
-            return SleepStatus::OtherProblem;
-        }
-        if w.dimension.is_hell_world() {
-            return SleepStatus::NotPossibleHere;
-        }
-        if w.skylight_subtracted < 4 {
-            return SleepStatus::NotPossibleNow;
-        }
-        if (self.pos.x - x as f64).abs() > 3.0
-            || (self.pos.y - y as f64).abs() > 2.0
-            || (self.pos.z - z as f64).abs() > 3.0
-        {
-            return SleepStatus::TooFarAway;
-        }
-        if !w.multiplayer_world
-            && w.entities_within_aabb(
-                None,
-                super::AxisAlignedBB::new(
-                    (x - 8) as f64,
-                    (y - 5) as f64,
-                    (z - 8) as f64,
-                    (x + 8) as f64,
-                    (y + 5) as f64,
-                    (z + 8) as f64,
-                ),
-            )
-            .into_iter()
-            .any(|id| w.entities[&id].kind.is_mob())
-        {
-            return SleepStatus::NotSafe;
+        if !w.multiplayer_world {
+            if self.player_state().unwrap().sleeping || self.living.health <= 0 || self.dead {
+                return SleepStatus::OtherProblem;
+            }
+            if w.dimension.is_hell_world() {
+                return SleepStatus::NotPossibleHere;
+            }
+            if w.skylight_subtracted < 4 {
+                return SleepStatus::NotPossibleNow;
+            }
+            if (self.pos.x - x as f64).abs() > 3.0
+                || (self.pos.y - y as f64).abs() > 2.0
+                || (self.pos.z - z as f64).abs() > 3.0
+            {
+                return SleepStatus::TooFarAway;
+            }
+            if w.entities_within_aabb(
+                    None,
+                    super::AxisAlignedBB::new(
+                        (x - 8) as f64,
+                        (y - 5) as f64,
+                        (z - 8) as f64,
+                        (x + 8) as f64,
+                        (y + 5) as f64,
+                        (z + 8) as f64,
+                    ),
+                )
+                .into_iter()
+                .any(|id| w.entities[&id].kind.is_mob())
+            {
+                return SleepStatus::NotSafe;
+            }
         }
         self.width = 0.2;
         self.height = 0.2;

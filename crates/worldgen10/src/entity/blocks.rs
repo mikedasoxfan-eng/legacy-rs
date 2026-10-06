@@ -300,11 +300,23 @@ impl World {
     }
     pub fn ray_trace_blocks_options(
         &mut self,
-        mut start: Vec3D,
+        start: Vec3D,
         end: Vec3D,
         liquids: bool,
         ignore_no_box: bool,
     ) -> Option<MovingObjectPosition> {
+        let mut cursor = start;
+        self.ray_trace_blocks_mut(&mut cursor, end, liquids, ignore_no_box)
+    }
+    /// Java rayTraceBlocks mutates its start vector; item consumers can observe it.
+    pub fn ray_trace_blocks_mut(
+        &mut self,
+        cursor: &mut Vec3D,
+        end: Vec3D,
+        liquids: bool,
+        ignore_no_box: bool,
+    ) -> Option<MovingObjectPosition> {
+        let mut start = *cursor;
         let nan = |v: Vec3D| v.x.is_nan() || v.y.is_nan() || v.z.is_nan();
         if nan(start) || nan(end) {
             return None;
@@ -355,6 +367,7 @@ impl World {
             let mut next = [s[0] + d[0] * t, s[1] + d[1] * t, s[2] + d[2] * t];
             next[a] = planes[a];
             start = Vec3D::new(next[0], next[1], next[2]);
+            *cursor = start;
             cell = [floor(start.x), floor(start.y), floor(start.z)];
             if side == 5 {
                 cell[0] -= 1;

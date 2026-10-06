@@ -216,16 +216,17 @@ impl Entity {
             w.play_sound_at_entity(self, "random.bow", 0.5, pitch);
             if !w.multiplayer_world {let projectile = Entity::throwable(w, self, stack.id == 344);w.entity_joined_world(projectile);}
         } else if stack.id == 333 {
-            let start = Vec3D::new(
+            let mut start = Vec3D::new(
                 self.prev_pos.x + (self.pos.x - self.prev_pos.x),
                 self.prev_pos.y + (self.pos.y - self.prev_pos.y) + 1.62 - self.y_offset as f64,
                 self.prev_pos.z + (self.pos.z - self.prev_pos.z),
             );
             let look = self.look(1.0);
+            let end = start.add(look.x * 5.0, look.y * 5.0, look.z * 5.0);
             if let Some(MovingObjectPosition::Block { x, mut y, z, .. }) = w
-                .ray_trace_blocks_options(
-                    start,
-                    start.add(look.x * 5.0, look.y * 5.0, look.z * 5.0),
+                .ray_trace_blocks_mut(
+                    &mut start,
+                    end,
                     true,
                     false,
                 )

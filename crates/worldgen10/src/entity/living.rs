@@ -351,6 +351,7 @@ impl Entity {
                 || matches!(
                     self.kind,
                     EntityKind::Dragon(..)
+                        | EntityKind::Villager { .. }
                         | EntityKind::Slime { .. }
                         | EntityKind::MagmaCube { .. } | EntityKind::Ghast(..) | EntityKind::Player(..)
                 ) {
@@ -1077,7 +1078,7 @@ impl Entity {
     pub fn drop_few_items(&mut self, w: &mut World) {
         self.drop_few_items_with_looting(w, self.living.recently_hit > 0, 0);
     }
-    /// Looting is supplied by EnchantmentHelper, whose tagged ItemStack integration is a blocks-area dependency.
+    /// EntityLiving.onDeath supplies the killer's held-item looting level.
     pub fn drop_few_items_with_looting(&mut self, w: &mut World, recently_hit: bool, looting: i32) {
         if matches!(self.kind, EntityKind::PigZombie { .. }) {
             for id in [367, 371] {
@@ -1114,7 +1115,7 @@ impl Entity {
             return;
         }
         if matches!(self.kind, EntityKind::Squid(..)) {
-            let n = self.rand.next_int(3) + 1;
+            let n = self.rand.next_int(3i32.wrapping_add(looting)) + 1;
             for _ in 0..n {
                 self.drop_item(w, 351, 1, 0, 0.0);
             }

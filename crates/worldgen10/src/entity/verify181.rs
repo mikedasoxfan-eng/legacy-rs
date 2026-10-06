@@ -146,7 +146,7 @@ pub(crate) fn state(w: &mut World, e: &Entity, o: &mut Vec<u8>) {
         }
         if !matches!(
             e.kind,
-            EntityKind::Player(..) | EntityKind::Ghast(..) | EntityKind::Slime { .. }
+            EntityKind::Player(..) | EntityKind::Ghast(..) | EntityKind::Slime { .. } | EntityKind::MagmaCube { .. } | EntityKind::Dragon(..)
         ) {
             i(o, a.flee_ticks);
             i(
@@ -270,7 +270,8 @@ pub fn rules() -> Vec<u8> {
             let list = super::spawning::spawn_list181(bi, cat);
             i(&mut o, list.len() as i32);
             for (name, weight, min, max) in list {
-                text(&mut o, name);
+                // The oracle writes the Java class name, not EntityList's name.
+                text(&mut o, match name { "LavaSlime" => "MagmaCube", "MushroomCow" => "Mooshroom", _ => name });
                 i(&mut o, weight);
                 i(&mut o, min);
                 i(&mut o, max);
