@@ -22,11 +22,8 @@ impl GuiWinGame {
         }
     }
     fn finish(&self, ui: &mut Ui) {
-        // Temporary bridge: Minecraft.respawn(false, 0, true) must preserve inventory
-        // and return from the End. The existing world adapter only supports death respawn.
-        // Do not connect PlayerEvent::WinGame until that adapter is ported.
         ui.display(None);
-        ui.actions.push(Action::Respawn);
+        ui.actions.push(Action::EndReturn);
     }
     pub fn completion_tick(&self) -> f32 {
         self.total_height
@@ -140,44 +137,16 @@ impl Screen for GuiWinGame {
         ui.draw_textured_modal_rect(x + 155, logo_y, 0, 45, 155, 44);
         ui.gl.set_color_opaque_i(16777215);
         ui.font.line_height = 12;
-        let mut y = logo_y + 200;
-        if let Some(lines) = &self.lines {
-            for (i, (line, height)) in lines.iter().zip(&self.heights).enumerate() {
-                if i == lines.len() - 1 {
-                    let shift = y as f32 + scroll - (h / 2 - height / 2) as f32;
-                    if shift < 0.0 {
-                        ui.gl.translatef(0.0, -shift, 0.0);
+        for command in self.line_draws(partial, |text|ui.font.get_string_width(text)) {
+            match command {
+                WinDraw::Translate(y) => ui.gl.translatef(0.0,y,0.0),
+                WinDraw::Text { text, kind, x, y, seed } => {
+                    if kind==1 {ui.font.draw_string_with_shadow(&mut ui.gl,&text,x,y,16777215);}
+                    else {
+                        ui.font.random.lock().unwrap().set_seed(seed);
+                        ui.font.draw_split_shadow(&mut ui.gl,&text,x,y,274,16777215,kind==2);
                     }
                 }
-                if y as f32 + scroll + *height as f32 + 8.0 > 0.0 && y as f32 + scroll < h as f32 {
-                    if let Some(line) = line.strip_prefix("[C]") {
-                        ui.font.draw_string_with_shadow(
-                            &mut ui.gl,
-                            line,
-                            x + (274 - ui.font.get_string_width(line)) / 2,
-                            y,
-                            16777215,
-                        );
-                    } else {
-                        let seed = (i as i64)
-                            .wrapping_mul(4238972211)
-                            .wrapping_add((self.ticks / 4) as i64);
-                        ui.font.random.lock().unwrap().set_seed(seed);
-                        ui.font.draw_split_shadow(
-                            &mut ui.gl,
-                            line,
-                            x + 1,
-                            y + 1,
-                            274,
-                            16777215,
-                            true,
-                        );
-                        ui.font.random.lock().unwrap().set_seed(seed);
-                        ui.font
-                            .draw_split_shadow(&mut ui.gl, line, x, y, 274, 16777215, false);
-                    }
-                }
-                y += height;
             }
         }
         ui.font.line_height = 8;
@@ -218,5 +187,26 @@ impl GuiWinGame {
                 .add_vertex_with_uv(x as f64, y as f64, 0.0, u as f64, v as f64);
         }
         ui.gl.draw();
+    }
+}
+
+#[derive(Debug)]
+pub(crate) enum WinDraw {
+    Translate(f32),
+    Text { text:String,kind:i32,x:i32,y:i32,seed:i64 },
+}
+impl GuiWinGame {
+    pub(crate) fn line_draws(&self,partial:f32,width:impl Fn(&str)->i32)->Vec<WinDraw> {
+        let h=self.base.height;let x=self.base.width/2-137;let scroll=-(self.ticks as f32+partial)*0.5;
+        let mut y=h.wrapping_add(250);let mut draws=Vec::new();
+        if let Some(lines)=&self.lines {for (index,(line,height)) in lines.iter().zip(&self.heights).enumerate() {
+            if index==lines.len()-1 {let shift=y as f32+scroll-(h/2-height/2) as f32;if shift<0.0 {draws.push(WinDraw::Translate(-shift));}}
+            if y as f32+scroll+*height as f32+8.0>0.0&&y as f32+scroll<h as f32 {
+                if let Some(text)=line.strip_prefix("[C]") {draws.push(WinDraw::Text{text:text.into(),kind:1,x:x+(274-width(text))/2,y,seed:0});}
+                else {let seed=(index as i64).wrapping_mul(4238972211).wrapping_add((self.ticks/4) as i64);for kind in [2,3] {let offset=if kind==2{1}else{0};draws.push(WinDraw::Text{text:line.clone(),kind,x:x+offset,y:y+offset,seed});}}
+            }
+            y=y.wrapping_add(*height);
+        }}
+        draws
     }
 }

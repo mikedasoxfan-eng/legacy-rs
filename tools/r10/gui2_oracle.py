@@ -9,7 +9,7 @@ import sys
 
 root = Path(__file__).resolve().parents[2]
 local_base = root / 'tools/oracle10'
-default_base = local_base if (local_base / 'build/net/minecraft/src/Oracle.class').exists() else root.parent / 'wt181-r10harness/tools/oracle10'
+default_base = local_base
 base = Path(os.environ.get('ORACLE10_BASE', default_base)).resolve()
 refs = base.parent / 'retromcp-r10'
 jar = refs / 'minecraft/jars/deobfuscated.jar'

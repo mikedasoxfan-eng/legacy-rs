@@ -4,6 +4,8 @@
 
 pub mod achievement_toast;
 pub mod check10_round2;
+pub mod check10_round3;
+pub(crate) mod draw_trace10;
 pub mod container_api;
 pub mod container_check;
 pub mod inventory_check;
@@ -44,6 +46,7 @@ use widgets::GuiButton;
 
 /// Textures the GUI binds by name (`RenderEngine.getTexture("/gui/gui.png")`).
 pub const TEXTURES: &[&str] = &[
+    "item/book.png",
     "item/sign.png",
     "item/chest.png",
     "font/default.png",
@@ -154,6 +157,8 @@ pub enum Action {
     RefreshTextures,
     /// `thePlayer.respawnPlayer()`
     Respawn,
+    /// GuiWinGame: Minecraft.respawn(false, 0, true).
+    EndReturn,
     /// GuiInventory / GuiContainerCreative's synchronous mode-change redirect.
     RedirectInventory,
 }
@@ -325,6 +330,7 @@ impl Ui {
     }
     #[allow(clippy::too_many_arguments)]
     pub fn draw_gradient_rect_z(&mut self, x0: i32, y0: i32, x1: i32, y1: i32, c0: i32, c1: i32, z: f32) {
+        draw_trace10::record(||draw_trace10::Call::Gradient([x0,y0,x1,y1,c0,c1],z));
         let f = |c: i32, s: i32| (c >> s & 255) as f32 / 255.0;
         let gl = &mut self.gl;
         gl.texture_2d = false;
@@ -372,6 +378,7 @@ impl Ui {
         h: i32,
         z: f32,
     ) {
+        draw_trace10::record(||draw_trace10::Call::Rect([x,y,u,v,w,h],z));
         let s = 0.00390625f32;
         let gl = &mut self.gl;
         gl.start_drawing_quads();

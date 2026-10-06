@@ -201,6 +201,11 @@ impl World {
     /// one with the same entity id, at its bed if the bed is still there, else at spawn.
     /// Returns the chat message to show (`tile.bed.notValid`), if any.
     pub fn respawn_player(&mut self, old: i32, progress: &mut dyn FnMut(LoadStep)) -> Option<&'static str> {
+        self.respawn_player_with_inventory(old, false, progress)
+    }
+
+    /// Release 1.0's third respawn argument copies inventory, food, XP and score.
+    pub fn respawn_player_with_inventory(&mut self, old: i32, keep: bool, progress: &mut dyn FnMut(LoadStep)) -> Option<&'static str> {
         let mut chat = None;
         let bed = self.entities.get(&old).and_then(|e| e.player_state()).and_then(|s| s.spawn);
         let mut target = None;
@@ -221,9 +226,12 @@ impl World {
         self.set_spawn_location();
         self.update_entity_list();
         // world.setEntityDead(thePlayer)
-        self.take_player(old);
+        let previous = self.take_player(old);
         // playerController.createPlayer: a new EntityPlayerSP for the session's user.
         let mut e = crate::entity::player::controller::PlayerControllerSP::create_player(self, "Player");
+        if keep {
+            if let Some(previous) = &previous { e.copy_player_from(previous); }
+        }
         if let Some(s) = e.player_state_mut() {
             s.dimension = 0;
         }
