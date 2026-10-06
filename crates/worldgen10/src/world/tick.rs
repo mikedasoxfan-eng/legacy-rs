@@ -136,7 +136,7 @@ impl World {
         if y < 0 {
             return 0;
         }
-        let y = y.min(127);
+        let y = if y >= self.height10 { self.height10.wrapping_sub(1) } else { y };
         if !self.access_chunk_pub(x >> 4, z >> 4) {
             return 0; // EmptyChunk
         }
@@ -317,7 +317,8 @@ impl World {
             if real {self.recheck_skylight181(cx,cz);}
             let block_at = |w: &World, x: i32, y: i32, z: i32| {
                 if real {
-                    w.chunk(cx, cz).block(x, y, z)
+                    let index = x.wrapping_shl(w.x_shift10 as u32) | z.wrapping_shl(w.height_bits10 as u32) | y;
+                    w.chunk(cx, cz).blocks[index as usize]
                 } else {
                     0
                 }
@@ -327,7 +328,7 @@ impl World {
             if self.sound_counter == 0 {
                 self.update_lcg = self.update_lcg.wrapping_mul(3).wrapping_add(1013904223);
                 let v = self.update_lcg >> 2;
-                let (x, z, y) = (v & 15, v >> 8 & 15, v >> 16 & 127);
+                let (x, z, y) = (v & 15, v >> 8 & 15, v >> 16 & self.height_mask10);
                 let id = block_at(self, x, y, z);
                 let (bx, bz) = (x + x0, z + z0);
                 if id == 0
@@ -379,7 +380,7 @@ impl World {
 
             crate::profiler::end_start_section("checkLight");
             let light_x=x0+self.rand.next_int(16);
-            let light_y=self.rand.next_int(128);
+            let light_y=self.rand.next_int(self.height10);
             let light_z=z0+self.rand.next_int(16);
             self.update_all_light181(light_x,light_y,light_z);
 
@@ -387,7 +388,7 @@ impl World {
             for _ in 0..20 {
                 self.update_lcg = self.update_lcg.wrapping_mul(3).wrapping_add(1013904223);
                 let v = self.update_lcg >> 2;
-                let (x, z, y) = (v & 15, v >> 8 & 15, v >> 16 & 127);
+                let (x, z, y) = (v & 15, v >> 8 & 15, v >> 16 & self.height_mask10);
                 let id = block_at(self, x, y, z);
                 if block::props(id).ticks {
                     behavior::update_tick(self, id, x + x0, y, z + z0, RandSel::World);

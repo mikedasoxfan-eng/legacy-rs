@@ -40,14 +40,16 @@ impl DecoratorSettings {
         d
     }
 }
-// A singleplayer generator executes on one thread. Keep singleton lifecycle
-// state separate from the world's RNG and from independent test threads.
-thread_local! { static ACTIVE: std::cell::RefCell<[bool; 16]> = const { std::cell::RefCell::new([false; 16]) }; }
-pub(crate) fn begin(b: crate::Biome) {
-    ACTIVE.with(|a| {
-        let mut a = a.borrow_mut();
-        assert!(!a[b as usize], "Already decorating!!");
-        a[b as usize] = true;
-    });
+// Java's biome singletons share this guard across Worlds and threads. A thrown
+// decoration keeps the flag set, since the source has no finally block.
+static ACTIVE: std::sync::atomic::AtomicU16 = std::sync::atomic::AtomicU16::new(0);
+pub(crate) fn active10(b: crate::Biome) -> bool {
+    ACTIVE.load(std::sync::atomic::Ordering::SeqCst) & (1 << b as u8) != 0
 }
-pub(crate) fn finish(b: crate::Biome) { ACTIVE.with(|a| a.borrow_mut()[b as usize] = false); }
+pub(crate) fn begin(b: crate::Biome) {
+    use std::sync::atomic::Ordering;
+    let mask = 1 << b as u8;
+    assert!(ACTIVE.fetch_update(Ordering::SeqCst, Ordering::SeqCst,
+        |active| (active & mask == 0).then_some(active | mask)).is_ok(), "Already decorating!!");
+}
+pub(crate) fn finish(b: crate::Biome) { ACTIVE.fetch_and(!(1 << b as u8), std::sync::atomic::Ordering::SeqCst); }

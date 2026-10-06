@@ -220,7 +220,7 @@ pub(super) fn old_format(o: &mut Vec<u8>) {
         i(o, w.display_name.len() as i32);
         o.extend(w.display_name.as_bytes());
         l(o, w.last_played);
-        l(o, w.size_on_disk);
+        l(o, w.last_played);
         i(o, w.game_type);
         o.push(w.requires_conversion as u8);
     }

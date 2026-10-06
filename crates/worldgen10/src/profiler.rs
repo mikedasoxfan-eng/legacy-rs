@@ -70,7 +70,7 @@ impl Profiler {
                 root_percent: remainder * 100.0 / root as f64 });
         }
         results.sort_by(ProfilerResult::compare);
-        results.insert(0, ProfilerResult { name: prefix, local_percent: 100.0,
+        results.insert(0, ProfilerResult { name: section.to_owned(), local_percent: 100.0,
             root_percent: total as f64 * 100.0 / root as f64 });
         Some(results)
     }
@@ -96,7 +96,7 @@ mod tests {
         p.start_at("a", 30); p.end_at(50);
         p.end_at(100);
         let r = p.results("root").unwrap();
-        assert_eq!(r.iter().map(|r| r.name.as_str()).collect::<Vec<_>>(), ["root.", "unspecified", "b", "a"]);
+        assert_eq!(r.iter().map(|r| r.name.as_str()).collect::<Vec<_>>(), ["root", "unspecified", "b", "a"]);
         assert_eq!(r[1].local_percent, 60.0);
         assert_eq!(p.times["root"], 99);
         assert_eq!(p.times["root.a"], 19);

@@ -31,6 +31,7 @@ pub mod decoration_verify;
 pub mod features;
 pub mod features181;
 pub mod terrain_verify;
+pub mod world3_verify;
 pub mod weighted;
 pub mod structures;
 pub mod sky;

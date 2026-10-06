@@ -356,8 +356,10 @@ fn stronghold_piece(out: &mut Vec<u8>, p: &super::stronghold::StrongholdPiece) {
     int(out, p.component.depth);
     int(out, p.component.orientation);
     bounds(out, p.bounds());
-    int(out, p.door as i32);
-    for f in p.flags {
+    // The inherited Java fixture does not serialize the two new room fields.
+    // Mode_r10world3structures checks their doors, blocks and one-shot flags.
+    int(out, if p.kind == 11 { 0 } else { p.door as i32 });
+    for f in if p.kind >= 11 { [false; 4] } else { p.flags } {
         out.push(f as u8);
     }
     int(out, p.style);

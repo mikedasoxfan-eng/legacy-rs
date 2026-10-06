@@ -43,7 +43,7 @@ pub struct VillagePiece {
     pub villagers10:i32,
 }
 impl VillagePiece {
-    fn new(kind: usize, depth: i32, bounds: B, orientation: i32, r: &mut JavaRandom) -> Self {
+    pub(crate) fn new(kind: usize, depth: i32, bounds: B, orientation: i32, r: &mut JavaRandom) -> Self {
         let flag = if kind == 0 || kind == 3 {
             r.next_bool()
         } else {
@@ -124,15 +124,7 @@ mod inhabitants_tests {
     }
 }
 fn top_solid(w: &mut World, x: i32, z: i32) -> i32 {
-    let mut y = 127;
-    while y > 0 {
-        let m = w.get_block_material(x, y, z);
-        if crate::block::mat(m).blocks_movement && m != crate::block::MAT_LEAVES {
-            return y + 1;
-        }
-        y -= 1;
-    }
-    -1
+    w.get_top_solid_or_liquid_block(x, z)
 }
 fn average_height(w: &mut World, clip: B, b: B) -> i32 {
     let mut sum: i32 = 0;
@@ -140,7 +132,7 @@ fn average_height(w: &mut World, clip: B, b: B) -> i32 {
     for z in b.min_z..=b.max_z {
         for x in b.min_x..=b.max_x {
             if clip.contains(x, 64, z) {
-                sum = sum.wrapping_add(top_solid(w, x, z).max(63));
+                sum = sum.wrapping_add(top_solid(w, x, z).max(w.sea_level10));
                 count += 1;
             }
         }

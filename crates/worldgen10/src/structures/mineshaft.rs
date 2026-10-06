@@ -197,7 +197,7 @@ impl MineshaftPiece {
                 };
                 let y = b.min_y - 1 + r.next_int(3);
                 add(pieces, r, x, y, z, dir, depth);
-                if depth < 10 {
+                if depth < 8 {
                     if d != 0 && d != 2 {
                         let mut x = b.min_x + 3;
                         while x + 3 <= b.max_x {

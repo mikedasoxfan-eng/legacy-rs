@@ -141,10 +141,10 @@ impl World {
     ) -> i32 {
         if kind == LightKind::Sky && self.dimension.has_no_sky() { return 0; }
         let y = y.max(0);
-        if y >= 128 && kind == LightKind::Sky {
+        if y >= self.height10 && kind == LightKind::Sky {
             return 15;
         }
-        if y >= 128 || !(-30000000..30000000).contains(&x) || !(-30000000..30000000).contains(&z) {
+        if y >= self.height10 || !(-30000000..30000000).contains(&x) || !(-30000000..30000000).contains(&z) {
             return kind.default_value();
         }
         if !self.chunk_exists(x >> 4, z >> 4) {

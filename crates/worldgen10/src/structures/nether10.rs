@@ -13,6 +13,10 @@ const BOXES: [[i32;6];14] = [
 #[derive(Clone,Debug)]
 pub struct NetherPiece { pub component: Component, pub kind: usize, pub end_seed: i32, spawner: bool }
 impl NetherPiece {
+    pub(crate) fn fixture(kind:usize,bounds:B,orientation:i32,r:&mut JavaRandom)->Self {
+        Self {component:Component {bounds,orientation,depth:7},kind,end_seed:if kind==13 {r.next_int_unbounded()} else {0},spawner:false}
+    }
+    pub(crate) fn has_spawner(&self)->bool { self.spawner }
     fn factory(pieces: &[Self], r: &mut JavaRandom, kind: usize, pos: [i32;3], dir: i32, depth: i32) -> Option<Self> {
         let [dx,dy,dz,sx,sy,sz] = BOXES[kind];
         let [x,y,z] = pos;

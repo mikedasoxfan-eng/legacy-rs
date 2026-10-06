@@ -41,7 +41,7 @@ impl MineshaftGenerator {
                 r.set_seed((x as i64).wrapping_mul(mx) ^ (z as i64).wrapping_mul(mz) ^ seed);
                 if !self.starts.contains_key(&key) {
                     r.next_int_unbounded();
-                    if r.next_int(80) == 0
+                    if r.next_int(100) == 0
                         && r.next_int(80) < x.wrapping_abs().max(z.wrapping_abs())
                     {
                         let start = mineshaft::MineshaftPiece::start(&mut r, x, z);

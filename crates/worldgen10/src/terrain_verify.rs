@@ -174,8 +174,8 @@ pub fn utilities(seed: i64) -> Vec<u8> {
         ] {
             ints(&mut out, &[list.len() as i32]);
             for e in list {
-                out.extend_from_slice(&(e.entity.len() as u16).to_be_bytes());
-                out.extend_from_slice(e.entity.as_bytes());
+                out.extend_from_slice(&((if e.entity == "LavaSlime" { "MagmaCube" } else { e.entity }).len() as u16).to_be_bytes());
+                out.extend_from_slice((if e.entity == "LavaSlime" { "MagmaCube" } else { e.entity }).as_bytes());
                 ints(&mut out, &[e.weight, e.min, e.max]);
             }
         }
@@ -343,7 +343,7 @@ pub fn feature(name: &str, seed: i64, fixture: i32) -> Vec<u8> {
             w.chunk_mut(cx, cz).init_height_and_sky();
         }
     }
-    *w.prand() = JavaRandom::new(seed);
+    if name != "sky" { *w.prand() = JavaRandom::new(seed); }
     let y = if name == "ore" || name == "dungeon" {
         32
     } else if fixture == 3 {
@@ -352,7 +352,7 @@ pub fn feature(name: &str, seed: i64, fixture: i32) -> Vec<u8> {
         64
     };
     let result = if name == "sky" {
-        crate::sky::populate(&mut w, 0, 0);
+        crate::end::populate(&mut w, 0, 0);
         true
     } else if let Some(id) = name.strip_prefix("animals") {
         crate::populate::spawn_population(
@@ -397,8 +397,7 @@ pub fn feature(name: &str, seed: i64, fixture: i32) -> Vec<u8> {
             out.extend_from_slice(&c.data.0[..]);
         }
     }
-    let mut entities: Vec<_> = w.entities.values().collect();
-    entities.sort_by_key(|e| e.entity_id);
+    let entities: Vec<_> = w.loaded_entity_list.iter().map(|id| &w.entities[id]).collect();
     out.extend_from_slice(&(entities.len() as i32).to_be_bytes());
     for e in entities {
         let name = e.kind.name();
@@ -467,7 +466,7 @@ pub fn round2(mode: &str, seed: i64) -> Vec<u8> {
         }
         "colors" => {
             let mut out = Vec::new();
-            for id in 0..10 {
+            for id in 0..16 {
                 for t in [-100.0, -3.0, -1.0, 0.0, 0.5, 1.0, 3.0, 100.0] {
                     out.extend(crate::Biome::from_id(id).sky_color_by_temp(t).to_be_bytes());
                 }

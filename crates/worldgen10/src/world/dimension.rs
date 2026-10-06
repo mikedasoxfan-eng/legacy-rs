@@ -131,7 +131,7 @@ impl World {
     /// `World.setSpawnLocation`: move the spawn sideways until the column isn't air.
     pub fn set_spawn_location(&mut self) {
         if self.spawn.1 <= 0 {
-            self.spawn.1 = 64;
+            self.spawn.1 = self.height10 / 2;
         }
         let (mut x, _, mut z) = self.spawn;
         let mut attempts = 0;

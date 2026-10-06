@@ -49,7 +49,7 @@ impl World {
     }
     pub fn get_top_solid_or_liquid_block(&mut self, x: i32, z: i32) -> i32 {
         self.access_chunk_pub(x >> 4, z >> 4);
-        for y in (1..128).rev() {
+        for y in (1..self.height10).rev() {
             let material = self.get_block_material(x, y, z);
             if crate::block::mat(material).blocks_movement && material != crate::block::MAT_LEAVES {
                 return y + 1;
@@ -62,7 +62,7 @@ impl World {
         if self.terrain.biome_source.temperature_at_height(x, y, z) > 0.15 {
             return false;
         }
-        if !(0..128).contains(&y) || self.get_saved_light_value(LightKind::Block, x, y, z) >= 10 {
+        if !(0..self.height10).contains(&y) || self.get_saved_light_value(LightKind::Block, x, y, z) >= 10 {
             return false;
         }
         if !matches!(self.get_block_id(x, y, z), 8 | 9) || self.get_block_metadata(x, y, z) != 0 {
@@ -77,7 +77,7 @@ impl World {
         if self.terrain.biome_source.temperature_at_height(x, y, z) > 0.15 {
             return false;
         }
-        if !(0..128).contains(&y) || self.get_saved_light_value(LightKind::Block, x, y, z) >= 10 {
+        if !(0..self.height10).contains(&y) || self.get_saved_light_value(LightKind::Block, x, y, z) >= 10 {
             return false;
         }
         let below = self.get_block_id(x, y - 1, z);

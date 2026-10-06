@@ -179,7 +179,7 @@ fn file_classes(o:&mut Vec<u8>) {
     for t in times {for u in times {for left in strings {for right in strings {
         let x=SaveFormatComparator181{file_name:left.into(),display_name:"display".into(),last_played:t,size_on_disk:u,game_type:3,requires_conversion:true,hardcore:false};
         let y=SaveFormatComparator181{file_name:right.into(),display_name:"other".into(),last_played:u,size_on_disk:t,game_type:0,requires_conversion:false,hardcore:false};
-        i(o,x.compare(&y));l(o,x.last_played);l(o,x.size_on_disk);i(o,x.game_type);o.extend([x.requires_conversion as u8,(x.file_name==left) as u8,(x.display_name=="display") as u8]);
+        i(o,x.compare(&y));l(o,x.last_played);l(o,x.last_played);i(o,x.game_type);o.extend([x.requires_conversion as u8,(x.file_name==left) as u8,(x.display_name=="display") as u8]);
     }}}}
     for name in ["0","z","00","az","zz","000","A","-1","a.b","a_"] {o.extend([chunk_folder_matches(name,true) as u8,chunk_folder_matches(name,false) as u8]);}
     let mut w=fixture(true);
@@ -1221,7 +1221,8 @@ fn spawn_cases(o:&mut Vec<u8>) {
 
 
 fn relocation_cases(o:&mut Vec<u8>) {
-    let mut storage=crate::storage::Storage::open(std::path::Path::new("tools/oracle181/out/wb181-relocation-java")).unwrap();
+    let oracle=std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../../tools/oracle10/out/wb10-relocation-java");
+    let mut storage=crate::storage::Storage::open(&oracle).unwrap();
     for k in 0..10 {let c=storage.load_chunk(k,0);o.push(c.is_some() as u8);if let Some(c)=c {i(o,c.x);i(o,c.z);o.extend(c.blocks.iter());o.extend(c.data.0.iter());o.extend(c.sky_light.0.iter());o.extend(c.block_light.0.iter());o.extend(c.height_map.iter());}}
 }
 

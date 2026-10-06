@@ -15,6 +15,10 @@ struct FileIoState {
 }
 pub struct ThreadedFileIOBase { state: Mutex<FileIoState> }
 impl ThreadedFileIOBase {
+    pub(crate) fn counters10(&self) -> (i64, i64) {
+        let state = self.state.lock().unwrap();
+        (state.queued, state.completed)
+    }
     fn new() -> Arc<Self> {
         let io = Arc::new(Self { state: Mutex::new(FileIoState::default()) });
         let worker = io.clone();
@@ -101,6 +105,9 @@ pub struct ThreadedChunkLoader {
     pending: Mutex<PendingChunks>,
 }
 impl ThreadedChunkLoader {
+    pub(crate) fn queued_snapshot10(&self) -> Vec<ThreadedChunkLoaderPending> {
+        self.pending.lock().unwrap().entries.clone()
+    }
     pub fn new(directory: &Path) -> Arc<Self> {
         Arc::new(Self { directory: directory.to_owned(), pending: Mutex::new(PendingChunks::default()) })
     }

@@ -39,8 +39,9 @@ pub(super) fn legacy(o: &mut Vec<u8>) {
             }
         }
     }
+    let oracle=Path::new(env!("CARGO_MANIFEST_DIR")).join("../../tools/oracle10/out/wb10-legacy5-java/input");
     let mut reader = Storage::open_legacy_with_players(
-        Path::new("tools/oracle181/out/wb181-legacy5-java/input"),
+        &oracle,
         false,
     )
     .unwrap();
