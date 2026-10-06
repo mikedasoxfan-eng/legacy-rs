@@ -358,6 +358,7 @@ pub(super) fn inventory(o: &mut Vec<u8>) {
 }
 fn tile_type(tile: Option<&TileEntity>) -> u8 {
     match tile {
+        Some(TileEntity::BrewingStand(_))=>9,Some(TileEntity::EnchantmentTable(_))=>10,Some(TileEntity::EndPortal)=>11,
         Some(TileEntity::Dispenser(_)) => 1,
         Some(TileEntity::Note(_)) => 2,
         Some(TileEntity::MobSpawner { .. }) => 3,

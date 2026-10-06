@@ -62,6 +62,7 @@ impl World {
                 if let Some(c) = session.active.as_mut().filter(|c| c.window == window) {
                     self.read_container_tiles(c);
                     c.next_map_id = self.map_id;
+                    if c.kind==ContainerKind::Enchantment {c.bookshelves=enchanting::world_bookshelves(self,c.positions[0]);}
                     c.slot_click(p, slot, button, shift);
                     self.map_id = c.next_map_id;
                     self.write_container_tiles(c);
@@ -138,6 +139,8 @@ impl World {
                         ContainerKind::Chest { .. } => id == 54,
                         ContainerKind::Furnace => matches!(id, 61 | 62),
                         ContainerKind::Dispenser => id == 23,
+                        ContainerKind::BrewingStand=>id==117,
+                        ContainerKind::Enchantment=>id==116,
                         _ => true,
                     };
                     let dx = e.pos.x - (x as f64 + 0.5);
@@ -177,10 +180,14 @@ impl World {
             54 => ContainerKind::Chest { rows: 3 },
             61 | 62 => ContainerKind::Furnace,
             23 => ContainerKind::Dispenser,
+            117=>ContainerKind::BrewingStand,
+            116=>ContainerKind::Enchantment,
             _ => return None,
         };
         let mut c = Container::new(kind, window);
         c.positions.push((x, y, z));
+        c.multiplayer=self.multiplayer_world;
+        if block==116 {c.bookshelves=enchanting::world_bookshelves(self,(x,y,z));}
         if block == 54 {
             c.positions=self.chest_inventory_positions181(x,y,z)?;
             if c.positions.len() > 1 {
@@ -219,6 +226,8 @@ impl World {
                         ContainerKind::Chest { .. } => id == 54,
                         ContainerKind::Furnace => matches!(id, 61 | 62),
                         ContainerKind::Dispenser => id == 23,
+                        ContainerKind::BrewingStand=>id==117,
+                        ContainerKind::Enchantment=>id==116,
                         _ => true,
                     };
                     valid && dx * dx + dy * dy + dz * dz <= 64.0
@@ -241,7 +250,7 @@ impl World {
                 Some(TileEntity::Chest(items)) => {
                     for s in items.iter().take(27) {
                         c.tile[offset] = s.map(|s| {
-                            ItemStack::new(s.id as i32, s.count, s.damage as i32)
+                            ItemStack::from(s)
                         });
                         offset += 1;
                     }
@@ -255,6 +264,7 @@ impl World {
                     }
                     c.progress = [f.cook, f.burn, f.current_fuel];
                 }
+                Some(TileEntity::BrewingStand(b))=>{c.tile.copy_from_slice(&b.items);c.progress[0]=b.brew_time;},
                 Some(TileEntity::Dispenser(items)) => c.tile.copy_from_slice(items.as_ref()),
                 _ => {}
             }
@@ -275,10 +285,27 @@ impl World {
                     }
                 }
                 Some(TileEntity::Furnace(f)) => f.items.copy_from_slice(&c.tile),
+                Some(TileEntity::BrewingStand(b))=>b.items.copy_from_slice(&c.tile),
                 Some(TileEntity::Dispenser(items)) => items.copy_from_slice(&c.tile),
                 _ => continue,
             }
             self.mark_container_dirty(x, z);
         }
+    }
+}
+
+impl World {
+    /// Simulation entry point for the client-owned enchantment button command.
+    pub fn enchant_container10(&mut self,player:i32,window:i32,button:usize)->bool {
+        let Some(mut session)=self.container_sessions.remove(&player) else{return false;};
+        let result=if let Some(c)=session.active.as_mut().filter(|c|c.window==window&&c.kind==ContainerKind::Enchantment) {
+            c.bookshelves=enchanting::world_bookshelves(self,c.positions[0]);
+            if let Some(p)=self.entities.get_mut(&player).and_then(|e|e.player_state_mut()) {
+                let e=c.enchanting.as_mut().unwrap();
+                let result=e.enchant(button,&mut p.experience.level,self.multiplayer_world,c.bookshelves);
+                c.tile[0]=e.item;c.progress=e.costs;result
+            }else{false}
+        }else{false};
+        self.container_sessions.insert(player,session);result
     }
 }

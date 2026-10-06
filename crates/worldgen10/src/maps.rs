@@ -224,31 +224,22 @@ impl MapData {
                             let mut block = 0;
                             if y > 1 {
                                 loop {
-                                    block = if (0..128).contains(&(y - 1)) {
-                                        chunk.block(bx + sx, y - 1, bz + sz)
-                                    } else {
-                                        0
-                                    };
-                                    if block == 0 || (y > 0 && block_color(block) == 0) {
-                                        y -= 1;
-                                        continue;
+                                    block = if (0..128).contains(&(y-1)) {chunk.block(bx+sx,y-1,bz+sz)} else {0};
+                                    let visible = block != 0 && (y <= 0 || block_color(block) != 0);
+                                    if !visible {
+                                        y-=1;
+                                        block=if (0..128).contains(&(y-1)) {chunk.block(bx+sx,y-1,bz+sz)} else {0};
                                     }
-                                    if mat(material_of(block)).is_liquid {
-                                        let mut yy = y - 1;
-                                        loop {
-                                            let b = if (0..128).contains(&yy) {
-                                                chunk.block(bx + sx, yy, bz + sz)
-                                            } else {
-                                                0
-                                            };
-                                            yy -= 1;
-                                            depth += 1;
-                                            if yy <= 0 || b == 0 || !mat(material_of(b)).is_liquid {
-                                                break;
-                                            }
-                                        }
+                                    if y<=0 || visible {break;}
+                                }
+                                if y>0 && block!=0 && mat(material_of(block)).is_liquid {
+                                    let mut yy=y-1;
+                                    loop {
+                                        let b=if (0..128).contains(&yy) {chunk.block(bx+sx,yy,bz+sz)} else {0};
+                                        yy-=1;
+                                        depth+=1;
+                                        if yy<=0 || b==0 || !mat(material_of(b)).is_liquid {break;}
                                     }
-                                    break;
                                 }
                             }
                             height += y as f64 / (factor * factor) as f64;

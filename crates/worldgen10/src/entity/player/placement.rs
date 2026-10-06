@@ -32,8 +32,9 @@ pub fn can_place_at(w: &mut World, id: u8, x: i32, y: i32, z: i32, side: i32) ->
     match id {
         51 => crate::world::ticks_blocks::fire_can_place(w, x, y, z),
         59 => base && w.get_block_id(x, y - 1, z) == TILLED_FIELD,
-        85 => w.get_block_id(x, y - 1, z) == 85
-            || (mat(w.get_block_material(x, y - 1, z)).is_solid && base),
+        85|113=>base,
+        111=>base&&w.get_block_id(x,y-1,z)==9,
+        115=>base&&w.get_block_id(x,y-1,z)==88,
         55 => w.is_block_normal_cube(x,y-1,z),
         96 => w.trapdoor_can_place_on_side181(x,y,z,side),
         VINE => crate::world::plants181::vine_can_place(w,x,y,z,side),
@@ -42,12 +43,9 @@ pub fn can_place_at(w: &mut World, id: u8, x: i32, y: i32, z: i32, side: i32) ->
         PUMPKIN_STEM | MELON_STEM => base && w.get_block_id(x,y-1,z)==TILLED_FIELD,
         34 | 36 => false,
         50 | 75 | 76 => {
-            w.is_block_normal_cube(x - 1, y, z)
-                || w.is_block_normal_cube(x + 1, y, z)
-                || w.is_block_normal_cube(x, y, z - 1)
-                || w.is_block_normal_cube(x, y, z + 1)
-                || w.is_block_normal_cube(x, y - 1, z)
-                || (id == 50 && w.get_block_id(x, y - 1, z) == 85)
+            w.torch_support10(x-1,y,z) || w.torch_support10(x+1,y,z)
+                || w.torch_support10(x,y,z-1) || w.torch_support10(x,y,z+1)
+                || w.torch_support10(x,y-1,z) || matches!(w.get_block_id(x,y-1,z),85|113)
         }
         69 | 77 => {
             if side == 1 && id == 69 {
@@ -129,6 +127,7 @@ impl Entity {
         let quarter = floor((self.yaw * 4.0 / 360.0) as f64 + 0.5) & 3;
         if id==54 {w.chest_placed181(x,y,z,self.yaw);return;}
         let meta = match id {
+            120=>Some((quarter+2)%4),
             29 | 33 => {
                 let eye=self.pos.y+1.82-self.y_offset as f64;
                 let vertical=if (self.pos.x as f32-x as f32).abs()<2.0 && (self.pos.z as f32-z as f32).abs()<2.0 {
@@ -136,7 +135,7 @@ impl Entity {
                 } else {None};
                 Some(vertical.unwrap_or([2,5,3,4][quarter as usize]))
             }
-            53 | 67 | STAIRS_BRICK | STAIRS_STONE_BRICK => Some([2, 1, 3, 0][quarter as usize]),
+            53 | 67 | STAIRS_BRICK | STAIRS_STONE_BRICK | 114 => Some([2, 1, 3, 0][quarter as usize]),
             61 | 62 | 23 => Some([2, 5, 3, 4][quarter as usize]),
             86 | 91 => Some(floor((self.yaw * 4.0 / 360.0) as f64 + 2.5) & 3),
             96 => Some(match side {
@@ -161,13 +160,12 @@ impl Entity {
                 let mut meta = w.get_block_metadata(x, y, z) & 7;
                 if side == 1
                     && id != 77
-                    && (w.is_block_normal_cube(x, y - 1, z)
-                        || (id == 50 && w.get_block_id(x, y - 1, z) == 85))
+                    && (if matches!(id,50|75|76) {w.torch_support10(x,y-1,z)||matches!(w.get_block_id(x,y-1,z),85|113)} else {w.is_block_normal_cube(x,y-1,z)})
                 {
                     meta = if id == 69 { 5 + w.rand.next_int(2) } else { 5 };
                 }
                 for (s, dx, dz, m) in [(2, 0, 1, 4), (3, 0, -1, 3), (4, 1, 0, 2), (5, -1, 0, 1)] {
-                    if side == s && w.is_block_normal_cube(x + dx, y, z + dz) {
+                    if side == s && (if matches!(id,50|75|76) {w.torch_support10(x+dx,y,z+dz)} else {w.is_block_normal_cube(x + dx, y, z + dz)}) {
                         meta = m;
                     }
                 }
@@ -229,7 +227,7 @@ impl Entity {
             return false;
         }
         w.set_block_and_metadata_with_notify(x, y, z, 26, dir);
-        w.set_block_and_metadata_with_notify(x + dx, y, z + dz, 26, dir + 8);
+        if w.get_block_id(x,y,z)==26 {w.set_block_and_metadata_with_notify(x + dx, y, z + dz, 26, dir + 8);}
         stack.count = stack.count.wrapping_sub(1);
         true
     }

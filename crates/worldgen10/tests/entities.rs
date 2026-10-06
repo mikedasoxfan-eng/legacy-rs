@@ -55,10 +55,8 @@ fn region_roundtrip_simulates_supported_entities_and_preserves_unknown_tags() {
     let id = w.loaded_entity_list[0];
     assert_eq!(w.entities[&id].to_nbt().unwrap(), expected);
     assert_eq!(w.chunk(0, 0).entity_lists[4], vec![id]);
-    assert_eq!(
-        w.chunk(0, 0).raw_entities,
-        vec![Tag::Compound(unsupported.clone())]
-    );
+    assert_eq!(w.chunk(0,0).raw_entities.len(),1);
+    assert!(w.chunk(0,0).raw_entities.iter().any(|tag|same_compound(tag,&unsupported)));
     w.world_time = 240;
     w.set_block_with_notify(8, 64, 8, 52);
     w.spawner_animations.insert((8, 64, 8), (123.0, 122.0));
@@ -79,8 +77,8 @@ fn region_roundtrip_simulates_supported_entities_and_preserves_unknown_tags() {
     let mut s = Storage::open(&dir).unwrap();
     let saved = s.load_chunk(0, 0).unwrap();
     assert_eq!(saved.raw_entities.len(), 2);
-    assert!(saved.raw_entities.contains(&Tag::Compound(unsupported)));
-    assert!(saved.raw_entities.contains(&Tag::Compound(expected)));
+    assert!(saved.raw_entities.iter().any(|tag|same_compound(tag,&unsupported)));
+    assert!(saved.raw_entities.iter().any(|tag|same_compound(tag,&expected)));
 }
 
 #[test]
@@ -111,4 +109,14 @@ fn force_gate_refiling_and_unloaded_removal_keep_chunk_membership_consistent() {
     rejected.set_position(1000.0, 64.0, 0.0);
     assert!(!w.entity_joined_world(rejected));
     assert_eq!(w.chunks.len(), 2);
+}
+
+// NBT compounds are maps; their serialized Hashtable order need not match
+// the insertion order of a manually assembled fixture.
+fn same_compound(tag:&Tag,expected:&Compound)->bool {
+    let Tag::Compound(actual)=tag else{return false;};
+    let mut a=Vec::new();let mut b=Vec::new();
+    worldgen::nbt::write_root_canonical(&mut a,actual).unwrap();
+    worldgen::nbt::write_root_canonical(&mut b,expected).unwrap();
+    a==b
 }

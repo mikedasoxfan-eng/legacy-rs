@@ -76,3 +76,17 @@ pub const VINE: u8 = 106;
 pub const FENCE_GATE: u8 = 107;
 pub const STAIRS_BRICK: u8 = 108;
 pub const STAIRS_STONE_BRICK: u8 = 109;
+
+pub const MYCELIUM:u8=110;
+pub const LILY_PAD:u8=111;
+pub const NETHER_BRICK:u8=112;
+pub const NETHER_FENCE:u8=113;
+pub const STAIRS_NETHER_BRICK:u8=114;
+pub const NETHER_STALK:u8=115;
+pub const ENCHANTMENT_TABLE:u8=116;
+pub const BREWING_STAND:u8=117;
+pub const CAULDRON:u8=118;
+pub const END_PORTAL:u8=119;
+pub const END_PORTAL_FRAME:u8=120;
+pub const END_STONE:u8=121;
+pub const DRAGON_EGG:u8=122;

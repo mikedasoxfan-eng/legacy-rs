@@ -25,16 +25,18 @@ impl World {
                 let n = (self.chest_random.next_int(21) + 10).min(count);
                 count -= n;
                 item.count = count;
+                let drop_stack=crate::entity::player::ItemStack::new(item.id,n,item.damage as i32);
                 let mut e = Entity::item(
                     self,
                     (x as f32 + ox) as f64,
                     (y as f32 + oy) as f64,
                     (z as f32 + oz) as f64,
-                    crate::world::tile::ItemStack::new(item.id as i32, n, item.damage as i32),
+                    drop_stack.into(),
                 );
                 e.motion.x = (self.chest_random.next_gaussian() as f32 * 0.05) as f64;
                 e.motion.y = (self.chest_random.next_gaussian() as f32 * 0.05 + 0.2) as f64;
                 e.motion.z = (self.chest_random.next_gaussian() as f32 * 0.05) as f64;
+                if let Some(tag)=crate::entity::player::ItemStack::from(*item).tag() {drop_stack.set_tag_checked(Some(tag));}
                 self.entity_joined_world(e);
             }
         }
@@ -92,14 +94,14 @@ impl World {
         if id == 0 {
             return false;
         }
-        if provides_power(id) {
+        if provides_power(id) && side!=-1 {
             return true;
         }
         if id != 93 && id != 94 {
             return false;
         }
         let meta = self.get_block_metadata(x, y, z);
-        side == [2, 3, 0, 1][(meta & 3) as usize]
+        side==(meta&3) || side == [2, 3, 0, 1][(meta & 3) as usize]
     }
     /// Dispatch the original isPoweringTo / isIndirectlyPoweringTo block callbacks.
     pub fn block_power(&mut self, x: i32, y: i32, z: i32, side: i32, strong: bool) -> bool {
@@ -161,8 +163,8 @@ impl World {
             _ => false,
         }
     }
-    pub(crate) fn farmland_tick(&mut self, x: i32, y: i32, z: i32, rs: crate::world::RandSel) {
-        if self.rng(rs).next_int(5) == 0 {
+    pub(crate) fn farmland_tick(&mut self, x: i32, y: i32, z: i32, _rs: crate::world::RandSel) {
+        {
             let mut water = false;
             'water: for bx in x - 4..=x + 4 {
                 for by in y..=y + 1 {

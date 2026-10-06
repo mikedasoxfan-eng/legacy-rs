@@ -25,7 +25,7 @@ impl Entity {
     }
     pub fn bucket_right_click181(&self, w: &mut World, stack: ItemStack, full: i32) -> ItemStack {
         let (start, end) = self.bucket_ray181();
-        let hit = w.ray_trace_blocks_options(start, end, full == 0, false);
+        let hit = w.ray_trace_blocks_options(start, end, full == 0, full != 0);
         self.bucket_hit181(w, stack, full, start, hit)
     }
     /// Original callback after World.rayTraceBlocks_do. World.canMineBlock and
@@ -75,6 +75,7 @@ impl Entity {
                         && w.get_block_metadata(x, y, z) == 0
                     {
                         remove(w, x, y, z);
+                        if self.player_state().unwrap().capabilities.creative {return stack;}
                         return ItemStack::new(if material == MAT_WATER { 326 } else { 327 }, 1, 0);
                     }
                 } else {

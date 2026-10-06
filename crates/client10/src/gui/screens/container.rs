@@ -62,6 +62,8 @@ impl GuiContainer {
             ContainerKind::Chest { .. } => "gui/container.png",
             ContainerKind::Furnace => "gui/furnace.png",
             ContainerKind::Dispenser => "gui/trap.png",
+            ContainerKind::BrewingStand => "gui/alchemy.png",
+            ContainerKind::Enchantment => "gui/enchant.png",
         };
         ui.gl.bind_texture(ui.texture(texture));
         if let ContainerKind::Chest { rows } = self.kind {
@@ -94,6 +96,8 @@ impl GuiContainer {
             }
             ContainerKind::Furnace => ("Furnace", 60, 6),
             ContainerKind::Dispenser => ("Dispenser", 60, 6),
+            ContainerKind::BrewingStand => ("Brewing Stand", 60, 6),
+            ContainerKind::Enchantment => ("Enchant", 12, 5),
         };
         ui.font.draw_string(&mut ui.gl, name, x, y, 4210752);
         if !matches!(self.kind,ContainerKind::Player|ContainerKind::Creative) {

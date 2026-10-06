@@ -181,23 +181,23 @@ impl World {
 
     /// `BlockTorch.canPlaceBlockAt` support test for one side (`func_31032_h` below).
     fn torch_support_below(&mut self, x: i32, y: i32, z: i32) -> bool {
-        self.is_block_normal_cube(x, y, z) || self.get_block_id(x, y, z) == 85
+        self.torch_support10(x, y, z) || matches!(self.get_block_id(x,y,z),85|113)
     }
 
     fn torch_can_stay(&mut self, x: i32, y: i32, z: i32) -> bool {
-        self.is_block_normal_cube(x - 1, y, z)
-            || self.is_block_normal_cube(x + 1, y, z)
-            || self.is_block_normal_cube(x, y, z - 1)
-            || self.is_block_normal_cube(x, y, z + 1)
+        self.torch_support10(x - 1, y, z)
+            || self.torch_support10(x + 1, y, z)
+            || self.torch_support10(x, y, z - 1)
+            || self.torch_support10(x, y, z + 1)
             || self.torch_support_below(x, y - 1, z)
     }
 
     /// `BlockTorch.dropTorchIfCantStay`
     fn drop_torch_if_cant_stay(&mut self, id: u8, x: i32, y: i32, z: i32) -> bool {
         if !self.torch_can_stay(x, y, z) {
-            let m = self.get_block_metadata(x, y, z);
+            if self.get_block_id(x,y,z)==id {let m = self.get_block_metadata(x, y, z);
             drop_block_as_item(self, id, x, y, z, m);
-            self.set_block_with_notify(x, y, z, 0);
+            self.set_block_with_notify(x, y, z, 0);}
             false
         } else {
             true
@@ -206,13 +206,13 @@ impl World {
 
     /// `BlockTorch.onBlockAdded`
     pub(crate) fn torch_added(&mut self, id: u8, x: i32, y: i32, z: i32) {
-        if self.is_block_normal_cube(x - 1, y, z) {
+        if self.torch_support10(x - 1, y, z) {
             self.set_block_metadata_with_notify(x, y, z, 1);
-        } else if self.is_block_normal_cube(x + 1, y, z) {
+        } else if self.torch_support10(x + 1, y, z) {
             self.set_block_metadata_with_notify(x, y, z, 2);
-        } else if self.is_block_normal_cube(x, y, z - 1) {
+        } else if self.torch_support10(x, y, z - 1) {
             self.set_block_metadata_with_notify(x, y, z, 3);
-        } else if self.is_block_normal_cube(x, y, z + 1) {
+        } else if self.torch_support10(x, y, z + 1) {
             self.set_block_metadata_with_notify(x, y, z, 4);
         } else if self.torch_support_below(x, y - 1, z) {
             self.set_block_metadata_with_notify(x, y, z, 5);
@@ -225,16 +225,16 @@ impl World {
         if self.drop_torch_if_cant_stay(id, x, y, z) {
             let m = self.get_block_metadata(x, y, z);
             let mut drop = false;
-            if !self.is_block_normal_cube(x - 1, y, z) && m == 1 {
+            if !self.torch_support10(x - 1, y, z) && m == 1 {
                 drop = true;
             }
-            if !self.is_block_normal_cube(x + 1, y, z) && m == 2 {
+            if !self.torch_support10(x + 1, y, z) && m == 2 {
                 drop = true;
             }
-            if !self.is_block_normal_cube(x, y, z - 1) && m == 3 {
+            if !self.torch_support10(x, y, z - 1) && m == 3 {
                 drop = true;
             }
-            if !self.is_block_normal_cube(x, y, z + 1) && m == 4 {
+            if !self.torch_support10(x, y, z + 1) && m == 4 {
                 drop = true;
             }
             if !self.torch_support_below(x, y - 1, z) && m == 5 {

@@ -57,7 +57,9 @@ impl ItemStack {
     }
     pub fn split(&mut self, count: i32) -> Self {
         self.count = self.count.wrapping_sub(count);
-        Self::new(self.id, count, self.damage)
+        let split=Self::new(self.id, count, self.damage);
+        split.set_tag(self.tag());
+        split
     }
     pub fn to_nbt(&self) -> Compound {
         let mut n = Compound::new();
@@ -79,12 +81,12 @@ impl ItemStack {
 }
 impl From<crate::world::tile::ItemStack> for ItemStack {
     fn from(s: crate::world::tile::ItemStack) -> Self {
-        Self::new(s.id as i32, s.count as i32, s.damage as i32)
+        let mut stack=Self::new(s.id as i32, s.count as i32, s.damage as i32);stack.identity=s.identity;stack
     }
 }
 impl From<ItemStack> for crate::world::tile::ItemStack {
     fn from(s: ItemStack) -> Self {
-        Self::new(s.id, s.count, s.damage)
+        let mut stack=Self::new(s.id, s.count, s.damage);stack.identity=s.identity;stack
     }
 }
 #[derive(Clone, Debug)]
@@ -158,6 +160,7 @@ impl InventoryPlayer {
         let found = self.main.iter().position(|s| {
             s.is_some_and(|s| {
                 s.id == item.id
+                    && s.tags_equal(item)
                     && s.stackable()
                     && s.count < s.max_stack()
                     && s.count < 64
@@ -167,7 +170,10 @@ impl InventoryPlayer {
         let Some(slot) = found.or_else(|| self.main.iter().position(Option::is_none)) else {
             return item.count;
         };
-        let s = self.main[slot].get_or_insert(ItemStack::new(item.id, 0, item.damage));
+        if self.main[slot].is_none() {
+            let s=ItemStack::new(item.id,0,item.damage);s.set_tag(item.tag());self.main[slot]=Some(s);
+        }
+        let s = self.main[slot].as_mut().unwrap();
         let count = item.count.min(s.max_stack() - s.count).min(64 - s.count);
         if count == 0 {
             return item.count;
@@ -180,7 +186,7 @@ impl InventoryPlayer {
     pub fn add(&mut self, item: &mut ItemStack) -> bool {
         if item.is_damaged() {
             if let Some(slot) = self.main.iter().position(Option::is_none) {
-                let mut s = ItemStack::new(item.id, item.count, item.damage);
+                let mut s = item.copy_stack181();
                 s.animations = 5;
                 self.main[slot] = Some(s);
                 item.count = 0;

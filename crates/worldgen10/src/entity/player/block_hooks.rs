@@ -61,7 +61,6 @@ pub fn added(w: &mut World, id: u8, x: i32, y: i32, z: i32) -> bool {
         return true;
     }
     if matches!(id, 43 | 44) {
-        w.slab_added181(x,y,z);
         return true;
     }
     if id == 50 {
@@ -77,8 +76,8 @@ pub fn added(w: &mut World, id: u8, x: i32, y: i32, z: i32) -> bool {
             (0, 0, 1, 4),
             (0, -1, 0, 5),
         ] {
-            if w.is_block_normal_cube(x + dx, y + dy, z + dz)
-                || (m == 5 && w.get_block_id(x, y - 1, z) == 85)
+            if w.torch_support10(x + dx, y + dy, z + dz)
+                || (m == 5 && matches!(w.get_block_id(x, y - 1, z),85|113))
             {
                 meta = Some(m);
                 break;
@@ -193,7 +192,7 @@ pub fn neighbor(w: &mut World, id: u8, x: i32, y: i32, z: i32, changed: u8) -> b
             if w.get_block_id(x, y - 1, z) != id {
                 w.set_block_with_notify(x, y, z, 0);
             }
-            if changed > 0 && crate::entity::block_hooks::provides_power(changed) {
+            if changed > 0 {
                 neighbor(w, id, x, y - 1, z, changed);
             }
         } else {
@@ -211,7 +210,7 @@ pub fn neighbor(w: &mut World, id: u8, x: i32, y: i32, z: i32, changed: u8) -> b
             }
             if removed {
                 if !w.multiplayer_world { crate::world::behavior::drop_block_as_item(w, id, x, y, z, m); }
-            } else if changed > 0 && crate::entity::block_hooks::provides_power(changed) {
+            } else if changed > 0 {
                 let powered = w.is_block_indirectly_getting_powered(x, y, z)
                     || w.is_block_indirectly_getting_powered(x, y + 1, z);
                 w.door_powered181(id,x,y,z,powered);
@@ -240,8 +239,8 @@ pub fn neighbor(w: &mut World, id: u8, x: i32, y: i32, z: i32, changed: u8) -> b
                 _ => (0, -1, 0),
             }
         };
-        let valid = w.is_block_normal_cube(x + dx, y + dy, z + dz)
-            || (id == 50 && orientation == 5 && w.get_block_id(x, y - 1, z) == 85)
+        let valid = (if id==50 {w.torch_support10(x+dx,y+dy,z+dz)} else {w.is_block_normal_cube(x + dx, y + dy, z + dz)})
+            || (id == 50 && orientation == 5 && matches!(w.get_block_id(x, y - 1, z),85|113))
             || (orientation == 0 && id != 65);
         if !valid {
             crate::world::behavior::drop_block_as_item(w, id, x, y, z, m);
@@ -272,8 +271,8 @@ pub fn tick(w: &mut World, id: u8, x: i32, y: i32, z: i32, rs: crate::world::Ran
         return true;
     }
     if id == 23 {
-        if w.is_block_indirectly_getting_powered(x, y, z)
-            || w.is_block_indirectly_getting_powered(x, y + 1, z)
+        if !w.multiplayer_world && (w.is_block_indirectly_getting_powered(x, y, z)
+            || w.is_block_indirectly_getting_powered(x, y + 1, z))
         {
             w.dispense_item(x, y, z, rs);
         }
@@ -311,7 +310,7 @@ pub fn tick(w: &mut World, id: u8, x: i32, y: i32, z: i32, rs: crate::world::Ran
                 if diagonal || along_x && along_z {
                     rate /= 2.0;
                 }
-                if w.rng(rs).next_int((100.0 / rate) as i32) == 0 {
+                if w.rng(rs).next_int((25.0f32 / rate) as i32 + 1) == 0 {
                     w.set_block_metadata_with_notify(x, y, z, m + 1);
                 }
             }

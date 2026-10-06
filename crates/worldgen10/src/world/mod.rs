@@ -6,6 +6,7 @@
 //! scheduling and chunk loading all have side effects that later code observes.
 
 pub mod behavior;
+pub mod blocks10;
 pub mod plants181;
 mod blocks181;
 pub mod beds181;
@@ -402,7 +403,7 @@ impl World {
             multiplayer_world: false,
             spawn_hostile_mobs: true,
             spawn_peaceful_mobs: true,
-            block_bounds: crate::entity::block_table::INITIAL_BOUNDS,
+            block_bounds: {let mut bounds=crate::entity::block_table::INITIAL_BOUNDS;for id in 110..=122 {if let Some(b)=blocks10::initial_bounds(id){bounds[id as usize]=b;}}bounds},
         }
     }
 

@@ -40,7 +40,8 @@ fn tick_rate(id: u8) -> i32 {
 // ---------------------------------------------------------------- dispatch
 
 pub fn on_block_added(w: &mut World, id: u8, x: i32, y: i32, z: i32) {
-    if matches!(id,43|44) { w.slab_added181(x,y,z); return; }
+    if super::blocks10::added(w,id,x,y,z){return;}
+    if matches!(id,43|44) { return; }
     // Structure placement reaches BlockTorch with metadata zero and no support.
     if id == 50 { w.torch_added(id,x,y,z); return; }
     if crate::entity::player::block_hooks::added(w, id, x, y, z) {
@@ -91,6 +92,7 @@ pub fn on_block_added(w: &mut World, id: u8, x: i32, y: i32, z: i32) {
 }
 
 pub fn on_block_removal(w: &mut World, id: u8, x: i32, y: i32, z: i32) {
+    if super::blocks10::removed(w,id,x,y,z){return;}
     if matches!(id, 63 | 68) { w.remove_block_tile_entity(x,y,z); return; }
     if crate::entity::player::block_hooks::removed(w, id, x, y, z) {
         return;
@@ -161,6 +163,7 @@ pub fn on_block_removal(w: &mut World, id: u8, x: i32, y: i32, z: i32) {
 }
 
 pub fn on_neighbor_block_change(w: &mut World, id: u8, x: i32, y: i32, z: i32, _changed: u8) {
+    if super::blocks10::neighbor(w,id,x,y,z){return;}
     if matches!(id,69|77) {w.attached_control_neighbor181(id,x,y,z); return;}
     if id == 19 { return; } // BlockSponge inherits the empty neighbor callback.
     if id == 96 { w.trapdoor_neighbor181(x,y,z,_changed); return; }
@@ -232,7 +235,7 @@ pub fn on_neighbor_block_change(w: &mut World, id: u8, x: i32, y: i32, z: i32, _
         }
         block::FIRE => tb::fire_neighbor(w, x, y, z),
         25 => w.note_neighbor(x,y,z,_changed),
-        29 | 33 => { if !w.piston_guard[(id==29) as usize] { w.piston_update(id,x,y,z); } },
+        29 | 33 => { if !super::pistons::IGNORE_UPDATES.load(std::sync::atomic::Ordering::Relaxed) { w.piston_update(id,x,y,z); } },
         34 => w.piston_head_neighbor(x,y,z,_changed),
         36 => { w.get_block_tile_entity(x,y,z); },
         55 => w.wire_neighbor_change(x, y, z),
@@ -269,6 +272,7 @@ pub static TICK_COUNTS: [std::sync::atomic::AtomicU32; 256] =
     [const { std::sync::atomic::AtomicU32::new(0) }; 256];
 
 pub fn update_tick(w: &mut World, id: u8, x: i32, y: i32, z: i32, rs: RandSel) {
+    if super::blocks10::tick(w,id,x,y,z,rs){return;}
     // All four registered stair models inherit the empty Block.updateTick.
     if crate::block::visual181::stairs_model181(id).is_some() {return;}
     if crate::entity::player::block_hooks::tick(w, id, x, y, z, rs) {
@@ -489,7 +493,7 @@ fn block_blocks_flow(w: &mut World, x: i32, y: i32, z: i32) -> bool {
     if id == block::AIR {
         return false;
     }
-    mat(material_of(id)).blocks_movement
+    material_of(id)==block::MAT_PORTAL || mat(material_of(id)).blocks_movement
 }
 
 /// `BlockFlowing.liquidCanDisplaceBlock`
@@ -555,6 +559,9 @@ fn flowing_update_tick(w: &mut World, id: u8, x: i32, y: i32, z: i32, rs: RandSe
     }
 
     if liquid_can_displace(w, id, x, y - 1, z) {
+        if fm==MAT_LAVA&&w.get_block_material(x,y-1,z)==MAT_WATER {
+            w.set_block_with_notify(x,y-1,z,block::STONE);trigger_lava_mix_effects(w,x,y-1,z);return;
+        }
         if decay >= 8 {
             w.set_block_and_metadata_with_notify(x, y - 1, z, id, decay);
         } else {
@@ -691,13 +698,13 @@ pub(crate) fn can_fall_below(w: &mut World, x: i32, y: i32, z: i32) -> bool {
 }
 
 /// `BlockSand.tryToFall`
-fn try_to_fall(w: &mut World, id: u8, x: i32, mut y: i32, z: i32) {
+pub(crate) fn try_to_fall(w: &mut World, id: u8, x: i32, mut y: i32, z: i32) {
     if can_fall_below(w, x, y - 1, z) && y >= 0 {
         let r = 32;
         if !w.sand_fall_instantly && w.check_chunks_exist(x - r, y - r, z - r, x + r, y + r, z + r)
         {
             // Spawns EntityFallingSand; the block stays until the entity ticks.
-            if w.chunk_exists(x >> 4, z >> 4) {
+            if (id==122||!w.multiplayer_world) && w.chunk_exists(x >> 4, z >> 4) {
                 w.falling_sand.push((x, y, z, id));
                 let entity = crate::entity::Entity::falling_sand(
                     w,
@@ -740,8 +747,8 @@ pub fn flower_can_stay(w: &mut World, id: u8, x: i32, y: i32, z: i32) -> bool {
             if !(0..128).contains(&y) {
                 return false;
             }
-            w.get_full_block_light_value(x, y, z) < 13
-                && plant_grows_on(id, w.get_block_id(x, y - 1, z))
+            let below=w.get_block_id(x,y-1,z);
+            below==110 || (w.get_full_block_light_value(x, y, z) < 13 && plant_grows_on(id,below))
         }
         _ => {
             (w.get_full_block_light_value(x, y, z) >= 8 || w.can_block_see_the_sky(x, y, z))
@@ -814,7 +821,8 @@ pub fn quantity_dropped(w: &mut World, id: u8) -> i32 {
                 0
             }
         }
-        block::VINE | block::SILVERFISH => 0,
+        block::VINE | block::SILVERFISH |115|119=>0,
+        47=>3,
         block::MELON => 3 + w.rand.next_int(5),
         block::MUSHROOM_CAP_BROWN | block::MUSHROOM_CAP_RED => (w.rand.next_int(10) - 7).max(0),
         block::SNOW
@@ -827,7 +835,6 @@ pub fn quantity_dropped(w: &mut World, id: u8) -> i32 {
         | 11
         | 20
         | 46
-        | 47
         | 52
         | 92 | 34 => 0,
         43 => 2,
@@ -840,9 +847,11 @@ pub fn quantity_dropped(w: &mut World, id: u8) -> i32 {
     }
 }
 
-pub fn id_dropped(w: &mut World, id: u8, meta: i32) -> i32 {
+pub fn id_dropped(w:&mut World,id:u8,meta:i32)->i32 {id_dropped_fortune(w,id,meta,0)}
+pub fn id_dropped_fortune(w: &mut World, id: u8, meta: i32,fortune:i32) -> i32 {
     match id {
-        92 => 0,
+        92|102|115|120 => 0,
+        47=>340,110=>3,117=>379,118=>380,
         55 => ITEM_REDSTONE,
         63 | 68 => 323,
         59 => {
@@ -862,17 +871,17 @@ pub fn id_dropped(w: &mut World, id: u8, meta: i32) -> i32 {
         block::DEAD_BUSH => -1,
         block::MOB_SPAWNER => 0,
         block::GRAVEL => {
-            if w.rand.next_int(10) == 0 {
+            if w.rand.next_int(10-fortune*3) == 0 {
                 ITEM_FLINT
             } else {
                 block::GRAVEL as i32
             }
         }
         block::TILLED_FIELD => block::DIRT as i32,
-        block::STAIRS_WOOD => 5,
-        block::STAIRS_COBBLESTONE => 4,
-        block::STAIRS_BRICK => 45,
-        block::STAIRS_STONE_BRICK => 98,
+        block::STAIRS_WOOD => 53,
+        block::STAIRS_COBBLESTONE => 67,
+        block::STAIRS_BRICK => 108,
+        block::STAIRS_STONE_BRICK => 109,
         block::PUMPKIN_STEM | block::MELON_STEM => -1,
         block::MELON => 360,
         block::MUSHROOM_CAP_BROWN => 39,
@@ -932,24 +941,24 @@ pub fn drop_block_with_chance(
     meta: i32,
     chance: f32,
 ) {
+    drop_block_with_chance_fortune(w,id,x,y,z,meta,chance,0);
+}
+pub fn drop_block_as_item_fortune(w:&mut World,id:u8,x:i32,y:i32,z:i32,meta:i32,fortune:i32){drop_block_with_chance_fortune(w,id,x,y,z,meta,1.0,fortune);}
+pub fn drop_block_with_chance_fortune(w:&mut World,id:u8,x:i32,y:i32,z:i32,meta:i32,chance:f32,fortune:i32){
     if w.multiplayer_world { return; }
     if id==26 && meta&8!=0 { return; } // BlockBed skips the base drop method for its head.
-    if matches!(id, 53 | 67 | 108 | 109) {
-        let model=match id {53=>5,67=>4,108=>45,_=>98};
-        drop_block_with_chance(w,model,x,y,z,meta,chance);
-        return;
-    }
     if id==36 {
         if let Some(TileEntity::Piston(p))=w.get_block_tile_entity(x,y,z).cloned() {
             drop_block_as_item(w,p.block_id.try_into().expect("BlockPistonMoving block index"),x,y,z,p.block_data);
         }
         return;
     }
-    let n = quantity_dropped(w, id);
+    if id==115 {let mut n=1;if meta>=3{n=2+w.rand.next_int(3);if fortune>0{n+=w.rand.next_int(fortune+1);}}for _ in 0..n{crate::entity::player::block_hooks::drop_stack(w,x,y,z,crate::entity::player::ItemStack::new(372,1,0));}return;}
+    let n = quantity_dropped_fortune(w, id, if id==59{0}else{fortune});
     for _ in 0..n {
         // Java's skip comparison lets NaN chances through.
         if !(w.rand.next_float() > chance) {
-            let item = id_dropped(w, id, meta);
+            let item = id_dropped_fortune(w, id, meta,fortune);
             if item > 0 {
                 let damage = match id {
                     block::LOG => meta,
@@ -989,7 +998,7 @@ pub fn drop_block_with_chance(
         }
     }
     if matches!(id, 59 | block::PUMPKIN_STEM | block::MELON_STEM) {
-        for _ in 0..3 {
+        for _ in 0..if id==59{3+fortune}else{3} {
             if w.rand.next_int(15) <= meta {
                 let s = 0.7f32;
                 let ox = w.rand.next_float() * s + (1.0 - s) * 0.5;
@@ -1008,5 +1017,17 @@ pub fn drop_block_with_chance(
                 w.entity_joined_world(e);
             }
         }
+    }
+}
+
+/// Quantity overrides consume nextInt(1) even when fortune is zero.
+pub fn quantity_dropped_fortune(w:&mut World,id:u8,fortune:i32)->i32 {
+    match id {
+        16|21|56 if fortune>0=>{let multiplier=(w.rand.next_int(fortune+2)-1).max(0)+1;quantity_dropped(w,id)*multiplier},
+        31=>1+w.rand.next_int(fortune*2+1),
+        73|74=>quantity_dropped(w,id)+w.rand.next_int(fortune+1),
+        89=>(quantity_dropped(w,id)+w.rand.next_int(fortune+1)).clamp(1,4),
+        103=>(quantity_dropped(w,id)+w.rand.next_int(fortune+1)).min(9),
+        _=>quantity_dropped(w,id),
     }
 }

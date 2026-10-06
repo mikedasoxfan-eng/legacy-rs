@@ -4,6 +4,8 @@ impl Entity {
         let id = w.get_block_id(x, y, z);
         let meta = w.get_block_metadata(x, y, z);
         match id {
+            118=>crate::world::blocks10::cauldron_activate(self,w,x,y,z),
+            122=>{crate::world::blocks10::dragon_egg_teleport(w,x,y,z);true},
             73 | 74 => { w.activate_redstone_ore181(id,x,y,z); false },
             25 => { w.activate_note(x,y,z); true },
             36 => {
@@ -73,8 +75,8 @@ impl Entity {
                 w.schedule_block_update(x, y, z, id, 20);
                 true
             }
-            58 | 61 | 62 | 23 => {
-                if matches!(id, 23 | 61 | 62) && w.multiplayer_world { return true; }
+            58 | 61 | 62 | 23 | 116 | 117 => {
+                if matches!(id, 23 | 61 | 62 | 116 | 117) && w.multiplayer_world { return true; }
                 if id != 58 && w.get_block_tile_entity(x,y,z).is_none() {
                     return true;
                 }

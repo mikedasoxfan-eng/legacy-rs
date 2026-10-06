@@ -195,21 +195,18 @@ impl World {
         a.previous_lid = a.lid;
         let leader = a.adjacent[0].is_none() && a.adjacent[2].is_none();
         let mut sound = if a.users > 0 && a.lid == 0.0 && leader {
-            Some("random.door_open")
+            Some("random.chestopen")
         } else {
             None
         };
         if (a.users == 0 && a.lid > 0.0) || (a.users > 0 && a.lid < 1.0) {
+            let old_lid=a.lid;
             a.lid += if a.users > 0 { 0.1f32 } else { -0.1f32 };
             if a.lid > 1.0 {
                 a.lid = 1.0;
             }
-            if a.lid < 0.0 {
-                a.lid = 0.0;
-                if leader {
-                    sound = Some("random.door_close");
-                }
-            }
+            if a.lid<0.5&&old_lid>=0.5&&leader{sound=Some("random.chestclosed");}
+            if a.lid<0.0{a.lid=0.0;}
         }
         let pos = Vec3D::new(
             x as f64 + 0.5 + if a.adjacent[1].is_some() { 0.5 } else { 0.0 },
@@ -218,7 +215,7 @@ impl World {
         );
         if let Some(name) = sound {
             let pitch = self.rand.next_float() * 0.1f32 + 0.9f32;
-            self.play_sound(name, pos, 1.0, pitch);
+            self.play_sound(name, pos, 0.5, pitch);
         }
     }
 }

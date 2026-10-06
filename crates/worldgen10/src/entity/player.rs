@@ -103,6 +103,7 @@ pub enum SleepStatus {
     NotPossibleHere,
     NotPossibleNow,
     TooFarAway,
+    NotSafe,
 }
 #[derive(Clone, Debug)]
 pub struct PlayerState {

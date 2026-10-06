@@ -1050,6 +1050,7 @@ pub fn append_world(w: &World, out: &mut Vec<u8>) {
                 i(out, v);
             }
             match &c.tile_entities[&(x, y, z)] {
+                crate::world::tile::TileEntity::BrewingStand(_)|crate::world::tile::TileEntity::EnchantmentTable(_)|crate::world::tile::TileEntity::EndPortal=>panic!("legacy worldBytes does not encode release tiles"),
                 // Shared Oracle.worldBytes also rejects RecordPlayer tiles.
                 // Their original-bytecode persistence is covered by record4.
                 crate::world::tile::TileEntity::RecordPlayer { .. } => {

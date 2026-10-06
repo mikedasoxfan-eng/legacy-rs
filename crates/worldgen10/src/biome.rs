@@ -322,7 +322,9 @@ impl BiomeSource {
         }
     }
     pub fn temperatures(&mut self, out: &mut Vec<f64>, x: i32, z: i32, w: i32, h: i32) {
-        *out = self.climate_values(true, x, z, w, h);
+        let values=self.climate_values(true,x,z,w,h);
+        if out.len()<values.len() {out.resize(values.len(),0.0);}
+        out[..values.len()].copy_from_slice(&values);
     }
     pub fn rainfalls(&self, x: i32, z: i32, w: i32, h: i32) -> Vec<f64> {
         self.climate_values(false, x, z, w, h)

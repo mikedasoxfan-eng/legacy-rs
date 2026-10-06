@@ -35,6 +35,8 @@ impl World {
         Ok(Some(b))
     }
     pub fn set_block_bounds_based_on_state(&mut self, id: u8, x: i32, y: i32, z: i32) {
+        if matches!(id,85|113) {self.block_bounds[id as usize]=self.fence_bounds10(id,x,y,z,1.0);return;}
+        if id==119 {self.block_bounds[id as usize]=BB::new(0.0,0.0,0.0,1.0,0.0625,1.0);return;}
         // BlockSign declares a state hook for both instances, but the standing
         // instance does nothing and retains the singleton's current bounds.
         if id == 63 {return;}
@@ -96,6 +98,8 @@ impl World {
         }
     }
     pub fn block_collision_box(&mut self, id: u8, x: i32, y: i32, z: i32) -> Option<BB> {
+        if matches!(id,85|113){return Some(self.fence_bounds10(id,x,y,z,1.5).translated_float_xz10(x,y,z));}
+        if matches!(id,110..=122) {return match id {115|119=>None,_=>Some(self.block_bounds[id as usize].translated(x as f64,y as f64,z as f64))};}
         if id == CACTUS {return Some(crate::block::visual181::cactus_box181(x,y,z,false));}
         if matches!(id, 97 | 98 | 99 | 100 | 103) {
             return Some(BB::new(
@@ -183,12 +187,17 @@ impl World {
                 for y in floor(query.min_y) - 1..floor(query.max_y + 1.0) {
                     let id = self.get_block_id(x, y, z);
                     let m = self.get_block_metadata(x, y, z) as usize;
-                    if matches!(id, IRON_BARS | GLASS_PANE) {
+                    if let Some(bounds)=crate::world::blocks10::multi_boxes(id,m as i32) {
+                        for b in bounds {self.block_bounds[id as usize]=b;let b=b.translated(x as f64,y as f64,z as f64);if b.intersects(query){boxes.push(b);}}
+                        self.block_bounds[id as usize]=match id {117=>BB::new(0.0,0.0,0.0,1.0,0.125,1.0),120=>BB::new(0.0,0.0,0.0,1.0,0.8125,1.0),_=>BB::new(0.0,0.0,0.0,1.0,1.0,1.0)};
+                    }else if matches!(id, IRON_BARS | GLASS_PANE) {
                         for b in self.pane_boxes(id,x,y,z) {
                             self.block_bounds[id as usize]=b;
                             let b=b.translated(x as f64,y as f64,z as f64);
                             if b.intersects(query) { boxes.push(b); }
                         }
+                    } else if id==114 {
+                        for b in table::MULTI_COLLISION[67][m] {let b=b.translated(x as f64,y as f64,z as f64);if b.intersects(query){boxes.push(b);}}self.block_bounds[id as usize]=BB::new(0.0,0.0,0.0,1.0,1.0,1.0);
                     } else if matches!(id, STAIRS_WOOD | STAIRS_COBBLESTONE | STAIRS_BRICK | STAIRS_STONE_BRICK | PISTON_EXTENSION) {
                         for b in table::MULTI_COLLISION[id as usize][m] {
                             let b = b.translated(x as f64, y as f64, z as f64);

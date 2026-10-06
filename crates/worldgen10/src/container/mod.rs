@@ -18,6 +18,8 @@ pub enum ContainerKind {
     Chest { rows: usize },
     Furnace,
     Dispenser,
+    BrewingStand,
+    Enchantment,
 }
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum SlotKind {
@@ -25,6 +27,9 @@ pub enum SlotKind {
     Crafting,
     Armor(i32),
     FurnaceOutput,
+    Potion,
+    BrewingIngredient,
+    Enchantment,
 }
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Inventory {
@@ -44,7 +49,7 @@ pub struct Slot {
 }
 impl Slot {
     pub fn stack_limit(&self) -> i32 {
-        if matches!(self.kind, SlotKind::Armor(_)) {
+        if matches!(self.kind, SlotKind::Armor(_) | SlotKind::Potion | SlotKind::Enchantment) {
             1
         } else {
             64
@@ -57,7 +62,9 @@ impl Slot {
                 CraftingManager::instance().armor_types.get(s.id as usize) == Some(&t)
                     || (s.id == 86 && t == 0)
             }
-            SlotKind::Normal => true,
+            SlotKind::Potion => brewing::potion_slot_accepts(Some(s)),
+            SlotKind::BrewingIngredient => brewing::ingredient_slot_accepts(Some(s)),
+            SlotKind::Enchantment | SlotKind::Normal => true,
         }
     }
     // SlotArmor does not override getBackgroundIconIndex in this version.
@@ -86,11 +93,14 @@ pub struct Container {
     pub progress: [i32; 3], // cook, burn, current fuel
     pub events: Vec<ContainerEvent>,
     pub transaction: i16,
+    pub enchanting: Option<enchanting::Enchanting>,
+    pub bookshelves: i32,
+    pub multiplayer: bool,
     /// World.getUniqueDataId("map"); session copies this between windows.
     pub next_map_id: i32,
 }
 fn copy(s: ItemStack) -> ItemStack {
-    ItemStack::new(s.id, s.count, s.damage)
+    s.copy_stack181()
 }
 fn same(a: ItemStack, b: ItemStack) -> bool {
     a.id == b.id && (!registry::item(a.id).is_some_and(|i| i.subtypes) || a.damage == b.damage)
@@ -109,6 +119,7 @@ impl Container {
             progress: [0; 3],
             events: Vec::new(),
             transaction: 0,
+            enchanting: None,bookshelves:0,multiplayer:false,
             next_map_id: -1,
         };
         let mut player_y = 84;
@@ -146,6 +157,16 @@ impl Container {
                 c.add(Inventory::Tile, 0, 56, 17, SlotKind::Normal);
                 c.add(Inventory::Tile, 1, 56, 53, SlotKind::Normal);
                 c.add(Inventory::Tile, 2, 116, 35, SlotKind::FurnaceOutput);
+            }
+            ContainerKind::BrewingStand => {
+                c.tile=vec![None;4];
+                for (index,x,y) in [(0,56,46),(1,79,53),(2,102,46)] {c.add(Inventory::Tile,index,x,y,SlotKind::Potion);}
+                c.add(Inventory::Tile,3,79,17,SlotKind::BrewingIngredient);
+            }
+            ContainerKind::Enchantment => {
+                c.tile=vec![None];
+                c.enchanting=Some(enchanting::Enchanting::new(crate::entity::EntitySeedSource::Time.next_seed()));
+                c.add(Inventory::Tile,0,25,47,SlotKind::Enchantment);
             }
             ContainerKind::Dispenser => {
                 c.tile = vec![None; 9];
@@ -223,7 +244,10 @@ impl Container {
             Inventory::Armor => p.armor[s.index] = stack,
             Inventory::Matrix => self.matrix[s.index] = stack,
             Inventory::Result => self.result = stack,
-            Inventory::Tile => self.tile[s.index] = stack,
+            Inventory::Tile => {
+                self.tile[s.index] = stack;
+                if let Some(e)=&mut self.enchanting {e.item=stack;e.changed(self.multiplayer,self.bookshelves);self.progress=e.costs;}
+            },
         }
     }
     pub fn put_stack(
@@ -234,7 +258,7 @@ impl Container {
     ) {
         if self.slots[slot].inventory == Inventory::Tile {
             if let Some(s) = &mut stack {
-                s.count = s.count.min(64);
+                s.count = s.count.min(if self.kind==ContainerKind::Enchantment {1}else{64});
             }
         }
         self.store(p, slot, stack);
@@ -265,7 +289,7 @@ impl Container {
     }
     fn decrement(&mut self, p: &mut InventoryPlayer, slot: usize, count: i32) -> Option<ItemStack> {
         let mut s = self.stack(p, slot)?;
-        if s.count <= count || self.slots[slot].inventory == Inventory::Result {
+        if s.count <= count || self.slots[slot].inventory == Inventory::Result || (self.kind==ContainerKind::BrewingStand && self.slots[slot].inventory==Inventory::Tile) {
             self.store(p, slot, None);
         } else {
             let part = s.split(count);
@@ -279,6 +303,9 @@ impl Container {
     }
     fn pickup(&mut self, p: &mut InventoryPlayer, slot: usize, mut stack: ItemStack) -> ItemStack {
         let kind = self.slots[slot].kind;
+        if kind==SlotKind::Potion && stack.id==373 && stack.damage>0 {
+            self.events.push(ContainerEvent::Achievement("potion"));
+        }
         if matches!(kind, SlotKind::Crafting | SlotKind::FurnaceOutput) {
             self.events.push(ContainerEvent::Crafted {
                 item: stack.id,
@@ -387,7 +414,15 @@ impl Container {
         let mut s = self.stack(p, slot)?;
         if self.kind==ContainerKind::Creative {return Some(s);}
         let old = copy(s);
+        if self.kind==ContainerKind::Enchantment && slot!=0 {
+            if self.tile[0].is_some() {return None;}
+            let mut transferred=if s.has_tag()&&s.count==1 {s.copy_stack181()}else{ItemStack::new(s.id,1,s.damage)};
+            transferred.count=1;self.put_stack(p,0,Some(transferred));s.count-=1;
+            self.store(p,slot,if s.count==0{None}else{Some(s)});self.changed(p,slot);self.pickup(p,slot,s);return Some(old);
+        }
         let (start, end, reverse) = match self.kind {
+            ContainerKind::BrewingStand => brewing::transfer_range(slot,s)?,
+            ContainerKind::Enchantment => (1,37,true),
             ContainerKind::Dispenser => {
                 if slot < 9 { (9, 45, true) } else { (0, 9, false) }
             }
@@ -531,7 +566,10 @@ impl Container {
         if self.kind == ContainerKind::Player
             || (self.kind == ContainerKind::Workbench && !multiplayer)
         {
-            for i in 0..self.matrix.len() {
+            if self.kind==ContainerKind::Enchantment&&!multiplayer {
+            if let Some(item)=self.tile[0] {self.events.push(ContainerEvent::Drop(item));}
+        }
+        for i in 0..self.matrix.len() {
                 if let Some(s) = self.matrix[i] {
                     self.events.push(ContainerEvent::Drop(s));
                 }
@@ -645,3 +683,5 @@ pub enum ContainerCommand {
     /// calls it again. Vanilla keeps both callbacks, including their effects.
     CloseFromGui { window: i32 },
 }
+pub mod brewing;
+pub mod enchanting;

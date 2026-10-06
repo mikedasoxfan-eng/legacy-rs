@@ -120,7 +120,10 @@ fn level_dat_roundtrip_keeps_player_out_of_chunk_entities() {
     drop(w);
     let mut storage = Storage::open(&dir).unwrap();
     let info = storage.load_level().unwrap();
-    assert_eq!(info.player.as_ref().unwrap(), &expected);
+    let mut loaded_nbt=Vec::new();let mut expected_nbt=Vec::new();
+    worldgen::nbt::write_root_canonical(&mut loaded_nbt,info.player.as_ref().unwrap()).unwrap();
+    worldgen::nbt::write_root_canonical(&mut expected_nbt,&expected).unwrap();
+    assert_eq!(loaded_nbt,expected_nbt);
     assert!(storage.load_chunk(0, 0).unwrap().raw_entities.is_empty());
     let mut w = flat_world();
     w.info = info;

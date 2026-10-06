@@ -124,17 +124,18 @@ impl Entity {
     }
     pub fn stop_item_use(&mut self, w: &mut World) {
         let s=self.player_state().unwrap();
-        if s.item_in_use.is_some_and(|i|i.id==261) && s.inventory.contains_item(262) {
+        if s.item_in_use.is_some_and(|i|i.id==261) && (s.capabilities.creative || s.inventory.contains_item(262)) {
             let mut charge=(72000-s.item_use_ticks) as f32/20.0;
             charge=(charge*charge+charge*2.0)/3.0;
             if charge as f64>=0.1 {
                 if charge>1.0 {charge=1.0;}
                 let mut arrow=Entity::arrow_from_owner_power(w,self,charge*2.0);
                 if let EntityKind::Arrow(a) = &mut arrow.kind { a.critical = charge == 1.0; }
+                self.damage_held(1);
                 let pitch=1.0/(w.item_random.next_float()*0.4+1.2)+charge*0.5;
                 w.play_sound_at_entity(self,"random.bow",1.0,pitch);
                 self.player_state_mut().unwrap().inventory.consume(262);
-                w.entity_joined_world(arrow);
+                if !w.multiplayer_world {w.entity_joined_world(arrow);}
             }
         }
         self.clear_item_use();
@@ -154,22 +155,29 @@ impl Entity {
         self.player_state_mut().unwrap().item_use_ticks -= 1;
         if self.player_state().unwrap().item_use_ticks == 0 {
             self.eating_effect(w, item, 16);
-            if let Some((amount, saturation)) = food_value(item.id) {
+            if matches!(item.id,335|373) {
+                let result=if item.id==335 {self.drink_milk10(w,item)}else{self.drink_potion10(w,item)};
+                let inv=&mut self.player_state_mut().unwrap().inventory;
+                inv.main[inv.current_item as usize]=Some(result);
+            } else if let Some((amount, saturation)) = food_value(item.id) {
                 let s = self.player_state_mut().unwrap();
                 s.food.add_food(amount, saturation);
                 let mut result = item;
                 result.count -= 1;
                 if item.id == 282 { result = ItemStack::new(281, 1, 0); }
                 s.inventory.main[s.inventory.current_item as usize] = if result.count == 0 { None } else { Some(result) };
+                let pitch=w.rand.next_float()*0.1+0.9;
+                w.play_sound_at_entity(self,"random.burp",0.5,pitch);
                 let effect = match item.id {
                     322 => Some((super::super::potion::REGENERATION, 1.0)),
                     365 => Some((super::super::potion::HUNGER, 0.3)),
                     367 => Some((super::super::potion::HUNGER, 0.8)),
+                    375 => Some((super::super::potion::POISON, 1.0)),
                     _ => None,
                 };
                 if let Some((id, probability)) = effect {
-                    if w.rand.next_float() < probability {
-                        self.add_potion_effect(super::super::potion::PotionEffect::new(id, 600, 0));
+                    if !w.multiplayer_world && w.rand.next_float() < probability {
+                        self.add_potion_effect(super::super::potion::PotionEffect::new(id, if item.id==375 {100}else{600}, 0));
                     }
                 }
             }
@@ -177,6 +185,10 @@ impl Entity {
         }
     }
     fn eating_effect(&mut self, w: &mut World, item: ItemStack, count: i32) {
+        if matches!(item.id,335|373) {
+            let pitch=self.rand.next_float()*0.1+0.9;
+            w.play_sound_at_entity(self,"random.drink",0.5,pitch);return;
+        }
         if food_value(item.id).is_none() { return; }
         let pitch = -self.pitch * math::PI_F32 / 180.0;
         let yaw = -self.yaw * math::PI_F32 / 180.0;
@@ -206,6 +218,6 @@ pub fn food_value(id: i32) -> Option<(i32, f32)> {
         260 => (4, 0.3), 282 => (8, 0.6), 297 => (5, 0.6),
         319 | 363 => (3, 0.3), 320 | 364 => (8, 0.8), 322 => (10, 1.2),
         349 | 360 | 365 => (2, 0.3), 350 => (5, 0.6), 357 => (1, 0.1),
-        366 => (6, 0.6), 367 => (4, 0.1), _ => return None,
+        375 => (2,0.8), 366 => (6, 0.6), 367 => (4, 0.1), _ => return None,
     })
 }

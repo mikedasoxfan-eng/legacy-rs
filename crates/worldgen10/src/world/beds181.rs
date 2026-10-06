@@ -85,6 +85,7 @@ impl World {
         match sleep(self, x, y, z) {
             SleepStatus::Ok => self.set_bed_occupied181(x, y, z, true),
             SleepStatus::NotPossibleNow => return Some("tile.bed.noSleep"),
+            SleepStatus::NotSafe => return Some("tile.bed.notSafe"),
             _ => {}
         }
         None

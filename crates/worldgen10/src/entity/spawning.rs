@@ -327,6 +327,19 @@ impl World {
     pub fn tick_tile_entity(&mut self, id: u64) {
         let (x, y, z) = self.tile_objects[&id].position;
         if let Some(mut te) = self.tile_object(id).cloned() {
+            if let crate::world::tile::TileEntity::BrewingStand(b)=&mut te {
+                let update=b.tick();self.update_tile_object(id,te);
+                if update.dirty{self.tile_inventory_changed181(id);}
+                if let Some(meta)=update.metadata{self.set_block_metadata_with_notify(x,y,z,meta);}
+                return;
+            }
+            if let crate::world::tile::TileEntity::EnchantmentTable(table)=&mut te {
+                let center=Vec3D::new((x as f32+0.5) as f64,(y as f32+0.5) as f64,(z as f32+0.5) as f64);
+                let player=self.closest_player(center,3.0).map(|i|{let (px,_,pz)=self.players[i];(px,pz)});
+                static RNG:std::sync::OnceLock<std::sync::Mutex<crate::JavaRandom>>=std::sync::OnceLock::new();
+                let mut rng=RNG.get_or_init(||std::sync::Mutex::new(crate::JavaRandom::new(crate::entity::EntitySeedSource::Time.next_seed()))).lock().unwrap();
+                table.tick((x,y,z),player,&mut rng);
+            }
             if matches!(&te, crate::world::tile::TileEntity::Chest(_)) {
                 self.tick_chest181(id);
             }
@@ -408,15 +421,7 @@ impl World {
             if e.get_can_spawn_here(self) {
                 let id = e.entity_id;
                 self.entity_joined_world(e);
-                for _ in 0..20 {
-                    let p = Vec3D::new(
-                        x as f64 + 0.5 + ((self.rand.next_float() as f64) - 0.5) * 2.0,
-                        y as f64 + 0.5 + ((self.rand.next_float() as f64) - 0.5) * 2.0,
-                        z as f64 + 0.5 + ((self.rand.next_float() as f64) - 0.5) * 2.0,
-                    );
-                    self.spawn_particle("smoke", p, Vec3D::default());
-                    self.spawn_particle("flame", p, Vec3D::default());
-                }
+                self.auxiliary_effect(2004,(x,y,z),0);
                 if let Some(mut e) = self.entities.remove(&id) {
                     e.explosion_particle(self);
                     self.entities.insert(id, e);

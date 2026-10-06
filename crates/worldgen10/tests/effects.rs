@@ -47,12 +47,11 @@ fn note_pitch_and_jukebox_record_survive_region_storage() {
         Some(worldgen::world::tile::TileEntity::Note(n)) => n.note,
         other => panic!("note block tile entity: {other:?}"),
     };
-    let record = chunk
-        .raw_tile_entities
-        .iter()
-        .find(|n| n.string("id") == "RecordPlayer")
-        .unwrap();
+    let record = match chunk.tile_entities.get(&(9,64,8)) {
+        Some(worldgen::world::tile::TileEntity::RecordPlayer {record}) => *record,
+        other => panic!("jukebox tile entity: {other:?}"),
+    };
     assert_eq!(note, 6);
-    assert_eq!(record.int("Record"), 2257);
+    assert_eq!(record, 2257);
     assert_eq!(chunk.data.get(9, 64, 8), 1);
 }

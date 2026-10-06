@@ -1,10 +1,10 @@
 use super::*;
 pub const DYE_COLOR_NAMES: [&str; 16] = ["black", "red", "green", "brown", "blue", "purple", "cyan", "silver", "gray", "pink", "lime", "yellow", "lightBlue", "magenta", "orange", "white"];
 pub const DYE_COLORS: [i32; 16] = [1973019,11743532,3887386,5320730,2437522,8073150,2651799,2651799,4408131,14188952,4312372,14602026,6719955,12801229,15435844,15790320];
-/// ItemDye.getIconFromDamage; Java remainder, division and overflow are intentional.
-pub fn icon(damage: i32) -> i32 { 78i32.wrapping_add((damage % 8).wrapping_mul(16)).wrapping_add(damage / 8) }
+/// ItemDye clamps damage before indexing its 16 color variants.
+pub fn icon(damage: i32) -> i32 { let damage=damage.clamp(0,15); 78+damage%8*16+damage/8 }
 pub fn name(damage: i32) -> Result<String, &'static str> {
-    DYE_COLOR_NAMES.get(damage as usize).map(|s| format!("item.dyePowder.{s}")).ok_or("ArrayIndexOutOfBoundsException")
+    DYE_COLOR_NAMES.get(damage.clamp(0,15) as usize).map(|s| format!("item.dyePowder.{s}")).ok_or("ArrayIndexOutOfBoundsException")
 }
 impl Entity {
     pub(super) fn dye_block(

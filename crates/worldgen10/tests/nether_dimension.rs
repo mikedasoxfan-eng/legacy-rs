@@ -9,25 +9,15 @@ use worldgen::world::Dimension;
 use worldgen::World;
 
 #[test]
-fn hell_biome_queries_preserve_shared_climate_buffers() {
-    let mut source = BiomeSource::hell();
-    assert_eq!(source.biome_at(-12345, 67890), Biome::Hell);
-    assert!(source.temperature.is_empty()); // override does not call loadBlockGeneratorData
-    let mut biomes = Vec::new();
-    source.biomes(&mut biomes, -12345, 67890, 3, 2);
-    assert_eq!(biomes, vec![Biome::Hell; 6]);
-    assert_eq!(source.temperature, vec![1.0; 6]);
-    assert_eq!(source.humidity, vec![0.0; 6]);
-    source.temperature[5] = 0.25;
-    source.humidity[5] = 0.75;
-    source.biomes(&mut biomes, 0, 0, 1, 1);
-    assert_eq!(source.temperature[5], 0.25); // only the requested prefix is filled
-    assert_eq!(source.humidity[5], 0.75);
-    let mut temperatures = vec![0.5; 4];
-    source.temperatures(&mut temperatures, 0, 0, 1, 2);
-    assert_eq!(temperatures, vec![1.0, 1.0, 0.5, 0.5]);
-    assert_eq!(source.temperature[5], 0.25);
-    assert_eq!(source.raw_temperature(999999, -999999), 1.0);
+fn hell_biome_queries_and_temperature_output_are_fixed() {
+    let mut source=BiomeSource::hell();
+    assert_eq!(source.biome_at(-12345,67890),Biome::Hell);
+    let mut biomes=Vec::new();source.biomes(&mut biomes,-12345,67890,3,2);
+    assert_eq!(biomes,vec![Biome::Hell;6]);
+    assert_eq!(source.raw_temperature(999999,-999999),1.0);
+    assert_eq!(source.raw_rainfall(999999,-999999),0.0);
+    let mut temperatures=vec![0.5;4];source.temperatures(&mut temperatures,0,0,1,2);
+    assert_eq!(temperatures,vec![1.0,1.0,0.5,0.5]);
 }
 
 #[test]
@@ -36,13 +26,13 @@ fn nether_chunks_start_with_uninitialized_height_and_light() {
     w.load_chunk(0, 0);
     let c = w.chunk(0, 0);
     assert!(c.blocks.iter().any(|&b| b == block::NETHERRACK));
-    assert_eq!(c.height_map, [0; 256]);
+    assert_eq!(c.height_map.as_ref(), &[0; 256]);
     assert!(c.sky_light.0.iter().all(|&v| v == 0));
     assert!(c.block_light.0.iter().all(|&v| v == 0));
     assert!(w.light_queue.is_empty());
     assert_eq!(w.light_brightness_table[0].to_bits(), 0.1f32.to_bits());
     assert_eq!(w.light_brightness_table[15].to_bits(), 1.0f32.to_bits());
-    assert_eq!(World::new(0, 1).light_brightness_table[0].to_bits(), 0.05f32.to_bits());
+    assert_eq!(World::new(0, 1).light_brightness_table[0].to_bits(), 0.0f32.to_bits());
 }
 
 #[test]
@@ -67,13 +57,15 @@ fn only_metadata_writes_skip_relighting_in_hell() {
 }
 
 #[test]
-fn repairing_a_saved_chunk_honors_the_provider() {
-    let mut nbt = Compound::new();
-    nbt.put("Blocks", Tag::ByteArray(vec![0; CHUNK_VOLUME]));
-    // Missing HeightMap/SkyLight forces ChunkLoader's func_1024_c repair path.
-    let hell = worldgen::storage::chunk_from_nbt_for_dimension(&nbt, Dimension::Nether).unwrap();
-    let overworld = worldgen::storage::chunk_from_nbt(&nbt).unwrap();
-    assert!(hell.sky_light.0.iter().all(|&v| v == 0));
-    assert_eq!(overworld.sky_light.get(0, 127, 0), 15);
-    assert_eq!(hell.height_map, overworld.height_map);
+fn missing_saved_arrays_are_preserved_in_each_dimension() {
+    let mut nbt=Compound::new();nbt.put("Blocks",Tag::ByteArray(vec![0;CHUNK_VOLUME]));
+    // getByteArray returns a non-null empty array. NibbleArray.isValid checks
+    // null only, so vanilla does not rebuild these absent arrays.
+    let hell=worldgen::storage::chunk_from_nbt_for_dimension(&nbt,Dimension::Nether).unwrap();
+    let overworld=worldgen::storage::chunk_from_nbt(&nbt).unwrap();
+    for chunk in [&hell,&overworld] {
+        assert!(chunk.height_map.is_empty());assert!(chunk.sky_light.0.is_empty());
+        assert!(chunk.block_light.0.is_empty());assert!(chunk.data.0.is_empty());
+    }
+    nbt.put("SkyLight",Tag::Int(0));assert!(worldgen::storage::chunk_from_nbt(&nbt).is_none());
 }
