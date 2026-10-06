@@ -5,6 +5,30 @@ use crate::{
     World,
 };
 impl Entity {
+    pub fn write_throwable_nbt(&self) -> crate::nbt::Compound {
+        let s = match &self.kind {
+            EntityKind::Snowball(s) | EntityKind::Egg(s) | EntityKind::EnderPearl(s) | EntityKind::Potion(s, _) => s,
+            _ => panic!("not a throwable"),
+        };
+        let mut n = crate::nbt::Compound::new();
+        for (key, value) in [("xTile", s.tile[0]), ("yTile", s.tile[1]), ("zTile", s.tile[2])] {
+            n.put(key, crate::nbt::Tag::Short(value as i16));
+        }
+        n.put("inTile", crate::nbt::Tag::Byte(s.block as i8));
+        n.put("shake", crate::nbt::Tag::Byte(s.shake as i8));
+        n.put("inGround", crate::nbt::Tag::Byte(s.in_ground as i8));
+        n
+    }
+    pub fn read_throwable_nbt(&mut self, n: &crate::nbt::Compound) {
+        let s = match &mut self.kind {
+            EntityKind::Snowball(s) | EntityKind::Egg(s) | EntityKind::EnderPearl(s) | EntityKind::Potion(s, _) => s,
+            _ => panic!("not a throwable"),
+        };
+        s.tile = [n.short("xTile") as i32, n.short("yTile") as i32, n.short("zTile") as i32];
+        s.block = n.byte("inTile") as u8;
+        s.shake = n.byte("shake") as u8 as i32;
+        s.in_ground = n.byte("inGround") == 1;
+    }
     pub fn throwable_at(w: &mut World, x: f64, y: f64, z: f64, egg: bool) -> Self {
         let mut e = Self::base(
             w,

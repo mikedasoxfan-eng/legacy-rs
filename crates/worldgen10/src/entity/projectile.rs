@@ -451,38 +451,7 @@ impl Entity {
         }
         let impact = self.projectile_intersection(w, &s.arrow, true);
         if let Some(hit) = impact {
-            if small {
-                self.small_fireball_impact(w, hit, &s);
-            } else {
-                if !w.multiplayer_world {
-            if let Hit::Entity { id, .. } = hit {
-                if let Some(mut e) = w.entities.remove(&id) {
-                    e.attack_from(
-                        w,
-                        super::damage::DamageSource::indirect(
-                            super::damage::DamageKind::Fireball,
-                            self.entity_id,
-                            s.arrow.owner,
-                        ),
-                                4,
-                    );
-                    w.entities.insert(id, e);
-                }
-            }
-            // The fireball is still in the world during its own explosion: at zero distance the
-            // knockback direction is NaN, and that NaN reaches its later motion and smoke.
-            let me = self.entity_id;
-            let mut copy = self.clone();
-            copy.kind = EntityKind::Fireball(s.clone());
-            w.entities.insert(me, copy);
-            w.new_explosion(None, self.pos, 1.0, true);
-            if let Some(back) = w.entities.remove(&me) {
-                self.motion = back.motion;
-                self.velocity_changed = back.velocity_changed;
-            }
-            self.dead = true;
-                }
-            }
+            self.fireball_impact(w, hit, &s);
         }
         self.projectile_advance(
             w,
@@ -495,5 +464,40 @@ impl Entity {
             EntityKind::SmallFireball(s)
         } else { EntityKind::Fireball(s)
         };
+    }
+    pub(super) fn fireball_impact(&mut self, w: &mut World, hit: Hit, s: &FireballState) {
+        if matches!(self.kind, EntityKind::SmallFireball(..)) {
+            self.small_fireball_impact(w, hit, s);
+            return;
+        }
+        if w.multiplayer_world {
+            return;
+        }
+        if let Hit::Entity { id, .. } = hit {
+            if let Some(mut e) = w.entities.remove(&id) {
+                e.attack_from(
+                    w,
+                    super::damage::DamageSource::indirect(
+                        super::damage::DamageKind::Fireball,
+                        self.entity_id,
+                        s.arrow.owner,
+                    ),
+                    4,
+                );
+                w.entities.insert(id, e);
+            }
+        }
+        // The fireball is still in the world during its own explosion: at zero distance the
+        // knockback direction is NaN, and that NaN reaches its later motion and smoke.
+        let me = self.entity_id;
+        let mut copy = self.clone();
+        copy.kind = EntityKind::Fireball(s.clone());
+        w.entities.insert(me, copy);
+        w.new_explosion(None, self.pos, 1.0, true);
+        if let Some(back) = w.entities.remove(&me) {
+            self.motion = back.motion;
+            self.velocity_changed = back.velocity_changed;
+        }
+        self.dead = true;
     }
 }

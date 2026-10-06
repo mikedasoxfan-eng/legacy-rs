@@ -133,7 +133,7 @@ impl Entity {
                         stack.count = stack.count.wrapping_sub(1);
                         if stack.count == 0 { inv.main[slot] = None; }
                     }
-                    s.fuel = s.fuel.wrapping_add(1200);
+                    s.fuel = s.fuel.wrapping_add(3600);
                 }
                 s.push_x = target.pos.x - self.pos.x;
                 s.push_z = target.pos.z - self.pos.z;

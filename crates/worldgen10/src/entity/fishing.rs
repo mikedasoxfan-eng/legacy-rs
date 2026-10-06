@@ -1,4 +1,4 @@
-//! EntityFish and ItemFishingRod. Tile coordinates deliberately stay -1 on impact.
+//! EntityFishHook and ItemFishingRod. Tile coordinates deliberately stay -1 on impact.
 use super::{
     projectile::ArrowState, AxisAlignedBB as BB, Entity, EntityKind, MovingObjectPosition as Hit,
     Vec3D,
@@ -108,7 +108,7 @@ impl Entity {
             return;
         }
         let owner = s.arrow.owner.and_then(|id| w.entities.get(&id));
-        if !owner.is_some_and(|p| {
+        if !w.multiplayer_world && !owner.is_some_and(|p| {
             !p.dead
                 && p.living.health > 0
                 && p.held_item().is_some_and(|s| s.id == 346)
@@ -125,7 +125,7 @@ impl Entity {
             }
             return;
         }
-        if let Some(id) = s.hooked {
+        if let Some(id) = s.hooked.filter(|_| !w.multiplayer_world) {
             if let Some(target) = w.entities.get(&id).filter(|e| !e.dead) {
                 self.pos = Vec3D::new(
                     target.pos.x,
@@ -332,7 +332,7 @@ impl Entity {
             angler.pos.y - self.pos.y,
             angler.pos.z - self.pos.z,
         );
-        let distance = pull.length();
+        let distance = pull.length() as f32 as f64;
         let motion = Vec3D::new(
             pull.x * 0.1,
             pull.y * 0.1 + (distance.sqrt() as f32 as f64) * 0.08,
@@ -364,6 +364,24 @@ impl Entity {
         self.dead = true;
         angler.player_state_mut().unwrap().fish_entity = None;
         damage
+    }
+    pub fn write_fish_nbt(&self) -> crate::nbt::Compound {
+        let EntityKind::Fish(s) = &self.kind else { panic!("not a fishing hook"); };
+        let mut n = crate::nbt::Compound::new();
+        for (key, value) in [("xTile", s.arrow.tile[0]), ("yTile", s.arrow.tile[1]), ("zTile", s.arrow.tile[2])] {
+            n.put(key, crate::nbt::Tag::Short(value as i16));
+        }
+        n.put("inTile", crate::nbt::Tag::Byte(s.arrow.block as i8));
+        n.put("shake", crate::nbt::Tag::Byte(s.arrow.shake as i8));
+        n.put("inGround", crate::nbt::Tag::Byte(s.arrow.in_ground as i8));
+        n
+    }
+    pub fn read_fish_nbt(&mut self, n: &crate::nbt::Compound) {
+        let EntityKind::Fish(s) = &mut self.kind else { panic!("not a fishing hook"); };
+        s.arrow.tile = [n.short("xTile") as i32, n.short("yTile") as i32, n.short("zTile") as i32];
+        s.arrow.block = n.byte("inTile") as u8;
+        s.arrow.shake = n.byte("shake") as u8 as i32;
+        s.arrow.in_ground = n.byte("inGround") == 1;
     }
     pub fn use_fishing_rod(&mut self, w: &mut World, stack: &mut ItemStack) {
         if let Some(id) = self.player_state().unwrap().fish_entity {

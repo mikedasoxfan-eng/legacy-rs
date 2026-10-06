@@ -851,10 +851,10 @@ impl Entity {
         x *= 0.5;
         z *= 0.5;
         if let EntityKind::Minecart(s) = &other.kind {
-            // Vanilla bug: prevPosX, not motionX, in the alignment test.
-            let align = (other.pos.x - self.pos.x) * other.motion.z
-                + (other.pos.z - self.pos.z) * other.prev_pos.x;
-            if align * align > 5.0 {
+            let separation = Vec3D::new(other.pos.x - self.pos.x, 0.0, other.pos.z - self.pos.z).normalize();
+            let angle = self.yaw * crate::math::PI_F32 / 180.0;
+            let facing = Vec3D::new(crate::math::cos(angle) as f64, 0.0, crate::math::sin(angle) as f64).normalize();
+            if separation.dot(facing).abs() < 0.8f32 as f64 {
                 return;
             }
             let vx = other.motion.x + self.motion.x;
@@ -863,14 +863,14 @@ impl Entity {
                 self.motion.x *= 0.2f32 as f64;
                 self.motion.z *= 0.2f32 as f64;
                 self.add_motion(other.motion.x - x, 0.0, other.motion.z - z);
-                other.motion.x *= 0.7f32 as f64;
-                other.motion.z *= 0.7f32 as f64;
+                other.motion.x *= 0.95f32 as f64;
+                other.motion.z *= 0.95f32 as f64;
             } else if s.cart_type != 2 && t == 2 {
                 other.motion.x *= 0.2f32 as f64;
                 other.motion.z *= 0.2f32 as f64;
                 other.add_motion(self.motion.x + x, 0.0, self.motion.z + z);
-                self.motion.x *= 0.7f32 as f64;
-                self.motion.z *= 0.7f32 as f64;
+                self.motion.x *= 0.95f32 as f64;
+                self.motion.z *= 0.95f32 as f64;
             } else {
                 self.motion.x *= 0.2f32 as f64;
                 self.motion.z *= 0.2f32 as f64;

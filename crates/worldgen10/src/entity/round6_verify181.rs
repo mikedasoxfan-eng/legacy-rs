@@ -317,7 +317,10 @@ pub fn replay(kind: &str) -> Vec<u8> {
                 }
                 e.add_potion_effect(PotionEffect::new(1, 3, 5));
                 effects(&e, &mut o);
-                e.remove_potion_effect(17);
+                // Release fixture calls EntityLiving.damageEntity; the removed
+                // Beta API used to delete hunger here.
+                let damage = e.armor_damage(super::damage::DamageSource::new(super::damage::DamageKind::Generic), 17);
+                e.living.health -= e.resistance_damage(damage);
                 effects(&e, &mut o);
                 let mut n = e.to_nbt().unwrap();
                 let mut list = Vec::new();

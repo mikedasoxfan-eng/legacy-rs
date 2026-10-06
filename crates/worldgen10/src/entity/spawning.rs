@@ -109,12 +109,6 @@ pub fn spawn_list181(biome: i32, category: i32) -> Vec<(&'static str, i32, i32, 
     entries.into_iter().map(|e|(e.entity,e.weight,e.min,e.max)).collect()
 }
 
-fn spawn_list(biome: Biome, category: i32) -> Vec<(&'static str, i32)> {
-    spawn_list181(biome as i32, category)
-        .into_iter()
-        .map(|(name, weight, _, _)| (name, weight))
-        .collect()
-}
 fn category(kind: &EntityKind) -> i32 {
     if kind.is_mob() || matches!(kind, EntityKind::Slime { .. } | EntityKind::MagmaCube { .. } | EntityKind::Ghast(..)) {
         0
@@ -231,19 +225,10 @@ impl World {
                             continue;
                         }
                         if selected.is_none() {
-                            let biome = self.terrain.biome_source.biome_at(px, pz);
-                            let list = spawn_list(biome, cat);
-                            if list.is_empty() {
+                            if let Some(entry) = self.choose_spawn_entry10(cat, px, py, pz) {
+                                selected = Some(entry.entity);
+                            } else {
                                 break;
-                            }
-                            let sum = list.iter().map(|(_, weight)| *weight).sum();
-                            let mut pick = self.rand.next_int(sum);
-                            for &(name, weight) in &list {
-                                pick -= weight;
-                                if pick < 0 {
-                                    selected = Some(name);
-                                    break;
-                                }
                             }
                         }
                         let name = selected.unwrap();

@@ -12,9 +12,9 @@ fn frame(w: &mut World, p: &mut Entity, o: &mut Vec<u8>) {
     verify::state_bytes(p.player_state().unwrap(),p,&mut bytes);
     p.player_state_mut().unwrap().stat_log.clear();
     let s=p.player_state().unwrap();let food=&s.food;
-    for v in [food.level,food.prev_level,food.tick_timer,s.experience.level,s.experience.total,s.xp_pickup_cooldown,s.sprint_ticks,s.sprint_toggle_timer,s.fly_toggle_timer,s.item_use_ticks,] {i(&mut bytes,v);}
+    for v in [food.level,food.prev_level,food.tick_timer,s.experience.points.to_bits() as i32,s.experience.level,s.experience.total,s.xp_pickup_cooldown,s.sprint_ticks,s.sprint_toggle_timer,s.fly_toggle_timer,s.item_use_ticks,] {i(&mut bytes,v);}
     for v in [
-        s.experience.points,food.saturation,food.exhaustion,p.fov_multiplier(),p.living.swing_progress,p.living.prev_swing_progress,s.previous_forward,s.render_arm_yaw,s.render_arm_pitch,s.prev_render_arm_yaw,s.prev_render_arm_pitch,] {f(&mut bytes,v);}
+        food.saturation,food.exhaustion,p.fov_multiplier(),p.living.swing_progress,p.living.prev_swing_progress,s.previous_forward,s.render_arm_yaw,s.render_arm_pitch,s.prev_render_arm_yaw,s.prev_render_arm_pitch,] {f(&mut bytes,v);}
     for v in [s.sprinting,s.capabilities.disable_damage,s.capabilities.flying,s.capabilities.allow_flying,s.capabilities.creative,s.previous_jump,p.is_blocking(),] {bytes.push(v as u8);}
     verify::write(&mut bytes,s.item_in_use);
     let arrows:Vec<_> = w.loaded_entity_list.iter().filter_map(|id|w.entities.get(id)).filter(|e|matches!(e.kind,EntityKind::Arrow(_))).collect();

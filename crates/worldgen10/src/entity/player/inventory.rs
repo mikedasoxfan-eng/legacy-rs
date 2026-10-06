@@ -31,7 +31,9 @@ impl ItemStack {
         }
     }
     pub fn copy_stack(&self) -> Self {
-        Self::new(self.id, self.count, self.damage)
+        let copy = Self::new(self.id, self.count, self.damage);
+        copy.set_tag(self.tag());
+        copy
     }
     pub fn same_object(self, other: Self) -> bool { self.identity == other.identity }
     pub fn max_stack(&self) -> i32 {
