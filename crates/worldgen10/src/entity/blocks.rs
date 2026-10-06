@@ -99,7 +99,7 @@ impl World {
     }
     pub fn block_collision_box(&mut self, id: u8, x: i32, y: i32, z: i32) -> Option<BB> {
         if matches!(id,85|113){return Some(self.fence_bounds10(id,x,y,z,1.5).translated_float_xz10(x,y,z));}
-        if matches!(id,110..=122) {return match id {115|119=>None,_=>Some(self.block_bounds[id as usize].translated(x as f64,y as f64,z as f64))};}
+        if matches!(id,110..=122) {return match id {115=>None,_=>Some(self.block_bounds[id as usize].translated(x as f64,y as f64,z as f64))};}
         if id == CACTUS {return Some(crate::block::visual181::cactus_box181(x,y,z,false));}
         if matches!(id, 97 | 98 | 99 | 100 | 103) {
             return Some(BB::new(

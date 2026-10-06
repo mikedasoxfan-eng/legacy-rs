@@ -1,5 +1,5 @@
-//! Immutable Item/Block defaults extracted from the original bytecode.
-//! Regenerate with tools/oracle181/oracle.sh wbregistry registry.bin.
+//! Immutable release Item/Block defaults extracted from the original bytecode.
+//! Regenerate with tools/oracle10/build_player_registry.py.
 const DATA: &[u8] = include_bytes!("registry.bin");
 const ITEM_SIZE: usize = 16 + 256 * 5;
 fn int(at: usize) -> i32 {
@@ -14,7 +14,7 @@ pub struct ItemDefinition {
 }
 pub fn item(id: i32) -> Option<ItemDefinition> {
     if let Some((material,slot))=crate::enchantment::armor(id) {return Some(ItemDefinition{max_stack:1,durability:material.durability(slot),subtypes:false,armor:material.reduction(slot)});}
-    if (110..=122).contains(&id)||(372..=382).contains(&id)||(2258..=2266).contains(&id) {
+    if (110..=122).contains(&id)||(369..=382).contains(&id)||(2258..=2266).contains(&id) {
         return Some(ItemDefinition{max_stack:if id==373||id>=2258 {1}else{64},durability:0,subtypes:id==373,armor:0});
     }
     if id==261{return Some(ItemDefinition{max_stack:1,durability:384,subtypes:false,armor:0});}

@@ -872,7 +872,7 @@ pub fn quantity_dropped(w: &mut World, id: u8) -> i32 {
 pub fn id_dropped(w:&mut World,id:u8,meta:i32)->i32 {id_dropped_fortune(w,id,meta,0)}
 pub fn id_dropped_fortune(w: &mut World, id: u8, meta: i32,fortune:i32) -> i32 {
     match id {
-        92|102|115|120 => 0,
+        8|9|10|11|36|92|102|106|115|120 => 0,
         47=>340,110=>3,117=>379,118=>380,
         55 => ITEM_REDSTONE,
         63 | 68 => 323,

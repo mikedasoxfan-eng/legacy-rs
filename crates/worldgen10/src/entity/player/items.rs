@@ -182,6 +182,15 @@ impl Entity {
         };
         let original = stack;
         if stack.id==374 {stack=self.glass_bottle_right_click10(w,stack);}
+        else if stack.id==381 {
+            stack=self.ender_eye_right_click10(w,stack,
+                |world,name,pos|world.closest_structure10(name,pos[0],pos[1],pos[2]),
+                |world,pos,target| {
+                    let mut eye=Entity::ender_eye(world,pos);
+                    eye.set_eye_target(target[0] as f64,target[1],target[2] as f64);
+                    world.entity_joined_world(eye);
+                });
+        }
         else if stack.id==111 {stack=self.lily_pad_right_click10(w,stack);}
         else if stack.id==335 || (stack.id==373 && stack.damage&16384==0) {self.start_item_use(stack,32);}
         else if stack.id == 373 || (stack.id == 368 && !self.player_state().unwrap().capabilities.creative) {
