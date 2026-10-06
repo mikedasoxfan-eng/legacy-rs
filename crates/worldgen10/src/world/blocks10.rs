@@ -71,7 +71,10 @@ impl BB {
 impl World {
     /// World.func_41082_b: missing chunks return the supplied fallback.
     pub fn torch_support10(&mut self, x: i32, y: i32, z: i32) -> bool {
-        if !self.block_exists(x, y, z) {
+        if !(-30_000_000..30_000_000).contains(&x)
+            || !(-30_000_000..30_000_000).contains(&z)
+            || !self.chunk_exists(x >> 4, z >> 4)
+        {
             return true;
         }
         let id = self.get_block_id(x, y, z);
@@ -215,12 +218,13 @@ pub fn can_stay(w: &mut World, id: u8, x: i32, y: i32, z: i32) -> bool {
     match id {
         111 => {
             y >= 0
-                && y < 128
+                && y < w.height10
                 && w.get_block_material(x, y - 1, z) == block::MAT_WATER
                 && w.get_block_metadata(x, y - 1, z) == 0
         }
         115 => {
             (w.get_full_block_light_value(x, y, z) >= 8 || w.can_block_see_the_sky(x, y, z))
+                && y > 0 && y - 1 < w.height10
                 && w.get_block_id(x, y - 1, z) == 88
         }
         _ => false,
@@ -325,11 +329,12 @@ pub fn cauldron_activate(player: &mut Entity, w: &mut World, x: i32, y: i32, z: 
         }
     } else if held.id == 374 && meta > 0 {
         let mut potion = ItemStack::new(373, 1, 0);
+        let creative = player.player_state().unwrap().capabilities.creative;
         if !player
             .player_state_mut()
             .unwrap()
             .inventory
-            .add(&mut potion)
+            .add_with_creative(&mut potion, creative)
         {
             let item = Entity::item(
                 w,

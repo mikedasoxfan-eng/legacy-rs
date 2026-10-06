@@ -372,6 +372,15 @@ impl StackContext for StackProbe {
     fn entity_is_player(&self) -> bool {
         self.absent != 1 && self.absent != 3
     }
+    fn skip_damage10(&mut self, _amount: i32, _stack: &mut ItemStack) -> Result<bool, StackError> {
+        // The matching Java probe is Unsafe-allocated, with a null inventory.
+        // Release damageItem now reads that inventory even at Unbreaking zero.
+        Err(StackError::NullPointer)
+    }
+    fn break_animation10(&mut self, _stack: &mut ItemStack) -> Result<(), StackError> {
+        // Its uninitialized EntityLiving also has no random/world dependency.
+        Err(StackError::NullPointer)
+    }
     fn stat(
         &mut self,
         kind: StackStat,
