@@ -11389,6 +11389,12 @@
   "entities2: dragondamage",
   "entities2: dragonflight"
  ],
+ "EffectRenderer": [
+  "effectrenderer_dispatch_activerenderinfo",
+  "effectrenderer_effects",
+  "effectrenderer_factory",
+  "effectrenderer_lifecycle"
+ ],
  "EmptyChunk": [
   "r10world3 biomecache/-4172144997902289642",
   "r10world3 biomecache/-9223372036854775808",
@@ -12269,6 +12275,9 @@
   "entities3: playersp-end-events",
   "entities3: playersp-magic-request"
  ],
+ "EntityAuraFX": [
+  "particlefx_EntityAuraFX"
+ ],
  "EntityBlaze": [
   "entities2: blaze",
   "entities2: drops-Blaze"
@@ -12452,12 +12461,24 @@
   "entities3: playersp-end-events",
   "entities3: playersp-magic-request"
  ],
+ "EntityBreakingFX": [
+  "particlefx_EntityBreakingFX_item",
+  "particlefx_EntityBreakingFX_item_velocity",
+  "particlefx_EntityBreakingFX_slimeball",
+  "particlefx_EntityBreakingFX_snowball"
+ ],
+ "EntityBubbleFX": [
+  "particlefx_EntityBubbleFX"
+ ],
  "EntityCaveSpider": [
   "entities2: rules"
  ],
  "EntityChicken": [
   "entities2: breeding",
   "entities2: egg"
+ ],
+ "EntityCloudFX": [
+  "particlefx_EntityCloudFX"
  ],
  "EntityCow": [
   "entities2: breeding",
@@ -12645,6 +12666,17 @@
   "entities3: playersp-end-events",
   "entities3: playersp-magic-request"
  ],
+ "EntityCrit2FX": [
+  "entitycrit2fx_named_emitters"
+ ],
+ "EntityCritFX": [
+  "particlefx_EntityCritFX",
+  "particlefx_EntityCritFX_magic"
+ ],
+ "EntityDiggingFX": [
+  "effectrenderer_effects",
+  "particlefx_EntityDiggingFX"
+ ],
  "EntityDragon": [
   "entities2: dragondamage",
   "entities2: dragondeath",
@@ -12656,8 +12688,15 @@
   "entities2: dragondeath",
   "entities2: dragonflight"
  ],
+ "EntityDropParticleFX": [
+  "particlefx_EntityDropParticleFX_lava",
+  "particlefx_EntityDropParticleFX_water"
+ ],
  "EntityEgg": [
   "entities2: egg"
+ ],
+ "EntityEnchantmentTableParticleFX": [
+  "particlefx_EntityEnchantmentTableParticleFX"
  ],
  "EntityEnderCrystal": [
   "entities2: crystal"
@@ -12671,6 +12710,13 @@
  "EntityEnderman": [
   "entities2: rules"
  ],
+ "EntityExplodeFX": [
+  "particlefx_EntityExplodeFX"
+ ],
+ "EntityFX": [
+  "effectrenderer_effects",
+  "particlefx_EntityFX"
+ ],
  "EntityFallingSand": [
   "entities2: fallingsand"
  ],
@@ -12681,6 +12727,9 @@
  ],
  "EntityFishHook": [
   "entities2: fishhook"
+ ],
+ "EntityFlameFX": [
+  "particlefx_EntityFlameFX"
  ],
  "EntityGhast": [
   "entities2: api-coordinates",
@@ -13040,8 +13089,14 @@
   "entities3: playersp-end-events",
   "entities3: playersp-magic-request"
  ],
+ "EntityHeartFX": [
+  "particlefx_EntityHeartFX"
+ ],
  "EntityItem": [
   "entities2: itempickup"
+ ],
+ "EntityLavaFX": [
+  "particlefx_EntityLavaFX"
  ],
  "EntityList": [
   "entities2: registry10"
@@ -13239,6 +13294,9 @@
  "EntityMooshroom": [
   "entities2: breeding",
   "entities2: mooshroom"
+ ],
+ "EntityNoteFX": [
+  "particlefx_EntityNoteFX"
  ],
  "EntityPig": [
   "entities2: breeding"
@@ -13780,8 +13838,17 @@
   "entities3: playersp-end-events",
   "entities3: playersp-magic-request"
  ],
+ "EntityPortalFX": [
+  "particlefx_EntityPortalFX"
+ ],
  "EntityPotion": [
   "entities2: splashpotion"
+ ],
+ "EntityRainFX": [
+  "particlefx_EntityRainFX"
+ ],
+ "EntityReddustFX": [
+  "particlefx_EntityReddustFX"
  ],
  "EntitySheep": [
   "entities2: breeding"
@@ -13975,6 +14042,13 @@
   "entities2: blaze",
   "entities2: drops-Blaze",
   "entities2: smallfireball"
+ ],
+ "EntitySmokeFX": [
+  "particlefx_EntitySmokeFX",
+  "particlefx_EntitySmokeFX_large"
+ ],
+ "EntitySnowShovelFX": [
+  "particlefx_EntitySnowShovelFX"
  ],
  "EntitySnowball": [
   "entities2: snowball"
@@ -14337,11 +14411,22 @@
   "entities3: playersp-end-events",
   "entities3: playersp-magic-request"
  ],
+ "EntitySpellParticleFX": [
+  "particlefx_EntitySpellParticleFX",
+  "particlefx_EntitySpellParticleFX_instant",
+  "particlefx_EntitySpellParticleFX_mob"
+ ],
  "EntitySpider": [
   "entities2: rules"
  ],
+ "EntitySplashFX": [
+  "particlefx_EntitySplashFX"
+ ],
  "EntitySquid": [
   "entities2: rules"
+ ],
+ "EntitySuspendFX": [
+  "particlefx_EntitySuspendFX"
  ],
  "EntityThrowable": [
   "entities2: egg",
@@ -21422,6 +21507,13 @@
   "RenderSnowball",
   "RenderVillager"
  ],
+ "RenderBoat": [
+  "vehicles_renderers",
+  "vehicles_renders_legacy"
+ ],
+ "RenderCreeper": [
+  "renderfx_RenderCreeper"
+ ],
  "RenderDragon": [
   "RenderDragon_boss_overlay"
  ],
@@ -21431,11 +21523,20 @@
  "RenderEnderCrystal": [
   "RenderEnderCrystal"
  ],
+ "RenderEnderman": [
+  "renderfx_RenderEnderman"
+ ],
  "RenderEngine": [
   "r10gui3 dynamic original bytecode"
  ],
+ "RenderFallingSand": [
+  "renderfx_RenderFallingSand"
+ ],
  "RenderFireball": [
   "RenderFireball"
+ ],
+ "RenderFish": [
+  "fish_renderer"
  ],
  "RenderMagmaCube": [
   "RenderMagmaCube"
@@ -21443,8 +21544,28 @@
  "RenderManager": [
   "RenderManager_TileEntityRenderer"
  ],
+ "RenderMinecart": [
+  "vehicles_renderers",
+  "vehicles_renders_legacy"
+ ],
  "RenderMooshroom": [
   "RenderMooshroom"
+ ],
+ "RenderPainting": [
+  "painting_renderer_legacy",
+  "renderfx_RenderPainting"
+ ],
+ "RenderPig": [
+  "renderfx_RenderPig"
+ ],
+ "RenderSheep": [
+  "renderfx_RenderSheep"
+ ],
+ "RenderSilverfish": [
+  "renderfx_RenderSilverfish"
+ ],
+ "RenderSlime": [
+  "renderfx_RenderSlime"
  ],
  "RenderSnowMan": [
   "RenderSnowMan"
@@ -21452,8 +21573,16 @@
  "RenderSnowball": [
   "RenderSnowball"
  ],
+ "RenderSpider": [
+  "renderfx_RenderSpider",
+  "renderfx_RenderSpider_cave"
+ ],
  "RenderVillager": [
   "RenderVillager"
+ ],
+ "RenderXPOrb": [
+  "renderfx_RenderXPOrb",
+  "xporb_renderer_legacy"
  ],
  "SaveConverterMcRegion": [
   "r10world3 biomecache/-4172144997902289642",
