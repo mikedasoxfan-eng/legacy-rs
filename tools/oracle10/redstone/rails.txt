@@ -1,0 +1,50 @@
+# Rails picking shapes: a straight run, corners, a T, slopes up a step, and powered rails.
+place 0 64 0 66 0
+place 1 64 0 66 0
+place 2 64 0 66 0
+place 2 64 1 66 0          # corner
+place 2 64 2 66 0
+place 3 64 2 66 0
+place 1 64 2 66 0          # T junction
+check -1 64 -1 4 65 3
+place 4 64 2 1 0           # a step
+place 4 65 2 66 0          # rail on the step: the one below slopes
+place 5 65 2 66 0
+check -1 64 -1 6 66 3
+place 0 64 -6 1 0          # lever block
+place 0 64 -5 69 3         # lever on its south side (meta 3: attached at z-1)
+place 0 64 -4 66 0
+place -1 64 -4 66 0
+place 1 64 -4 66 0         # three rails around a T: switches with power
+check -2 64 -6 2 65 -3
+use 0 64 -5
+check -2 64 -6 2 65 -3 4
+use 0 64 -5
+check -2 64 -6 2 65 -3 4
+# Powered rails along a line from a lever, 10 long (only 8 carry power)
+place 8 64 -6 1 0
+place 9 64 -6 69 1
+place 10 64 -6 27 1
+place 11 64 -6 27 1
+place 12 64 -6 27 1
+place 13 64 -6 27 1
+place 14 64 -6 27 1
+place 15 64 -6 27 1
+place 16 64 -6 27 1
+place 17 64 -6 27 1
+place 18 64 -6 27 1
+place 19 64 -6 27 1
+check 8 64 -6 19 64 -6
+use 9 64 -6
+check 8 64 -6 19 64 -6 3
+remove 13 64 -6
+check 8 64 -6 19 64 -6 3
+use 9 64 -6
+check 8 64 -6 19 64 -6 3
+# A detector rail set pressed by hand releases on its tick
+place 8 64 4 28 9
+place 9 64 4 55 0
+place 10 64 4 55 0
+check 8 64 4 10 64 4
+tick 25
+check 8 64 4 10 64 4

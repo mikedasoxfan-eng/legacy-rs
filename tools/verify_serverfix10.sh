@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+# Recheck the release server after initializing its new entity air watcher.
+set -uo pipefail
+root="$(cd "$(dirname "$0")/.." && pwd)"
+cd "$root"
+source "$root/tools/r10/verify_common10.sh"
+lock="$root/target/r10/verify10.lock"
+if [ -z "${VERIFY10_LOCKED:-}" ]; then
+ mkdir "$lock" || exit 3
+ trap 'rmdir "$lock" 2>/dev/null' EXIT
+fi
+fail=0
+out="$root/tools/oracle10/out"
+save="$root/target/r10/serverfix"
+mkdir -p "$save"
+echo "== server mode: 900-tick walk (real World.tick), unload/reload through region files"
+if r10_oracle "$root/tools/oracle10/server_oracle.sh" serverwalk 0 1 10 "$save/java" 900 harness-fix10-server.bin; then
+ r10_compare "$root/target/release/compare10" serverwalk 0 1 10 "$save/rust" 900 "$out/harness-fix10-server.bin" || fail=1
+ if r10_oracle "$root/tools/oracle10/oracle.sh" readsave "$save/java" harness-fix10-server-saved.bin; then
+  r10_compare "$root/target/release/compare10" savecheck "$save/rust" "$out/harness-fix10-server-saved.bin" || fail=1
+ else fail=1; fi
+ python "$root/tools/oracle10/compare_regions.py" "$save/java" "$save/rust" || fail=1
+else fail=1; fi
+exit "$fail"

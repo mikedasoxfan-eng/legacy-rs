@@ -1,0 +1,61 @@
+# --- player-gui (1.0) ---
+saves ../out/guisaves
+world 42
+clear 128
+hud health=20 prev=20 item=0 pos=0.5,120,0.5 brightness=0.0 food=20 saturation=5 xp=0 level=0
+counter 0
+shot b10_hud_full
+hud health=3 prev=9 hearts_life=13 item=8 pos=0.5,120,0.5 brightness=1.0 food=7 saturation=0 xp=23 level=4 armor=20
+counter 22
+shot b10_hud_low_hunger_xp
+hud health=20 prev=20 item=0 pos=0.5,120,0.5 brightness=1.0 food=0 saturation=0 xp=9 level=0 armor=0
+counter 1
+shot b10_hud_starving
+hud health=5 prev=5 item=0 pos=0.5,120,0.5 brightness=1.0 creative=1
+shot b10_hud_creative
+open create
+mouse 0 0
+shot b10_create_survival
+mouse 213 110
+click
+mouse 0 0
+shot b10_create_creative
+mouse 213 180
+click
+mouse 0 0
+shot b10_create_more
+mouse 143 110
+click
+mouse 0 0
+shot b10_create_features_off
+open creative
+mouse 0 0
+shot b10_creative_first
+wheel -1
+wheel -1
+wheel -1
+shot b10_creative_scroll
+mouse 133 36
+shift on
+click
+shift off
+mouse 300 220
+shot b10_creative_cursor
+open options
+mouse 0 0
+shot b10_options
+mouse 80 92
+click
+mouse 0 0
+shot b10_options_fov
+open video
+shot b10_video_gamma
+open controls
+shot b10_controls
+mouse 75 50
+click
+mouse 0 0
+shot b10_controls_waiting
+click 1
+shot b10_controls_duplicate
+# --- end player-gui ---

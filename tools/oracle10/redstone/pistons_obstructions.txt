@@ -1,0 +1,274 @@
+# Immovable blocks, tile entities, mobility-one drops, piston pushes/pulls.
+remove 0 64 0
+remove 0 64 1
+remove 1 64 0
+remove 2 64 0
+remove 3 64 0
+place 1 64 0 49 0
+place 0 64 0 29 5
+place 0 64 1 69 5
+use 0 64 1
+state
+events
+check 0 64 0 3 64 0 3
+state
+use 0 64 1
+events
+check 0 64 0 3 64 0 3
+state
+remove 0 64 0
+remove 0 64 1
+remove 1 64 0
+remove 2 64 0
+remove 3 64 0
+place 1 64 0 7 0
+place 0 64 0 29 5
+place 0 64 1 69 5
+use 0 64 1
+state
+events
+check 0 64 0 3 64 0 3
+state
+use 0 64 1
+events
+check 0 64 0 3 64 0 3
+state
+remove 0 64 0
+remove 0 64 1
+remove 1 64 0
+remove 2 64 0
+remove 3 64 0
+place 1 64 0 54 0
+place 0 64 0 29 5
+place 0 64 1 69 5
+use 0 64 1
+state
+events
+check 0 64 0 3 64 0 3
+state
+use 0 64 1
+events
+check 0 64 0 3 64 0 3
+state
+remove 0 64 0
+remove 0 64 1
+remove 1 64 0
+remove 2 64 0
+remove 3 64 0
+place 1 64 0 25 0
+place 0 64 0 29 5
+place 0 64 1 69 5
+use 0 64 1
+state
+events
+check 0 64 0 3 64 0 3
+state
+use 0 64 1
+events
+check 0 64 0 3 64 0 3
+state
+remove 0 64 0
+remove 0 64 1
+remove 1 64 0
+remove 2 64 0
+remove 3 64 0
+place 1 64 0 23 0
+place 0 64 0 29 5
+place 0 64 1 69 5
+use 0 64 1
+state
+events
+check 0 64 0 3 64 0 3
+state
+use 0 64 1
+events
+check 0 64 0 3 64 0 3
+state
+remove 0 64 0
+remove 0 64 1
+remove 1 64 0
+remove 2 64 0
+remove 3 64 0
+place 1 64 0 61 0
+place 0 64 0 29 5
+place 0 64 1 69 5
+use 0 64 1
+state
+events
+check 0 64 0 3 64 0 3
+state
+use 0 64 1
+events
+check 0 64 0 3 64 0 3
+state
+remove 0 64 0
+remove 0 64 1
+remove 1 64 0
+remove 2 64 0
+remove 3 64 0
+place 1 64 0 52 0
+place 0 64 0 29 5
+place 0 64 1 69 5
+use 0 64 1
+state
+events
+check 0 64 0 3 64 0 3
+state
+use 0 64 1
+events
+check 0 64 0 3 64 0 3
+state
+remove 0 64 0
+remove 0 64 1
+remove 1 64 0
+remove 2 64 0
+remove 3 64 0
+place 1 64 0 50 5
+place 0 64 0 29 5
+place 0 64 1 69 5
+use 0 64 1
+state
+events
+check 0 64 0 3 64 0 3
+state
+use 0 64 1
+events
+check 0 64 0 3 64 0 3
+state
+remove 0 64 0
+remove 0 64 1
+remove 1 64 0
+remove 2 64 0
+remove 3 64 0
+place 1 63 0 3 0
+place 1 64 0 37 0
+place 0 64 0 29 5
+place 0 64 1 69 5
+use 0 64 1
+state
+events
+check 0 64 0 3 64 0 3
+state
+use 0 64 1
+events
+check 0 64 0 3 64 0 3
+state
+remove 0 64 0
+remove 0 64 1
+remove 1 64 0
+remove 2 64 0
+remove 3 64 0
+place 1 64 0 18 0
+place 0 64 0 29 5
+place 0 64 1 69 5
+use 0 64 1
+state
+events
+check 0 64 0 3 64 0 3
+state
+use 0 64 1
+events
+check 0 64 0 3 64 0 3
+state
+remove 0 64 0
+remove 0 64 1
+remove 1 64 0
+remove 2 64 0
+remove 3 64 0
+place 1 64 0 12 0
+place 0 64 0 29 5
+place 0 64 1 69 5
+use 0 64 1
+state
+events
+check 0 64 0 3 64 0 3
+state
+use 0 64 1
+events
+check 0 64 0 3 64 0 3
+state
+remove 0 64 0
+remove 0 64 1
+remove 1 64 0
+remove 2 64 0
+remove 3 64 0
+place 1 64 0 79 0
+place 0 64 0 29 5
+place 0 64 1 69 5
+use 0 64 1
+state
+events
+check 0 64 0 3 64 0 3
+state
+use 0 64 1
+events
+check 0 64 0 3 64 0 3
+state
+remove 0 64 0
+remove 0 64 1
+remove 1 64 0
+remove 2 64 0
+remove 3 64 0
+place 1 64 0 29 4
+place 0 64 0 29 5
+place 0 64 1 69 5
+use 0 64 1
+state
+events
+check 0 64 0 3 64 0 3
+state
+use 0 64 1
+events
+check 0 64 0 3 64 0 3
+state
+remove 0 64 0
+remove 0 64 1
+remove 1 64 0
+remove 2 64 0
+remove 3 64 0
+place 1 64 0 33 4
+place 0 64 0 29 5
+place 0 64 1 69 5
+use 0 64 1
+state
+events
+check 0 64 0 3 64 0 3
+state
+use 0 64 1
+events
+check 0 64 0 3 64 0 3
+state
+remove 0 64 0
+remove 0 64 1
+remove 1 64 0
+remove 2 64 0
+remove 3 64 0
+place 1 64 0 29 12
+place 0 64 0 29 5
+place 0 64 1 69 5
+use 0 64 1
+state
+events
+check 0 64 0 3 64 0 3
+state
+use 0 64 1
+events
+check 0 64 0 3 64 0 3
+state
+remove 0 64 0
+remove 0 64 1
+remove 1 64 0
+remove 2 64 0
+remove 3 64 0
+place 1 64 0 33 12
+place 0 64 0 29 5
+place 0 64 1 69 5
+use 0 64 1
+state
+events
+check 0 64 0 3 64 0 3
+state
+use 0 64 1
+events
+check 0 64 0 3 64 0 3
+state

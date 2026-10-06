@@ -25,3 +25,11 @@ options.txt
 /tools/oracle181/visual_build/
 __pycache__/
 /b1.8.1/
+/shots10/
+/tools/oracle10/build/
+/tools/oracle10/build_try/
+/tools/oracle10/generated/
+/tools/oracle10/out/
+/tools/oracle10/server/build/
+/tools/oracle10/gui/build/
+/tools/oracle10/visual_build/

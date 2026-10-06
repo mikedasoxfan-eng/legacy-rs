@@ -1,0 +1,915 @@
+# GUI scenes captured from both the original client and the port (tools/oracle/guishot.sh).
+saves ../out/guisaves
+millis 250
+mojang
+shot mojang
+splash Ported to Rust!
+open title
+mouse -1 -1
+shot title
+mouse 213 124
+shot title_hover_singleplayer
+mouse 160 184
+shot title_hover_options
+open options
+mouse 300 200
+shot options
+open video
+shot video
+open controls
+mouse 190 40
+shot controls
+open select
+mouse -1 -1
+shot select
+mouse 200 52
+down
+shot select_pressed
+up
+shot select_clicked
+mouse 213 225
+shot select_hover_rename
+open create
+update 3
+shot create
+key 30 97
+key 14 8
+key 31 115
+shot create_typed
+open rename World1
+update 7
+shot rename
+open texturepacks
+mouse 100 50
+shot texturepacks
+loading 42 Generating level|Building terrain
+shot loading
+loading -1 Loading level|
+shot loading_nobar
+# The in-game overlay over a real world (vignette, hotbar, crosshair, hearts).
+world 42
+clear 128
+hud health=20 prev=20 item=0 pos=0.5,120,0.5 brightness=0.0
+counter 0
+shot hud_full
+hud health=7 prev=7 item=3 pos=0.5,120,0.5 brightness=1.0
+shot hud_hurt
+hud health=3 prev=9 hearts_life=13 item=8 pos=0.5,120,0.5 brightness=1.0
+counter 17
+shot hud_low_flash
+hud health=12 prev=16 hearts_life=11 item=5 pos=0.5,120,0.5 brightness=1.0
+counter 3
+shot hud_flash
+# Wearing a carved pumpkin (renderPumpkinBlur).
+hud health=20 prev=20 hearts_life=0 item=0 pos=0.5,120,0.5 brightness=1.0 helmet=86
+counter 0
+shot hud_pumpkin
+hud health=20 prev=20 item=0 pos=0.5,120,0.5 brightness=1.0 helmet=-1
+# Achievements (fresh stats: only "Taking Inventory" can be unlocked), over the world.
+open achievements
+mouse -1 -1
+millis 250
+shot achievements
+millis 100
+mouse 240 140
+shot achievements_hover_locked
+mouse 201 115
+shot achievements_hover_open
+# The death screen (score 0) over the world.
+open gameover
+mouse -1 -1
+shot gameover
+mouse 213 140
+shot gameover_hover_respawn
+# Statistics: General, Blocks and Items lists with set counts; header tooltip, sorting, item
+# tooltips and dragging the scrollbar of a long list.
+statsreset
+stat 1000 3
+stat 1001 1
+stat 1100 72345
+stat 2000 123456
+stat 2001 789
+stat 2002 1500
+stat 2010 42
+stat 16777217 1234
+stat 16777233 64
+stat 16777220 9
+stat 16842810 3
+stat 16842802 16
+stat 16908289 5000
+stat 16908305 12
+stat 16908548 7
+stat 16843028 1
+stat 16974100 2
+stat 16908564 250
+stat 16908549 4
+stat 16843013 1
+open stats
+mouse -1 -1
+shot stats_general
+mouse 213 198
+click
+mouse -1 -1
+shot stats_blocks
+mouse 320 198
+click
+mouse -1 -1
+shot stats_items
+# Header tooltip, then click the "mined" column to sort, then hover an item.
+open stats
+mouse 213 198
+click
+mouse 311 55
+shot stats_blocks_hover_header
+down
+shot stats_blocks_sort_down
+up
+mouse 311 55
+shot stats_blocks_sorted
+mouse 155 75
+shot stats_blocks_hover_item
+# A long item list that scrolls.
+stat 16908544 1
+stat 16908545 38
+stat 16908546 75
+stat 16908547 112
+stat 16908548 149
+stat 16908549 186
+stat 16908550 223
+stat 16908551 260
+stat 16908552 297
+stat 16908553 334
+stat 16908554 371
+stat 16908555 408
+stat 16908556 445
+stat 16908557 482
+stat 16908558 519
+stat 16908559 556
+stat 16908560 593
+stat 16908561 630
+stat 16908562 667
+stat 16908563 704
+stat 16908564 741
+stat 16908565 778
+stat 16908566 815
+stat 16908567 852
+stat 16908568 889
+stat 16908569 926
+stat 16908570 963
+stat 16908571 1000
+stat 16908572 1037
+stat 16908573 1074
+stat 16974080 3
+stat 16974083 11
+open stats
+mouse 320 198
+click
+mouse -1 -1
+shot stats_items_long
+mouse 211 45
+down
+shot stats_items_sort_used
+up
+mouse 211 45
+shot stats_items_sorted
+mouse 155 95
+shot stats_items_hover_item
+# Drag the scrollbar down.
+mouse 341 50
+down
+shot stats_items_drag_start
+mouse 341 110
+shot stats_items_drag_mid
+up
+mouse -1 -1
+shot stats_items_scrolled
+
+# --- player-gui (1.0) ---
+saves ../out/guisaves
+world 42
+clear 128
+hud health=20 prev=20 item=0 pos=0.5,120,0.5 brightness=1.0 food=20 saturation=5 xp=0 level=0
+counter 0
+shot b10_hud_full
+hud health=3 prev=9 hearts_life=13 item=8 pos=0.5,120,0.5 brightness=1.0 food=7 saturation=0 xp=23 level=4 armor=20
+counter 22
+shot b10_hud_low_hunger_xp
+hud health=20 prev=20 item=0 pos=0.5,120,0.5 brightness=1.0 food=0 saturation=0 xp=9 level=0 armor=0
+counter 1
+shot b10_hud_starving
+hud health=5 prev=5 item=0 pos=0.5,120,0.5 brightness=1.0 creative=1
+shot b10_hud_creative
+open create
+mouse 0 0
+shot b10_create_survival
+mouse 213 110
+click
+mouse 0 0
+shot b10_create_creative
+mouse 213 180
+click
+mouse 0 0
+shot b10_create_more
+mouse 143 110
+click
+mouse 0 0
+shot b10_create_features_off
+open creative
+mouse 0 0
+shot b10_creative_first
+wheel -1
+wheel -1
+wheel -1
+shot b10_creative_scroll
+mouse 133 36
+shift on
+click
+shift off
+mouse 300 220
+shot b10_creative_cursor
+open options
+mouse 0 0
+shot b10_options
+mouse 80 92
+click
+mouse 0 0
+shot b10_options_fov
+open video
+shot b10_video_gamma
+open controls
+shot b10_controls
+mouse 75 50
+click
+mouse 0 0
+shot b10_controls_waiting
+click 1
+shot b10_controls_duplicate
+world 42
+clear 128
+hud health=20 prev=20 item=0 pos=0.5,120,0.5 brightness=1.0
+counter 0
+open inventory
+mouse 0 0
+shot b10_inventory
+open chest
+shot b10_chest
+open largechest
+shot b10_largechest
+open crafting
+shot b10_crafting
+open furnace
+shot b10_furnace
+open dispenser
+shot b10_dispenser
+# --- end player-gui ---
+
+# --- player-gui round 2 (1.0) ---
+world 42
+clear 128
+hud health=11 prev=11 food=13 saturation=0 xp=25 level=7 armor=20 poison=1 hunger=1 regen=1 pos=0.5,120,0.5 brightness=1.0
+counter 0
+shot b10_hud_potions
+hud health=11 prev=11 food=13 saturation=0 xp=25 level=7 armor=20 poison=1 hunger=1 regen=1 pos=0.5,120,0.5 brightness=1.0
+counter 3
+shot b10_hud_regen_shift
+hud health=11 prev=11 food=13 saturation=0 xp=25 level=7 armor=20 poison=1 hunger=1 regen=1 pos=0.5,120,0.5 brightness=0.77777773 water=1 air=300
+counter 3
+shot b10_hud_air_full
+hud health=11 prev=11 food=13 saturation=0 xp=25 level=7 armor=20 poison=1 hunger=1 regen=1 pos=0.5,120,0.5 brightness=0.77777773 water=1 air=151
+counter 3
+shot b10_hud_air_half
+hud health=11 prev=11 food=13 saturation=0 xp=25 level=7 armor=20 poison=1 hunger=1 regen=1 pos=0.5,120,0.5 brightness=0.77777773 water=1 air=1
+counter 3
+shot b10_hud_air_popping
+hud health=11 prev=11 food=13 saturation=0 xp=25 level=7 armor=20 poison=1 hunger=1 regen=1 pos=0.5,120,0.5 brightness=0.77777773 water=1 air=0
+counter 3
+shot b10_hud_air_empty
+hud health=11 prev=11 food=13 saturation=0 xp=25 level=7 armor=20 poison=1 hunger=1 regen=1 pos=0.5,120,0.5 brightness=0.77777773 water=1 air=151 creative=1
+counter 3
+shot b10_hud_air_creative
+# --- end player-gui round 2 ---
+# --- player-gui round 3 (1.0): achievement notifications ---
+clear 128
+millis 10000
+toast taken 0
+shot b10_toast_start
+millis 10100
+shot b10_toast_enter
+millis 10375
+shot b10_toast_visible
+millis 11500
+shot b10_toast_middle
+millis 12900
+shot b10_toast_exit
+millis 13000
+shot b10_toast_end
+millis 13001
+shot b10_toast_expired
+millis 12000
+shot b10_toast_no_revival
+millis 0
+toast taken 0
+shot b10_toast_zero_clock
+millis 20000
+toast taken 16
+millis 20500
+shot b10_toast_snipe
+millis 30000
+toast information 0
+shot b10_toast_hint
+millis 33000
+shot b10_toast_hint_late
+millis 40000
+toast information 16
+shot b10_toast_snipe_hint
+# --- end player-gui round 3 ---
+
+# --- player-gui round 4 (1.0) ---
+saves ../out/guisaves
+world 42
+clear 128
+hud health=20 prev=20 item=0 pos=0.5,120,0.5 brightness=0.77777773 food=20 saturation=5 xp=0 level=0
+counter 0
+open achievements
+key 42 0
+screenstate open
+key 18 0
+screenstate none
+hud health=20 prev=20 item=0 pos=0.5,120,0.5 brightness=0.77777773 food=20 saturation=5 xp=0 level=0
+shot b10_achievement_inventory_close
+open creative
+key 18 0
+screenstate none
+open create
+mouse 213 180
+click
+mouse 213 70
+click
+key 78 43
+key 2 49
+key 3 50
+key 4 51
+mouse 0 0
+shot b10_create_signed_seed
+mouse 213 180
+click
+mouse 213 110
+click
+mouse 0 0
+shot b10_create_signed_seed_return
+# --- end player-gui round 4 ---
+# --- player-gui round 4 creative close (1.0) ---
+saves ../out/guisaves
+world 42
+clear 128
+hud health=20 prev=20 item=0 pos=0.5,120,0.5 brightness=0.77777773 food=20 saturation=5 xp=0 level=0 creative=1
+counter 0
+open creative
+key 18 0
+screenstate none
+hud health=20 prev=20 item=0 pos=0.5,120,0.5 brightness=0.77777773 food=20 saturation=5 xp=0 level=0 creative=1
+shot b10_creative_inventory_close
+# --- end player-gui round 4 creative close ---
+
+# --- player-gui round 5 (1.0) ---
+saves ../out/guisaves
+open create
+key 14 0
+key 14 0
+key 14 0
+key 14 0
+key 14 0
+key 14 0
+key 14 0
+key 14 0
+key 14 0
+mouse 0 0
+shot b10_create_empty_name
+key 57 32
+key 57 32
+shot b10_create_spaces_name
+key 14 0
+key 14 0
+key 17 87
+key 24 111
+key 19 114
+key 38 108
+key 32 100
+key 2 49
+shot b10_create_folder_collision
+mouse 213 180
+click
+key 15 9
+mouse 213 70
+click
+key 12 45
+key 2 49
+key 3 50
+key 4 51
+mouse 0 0
+shot b10_create_tab_seed
+open rename World1
+key 14 0
+key 14 0
+key 14 0
+key 14 0
+key 14 0
+key 14 0
+key 14 0
+key 14 0
+key 14 0
+key 14 0
+key 14 0
+key 14 0
+key 14 0
+key 14 0
+key 57 32
+key 28 13
+screenstate open
+mouse 0 0
+shot b10_rename_spaces_disabled
+dropworld
+open select
+mouse 213 50
+click
+mouse 165 220
+click
+mouse 0 0
+shot b10_delete_confirmation
+mouse 290 145
+click
+shot b10_delete_cancel
+screenstate open
+# --- end player-gui round 5 ---
+
+# --- player-gui round 5 HUD (1.0) ---
+world 42
+clear 128
+hud health=20 prev=20 food=20 saturation=5 xp=0 level=0 item=0 armor=0 helmet=-1 creative=0 sleep=0 portal=0 prev_portal=0 nausea=0 pos=0.5,120,0.5 brightness=0.0 portal=1 prev_portal=1
+counter 0
+shot b10_hud5_portal_full
+hud health=20 prev=20 food=20 saturation=5 xp=0 level=0 item=0 armor=0 helmet=-1 creative=0 sleep=0 portal=0 prev_portal=0 nausea=0 pos=0.5,120,0.5 brightness=1.0 portal=0.5 prev_portal=0.5
+counter 0
+shot b10_hud5_portal_partial
+hud health=20 prev=20 food=20 saturation=5 xp=0 level=0 item=0 armor=0 helmet=-1 creative=0 sleep=0 portal=0 prev_portal=0 nausea=0 pos=0.5,120,0.5 brightness=1.0 portal=1 prev_portal=1 nausea=1
+counter 0
+shot b10_hud5_portal_nausea
+hud health=20 prev=20 food=20 saturation=5 xp=0 level=0 item=0 armor=0 helmet=-1 creative=0 sleep=0 portal=0 prev_portal=0 nausea=0 pos=0.5,120,0.5 brightness=1.0 helmet=86 creative=1
+counter 0
+shot b10_hud5_pumpkin_creative
+hud health=20 prev=20 food=20 saturation=5 xp=0 level=0 item=0 armor=0 helmet=-1 creative=0 sleep=0 portal=0 prev_portal=0 nausea=0 pos=0.5,120,0.5 brightness=1.0 sleep=1
+counter 0
+shot b10_hud5_sleep_enter
+hud health=20 prev=20 food=20 saturation=5 xp=0 level=0 item=0 armor=0 helmet=-1 creative=0 sleep=0 portal=0 prev_portal=0 nausea=0 pos=0.5,120,0.5 brightness=1.0 sleep=100
+counter 0
+shot b10_hud5_sleep_full
+hud health=20 prev=20 food=20 saturation=5 xp=0 level=0 item=0 armor=0 helmet=-1 creative=0 sleep=0 portal=0 prev_portal=0 nausea=0 pos=0.5,120,0.5 brightness=1.0 sleep=105
+counter 0
+shot b10_hud5_sleep_exit
+hud health=20 prev=20 food=20 saturation=5 xp=0 level=0 item=0 armor=0 helmet=-1 creative=0 sleep=0 portal=0 prev_portal=0 nausea=0 pos=0.5,120,0.5 brightness=1.0 sleep=110
+counter 0
+shot b10_hud5_sleep_end
+hud health=20 prev=20 food=20 saturation=5 xp=0 level=0 item=0 armor=0 helmet=-1 creative=0 sleep=0 portal=0 prev_portal=0 nausea=0 pos=0.5,120,0.5 brightness=1.0 xp=2147483647 level=0
+counter 0
+shot b10_hud5_xp_overflow
+hud health=20 prev=20 food=20 saturation=5 xp=0 level=0 item=0 armor=0 helmet=-1 creative=0 sleep=0 portal=0 prev_portal=0 nausea=0 pos=0.5,120,0.5 brightness=1.0 xp=10 level=2147483647
+counter 0
+shot b10_hud5_xp_cap_overflow
+# --- end player-gui round 5 HUD ---
+
+# --- player-gui (1.0), round 6: texture unit 1 ---
+world 42
+clear 128
+mouse -1 -1
+lightmap 0
+open inventory
+shot b10_lightmap0_inventory
+stack 9 35 17 14
+stack 10 264 37 0
+stack 11 61 1 0
+shot b10_lightmap0_items
+pose 27 0.0 0.0 0.0 off off 5
+shot b10_lightmap0_hurt
+open chest
+stack 0 35 17 14
+shot b10_lightmap0_chest
+lightmap 1
+open inventory
+shot b10_lightmap1_inventory
+stack 9 35 17 14
+stack 10 264 37 0
+stack 11 61 1 0
+shot b10_lightmap1_items
+pose 27 0.0 0.0 0.0 off off 5
+shot b10_lightmap1_hurt
+open chest
+stack 0 35 17 14
+shot b10_lightmap1_chest
+lightmap 2
+open inventory
+shot b10_lightmap2_inventory
+stack 9 35 17 14
+stack 10 264 37 0
+stack 11 61 1 0
+shot b10_lightmap2_items
+pose 27 0.0 0.0 0.0 off off 5
+shot b10_lightmap2_hurt
+open chest
+stack 0 35 17 14
+shot b10_lightmap2_chest
+lightmap 3
+open inventory
+shot b10_lightmap3_inventory
+stack 9 35 17 14
+stack 10 264 37 0
+stack 11 61 1 0
+shot b10_lightmap3_items
+pose 27 0.0 0.0 0.0 off off 5
+shot b10_lightmap3_hurt
+open chest
+stack 0 35 17 14
+shot b10_lightmap3_chest
+# --- end player-gui ---
+
+# --- player-gui (1.0), round 7: original entity brightness ---
+world 42
+clear 128
+mouse -1 -1
+lightmap 2
+open inventory
+previewlight 0
+pose 27 0.0 0.0 0.0 off off 5
+shot b10_previewlight0
+open inventory
+previewlight 1
+pose 27 0.0 0.0 0.0 off off 5
+shot b10_previewlight1
+open inventory
+previewlight 2
+pose 27 0.0 0.0 0.0 off off 5
+shot b10_previewlight2
+open inventory
+previewlight 3
+pose 27 0.0 0.0 0.0 off off 5
+shot b10_previewlight3
+open inventory
+previewlight 4
+pose 27 0.0 0.0 0.0 off off 5
+shot b10_previewlight4
+open inventory
+previewlight 5
+pose 27 0.0 0.0 0.0 off off 5
+shot b10_previewlight5
+open inventory
+previewlight 6
+pose 27 0.0 0.0 0.0 off off 5
+shot b10_previewlight6
+open inventory
+previewlight 7
+pose 27 0.0 0.0 0.0 off off 5
+shot b10_previewlight7
+open inventory
+previewlight 8
+pose 27 0.0 0.0 0.0 off off 5
+shot b10_previewlight8
+open inventory
+previewlight 9
+pose 27 0.0 0.0 0.0 off off 5
+shot b10_previewlight9
+open inventory
+previewlight 10
+pose 27 0.0 0.0 0.0 off off 5
+shot b10_previewlight10
+open inventory
+previewlight 11
+pose 27 0.0 0.0 0.0 off off 5
+shot b10_previewlight11
+open inventory
+previewlight 12
+pose 27 0.0 0.0 0.0 off off 5
+shot b10_previewlight12
+open inventory
+previewlight 13
+pose 27 0.0 0.0 0.0 off off 5
+shot b10_previewlight13
+open inventory
+previewlight 14
+pose 27 0.0 0.0 0.0 off off 5
+shot b10_previewlight14
+open inventory
+previewlight 15
+pose 27 0.0 0.0 0.0 off off 5
+shot b10_previewlight15
+open inventory
+stack 36 264 37 0
+cursor 35 17 14
+inventorymode creative
+update
+shot b10_inventory_to_creative
+inventorymode survival
+update
+shot b10_creative_to_inventory
+# --- end player-gui ---
+
+# --- player-gui round 8: GuiSlot, GuiYesNo and GuiRenameWorld ---
+dropworld
+saves ../out/guisaves
+clear 128
+open select
+mouse 0 0
+shot b10_gui8_select
+mouse 213 50
+click
+mouse 0 0
+shot b10_gui8_selected
+mouse 165 220
+click
+mouse 100 145
+shot b10_gui8_yes_hover
+mouse 290 145
+shot b10_gui8_no_hover
+click
+mouse 0 0
+shot b10_gui8_cancel_return
+open rename World1
+repeatstate on
+mouse 0 0
+shot b10_gui8_rename
+update 13
+shot b10_gui8_rename_cursor
+mouse 112 60
+click 1
+mouse 0 0
+shot b10_gui8_rename_unfocused
+mouse 213 70
+click
+key 14 0
+key 14 0
+key 14 0
+key 14 0
+key 14 0
+key 14 0
+key 14 0
+key 14 0
+key 14 0
+key 14 0
+key 14 0
+key 14 0
+key 14 0
+key 14 0
+key 28 13
+screenstate open
+mouse 0 0
+shot b10_gui8_rename_empty
+key 57 32
+key 57 32
+key 28 13
+screenstate open
+shot b10_gui8_rename_spaces
+key 19 82
+key 18 101
+key 49 110
+key 30 97
+key 50 109
+key 18 101
+key 32 100
+key 57 32
+key 28 13
+repeatstate off
+open select
+shot b10_gui8_renamed_list
+mouse 213 50
+click
+mouse 165 220
+click
+mouse 100 145
+click
+mouse 0 0
+shot b10_gui8_deleted_list
+# --- end player-gui round 8 ---
+
+# --- player-gui round 8: statistics lists, flat vanilla icons ---
+world 42
+clear 128
+hud health=20 prev=20 item=0 pos=0.5,120,0.5 brightness=0.0 food=20 saturation=5 xp=0 level=0
+statsreset
+stat 16777253 1234
+stat 16777254 9
+stat 16777266 55
+stat 16908548 7
+stat 16908557 1234
+stat 16908568 250
+stat 16843032 22
+stat 16974093 3
+open stats
+mouse 213 198
+click
+mouse 0 0
+shot b10_gui8_stats_blocks
+mouse 311 45
+shot b10_gui8_stats_blocks_header
+down
+shot b10_gui8_stats_blocks_press
+up
+shot b10_gui8_stats_blocks_sorted
+mouse 155 75
+shot b10_gui8_stats_blocks_tooltip
+mouse 320 198
+click
+mouse 0 0
+shot b10_gui8_stats_items
+mouse 211 45
+shot b10_gui8_stats_items_header
+down
+shot b10_gui8_stats_items_press
+up
+shot b10_gui8_stats_items_sorted
+down
+shot b10_gui8_stats_items_reverse_press
+up
+shot b10_gui8_stats_items_reverse
+down
+shot b10_gui8_stats_items_clear_press
+up
+shot b10_gui8_stats_items_clear
+mouse 155 75
+shot b10_gui8_stats_items_tooltip
+# --- end player-gui round 8 ---
+
+# --- player-gui round 9: inventory death, material clamp and retained state ---
+world 42
+clear 128
+lightmap 2
+mouse -1 -1
+open inventory
+previewlight 0
+pose 27 0.0 0.0 0.0 off off 0 1
+shot b10_gui9_death1_light0
+open inventory
+previewlight 7
+pose 27 0.0 0.0 0.0 off off 0 1
+shot b10_gui9_death1_light7
+open inventory
+previewlight 15
+pose 27 0.0 0.0 0.0 off off 0 1
+shot b10_gui9_death1_light15
+open inventory
+previewlight 0
+pose 27 0.0 0.0 0.0 off off 0 2
+shot b10_gui9_death2_light0
+open inventory
+previewlight 7
+pose 27 0.0 0.0 0.0 off off 0 2
+shot b10_gui9_death2_light7
+open inventory
+previewlight 15
+pose 27 0.0 0.0 0.0 off off 0 2
+shot b10_gui9_death2_light15
+open inventory
+previewlight 0
+pose 27 0.0 0.0 0.0 off off 0 5
+shot b10_gui9_death5_light0
+open inventory
+previewlight 7
+pose 27 0.0 0.0 0.0 off off 0 5
+shot b10_gui9_death5_light7
+open inventory
+previewlight 15
+pose 27 0.0 0.0 0.0 off off 0 5
+shot b10_gui9_death5_light15
+open inventory
+previewlight 0
+pose 27 0.0 0.0 0.0 off off 0 9
+shot b10_gui9_death9_light0
+open inventory
+previewlight 7
+pose 27 0.0 0.0 0.0 off off 0 9
+shot b10_gui9_death9_light7
+open inventory
+previewlight 15
+pose 27 0.0 0.0 0.0 off off 0 9
+shot b10_gui9_death9_light15
+open inventory
+previewlight 0
+pose 27 0.0 0.0 0.0 off off 0 13
+shot b10_gui9_death13_light0
+open inventory
+previewlight 7
+pose 27 0.0 0.0 0.0 off off 0 13
+shot b10_gui9_death13_light7
+open inventory
+previewlight 15
+pose 27 0.0 0.0 0.0 off off 0 13
+shot b10_gui9_death13_light15
+open inventory
+previewlight 0
+pose 27 0.0 0.0 0.0 off off 0 20
+shot b10_gui9_death20_light0
+open inventory
+previewlight 7
+pose 27 0.0 0.0 0.0 off off 0 20
+shot b10_gui9_death20_light7
+open inventory
+previewlight 15
+pose 27 0.0 0.0 0.0 off off 0 20
+shot b10_gui9_death20_light15
+open inventory
+previewlight 7
+stack 5 310 1 0
+stack 6 311 1 0
+stack 7 312 1 0
+stack 8 313 1 0
+stack 36 257 1 0
+pose 83 2.5 0.7 0.0 off off 0 1
+shot b10_gui9_armor_death1
+open inventory
+previewlight 7
+stack 5 310 1 0
+stack 6 311 1 0
+stack 7 312 1 0
+stack 8 313 1 0
+stack 36 257 1 0
+pose 83 2.5 0.7 0.0 off off 0 5
+shot b10_gui9_armor_death5
+open inventory
+previewlight 7
+stack 5 310 1 0
+stack 6 311 1 0
+stack 7 312 1 0
+stack 8 313 1 0
+stack 36 257 1 0
+pose 83 2.5 0.7 0.0 off off 0 13
+shot b10_gui9_armor_death13
+open inventory
+previewlight 7
+stack 5 310 1 0
+stack 6 311 1 0
+stack 7 312 1 0
+stack 8 313 1 0
+stack 36 257 1 0
+pose 83 2.5 0.7 0.0 off off 0 20
+shot b10_gui9_armor_death20
+open inventory
+previewlight 7
+mouse 140 130
+pose 27 0.0 0.0 0.0 off off 0 1
+shot b10_gui9_mouse0_first
+shot b10_gui9_mouse0_retained
+open inventory
+previewlight 7
+mouse 220 80
+pose 27 0.0 0.0 0.0 off off 0 5
+shot b10_gui9_mouse1_first
+shot b10_gui9_mouse1_retained
+open inventory
+previewlight 7
+mouse 15 15
+pose 27 0.0 0.0 0.0 off off 0 13
+shot b10_gui9_mouse2_first
+shot b10_gui9_mouse2_retained
+open inventory
+previewlight 7
+mouse 400 200
+pose 27 0.0 0.0 0.0 off off 0 20
+shot b10_gui9_mouse3_first
+shot b10_gui9_mouse3_retained
+# --- end player-gui round 9 ---
+
+# --- player-gui round 10: native panorama driver precision ---
+sessionless
+millis 250
+splash Ported to Rust!
+mouse -1 -1
+open title
+repeatstate off
+update 0
+shot b10_title10_0
+open title
+repeatstate off
+update 1
+shot b10_title10_1
+open title
+repeatstate off
+update 7
+shot b10_title10_7
+open title
+repeatstate off
+update 37
+shot b10_title10_37
+open title
+repeatstate off
+update 100
+shot b10_title10_100
+open title
+repeatstate off
+update 400
+shot b10_title10_400
+open title
+repeatstate off
+update 999
+shot b10_title10_999
+open title
+repeatstate off
+update 2000
+shot b10_title10_2000
+# --- end player-gui round 10 ---

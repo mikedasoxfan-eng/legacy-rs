@@ -1,0 +1,174 @@
+package net.minecraft.src;
+
+import java.io.*;
+import java.lang.reflect.*;
+import java.util.*;
+
+/** Container/recipe ground truth: invokes original classes, never recompiles them. */
+public class ContainerOracle {
+    static final class StatHook {
+        final String achievement;final int count;
+        StatHook(String name,int n){achievement=name;count=n;}
+    }
+    static final class StatsPlayer extends EntityPlayerSP {
+        final List<StatHook> hooks=new ArrayList<StatHook>();
+        StatsPlayer(net.minecraft.client.Minecraft mc,World w){super(mc,w,new Session("Player",""),0);}
+        public void addStat(StatBase stat,int count) {
+            PlayerOracle.stat(this,stat,count);
+            if(hooks==null)return;
+            if(stat==null||stat instanceof StatCrafting)hooks.add(new StatHook(null,count));
+            else if(stat instanceof Achievement) {
+                try{for(Field f:AchievementList.class.getFields())if(f.getType()==Achievement.class&&f.get(null)==stat){hooks.add(new StatHook(f.getName(),count));break;}}
+                catch(IllegalAccessException e){throw new RuntimeException(e);}
+            }
+        }
+        public void onItemPickup(Entity e,int count){}
+    }
+    static void seed(Object o, Class type, String name, long seed) throws Exception {
+        Field f = type.getDeclaredField(name); f.setAccessible(true); ((Random)f.get(o)).setSeed(seed);
+    }
+    static long hash(byte[] data) {
+        long n = 0xcbf29ce484222325L; for (byte b : data) { n ^= b & 255; n *= 0x100000001b3L; } return n;
+    }
+    public static void tiles(int ticks, String path) throws Exception {
+        World w = Oracle.newWorld(0); w.chunkProvider = new EntityOracle.FlatProvider(w);
+        WorldEventOracle.attach(w);
+        Field ids = Entity.class.getDeclaredField("nextEntityID"); ids.setAccessible(true); ids.setInt(null,0);
+        OracleHooks.reset(100); EntityOracle.mathRandom().setSeed(200); w.rand.setSeed(300); Item.itemRand.setSeed(600); w.updateLCG=0;
+        Field sound = World.class.getDeclaredField("soundCounter"); sound.setAccessible(true); sound.setInt(w,0);
+        seed(Block.stoneOvenIdle,BlockFurnace.class,"furnaceRand",700);
+        seed(Block.stoneOvenActive,BlockFurnace.class,"furnaceRand",701);
+        seed(Block.dispenser,BlockDispenser.class,"random",702);
+        int[] inputs = {15,14,56,12,4,319,349,81,17,16,1,15};
+        int[] fuels = {263,280,5,327,6,17,54,53,85,58,264,263};
+        for(int i=0;i<inputs.length;i++) {
+            w.setBlockWithNotify(-12+i*2,64,8,61);
+            TileEntityFurnace f=(TileEntityFurnace)w.getBlockTileEntity(-12+i*2,64,8);
+            f.setInventorySlotContents(0,new ItemStack(inputs[i],12,i%3));
+            f.setInventorySlotContents(1,new ItemStack(fuels[i],4,i%2));
+            if(i==11)f.setInventorySlotContents(2,new ItemStack(265,64,0));
+        }
+        w.setBlockWithNotify(8,64,-8,23);w.setBlockMetadataWithNotify(8,64,-8,3);
+        TileEntityDispenser d=(TileEntityDispenser)w.getBlockTileEntity(8,64,-8);
+        seed(d,TileEntityDispenser.class,"dispenserRandom",900);
+        int[] items={262,344,332,35,263,264,327,5,351};
+        for(int i=0;i<9;i++)d.setInventorySlotContents(i,new ItemStack(items[i],6,items[i]==35?14:0));
+        Method dispense=BlockDispenser.class.getDeclaredMethod("dispenseItem",World.class,int.class,int.class,int.class,Random.class);dispense.setAccessible(true);
+        try(DataOutputStream out=new DataOutputStream(new BufferedOutputStream(new FileOutputStream(path)))) {
+            for(int t=0;t<=ticks;t++) {
+                if(t>0) {
+                    if(t<400&&t%5==0) {w.setBlockMetadataWithNotify(8,64,-8,2+t/5%4);dispense.invoke(Block.dispenser,w,8,64,-8,w.rand);}
+                    if(t==450)w.setBlockWithNotify(-12,64,8,0);
+                    if(t==500)w.setBlockWithNotify(8,64,-8,0);
+                    if(t==600){TileEntityFurnace f=(TileEntityFurnace)w.getBlockTileEntity(-6,64,8);f.furnaceBurnTime=1;f.setInventorySlotContents(1,null);}
+                    AxisAlignedBB.clearBoundingBoxPool();Vec3D.initialize();w.updateEntities();
+                }
+                EntityOracle.snapshot(w,out);
+                for(int i=0;i<inputs.length;i++) {
+                    TileEntity te=w.getBlockTileEntity(-12+i*2,64,8);
+                    TileEntityFurnace f=te instanceof TileEntityFurnace?(TileEntityFurnace)te:null;
+                    Trace10.writeBoolean(out, "f!=null", f!=null);
+                    if(f!=null){for(int j=0;j<3;j++)stack(out,f.getStackInSlot(j));Trace10.writeInt(out, "f.furnaceBurnTime", f.furnaceBurnTime);Trace10.writeInt(out, "f.currentItemBurnTime", f.currentItemBurnTime);Trace10.writeInt(out, "f.furnaceCookTime", f.furnaceCookTime);}
+                }
+                Trace10.writeLong(out, "hash(Oracle.worldBytes(w,0,0,0).buf.toByteArray())", hash(Oracle.worldBytes(w,0,0,0).buf.toByteArray()));
+            }
+            Oracle.worldBytes(w,0,0,0).writeTo(out);
+        }
+    }
+    static TileEntityChest chest(World w) { TileEntityChest c=new TileEntityChest();c.worldObj=w;return c; }
+    static Container make(EntityPlayer p, int kind) {
+        switch (kind) {
+            case 0: return new ContainerPlayer(p.inventory);
+            case 1: return new ContainerWorkbench(p.inventory, p.worldObj, 0, 64, 0);
+            case 2: return new ContainerChest(p.inventory, chest(p.worldObj));
+            case 3: return new ContainerChest(p.inventory, new InventoryLargeChest("Large chest", chest(p.worldObj), chest(p.worldObj)));
+            case 4: return new ContainerFurnace(p.inventory, new TileEntityFurnace());
+            default: return new ContainerDispenser(p.inventory, new TileEntityDispenser());
+        }
+    }
+    static ItemStack readStack(String[] a, int offset) {
+        int id = Integer.parseInt(a[offset]);
+        return id < 0 ? null : new ItemStack(id, Integer.parseInt(a[offset+1]), Integer.parseInt(a[offset+2]));
+    }
+    public static void replay(String input, String path) throws Exception {
+        World w = Oracle.newWorld(0); w.chunkProvider = new EntityOracle.FlatProvider(w);
+        StatsPlayer p = new StatsPlayer(PlayerOracle.player(w).mc,w);
+        Container c = make(p, 0);
+        DataOutputStream out = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(path)));
+        BufferedReader in = new BufferedReader(new FileReader(input));
+        String line;
+        while ((line = in.readLine()) != null) {
+            if (line.trim().isEmpty() || line.startsWith("#")) continue;
+            String[] a = line.split(" ");
+            ItemStack result = null;
+            if (a[0].equals("open")) { p.inventory = new InventoryPlayer(p); c = make(p, Integer.parseInt(a[1])); }
+            else if (a[0].equals("put")) c.putStackInSlot(Integer.parseInt(a[1]), readStack(a, 2));
+            else if (a[0].equals("cursor")) p.inventory.setItemStack(readStack(a, 1));
+            else if (a[0].equals("click")) result = c.slotClick(Integer.parseInt(a[1]), Integer.parseInt(a[2]), a[3].equals("1"), p);
+            else if (a[0].equals("close")) c.onCraftGuiClosed(p);
+            else if (a[0].equals("expect")) {
+                ItemStack actual=((Slot)c.inventorySlots.get(0)).getStack(), expected=readStack(a,1);
+                // The inherited recipe fixture deliberately includes recipes
+                // changed by 1.0. Keep dumping so the comparator locates the
+                // changed result slot; an expectation is not an oracle precondition.
+            }
+            else throw new IllegalArgumentException(line);
+            stack(out, result);
+            Trace10.writeInt(out, "c.inventorySlots.size()", c.inventorySlots.size());
+            for (Object o : c.inventorySlots) stack(out, ((Slot)o).getStack());
+            stack(out, p.inventory.getItemStack());
+            for (ItemStack s : p.inventory.armorInventory) stack(out, s);
+            for (ItemStack s : p.inventory.mainInventory) stack(out, s);
+            Trace10.writeInt(out, "p.hooks.size()", p.hooks.size());
+            for(StatHook h:p.hooks) {Trace10.writeBoolean(out, "h.achievement!=null", h.achievement!=null);if(h.achievement!=null)out.writeUTF(h.achievement);Trace10.writeInt(out, "h.count", h.count);}
+            p.hooks.clear();
+        }
+        in.close(); out.close();
+    }
+    static Object field(Object o, String name) throws Exception {
+        Field f = o.getClass().getDeclaredField(name); f.setAccessible(true); return f.get(o);
+    }
+    static void stack(DataOutputStream out, ItemStack s) throws Exception {
+        Trace10.writeBoolean(out, "s != null", s != null);
+        if (s != null) { Trace10.writeInt(out, "s.itemID", s.itemID); Trace10.writeInt(out, "s.stackSize", s.stackSize); Trace10.writeInt(out, "s.getItemDamage()", s.getItemDamage()); }
+    }
+    public static void recipes(String path) throws Exception {
+        DataOutputStream out = new DataOutputStream(new FileOutputStream(path));
+        List recipes = CraftingManager.getInstance().getRecipeList();
+        Trace10.writeInt(out, "recipes.size()", recipes.size());
+        for (Object r : recipes) {
+            boolean shaped = r instanceof ShapedRecipes;
+            Trace10.writeBoolean(out, "shaped", shaped);
+            Trace10.writeInt(out, "shaped ? (Integer)field(r, \"recipeWidth\") : 0", shaped ? (Integer)field(r, "recipeWidth") : 0);
+            Trace10.writeInt(out, "shaped ? (Integer)field(r, \"recipeHeight\") : 0", shaped ? (Integer)field(r, "recipeHeight") : 0);
+            stack(out, ((IRecipe)r).getRecipeOutput());
+            List items = shaped ? Arrays.asList((ItemStack[])field(r, "recipeItems")) : (List)field(r, "recipeItems");
+            Trace10.writeInt(out, "items.size()", items.size());
+            for (Object s : items) stack(out, (ItemStack)s);
+        }
+        for (int id = 0; id < 2258; id++) {
+            stack(out, FurnaceRecipes.smelting().getSmeltingResult(id));
+            Item i = Item.itemsList[id];
+            Trace10.writeInt(out, "i != null && i.hasContainerItem() ? i.getContainerItem().shiftedIndex : -1", i != null && i.hasContainerItem() ? i.getContainerItem().shiftedIndex : -1);
+            Trace10.writeInt(out, "i instanceof ItemArmor ? ((ItemArmor)i).armorType : -1", i instanceof ItemArmor ? ((ItemArmor)i).armorType : -1);
+            Trace10.writeBoolean(out, "id < 256 && Block.blocksList[id] != null && Block.blocksList[id].blockMaterial == Material.wood", id < 256 && Block.blocksList[id] != null && Block.blocksList[id].blockMaterial == Material.wood);
+        }
+        out.close();
+        PrintWriter names = new PrintWriter(path + ".names", "UTF-8");
+        for(int id=0;id<2258;id++)if(Item.itemsList[id]!=null) {
+            for(int damage=0;damage<16;damage++) {
+                try { names.println(id+"\t"+damage+"\t"+Item.itemsList[id].getItemNameIS(new ItemStack(id,1,damage))); }
+                catch(ArrayIndexOutOfBoundsException e) {} // Vanilla invalid slab/dye subtype.
+            }
+        }
+        names.close();
+        DataOutputStream render=new DataOutputStream(new FileOutputStream(path+".render"));
+        for(int id=0;id<2258;id++) {
+            Item i=Item.itemsList[id];
+            Trace10.writeBoolean(render, "i!=null&&i.isFull3D()", i!=null&&i.isFull3D());
+            Trace10.writeBoolean(render, "i!=null&&i.shouldRotateAroundWhenRendering()", i!=null&&i.shouldRotateAroundWhenRendering());
+            Trace10.writeInt(render, "i instanceof ItemArmor?((ItemArmor)i).renderIndex:-1", i instanceof ItemArmor?((ItemArmor)i).renderIndex:-1);
+        }
+        render.close();
+    }
+}

@@ -1,0 +1,199 @@
+# ItemPiston metadata 7 prevents premature extension; exact player-facing rules.
+remove 0 65 0
+remove 0 64 0
+remove 0 66 0
+remove 0 65 1
+place 0 64 0 1 0
+place 0 64 1 1 0
+place 0 65 1 69 13
+itemplace 0 64 0 1 29 500 64000 500 0
+check -1 64 -1 2 68 2 4
+state
+events
+remove 0 65 0
+remove 0 64 0
+remove 0 66 0
+remove 0 65 1
+place 0 64 0 1 0
+place 0 64 1 1 0
+place 0 65 1 69 13
+itemplace 0 64 0 1 29 500 64000 500 90000
+check -1 64 -1 2 68 2 4
+state
+events
+remove 0 65 0
+remove 0 64 0
+remove 0 66 0
+remove 0 65 1
+place 0 64 0 1 0
+place 0 64 1 1 0
+place 0 65 1 69 13
+itemplace 0 64 0 1 29 500 64000 500 180000
+check -1 64 -1 2 68 2 4
+state
+events
+remove 0 65 0
+remove 0 64 0
+remove 0 66 0
+remove 0 65 1
+place 0 64 0 1 0
+place 0 64 1 1 0
+place 0 65 1 69 13
+itemplace 0 64 0 1 29 500 64000 500 270000
+check -1 64 -1 2 68 2 4
+state
+events
+remove 0 65 0
+remove 0 64 0
+remove 0 66 0
+remove 0 65 1
+place 0 64 0 1 0
+place 0 64 1 1 0
+place 0 65 1 69 13
+itemplace 0 64 0 1 29 500 70000 500 0
+check -1 64 -1 2 68 2 4
+state
+events
+remove 0 65 0
+remove 0 64 0
+remove 0 66 0
+remove 0 65 1
+place 0 64 0 1 0
+place 0 64 1 1 0
+place 0 65 1 69 13
+itemplace 0 64 0 1 29 500 60000 500 0
+check -1 64 -1 2 68 2 4
+state
+events
+remove 0 65 0
+remove 0 64 0
+remove 0 66 0
+remove 0 65 1
+place 0 64 0 1 0
+place 0 64 1 1 0
+place 0 65 1 69 13
+itemplace 0 64 0 1 29 2000 68000 0 360000
+check -1 64 -1 2 68 2 4
+state
+events
+remove 0 65 0
+remove 0 64 0
+remove 0 66 0
+remove 0 65 1
+place 0 64 0 1 0
+place 0 64 1 1 0
+place 0 65 1 69 13
+itemplace 0 64 0 1 29 1999 66180 0 -45000
+check -1 64 -1 2 68 2 4
+state
+events
+remove 0 65 0
+remove 0 64 0
+remove 0 66 0
+remove 0 65 1
+place 0 64 0 1 0
+place 0 64 1 1 0
+place 0 65 1 69 13
+itemplace 0 64 0 1 29 2001 66180 0 -90001
+check -1 64 -1 2 68 2 4
+state
+events
+remove 0 65 0
+remove 0 64 0
+remove 0 66 0
+remove 0 65 1
+place 0 64 0 1 0
+place 0 64 1 1 0
+place 0 65 1 69 13
+itemplace 0 64 0 1 33 500 64000 500 0
+check -1 64 -1 2 68 2 4
+state
+events
+remove 0 65 0
+remove 0 64 0
+remove 0 66 0
+remove 0 65 1
+place 0 64 0 1 0
+place 0 64 1 1 0
+place 0 65 1 69 13
+itemplace 0 64 0 1 33 500 64000 500 90000
+check -1 64 -1 2 68 2 4
+state
+events
+remove 0 65 0
+remove 0 64 0
+remove 0 66 0
+remove 0 65 1
+place 0 64 0 1 0
+place 0 64 1 1 0
+place 0 65 1 69 13
+itemplace 0 64 0 1 33 500 64000 500 180000
+check -1 64 -1 2 68 2 4
+state
+events
+remove 0 65 0
+remove 0 64 0
+remove 0 66 0
+remove 0 65 1
+place 0 64 0 1 0
+place 0 64 1 1 0
+place 0 65 1 69 13
+itemplace 0 64 0 1 33 500 64000 500 270000
+check -1 64 -1 2 68 2 4
+state
+events
+remove 0 65 0
+remove 0 64 0
+remove 0 66 0
+remove 0 65 1
+place 0 64 0 1 0
+place 0 64 1 1 0
+place 0 65 1 69 13
+itemplace 0 64 0 1 33 500 70000 500 0
+check -1 64 -1 2 68 2 4
+state
+events
+remove 0 65 0
+remove 0 64 0
+remove 0 66 0
+remove 0 65 1
+place 0 64 0 1 0
+place 0 64 1 1 0
+place 0 65 1 69 13
+itemplace 0 64 0 1 33 500 60000 500 0
+check -1 64 -1 2 68 2 4
+state
+events
+remove 0 65 0
+remove 0 64 0
+remove 0 66 0
+remove 0 65 1
+place 0 64 0 1 0
+place 0 64 1 1 0
+place 0 65 1 69 13
+itemplace 0 64 0 1 33 2000 68000 0 360000
+check -1 64 -1 2 68 2 4
+state
+events
+remove 0 65 0
+remove 0 64 0
+remove 0 66 0
+remove 0 65 1
+place 0 64 0 1 0
+place 0 64 1 1 0
+place 0 65 1 69 13
+itemplace 0 64 0 1 33 1999 66180 0 -45000
+check -1 64 -1 2 68 2 4
+state
+events
+remove 0 65 0
+remove 0 64 0
+remove 0 66 0
+remove 0 65 1
+place 0 64 0 1 0
+place 0 64 1 1 0
+place 0 65 1 69 13
+itemplace 0 64 0 1 33 2001 66180 0 -90001
+check -1 64 -1 2 68 2 4
+state
+events

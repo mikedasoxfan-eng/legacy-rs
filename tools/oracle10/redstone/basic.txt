@@ -1,0 +1,30 @@
+# A lever on a stone block feeds a wire line into a door and a torch on a block.
+place 2 64 2 1 0            # lever's block
+place 3 64 2 69 1           # lever on the block at x-1 (meta 1)
+place 4 64 2 55 0
+place 5 64 2 55 0
+place 6 64 2 55 0
+place 7 64 2 55 0
+place 8 64 2 55 0
+place 8 64 3 55 0           # turn
+place 8 64 4 55 0
+place 9 64 4 1 0            # block powered by the wire
+place 10 64 4 76 1          # redstone torch on the block at x-1: inverts
+place 11 64 4 55 0
+place 12 64 4 64 0          # door fed by the torch line
+place 12 65 4 64 8
+place 6 65 2 1 0            # a block over the wire, wire climbing onto it
+place 6 66 2 55 0
+tick 10
+use 3 64 2                  # lever on
+check 2 64 2 12 66 4 12
+use 3 64 2                  # lever off
+tick 10
+use 3 64 2
+tick 4
+remove 6 64 2               # cut the line while powered
+check 2 64 2 12 66 4 10
+place 6 64 2 55 0
+tick 30
+use 3 64 2                  # off again
+tick 2

@@ -16,6 +16,12 @@ fn empty_chunk(x: i32, z: i32) -> Chunk {
     c
 }
 
+fn canonical(nbt: &Compound) -> Vec<u8> {
+    let mut bytes = Vec::new();
+    worldgen::nbt::write_root_canonical(&mut bytes, nbt).unwrap();
+    bytes
+}
+
 #[test]
 fn region_roundtrip_simulates_supported_entities_and_preserves_unknown_tags() {
     let dir = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
