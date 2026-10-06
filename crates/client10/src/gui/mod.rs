@@ -3,6 +3,7 @@
 //! (`gl`) so the original drawing code can be followed line by line.
 
 pub mod achievement_toast;
+pub mod check10_round2;
 pub mod container_api;
 pub mod container_check;
 pub mod inventory_check;
@@ -71,6 +72,10 @@ pub const TEXTURES: &[&str] = &[
     "gui/container.png",
     "gui/furnace.png",
     "gui/trap.png",
+    "gui/enchant.png",
+    "gui/alchemy.png",
+    "font/alternate.png",
+    "%blur%/gui/background.png",
     "mob/char.png",
     "armor/cloth_1.png",
     "armor/cloth_2.png",
@@ -140,6 +145,8 @@ pub enum Action {
     },
     /// `GuiIngameMenu` "Save and quit to title".
     QuitWorld,
+    DeleteHardcoreWorld,
+    MainMenu,
     /// `mc.shutdown()`
     Shutdown,
     /// Settings changed (render distance, graphics...): the game should re-read them.
@@ -153,6 +160,7 @@ pub enum Action {
 
 /// The parts of `Minecraft` the GUI code reaches into.
 pub struct Ui {
+    pub release: ReleaseUiState,
     pub packs: crate::texture_packs::TexturePackList,
     pub pack_icons: Vec<TexId>,
     pub gl: Gl,
@@ -198,6 +206,16 @@ pub struct Ui {
     pub inventory_armor_state: screens::inventory_model::ArmorPassState,
     /// A displayed mode-change screen is awaiting the world-thread acknowledgement.
     pub inventory_redirect_pending: bool,
+}
+
+/// Presentation data passed from the world and entity snapshots.
+#[derive(Default)]
+pub struct ReleaseUiState {
+    pub hardcore: bool,
+    pub session_missing: bool,
+    pub player_level: i32,
+    pub effects: Vec<worldgen::entity::potion::PotionEffect>,
+    pub wheel_events: Vec<i32>,
 }
 
 impl Ui {
@@ -303,6 +321,10 @@ impl Ui {
 
     /// `Gui.drawGradientRect`
     pub fn draw_gradient_rect(&mut self, x0: i32, y0: i32, x1: i32, y1: i32, c0: i32, c1: i32) {
+        self.draw_gradient_rect_z(x0, y0, x1, y1, c0, c1, 0.0);
+    }
+    #[allow(clippy::too_many_arguments)]
+    pub fn draw_gradient_rect_z(&mut self, x0: i32, y0: i32, x1: i32, y1: i32, c0: i32, c1: i32, z: f32) {
         let f = |c: i32, s: i32| (c >> s & 255) as f32 / 255.0;
         let gl = &mut self.gl;
         gl.texture_2d = false;
@@ -312,11 +334,11 @@ impl Ui {
         gl.shade = Shade::Smooth;
         gl.start_drawing_quads();
         gl.set_color_rgba_f(f(c0, 16), f(c0, 8), f(c0, 0), f(c0, 24));
-        gl.add_vertex(x1 as f64, y0 as f64, 0.0);
-        gl.add_vertex(x0 as f64, y0 as f64, 0.0);
+        gl.add_vertex(x1 as f64, y0 as f64, z as f64);
+        gl.add_vertex(x0 as f64, y0 as f64, z as f64);
         gl.set_color_rgba_f(f(c1, 16), f(c1, 8), f(c1, 0), f(c1, 24));
-        gl.add_vertex(x0 as f64, y1 as f64, 0.0);
-        gl.add_vertex(x1 as f64, y1 as f64, 0.0);
+        gl.add_vertex(x0 as f64, y1 as f64, z as f64);
+        gl.add_vertex(x1 as f64, y1 as f64, z as f64);
         gl.draw();
         gl.shade = Shade::Flat;
         gl.blend = false;
@@ -454,7 +476,7 @@ impl ScreenBase {
 
 /// A `GuiScreen` subclass. Default methods are the base-class behaviour.
 pub trait Screen {
-    fn mouse_scrolled(&mut self,_ui:&mut Ui,_amount:i32) {}
+    fn mouse_scrolled(&mut self, ui: &mut Ui, amount: i32) { ui.release.wheel_events.push(amount); }
     fn base(&mut self) -> &mut ScreenBase;
 
     fn init_gui(&mut self, _ui: &mut Ui) {}

@@ -144,7 +144,21 @@ pub fn run(script: &str, out_dir: &std::path::Path) -> Result<(), String> {
                 sys.ui.settings.anaglyph = rest == "on";
                 sys.refresh_textures(&device, &queue)?;
             }
-            "sessionless" | "texturecheck" => {}
+            "sessionless" => sys.ui.release.session_missing = rest == "on",
+            "texturecheck" => {}
+            "hardcore" => sys.ui.release.hardcore = rest == "on",
+            "level" => sys.ui.release.player_level = rest.parse().map_err(|_| "level")?,
+            "effect" => sys.ui.release.effects.push(worldgen::entity::potion::PotionEffect {
+                id: arg(0).parse().map_err(|_| "effect id")?,
+                duration: arg(1).parse().map_err(|_| "effect duration")?,
+                amplifier: arg(2).parse().map_err(|_| "effect amplifier")?,
+            }),
+            "containerprogress" => {
+                let snapshot = sys.ui.container_snapshot.as_mut().ok_or("containerprogress requires container")?;
+                for (field, value) in snapshot.progress.iter_mut().zip(rest.split_whitespace()) {
+                    *field = value.parse().map_err(|_| "containerprogress value")?;
+                }
+            }
             "millis" => sys.ui.millis = rest.parse().map_err(|_| "millis")?,
             "toast" => {
                 toast_mode = true;
@@ -181,7 +195,7 @@ pub fn run(script: &str, out_dir: &std::path::Path) -> Result<(), String> {
                 let title: Box<dyn super::Screen> =
                     Box::new(screens::main_menu::GuiMainMenu::with_splash(&splash));
                 let s: Box<dyn super::Screen> = match arg(0).as_str() {
-                    "creative" | "inventory" | "crafting" | "chest" | "largechest" | "furnace" | "dispenser" => {
+                    "creative" | "inventory" | "crafting" | "chest" | "largechest" | "furnace" | "dispenser" | "brewing" | "enchantment" => {
                         preview = Default::default();
                         use worldgen::container::*;
                         let kind = match arg(0).as_str() {
@@ -191,6 +205,8 @@ pub fn run(script: &str, out_dir: &std::path::Path) -> Result<(), String> {
                             "chest" => ContainerKind::Chest { rows: 3 },
                             "largechest" => ContainerKind::Chest { rows: 6 },
                             "furnace" => ContainerKind::Furnace,
+                            "brewing" => ContainerKind::BrewingStand,
+                            "enchantment" => ContainerKind::Enchantment,
                             _ => ContainerKind::Dispenser,
                         };
                         let c = Container::new(kind, 0);
@@ -217,6 +233,7 @@ pub fn run(script: &str, out_dir: &std::path::Path) -> Result<(), String> {
                         Box::new(screens::achievements::GuiAchievements::new())
                     }
                     "gameover" => Box::new(screens::game_over::GuiGameOver::new()),
+                    "win" => Box::new(screens::win_game::GuiWinGame::new("Player_10")),
                     "stats" => {
                         sys.ui.world_open = true;
                         Box::new(screens::stats::GuiStats::new(title))

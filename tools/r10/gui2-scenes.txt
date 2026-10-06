@@ -1,0 +1,28 @@
+# Presentation-only review scenes; this script creates no saves.
+open title
+shot title-release
+hardcore on
+open gameover
+shot death-hardcore
+hardcore off
+open brewing
+stack 0 373 1 0
+stack 1 373 1 16
+stack 2 373 1 8194
+stack 3 372 1 0
+containerprogress 200
+shot brewing-release
+open enchantment
+stack 0 276 1 0
+level 30
+containerprogress 5 15 30
+update 20
+shot enchanting-release
+effect 1 2400 1
+effect 10 600 0
+effect 14 12000 0
+open inventory
+shot inventory-effects
+open win
+update 850
+shot end-poem

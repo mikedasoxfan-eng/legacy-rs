@@ -516,6 +516,10 @@ bash "$root/tools/verify_entities11_10.sh" --built || fail=1
 bash tools/verify_player_gui11_10.sh --built || fail=1
 # --- end player-gui ---
 
+# --- gui (1.0), round 2 ---
+bash tools/verify_r10gui2.sh --built || fail=1
+# --- end gui ---
+
 pflush
 [ $fail -eq 0 ] && echo "ALL CASES EXACT" || echo "SOME CASES DIFFER"
 exit $fail

@@ -123,21 +123,20 @@ impl SlotList for WorldSlot<'_> {
     }
 
     fn draw_slot(&mut self, ui: &mut Ui, i: i32, x: i32, y: i32, _h: i32) {
-        let s = &self.saves[i as usize];
-        let name = if s.display_name.is_empty() { format!("{} {}", self.world_label, i + 1) } else { s.display_name.clone() };
-        // (float)(size / 1024L * 100L / 1024L) / 100.0F, printed by Java's Float.toString.
-        let mb = (s.size_on_disk / 1024 * 100 / 1024) as f32 / 100.0;
-        let info = format!("{} ({}, {} MB)", s.file_name, saves::format_date(s.last_played), java_float_string(mb));
-        let mut conv = String::new();
-        if s.needs_conversion {
-            conv = format!("{} {}", self.conversion_label, conv);
-        } else {
-            conv = self.game_mode_labels[s.game_mode as usize].clone();
+        for (text, x, y, color) in world_slot_labels(ui, &self.saves[i as usize], i, x, y, self.world_label, self.conversion_label, self.game_mode_labels) {
+            ui.draw_string(&text, x, y, color);
         }
-        ui.draw_string(&name, x + 2, y + 1, 16777215);
-        ui.draw_string(&info, x + 2, y + 12, 8421504);
-        ui.draw_string(&conv, x + 2, y + 12 + 10, 8421504);
     }
+}
+
+#[allow(clippy::too_many_arguments)]
+pub(crate) fn world_slot_labels(ui: &Ui, s: &SaveEntry, i: i32, x: i32, y: i32, world_label: &str, conversion_label: &str, game_mode_labels: &[String; 2]) -> [(String, i32, i32, i32); 3] {
+    let name = if s.display_name.is_empty() { format!("{} {}", world_label, i + 1) } else { s.display_name.clone() };
+    let info = format!("{} ({})", s.file_name, saves::format_date(s.last_played));
+    let mode = if s.hardcore { format!("\u{a7}4{}\u{a7}8", ui.translate("gameMode.hardcore")) }
+        else if s.needs_conversion { format!("{} ", conversion_label) }
+        else { game_mode_labels[s.game_mode as usize].clone() };
+    [(name, x + 2, y + 1, 16777215), (info, x + 2, y + 12, 8421504), (mode, x + 2, y + 22, 8421504)]
 }
 
 /// `Float.toString(f)`: shortest digits that round-trip, at least one decimal, with
@@ -268,6 +267,7 @@ pub struct GuiCreateWorld {
     folder_name: String,
     create_clicked: bool,
     creative: bool,
+    hardcore: bool,
     map_features: bool,
     more_options: bool,
 }
@@ -282,9 +282,14 @@ impl GuiCreateWorld {
             folder_name: String::new(),
             create_clicked: false,
             creative: false,
+            hardcore: false,
             map_features: true,
             more_options: false,
         }
+    }
+
+    fn mode(&self) -> &'static str {
+        if self.hardcore { "hardcore" } else if self.creative { "creative" } else { "survival" }
     }
 
     /// `func_22129_j`: the folder name the world will get.
@@ -300,7 +305,7 @@ impl GuiCreateWorld {
     }
 
     fn update_labels(&mut self, ui: &Ui) {
-        let mode = if self.creative { "creative" } else { "survival" };
+        let mode = self.mode();
         self.base.button(2).text = format!("{} {}", ui.translate("selectWorld.gameMode"), ui.translate(&format!("selectWorld.gameMode.{mode}")));
         self.base.button(4).text = format!("{} {}", ui.translate("selectWorld.mapFeatures"), ui.translate(if self.map_features { "options.on" } else { "options.off" }));
         self.base.button(5).text = format!("{} {}", ui.translate("selectWorld.mapType"), ui.translate("selectWorld.mapType.normal"));
@@ -318,7 +323,7 @@ impl GuiCreateWorld {
         // Vanilla draws nextLong before inspecting the field, even for a numeric seed.
         let random = random_seed();
         let seed = seed_from_units(&self.seed.text.encode_utf16().collect::<Vec<_>>()).unwrap_or(random);
-        ui.actions.push(Action::StartWorld { folder: self.folder_name.clone(), name: self.name.text.clone(), seed: Some(seed), settings: Some(worldgen::entity::player::food::WorldSettings::new(seed, self.creative as i32, self.map_features)) });
+        ui.actions.push(Action::StartWorld { folder: self.folder_name.clone(), name: self.name.text.clone(), seed: Some(seed), settings: Some(worldgen::entity::player::food::WorldSettings::with_hardcore(seed, self.creative as i32, self.map_features, self.hardcore)) });
         ui.display(None);
     }
 }
@@ -533,10 +538,12 @@ impl Screen for GuiCreateWorld {
         self.base.button(4).visible = false;
         self.base.button(5).visible = false;
         self.base.button(5).enabled = false;
-        self.name = GuiTextField::new(w / 2 - 100, 60, 200, 20, ui.translate("selectWorld.newWorld"));
+        let name = if self.name.width == 0 { ui.translate("selectWorld.newWorld") } else { self.name.text.clone() };
+        let seed = self.seed.text.clone();
+        self.name = GuiTextField::new(w / 2 - 100, 60, 200, 20, name);
         self.name.focused = true;
         self.name.max_length = 32;
-        self.seed = GuiTextField::new(w / 2 - 100, 60, 200, 20, "");
+        self.seed = GuiTextField::new(w / 2 - 100, 60, 200, 20, seed);
         self.update_labels(ui);
         self.update_folder_name(ui);
     }
@@ -546,7 +553,12 @@ impl Screen for GuiCreateWorld {
         match id {
             1 => ui.display(self.parent.take()),
             0 => self.create(ui),
-            2 => { self.creative = !self.creative; self.update_labels(ui); }
+            2 => {
+                if self.hardcore { self.hardcore = false; self.creative = true; }
+                else if self.creative { self.creative = false; }
+                else { self.hardcore = true; }
+                self.update_labels(ui);
+            }
             3 => {
                 self.more_options = !self.more_options;
                 self.base.button(2).visible = !self.more_options;
@@ -600,7 +612,7 @@ impl Screen for GuiCreateWorld {
             let label = format!("{} {}", ui.translate("selectWorld.resultFolder"), self.folder_name);
             ui.draw_string(&label, w / 2 - 100, 85, 10526880);
             self.name.draw_text_box(ui);
-            let mode = if self.creative { "creative" } else { "survival" };
+            let mode = self.mode();
             let label = ui.translate(&format!("selectWorld.gameMode.{mode}.line1"));
             ui.draw_string(&label, w / 2 - 100, 122, 10526880);
             let label = ui.translate(&format!("selectWorld.gameMode.{mode}.line2"));
@@ -615,6 +627,28 @@ impl Screen for GuiCreateWorld {
             self.seed.draw_text_box(ui);
         }
         self.draw_buttons(ui, mx, my);
+    }
+}
+
+pub(crate) fn check_hardcore10(ui: &mut Ui, out: &mut Vec<u8>) {
+    use crate::gui::check10_round2::{buttons, i, s};
+    let mut random = worldgen::JavaRandom::new(10910);
+    for c in 0..300 {
+        let mut g = GuiCreateWorld::new(Box::new(super::main_menu::GuiMainMenu::with_splash("fixture")));
+        g.base.width = 320+random.next_int(1000); g.base.height = 240+random.next_int(1000);g.init_gui(ui);g.key_typed(ui, 'x',45);
+        for _ in 0..c%3 { g.action_performed(ui, 2); }
+        g.action_performed(ui,3); g.mouse_clicked(ui,g.base.width/2,65,0);g.key_typed(ui,'7',8);
+        g.base.width=320+random.next_int(1000);g.base.height=240+random.next_int(1000);g.init_gui(ui);
+        buttons(out,&mut g);s(out,&g.name.text);s(out,&g.seed.text);s(out,g.mode());out.push(g.hardcore as u8);
+        ui.actions.clear();g.action_performed(ui,0);
+        let settings = ui.actions.iter().find_map(|a| if let Action::StartWorld {settings,..}=a {*settings}else {None}).unwrap();
+        i(out,1);i(out,settings.game_mode);out.push(settings.hardcore as u8);out.push(settings.map_features as u8);out.extend(settings.seed.to_le_bytes());
+        ui.actions.clear();
+    }
+    for c in 0..1000 {
+        ui.release.hardcore=c%2==0;ui.world_open=c%3!=0;
+        let mut g=super::options::GuiOptions::new(Box::new(super::main_menu::GuiMainMenu::with_splash("fixture")));
+        g.base().width=320+random.next_int(1000);g.base().height=240+random.next_int(1000);g.init_gui(ui);buttons(out,&mut g);
     }
 }
 

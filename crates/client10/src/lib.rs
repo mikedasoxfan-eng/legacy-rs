@@ -572,6 +572,7 @@ pub fn run() {
     if args.get(1).map(String::as_str)==Some("--renderengine11check"){std::process::exit(if gui::texture_check11::check(&args[2]) {0}else{1});}
     if args.get(1).map(String::as_str)==Some("--renderengine10check"){std::process::exit(if gui::texture_check10::check(&args[2]) {0}else{1});}
     if args.get(1).map(String::as_str)==Some("--mainmenu10check"){std::process::exit(if gui::screens::main_menu::check(&args[2]) {0}else{1});}
+    if args.get(1).map(String::as_str)==Some("--r10guicheck"){std::process::exit(if gui::check10_round2::check(&args[2], &args[3]) {0}else{1});}
     if args.get(1).map(String::as_str)==Some("--statfile11check"){std::process::exit(if gui::statfile_check11::check(&args[2]) {0}else{1});}
     if args.get(1).map(String::as_str)==Some("--statfile10check"){std::process::exit(if gui::statfile_check10::check(&args[2]) {0}else{1});}
     if args.get(1).map(String::as_str)==Some("--statsynccheck"){std::process::exit(if gui::stats_check::check(std::path::Path::new(&args[2])) {0}else{1});}

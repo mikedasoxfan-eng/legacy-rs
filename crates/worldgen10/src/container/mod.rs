@@ -609,12 +609,14 @@ impl Container {
             creative: self.kind == ContainerKind::Creative,
             preview: PlayerPreview::default(),
             progress: self.progress,
+            enchantment_name_seed: self.enchanting.as_ref().map_or(0, |e| e.name_seed),
             alive: true,
         }
     }
 }
 #[derive(Clone, Debug)]
 pub struct ContainerSnapshot {
+    pub enchantment_name_seed: i64,
     pub player_inventory: InventoryPlayer,
     pub creative: bool,
     pub inventory_name: Option<&'static str>,
@@ -674,6 +676,7 @@ impl PlayerPreview {
 }
 #[derive(Clone, Copy, Debug)]
 pub enum ContainerCommand {
+    Enchant { window: i32, offer: usize },
     OpenVehicle { entity: i32 },
     OpenInventory,
     OpenBlock {

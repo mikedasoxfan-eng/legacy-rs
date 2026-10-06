@@ -314,7 +314,7 @@ pub fn check(path: &str) -> bool {
             for b in [
                 settings.hide_gui,
                 settings.show_debug_info,
-                settings.third_person_view,
+                settings.third_person_view != 0,
             ] {
                 actual.push(b as u8);
             }

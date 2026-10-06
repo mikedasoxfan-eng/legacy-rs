@@ -21,7 +21,7 @@ const fn a(i: i32, key: &'static str, column: i32, row: i32, icon: i16, parent: 
 }
 
 /// In registration order (`AchievementList.achievementList`).
-pub const ACHIEVEMENTS: [Achievement; 17] = [
+pub const ACHIEVEMENTS: [Achievement; 27] = [
     a(0, "openInventory", 0, 0, 340, None, false),
     a(1, "mineWood", 2, 1, 17, Some(0), false),
     a(2, "buildWorkBench", 4, -1, 58, Some(1), false),
@@ -39,6 +39,16 @@ pub const ACHIEVEMENTS: [Achievement; 17] = [
     a(14, "killCow", 7, -3, 334, Some(12), false),
     a(15, "flyPig", 8, -4, 329, Some(14), true),
     a(16, "snipeSkeleton", 7, 0, 261, Some(13), true),
+    a(17, "diamonds", -1, 5, 264, Some(5), false),
+    a(18, "portal", -1, 7, 49, Some(17), false),
+    a(19, "ghast", -4, 8, 370, Some(18), true),
+    a(20, "blazeRod", 0, 9, 369, Some(18), false),
+    a(21, "potion", 2, 8, 373, Some(20), false),
+    a(22, "theEnd", 3, 10, 381, Some(20), true),
+    a(23, "theEnd2", 4, 13, 122, Some(22), true),
+    a(24, "enchantments", -4, 4, 116, Some(17), false),
+    a(25, "overkill", -4, 1, 276, Some(24), true),
+    a(26, "bookcase", -3, 6, 47, Some(24), false),
 ];
 
 /// `AchievementList.min/maxDisplayColumn/Row` after registration.

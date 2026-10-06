@@ -151,7 +151,7 @@ impl GuiAchievements {
 
         // glRotatef(180, 1, 0, 0); RenderHelper.enableStandardItemLighting();
         // glEnable(GL_RESCALE_NORMAL)
-        gui_item::set_gui_light_rotation(180.0);
+        gui_item::set_gui_light_rotation(120.0);
         gui_item::set_gui_rescale_normal(true);
         let mut hovered = None;
         for (i, a) in ACHIEVEMENTS.iter().enumerate() {

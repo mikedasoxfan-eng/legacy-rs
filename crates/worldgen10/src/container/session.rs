@@ -21,6 +21,19 @@ impl World {
         let creative=entity.player_state()?.capabilities.creative;
         let p = &mut entity.player_state_mut()?.inventory;
         match command {
+            ContainerCommand::Enchant { window, offer } => {
+                if let Some(c) = session.active.as_mut().filter(|c| c.window == window && c.kind == ContainerKind::Enchantment) {
+                    if offer < 3 {
+                        let bookshelves = enchanting::world_bookshelves(self, c.positions[0]);
+                        let level = &mut entity.player_state_mut().unwrap().experience.level;
+                        let e = c.enchanting.as_mut().unwrap();
+                        if e.enchant(offer, level, self.multiplayer_world, bookshelves) {
+                            c.tile[0] = e.item;
+                            c.progress = e.costs;
+                        }
+                    }
+                }
+            }
             ContainerCommand::OpenInventory | ContainerCommand::OpenBlock { .. } | ContainerCommand::OpenVehicle { .. } => {
                 if let Some(mut old) = session.active.take() {
                     self.chest_container_use181(&old,false);

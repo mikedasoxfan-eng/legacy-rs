@@ -200,6 +200,8 @@ pub struct App {
     loading: Option<gui::loading::LoadingScreen>,
     /// After the world thread has saved: quit the program (true) or go to the title (false).
     exit_after_save: bool,
+    world_dir: Option<std::path::PathBuf>,
+    delete_hardcore_after_close: bool,
     /// The world thread dropped the world over a session-lock conflict.
     session_conflict: bool,
     /// `mcDataDir`: options.txt, saves/, stats/, screenshots/.
@@ -301,6 +303,8 @@ impl App {
             col: None,
             loading: None,
             exit_after_save: false,
+            world_dir: None,
+            delete_hardcore_after_close: false,
             session_conflict: false,
             data_dir: std::path::PathBuf::new(),
             tx: None,
@@ -411,6 +415,8 @@ impl App {
     /// `Minecraft.startWorld`: open a world on the world thread (the loading screen shows
     /// its progress until it is ready).
     fn start_world(&mut self, w: WorldOptions) {
+        self.world_dir = w.dir.clone();
+        self.delete_hardcore_after_close = false;
         let seed = w.seed;
         self.ready = false;
         self.minecraft_events=Default::default();
@@ -478,6 +484,13 @@ impl App {
         if let Some(h) = self.worker.take() {
             let _ = h.join();
         }
+        if std::mem::take(&mut self.delete_hardcore_after_close) {
+            if let Some(directory) = self.world_dir.take() {
+                if let (Some(parent), Some(folder)) = (directory.parent(), directory.file_name()) {
+                    gui::saves::delete(parent, &folder.to_string_lossy());
+                }
+            }
+        }
         self.ready = false;
         self.loading = None;
         self.entities.clear();
@@ -510,7 +523,7 @@ impl App {
     fn shutdown(&mut self, el: &ActiveEventLoop) {
         if self.tx.is_some() {
             if let Some(g) = &self.gpu {
-                g.window.set_title("Minecraft Beta 1.8.1 (Rust) — saving world...");
+                g.window.set_title("Minecraft 1.0.0 (Rust) — saving world...");
             }
             self.quit_world(true);
             // Wait here: the window is closing.
@@ -572,6 +585,11 @@ impl App {
                     self.start_world(w);
                 }
                 gui::system::GameAction::QuitWorld => self.quit_world(false),
+                gui::system::GameAction::DeleteHardcoreWorld => {
+                    // Close and join the world worker before deleting its save.
+                    self.delete_hardcore_after_close = true;
+                    self.quit_world(false);
+                }
                 gui::system::GameAction::Shutdown => {
                     self.shutdown(el);
                     return;
@@ -1094,6 +1112,7 @@ impl App {
                         in_water,
                         input_seq,
                         score,
+                        hardcore,
                         life,
                     }) => {
                         if life < self.life {
@@ -1192,6 +1211,11 @@ impl App {
                             }
                             g.ui.player_dead = hud.health <= 0;
                             g.ui.player_score = score;
+                            g.ui.release.hardcore = hardcore;
+                            g.ui.release.player_level = hud.experience.level;
+                            g.ui.release.effects = entity.living.effects.clone();
+                            let capacity = entity.living.effect_capacity;
+                            g.ui.release.effects.sort_by_key(|e| ((e.id as u32 ^ (e.id as u32 >> 16)) as usize) & (capacity - 1));
                             // Minecraft.runTick: no screen and a dead player shows GuiGameOver.
                             if g.ui.player_dead && g.screen.is_none() {
                                 g.ui.display(None);
@@ -1536,7 +1560,7 @@ impl App {
         let settings = self.gui.as_ref().map(|g| &g.ui.settings);
         let camera_settings = render::camera::Settings {
             bobbing: settings.is_none_or(|s| s.view_bobbing),
-            third_person: settings.is_some_and(|s| s.third_person_view),
+            third_person: settings.is_some_and(|s| s.third_person_view != 0),
             anaglyph: video.anaglyph,
             distance: video.distance,
             ticks: self.cloud_ticks as i32,
@@ -1712,7 +1736,7 @@ impl App {
             self.fps_time = Instant::now();
             let p = self.cam.pos;
             gpu.window.set_title(&format!(
-                "Minecraft Beta 1.8.1 (Rust) — {} (seed {}) — {} fps — x {:.1} y {:.1} z {:.1} — {} chunks{}",
+                "Minecraft 1.0.0 (Rust) — {} (seed {}) — {} fps — x {:.1} y {:.1} z {:.1} — {} chunks{}",
                 self.world_name,
                 self.seed,
                 self.fps,
@@ -1740,7 +1764,7 @@ impl ApplicationHandler for App {
             }
         };
         let attrs = Window::default_attributes()
-            .with_title("Minecraft Beta 1.8.1 (Rust)")
+            .with_title("Minecraft 1.0.0 (Rust)")
             .with_inner_size(winit::dpi::LogicalSize::new(854.0, 480.0));
         let window = Arc::new(el.create_window(attrs).expect("create window"));
         let mut gpu = Gpu::new(
