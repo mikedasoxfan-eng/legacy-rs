@@ -583,6 +583,8 @@ pub fn fishing() -> Vec<u8> {
     for scene in 0..10 {
         for seed in 0..3 {
             let mut w = flat_world();
+            // The fixture seeds the angler with OracleHooks.reset(90 + seed).
+            w.entity_seed_source = EntitySeedSource::Deterministic(90 + seed);
             let mut p = Entity::player(&mut w, "Player");
             p.set_position(0.5, 66.0, 0.5);
             p.yaw = if scene < 3 { scene as f32 * 73.25 } else { 0.0 };

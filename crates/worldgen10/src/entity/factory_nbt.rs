@@ -71,7 +71,8 @@ pub fn validate(name: &str, n: &Compound) -> Result<(), FactoryError> {
     ] {
         check(n, key, ty)?;
     }
-    let living = super::registry::by_name(name).is_some_and(|e| e.id >= 48);
+    // EntityList ids 48..=120 are EntityLiving subclasses; EnderCrystal (200) is not.
+    let living = super::registry::by_name(name).is_some_and(|e| (48..=120).contains(&e.id));
     if living {
         for key in ["Health", "HurtTime", "DeathTime", "AttackTime"] {
             check(n, key, 2)?;
@@ -87,11 +88,22 @@ pub fn validate(name: &str, n: &Compound) -> Result<(), FactoryError> {
     }
     let fields: &[(&str, u8)] = match name {
         "XPOrb" => &[("Health", 2), ("Age", 2), ("Value", 2)],
-        "Enderman" => &[("carried", 2), ("carryingData", 2)],
+        "Enderman" => &[("carried", 2), ("carriedData", 2)],
         "PigZombie" => &[("Anger", 2)],
-        "Wolf" => &[("Angry", 1), ("Sitting", 1), ("Owner", 8)],
-        "Pig" => &[("Saddle", 1)],
-        "Sheep" => &[("Sheared", 1), ("Color", 1)],
+        // 1.0 EntityAnimal reads Age and InLove before the subclass fields.
+        "Wolf" => &[("Age", 3), ("InLove", 3), ("Angry", 1), ("Sitting", 1), ("Owner", 8)],
+        "Pig" => &[("Age", 3), ("InLove", 3), ("Saddle", 1)],
+        "Sheep" => &[("Age", 3), ("InLove", 3), ("Sheared", 1), ("Color", 1)],
+        "Cow" | "Chicken" | "MushroomCow" => &[("Age", 3), ("InLove", 3)],
+        "Villager" => &[("Profession", 3)],
+        "LavaSlime" => &[("Size", 3)],
+        "Fireball" | "SmallFireball" => &[
+            ("xTile", 2),
+            ("yTile", 2),
+            ("zTile", 2),
+            ("inTile", 1),
+            ("inGround", 1),
+        ],
         "Creeper" => &[("powered", 1)],
         "Slime" => &[("Size", 3)],
         "PrimedTnt" => &[("Fuse", 1)],
@@ -113,7 +125,7 @@ pub fn validate(name: &str, n: &Compound) -> Result<(), FactoryError> {
             ("inGround", 1),
             ("player", 1),
         ],
-        "Snowball" => &[
+        "Snowball" | "ThrownEnderpearl" => &[
             ("xTile", 2),
             ("yTile", 2),
             ("zTile", 2),

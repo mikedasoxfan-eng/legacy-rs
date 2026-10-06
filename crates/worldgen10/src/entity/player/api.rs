@@ -69,7 +69,7 @@ impl Entity {
             callbacks|=32;
             self.swing_item();
         } else {
-            self.player_state_mut().unwrap().right_click_delay = 6;
+            self.player_state_mut().unwrap().right_click_delay = 4; // 1.0 Minecraft.clickMouse: rightClickDelayTimer = 4
         }
         let mut use_item = true;
         match hit {
@@ -208,10 +208,11 @@ impl World {
         }
         let using = p.player_state().unwrap().item_in_use.is_some();
         if using && !input.right_held { p.stop_item_use(self); }
+        // 1.0 runTick drains the attack/use/pick presses while an item is in use, too.
+        let s=p.player_state_mut().unwrap();
+        let (attacks,uses,picks)=(s.pending_attack_presses,s.pending_use_presses,s.pending_pick_presses);
+        s.pending_attack_presses=0;s.pending_use_presses=0;s.pending_pick_presses=0;
         if !using {
-            let s=p.player_state_mut().unwrap();
-            let (attacks,uses,picks)=(s.pending_attack_presses,s.pending_use_presses,s.pending_pick_presses);
-            s.pending_attack_presses=0;s.pending_use_presses=0;s.pending_pick_presses=0;
             for _ in 0..attacks {p.click_player(self,&mut controller,hit,false);}
             for _ in 0..uses {p.click_player(self,&mut controller,hit,true);}
             for _ in 0..picks {p.pick_block(self,hit);}

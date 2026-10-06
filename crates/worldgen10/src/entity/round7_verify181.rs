@@ -298,8 +298,8 @@ pub fn replay(kind: &str) -> Vec<u8> {
                                 .wrapping_add(side.wrapping_mul(31))
                                 .wrapping_add(damage.wrapping_mul(17))
                         });
-                        let result_color = item.color(|block| {
-                            calls.push([block as i32, -1, 0]);
+                        let result_color = item.color(damage, |block, damage| {
+                            calls.push([block as i32, -1, damage]);
                             color
                         });
                         i(&mut o, icon);

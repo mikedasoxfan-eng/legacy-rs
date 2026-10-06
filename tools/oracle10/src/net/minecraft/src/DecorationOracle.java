@@ -80,7 +80,10 @@ public final class DecorationOracle {
     public static void fishing(String path)throws Exception {
         try(DataOutputStream o=new DataOutputStream(new BufferedOutputStream(new FileOutputStream(path)))) {
         for(int scene=0;scene<10;scene++)for(int seed=0;seed<3;seed++) {
-            World w=Oracle.newWorld(0);w.chunkProvider=new EntityOracle.FlatProvider(w);w.rand.setSeed(300);EntityOracle.mathRandom().setSeed(200);SignPlayer p=new SignPlayer((net.minecraft.client.Minecraft)Oracle.allocate(PlayerOracle.HeadlessMinecraft.class),w);p.mc.theWorld=w;
+            World w=Oracle.newWorld(0);w.chunkProvider=new EntityOracle.FlatProvider(w);w.rand.setSeed(300);EntityOracle.mathRandom().setSeed(200);
+            // Seed the angler explicitly: 1.0 rod breaks draw from its Random (broken-item particles), and
+            // without a reset its seed would carry over from the previous cast.
+            OracleHooks.reset(90+seed);SignPlayer p=new SignPlayer((net.minecraft.client.Minecraft)Oracle.allocate(PlayerOracle.HeadlessMinecraft.class),w);p.mc.theWorld=w;
             p.setPosition(.5,66,.5);p.rotationYaw=scene<3?scene*73.25F:0;p.rotationPitch=scene<3?35:0;ItemStack rod=new ItemStack(346,1,scene==9?64:0);p.inventory.mainInventory[0]=rod;w.entityJoinedWorld(p);
             if(scene<3||scene==6||scene==7)for(int x=-18;x<=18;x++)for(int z=-18;z<=18;z++)for(int y=64;y<=65;y++)EntityOracle.rawBlock(w,x,y,z,9,0);
             if(scene==1){w.worldInfo.setIsRaining(true);w.rainingStrength=1;}

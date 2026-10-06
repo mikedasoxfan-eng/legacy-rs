@@ -669,10 +669,10 @@ fn factory_extra(e: &Entity, o: &mut Vec<u8>) {
 }
 pub fn entitylist() -> Vec<u8> {
     let mut o = Vec::new();
-    let mut names: Vec<_> = super::registry::ENTRIES
-        .iter()
-        .map(|e| Some(e.name))
-        .collect();
+    // The fixture walks EntityList's registrations in addMapping (= ascending id) order.
+    let mut entries: Vec<_> = super::registry::ENTRIES.iter().collect();
+    entries.sort_by_key(|e| e.id);
+    let mut names: Vec<_> = entries.iter().map(|e| Some(e.name)).collect();
     names.extend([None, Some("unknown"), Some("Player"), Some("")]);
     for name in names {
         for _null_world in [false, true] {

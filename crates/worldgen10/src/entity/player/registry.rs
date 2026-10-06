@@ -107,7 +107,7 @@ pub fn block_item_properties(id: i32, damage: i32, fancy: bool) -> Option<(i32, 
             (item.icon(damage,|block,side,damage| {
                 debug_assert_eq!(side,0);
                 if block==106 {143} else {match damage {0=>55,2=>56,_=>39}}
-            }),item.color(|block|if block==106 || damage!=0 {4764952} else {16777215}) as u32)
+            }),item.color(damage,|block,damage|if block==106 || damage!=0 {4764952} else {16777215}) as u32)
         },
         17 | 98 => {
             let item=LogItem::new(Some(id as u8));
@@ -148,7 +148,8 @@ pub struct VineItem { pub block: u8, pub subtypes: bool, }
 impl VineItem {
     pub fn new(block: u8, subtypes: bool) -> Self { Self {block,subtypes} }
     pub fn icon(&self, damage: i32, mut texture: impl FnMut(u8,i32,i32)->i32) -> i32 {texture(self.block,0,damage)}
-    pub fn color(&self, mut block_color: impl FnMut(u8)->i32) -> i32 {block_color(self.block)}
+    /// 1.0 ItemColored.getColorFromDamage: Block.getRenderColor(damage).
+    pub fn color(&self, damage: i32, mut render_color: impl FnMut(u8,i32)->i32) -> i32 {render_color(self.block,damage)}
     pub fn placed_metadata(&self, damage: i32) -> i32 {damage}
 }
 /// ItemSlab clamps its name index (but not its icon index); ItemCloth uses

@@ -201,6 +201,10 @@ pub fn run_tick(settings: &mut GameSettings, host: &mut impl Host, events: Event
         if !settings.binding_pressed("key.use") {
             host.stop_using();
         }
+        // 1.0 drains the queued attack, use and pick presses without acting on them.
+        while take(settings, "key.attack") {}
+        while take(settings, "key.use") {}
+        while take(settings, "key.pickItem") {}
     } else {
         while take(settings, "key.attack") {
             host.click(false);

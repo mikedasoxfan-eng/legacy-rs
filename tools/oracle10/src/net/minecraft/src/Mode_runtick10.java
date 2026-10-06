@@ -126,7 +126,7 @@ public final class Mode_runtick10 {
                     if(scenario==2||scenario==4){mouse.add(new int[]{-1,0,phase%2==0?120:-240});mouse.add(new int[]{-1,0,120});if(phase%3==0)keys.add(new int[]{2+t%9,1});}
                     if(scenario==3){if(phase==0)keys.add(new int[]{61,1});if(phase==3)keys.add(new int[]{42,1});if(phase==4)keys.add(new int[]{54,1});if(phase==5)keys.add(new int[]{42,0});if(phase==7)keys.add(new int[]{54,0});if(phase<10)keys.add(new int[]{33,1});if(phase==10)keys.add(new int[]{61,0});if(phase%3==0)keys.add(new int[]{59,1});if(phase%4==0)keys.add(new int[]{63,1});if(phase==15)keys.add(new int[]{66,1});if(phase==16)keys.add(new int[]{87,1});}
                     if(scenario==5&&phase==7){keys.add(new int[]{16,1});keys.add(new int[]{18,1});keys.add(new int[]{18,1});keys.add(new int[]{20,1});}
-                    if(scenario==6){keys.add(new int[]{phase%2==0?33:2,phase%3==0?0:1});if(phase==4)keys.add(new int[]{16,1});}
+                    if(scenario==6){keys.add(new int[]{phase%2==0?33:2,phase%3==0||mode==1&&phase==4?0:1});if(phase==4)keys.add(new int[]{16,1});} // creative: no attack press with the pick press (1.0 picks the broken air block: Item.itemsList[0] NPE)
                     if(scenario==8&&phase==7)keys.add(new int[]{20,1});
                     if(scenario==11&&phase==7){keys.add(new int[]{1,1});keys.add(new int[]{5,1});}
                     if(scenario==0&&phase==8){keys.add(new int[]{16,1});keys.add(new int[]{16,1});keys.add(new int[]{16,0});}

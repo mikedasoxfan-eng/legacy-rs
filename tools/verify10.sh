@@ -409,18 +409,20 @@ echo "== statistics file"
 sf="$out/statsfile"; rm -rf "$sf"; mkdir -p "$sf"
 stats_rows() { grep -E '^(-?[0-9]+ -?[0-9]+|null)$' || true; }
 pushd "$sf" >/dev/null
-beta --statsfile write rust "1000=3,1001=1,1002=4,1100=72345,2000=123456,2010=42,16777217=1234,16908564=250,16974100=2,5242880=1,5242881=1"
-beta --statsfile write odd "1000=1,999999=5"
+# The stats file paths are relative to $sf, so run the client here (r10_client would isolate it).
+statsbeta() { "$root/target/release/beta" --mc 1.0 "$@"; }
+statsbeta --statsfile write rust "1000=3,1001=1,1002=4,1100=72345,2000=123456,2010=42,16777217=1234,16908564=250,16974100=2,5242880=1,5242881=1"
+statsbeta --statsfile write odd "1000=1,999999=5"
 cp rust/stats/stats_player_unsent.dat tampered.dat
 sed -i 's/{"1000":3}/{"1000":4}/' tampered.dat
 sf_ok=1
 for f in rust/stats/stats_player_unsent.dat odd/stats/stats_player_unsent.dat tampered.dat; do
   j=$(r10_oracle "$oracle" statsfile "statsfile/$f" "statsfile/$f.java" | stats_rows)  # oracle.sh runs in $out
-  r=$(beta --statsfile read "$f" | stats_rows)
+  r=$(statsbeta --statsfile read "$f" | stats_rows)
   [ "$j" = "$r" ] || { echo "stats file $f: java [$j] rust [$r]"; sf_ok=0; }
   if [ -f "$f.java" ]; then
     j2=$(r10_oracle "$oracle" statsfile "statsfile/$f.java" "statsfile/$f.java2" | stats_rows)
-    r2=$(beta --statsfile read "$f.java" | stats_rows)
+    r2=$(statsbeta --statsfile read "$f.java" | stats_rows)
     [ "$j2" = "$r2" ] && [ "$j2" = "$j" ] || { echo "stats file $f.java: java [$j2] rust [$r2]"; sf_ok=0; }
   fi
 done

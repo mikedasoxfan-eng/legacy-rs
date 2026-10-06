@@ -83,6 +83,11 @@ impl Entity {
         let Some(hit) = hit else { return; };
         let (x,y,z) = match hit { MovingObjectPosition::Block {x,y,z,..} => (x,y,z), _ => (0,0,0) };
         let block = match w.get_block_id(x,y,z) { 2=>3,43=>44,7=>1,b=>b as i32 };
-        self.player_state_mut().unwrap().inventory.set_current_item(block);
+        // 1.0: Item.itemsList[block].getHasSubtypes() selects by metadata too (ItemCloth, the log and
+        // stone-brick ItemMetadata, ItemSlab, ItemSapling, ItemLeaves, tall grass ItemColored).
+        let subtypes = matches!(block, 6 | 17 | 18 | 31 | 35 | 44 | 98);
+        let damage = if subtypes { w.get_block_metadata(x,y,z) } else { 0 };
+        let creative = self.player_state().unwrap().capabilities.creative;
+        self.player_state_mut().unwrap().inventory.select_item(block, damage, subtypes, creative);
     }
 }

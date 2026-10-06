@@ -2,7 +2,9 @@ package net.minecraft.src;
 import java.io.*;import java.lang.reflect.*;
 /** Concrete original EntityList constructors and malformed NBT, including null World. */
 public final class Mode_entitylist10_10 {
- static final String[] names={"Item","XPOrb","Arrow","Snowball","Painting","Mob","Monster","Creeper","Skeleton","Spider","Giant","Zombie","Slime","Ghast","PigZombie","Enderman","CaveSpider","Silverfish","Pig","Sheep","Cow","Chicken","Squid","Wolf","PrimedTnt","FallingSand","Minecart","Boat",null,"unknown","Player",""};
+ // Every 1.0 EntityList.addMapping, in registration (= id) order, then unregistered names.
+ static final String[] names={"Item","XPOrb","Painting","Arrow","Snowball","Fireball","SmallFireball","ThrownEnderpearl","EyeOfEnderSignal","PrimedTnt","FallingSand","Minecart","Boat","Mob","Monster","Creeper","Skeleton","Spider","Giant","Zombie","Slime","Ghast","PigZombie","Enderman","CaveSpider","Silverfish","Blaze","LavaSlime","EnderDragon","Pig","Sheep","Cow","Chicken","Squid","Wolf","MushroomCow","SnowMan","Villager","EnderCrystal",null,"unknown","Player",""};
+ static final int[] ids={1,2,9,10,11,12,13,14,15,20,21,40,41,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,90,91,92,93,94,95,96,97,120,200};
  static final String[] fields={"FallDistance","Fire","Air","OnGround","Health","HurtTime","DeathTime","AttackTime","ActiveEffects","Age","Value","carried","carryingData","Anger","Angry","Sitting","Owner","Saddle","Sheared","Color","powered","Size","Fuse","Tile","Dir","TileX","TileY","TileZ","Motive","xTile","yTile","zTile","inTile","inData","shake","inGround","player","Item","Type","Items","PushX","PushZ","Fuel"};
  static NBTTagList doubles(double... values){NBTTagList l=new NBTTagList();for(double v:values)l.setTag(new NBTTagDouble("", v));return l;}
  static NBTTagList floats(float... values){NBTTagList l=new NBTTagList();for(float v:values)l.setTag(new NBTTagFloat("", v));return l;}
@@ -43,7 +45,7 @@ public final class Mode_entitylist10_10 {
   try(DataOutputStream o=new DataOutputStream(new BufferedOutputStream(new FileOutputStream(a[3])))) {
    for(String name:names)for(boolean nullWorld:new boolean[]{false,true})for(int scenario=-2;scenario<64;scenario++) {
     World allocator=Mode_entities10.world(),w=nullWorld?null:allocator;Entity e=null;String error="";
-    try{if(scenario==-2)e=EntityList.createEntityInWorld(name,w);else if(scenario==-1){int id=-1;for(int j=0;j<28;j++)if(names[j].equals(name))id=new int[]{1,2,10,11,9,48,49,50,51,52,53,54,55,56,57,58,59,60,90,91,92,93,94,95,20,21,40,41}[j];e=EntityList.createEntity(id,w);}else e=EntityList.createEntityFromNBT(nbt(name,scenario),w);}catch(RuntimeException ex){error=ex.getClass().getSimpleName();}
+    try{if(scenario==-2)e=EntityList.createEntityInWorld(name,w);else if(scenario==-1){int id=-1;for(int j=0;j<ids.length;j++)if(names[j].equals(name))id=ids[j];e=EntityList.createEntity(id,w);}else e=EntityList.createEntityFromNBT(nbt(name,scenario),w);}catch(RuntimeException ex){error=ex.getClass().getSimpleName();}
     result(allocator,e,error,o);
    }
    World w=Mode_entities10.world();Entity[] unregistered={null,new Mode_entities10.Player(w),new EntityEgg(w),new EntityFireball(w),new EntityLightningBolt(w,0,0,0)};

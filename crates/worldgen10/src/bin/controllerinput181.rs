@@ -119,6 +119,7 @@ fn main() {
             } else {
                 None
             };
+            let picked_block = w.get_block_id(4, 64, 4);
             w.apply_player_tick_input(
                 id,
                 worldgen::entity::player::api::PlayerTickInput {
@@ -139,7 +140,7 @@ fn main() {
                     } else {
                         0
                     },
-                    pick_presses: if phase == 25 || phase == 50 { 1 } else { 0 },
+                    pick_presses: if (phase == 25 || phase == 50) && (hit.is_none() || picked_block != 0) { 1 } else { 0 },
                     ..Default::default()
                 },
                 t,
