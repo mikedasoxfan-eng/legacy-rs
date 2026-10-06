@@ -258,6 +258,7 @@ impl<'a, 'b> RenderBlocks<'a, 'b> {
                     self.w.biome_tint10(self.col.grass(t,h),x,z)
                 }
             }
+            block::WATER_MOVING | block::WATER_STILL => self.w.water_color10(x, z),
             // BlockVine: foliage colour of the column.
             106 => {
                 let (t, h) = self.w.climate(x, z);

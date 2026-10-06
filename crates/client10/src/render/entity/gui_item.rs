@@ -193,7 +193,7 @@ fn submit(ui: &mut Ui, g: Fixed) {
         let batch = d.batch();
         ui.gl.texture_2d = batch.texture.is_some();
         if let Some(tex) = batch.texture {
-            ui.gl.bind_texture(ui.texture(tex));
+            ui.gl.bind_texture(ui.texture(gui_texture_name(tex)));
         }
         glint_state(ui, d, |ui| ui.gl.triangles(&batch.vertices));
     }
@@ -266,3 +266,8 @@ pub fn set_gui_release_lighting() {
 }
 pub(crate) fn capture_lights(){LIGHT_CAPTURE.with(|c|*c.borrow_mut()=Some(Vec::new()));}
 pub(crate) fn take_light_calls()->Vec<[[f32;4];2]>{LIGHT_CAPTURE.with(|c|c.borrow_mut().take().unwrap_or_default())}
+
+/// RenderItem binds the glint as `%blur%/misc/glint.png` (linear filtering).
+pub(crate) fn gui_texture_name(name: &str) -> &str {
+    if name == "misc/glint.png" { "%blur%/misc/glint.png" } else { name }
+}

@@ -153,7 +153,7 @@ fn draw_item(ui: &mut Ui, s: Option<ItemStack>, x: i32, y: i32, z: f32) {
             }
             ui.gl.texture_2d = batch.texture.is_some();
             if let Some(t) = batch.texture {
-                ui.gl.bind_texture(ui.texture(t));
+                ui.gl.bind_texture(ui.texture(gui_item::gui_texture_name(t)));
             }
             if matches!(s.id,18|20) {
                 let mut front=Vec::new();

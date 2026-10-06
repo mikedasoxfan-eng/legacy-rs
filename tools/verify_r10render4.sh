@@ -75,6 +75,15 @@ round4 RenderHelper_item_and_gui_lighting renderhelper
 round4 Render_shadow_baby_animals shadow
 check Render_shadow_fire rendereffects -- --effectcheck
 round4 Tessellator_draw_bytes_brightness_units tessellator
+echo "== WorldRenderer_sections_passes_skip_tiles"
+wr_ok=0
+for spec in "1 1 fancy on" "1 1 fast off" "25 1 fancy off" "25 1 fast on"; do
+  if "$oracle" render_worldrenderer4_10 $spec 2 "$W/worldrenderer.bin" >"$out/worldrenderer.oracle.log" 2>&1 &&
+     beta --worldrenderer4-check $spec "$out/worldrenderer.bin" >"$out/worldrenderer.rust.log" 2>&1; then
+    tail -1 "$out/worldrenderer.rust.log"
+  else echo "WorldRenderer differs: $spec"; tail -5 "$out/worldrenderer.rust.log"; wr_ok=1; fi
+done
+result "$wr_ok"
 round4 RenderGlobal_playAuxSFX_spawnParticle_setting auxsfx
 check RenderGlobal_particle_factory_names particlefactory6_181 -- --particlefactorycheck
 echo "== RenderGlobal_clouds_fancy_fast_anaglyph"
