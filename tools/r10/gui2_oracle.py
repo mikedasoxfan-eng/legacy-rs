@@ -44,7 +44,7 @@ for name, method in {
 stub_path = build / 'generated/org/lwjgl/opengl/GL11.java'
 stub_path.parent.mkdir(parents=True, exist_ok=True)
 stub_path.write_text(stub)
-sources = sorted((root / 'tools/oracle10/src/net/minecraft/src').glob('*gui2*10.java'))
+sources = sorted((root / 'tools/oracle10/gui2').glob('*.java'))  # kept out of src: they need the instrumented GL11 above
 sources += [stub_path]
 subprocess.run(['javac', '-nowarn', '-cp', cp, '-d', str(build), *map(str, sources)], check=True)
 mode, output = sys.argv[1:3]
