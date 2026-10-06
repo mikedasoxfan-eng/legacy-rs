@@ -7,6 +7,7 @@ mod integrator;
 mod round8;
 mod round9;
 mod round10;
+mod blocks4;
 use super::{
     behavior,
     chunk::{idx, Chunk},
@@ -69,6 +70,15 @@ fn fixture(bright: bool) -> World {
 pub fn bytes(kind: &str) -> Vec<u8> {
     let mut o = Vec::new();
     match kind {
+        "b4right" => blocks4::right(&mut o),
+        "b4eat" => blocks4::eat(&mut o),
+        "b4use" => blocks4::item_use(&mut o),
+        "b4items" => blocks4::items(&mut o),
+        "b4harvest" => blocks4::harvest(&mut o),
+        "b4ticks" => blocks4::ticks(&mut o),
+        "b4colors" => blocks4::colors(&mut o),
+        "b4tiles" => blocks4::tiles(&mut o),
+        "b4stack" => blocks4::stack_damage(&mut o),
         "furnacetile10" => round10::furnace(&mut o),
         "dispensertile10" => round10::dispenser(&mut o),
         "jukebox10" => round10::jukebox(&mut o),

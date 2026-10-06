@@ -231,7 +231,9 @@ impl World {
         if !self.dimension.has_no_sky() {
             for yy in h.min(old)..=h.max(old) { self.update_light181(LightKind::Sky, x, yy, z); }
         }
-        self.mark_blocks_dirty181([x, h.min(old), z, x, h.max(old), z]);
+        // World.markBlocksDirtyVertical -> markBlocksDirty: a renderer range, not one of the
+        // block-owned direct ranges the round-nine recorders observe.
+        self.renderers_dirty = true;
         let no_sky = self.dimension.has_no_sky();
         let c = self.chunk_mut(cx, cz);
         c.height_map[(z << 4 | x) as usize] = h as u8;

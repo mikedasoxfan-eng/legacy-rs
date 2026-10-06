@@ -140,6 +140,8 @@ impl<'a> Access<'a> {
     /// b1.8.1 `WorldChunkManager.func_35554_b` / `func_35558_c`: the column's cached
     /// temperature and rainfall (BiomeCache), as the colour multipliers read them.
     pub fn biome_tint10(&self,color:u32,x:i32,z:i32)->u32 {self.biomes.borrow_mut().biome_at(x,z).tint_color10(color)}
+    /// BiomeGenBase.field_40256_A, BlockFluid's 1.0 water colour.
+    pub fn biome_water10(&self,x:i32,z:i32)->i32 {self.biomes.borrow_mut().biome_at(x,z).water_color10()}
     pub fn climate(&self, x: i32, z: i32) -> (f64, f64) {
         let bs = self.biomes.borrow();
         (bs.raw_temperature(x, z), bs.raw_rainfall(x, z))

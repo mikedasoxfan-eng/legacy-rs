@@ -145,8 +145,8 @@ impl World {
     }
     pub fn swap_furnace_block(&mut self, lit: bool, x: i32, y: i32, z: i32) {
         let metadata = self.get_block_metadata(x, y, z);
-        self.get_block_tile_entity(x,y,z);
-        let tile_id = self.chunk(x >> 4,z >> 4).tile_entity_ids.get(&(x & 15,y,z & 15)).copied();
+        // 1.0 World.getBlockTileEntity also returns a pending addedTileEntityList object.
+        let tile_id = if self.get_block_tile_entity(x,y,z).is_some() { self.tile_id10(x,y,z) } else { None };
         self.keep_furnace_inventory = true;
         self.set_block_with_notify(x, y, z, if lit { 62 } else { 61 });
         self.keep_furnace_inventory = false;

@@ -301,7 +301,7 @@ pub fn color_multiplier(
 /// owner supplies biome colors, including subclass-specific swamp behavior.
 pub fn color_multiplier10(id:u8,metadata:i32,x:i32,y:i32,z:i32,
     mut biome_color:impl FnMut(i32,i32,i32,bool)->i32,water_color:impl FnOnce(i32,i32)->i32)->i32 {
-    match id {111=>2129968,18 if metadata&1!=0=>6396257,18 if metadata&2!=0=>8431445,
+    match id {111=>2129968,55=>8388608,18 if metadata&1!=0=>6396257,18 if metadata&2!=0=>8431445,
         31 if metadata==0=>16777215,2|31=>biome_color(x,y,z,false),18|106=>biome_color(x,y,z,true),
         8|9=>water_color(x,z),104|105=>(metadata*32)<<16 | (255-metadata*8)<<8 | metadata*4,
         _=>16777215}

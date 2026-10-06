@@ -73,7 +73,8 @@ pub(super) fn piston_callbacks(o: &mut Vec<u8>) {
                                 raw(&mut w, 8 + dx, 64 + dy, 8 + dz, 76, 5);
                             }
                             w.multiplayer_world = remote;
-                            w.piston_guard[(id == 29) as usize] = ignored;
+                            // 1.0 BlockPistonBase.ignoreUpdates is static (shared by both pistons).
+                            crate::world::pistons::IGNORE_UPDATES.store(ignored, std::sync::atomic::Ordering::Relaxed);
                             seed(&mut w);
                             if hook == 0 {
                                 behavior::on_block_added(&mut w, id, 8, 64, 8);
@@ -81,6 +82,7 @@ pub(super) fn piston_callbacks(o: &mut Vec<u8>) {
                                 behavior::on_neighbor_block_change(&mut w, id, 8, 64, 8, 76);
                             }
                             piston_callback_snapshot(o, &mut w);
+                            crate::world::pistons::IGNORE_UPDATES.store(false, std::sync::atomic::Ordering::Relaxed);
                         }
                     }
                 }

@@ -284,7 +284,9 @@ impl Entity {
         if matches!(id,18|31|106) && self.held_item().is_some_and(|s| s.id == 359) {
             super::block_hooks::drop_stack(w, x, y, z, ItemStack::new(id as i32, 1, if id==18 {meta & 3}else if id==106 {0}else{meta}));
         } else if id == 78 {
-            super::block_hooks::drop_stack(w, x, y, z, ItemStack::new(332, 1, 0));
+            // 1.0 BlockSnow.harvestBlock: unguarded drop, then the layer is removed.
+            super::block_hooks::drop_stack_unguarded(w, x, y, z, ItemStack::new(332, 1, 0));
+            w.set_block_with_notify(x, y, z, 0);
             self.add_stat(super::stat::mine(78), 1);
         } else {
             // EntityPlayer.addExhaustion skips remote worlds; this block-owned
@@ -293,9 +295,9 @@ impl Entity {
             let silk=crate::enchantment::level(33,self.held_item())>0;
             let harvestable=crate::block::props(id).normal_render&&!crate::block::props(id).container;
             if silk&&harvestable {
-                if matches!(id,46|79) {return;}
+                // BlockTNT/BlockIce.func_41049_c_ return null: no drop, but BlockIce still melts.
                 let damage=if id==43 {meta}else if registry::item(id as i32).is_some_and(|i|i.subtypes){meta}else{0};
-                super::block_hooks::drop_stack(w,x,y,z,ItemStack::new(if id==43 {44}else if id==97 {match meta{1=>4,2=>98,_=>1}}else{id as i32},1,if id==97 {0}else{damage}));
+                if !matches!(id,46|79) { super::block_hooks::drop_stack(w,x,y,z,ItemStack::new(if id==43 {44}else if id==74 {73}else if id==97 {match meta{1=>4,2=>98,_=>1}}else{id as i32},1,if matches!(id,97|73|74) {0}else{damage})); }
             }else {
                 let fortune=crate::enchantment::level(35,self.held_item());
                 crate::world::behavior::drop_block_as_item_fortune(w,id,x,y,z,meta,fortune);

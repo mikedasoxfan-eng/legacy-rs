@@ -195,7 +195,13 @@ impl Entity {
                 if charge>1.0 {charge=1.0;}
                 let mut arrow=Entity::arrow_from_owner_power(w,self,charge*2.0);
                 if let EntityKind::Arrow(a) = &mut arrow.kind { a.critical = charge == 1.0; }
-                self.damage_held10(w, 1);
+                // ItemBow damages the in-use stack in place: a broken bow stays in its
+                // slot as a zero-size stack (nothing on this path clears it).
+                if let Some(mut bow) = self.held_item() {
+                    bow.damage_item10(1, self, w);
+                    let inv = &mut self.player_state_mut().unwrap().inventory;
+                    inv.main[inv.current_item as usize] = Some(bow);
+                }
                 let pitch=1.0/(w.item_random.next_float()*0.4+1.2)+charge*0.5;
                 w.play_sound_at_entity(self,"random.bow",1.0,pitch);
                 self.player_state_mut().unwrap().inventory.consume(262);
@@ -217,36 +223,42 @@ impl Entity {
         let remaining = s.item_use_ticks;
         if remaining <= 25 && remaining % 4 == 0 { self.eating_effect(w, item, 5); }
         self.player_state_mut().unwrap().item_use_ticks -= 1;
-        if self.player_state().unwrap().item_use_ticks == 0 {
-            self.eating_effect(w, item, 16);
-            if matches!(item.id,335|373) {
-                let result=if item.id==335 {self.drink_milk10(w,item)}else{self.drink_potion10(w,item)};
-                let inv=&mut self.player_state_mut().unwrap().inventory;
-                inv.main[inv.current_item as usize]=Some(result);
-            } else if let Some((amount, saturation)) = food_value(item.id) {
-                let s = self.player_state_mut().unwrap();
-                s.food.add_food(amount, saturation);
-                let mut result = item;
-                result.count -= 1;
-                if item.id == 282 { result = ItemStack::new(281, 1, 0); }
-                s.inventory.main[s.inventory.current_item as usize] = if result.count == 0 { None } else { Some(result) };
-                let pitch=w.rand.next_float()*0.1+0.9;
-                w.play_sound_at_entity(self,"random.burp",0.5,pitch);
-                let effect = match item.id {
-                    322 => Some((super::super::potion::REGENERATION, 1.0)),
-                    365 => Some((super::super::potion::HUNGER, 0.3)),
-                    367 => Some((super::super::potion::HUNGER, 0.8)),
-                    375 => Some((super::super::potion::POISON, 1.0)),
-                    _ => None,
-                };
-                if let Some((id, probability)) = effect {
-                    if !w.multiplayer_world && w.rand.next_float() < probability {
-                        self.add_potion_effect(super::super::potion::PotionEffect::new(id, if item.id==375 {100}else{600}, 0));
-                    }
+        // 1.0 EntityPlayer.onUpdate: the use finishes only on the authoritative world.
+        if self.player_state().unwrap().item_use_ticks == 0 && !w.multiplayer_world {
+            self.finish_item_use(w);
+        }
+    }
+    /// EntityPlayer.func_35208_ae (onItemUseFinish).
+    pub fn finish_item_use(&mut self, w: &mut World) {
+        let Some(item) = self.player_state().unwrap().item_in_use else { return; };
+        self.eating_effect(w, item, 16);
+        if matches!(item.id,335|373) {
+            let result=if item.id==335 {self.drink_milk10(w,item)}else{self.drink_potion10(w,item)};
+            let inv=&mut self.player_state_mut().unwrap().inventory;
+            inv.main[inv.current_item as usize]=Some(result);
+        } else if let Some((amount, saturation)) = food_value(item.id) {
+            let s = self.player_state_mut().unwrap();
+            s.food.add_food(amount, saturation);
+            let mut result = item;
+            result.count -= 1;
+            if item.id == 282 { result = ItemStack::new(281, 1, 0); }
+            s.inventory.main[s.inventory.current_item as usize] = if result.count == 0 { None } else { Some(result) };
+            let pitch=w.rand.next_float()*0.1+0.9;
+            w.play_sound_at_entity(self,"random.burp",0.5,pitch);
+            let effect = match item.id {
+                322 => Some((super::super::potion::REGENERATION, 1.0)),
+                365 => Some((super::super::potion::HUNGER, 0.3)),
+                367 => Some((super::super::potion::HUNGER, 0.8)),
+                375 => Some((super::super::potion::POISON, 1.0)),
+                _ => None,
+            };
+            if let Some((id, probability)) = effect {
+                if !w.multiplayer_world && w.rand.next_float() < probability {
+                    self.add_potion_effect(super::super::potion::PotionEffect::new(id, if item.id==375 {100}else{600}, 0));
                 }
             }
-            self.clear_item_use();
         }
+        self.clear_item_use();
     }
     fn eating_effect(&mut self, w: &mut World, item: ItemStack, count: i32) {
         // EntityPlayer.func_35201_a: EnumAction.drink (potions and milk) uses World.rand.

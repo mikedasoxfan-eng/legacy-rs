@@ -1,6 +1,14 @@
 use super::*;
 use crate::block::*;
 pub fn drop_stack(w: &mut World, x: i32, y: i32, z: i32, stack: ItemStack) {
+    // Block.dropBlockAsItem_do spawns nothing (and draws nothing) on a remote world.
+    if w.multiplayer_world {
+        return;
+    }
+    drop_stack_unguarded(w, x, y, z, stack);
+}
+/// The same item spawn without the remote guard (BlockSnow.harvestBlock's inline copy).
+pub fn drop_stack_unguarded(w: &mut World, x: i32, y: i32, z: i32, stack: ItemStack) {
     let s = 0.7f32;
     let ox = (w.rand.next_float() * s) as f64 + (1.0 - s) as f64 * 0.5;
     let oy = (w.rand.next_float() * s) as f64 + (1.0 - s) as f64 * 0.5;
@@ -192,7 +200,8 @@ pub fn neighbor(w: &mut World, id: u8, x: i32, y: i32, z: i32, changed: u8) -> b
             if w.get_block_id(x, y - 1, z) != id {
                 w.set_block_with_notify(x, y, z, 0);
             }
-            if changed > 0 {
+            // 1.0 BlockDoor: the upper half forwards only power-providing neighbours.
+            if changed > 0 && crate::entity::block_hooks::provides_power(changed) {
                 neighbor(w, id, x, y - 1, z, changed);
             }
         } else {

@@ -14,6 +14,7 @@ pub(super) fn bed(o: &mut Vec<u8>) {
                         SleepStatus::NotPossibleNow,
                         SleepStatus::TooFarAway,
                         SleepStatus::OtherProblem,
+                        SleepStatus::NotSafe, // 1.0 EnumStatus.values() has six entries
                     ] {
                         for x in 6..=10 {
                             for y in 62..=65 {

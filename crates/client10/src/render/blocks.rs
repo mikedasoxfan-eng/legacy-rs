@@ -233,47 +233,21 @@ impl<'a, 'b> RenderBlocks<'a, 'b> {
 
     /// `colorMultiplier`
     fn color_multiplier(&self, id: u8, x: i32, y: i32, z: i32) -> u32 {
-        match id {
-            block::GRASS => {
+        // Release 1.0 Block.colorMultiplier: the block-owned dispatch (worldgen, checked against
+        // the original bytecode by blocks4:colors) over the biome's per-block climate colour
+        // (BiomeGenBase.func_40254_a/func_40255_b, swamp tint) and water colour.
+        worldgen::block::visual181::color_multiplier10(
+            id,
+            self.w.meta(x, y, z),
+            x,
+            y,
+            z,
+            |x, _y, z, foliage| {
                 let (t, h) = self.w.climate(x, z);
-                self.w.biome_tint10(self.col.grass(t,h),x,z)
-            }
-            block::LEAVES => {
-                let m = self.w.meta(x, y, z);
-                if m & 1 == 1 {
-                    6396257
-                } else if m & 2 == 2 {
-                    8431445
-                } else {
-                    let (t, h) = self.w.climate(x, z);
-                    self.w.biome_tint10(self.col.foliage(t,h),x,z)
-                }
-            }
-            block::TALL_GRASS => {
-                if self.w.meta(x, y, z) == 0 {
-                    0xffffff
-                } else {
-                    let mut v = x.wrapping_mul(3129871).wrapping_add(z.wrapping_mul(6129781)).wrapping_add(y) as i64;
-                    v = v.wrapping_mul(v).wrapping_mul(42317861).wrapping_add(v.wrapping_mul(11));
-                    // b1.8.1 centres the jitter: +-16 around the block.
-                    let x2 = (x as i64 + ((v >> 14 & 31) - 16)) as i32;
-                    let z2 = (z as i64 + ((v >> 24 & 31) - 16)) as i32;
-                    let (t, h) = self.w.climate(x2, z2);
-                    self.w.biome_tint10(self.col.grass(t,h),x2,z2)
-                }
-            }
-            // BlockVine: foliage colour of the column.
-            106 => {
-                let (t, h) = self.w.climate(x, z);
-                self.w.biome_tint10(self.col.foliage(t,h),x,z)
-            }
-            // BlockStem.getRenderColor(meta): green to yellow as it grows.
-            104 | 105 => {
-                let m = self.w.meta(x, y, z);
-                ((m * 32) << 16 | (255 - m * 8) << 8 | m * 4) as u32
-            }
-            _ => 0xffffff,
-        }
+                self.w.biome_tint10(if foliage { self.col.foliage(t, h) } else { self.col.grass(t, h) }, x, z) as i32
+            },
+            |x, z| self.w.biome_water10(x, z),
+        ) as u32
     }
 
     /// `shouldSideBeRendered`, called for block `id` with the neighbour position.

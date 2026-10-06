@@ -545,6 +545,10 @@ bash "$root/tools/verify_r10blocks3.sh" --built || fail=1
 bash "$root/tools/verify_r10gui3.sh" --built || fail=1
 # --- end gui ---
 
+
+# Release 1.0 blocks, round 4.
+bash "$root/tools/verify_r10blocks4.sh" --built || fail=1
+
 pflush
 [ $fail -eq 0 ] && echo "ALL CASES EXACT" || echo "SOME CASES DIFFER"
 exit $fail

@@ -2,7 +2,7 @@
 use super::*;
 use crate::world::{tile::TileEntity, tile_nbt181::TileError181};
 
-fn error(o: &mut Vec<u8>, result: Result<(), TileError181>) {
+pub(super) fn error(o: &mut Vec<u8>, result: Result<(), TileError181>) {
     o.push(match result {
         Ok(()) => 0,
         Err(TileError181::ClassCast) => 1,
@@ -11,7 +11,7 @@ fn error(o: &mut Vec<u8>, result: Result<(), TileError181>) {
         Err(TileError181::MissingMapping) => 4,
     });
 }
-fn nbt(o: &mut Vec<u8>, n: &Compound) {
+pub(super) fn nbt(o: &mut Vec<u8>, n: &Compound) {
     let mut bytes = Vec::new();
     crate::nbt::write_root(&mut bytes, n).unwrap();
     i(o, bytes.len() as i32);
@@ -285,7 +285,7 @@ pub(super) fn jukebox(o: &mut Vec<u8>) {
         }
     }
 }
-fn base_snapshot(o: &mut Vec<u8>, base: &crate::world::tile_nbt181::TileBase181, w: &World) {
+pub(super) fn base_snapshot(o: &mut Vec<u8>, base: &crate::world::tile_nbt181::TileBase181, w: &World) {
     for v in [
         base.position.0,
         base.position.1,

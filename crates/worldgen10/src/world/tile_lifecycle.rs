@@ -23,7 +23,7 @@ impl std::ops::DerefMut for TileObject {
 }
 
 impl World {
-    fn tile_id10(&mut self, x: i32, y: i32, z: i32) -> Option<TileId> {
+    pub(crate) fn tile_id10(&mut self, x: i32, y: i32, z: i32) -> Option<TileId> {
         self.chunk(x >> 4, z >> 4).tile_entity_ids.get(&(x & 15, y, z & 15)).copied()
             .or_else(|| self.pending_tile_entities.iter().copied().find(|id| {
                 let o = &self.tile_objects[id]; !o.invalid && o.position == (x, y, z)
@@ -43,15 +43,36 @@ impl World {
     /// The two Chunk block setters refresh container caches after onBlockAdded.
     /// Preserve the original fallback's local coordinates passed to World.
     pub(crate) fn refresh_changed_block_tile181(&mut self, cx: i32, cz: i32, x: i32, y: i32, z: i32, block: u8, old: u8) {
+        // 1.0 Chunk.setBlockID*: these use Chunk.getChunkBlockTileEntity, which
+        // (unlike 1.0 World.getBlockTileEntity) never searches addedTileEntityList.
         if props(block).container || (block == 0 && props(old).container) {
-            let present = self.get_block_tile_entity(cx * 16 + x, y, cz * 16 + z).is_some();
-            if !present && props(block).container && block != 36 {
-                self.set_block_tile_entity(x, y, z, TileEntity::for_block(block));
-            } else if present {
-                let id = self.tile_id10(cx * 16 + x, y, cz * 16 + z).unwrap();
-                self.reset_tile_cache181(id);
+            match self.chunk_tile_id10(cx * 16 + x, y, cz * 16 + z) {
+                None => if props(block).container && block != 36 {
+                    self.set_block_tile_entity(x, y, z, TileEntity::for_block(block));
+                },
+                Some(id) => self.reset_tile_cache181(id),
             }
         }
+    }
+    /// 1.0 `Chunk.getChunkBlockTileEntity`: lazy creation through World.setBlockTileEntity,
+    /// then removal of an invalid entry. No World.addedTileEntityList fallback.
+    pub(crate) fn chunk_tile_id10(&mut self, x: i32, y: i32, z: i32) -> Option<TileId> {
+        if !self.access_chunk(x >> 4, z >> 4) {
+            return None;
+        }
+        let key = (x & 15, y, z & 15);
+        if !self.chunk(x >> 4, z >> 4).tile_entities.contains_key(&key) {
+            let block = self.chunk(x >> 4, z >> 4).block(x & 15, y, z & 15);
+            if props(block).container && block != 36 {
+                self.set_block_tile_entity(x,y,z,TileEntity::for_block(block));
+            }
+        }
+        let id = self.chunk(x >> 4, z >> 4).tile_entity_ids.get(&key).copied()?;
+        if self.tile_objects[&id].invalid {
+            self.detach_chunk_tile(x, y, z);
+            return None;
+        }
+        Some(id)
     }
     /// Chunk.onChunkUnload queues tiles without invalidating them. Their world
     /// reference and payload survive until World.updateEntities removes the list.
@@ -199,21 +220,10 @@ impl World {
         if !self.access_chunk(x >> 4, z >> 4) {
             return None;
         }
-        let key = (x & 15, y, z & 15);
-        if !self.chunk(x >> 4, z >> 4).tile_entities.contains_key(&key) {
-            let block = self.chunk(x >> 4, z >> 4).block(x & 15, y, z & 15);
-            if props(block).container && block != 36 {
-                self.set_block_tile_entity(x,y,z,TileEntity::for_block(block));
-            }
+        if self.chunk_tile_id10(x, y, z).is_some() {
+            return self.chunk_mut(x >> 4, z >> 4).tile_entities.get_mut(&(x & 15, y, z & 15));
         }
-        if let Some(&id) = self.chunk(x >> 4, z >> 4).tile_entity_ids.get(&key) {
-            if self.tile_objects[&id].invalid {
-                self.detach_chunk_tile(x, y, z);
-            }
-        }
-        if self.chunk(x >> 4, z >> 4).tile_entity_ids.contains_key(&key) {
-            return self.chunk_mut(x >> 4, z >> 4).tile_entities.get_mut(&key);
-        }
+        // 1.0 World.getBlockTileEntity: first valid addedTileEntityList entry at the position.
         let pending = self.pending_tile_entities.iter().copied().find(|id| {
             let o = &self.tile_objects[id];
             !o.invalid && o.position == (x, y, z)
@@ -246,7 +256,10 @@ impl World {
                 let o = &self.tile_objects[id]; !o.invalid && o.position == (x, y, z)
             }));
         if let Some(id) = id {
-            self.pending_tile_entities.retain(|p| *p != id);
+            // 1.0 World.removeBlockTileEntity: List.remove drops the first occurrence only.
+            if let Some(i) = self.pending_tile_entities.iter().position(|p| *p == id) {
+                self.pending_tile_entities.remove(i);
+            }
             if self.scanning_tiles {
                 self.invalidate_tile181(id);
                 return;

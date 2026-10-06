@@ -140,8 +140,9 @@ pub fn multi_boxes(id: u8, metadata: i32) -> Option<Vec<BB>> {
 pub fn added(w: &mut World, id: u8, x: i32, y: i32, z: i32) -> bool {
     match id {
         116 | 117 => w.container_added181(id, x, y, z),
+        // BlockEndPortal.onBlockAdded replaces BlockContainer's: no tile is added here
+        // (Chunk.setBlockID's own container lookup creates it afterwards).
         119 => {
-            w.container_added181(id, x, y, z);
             if !END_PORTAL_ALLOW.load(std::sync::atomic::Ordering::Relaxed)
                 && w.dimension != super::Dimension::Overworld
             {
@@ -154,21 +155,21 @@ pub fn added(w: &mut World, id: u8, x: i32, y: i32, z: i32) -> bool {
     }
     true
 }
+/// BlockBrewingStand.field_40214_a: one Random owned by the single registered block.
+pub fn brewing_stand_random10() -> std::sync::MutexGuard<'static, crate::JavaRandom> {
+    static RNG: std::sync::OnceLock<std::sync::Mutex<crate::JavaRandom>> = std::sync::OnceLock::new();
+    RNG.get_or_init(|| {
+        std::sync::Mutex::new(crate::JavaRandom::new(crate::entity::EntitySeedSource::Time.next_seed()))
+    })
+    .lock()
+    .unwrap_or_else(|e| e.into_inner())
+}
 pub fn removed(w: &mut World, id: u8, x: i32, y: i32, z: i32) -> bool {
     match id {
         117 => {
             if let Some(TileEntity::BrewingStand(b)) = w.get_block_tile_entity(x, y, z).cloned() {
                 let tile_id = w.chunk(x >> 4, z >> 4).tile_entity_ids[&(x & 15, y, z & 15)];
-                static RNG: std::sync::OnceLock<std::sync::Mutex<crate::JavaRandom>> =
-                    std::sync::OnceLock::new();
-                let mut rng = RNG
-                    .get_or_init(|| {
-                        std::sync::Mutex::new(crate::JavaRandom::new(
-                            crate::entity::EntitySeedSource::Time.next_seed(),
-                        ))
-                    })
-                    .lock()
-                    .unwrap();
+                let mut rng = brewing_stand_random10();
                 for (slot, stack) in b.items.into_iter().enumerate() {
                     let Some(mut stack) = stack else { continue; };
                     let ox = rng.next_float() * 0.8 + 0.1;

@@ -77,7 +77,8 @@ impl Entity {
             }
             58 | 61 | 62 | 23 | 116 | 117 => {
                 if matches!(id, 23 | 61 | 62 | 116 | 117) && w.multiplayer_world { return true; }
-                if id != 58 && w.get_block_tile_entity(x,y,z).is_none() {
+                // BlockEnchantmentTable opens its GUI without looking up (or lazily creating) a tile.
+                if id != 58 && id != 116 && w.get_block_tile_entity(x,y,z).is_none() {
                     return true;
                 }
                 self.player_state_mut()

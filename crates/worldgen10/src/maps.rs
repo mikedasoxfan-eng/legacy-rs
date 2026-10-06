@@ -11,9 +11,10 @@ pub const PALETTE: [u32; 14] = [
     0, 8368696, 16247203, 10987431, 16711680, 10526975, 10987431, 31744, 16777215, 10791096,
     12020271, 7368816, 4210943, 6837042,
 ];
-/// Material.materialMapColor by material id; b1.8.1 adds the vine material at index 10.
-pub const MATERIAL_COLORS: [u8; 29] = [
-    0, 1, 10, 13, 11, 6, 12, 4, 7, 7, 7, 3, 3, 0, 2, 0, 0, 4, 7, 5, 8, 8, 7, 9, 7, 0, 0, 3, 11,
+/// Material.materialMapColor by material id (1.0 order: vine at 10, the dragon-egg
+/// material field_41056_z at 25, piston at 29).
+pub const MATERIAL_COLORS: [u8; 30] = [
+    0, 1, 10, 13, 11, 6, 12, 4, 7, 7, 7, 3, 3, 0, 2, 0, 0, 4, 7, 5, 8, 8, 7, 9, 7, 7, 0, 0, 3, 11,
 ];
 pub fn block_color(id: u8) -> u8 {
     MATERIAL_COLORS[material_of(id) as usize]

@@ -440,7 +440,13 @@ pub fn record_tooltip(id: i32) -> Option<String> {
 pub fn item_properties(id: i32, damage: i32) -> Option<(i32, u32, i32)> {
     if (110..=122).contains(&id) {
         return Some((
-            crate::world::blocks10::texture(id as u8, 2, damage).unwrap(),
+            // ItemBlock fixes its icon at construction (getBlockTextureFromSide(2), metadata 0);
+            // ItemLilyPad (ItemColored) asks the block for side 0 with the damage.
+            if id == 111 {
+                crate::world::blocks10::texture(111, 0, damage).unwrap()
+            } else {
+                crate::world::blocks10::texture(id as u8, 2, 0).unwrap()
+            },
             if id == 111 { 2129968 } else { 0xffffff },
             0,
         ));
@@ -467,7 +473,7 @@ pub fn item_properties(id: i32, damage: i32) -> Option<(i32, u32, i32)> {
         380 => 156,
         381 => 155,
         382 => 137,
-        2258..=2266 => 240 + (id - 2256),
+        2256..=2266 => 240 + (id - 2256),
         351 => 78 + damage.clamp(0, 15) % 8 * 16 + damage.clamp(0, 15) / 8,
         _ => return None,
     };
