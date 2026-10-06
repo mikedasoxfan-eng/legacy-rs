@@ -95,6 +95,8 @@ pub fn class(e: &Entity) -> &'static str {
         EntityKind::Egg(_) => "EntityEgg",
         EntityKind::Fish(_) => "EntityFishHook",
         EntityKind::PigZombie { .. } => "EntityPigZombie",
+        // The simulation names the mooshroom by its save id; its class is EntityMooshroom.
+        EntityKind::Mooshroom => "EntityMooshroom",
         _ => {
             RENDERERS
                 .iter()

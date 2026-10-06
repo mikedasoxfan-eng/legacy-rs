@@ -287,6 +287,94 @@ pub fn fog_base(sky: [f32; 3], fog: [f32; 3], distance: i32, rain: f32, thunder:
     }
     c
 }
+/// Release 1.0 `EntityRenderer` fog inputs that the Beta helpers above do not know about.
+#[derive(Clone, Copy, Debug, Default)]
+pub struct FogState {
+    /// `ActiveRenderInfo.func_41066_a`'s block material at the near-plane eye point.
+    pub medium: Medium,
+    /// `cloudFog` (RenderGlobal.func_27307_a, which 1.0 never sets) with `World.drawClouds`.
+    pub cloud: Option<[f32; 3]>,
+    /// Remaining blindness ticks when the effect is active.
+    pub blindness: Option<i32>,
+    pub water_breathing: bool,
+    /// `worldProvider.hasNoSky` (Nether and End): no void fog.
+    pub has_no_sky: bool,
+    pub nether: bool,
+}
+
+/// 1.0 `updateFogColor` after the sky blend, rain and thunder: cloud, liquid and fade colors,
+/// the blindness-dimmed void darkening and the anaglyph mix.
+pub fn fog_color_release(base: [f32; 3], s: &FogState, fade: f32, anaglyph: bool, eye_y: f64) -> [f32; 3] {
+    let mut c = if let Some(cloud) = s.cloud {
+        cloud
+    } else {
+        match s.medium {
+            Medium::Air => base,
+            Medium::Water => [0.02, 0.02, 0.2],
+            Medium::Lava => [0.6, 0.1, 0.0],
+        }
+    }
+    .map(|c| c * fade);
+    let mut depth = eye_y / 32.0;
+    if let Some(duration) = s.blindness {
+        if duration < 20 {
+            depth *= (1.0f32 - duration as f32 / 20.0f32) as f64;
+        } else {
+            depth = 0.0;
+        }
+    }
+    if depth < 1.0 {
+        if depth < 0.0 {
+            depth = 0.0;
+        }
+        depth *= depth;
+        c = c.map(|v| (v as f64 * depth) as f32);
+    }
+    if anaglyph {
+        [
+            (c[0] * 30.0 + c[1] * 59.0 + c[2] * 11.0) / 100.0,
+            (c[0] * 30.0 + c[1] * 70.0) / 100.0,
+            (c[0] * 30.0 + c[2] * 70.0) / 100.0,
+        ]
+    } else {
+        c
+    }
+}
+
+/// 1.0 `setupFog(mode, t)` (mode >= 0; `sky` is mode < 0) as `[start or density, end, mode]`
+/// with mode 1 linear and 2 exponential.
+pub fn fog_release(s: &FogState, far: f32, sky: bool, void: f64) -> [f32; 3] {
+    if let Some(duration) = s.blindness {
+        let mut distance = 5.0f32;
+        if duration < 20 {
+            distance = 5.0 + (far - 5.0) * (1.0 - duration as f32 / 20.0);
+        }
+        return if sky { [0.0, distance * 0.8, 1.0] } else { [distance * 0.25, distance, 1.0] };
+    }
+    if s.cloud.is_some() {
+        return [0.1, 0.0, 2.0];
+    }
+    match s.medium {
+        Medium::Water => [if s.water_breathing { 0.05 } else { 0.1 }, 0.0, 2.0],
+        Medium::Lava => [2.0, 0.0, 2.0],
+        Medium::Air => {
+            let mut distance = far;
+            if !s.has_no_sky && void < 1.0 {
+                let v = if void < 0.0 { 0.0 } else { void };
+                let near = (100.0f32 * (v * v) as f32).max(5.0);
+                if distance > near {
+                    distance = near;
+                }
+            }
+            [
+                if sky || s.nether { 0.0 } else { distance * 0.25 },
+                if sky { distance * 0.8 } else { distance },
+                1.0,
+            ]
+        }
+    }
+}
+
 /// Uniform convention: linear=1, exponential=2 (density in x).
 /// RenderGlobal.func_27307_a always returns false in b1.7.3: no cloud-fog branch.
 /// `EntityRenderer.setupFog`. `void` is b1.8.1's depth factor: the view entity's sky light / 16

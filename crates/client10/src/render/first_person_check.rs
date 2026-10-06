@@ -273,7 +273,7 @@ impl Input {
         }
     }
 }
-fn world() -> World {
+pub(crate) fn world() -> World {
     let mut w = World::new(0, 0);
     w.skylight_subtracted = 0;
     for x in -3..=3 {
@@ -289,7 +289,7 @@ fn world() -> World {
     }
     w
 }
-fn raw(w: &mut World, x: i32, y: i32, z: i32, id: u8, m: i32) {
+pub(crate) fn raw(w: &mut World, x: i32, y: i32, z: i32, id: u8, m: i32) {
     let c = w
         .chunks
         .entry((x >> 4, z >> 4))

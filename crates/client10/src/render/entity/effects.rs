@@ -17,8 +17,14 @@ pub struct Snapshot {
     pub vehicle_rails: Option<super::vehicles::RailSnapshot>,
     pub surfaces: Vec<Surface>,
 }
+/// `Render.renderShadow`'s radius: the renderer's shadow size times the living size
+/// multiplier (1 in 1.0), halved for baby animals (1.0).
 pub fn radius(e: &Entity) -> f32 {
-    super::manager::renderer_for(e).shadow_size
+    let mut size = super::manager::renderer_for(e).shadow_size;
+    if e.kind.is_animal() && e.is_child() {
+        size *= 0.5;
+    }
+    size
 }
 
 pub fn shadow(e: &Entity, surfaces: &[Surface], partial: f32, camera: [f64; 3]) -> Fixed {
@@ -89,6 +95,9 @@ fn shadow_at_with_camera(e: &Entity, surfaces: &[Surface], partial: f32, camera:
         }
     }
     g.end();
+    // renderShadow restores the blend and depth-mask state after drawing.
+    g.enable(16, false);
+    g.enable(32, true);
     g
 }
 pub fn fire(e: &Entity, partial: f32, camera: [f64; 3], view_y: f32) -> Fixed {

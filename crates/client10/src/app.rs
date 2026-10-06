@@ -1575,6 +1575,11 @@ impl App {
             zoom: 1.0,
             ..Default::default()
         };
+        if let (Some(p), Some(gpu)) = (self.player.as_mut(), self.gpu.as_ref()) {
+            let (w, h) = gpu.size();
+            p.viewport = [0, 0, w as i32, h as i32];
+            p.far = video.far();
+        }
         let player_frame = self.player.as_mut().map(|p| {
             p.fov_option=settings.map_or(0.0,|s|s.fov);
             p.frame(
@@ -1600,14 +1605,14 @@ impl App {
             moon_phase: render::sky_release::moon_phase(self.world_time),
             end: self.player.as_ref().and_then(|p| p.entity.player_state()).is_some_and(|s| s.dimension == 1),
             sky_color: sky::sky_color(angle, temp, rain, thunder, self.weather.flash, partial),
-            fog_color: render::camera::fog_color(
+            fog_color: render::camera::fog_color_release(
                 if self.nether {
                     let sky = sky::sky_color(angle, temp, rain, thunder, self.weather.flash, partial);
                     sky::nether_fog_color(sky, video.distance, rain, thunder)
                 } else {
                     sky::fog_color(angle, temp, video.distance, rain, thunder, self.weather.flash, partial, sky::look(self.cam.yaw, self.cam.pitch, self.cam.yaw, self.cam.pitch, partial))
                 },
-                player_frame.as_ref().map_or(render::camera::Medium::Air, |v| v.medium),
+                &player_frame.as_ref().map_or_else(Default::default, |v| v.fog),
                 self.fog_fade[0] + (self.fog_fade[1] - self.fog_fade[0]) * partial,
                 video.anaglyph,
                 self.cam.pos.y,

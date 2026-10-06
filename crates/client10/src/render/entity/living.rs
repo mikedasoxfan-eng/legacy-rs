@@ -450,10 +450,8 @@ pub fn model_transform(s: &RenderState, camera: DVec3) -> Mat4 {
 
 /// RenderHelper light positions: Vec3D.normalize narrows sqrt to float first.
 fn light(x: f32, z: f32) -> Vec3 {
-    let x = x as f64;
-    let z = z as f64;
-    let len = ((x * x + 1.0 + z * z).sqrt() as f32) as f64;
-    Vec3::new((x / len) as f32, (1.0 / len) as f32, (z / len) as f32).normalize()
+    // GL normalizes the directional light; the position itself is RenderHelper's.
+    Vec3::from_array(crate::render::render_helper::light_position(x, z)).normalize()
 }
 
 /// GL_BYTE normal arrays as written by Tessellator.setNormal. Preserve both its

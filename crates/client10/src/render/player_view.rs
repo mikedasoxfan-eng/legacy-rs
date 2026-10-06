@@ -84,6 +84,10 @@ pub struct Frame {
     pub hand_light: u32,
     /// b1.8.1 void-fog factor (`camera::void_factor`) of the view entity.
     pub void_fog: f64,
+    /// 1.0 fog inputs: the ActiveRenderInfo eye block, blindness, water breathing, hasNoSky.
+    pub fog: camera::FogState,
+    /// ActiveRenderInfo after this frame's camera transform (End portals, particles).
+    pub active_info: super::active_info::Info,
 }
 pub struct View {
     pub entity: Entity,
@@ -96,6 +100,11 @@ pub struct View {
     fov_multiplier: [f32; 2],
     /// The FOV option (`field_35379_L`).
     pub fov_option: f32,
+    /// ActiveRenderInfo, updated after each camera transform from its matrices and viewport.
+    pub active_info: super::active_info::Info,
+    /// The GL viewport (0, 0, displayWidth, displayHeight) and farPlaneDistance.
+    pub viewport: [i32; 4],
+    pub far: f32,
 }
 impl View {
     pub fn new(
@@ -117,6 +126,9 @@ impl View {
             model: Default::default(),
             fov_multiplier: [1.0, 1.0],
             fov_option: 0.0,
+            active_info: Default::default(),
+            viewport: [0, 0, 854, 480],
+            far: 256.0,
         }
     }
     pub fn update(
@@ -156,24 +168,43 @@ impl View {
         e.pitch = look[1];
         e.prev_yaw = look[2];
         e.prev_pitch = look[3];
-        let medium = camera::medium(&e, &mut self.world);
+        // 1.0 getFOVModifier reads ActiveRenderInfo's block, still from the previous transform.
+        let medium = self.active_info.medium(&e, t as f64, &mut self.world);
         let d = if s.third_person && !s.debug_camera {
             camera::third_distance(&e, t, &mut self.world, s.front_view)
         } else {
             4.0
         };
         let bed = self.bed();
-        (
-            camera::transform(&e, t, s, d, bed),
-            camera::fov(
-                &e,
-                medium == camera::Medium::Water,
-                t,
-                &camera::Settings { fov_option: self.fov_option, fov_zoom: Some(self.fov_multiplier), ..s },
-                true,
-            ),
-            medium,
-        )
+        let ops = camera::transform(&e, t, s, d, bed);
+        let fov = camera::fov(
+            &e,
+            medium == camera::Medium::Water,
+            t,
+            &camera::Settings { fov_option: self.fov_option, fov_zoom: Some(self.fov_multiplier), ..s },
+            true,
+        );
+        // ActiveRenderInfo.func_41067_a after setupCameraTransform: GL modelview and projection.
+        let mut pre = super::entity::fixed::Fixed::new(1.0);
+        if s.anaglyph {
+            pre.translate(-(s.eye * 2 - 1) as f32 * 0.07, 0.0, 0.0);
+        }
+        if s.zoom != 1.0 {
+            pre.translate(s.zoom_yaw as f32, -s.zoom_pitch as f32, 0.0);
+            pre.scale(s.zoom as f32, s.zoom as f32, 1.0);
+        }
+        let aspect = self.viewport[2] as f32 / self.viewport[3].max(1) as f32;
+        let projection = camera::matrix(&pre.ops) * camera::projection_gl(fov, aspect, self.far * 2.0);
+        self.active_info.update(
+            camera::matrix(&ops).to_cols_array(),
+            projection.to_cols_array(),
+            self.viewport,
+            e.yaw,
+            e.pitch,
+            s.third_person && s.front_view,
+        );
+        let medium = self.active_info.medium(&e, t as f64, &mut self.world);
+        (ops, fov, medium)
     }
     pub fn frame(
         &mut self,
@@ -230,9 +261,10 @@ impl View {
         );
         let map_image = map.map(|m| super::map::image(m, settings.anaglyph));
         let opaque = super::first_person::opaque_textures(&e, &mut self.world);
+        // renderOverlays still asks Entity.isInsideOfMaterial(water).
         let overlays = super::first_person::overlays(
             &e,
-            medium == camera::Medium::Water,
+            camera::medium(&e, &mut self.world) == camera::Medium::Water,
             &opaque,
             self.hud.brightness,
             settings,
@@ -268,6 +300,15 @@ impl View {
             map_image,
             hand_light,
             void_fog,
+            fog: camera::FogState {
+                medium,
+                cloud: None,
+                blindness: e.potion_effect(15).map(|p| p.duration),
+                water_breathing: e.potion_effect(13).is_some(),
+                has_no_sky: self.world.dimension.is_hell_world() || self.entity.player_state().is_some_and(|p| p.dimension == 1),
+                nether: self.world.dimension.is_hell_world(),
+            },
+            active_info: self.active_info,
         }
     }
 }

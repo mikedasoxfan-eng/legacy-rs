@@ -202,7 +202,7 @@ pub fn render_with_map(
     // b1.8.1 ItemRenderer: getLightBrightness is read but overwritten with 1; the light comes
     // from the lightmap (func_35451_b at the player), and items render at brightness 1.
     let _ = (brightness, block_brightness);
-    let (brightness, block_brightness) = (1.0f32, 1.0f32);
+    let brightness = 1.0f32;
     let mut g = Fixed::new(brightness);
     if s.anaglyph {
         g.translate((s.eye * 2 - 1) as f32 * 0.1, 0.0, 0.0);

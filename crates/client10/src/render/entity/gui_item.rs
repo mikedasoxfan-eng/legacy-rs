@@ -257,7 +257,7 @@ pub fn render_item_overlay_into_gui(ui: &mut Ui, item: Option<&ItemStack>, x: i3
 
 /// RenderHelper.func_41089_c (Release 1.0), shared by all GUI item callers.
 pub fn set_gui_release_lighting() {
-    let ops=[[-30.0f32,0.0,1.0,0.0],[165.0,1.0,0.0,0.0]];
+    let ops=crate::render::render_helper::GUI_LIGHT_ROTATIONS;
     LIGHT_CAPTURE.with(|c|{if let Some(c)=c.borrow_mut().as_mut(){c.push(ops);}});
     let mut matrix=glam::Mat4::IDENTITY;
     for [angle,x,y,z] in ops {matrix*=glam::Mat4::from_axis_angle(glam::Vec3::new(x,y,z),angle.to_radians());}
