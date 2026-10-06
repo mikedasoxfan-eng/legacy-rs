@@ -264,6 +264,7 @@ fn main() -> ExitCode {
             }
             pm.remove_player(&mut w);
             w.save_world(true);
+            worldgen::threaded_io10::FILE_IO.flush();
             worldgen::world::tick::finish_chunk_identity_replay181();
             println!("rust: {} chunks loaded at the end", w.chunks.len());
             let state = format!("time {}\nlcg {}\nsound {}\nrand {}\n",
@@ -291,12 +292,22 @@ fn main() -> ExitCode {
             // Match Mode_terrainsave181's isolated, deterministic save fixture.
             let mut w = World::new(p(2), p(3));
             w.set_entity_determinism(100, 200, 0);
+            // Optional: the oracle's recorded NextTickListEntry identity hashes, which order
+            // equal-hash entries in scheduledTickSet's tree bins (and so saved TileTicks).
+            if let Some(path) = a.get(5) {
+                let b = std::fs::read(path).expect("tick identities");
+                let n = i32::from_be_bytes(b[..4].try_into().unwrap()) as usize;
+                w.tick_identity_replay10 = Some(b[4..4 + 4 * n].chunks(4)
+                    .map(|c| i32::from_be_bytes(c.try_into().unwrap())).collect());
+            }
             w.storage = Some(worldgen::storage::Storage::open(
                 std::path::Path::new(&a[4]),
             ).expect("open terrain save"));
             w.find_initial_spawn();
             w.preload_spawn_area();
             w.save_world(true);
+            // The oracle JVM only exits after the File IO thread has written every queued chunk.
+            worldgen::threaded_io10::FILE_IO.flush();
             println!("deterministic terrain save: {} chunks", w.chunks.len());
             ExitCode::SUCCESS
         }

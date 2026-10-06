@@ -408,15 +408,30 @@ impl BiomeSource {
         allowed: &[Biome],
         rand: &mut JavaRandom,
     ) -> Option<(i32, i32)> {
+        self.find_position10(x, z, r, allowed, rand)
+            .expect("WorldChunkManager.func_35556_a: ArrayIndexOutOfBoundsException")
+    }
+    /// WorldChunkManager.func_35556_a. Release 1.0 iterates the complete IntCache array,
+    /// stale padding included: unused ids (null biomes) never match, and an id outside
+    /// biomeList (0..256) throws ArrayIndexOutOfBoundsException (`Err`) after the
+    /// draws already made.
+    pub fn find_position10(
+        &self,
+        x: i32,
+        z: i32,
+        r: i32,
+        allowed: &[Biome],
+        rand: &mut JavaRandom,
+    ) -> Result<Option<(i32, i32)>, ()> {
         if let Some(b) = self.fixed {
-            return if allowed.contains(&b) {
+            return Ok(if allowed.contains(&b) {
                 Some((
                     x - r + rand.next_int(r * 2 + 1),
                     z - r + rand.next_int(r * 2 + 1),
                 ))
             } else {
                 None
-            };
+            });
         }
         let (x0, z0, x1, z1) = ((x - r) >> 2, (z - r) >> 2, (x + r) >> 2, (z + r) >> 2);
         let w = x1 - x0 + 1;
@@ -428,15 +443,19 @@ impl BiomeSource {
         };
         let mut found = None;
         let mut count = 0;
-        for (i, b) in values.iter().enumerate() {
-            if allowed.contains(&Biome::from_id(*b))
+        for (i, &b) in values.iter().enumerate() {
+            if !(0..256).contains(&b) {
+                return Err(());
+            }
+            if b < 16
+                && allowed.contains(&Biome::from_id(b))
                 && (found.is_none() || rand.next_int(count + 1) == 0)
             {
                 found = Some(((x0 + i as i32 % w) << 2, (z0 + i as i32 / w) << 2));
                 count += 1;
             }
         }
-        found
+        Ok(found)
     }
 }
 
