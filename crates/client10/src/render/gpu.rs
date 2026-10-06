@@ -44,6 +44,9 @@ pub struct FrameParams {
     pub pitch: f32,
     pub fov_y_deg: f32,
     pub celestial: f32,
+    pub moon_phase: i32,
+    /// worldProvider.worldType == 1 (End).
+    pub end: bool,
     pub sky_color: [f32; 3],
     pub fog_color: [f32; 3],
     pub far: f32,
@@ -111,8 +114,10 @@ pub struct Gpu {
     stars: (wgpu::Buffer, u32),
     sun_quad: (wgpu::Buffer, u32),
     moon_quad: (wgpu::Buffer, u32),
+    end_quad: (wgpu::Buffer, u32),
+    end_slots: [DrawSlot; 6],
     fan: wgpu::Buffer,
-    /// b1.8.1: the black box under the camera below y 64.
+    /// The black box under the camera below y 63.
     void_box: wgpu::Buffer,
     slots: Vec<DrawSlot>,
     terrain_slot: DrawSlot,
@@ -439,16 +444,10 @@ impl Gpu {
             ),
             "sun",
         );
-        let s = 20.0;
-        let moon_quad = vbuf(
-            &quad(
-                -100.0,
-                s,
-                [[1.0, 1.0], [0.0, 1.0], [0.0, 0.0], [1.0, 0.0]],
-                [[-s, -100.0, s], [s, -100.0, s], [s, -100.0, -s], [-s, -100.0, -s]],
-            ),
-            "moon",
-        );
+        // Retain signed phases too: Java's remainder is negative for negative days.
+        let moons: Vec<Vertex> = (-7..=7).flat_map(super::sky_release::moon_quad).collect();
+        let moon_quad = vbuf(&moons, "moon phases");
+        let end_quad = vbuf(&super::sky_release::end_quad(), "End sky");
         let void_box = device.create_buffer(&wgpu::BufferDescriptor {
             label: Some("void box"),
             size: (30 * std::mem::size_of::<Vertex>()) as u64,
@@ -468,6 +467,8 @@ impl Gpu {
         let sun_slot = slot(&sun_view);
         let moon_slot = slot(&moon_view);
         let cloud_slot = slot(&clouds_view);
+        let (_, tunnel_view) = upload(&mobs["misc/tunnel.png"], "End tunnel");
+        let end_slots = std::array::from_fn(|_| slot(&tunnel_view));
         let (items_tex, items_view) = upload(weather_images[3], "particle items");
         let weather_slots = [
             slot(&upload(weather_images[0], "snow").1),
@@ -572,6 +573,8 @@ impl Gpu {
             stars,
             sun_quad,
             moon_quad,
+            end_quad,
+            end_slots,
             fan,
             void_box,
             slots,
@@ -930,7 +933,8 @@ impl Gpu {
             let fan = sky::sunrise_fan(p.celestial, p.video.anaglyph).unwrap();
             self.queue.write_buffer(&self.fan, 0, bytemuck::cast_slice(&fan));
             let z = if worldgen::math::sin(p.celestial * std::f32::consts::PI * 2.0f32) < 0.0 { 180.0f32 } else { 0.0 };
-            let model = Mat4::from_rotation_x(90f32.to_radians()) * Mat4::from_rotation_z(z.to_radians());
+            let model = Mat4::from_rotation_x(90f32.to_radians()) * Mat4::from_rotation_z(z.to_radians())
+                * Mat4::from_rotation_z(90f32.to_radians());
             let u = Uniforms {
                 view_proj: view_proj.to_cols_array_2d(),
                 fog_view: rot.to_cols_array_2d(),
@@ -941,7 +945,8 @@ impl Gpu {
             };
             self.write_uniforms(&self.slots[1], &u);
         }
-        let celestial_rot = Mat4::from_rotation_x((p.celestial * 360.0).to_radians());
+        let celestial_rot = Mat4::from_rotation_y(-90f32.to_radians())
+            * Mat4::from_rotation_x((p.celestial * 360.0).to_radians());
         let sunmoon_u = Uniforms {
             view_proj: view_proj.to_cols_array_2d(),
             fog_view: rot.to_cols_array_2d(),
@@ -952,12 +957,12 @@ impl Gpu {
         };
         let star_b = sky::star_brightness(p.celestial) * (1.0f32 - p.rain);
         let stars_u = Uniforms { color: [star_b; 4], ..sunmoon_u };
-        // RenderGlobal.renderSky: thePlayer.getPosition(partial).yCoord - 64.
-        let void_depth = p.cam_pos.y - 64.0;
+        // RenderGlobal.renderSky: thePlayer.getPosition(partial).yCoord - 63.
+        let void_depth = p.cam_pos.y - 63.0;
         let void_u = Uniforms {
             view_proj: view_proj.to_cols_array_2d(),
             fog_view: rot.to_cols_array_2d(),
-            // b1.8.1: the void plane sits at sea level: translate(0, -(y - 64 - 16), 0).
+            // b1.8.1: the void plane sits at sea level: translate(0, -(y - 63 - 16), 0).
             model: Mat4::from_translation(glam::Vec3::new(0.0, -((void_depth - 16.0) as f32), 0.0)).to_cols_array_2d(),
             color: [sky_color[0] * 0.2 + 0.04, sky_color[1] * 0.2 + 0.04, sky_color[2] * 0.6 + 0.1, 1.0],
             fog_color: fog4,
@@ -965,7 +970,7 @@ impl Gpu {
         };
         self.write_uniforms(&self.slots[2], &stars_u);
         self.write_uniforms(&self.slots[3], &void_u);
-        // Below y 64: the void list again at +12 and a black box under the camera, both black.
+        // Below y 63: the void list again at +12 and a black box under the camera, both black.
         let below = void_depth < 0.0;
         if below {
             let black = Uniforms {
@@ -975,7 +980,7 @@ impl Gpu {
             };
             self.write_uniforms(&self.slots[4], &black);
             self.write_uniforms(&self.slots[5], &Uniforms { model: ident, color: [0.0, 0.0, 0.0, 1.0], ..void_u });
-            let (a, b0, b1) = (1.0f32, -((void_depth + 64.0) as f32), -1.0f32);
+            let (a, b0, b1) = (1.0f32, -((void_depth + 65.0) as f32), -1.0f32);
             let quads = [
                 [[-a, b0, a], [a, b0, a], [a, b1, a], [-a, b1, a]],
                 [[-a, b1, -a], [a, b1, -a], [a, b0, -a], [-a, b0, -a]],
@@ -992,6 +997,12 @@ impl Gpu {
         }
         self.write_uniforms(&self.sun_slot, &sunmoon_u);
         self.write_uniforms(&self.moon_slot, &sunmoon_u);
+        for (face, slot) in self.end_slots.iter().enumerate() {
+            self.write_uniforms(slot, &Uniforms {
+                model: super::sky_release::end_rotation(face).to_cols_array_2d(),
+                color: [1.0; 4], fog: [0.0, 1.0, 0.0, -1.0], ..sunmoon_u
+            });
+        }
 
         // ---- terrain: chunk origins relative to the camera, frustum-culled
         let cam = p.cam_pos;
@@ -1134,7 +1145,15 @@ impl Gpu {
             });
 
             // RenderGlobal.renderSky draws nothing in the Nether.
-            if p.video.sky() && !p.nether {
+            if p.video.sky() && p.end {
+                // Fog and alpha test disabled; standard alpha blending, no depth writes.
+                rp.set_pipeline(self.p_sky_alpha.get(mask));
+                rp.set_vertex_buffer(0, self.end_quad.0.slice(..));
+                for slot in &self.end_slots {
+                    rp.set_bind_group(0, &slot.bind, &[]);
+                    rp.draw(0..self.end_quad.1, 0..1);
+                }
+            } else if p.video.sky() && !p.nether {
                 // Sky plane, sunrise glow, sun, moon, stars, void.
                 rp.set_pipeline(self.p_sky.get(mask));
                 rp.set_bind_group(0, &self.slots[0].bind, &[]);
@@ -1152,7 +1171,8 @@ impl Gpu {
                 rp.draw(0..self.sun_quad.1, 0..1);
                 rp.set_bind_group(0, &self.moon_slot.bind, &[]);
                 rp.set_vertex_buffer(0, self.moon_quad.0.slice(..));
-                rp.draw(0..self.moon_quad.1, 0..1);
+                let moon_start = ((p.moon_phase + 7) * 6) as u32;
+                rp.draw(moon_start..moon_start + 6, 0..1);
                 if star_b > 0.0 {
                     rp.set_bind_group(0, &self.slots[2].bind, &[]);
                     rp.set_vertex_buffer(0, self.stars.0.slice(..));
@@ -1236,7 +1256,7 @@ impl Gpu {
             }
             for (pass, pipe) in [&self.p_cloud_depth, &self.p_cloud_color].into_iter().enumerate() {
                 // renderClouds: none in the Nether.
-                if p.nether || !p.video.fancy && pass == 0 {
+                if p.nether || p.end || !p.video.sky() || !p.video.clouds || !p.video.fancy && pass == 0 {
                     continue;
                 }
                 if p.video.fancy && pass == 1 { mask = super::color_mask::eye_mask(p.video.anaglyph, eye, true); }

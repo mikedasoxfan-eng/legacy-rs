@@ -1081,6 +1081,7 @@ impl App {
                                 self.ingame.set_record_playing(&format!("C418 - {name}"));
                             }
                         }
+                        self.particles.renderer.particle_setting = self.gui.as_ref().map_or(0, |g| g.ui.settings.particles);
                         self.particles.fancy = self.gui.as_ref().is_none_or(|gui| gui.ui.settings.fancy_graphics);
                         self.particles.colors = self.col.clone();
                         self.particles.receive(events, terrain, self.cam.pos.to_array(), self.sound.as_mut());
@@ -1562,6 +1563,8 @@ impl App {
             pitch: self.cam.pitch,
             fov_y_deg: 70.0,
             celestial: angle,
+            moon_phase: render::sky_release::moon_phase(self.world_time),
+            end: self.player.as_ref().and_then(|p| p.entity.player_state()).is_some_and(|s| s.dimension == 1),
             sky_color: sky::sky_color(angle, temp, rain, thunder, self.weather.flash, partial),
             fog_color: render::camera::fog_color(
                 if self.nether {

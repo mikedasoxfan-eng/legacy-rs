@@ -10,6 +10,7 @@ pub struct VideoSettings {
     pub limit: i32,
     pub anaglyph: bool,
     pub advanced_opengl: bool,
+    pub clouds: bool,
 }
 
 impl From<&GameSettings> for VideoSettings {
@@ -21,6 +22,7 @@ impl From<&GameSettings> for VideoSettings {
             limit: s.limit_framerate.clamp(0, 2),
             anaglyph: s.anaglyph,
             advanced_opengl: s.advanced_opengl,
+            clouds: s.clouds,
         }
     }
 }

@@ -5,6 +5,9 @@ use super::{
     weather::{Snapshot, WeatherVertex},
 };
 use worldgen::{math, JavaRandom};
+#[cfg(test)]
+#[path = "particles_release_tests.rs"]
+mod release_tests;
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub enum Kind {
     Base,
@@ -28,6 +31,12 @@ pub enum Kind {
     Pickup,
     Crit,
     MagicCrit,
+    Spell,
+    InstantSpell,
+    MobSpell,
+    Enchantment,
+    DripWater,
+    DripLava,
     Cloud,
     Aura,
     Suspend,
@@ -54,6 +63,13 @@ impl Kind {
             "snowshovel" => Self::SnowShovel,
             "footstep" => Self::Footstep,
             "crit" => Self::Crit,
+            "magicCrit" => Self::MagicCrit,
+            "spell" => Self::Spell,
+            "instantSpell" => Self::InstantSpell,
+            "mobSpell" => Self::MobSpell,
+            "enchantmenttable" => Self::Enchantment,
+            "dripWater" => Self::DripWater,
+            "dripLava" => Self::DripLava,
 
             "cloud" => Self::Cloud,
             "townaura" | "depthsuspend" => Self::Aura,
@@ -96,6 +112,19 @@ pub struct Particle {
     pub emitted: Vec<(&'static str, [f64; 3], [f64; 3])>,
 }
 impl Particle {
+    /// Scalar counterpart to the new particle packed-light overrides.
+    pub fn brightness_from(&self, base: f32) -> f32 {
+        match self.kind {
+            Kind::DripLava => 1.0,
+            Kind::Enchantment => {
+                let mut t = self.age as f32 / self.max_age as f32;
+                t *= t;
+                t *= t;
+                base * (1.0f32 - t) + t
+            }
+            _ => base,
+        }
+    }
     /// Entity.func_35115_a and the three particle overrides. The partial tick
     /// affects Flame, but Portal deliberately uses the integer age alone.
     pub fn packed_brightness(&self, terrain: &Snapshot, partial: f32) -> i32 {
@@ -110,11 +139,12 @@ impl Particle {
         match self.kind {
             Kind::LargeExplode => 61680,
             Kind::Lava => 240 | sky << 16,
+            Kind::DripLava => 257,
             Kind::Flame => {
                 let t = ((self.age as f32 + partial) / self.max_age as f32).clamp(0.0, 1.0);
                 (block + (t * 15.0 * 16.0) as i32).min(240) | sky << 16
             }
-            Kind::Portal => {
+            Kind::Portal | Kind::Enchantment => {
                 let mut t = self.age as f32 / self.max_age as f32;
                 t *= t;
                 t *= t;
@@ -148,6 +178,9 @@ impl Particle {
         let input = if matches!(
             kind,
             Kind::Crit
+                | Kind::MobSpell
+                | Kind::DripWater
+                | Kind::DripLava
                 | Kind::MagicCrit
                 | Kind::Cloud
                 | Kind::Smoke
@@ -218,6 +251,37 @@ impl Particle {
             emitted: Vec::new(),
         };
         match kind {
+            Kind::Spell | Kind::InstantSpell | Kind::MobSpell => {
+                p.motion[1] *= 0.2f32 as f64;
+                let input = if kind == Kind::MobSpell { [0.0;3] } else { velocity };
+                if input[0] == 0.0 && input[2] == 0.0 {
+                    p.motion[0] *= 0.1f32 as f64;
+                    p.motion[2] *= 0.1f32 as f64;
+                }
+                p.scale *= 12.0 / 16.0;
+                p.max_age = (8.0 / (m.next_double() * 0.8 + 0.2)) as i32;
+                p.timer = if kind == Kind::InstantSpell { 144 } else { 128 };
+                if kind == Kind::MobSpell { p.color = velocity.map(|v| v as f32); }
+            }
+            Kind::Enchantment => {
+                p.motion = velocity;
+                let bright = p.rand.next_float() * 0.6 + 0.4;
+                p.scale = p.rand.next_float() * 0.5 + 0.2;
+                p.color = [bright * 0.9, bright * 0.9, bright];
+                p.max_age = (m.next_double() * 10.0) as i32 + 30;
+                p.no_clip = true;
+                p.texture = (m.next_double() * 26.0 + 1.0 + 224.0) as i32;
+            }
+            Kind::DripWater | Kind::DripLava => {
+                p.motion = [0.0;3];
+                p.color = if kind == Kind::DripWater { [0.0,0.0,1.0] } else { [1.0,0.0,0.0] };
+                p.texture = 113;
+                p.width = 0.01;
+                p.height = 0.01;
+                p.gravity = 0.06;
+                p.timer = 40;
+                p.max_age = (64.0 / (m.next_double() * 0.8 + 0.2)) as i32;
+            }
             Kind::LargeExplode => {
                 p.duration = 6 + p.rand.next_int(4);
                 p.color = [p.rand.next_float() * 0.6 + 0.4; 3];
@@ -481,6 +545,49 @@ impl Particle {
         }
         self.prev = self.pos;
         let mut smoke = None;
+        if self.kind == Kind::Enchantment {
+            let t = 1.0f32 - self.age as f32 / self.max_age as f32;
+            let mut drop = 1.0f32 - t;
+            drop *= drop;
+            drop *= drop;
+            self.pos = std::array::from_fn(|i| self.origin[i] + self.motion[i] * t as f64);
+            self.pos[1] -= (drop * 1.2f32) as f64;
+            if self.age >= self.max_age { self.dead = true; }
+            self.age += 1;
+            return None;
+        }
+        if matches!(self.kind, Kind::DripWater | Kind::DripLava) {
+            self.color = if self.kind == Kind::DripWater { [0.2,0.3,1.0] } else {
+                [1.0, 16.0 / (40-self.timer+16) as f32, 4.0 / (40-self.timer+8) as f32]
+            };
+            self.motion[1] -= self.gravity as f64;
+            if self.timer > 0 {
+                for v in &mut self.motion { *v *= 0.02; }
+                self.texture = 113;
+            } else { self.texture = 112; }
+            self.timer -= 1;
+            self.on_ground = move_particle(self, terrain);
+            for v in &mut self.motion { *v *= 0.98f32 as f64; }
+            if self.max_age <= 0 { self.dead = true; }
+            self.max_age -= 1;
+            if self.on_ground {
+                if self.kind == Kind::DripWater {
+                    self.dead = true;
+                    self.emitted.push(("splash", self.pos, [0.0;3]));
+                } else { self.texture = 114; }
+                self.motion[0] *= 0.7f32 as f64;
+                self.motion[2] *= 0.7f32 as f64;
+            }
+            let y = math::floor_double(self.pos[1]);
+            let mat = worldgen::block::mat(material(terrain, self.pos));
+            if mat.is_liquid || mat.is_solid {
+                let meta = terrain.column(math::floor_double(self.pos[0]),math::floor_double(self.pos[2]))
+                    .map_or(0, |c| if (0..128).contains(&y) { c.meta[y as usize] as i32 } else {0});
+                let air = (if meta >= 8 {1} else {meta+1}) as f32 / 9.0;
+                if self.pos[1] < ((y+1) as f32-air) as f64 { self.dead = true; }
+            }
+            return None;
+        }
         if self.kind == Kind::Portal {
             let mut t = self.age as f32 / self.max_age as f32;
             let old = t;
@@ -544,7 +651,11 @@ impl Particle {
         ) {
             self.texture = 7 - self.age * 8 / self.max_age;
         }
+        if matches!(self.kind, Kind::Spell | Kind::InstantSpell | Kind::MobSpell) {
+            self.texture = self.timer + (7 - self.age * 8 / self.max_age);
+        }
         match self.kind {
+            Kind::Spell | Kind::InstantSpell | Kind::MobSpell |
             Kind::Smoke | Kind::LargeSmoke | Kind::Explode => self.motion[1] += 0.004,
             Kind::Bubble => self.motion[1] += 0.002,
             Kind::Rain | Kind::Splash => self.motion[1] -= self.gravity as f64,
@@ -563,6 +674,7 @@ impl Particle {
         self.on_ground = move_particle(self, terrain);
         if matches!(
             self.kind,
+            Kind::Spell | Kind::InstantSpell | Kind::MobSpell |
             Kind::Smoke | Kind::LargeSmoke | Kind::RedDust | Kind::Note | Kind::Heart
         ) && self.pos[1] == self.prev[1]
         {
@@ -570,6 +682,7 @@ impl Particle {
             self.motion[2] *= 1.1;
         }
         let friction: f32 = match self.kind {
+            Kind::Spell | Kind::InstantSpell | Kind::MobSpell |
             Kind::Cloud | Kind::Smoke | Kind::LargeSmoke | Kind::Flame | Kind::RedDust => 0.96,
             Kind::Explode => 0.9,
             Kind::Bubble => 0.85,
@@ -797,6 +910,9 @@ pub struct EffectRenderer {
     pub creation_terrain: Snapshot,
     pub cloud_player: Option<[f64; 5]>,
     pub math_random: JavaRandom,
+    /// Adapter RNG for particle callbacks outside an auxiliary World.rand snapshot.
+    pub spawn_random: JavaRandom,
+    pub particle_setting: i32,
     pub next_seed: i64,
     pub rand: JavaRandom,
     pub seed_source: Option<worldgen::entity::EntitySeedSource>,
@@ -861,6 +977,8 @@ impl EffectRenderer {
             creation_terrain: Snapshot::default(),
             cloud_player: None,
             math_random: JavaRandom::new(seed),
+            spawn_random: JavaRandom::new(seed),
+            particle_setting: 0,
             next_seed: seed.wrapping_add(1),
             rand: JavaRandom::new(seed.wrapping_add(2)),
             seed_source: None,
@@ -918,38 +1036,45 @@ impl EffectRenderer {
     pub fn spawn(&mut self, name: &str, p: [f64; 3], v: [f64; 3], view: [f64; 3]) {
         self.try_spawn(name, p, v, view).expect("Invalid particle factory input");
     }
-    /// RenderGlobal's named factory feeding EffectRenderer. Parsing happens only
-    /// after the original distance guard; large explosions bypass that guard.
     pub fn try_spawn(&mut self, name: &str, p: [f64; 3], v: [f64; 3], view: [f64; 3]) -> Result<(), &'static str> {
-        let dx = view[0] - p[0];
-        let dy = view[1] - p[1];
-        let dz = view[2] - p[2];
-        let distance = dx * dx + dy * dy + dz * dz;
-        if matches!(name, "largeexplode" | "hugeexplosion") {
-            let particle = self.create(Kind::named(name).unwrap(), p, v);
-            self.add(particle);
-            return Ok(());
-        }
-        if distance > 16.0 * 16.0 { return Ok(()); }
-        if let Some(suffix) = name.strip_prefix("iconcrack_") {
+        let mut random = self.spawn_random.clone();
+        let result = self.try_spawn_return(name, p, v, view, &mut random);
+        self.spawn_random = random;
+        result.map(|_| ())
+    }
+    /// RenderGlobal.func_40193_b. The returned layer/index refers to the newly
+    /// inserted effect, after the 4000-entry oldest-effect eviction.
+    pub fn try_spawn_return(&mut self, name: &str, p: [f64;3], v: [f64;3], view: [f64;3], random: &mut JavaRandom)
+        -> Result<Option<(usize,usize)>, &'static str> {
+        let mut setting = self.particle_setting;
+        if setting == 1 && random.next_int(3) == 0 { setting = 2; }
+        let dx = view[0]-p[0]; let dy = view[1]-p[1]; let dz = view[2]-p[2];
+        let large = matches!(name,"largeexplode" | "hugeexplosion");
+        if !large && (dx*dx+dy*dy+dz*dz > 16.0*16.0 || setting > 1) { return Ok(None); }
+        let particle = if let Some(suffix) = name.strip_prefix("iconcrack_") {
             let id = java_particle_integer(suffix)?;
             if !(0..32000).contains(&id) { return Err("ArrayIndexOutOfBoundsException"); }
-            if worldgen::entity::player::registry::item(id).is_none() { let _ = self.create(Kind::Snowball, p, [0.0; 3]); return Err("NullPointerException"); }
-            let mut particle = self.create(Kind::Snowball, p, [0.0; 3]);
-            particle.texture = super::entity::item_table::properties(id as i16, 0).0;
-            for axis in 0..3 { particle.motion[axis] = particle.motion[axis] * 0.1f32 as f64 + v[axis]; }
-            self.add(particle);
+            // Release item registry is owned by the blocks worker. These two new
+            // icon-only render dependencies are read straight from Item.java.
+            let icon = match id {
+                373 => Some(140), 381 => Some(155),
+                _ if worldgen::entity::player::registry::item(id).is_some() => Some(super::entity::item_table::properties(id as i16,0).0),
+                _ => None,
+            };
+            let mut particle = self.create(Kind::Snowball,p,[0.0;3]);
+            particle.texture = icon.ok_or("NullPointerException")?;
+            for axis in 0..3 { particle.motion[axis] = particle.motion[axis]*0.1f32 as f64+v[axis]; }
+            particle
         } else if let Some(suffix) = name.strip_prefix("tilecrack_") {
             let id = java_particle_integer(suffix)?;
             if !(0..256).contains(&id) { return Err("ArrayIndexOutOfBoundsException"); }
-            if worldgen::entity::player::registry::item(id).is_none() { let _ = self.create(Kind::Base, p, v); return Err("NullPointerException"); }
-            let particle = self.create(Kind::Digging { block: id as u8, metadata: 0 }, p, v);
-            self.add(particle);
-        } else if let Some(kind) = Kind::named(name) {
-            let particle = self.create(kind, p, v);
-            self.add(particle);
-        }
-        Ok(())
+            if !rprops(id as u8).exists { let _=self.create(Kind::Base,p,v); return Err("NullPointerException"); }
+            self.create(Kind::Digging {block:id as u8,metadata:0},p,v)
+        } else if let Some(kind) = Kind::named(name) { self.create(kind,p,v) }
+        else { return Ok(None); };
+        let layer=particle.layer();
+        self.add(particle);
+        Ok(Some((layer,self.layers[layer].len()-1)))
     }
     pub fn tick(&mut self, s: &Snapshot, view: [f64; 3]) {
         for layer in 0..4 {

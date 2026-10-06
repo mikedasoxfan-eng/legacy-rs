@@ -6,6 +6,8 @@
 
 #[path = "blocks_special.rs"]
 mod special;
+#[path = "blocks_release.rs"]
+pub(crate) mod release;
 
 use super::access::Access;
 use super::{rprops, Tessellator};
@@ -181,19 +183,19 @@ impl<'a, 'b> RenderBlocks<'a, 'b> {
             let above = self.w.light_brightness(x, y + 1, z);
             return if own > above { own } else { above };
         }
-        self.w.brightness(x, y, z, block::light_value(id))
+        self.w.brightness(x, y, z, render_light_value(id))
     }
 
     /// `getBlockTexture(IBlockAccess, x, y, z, side)`
     fn texture(&self, id: u8, x: i32, y: i32, z: i32, side: usize) -> i32 {
         match id {
-            block::GRASS => match side {
-                1 => 0,
+            block::GRASS | 110 => match side {
+                1 => if id == 110 { 78 } else { 0 },
                 0 => 2,
                 _ => {
                     let m = self.w.material(x, y + 1, z);
                     if m != MAT_SNOW && m != MAT_CRAFTEDSNOW {
-                        3
+                        if id == 110 { 77 } else { 3 }
                     } else {
                         68
                     }
@@ -290,6 +292,7 @@ impl<'a, 'b> RenderBlocks<'a, 'b> {
             return (a && matches!(side, 4 | 5)) || (b && matches!(side, 2 | 3));
         }
         match id {
+            119 => return side == 0 && self.default_side(x, y, z, side),
             block::WATER_MOVING | block::WATER_STILL | block::LAVA_MOVING | block::LAVA_STILL => {
                 let m = self.w.material(x, y, z);
                 if m == block::material_of(id) || m == MAT_ICE {
@@ -381,6 +384,11 @@ impl<'a, 'b> RenderBlocks<'a, 'b> {
             19 => self.render_block_stem(id, x, y, z),
             20 => self.render_block_vine(id, x, y, z),
             21 => self.render_block_fence_gate(id, x, y, z),
+            23 => self.render_block_lily_pad(id, x, y, z),
+            24 => self.render_block_cauldron(id, x, y, z),
+            25 => self.render_block_brewing_stand(id, x, y, z),
+            26 => self.render_block_end_portal_frame(id, x, y, z),
+            27 => self.render_block_dragon_egg(id, x, y, z),
             _ => false,
         };
         self.store_bounds(id);
@@ -395,7 +403,7 @@ impl<'a, 'b> RenderBlocks<'a, 'b> {
     /// `renderStandardBlock` (smooth lighting is on by default in b1.7.3).
     fn render_standard_block(&mut self, id: u8, x: i32, y: i32, z: i32) -> bool {
         let (r, g, b) = self.tinted_rgb(self.color_multiplier(id, x, y, z));
-        if self.ao {
+        if self.ao && render_light_value(id) == 0 {
             self.render_standard_block_ao(id, x, y, z, r, g, b)
         } else {
             self.render_standard_block_color(id, x, y, z, r, g, b)
@@ -489,7 +497,7 @@ impl<'a, 'b> RenderBlocks<'a, 'b> {
             let (a0, b0, a1, b1) = (a & 255, b & 255, a >> 16 & 255, b >> 16 & 255);
             return (if a0 > b0 { a0 } else { b0 }) | (if a1 > b1 { a1 } else { b1 }) << 16;
         }
-        self.w.mixed_brightness(x, y, z, block::light_value(id))
+        self.w.mixed_brightness(x, y, z, render_light_value(id))
     }
 
     /// `Block.func_35276_e` (getAmbientOcclusionLightValue): 0.2 next to a normal cube.
@@ -564,12 +572,12 @@ impl<'a, 'b> RenderBlocks<'a, 'b> {
         let ao_x_pos = ao(self, x + 1, y, z);
         let ao_y_pos = ao(self, x, y + 1, z);
         let ao_z_pos = ao(self, x, y, z + 1);
-        let b_x_neg = mx(self, x - 1, y, z); // var19
-        let b_y_neg = mx(self, x, y - 1, z); // var20
-        let b_z_neg = mx(self, x, y, z - 1); // var21
-        let b_x_pos = mx(self, x + 1, y, z); // var22
-        let b_y_pos = mx(self, x, y + 1, z); // var23
-        let b_z_pos = mx(self, x, y, z + 1); // var24
+        let b_x_neg = if self.b.min_x > 0.0 { mx(self, x, y, z) } else { mx(self, x - 1, y, z) }; // var19
+        let b_y_neg = if self.b.min_y > 0.0 { mx(self, x, y, z) } else { mx(self, x, y - 1, z) }; // var20
+        let b_z_neg = if self.b.min_z > 0.0 { mx(self, x, y, z) } else { mx(self, x, y, z - 1) }; // var21
+        let b_x_pos = if self.b.max_x < 1.0 { mx(self, x, y, z) } else { mx(self, x + 1, y, z) }; // var22
+        let b_y_pos = if self.b.max_y < 1.0 { mx(self, x, y, z) } else { mx(self, x, y + 1, z) }; // var23
+        let b_z_pos = if self.b.max_z < 1.0 { mx(self, x, y, z) } else { mx(self, x, y, z + 1) }; // var24
         self.t.set_brightness(983055);
         let cbg = |s: &Self, x: i32, y: i32, z: i32| rprops(s.w.block(x, y, z)).can_block_grass;
         let g_xp_yp = cbg(self, x + 1, y + 1, z); // aoGrassXYZPPC
@@ -602,7 +610,7 @@ impl<'a, 'b> RenderBlocks<'a, 'b> {
 
         // bottom (y-1)
         if self.render_all_faces || self.should_side_be_rendered(id, x, y - 1, z, 0) {
-            let yy = y - 1;
+            let yy = if self.b.min_y > 0.0 { y } else { y - 1 };
             let l_xn = mx(self, x - 1, yy, z); // field_35935_Q
             let l_zn = mx(self, x, yy, z - 1); // field_35937_S
             let l_zp = mx(self, x, yy, z + 1); // field_35932_T
@@ -631,7 +639,7 @@ impl<'a, 'b> RenderBlocks<'a, 'b> {
 
         // top (y+1)
         if self.render_all_faces || self.should_side_be_rendered(id, x, y + 1, z, 1) {
-            let yy = y + 1;
+            let yy = if self.b.max_y < 1.0 { y } else { y + 1 };
             let l_xn = mx(self, x - 1, yy, z); // field_35939_Y
             let l_xp = mx(self, x + 1, yy, z); // field_35949_ac
             let l_zn = mx(self, x, yy, z - 1); // field_35951_aa
@@ -660,7 +668,7 @@ impl<'a, 'b> RenderBlocks<'a, 'b> {
 
         // east (z-1)
         if self.render_all_faces || self.should_side_be_rendered(id, x, y, z - 1, 2) {
-            let zz = z - 1;
+            let zz = if self.b.min_z > 0.0 { z } else { z - 1 };
             let a_xn = ao(self, x - 1, y, zz); // aoLightValueScratchXZNN
             let a_yn = ao(self, x, y - 1, zz); // aoLightValueScratchYZNN
             let a_yp = ao(self, x, y + 1, zz); // aoLightValueScratchYZPN
@@ -693,7 +701,7 @@ impl<'a, 'b> RenderBlocks<'a, 'b> {
 
         // west (z+1)
         if self.render_all_faces || self.should_side_be_rendered(id, x, y, z + 1, 3) {
-            let zz = z + 1;
+            let zz = if self.b.max_z < 1.0 { z } else { z + 1 };
             let a_xn = ao(self, x - 1, y, zz); // aoLightValueScratchXZNP
             let a_xp = ao(self, x + 1, y, zz); // aoLightValueScratchXZPP
             let a_yn = ao(self, x, y - 1, zz); // aoLightValueScratchYZNP
@@ -726,7 +734,7 @@ impl<'a, 'b> RenderBlocks<'a, 'b> {
 
         // north (x-1)
         if self.render_all_faces || self.should_side_be_rendered(id, x - 1, y, z, 4) {
-            let xx = x - 1;
+            let xx = if self.b.min_x > 0.0 { x } else { x - 1 };
             let a_yn = ao(self, xx, y - 1, z); // aoLightValueScratchXYNN
             let a_zn = ao(self, xx, y, z - 1); // aoLightValueScratchXZNN
             let a_zp = ao(self, xx, y, z + 1); // aoLightValueScratchXZNP
@@ -759,7 +767,7 @@ impl<'a, 'b> RenderBlocks<'a, 'b> {
 
         // south (x+1)
         if self.render_all_faces || self.should_side_be_rendered(id, x + 1, y, z, 5) {
-            let xx = x + 1;
+            let xx = if self.b.max_x < 1.0 { x } else { x + 1 };
             let a_yn = ao(self, xx, y - 1, z); // aoLightValueScratchXYPN
             let a_zn = ao(self, xx, y, z - 1); // aoLightValueScratchXZPN
             let a_zp = ao(self, xx, y, z + 1); // aoLightValueScratchXZPP
@@ -1425,12 +1433,17 @@ impl<'a, 'b> RenderBlocks<'a, 'b> {
         let fm = block::material_of(id);
         let meta = self.w.meta(x, y, z);
         // b1.8.1 widens the corner heights to double before adding them to y.
-        let h00 = self.fluid_height(fm, x, y, z) as f64;
-        let h01 = self.fluid_height(fm, x, y, z + 1) as f64;
-        let h11 = self.fluid_height(fm, x + 1, y, z + 1) as f64;
-        let h10 = self.fluid_height(fm, x + 1, y, z) as f64;
+        let mut h00 = self.fluid_height(fm, x, y, z) as f64;
+        let mut h01 = self.fluid_height(fm, x, y, z + 1) as f64;
+        let mut h11 = self.fluid_height(fm, x + 1, y, z + 1) as f64;
+        let mut h10 = self.fluid_height(fm, x + 1, y, z) as f64;
 
+        let epsilon = 0.001f32 as f64;
         if self.render_all_faces || top {
+            h00 -= epsilon;
+            h01 -= epsilon;
+            h11 -= epsilon;
+            h10 -= epsilon;
             rendered = true;
             let mut tex = self.texture_meta(id, 1, meta);
             let mut angle = flow_angle(self.flow_vector(fm, x, y, z)) as f32;
@@ -1447,8 +1460,8 @@ impl<'a, 'b> RenderBlocks<'a, 'b> {
                 cu = ((tu + 16) as f32 / 256.0f32) as f64;
                 cv = ((tv + 16) as f32 / 256.0f32) as f64;
             }
-            let s = (math::sin(angle) * 8.0f32 / 256.0f32) as f64;
-            let c = (math::cos(angle) * 8.0f32 / 256.0f32) as f64;
+            let s = (math::sin(angle) * 8.0f32) as f64 / 256.0;
+            let c = (math::cos(angle) * 8.0f32) as f64 / 256.0;
             let mixed = self.mixed(id, x, y, z);
             self.t.set_brightness(mixed);
             let l = 1.0f32;
@@ -1466,7 +1479,7 @@ impl<'a, 'b> RenderBlocks<'a, 'b> {
             self.t.set_color_opaque_f(s_bottom * l, s_bottom * l, s_bottom * l);
             let tex = if damage_texture >= 0 { damage_texture } else { self.texture_meta(id, 0, 0) };
             self.override_texture = damage_texture;
-            self.render_bottom_face(x as f64, y as f64, z as f64, tex);
+            self.render_bottom_face(x as f64, y as f64 + epsilon, z as f64, tex);
             self.override_texture = -1;
             rendered = true;
         }
@@ -1484,10 +1497,10 @@ impl<'a, 'b> RenderBlocks<'a, 'b> {
                 continue;
             }
             let (ha, hb, xa, xb, za, zb) = match i {
-                0 => (h00, h10, x as f64, (x + 1) as f64, z as f64, z as f64),
-                1 => (h11, h01, (x + 1) as f64, x as f64, (z + 1) as f64, (z + 1) as f64),
-                2 => (h01, h00, x as f64, x as f64, (z + 1) as f64, z as f64),
-                _ => (h10, h11, (x + 1) as f64, (x + 1) as f64, z as f64, (z + 1) as f64),
+                0 => (h00, h10, x as f64, (x + 1) as f64, z as f64 + epsilon, z as f64 + epsilon),
+                1 => (h11, h01, (x + 1) as f64, x as f64, (z + 1) as f64 - epsilon, (z + 1) as f64 - epsilon),
+                2 => (h01, h00, x as f64 + epsilon, x as f64 + epsilon, (z + 1) as f64, z as f64),
+                _ => (h10, h11, (x + 1) as f64 - epsilon, (x + 1) as f64 - epsilon, z as f64, (z + 1) as f64),
             };
             rendered = true;
             let u0 = ((tu + 0) as f32 / 256.0f32) as f64;
@@ -1610,4 +1623,9 @@ fn flow_angle(v: (f64, f64, f64)) -> f64 {
     } else {
         v.2.atan2(v.0) - std::f64::consts::PI * 0.5
     }
+}
+
+/// Client-side rendering values until the blocks worker's 1.0 registry is integrated.
+fn render_light_value(id: u8) -> i32 {
+    match id { 117 | 120 | 122 => 1, 119 => 15, _ => worldgen::block::light_value(id) }
 }

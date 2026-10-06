@@ -145,7 +145,7 @@ fn bounds(p: [f32; 6]) -> Bounds {
 }
 fn item_props(id:u8)->&'static crate::render::RenderProps {&crate::gui::screens::block_items::RENDER[id as usize]}
 pub fn in_3d(id: i16) -> bool {
-    (0..256).contains(&id) && matches!(item_props(id as u8).render_type, 0 | 13 | 10 | 11 | 16 | 21 | 22)
+    (0..256).contains(&id) && matches!(item_props(id as u8).render_type, 0 | 13 | 10 | 11 | 16 | 21 | 22 | 27)
 }
 pub fn block_color(id: u8, meta: i32) -> u32 {
     if id == 18 {
@@ -173,6 +173,20 @@ pub fn inventory(gl: &mut Fixed, id: u8, meta: i32, brightness: f32, tint: bool)
         ];
     }
     let rt = item_props(id).render_type;
+    if rt == 23 { return; } // Vanilla's inventory lily-pad branch emits no vertices.
+    if rt == 27 {
+        gl.translate(-0.5, -0.5, -0.5);
+        gl.begin();
+        for b in crate::render::blocks::release::dragon_egg_boxes() {
+            for (side, n) in NORMALS.iter().enumerate() {
+                gl.set_normal(n[0], n[1], n[2]);
+                Faces { b: bounds(b), gl, offset: [0.0; 3] }.face(side, item_props(id).textures[0][side] as i32);
+            }
+        }
+        gl.end();
+        gl.translate(0.5, 0.5, 0.5);
+        return;
+    }
     let meta = if rt == 16 { 1 } else { meta };
     let mut boxes = vec![item_props(id).bounds];
     if rt == 10 {

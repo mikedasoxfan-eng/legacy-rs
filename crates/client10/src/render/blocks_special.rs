@@ -54,6 +54,7 @@ impl<'a, 'b> RenderBlocks<'a, 'b> {
         self.b = BOUNDS.with(|b| b.borrow()[id as usize]);
         let meta = self.w.meta(x, y, z);
         match id {
+            119 => self.set_block_bounds(0.0, 0.0, 0.0, 1.0, 1.0 / 16.0, 1.0),
             block::SNOW => {
                 self.b.max_y = ((2 * (1 + (meta & 7))) as f32 / 16.0f32) as f64;
             }
@@ -127,7 +128,7 @@ impl<'a, 'b> RenderBlocks<'a, 'b> {
                 let h = if (2..=5).contains(&meta) { 10.0 / 16.0 } else { 2.0 / 16.0 };
                 self.set_block_bounds(0.0, 0.0, 0.0, 1.0, h, 1.0);
             }
-            53 | 67 => self.set_block_bounds(0.0, 0.0, 0.0, 1.0, 1.0, 1.0),
+            53 | 67 | 108 | 109 | 114 => self.set_block_bounds(0.0, 0.0, 0.0, 1.0, 1.0, 1.0),
             96 => {
                 let v = 3.0f32 / 16.0;
                 self.set_block_bounds(0.0, 0.0, 0.0, 1.0, v, 1.0);
@@ -249,11 +250,6 @@ impl<'a, 'b> RenderBlocks<'a, 'b> {
         } else {
             dir == BED_OPPOSITE[(self.w.meta(x, y, z) & 3) as usize] as i32
         }
-    }
-
-    #[inline]
-    fn light_value_of(id: u8) -> i32 {
-        block::light_value(id)
     }
 
     #[inline]
@@ -452,11 +448,8 @@ impl<'a, 'b> RenderBlocks<'a, 'b> {
         let dir = meta & 3;
         let delay = ((meta & 12) >> 2) as usize;
         self.render_standard_block_pub(id, x, y, z);
-        let mut l = self.brightness(id, x, y, z);
-        if Self::light_value_of(id) > 0 {
-            l = (l + 1.0f32) * 0.5f32;
-        }
-        self.color(l, l, l);
+        self.t.set_brightness(self.mixed(id, x, y, z));
+        self.color(1.0, 1.0, 1.0);
         let down = -0.1875;
         let (mut ax, mut az, mut bx, mut bz) = (0.0, 0.0, 0.0, 0.0);
         match dir {
@@ -1100,31 +1093,29 @@ impl<'a, 'b> RenderBlocks<'a, 'b> {
         let yy = (y as f32 + 0.015625f32) as f64;
         let s = 1.0 / 16.0;
         if shape == 0 {
-            if east || north || south || west {
-                if !west {
-                    x0 += 5.0 / 16.0;
-                }
-                if !west {
-                    u0 += 1.25 / 64.0;
-                }
-                if !east {
-                    x1 -= 5.0 / 16.0;
-                }
-                if !east {
-                    u1 -= 1.25 / 64.0;
-                }
-                if !north {
-                    z0 += 5.0 / 16.0;
-                }
-                if !north {
-                    v0 += 1.25 / 64.0;
-                }
-                if !south {
-                    z1 -= 5.0 / 16.0;
-                }
-                if !south {
-                    v1 -= 1.25 / 64.0;
-                }
+            if !west {
+                x0 += 5.0 / 16.0;
+            }
+            if !west {
+                u0 += 1.25 / 64.0;
+            }
+            if !east {
+                x1 -= 5.0 / 16.0;
+            }
+            if !east {
+                u1 -= 1.25 / 64.0;
+            }
+            if !north {
+                z0 += 5.0 / 16.0;
+            }
+            if !north {
+                v0 += 1.25 / 64.0;
+            }
+            if !south {
+                z1 -= 5.0 / 16.0;
+            }
+            if !south {
+                v1 -= 1.25 / 64.0;
             }
             let (x0, x1, z0, z1) = (x0 as f64, x1 as f64, z0 as f64, z1 as f64);
             self.v(x1, yy, z1, u1, v1);
@@ -1413,8 +1404,9 @@ impl<'a, 'b> RenderBlocks<'a, 'b> {
         self.render_standard_block_pub(id, x, y, z);
         let mut along_x = false;
         let mut along_z = false;
-        // BlockFence.func_35303_f: fences join fences and fence gates.
-        let joins = |b: u8| b == id || b == 107;
+        // BlockFence.isFenceAt: also join opaque normal blocks except pumpkins.
+        let joins = |b: u8| b == id || b == 107 ||
+            (b != 86 && b != 91 && rprops(b).exists && rprops(b).normal && (mat(material_of(b)).translucent_solid || matches!(b, 110 | 112 | 121)));
         if joins(self.w.block(x - 1, y, z)) || joins(self.w.block(x + 1, y, z)) {
             along_x = true;
         }
@@ -1447,7 +1439,7 @@ impl<'a, 'b> RenderBlocks<'a, 'b> {
             y0 = 6.0 / 16.0;
             y1 = 9.0 / 16.0;
         }
-        self.set_block_bounds(0.0, 0.0, 0.0, 1.0, 1.0, 1.0);
+        self.set_block_bounds(if w { 0.0 } else { p0 }, 0.0, if n { 0.0 } else { p0 }, if e { 1.0 } else { p1 }, 1.0, if s { 1.0 } else { p1 });
         true
     }
 

@@ -129,6 +129,8 @@ impl Screen for GuiVideoSettings {
                 EnumOptions::GuiScale,
                 EnumOptions::AdvancedOpengl,
                 EnumOptions::Gamma,
+                EnumOptions::RenderClouds,
+                EnumOptions::Particles,
             ],
         );
         let (w, h) = (self.base.width, self.base.height);
