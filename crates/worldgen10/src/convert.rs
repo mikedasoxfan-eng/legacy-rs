@@ -108,17 +108,22 @@ pub fn convert_map_format(dir: &Path, progress: &mut dyn FnMut(LoadStep)) -> boo
     progress(LoadStep::Text("This may take a while :)"));
     progress(LoadStep::Progress(0));
     let nether = dir.join("DIM-1");
+    let end = dir.join("DIM1");
+    let (mut end_chunks,mut end_folders) = (vec![],vec![]);
     let (mut chunks, mut folders, mut nether_chunks, mut nether_folders) = (vec![], vec![], vec![], vec![]);
     println!("Scanning folders...");
     scan(dir, &mut chunks, &mut folders);
     if nether.exists() {
         scan(&nether, &mut nether_chunks, &mut nether_folders);
     }
-    let total = (chunks.len() + nether_chunks.len() + folders.len() + nether_folders.len()) as i32;
+    if end.exists() { scan(&end,&mut end_chunks,&mut end_folders); }
+    let cleanup_done = (chunks.len()+nether_chunks.len()) as i32;
+    let total = (chunks.len() + nether_chunks.len() + end_chunks.len() + folders.len() + nether_folders.len() + end_folders.len()) as i32;
     println!("Total conversion count is {total}");
     let mut done = 0;
     convert_chunks(dir, chunks, &mut done, total, progress);
     convert_chunks(&nether, nether_chunks, &mut done, total, progress);
+    convert_chunks(&end,end_chunks,&mut done,total,progress);
     let Some(mut info) = Storage::read_level(dir) else { return false };
     info.version = 19132;
     match Storage::open_with_players(dir, false) {
@@ -129,6 +134,8 @@ pub fn convert_map_format(dir: &Path, progress: &mut dyn FnMut(LoadStep)) -> boo
         }
         Err(e) => eprintln!("{e}"),
     }
+    // Release 1.0 omits DIM1 cleanup and omits its chunks from cleanup progress.
+    done = cleanup_done;
     delete_folders(folders, &mut done, total, progress);
     if nether.exists() {
         delete_folders(nether_folders, &mut done, total, progress);

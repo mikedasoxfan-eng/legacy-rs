@@ -47,16 +47,9 @@ pub fn choose<'a, T: Weighted>(r: &mut JavaRandom, choices: &'a [T]) -> Option<&
 }
 pub fn creatures(b: crate::Biome) -> Vec<SpawnListEntry> {
     use crate::Biome::*;
-    if matches!(b, Ocean | River | Desert | Hell) {
-        return Vec::new();
-    }
-    if b == Sky {
-        return vec![SpawnListEntry {
-            entity: "Chicken",
-            weight: 10,
-            min: 4,
-            max: 4,
-        }];
+    if matches!(b, Ocean | River | FrozenOcean | FrozenRiver | Desert | Hell | Sky) { return Vec::new(); }
+    if matches!(b, MushroomIsland | MushroomIslandShore) {
+        return vec![SpawnListEntry { entity: "MushroomCow", weight:8, min:4, max:8 }];
     }
     let mut entries = vec![
         SpawnListEntry {
@@ -95,11 +88,10 @@ pub fn creatures(b: crate::Biome) -> Vec<SpawnListEntry> {
     entries
 }
 pub fn monsters(b: crate::Biome) -> Vec<SpawnListEntry> {
-    if b == crate::Biome::Sky {
-        return vec![];
-    }
+    if matches!(b, crate::Biome::MushroomIsland | crate::Biome::MushroomIslandShore) { return vec![]; }
+    if b == crate::Biome::Sky { return vec![SpawnListEntry {entity:"Enderman",weight:10,min:4,max:4}]; }
     let entries = if b == crate::Biome::Hell {
-        vec![("Ghast", 10), ("PigZombie", 10)]
+        vec![("Ghast", 50), ("PigZombie", 100), ("LavaSlime", 1)]
     } else {
         vec![
             ("Spider", 10),
@@ -107,7 +99,7 @@ pub fn monsters(b: crate::Biome) -> Vec<SpawnListEntry> {
             ("Skeleton", 10),
             ("Creeper", 10),
             ("Slime", 10),
-            ("Enderman", 2),
+            ("Enderman", 1),
         ]
     };
     entries
@@ -115,13 +107,13 @@ pub fn monsters(b: crate::Biome) -> Vec<SpawnListEntry> {
         .map(|(entity, weight)| SpawnListEntry {
             entity,
             weight,
-            min: 4,
+            min: if entity=="Enderman" {1} else {4},
             max: 4,
         })
         .collect()
 }
 pub fn water_creatures(b: crate::Biome) -> Vec<SpawnListEntry> {
-    if matches!(b, crate::Biome::Hell | crate::Biome::Sky) {
+    if matches!(b, crate::Biome::Hell | crate::Biome::Sky | crate::Biome::MushroomIsland | crate::Biome::MushroomIslandShore) {
         vec![]
     } else {
         vec![SpawnListEntry {

@@ -623,7 +623,7 @@ fn run(opts: WorldOptions, mut col: Colorizers, mut video: VideoSettings, rx: Re
                     if let Some(pm) = &mut players {
                         pm.remove_player(&mut world);
                     }
-                    world.save_world(true);
+                    world.save_world_indirectly();
                     let _ = tx.send(FromWorker::Saved);
                     return;
                 }

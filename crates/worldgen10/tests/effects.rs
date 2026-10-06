@@ -39,7 +39,7 @@ fn note_pitch_and_jukebox_record_survive_region_storage() {
         "pitch changes must dirty the chunk"
     );
     assert!(world.insert_record(9, 64, 8, 2257));
-    world.save_world(true);
+    world.save_world_indirectly();
     drop(world);
     let mut storage = Storage::open(&dir).unwrap();
     let chunk = storage.load_chunk(0, 0).unwrap();

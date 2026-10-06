@@ -117,7 +117,7 @@ fn level_dat_roundtrip_keeps_player_out_of_chunk_entities() {
     assert!(p.to_nbt().is_none());
     w.chunk_list = vec![(0, 0)];
     w.chunk_mut(0, 0).modified = true;
-    w.save_world(true);
+    w.save_world_indirectly();
     drop(w);
     let mut storage = Storage::open(&dir).unwrap();
     let info = storage.load_level().unwrap();

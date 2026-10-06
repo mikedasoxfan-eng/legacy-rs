@@ -60,7 +60,7 @@ impl Component {
                 3 => return m.wrapping_add(3) & 3,
                 _ => {}
             }
-        } else if id == 67 || id == 53 {
+        } else if matches!(id, 67 | 53 | 109 | 114) {
             match (d, m) {
                 (0, 2) => return 3,
                 (0, 3) => return 2,

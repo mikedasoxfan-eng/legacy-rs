@@ -98,7 +98,7 @@ impl World {
         progress(LoadStep::Text(""));
         // saveWorldIndirectly: func_594_b("Saving level"), then "Saving chunks".
         progress(LoadStep::Text("Saving chunks"));
-        self.save_world(true);
+        self.save_world_indirectly();
         // func_6255_d(title) around the player.
         progress(LoadStep::Title(title));
         progress(LoadStep::Text("Building terrain"));

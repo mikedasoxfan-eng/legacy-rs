@@ -49,6 +49,9 @@ pub fn strongholds(seed: i64, biomes: &BiomeSource, r: &mut JavaRandom) -> [(i32
                     Biome::Forest,
                     Biome::ExtremeHills,
                     Biome::Swampland,
+                    Biome::Taiga,
+                    Biome::IcePlains,
+                    Biome::IceMountains,
                 ],
                 r,
             )

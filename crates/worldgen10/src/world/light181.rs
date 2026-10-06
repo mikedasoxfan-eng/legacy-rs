@@ -88,11 +88,11 @@ impl World {
                     continue;
                 }
                 self.set_light_value(kind, bx, by, bz, 0);
-                let next = level - 1;
-                if next <= 0 || (bx - x).abs() + (by - y).abs() + (bz - z).abs() >= 17 {
+                if level <= 0 || (bx - x).abs() + (by - y).abs() + (bz - z).abs() >= 17 {
                     continue;
                 }
                 for (dx, dy, dz) in DARK_NEIGHBORS {
+                    let next = level - light_opacity(self.get_block_id(bx + dx, by + dy, bz + dz)).max(1);
                     if self.get_saved_light_value(kind, bx + dx, by + dy, bz + dz) == next {
                         assert!(queue.len() < 32768, "vanilla light queue overflow");
                         queue.push(encode(bx + dx - x, by + dy - y, bz + dz - z, next));
@@ -126,7 +126,9 @@ impl World {
     }
     /// `World.func_35463_p`.
     pub(crate) fn update_all_light181(&mut self, x: i32, y: i32, z: i32) {
-        self.update_light181(LightKind::Sky, x, y, z);
+        if !self.dimension.has_no_sky() {
+            self.update_light181(LightKind::Sky, x, y, z);
+        }
         self.update_light181(LightKind::Block, x, y, z);
     }
     /// `World.func_35457_a`: neighbour light only for the four original partial blocks.
@@ -137,6 +139,7 @@ impl World {
         y: i32,
         z: i32,
     ) -> i32 {
+        if kind == LightKind::Sky && self.dimension.has_no_sky() { return 0; }
         let y = y.max(0);
         if y >= 128 && kind == LightKind::Sky {
             return 15;
@@ -147,7 +150,7 @@ impl World {
         if !self.chunk_exists(x >> 4, z >> 4) {
             return 0;
         }
-        if matches!(self.get_block_id(x, y, z), 44 | 60 | 67 | 53) {
+        if super::release10::use_neighbor_brightness(self.get_block_id(x, y, z)) {
             [(0, 1, 0), (1, 0, 0), (-1, 0, 0), (0, 0, 1), (0, 0, -1)]
                 .into_iter()
                 .map(|(dx, dy, dz)| self.get_saved_light_value(kind, x + dx, y + dy, z + dz))
@@ -183,6 +186,7 @@ impl World {
     }
     /// `Chunk.func_35841_j` / `func_35839_k`.
     pub fn recheck_skylight181(&mut self, cx: i32, cz: i32) {
+        if self.dimension.has_no_sky() || !self.chunk(cx, cz).skylight_pending10 { return; }
         let (x0, z0) = (cx * 16, cz * 16);
         if !self.check_chunks_exist(x0 - 8, 48, z0 - 8, x0 + 24, 80, z0 + 24) {
             return;
@@ -206,11 +210,11 @@ impl World {
                 .into_iter()
                 .min()
                 .unwrap();
-                self.chunk_mut(cx, cz).skylight_updated = true;
                 self.check_neighbor_height181(bx, bz, lowest);
                 for (dx, dz) in [(-1, 0), (1, 0), (0, -1), (0, 1)] {
                     self.check_neighbor_height181(bx + dx, bz + dz, h);
                 }
+                self.chunk_mut(cx, cz).skylight_pending10 = false;
             }
         }
     }
@@ -224,9 +228,11 @@ impl World {
             return;
         }
         // Vanilla passes chunk-local x/z here, before updating the height map.
-        for yy in h.min(old)..=h.max(old) {
-            self.update_light181(LightKind::Sky, x, yy, z);
+        if !self.dimension.has_no_sky() {
+            for yy in h.min(old)..=h.max(old) { self.update_light181(LightKind::Sky, x, yy, z); }
         }
+        self.mark_blocks_dirty181([x, h.min(old), z, x, h.max(old), z]);
+        let no_sky = self.dimension.has_no_sky();
         let c = self.chunk_mut(cx, cz);
         c.height_map[(z << 4 | x) as usize] = h as u8;
         c.lowest_block_height = if h < c.lowest_block_height {
@@ -239,6 +245,7 @@ impl World {
                 .unwrap()
                 .min(127)
         };
+        if !no_sky {
         if h < old {
             for yy in h..old {
                 c.sky_light.set(x, yy, z, 15);
@@ -255,12 +262,15 @@ impl World {
             light = (light - light_opacity(c.block(x, yy, z)).max(1)).max(0);
             c.sky_light.set(x, yy, z, light);
         }
+        }
         // The byte height is sign-extended, a vanilla bug at height 128.
         let signed = (h as u8 as i8) as i32;
         let (low, high) = (old.min(signed), old.max(signed));
         let (bx, bz) = (cx * 16 + x, cz * 16 + z);
+        if !no_sky {
         for (dx, dz) in [(-1, 0), (1, 0), (0, -1), (0, 1), (0, 0)] {
             self.light_column181(bx + dx, bz + dz, low, high);
+        }
         }
         self.touch(cx, cz);
     }

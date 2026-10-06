@@ -9,6 +9,7 @@ pub struct CaveCarver {
     range: i32,
     rand: JavaRandom,
     ravine: bool,
+    top_blocks10: [u8;256],
 }
 
 impl Default for CaveCarver {
@@ -17,6 +18,7 @@ impl Default for CaveCarver {
             range: 8,
             rand: JavaRandom::new(0),
             ravine: false,
+            top_blocks10: [block::GRASS;256],
         }
     }
 }
@@ -27,6 +29,9 @@ impl CaveCarver {
             ravine: true,
             ..Self::default()
         }
+    }
+    pub fn set_biomes10(&mut self, biomes: &[crate::Biome]) {
+        for (top, biome) in self.top_blocks10.iter_mut().zip(biomes) { *top = biome.top_block(); }
     }
     /// `func_867_a`
     pub fn carve(&mut self, world_seed: i64, chunk_x: i32, chunk_z: i32, blocks: &mut [u8]) {
@@ -324,7 +329,7 @@ impl CaveCarver {
                                                 } else {
                                                     blocks[i] = block::AIR;
                                                     if grass && blocks[i - 1] == block::DIRT {
-                                                        blocks[i - 1] = block::GRASS;
+                                                        blocks[i - 1] = self.top_blocks10[(bx + bz * 16) as usize];
                                                     }
                                                 }
                                             }

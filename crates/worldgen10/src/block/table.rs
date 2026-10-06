@@ -180,7 +180,7 @@ pub const BLOCKS: [BlockProps; 256] = [
     BlockProps { exists: true, material: 9, light_opacity: 0, light_value: 0, opaque_cube: false, normal_render: false, container: false, ticks: true, tick_rate: 10, name: "tile.waterlily" }, // 111
     BlockProps { exists: true, material: 4, light_opacity: 255, light_value: 0, opaque_cube: true, normal_render: true, container: false, ticks: false, tick_rate: 10, name: "tile.netherBrick" }, // 112
     BlockProps { exists: true, material: 4, light_opacity: 0, light_value: 0, opaque_cube: false, normal_render: false, container: false, ticks: false, tick_rate: 10, name: "tile.netherFence" }, // 113
-    BlockProps { exists: true, material: 4, light_opacity: 0, light_value: 0, opaque_cube: false, normal_render: false, container: false, ticks: false, tick_rate: 10, name: "tile.stairsNetherBrick" }, // 114
+    BlockProps { exists: true, material: 4, light_opacity: 255, light_value: 0, opaque_cube: false, normal_render: false, container: false, ticks: false, tick_rate: 10, name: "tile.stairsNetherBrick" }, // 114
     BlockProps { exists: true, material: 9, light_opacity: 0, light_value: 0, opaque_cube: false, normal_render: false, container: false, ticks: true, tick_rate: 10, name: "tile.netherStalk" }, // 115
     BlockProps { exists: true, material: 4, light_opacity: 0, light_value: 0, opaque_cube: false, normal_render: false, container: true, ticks: false, tick_rate: 10, name: "tile.enchantmentTable" }, // 116
     BlockProps { exists: true, material: 5, light_opacity: 0, light_value: 1, opaque_cube: false, normal_render: false, container: true, ticks: false, tick_rate: 10, name: "tile.brewingStand" }, // 117

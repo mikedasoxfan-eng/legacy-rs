@@ -46,8 +46,7 @@ impl LevelInfo {
             seed,
             game_type: 0,
             hardcore: false,
-            map_features: true,
-            spawn: (0, 0, 0),
+            map_features: true,            spawn: (0, 0, 0),
             time: 0,
             size_on_disk: 0,
             last_played: 0,
@@ -310,6 +309,7 @@ pub struct Storage {
     chunk_dir: PathBuf,
     session: i64,
     legacy_chunks: bool,
+    threaded_loader10: std::sync::Arc<crate::threaded_io10::ThreadedChunkLoader>,
 }
 
 impl Storage {
@@ -335,24 +335,17 @@ impl Storage {
             chunk_dir: dir.to_path_buf(),
             session,
             legacy_chunks: false,
+            threaded_loader10: crate::threaded_io10::ThreadedChunkLoader::new(dir),
         })
     }
 
     /// The same save (and session lock) with the chunk loader for `dimension`: the Nether
     /// keeps its regions in `DIM-1`.
     pub fn for_dimension(&self, dimension: crate::world::Dimension) -> io::Result<Storage> {
-        let chunk_dir = if dimension.is_hell_world() {
-            self.dir.join("DIM-1")
-        } else {
-            self.dir.clone()
-        };
+        let chunk_dir = match dimension { crate::world::Dimension::Nether => self.dir.join("DIM-1"), crate::world::Dimension::End => self.dir.join("DIM1"), _ => self.dir.clone() };
         std::fs::create_dir_all(&chunk_dir)?;
-        Ok(Storage {
-            dir: self.dir.clone(),
-            chunk_dir,
-            session: self.session,
-            legacy_chunks: self.legacy_chunks,
-        })
+        let threaded_loader10 = crate::threaded_io10::ThreadedChunkLoader::new(&chunk_dir);
+        Ok(Storage { dir: self.dir.clone(), chunk_dir, session: self.session, legacy_chunks: self.legacy_chunks, threaded_loader10 })
     }
 
     /// SaveHandler (as returned by SaveFormatOld) uses ChunkLoader, whereas
@@ -424,8 +417,9 @@ impl Storage {
         let root = if self.legacy_chunks {
             crate::legacy_chunk181::LegacyChunkLoader181::new(&self.chunk_dir, true)
                 .read_root(cx, cz)?
-        } else {
-            let raw = crate::region_cache181::read_chunk(&self.chunk_dir, cx, cz).ok()??;
+        } else if let Some(root) = self.threaded_loader10.load_pending(cx, cz) { root }
+        else {
+            let raw = crate::region_cache181::read_chunk(&self.chunk_dir,cx,cz).ok()??;
             nbt::read_root(&mut &raw[..]).ok()?
         };
         let level = match root.compound("Level") {
@@ -466,27 +460,20 @@ impl Storage {
             return crate::legacy_chunk181::LegacyChunkLoader181::new(&self.chunk_dir, true)
                 .save_chunk(c, world_time);
         }
+        if !self.session_ok() {
+            return Err(io::Error::new(io::ErrorKind::Other, "Failed to check session lock, aborting"));
+        }
         let mut root = Compound::new();
         root.put("Level", Tag::Compound(chunk_to_nbt(c, world_time)));
-        let mut raw = Vec::new();
-        nbt::write_root(&mut raw, &root)?;
-        let mut z = flate2::write::ZlibEncoder::new(Vec::new(), flate2::Compression::default());
-        z.write_all(&raw)?;
-        let compressed = z.finish()?;
-        crate::region_cache181::with_region(&self.chunk_dir, c.x, c.z, |r| {
-            r.write_chunk(c.x & 31, c.z & 31, &compressed)?;
-            Ok(r.take_size_delta() as i64)
-        })
+        self.threaded_loader10.save(c.x, c.z, root);
+        Ok(0)
     }
 
     /// Release cached RegionFiles (SaveConverterMcRegion.flushCache).
-    pub fn flush_region_cache(&mut self) {
-        crate::region_cache181::clear();
-    }
+    pub fn flush_region_cache(&mut self) { crate::threaded_io10::FILE_IO.flush(); crate::region_cache181::clear(); }
 
-    pub fn data_file(&self, name: &str) -> PathBuf {
-        self.dir.join("data").join(format!("{name}.dat"))
-    }
+    pub fn save_name10(&self) -> String { self.dir.file_name().unwrap_or_default().to_string_lossy().into_owned() }
+    pub fn data_file(&self, name: &str) -> PathBuf { self.dir.join("data").join(format!("{name}.dat")) }
 }
 
 // ---------------------------------------------------------------- chunk <-> NBT
@@ -504,6 +491,9 @@ pub fn chunk_to_nbt(c: &Chunk, world_time: i64) -> Compound {
     l.put("HeightMap", Tag::ByteArray(c.height_map.to_vec()));
     l.put("TerrainPopulated", Tag::Byte(c.populated as i8));
     l.put("Entities", Tag::List(10, c.raw_entities.clone()));
+    if let Some(ticks) = &c.tile_ticks10 {
+        l.put("TileTicks", Tag::List(10, ticks.iter().cloned().map(Tag::Compound).collect()));
+    }
     let mut tes = Vec::new();
     let mut insertion = c.tile_entity_order.clone();
     let mut remaining: Vec<_> = c
@@ -614,9 +604,13 @@ pub fn chunk_from_nbt_for_dimension(
     c.lowest_block_height = 0;
     c.data = Nibbles(bytes(l, "Data")?.to_vec().into_boxed_slice());
     c.populated = l.boolean("TerrainPopulated");
-    c.height_map = bytes(l, "HeightMap")?.to_vec().into_boxed_slice();
-    c.sky_light = Nibbles(bytes(l, "SkyLight")?.to_vec().into_boxed_slice());
-    c.block_light = Nibbles(bytes(l, "BlockLight")?.to_vec().into_boxed_slice());
+    c.height_map=bytes(l,"HeightMap")?.to_vec().into_boxed_slice();
+    c.sky_light=Nibbles(bytes(l,"SkyLight")?.to_vec().into_boxed_slice());
+    c.block_light=Nibbles(bytes(l,"BlockLight")?.to_vec().into_boxed_slice());
+    c.has_no_sky10 = _dimension.has_no_sky();
+    c.tile_ticks10 = l.has("TileTicks").then(|| l.list("TileTicks").iter().filter_map(|t| match t {
+        Tag::Compound(c) => Some(c.clone()), _ => None,
+    }).collect());
     c.raw_entities = l.list("Entities").to_vec();
     c.has_entities = !c.raw_entities.is_empty();
     for t in l.list("TileEntities") {

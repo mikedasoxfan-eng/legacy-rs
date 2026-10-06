@@ -72,7 +72,7 @@ impl<'a> ChunkCache181<'a> {
     pub fn saved_light(&self, kind: LightKind, x: i32, y: i32, z: i32) -> i32 {
         let y = y.clamp(0,127);
         if !Self::in_bounds(x, z) { return kind.default_value(); }
-        if matches!(self.block_id(x, y, z), 44 | 60 | 53 | 67) {
+        if super::release10::use_neighbor_brightness(self.block_id(x, y, z)) {
             [(0,1,0),(1,0,0),(-1,0,0),(0,0,1),(0,0,-1)].into_iter()
                 .map(|(dx,dy,dz)| self.saved_light_raw(kind,x+dx,y+dy,z+dz)).max().unwrap()
         } else { self.saved_light_raw(kind,x,y,z) }

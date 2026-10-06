@@ -234,7 +234,7 @@ impl<'a, 'b> RenderBlocks<'a, 'b> {
         match id {
             block::GRASS => {
                 let (t, h) = self.w.climate(x, z);
-                self.col.grass(t, h)
+                self.w.biome_tint10(self.col.grass(t,h),x,z)
             }
             block::LEAVES => {
                 let m = self.w.meta(x, y, z);
@@ -244,7 +244,7 @@ impl<'a, 'b> RenderBlocks<'a, 'b> {
                     8431445
                 } else {
                     let (t, h) = self.w.climate(x, z);
-                    self.col.foliage(t, h)
+                    self.w.biome_tint10(self.col.foliage(t,h),x,z)
                 }
             }
             block::TALL_GRASS => {
@@ -257,13 +257,13 @@ impl<'a, 'b> RenderBlocks<'a, 'b> {
                     let x2 = (x as i64 + ((v >> 14 & 31) - 16)) as i32;
                     let z2 = (z as i64 + ((v >> 24 & 31) - 16)) as i32;
                     let (t, h) = self.w.climate(x2, z2);
-                    self.col.grass(t, h)
+                    self.w.biome_tint10(self.col.grass(t,h),x2,z2)
                 }
             }
             // BlockVine: foliage colour of the column.
             106 => {
                 let (t, h) = self.w.climate(x, z);
-                self.col.foliage(t, h)
+                self.w.biome_tint10(self.col.foliage(t,h),x,z)
             }
             // BlockStem.getRenderColor(meta): green to yellow as it grows.
             104 | 105 => {

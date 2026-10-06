@@ -177,8 +177,8 @@ fn file_classes(o:&mut Vec<u8>) {
     let strings=["","a","aa","A","z","world","world2","é","😀","\u{e000}"];
     let times=[i64::MIN,-1,0,1,i64::MAX];
     for t in times {for u in times {for left in strings {for right in strings {
-        let x=SaveFormatComparator181{file_name:left.into(),display_name:"display".into(),last_played:t,size_on_disk:u,game_type:3,requires_conversion:true};
-        let y=SaveFormatComparator181{file_name:right.into(),display_name:"other".into(),last_played:u,size_on_disk:t,game_type:0,requires_conversion:false};
+        let x=SaveFormatComparator181{file_name:left.into(),display_name:"display".into(),last_played:t,size_on_disk:u,game_type:3,requires_conversion:true,hardcore:false};
+        let y=SaveFormatComparator181{file_name:right.into(),display_name:"other".into(),last_played:u,size_on_disk:t,game_type:0,requires_conversion:false,hardcore:false};
         i(o,x.compare(&y));l(o,x.last_played);l(o,x.size_on_disk);i(o,x.game_type);o.extend([x.requires_conversion as u8,(x.file_name==left) as u8,(x.display_name=="display") as u8]);
     }}}}
     for name in ["0","z","00","az","zz","000","A","-1","a.b","a_"] {o.extend([chunk_folder_matches(name,true) as u8,chunk_folder_matches(name,false) as u8]);}

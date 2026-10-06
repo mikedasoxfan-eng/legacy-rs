@@ -24,15 +24,6 @@ pub fn populate(w: &mut World, cx: i32, cz: i32) {
     );
     let mut village = false;
     if w.info.map_features {
-        let mut strongholds = std::mem::take(&mut w.strongholds);
-        let mut r = w.prand().clone();
-        strongholds.populate(w, &mut r, cx, cz);
-        *w.prand() = r;
-        for key in w.strongholds.keys() {
-            let start = w.strongholds.starts.remove(&key).unwrap();
-            strongholds.merge_start(key, start);
-        }
-        w.strongholds = strongholds;
         let mut structures = std::mem::take(&mut w.mineshafts);
         let mut r = w.prand().clone();
         structures.populate(w, &mut r, cx, cz);
@@ -53,6 +44,15 @@ pub fn populate(w: &mut World, cx: i32, cz: i32) {
             structures.merge_start(key, start);
         }
         w.villages = structures;
+        let mut strongholds = std::mem::take(&mut w.strongholds);
+        let mut r = w.prand().clone();
+        strongholds.populate(w, &mut r, cx, cz);
+        *w.prand() = r;
+        for key in w.strongholds.keys() {
+            let start = w.strongholds.starts.remove(&key).unwrap();
+            strongholds.merge_start(key, start);
+        }
+        w.strongholds = strongholds;
     }
     if !village && w.prand().next_int(4) == 0 {
         let (x, y, z) = surface_pos(w, x0, z0);
@@ -73,10 +73,19 @@ pub fn populate(w: &mut World, cx: i32, cz: i32) {
     }
     decorate(w, biome, x0, z0);
     spawn_population(w, biome, x0 + 8, z0 + 8, 16, 16);
+    for x in 0..16 {
+        for z in 0..16 {
+            let wx = x0.wrapping_add(8).wrapping_add(x);
+            let wz = z0.wrapping_add(8).wrapping_add(z);
+            let y = w.precipitation_height181(wx, wz);
+            if w.can_block_freeze(wx, y - 1, wz, false) { w.set_block_with_notify(wx, y - 1, wz, block::ICE); }
+            if w.can_snow_at(wx, y, wz) { w.set_block_with_notify(wx, y, wz, block::SNOW); }
+        }
+    }
     w.sand_fall_instantly = false;
 }
 
-pub fn decorate(w: &mut World, biome: Biome, x0: i32, z0: i32) {
+pub(crate) fn generate_ores(w: &mut World, x0: i32, z0: i32) {
     let ores = [
         (block::DIRT, 32, 20, 128),
         (block::GRAVEL, 32, 10, 128),
@@ -98,26 +107,27 @@ pub fn decorate(w: &mut World, biome: Biome, x0: i32, z0: i32) {
     let y = w.prand().next_int(16) + w.prand().next_int(16);
     let z = z0 + w.prand().next_int(16);
     features::minable(w, block::ORE_LAPIS, 6, x, y, z);
-    for _ in 0..3 {
+}
+
+pub fn decorate(w: &mut World, biome: Biome, x0: i32, z0: i32) {
+    decorate_with_settings(w, biome, x0, z0, crate::decorator10::DecoratorSettings::for_biome(biome));
+}
+pub fn decorate_with_settings(w: &mut World, biome: Biome, x0: i32, z0: i32, d: crate::decorator10::DecoratorSettings) {
+    crate::decorator10::begin(biome);
+    generate_ores(w, x0, z0);
+    for _ in 0..d.sand2 {
         let (x, y, z) = disc_pos(w, x0, z0);
         features::sand(w, 7, block::SAND, x, y, z);
     }
-    {
+    for _ in 0..d.clay {
         let (x, y, z) = disc_pos(w, x0, z0);
         features::clay(w, 4, x, y, z);
     }
-    {
+    for _ in 0..d.sand {
         let (x, y, z) = disc_pos(w, x0, z0);
         features::sand(w, 7, block::SAND, x, y, z);
     }
-    let (mut trees, flowers, grass, bushes, mushrooms, reeds, cacti) = match biome {
-        Biome::Desert => (-999, 2, 1, 2, 0, 50, 10),
-        Biome::Plains => (-999, 4, 10, 0, 0, 0, 0),
-        Biome::Forest => (10, 2, 2, 0, 0, 0, 0),
-        Biome::Taiga => (10, 2, 1, 0, 0, 0, 0),
-        Biome::Swampland => (2, -999, 1, 1, 8, 10, 0),
-        _ => (0, 2, 1, 0, 0, 0, 0),
-    };
+    let mut trees = d.trees;
     if w.prand().next_int(10) == 0 {
         trees += 1;
     }
@@ -133,23 +143,36 @@ pub fn decorate(w: &mut World, biome: Biome, x0: i32, z0: i32) {
             features::tree(w, kind, x, y, z);
         }
     }
-    for _ in 0..flowers {
+    for _ in 0..d.big_mushrooms {
+        let x = x0 + w.prand().next_int(16) + 8;
+        let z = z0 + w.prand().next_int(16) + 8;
+        let y = w.get_height_value(x, z);
+        crate::features181::big_mushroom(w, None, x, y, z);
+    }
+    for _ in 0..d.flowers {
         let (x, y, z) = surface_pos(w, x0, z0);
         features::flowers(w, block::PLANT_YELLOW, x, y, z);
         if w.prand().next_int(4) == 0 {
             let (x, y, z) = surface_pos(w, x0, z0);
-            features::flowers(w, block::PLANT_YELLOW, x, y, z);
+            features::flowers(w, block::PLANT_RED, x, y, z);
         }
     }
-    for _ in 0..grass {
+    for _ in 0..d.grass {
         let (x, y, z) = surface_pos(w, x0, z0);
         features::tall_grass(w, block::TALL_GRASS, 1, x, y, z);
     }
-    for _ in 0..bushes {
+    for _ in 0..d.dead_bush {
         let (x, y, z) = surface_pos(w, x0, z0);
         features::dead_bush(w, block::DEAD_BUSH, x, y, z);
     }
-    for _ in 0..mushrooms {
+    for _ in 0..d.waterlilies {
+        let x = x0 + w.prand().next_int(16) + 8;
+        let z = z0 + w.prand().next_int(16) + 8;
+        let mut y = w.prand().next_int(128);
+        while y > 0 && w.get_block_id(x, y - 1, z) == 0 { y -= 1; }
+        crate::features181::waterlily(w, x, y, z);
+    }
+    for _ in 0..d.mushrooms {
         if w.prand().next_int(4) == 0 {
             let x = x0 + w.prand().next_int(16) + 8;
             let z = z0 + w.prand().next_int(16) + 8;
@@ -171,7 +194,7 @@ pub fn decorate(w: &mut World, biome: Biome, x0: i32, z0: i32) {
         let (x, y, z) = surface_pos(w, x0, z0);
         features::flowers(w, block::MUSHROOM_RED, x, y, z);
     }
-    for _ in 0..reeds {
+    for _ in 0..d.reeds {
         let x = x0 + w.prand().next_int(16) + 8;
         let z = z0 + w.prand().next_int(16) + 8;
         let y = w.prand().next_int(128);
@@ -185,10 +208,11 @@ pub fn decorate(w: &mut World, biome: Biome, x0: i32, z0: i32) {
         let (x, y, z) = surface_pos(w, x0, z0);
         features::pumpkin(w, x, y, z);
     }
-    for _ in 0..cacti {
+    for _ in 0..d.cacti {
         let (x, y, z) = surface_pos(w, x0, z0);
         features::cactus(w, x, y, z);
     }
+    if d.generate_fluid {
     for _ in 0..50 {
         let x = x0 + w.prand().next_int(16) + 8;
         let bound = w.prand().next_int(120) + 8;
@@ -204,6 +228,8 @@ pub fn decorate(w: &mut World, biome: Biome, x0: i32, z0: i32) {
         let z = z0 + w.prand().next_int(16) + 8;
         features::liquid_spring(w, block::LAVA_MOVING, x, y, z);
     }
+    }
+    crate::decorator10::finish(biome);
 }
 fn surface_pos(w: &mut World, x0: i32, z0: i32) -> (i32, i32, i32) {
     let x = x0 + w.prand().next_int(16) + 8;
@@ -276,7 +302,7 @@ pub fn spawn_population(w: &mut World, biome: Biome, x0: i32, z0: i32, width: i3
                     && !block::mat(w.get_block_material(x, y, z)).is_liquid
                     && !w.is_block_normal_cube(x, y + 1, z);
                 if good {
-                    let mut e = Entity::living(w, choice.entity).expect("population creature");
+                    let Some(mut e) = Entity::living(w, choice.entity) else { return; };
                     let id = e.entity_id;
                     let yaw = w.prand().next_float() * 360.0f32;
                     e.set_location_and_angles(

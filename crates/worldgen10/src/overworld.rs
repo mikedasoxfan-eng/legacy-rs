@@ -112,6 +112,8 @@ impl OverworldGenerator {
         self.biome_source
             .biomes(&mut biomes, cx * 16, cz * 16, 16, 16);
         self.surface(cx, cz, &mut blocks[..], &biomes);
+        self.caves.set_biomes10(&biomes);
+        self.ravines.set_biomes10(&biomes);
         self.caves.carve(self.seed, cx, cz, &mut blocks[..]);
         self.ravines.carve(self.seed, cx, cz, &mut blocks[..]);
         let out = RawChunk {
@@ -164,9 +166,10 @@ impl OverworldGenerator {
                         for m in 0..4usize {
                             let mut idx = (m + i * 4) << 11 | (j * 4) << 7 | (k * 8 + l);
                             let fz = 0.25;
-                            let mut v = a;
                             let vz = (b - a) * fz;
+                            let mut v = a - vz;
                             for _ in 0..4usize {
+                                v += vz;
                                 let y = (k * 8 + l) as i32;
                                 let mut id = block::AIR;
                                 if y < sea_level {
@@ -177,7 +180,6 @@ impl OverworldGenerator {
                                 }
                                 blocks[idx] = id;
                                 idx += 128;
-                                v += vz;
                             }
                             a += ax;
                             b += bx;
@@ -352,6 +354,8 @@ impl OverworldGenerator {
             s * 2.0,
         );
 
+        let mut temperatures = Vec::new();
+        self.biome_source.temperatures(&mut temperatures, cx * 16, cz * 16, 16, 16);
         // Variable roles follow the Java: `a` indexes z-ish noise columns, `b` the x row.
         for a in 0..16usize {
             for b in 0..16usize {
@@ -382,7 +386,7 @@ impl OverworldGenerator {
                                 filler = biome.filler_block();
                             }
                             if y < sea_level && top == block::AIR {
-                                top = block::WATER_STILL;
+                                top = if (temperatures[b + a * 16] as f32) < 0.15f32 { block::ICE } else { block::WATER_STILL };
                             }
                             run = depth;
                             blocks[idx] = if y >= sea_level - 1 { top } else { filler };

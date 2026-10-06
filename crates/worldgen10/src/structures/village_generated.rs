@@ -86,7 +86,8 @@ impl VillagePiece {
                 self.component.fill_down(w, clip, 4, 0, var5, -1, var4);
             }
         }
-        return true;
+        self.spawn_villagers10(w,clip,1,1,2,1);
+            return true;
     }
     pub(super) fn generate_1(&mut self, w: &mut World, r: &mut JavaRandom, clip: B) -> bool {
         if self.height < 0 {
@@ -182,7 +183,8 @@ impl VillagePiece {
                 self.component.fill_down(w, clip, 4, 0, var6, -1, var5);
             }
         }
-        return true;
+        self.spawn_villagers10(w,clip,2,1,2,1);
+            return true;
     }
     pub(super) fn generate_2(&mut self, w: &mut World, r: &mut JavaRandom, clip: B) -> bool {
         if self.height < 0 {
@@ -291,7 +293,8 @@ impl VillagePiece {
                 self.component.fill_down(w, clip, 4, 0, var8, -1, var7);
             }
         }
-        return true;
+        self.spawn_villagers10(w,clip,2,1,2,1);
+            return true;
     }
     pub(super) fn generate_3(&mut self, w: &mut World, r: &mut JavaRandom, clip: B) -> bool {
         if self.height < 0 {
@@ -363,7 +366,8 @@ impl VillagePiece {
                 self.component.fill_down(w, clip, 4, 0, var5, -1, var4);
             }
         }
-        return true;
+        self.spawn_villagers10(w,clip,1,1,2,1);
+            return true;
     }
     pub(super) fn generate_4(&mut self, w: &mut World, r: &mut JavaRandom, clip: B) -> bool {
         if self.height < 0 {
@@ -467,7 +471,8 @@ impl VillagePiece {
                 self.component.fill_down(w, clip, 4, 0, var7, -1, var6);
             }
         }
-        return true;
+        self.spawn_villagers10(w,clip,4,1,2,2);
+            return true;
     }
     pub(super) fn generate_5(&mut self, w: &mut World, r: &mut JavaRandom, clip: B) -> bool {
         if self.height < 0 {
@@ -654,7 +659,8 @@ impl VillagePiece {
                 self.component.fill_down(w, clip, 4, 0, var5, -1, var4);
             }
         }
-        return true;
+        self.spawn_villagers10(w,clip,7,1,1,1);
+            return true;
     }
     pub(super) fn generate_8(&mut self, w: &mut World, r: &mut JavaRandom, clip: B) -> bool {
         if self.height < 0 {
@@ -793,7 +799,8 @@ impl VillagePiece {
                 self.component.fill_down(w, clip, 4, 0, var9, -1, var8);
             }
         }
-        return true;
+        self.spawn_villagers10(w,clip,4,1,2,2);
+            return true;
     }
     pub(super) fn generate_9(&mut self, w: &mut World, r: &mut JavaRandom, clip: B) -> bool {
         if self.height < 0 {

@@ -211,16 +211,16 @@ impl World {
 
     /// `World.tick` (no sleeping players or mob spawning yet).
     pub fn tick(&mut self) {
-        if self.info.hardcore {
-            self.difficulty = 3;
-        }
+        if self.info.hardcore && self.difficulty < 3 { self.difficulty = 3; }
         self.terrain.biome_source.cleanup_cache();
         self.update_weather();
         self.tick_sleeping_players();
+        crate::profiler::start_section("mobSpawner");
         self.perform_spawning(
             self.spawn_hostile_mobs,
             self.spawn_peaceful_mobs && self.world_time % 400 == 0,
         );
+        crate::profiler::end_start_section("chunkSource");
         self.unload_oldest_chunks();
         let s = self.calculate_skylight_subtracted(1.0);
         if s != self.skylight_subtracted {
@@ -229,11 +229,15 @@ impl World {
         }
         let t = self.world_time + 1;
         if t % 40 == 0 {
+            crate::profiler::end_start_section("save");
             self.save_world(false);
         }
         self.world_time = t;
+        crate::profiler::end_start_section("tickPending");
         self.tick_updates(false);
+        crate::profiler::end_start_section("tickTiles");
         self.random_ticks();
+        crate::profiler::end_section();
     }
 
     /// `TickUpdates`: run due scheduled block updates, at most 1000 per tick.
@@ -251,6 +255,7 @@ impl World {
             }
             self.tick_order.remove(&(time, id, key));
             self.pending_ticks.remove(&key);
+            self.scheduled_tick_set10.remove(key.java_hash181(), key);
             let r = 8;
             if self.check_chunks_exist(
                 key.x - r,
@@ -269,15 +274,16 @@ impl World {
         !self.tick_order.is_empty()
     }
 
-    /// `updateBlocksAndPlayCaveSounds`: random ticks within 9 chunks of every player.
+    /// `updateBlocksAndPlayCaveSounds`: random ticks within 7 chunks of every player.
     fn random_ticks(&mut self) {
+        crate::profiler::start_section("buildList");
         let mut positions = std::mem::take(&mut self.positions_to_update);
         positions.clear();
         for &(px, _, pz) in &self.players {
             let cx = math::floor_double(px / 16.0);
             let cz = math::floor_double(pz / 16.0);
-            for dx in -9..=9 {
-                for dz in -9..=9 {
+            for dx in -7..=7 {
+                for dz in -7..=7 {
                     let (x, z) = (dx + cx, dz + cz);
                     // ChunkCoordIntPair.hashCode in b1.8.1 folds the 64-bit key.
                     if let Some(identity) = replay_identity181() {
@@ -290,6 +296,7 @@ impl World {
         }
         let list: Vec<(i32, i32)> = positions.iter().collect();
         self.positions_to_update = positions;
+        crate::profiler::end_section();
 
         self.tick_active_chunks181(&list, |w, x, z| {
             biome_snows(w.terrain.biome_source.biome_at(x, z))
@@ -298,22 +305,16 @@ impl World {
 
     /// The per-chunk half of updateBlocksAndPlayCaveSounds. Supplying the biome
     /// flag separately also permits original-bytecode fixtures with custom biomes.
-    pub(crate) fn tick_active_chunks181(
-        &mut self,
-        list: &[(i32, i32)],
-        mut snows: impl FnMut(&mut World, i32, i32) -> bool,
-    ) {
-        if self.sound_counter > 0 {
-            self.sound_counter -= 1;
-        }
+    pub(crate) fn tick_active_chunks181(&mut self, list:&[(i32,i32)],_snows:impl FnMut(&mut World,i32,i32)->bool) {
+        if self.sound_counter > 0 { self.sound_counter -= 1; }
 
         for &(cx, cz) in list {
             let (x0, z0) = (cx * 16, cz * 16);
             // getChunkFromChunkCoords: singleplayer loads (and generates) it here.
+            crate::profiler::start_section("getChunk");
             let real = self.access_chunk_pub(cx, cz);
-            if real {
-                self.recheck_skylight181(cx, cz);
-            }
+            crate::profiler::end_start_section("tickChunk");
+            if real {self.recheck_skylight181(cx,cz);}
             let block_at = |w: &World, x: i32, y: i32, z: i32| {
                 if real {
                     w.chunk(cx, cz).block(x, y, z)
@@ -322,6 +323,7 @@ impl World {
                 }
             };
 
+            crate::profiler::end_start_section("moodSound");
             if self.sound_counter == 0 {
                 self.update_lcg = self.update_lcg.wrapping_mul(3).wrapping_add(1013904223);
                 let v = self.update_lcg >> 2;
@@ -349,6 +351,7 @@ impl World {
                 }
             }
 
+            crate::profiler::end_start_section("thunder");
             if self.rand.next_int(100000) == 0 && self.is_raining() && self.is_thundering() {
                 self.update_lcg = self.update_lcg.wrapping_mul(3).wrapping_add(1013904223);
                 let v = self.update_lcg >> 2;
@@ -362,55 +365,26 @@ impl World {
                 }
             }
 
-            if self.rand.next_int(16) == 0 {
-                self.update_lcg = self.update_lcg.wrapping_mul(3).wrapping_add(1013904223);
-                let v = self.update_lcg >> 2;
-                let (x, z) = (v & 15, v >> 8 & 15);
-                let y = self.precipitation_height181(x + x0, z + z0);
-                if snows(self, x + x0, z + z0) && y >= 0 && y < 128 {
-                    let block_light = if real {
-                        self.chunk(cx, cz).saved_light(LightKind::Block, x, y, z)
-                    } else {
-                        0
-                    };
-                    if block_light < 10 {
-                        let below = block_at(self, x, y - 1, z);
-                        let cur = block_at(self, x, y, z);
-                        if self.is_raining()
-                            && cur == 0
-                            && behavior::snow_can_place(self, x + x0, y, z + z0)
-                            && below != 0
-                            && below != block::ICE
-                            && block::mat(block::material_of(below)).blocks_movement
-                        {
-                            self.set_block_with_notify(x + x0, y, z + z0, block::SNOW);
-                        }
-                        let below_meta = if real {
-                            self.chunk(cx, cz).data.get(x, y - 1, z)
-                        } else {
-                            0
-                        };
-                        if below == block::WATER_STILL
-                            && below_meta == 0
-                            && [(-1, 0), (1, 0), (0, -1), (0, 1)]
-                                .into_iter()
-                                .any(|(dx, dz)| {
-                                    self.get_block_material(x + x0 + dx, y - 1, z + z0 + dz)
-                                        != block::MAT_WATER
-                                })
-                        {
-                            self.set_block_with_notify(x + x0, y - 1, z + z0, block::ICE);
-                        }
-                    }
-                }
+            crate::profiler::end_start_section("iceandsnow");
+            self.update_lcg = self.update_lcg.wrapping_mul(3).wrapping_add(1013904223);
+            let v = self.update_lcg >> 2;
+            let (x, z) = (x0 + (v & 15), z0 + (v >> 8 & 15));
+            let y = self.precipitation_height181(x, z);
+            if self.can_block_freeze(x, y - 1, z, true) {
+                self.set_block_with_notify(x, y - 1, z, block::ICE);
+            }
+            if self.is_raining() && self.can_snow_at(x, y, z) {
+                self.set_block_with_notify(x, y, z, block::SNOW);
             }
 
-            let light_x = x0 + self.rand.next_int(16);
-            let light_y = self.rand.next_int(128);
-            let light_z = z0 + self.rand.next_int(16);
-            self.update_all_light181(light_x, light_y, light_z);
+            crate::profiler::end_start_section("checkLight");
+            let light_x=x0+self.rand.next_int(16);
+            let light_y=self.rand.next_int(128);
+            let light_z=z0+self.rand.next_int(16);
+            self.update_all_light181(light_x,light_y,light_z);
 
-            for _ in 0..80 {
+            crate::profiler::end_start_section("tickTiles");
+            for _ in 0..20 {
                 self.update_lcg = self.update_lcg.wrapping_mul(3).wrapping_add(1013904223);
                 let v = self.update_lcg >> 2;
                 let (x, z, y) = (v & 15, v >> 8 & 15, v >> 16 & 127);
@@ -419,6 +393,7 @@ impl World {
                     behavior::update_tick(self, id, x + x0, y, z + z0, RandSel::World);
                 }
             }
+            crate::profiler::end_section();
         }
     }
 
@@ -450,6 +425,7 @@ impl World {
         let id = super::next_tick_entry_id181();
         if let std::collections::hash_map::Entry::Vacant(e) = self.pending_ticks.entry(key) {
             e.insert((time, id));
+            self.scheduled_tick_set10.insert(key.java_hash181(), key);
             self.tick_order.insert((time, id, key));
         }
     }

@@ -45,7 +45,7 @@ impl World {
     /// `WorldProvider.canCoordinateBeSpawn`
     pub(crate) fn can_coordinate_be_spawn(&mut self, x: i32, z: i32) -> bool {
         let id = self.get_first_uncovered_block(x, z);
-        if self.dimension.is_hell_world() {
+        if self.dimension == crate::world::Dimension::Nether {
             id != block::BEDROCK && id != block::AIR && block::opaque_cube_lookup(id)
         } else if self.dimension == crate::world::Dimension::Sky {
             id != 0 && block::mat(block::material_of(id)).is_solid

@@ -3,6 +3,14 @@
 use glam::{DVec3, Mat4, Vec3};
 use worldgen::math::PI_F32;
 
+/// Release 1.0 TextureOffset's immutable integer pair.
+#[derive(Clone, Copy, Debug)]
+pub struct TextureOffset { u: i32, v: i32 }
+impl TextureOffset {
+    pub fn new(u: i32, v: i32) -> Self { Self { u, v } }
+    pub fn coordinates(self) -> [i32; 2] { [self.u, self.v] }
+}
+
 /// Positions are Java doubles narrowed from floats by `PositionTextureVertex`.
 #[derive(Clone, Copy, Debug)]
 pub struct PositionTextureVertex {
@@ -25,11 +33,11 @@ impl TexturedQuad {
         v1: i32,
         texture: [f32; 2],
     ) -> Self {
-        // The 0.1 texel inset is present in Beta; later versions removed it.
-        let u0 = u0 as f32 / texture[0] + 0.1 / texture[0];
-        let u1 = u1 as f32 / texture[0] - 0.1 / texture[0];
-        let v0 = v0 as f32 / texture[1] + 0.1 / texture[1];
-        let v1 = v1 as f32 / texture[1] - 0.1 / texture[1];
+        // Release 1.0 retains the arithmetic with zero texel offsets.
+        let u0 = u0 as f32 / texture[0] + 0.0 / texture[0];
+        let u1 = u1 as f32 / texture[0] - 0.0 / texture[0];
+        let v0 = v0 as f32 / texture[1] + 0.0 / texture[1];
+        let v1 = v1 as f32 / texture[1] - 0.0 / texture[1];
         for (v, uv) in vertices
             .iter_mut()
             .zip([[u1, v0], [u0, v0], [u0, v1], [u1, v1]])

@@ -13,6 +13,7 @@ pub struct SaveEntry {
     pub size_on_disk: i64,
     pub needs_conversion: bool,
     pub game_mode: i32,
+    pub hardcore: bool,
 }
 
 fn read_data(path: &Path) -> Option<(Compound, Compound)> {
@@ -56,9 +57,10 @@ pub fn list(saves: &Path) -> Vec<SaveEntry> {
                 file_name: name,
                 display_name: display,
                 last_played: info.long("LastPlayed"),
-                size_on_disk: info.long("SizeOnDisk"),
+                size_on_disk: 0,
                 needs_conversion: info.int("version") != 19132,
                 game_mode: info.int("GameType"),
+                hardcore: info.byte("hardcore") != 0,
             });
         }
     }

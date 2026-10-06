@@ -47,6 +47,7 @@ fn region_roundtrip_simulates_supported_entities_and_preserves_unknown_tags() {
     assert!(w.entity_joined_world(pig));
     w.world_time = 120;
     assert!(w.save_chunks(true));
+    worldgen::threaded_io10::FILE_IO.flush();
     drop(w);
     let mut w = World::new(0, 1);
     w.set_entity_determinism(100, 200, 0);
@@ -77,6 +78,7 @@ fn region_roundtrip_simulates_supported_entities_and_preserves_unknown_tags() {
     assert_eq!(w.loaded_tile_entities.len(), 1);
     assert!(w.spawner_animations.is_empty());
     assert!(w.save_chunks(true));
+    worldgen::threaded_io10::FILE_IO.flush();
     drop(w);
     let mut s = Storage::open(&dir).unwrap();
     let saved = s.load_chunk(0, 0).unwrap();

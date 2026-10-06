@@ -2,7 +2,7 @@
 use super::{component::Component, BoundingBox as B, Piece, StructurePieceTreasure as T};
 use crate::{block, JavaRandom, World};
 
-const LOOT: [T; 10] = [
+const LOOT: [T; 11] = [
     T {
         item: 265,
         metadata: 0,
@@ -73,6 +73,7 @@ const LOOT: [T; 10] = [
         max: 4,
         weight: 10,
     },
+    T { item:361, metadata:0, min:2, max:4, weight:10 },
 ];
 #[derive(Clone, Debug)]
 pub enum Kind {
@@ -275,7 +276,7 @@ impl MineshaftPiece {
         d: i32,
         depth: i32,
     ) -> Option<usize> {
-        if depth > 10
+        if depth > 8
             || x.wrapping_sub(root.min_x).wrapping_abs() > 80
             || z.wrapping_sub(root.min_z).wrapping_abs() > 80
         {

@@ -357,8 +357,7 @@ fn warn_once(id: u8, hook: &str) {
 fn assert_plain(id: u8, hook: &str) {
     let plain = matches!(
         id,
-        119 | 121 | 122 | 45 | 57 | 95 | 97
-            ..=109 | block::STONE
+        45 | 57 | 95 | 97..=115 | 119 | 120 | 121 | 122 | block::STONE
             | block::FENCE
             | block::STAIRS_WOOD
             | block::STAIRS_COBBLESTONE
