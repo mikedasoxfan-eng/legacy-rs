@@ -42,6 +42,14 @@ fn tick_rate(id: u8) -> i32 {
 pub fn on_block_added(w: &mut World, id: u8, x: i32, y: i32, z: i32) {
     if super::blocks10::added(w,id,x,y,z){return;}
     if matches!(id,43|44) { return; }
+    if matches!(id, block::PUMPKIN | 91) {
+        w.pumpkin_added10(x, y, z, |world, position| {
+            let mut snowman = crate::entity::Entity::living(world, "SnowMan").unwrap();
+            snowman.set_location_and_angles(position.x, position.y, position.z, 0.0, 0.0);
+            world.entity_joined_world(snowman);
+        });
+        return;
+    }
     // Structure placement reaches BlockTorch with metadata zero and no support.
     if id == 50 {
         w.torch_added(id, x, y, z);
@@ -758,7 +766,7 @@ fn plant_grows_on(id: u8, below: u8) -> bool {
 pub fn flower_can_stay(w: &mut World, id: u8, x: i32, y: i32, z: i32) -> bool {
     match id {
         block::MUSHROOM_BROWN | block::MUSHROOM_RED => {
-            if !(0..128).contains(&y) {
+            if y < 0 || y >= w.height10 {
                 return false;
             }
             let below=w.get_block_id(x,y-1,z);

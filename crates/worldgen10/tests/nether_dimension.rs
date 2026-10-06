@@ -25,7 +25,8 @@ fn hell_biome_queries_replace_shared_climate_buffers() {
     assert_eq!(source.humidity, vec![0.0]);
     let mut temperatures = vec![0.5; 4];
     source.temperatures(&mut temperatures, 0, 0, 1, 2);
-    assert_eq!(temperatures, vec![1.0, 1.0]);
+    // getTemperatures fills only width*height in a reused, sufficiently large array.
+    assert_eq!(temperatures, vec![1.0, 1.0, 0.5, 0.5]);
     assert_eq!(source.temperature, vec![1.0]);
     assert_eq!(source.raw_temperature(999999, -999999), 1.0);
 }

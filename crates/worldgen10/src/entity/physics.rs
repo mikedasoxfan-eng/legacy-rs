@@ -458,6 +458,12 @@ impl Entity {
                 }
             }
             PORTAL => self.set_in_portal(),
+            END_PORTAL => {
+                if self.riding.is_none() && self.ridden_by.is_none()
+                    && self.player_state().is_some() && !w.multiplayer_world {
+                    self.enter_end(w, 1);
+                }
+            }
             CACTUS => {
                 self.attack_from(
                     w,

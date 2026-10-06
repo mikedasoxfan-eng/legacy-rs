@@ -86,9 +86,7 @@ impl Entity {
                     );
                     w.set_block_with_notify(x, y, z, 51);
                 }
-                if stack.damage_item(1) {
-                    self.add_stat(stat::broken(stack.id), 1);
-                }
+                stack.damage_item10(1, self, w);
                 true
             }
             290..=294 => {
@@ -109,9 +107,7 @@ impl Entity {
                         pitch * 0.8,
                     );
                     w.set_block_with_notify(x, y, z, 60);
-                    if stack.damage_item(1) {
-                        self.add_stat(stat::broken(stack.id), 1);
-                    }
+                    stack.damage_item10(1, self, w);
                     true
                 }
             }
@@ -188,6 +184,19 @@ impl Entity {
         if stack.id==374 {stack=self.glass_bottle_right_click10(w,stack);}
         else if stack.id==111 {stack=self.lily_pad_right_click10(w,stack);}
         else if stack.id==335 || (stack.id==373 && stack.damage&16384==0) {self.start_item_use(stack,32);}
+        else if stack.id == 373 || (stack.id == 368 && !self.player_state().unwrap().capabilities.creative) {
+            stack.count = stack.count.wrapping_sub(1);
+            let pitch = 0.4f32 / (w.item_random.next_float() * 0.4f32 + 0.8f32);
+            w.play_sound_at_entity(self, "random.bow", 0.5, pitch);
+            if !w.multiplayer_world {
+                let projectile = if stack.id == 373 {
+                    Entity::potion_projectile(w, self, stack.damage)
+                } else {
+                    Entity::pearl(w, self)
+                };
+                w.entity_joined_world(projectile);
+            }
+        }
         else if super::mechanics::food_value(stack.id).is_some() {
             let s = self.player_state().unwrap();
             if (stack.id == 322 || s.food.needs_food()) && !s.capabilities.disable_damage {

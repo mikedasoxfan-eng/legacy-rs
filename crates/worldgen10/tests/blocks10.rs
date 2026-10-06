@@ -233,3 +233,247 @@ fn food_recipes_are_shapeless_and_repair_discards_tags() {
         assert_eq!((s.id, s.damage), (item, damage));
     }
 }
+
+#[test]
+fn splash_and_pearl_item_dispatch_preserves_guards_and_item_rng() {
+    use worldgen::entity::EntityKind;
+    for (item, damage, creative, remote) in [
+        (373, 16384 | 8194, false, false),
+        (373, 16384 | 8194, false, true),
+        (368, 0, false, false),
+        (368, 0, true, false),
+        (373, 8194, false, false),
+    ] {
+        let (mut w, id) = fixture();
+        w.multiplayer_world = remote;
+        w.item_random.set_seed(42);
+        let mut p = w.entities.remove(&id).unwrap();
+        p.set_creative(creative);
+        p.player_state_mut().unwrap().inventory.main[0] = Some(ItemStack::new(item, 2, damage));
+        let throw = (item == 373 && damage & 16384 != 0) || (item == 368 && !creative);
+        assert_eq!(p.use_item(&mut w), throw);
+        assert_eq!(p.held_item().unwrap().count, if throw { 1 } else { 2 });
+        let mut expected = JavaRandom::new(42);
+        if throw { expected.next_float(); }
+        assert_eq!(w.item_random.state(), expected.state());
+        let projectiles: Vec<_> = w.entities.values().collect();
+        assert_eq!(projectiles.len(), usize::from(throw && !remote));
+        if let Some(projectile) = projectiles.first() {
+            assert!(match &projectile.kind {
+                EntityKind::Potion(state, meta) => item == 373 && *meta == damage && state.owner == Some(id),
+                EntityKind::EnderPearl(state) => item == 368 && state.owner == Some(id),
+                _ => false,
+            });
+        }
+        if item == 373 && !throw {
+            assert_eq!(p.player_state().unwrap().item_use_ticks, 32);
+        }
+    }
+}
+
+#[test]
+fn dispenser_launches_splash_metadata_and_keeps_drinkable_potions_as_items() {
+    use worldgen::{entity::EntityKind, world::RandSel};
+    for damage in [8194, 16384 | 8194] {
+        let (mut w, _) = fixture();
+        w.set_block_with_notify(9, 64, 9, 23);
+        if let Some(TileEntity::Dispenser(items)) = w.get_block_tile_entity(9, 64, 9) {
+            items[0] = Some(ItemStack::new(373, 2, damage));
+        }
+        w.dispense_item(9, 64, 9, RandSel::World);
+        assert_eq!(w.container_effects[0].0, if damage & 16384 != 0 {1002} else {1000});
+        assert_eq!(w.container_effects[1].0, 2000);
+        assert!(w.entities.values().any(|e| match &e.kind {
+            EntityKind::Potion(_, meta) => damage & 16384 != 0 && *meta == damage,
+            EntityKind::Item { item, .. } => damage & 16384 == 0 && item.damage as i32 == damage,
+            _ => false,
+        }));
+    }
+}
+
+#[test]
+fn pumpkin_added_consumes_snow_blocks_and_constructs_a_snowman() {
+    use worldgen::entity::EntityKind;
+    let (mut w, _) = fixture();
+    w.set_block_with_notify(9, 62, 9, 80);
+    w.set_block_with_notify(9, 63, 9, 80);
+    w.set_block_with_notify(9, 64, 9, 86);
+    for y in 62..=64 { assert_eq!(w.get_block_id(9, y, 9), 0); }
+    let snowman = w.entities.values().find(|e| matches!(e.kind, EntityKind::Snowman)).unwrap();
+    assert_eq!(snowman.pos, worldgen::entity::Vec3D::new(9.5, 64.0 - 1.95, 9.5));
+}
+
+#[test]
+fn unbreaking_uses_the_held_item_and_one_world_draw_for_the_entire_damage_call() {
+    let (mut w, id) = fixture();
+    let mut p = w.entities.remove(&id).unwrap();
+    let sword = ItemStack::new(276, 1, 0);
+    sword.add_enchantment(34, 3);
+    p.player_state_mut().unwrap().inventory.main[0] = Some(sword);
+    let mut armor = ItemStack::new(310, 1, 0);
+    w.rand.set_seed(42); // nextInt(4) == 2: skip all 7 damage, including to armor.
+    let mut expected = JavaRandom::new(42);
+    assert_eq!(expected.next_int(4), 2);
+    assert!(!armor.damage_item10(7, &mut p, &mut w));
+    assert_eq!(armor.damage, 0);
+    assert_eq!(w.rand.state(), expected.state());
+    armor.damage_item10(-3, &mut p, &mut w);
+    assert_eq!(armor.damage, -3);
+    assert_eq!(w.rand.state(), expected.state());
+    p.player_state_mut().unwrap().inventory.main[0] = None;
+    armor.damage_item10(7, &mut p, &mut w);
+    assert_eq!(armor.damage, 4);
+    assert_eq!(w.rand.state(), expected.state());
+}
+
+#[test]
+fn tag_references_share_mutation_but_copy_and_split_clone_compounds() {
+    use std::sync::{Arc, Mutex};
+    use worldgen::nbt::{Compound, Tag};
+    let tag = Arc::new(Mutex::new(Compound::new()));
+    let mut a = ItemStack::new(276, 2, 0);
+    let b = ItemStack::new(267, 1, 0);
+    a.set_tag_handle(Some(tag.clone()));
+    b.set_tag_handle(Some(tag.clone()));
+    let copy = a.copy_stack181();
+    let split = a.split(1);
+    a.add_enchantment(16, 2);
+    assert_eq!(b.enchantments(), a.enchantments());
+    assert_eq!(tag.lock().unwrap().list("ench").len(), 1);
+    assert!(copy.enchantments().is_empty());
+    assert!(split.enchantments().is_empty());
+    tag.lock().unwrap().put("NaN", Tag::Float(f32::NAN));
+    assert!(a.tags_equal(&b)); // Java Map.equals short-circuits shared values.
+}
+
+#[test]
+fn enchantment_level_stops_before_later_malformed_entries() {
+    use worldgen::nbt::{Compound, Tag};
+    let stack = ItemStack::new(276, 1, 0);
+    let mut enchantment = Compound::new();
+    enchantment.put("id", Tag::Short(16));
+    enchantment.put("lvl", Tag::Short(3));
+    let mut tag = Compound::new();
+    tag.put("ench", Tag::List(10, vec![Tag::Compound(enchantment), Tag::Int(7)]));
+    stack.set_tag(Some(tag));
+    assert_eq!(worldgen::enchantment::level(16, Some(stack)), 3);
+    assert!(std::panic::catch_unwind(|| worldgen::enchantment::level(20, Some(stack))).is_err());
+    let mut wrong = Compound::new();
+    wrong.put("ench", Tag::Int(7));
+    stack.set_tag(Some(wrong));
+    assert!(std::panic::catch_unwind(|| stack.enchantments()).is_err());
+}
+
+#[test]
+fn enchantment_slot_recomputes_twice_on_put_and_rejects_incoming_shift_clicks() {
+    use worldgen::container::{Container, InventoryPlayer};
+    let mut c = Container::new(ContainerKind::Enchantment, 1);
+    let mut inventory = InventoryPlayer::default();
+    c.bookshelves = 30;
+    c.enchanting.as_mut().unwrap().rng.set_seed(42);
+    let sword = ItemStack::new(276, 1, 0);
+    c.put_stack(&mut inventory, 0, Some(sword));
+    let mut expected = worldgen::container::enchanting::Enchanting::new(42);
+    expected.item = Some(sword);
+    expected.changed(false, 30);
+    expected.changed(false, 30);
+    assert_eq!(c.enchanting.as_ref().unwrap().rng.state(), expected.rng.state());
+    assert_eq!(c.enchanting.as_ref().unwrap().name_seed, expected.name_seed);
+    assert_eq!(c.progress, expected.costs);
+    c.put_stack(&mut inventory, 0, None);
+    inventory.main[9] = Some(sword);
+    assert!(c.slot_click(&mut inventory, 1, 0, true).is_none());
+    assert!(c.tile[0].is_none());
+    assert!(inventory.main[9].unwrap().same_object(sword));
+}
+
+#[test]
+fn colored_item_retains_configurable_name_array_and_full_damage_callbacks() {
+    use std::sync::{Arc, Mutex};
+    let mut item = worldgen::item10::ColoredItem::new(Some(31), true);
+    let names = Arc::new(Mutex::new(vec![Some("custom".to_owned()), None]));
+    item.set_names(Some(names.clone()));
+    let stack = ItemStack::new(31, 1, 0);
+    assert_eq!(item.name(Some(&stack), || Some("tile.tallgrass".into())), Some("tile.tallgrass.custom".into()));
+    names.lock().unwrap()[0] = Some("changed".into());
+    assert_eq!(item.name(Some(&stack), || None), Some("null.changed".into()));
+    assert_eq!(item.name(Some(&stack), || {
+        names.lock().unwrap()[0] = Some("during-base".into());
+        Some("base".into())
+    }), Some("base.during-base".into()));
+    assert_eq!(item.color(-999, |block, damage| { assert_eq!((block, damage), (31, -999)); 123 }), 123);
+    item.set_names(None);
+    assert_eq!(item.name(None, || Some("base".into())), Some("base".into()));
+}
+
+#[test]
+fn potion_cache_retains_mutable_lists_and_drinking_copies_the_current_effects() {
+    use std::sync::Arc;
+    use worldgen::item10::PotionItem;
+    let mut item = PotionItem::default();
+    assert!(item.effects(0).is_none());
+    let effects = item.effects(8194).unwrap();
+    assert!(Arc::ptr_eq(&effects, &item.effects(8194).unwrap()));
+    effects.lock().unwrap()[0].amplifier = 7;
+    let mut applied = Vec::new();
+    let result = item.drink(ItemStack::new(373, 1, 8194), false,
+        |effect| applied.push(effect), |_| panic!("last potion replaces the stack"));
+    assert_eq!(result.id, 374);
+    assert_eq!(applied[0].amplifier, 7);
+    effects.lock().unwrap().clear();
+    assert!(item.effects(8194).unwrap().lock().unwrap().is_empty());
+    assert_eq!(applied[0].amplifier, 7);
+    // Java String.trim removes ASCII controls, while retaining NBSP.
+    assert_eq!(item.display_name(0, "unused", |_| "\u{20}\u{a0}water\u{a0}\n".into()), "\u{a0}water\u{a0}");
+}
+
+#[test]
+fn mushroom_spread_uses_release_probability_and_preserves_failed_trials() {
+    use worldgen::world::{behavior, RandSel};
+    let (mut w, _) = fixture();
+    for x in 3..=13 { for z in 3..=13 {
+        w.chunk_mut(0, 0).blocks[idx(x, 63, z)] = 110;
+    }}
+    w.chunk_mut(0, 0).blocks[idx(8, 64, 8)] = 39;
+    w.rand.set_seed(19); // nextInt(25) == 0, nextInt(100) == 25.
+    behavior::update_tick(&mut w, 39, 8, 64, 8, RandSel::World);
+    // All five proposals run. The final proposal hits the soil at (7,63,6).
+    assert_eq!(w.rand.state(), 55_509_055_100_821);
+    assert_eq!(w.get_block_id(7, 63, 6), 110);
+    w.height10 = 64;
+    assert!(!behavior::flower_can_stay(&mut w, 39, 8, 64, 8));
+    w.height10 = 65;
+    assert!(behavior::flower_can_stay(&mut w, 39, 8, 64, 8));
+}
+
+#[test]
+fn giant_mushroom_rejects_stone_soil_and_restores_the_original_metadata() {
+    use worldgen::world::{plants181, RandSel};
+    let (mut w, _) = fixture();
+    w.chunk_mut(0, 0).blocks[idx(8, 63, 8)] = 1;
+    w.chunk_mut(0, 0).blocks[idx(8, 64, 8)] = 39;
+    w.chunk_mut(0, 0).data.set(8, 64, 8, 3);
+    w.rand.set_seed(42);
+    assert!(!plants181::grow_mushroom(&mut w, 8, 64, 8, RandSel::World));
+    assert_eq!((w.get_block_id(8,64,8),w.get_block_metadata(8,64,8)), (39,3));
+    let mut expected = JavaRandom::new(42);
+    expected.next_int(2);
+    expected.next_int(3);
+    assert_eq!(w.rand.state(), expected.state());
+    w.chunk_mut(0, 0).blocks[idx(8, 63, 8)] = 110;
+    assert!(plants181::grow_mushroom(&mut w, 8, 64, 8, RandSel::World));
+    assert_eq!(w.get_block_id(8,63,8), 3);
+    assert_eq!(w.get_block_id(8,64,8), 99);
+}
+
+#[test]
+fn neighbor_brightness_includes_double_slabs_and_nether_stairs() {
+    use worldgen::world::chunk::LightKind;
+    let (mut w, _) = fixture();
+    w.chunk_mut(0,0).block_light.set(8,64,8,2);
+    w.chunk_mut(0,0).block_light.set(8,65,8,11);
+    for (block, light) in [(43,11), (114,11), (1,2)] {
+        w.chunk_mut(0,0).blocks[idx(8,64,8)] = block;
+        assert_eq!(w.saved_light_with_neighbors181(LightKind::Block,8,64,8), light);
+    }
+}

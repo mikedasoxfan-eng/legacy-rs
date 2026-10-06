@@ -369,11 +369,7 @@ impl Entity {
         if let Some(id) = self.player_state().unwrap().fish_entity {
             if let Some(mut fish) = w.entities.remove(&id) {
                 let damage = fish.catch_fish(w, self);
-                let count = stack.count;
-                stack.damage_item(damage);
-                if stack.count < count {
-                    self.add_stat(crate::entity::player::stat::broken(346), 1);
-                }
+                stack.damage_item10(damage, self, w);
                 if w.loaded_entity_list.contains(&id) {
                     w.entities.insert(id, fish);
                 }

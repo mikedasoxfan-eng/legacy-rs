@@ -129,7 +129,7 @@ impl World {
         self.update_light181(LightKind::Sky, x, y, z);
         self.update_light181(LightKind::Block, x, y, z);
     }
-    /// `World.func_35457_a`: neighbour light only for the four original partial blocks.
+    /// Release 1.0 neighbour light uses Block.useNeighborBrightness.
     pub fn saved_light_with_neighbors181(
         &mut self,
         kind: LightKind,
@@ -147,7 +147,7 @@ impl World {
         if !self.chunk_exists(x >> 4, z >> 4) {
             return 0;
         }
-        if matches!(self.get_block_id(x, y, z), 44 | 60 | 67 | 53) {
+        if crate::block::use_neighbor_brightness(self.get_block_id(x, y, z)) {
             [(0, 1, 0), (1, 0, 0), (-1, 0, 0), (0, 0, 1), (0, 0, -1)]
                 .into_iter()
                 .map(|(dx, dy, dz)| self.get_saved_light_value(kind, x + dx, y + dy, z + dz))

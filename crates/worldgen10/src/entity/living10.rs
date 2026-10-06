@@ -75,7 +75,10 @@ impl Entity {
         (self.rand.next_float() - self.rand.next_float()) * 0.2
             + if self.is_child() { 1.5 } else { 1.0 }
     }
-    pub(super) fn armor_damage(&mut self, source: DamageSource, mut damage: i32) -> i32 {
+    pub(super) fn armor_damage(&mut self, source: DamageSource, damage: i32) -> i32 {
+        self.armor_damage_context10(source, damage, None)
+    }
+    pub(super) fn armor_damage_context10(&mut self, source: DamageSource, mut damage: i32, world: Option<&mut World>) -> i32 {
         if !source.bypasses_armor() {
             let armor = if let Some(p) = self.player_state() {
                 p.inventory.armor_value()
@@ -89,7 +92,19 @@ impl Entity {
             let total = damage
                 .wrapping_mul(25 - armor)
                 .wrapping_add(self.living.damage_remainder);
-            if let Some(p) = self.player_state_mut() {
+            if let Some(world) = world {
+                if self.player_state().is_some() {
+                    let amount = (damage / 4).max(1);
+                    for index in 0..4 {
+                        let Some(mut stack) = self.player_state().unwrap().inventory.armor[index] else { continue; };
+                        if crate::enchantment::armor(stack.id).is_some() {
+                            stack.damage_item10(amount, self, world);
+                            self.player_state_mut().unwrap().inventory.armor[index] =
+                                (stack.count != 0).then_some(stack);
+                        }
+                    }
+                }
+            } else if let Some(p) = self.player_state_mut() {
                 p.inventory.damage_armor(damage);
             }
             damage = total / 25;
@@ -105,6 +120,27 @@ impl Entity {
                 .wrapping_add(self.living.damage_remainder);
             damage = total / 25;
             self.living.damage_remainder = total % 25;
+        }
+        damage
+    }
+    pub(super) fn enchantment_damage10(&mut self, source: DamageSource, damage: i32) -> i32 {
+        let mut damage = self.resistance_damage(damage);
+        if let Some(player) = self.player_state() {
+            if damage <= 0 { return 0; }
+            let protection = crate::enchantment::ProtectionSource {
+                creative_harm: source.harms_creative(),
+                fire: source.is_fire(),
+                fall: source.kind == super::damage::DamageKind::Fall,
+                explosion: source.kind == super::damage::DamageKind::Explosion,
+                projectile: source.is_projectile(),
+            };
+            let modifier = crate::enchantment::with_modifier_random(|rng|
+                crate::enchantment::modifier_damage(rng, &player.inventory.armor, protection)).min(20);
+            if modifier > 0 {
+                let total = damage.wrapping_mul(25 - modifier).wrapping_add(self.living.damage_remainder);
+                damage = total / 25;
+                self.living.damage_remainder = total % 25;
+            }
         }
         damage
     }

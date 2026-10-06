@@ -379,7 +379,11 @@ impl Entity {
             && !matches!(self.kind, EntityKind::Squid(..))
             && self.potion_effect(super::potion::WATER_BREATHING).is_none()
         {
-            self.set_air(self.air - 1);
+            let respiration = self.player_state().map_or(0, |p|
+                crate::enchantment::max_level(5, &p.inventory.armor));
+            if respiration <= 0 || self.rand.next_int(respiration.wrapping_add(1)) == 0 {
+                self.set_air(self.air.wrapping_sub(1));
+            }
             if self.air == -20 {
                 self.set_air( 0);
                 for _ in 0..8 {
@@ -880,14 +884,14 @@ impl Entity {
             if damage <= self.living.last_damage {
                 return false;
             }
-            self.apply_living_damage181(source, damage.wrapping_sub(self.living.last_damage));
+            self.apply_living_damage181(w, source, damage.wrapping_sub(self.living.last_damage));
             self.living.last_damage = damage;
             fresh = false;
         } else {
             self.living.last_damage = damage;
             self.living.prev_health = self.living.health;
             self.living.hearts_life = self.living.hearts_halves_life;
-            self.apply_living_damage181(source, damage);
+            self.apply_living_damage181(w, source, damage);
             self.living.hurt_time = 10;
             self.living.max_hurt_time = 10;
             fresh = true;
@@ -965,9 +969,9 @@ impl Entity {
         }
         true
     }
-    fn apply_living_damage181(&mut self, source: super::damage::DamageSource, damage: i32) {
+    fn apply_living_damage181(&mut self, world: &mut World, source: super::damage::DamageSource, damage: i32) {
         if self.player_state().is_some() {
-            self.damage_living_from(source, damage);
+            self.damage_living_context10(Some(world), source, damage);
         } else {
             let damage = self.armor_damage(source, damage);
             let damage = self.resistance_damage(damage);
@@ -1002,7 +1006,13 @@ impl Entity {
                 }
                 w.entities.insert(a.entity_id, a);
             }
-            if !w.multiplayer_world && !self.is_child() { self.drop_few_items(w); }
+            if !w.multiplayer_world && !self.is_child() {
+                let looting = attacker.and_then(|id| {
+                    if id == self.entity_id { self.player_state().map(|_| self.held_item()) }
+                    else { w.entities.get(&id).filter(|e| e.player_state().is_some()).map(|e| e.held_item()) }
+                }).map_or(0, |stack| crate::enchantment::level(21, stack));
+                self.drop_few_items_with_looting(w, self.living.recently_hit > 0, looting);
+            }
             if matches!(self.kind, EntityKind::Player(..)) {
                 self.player_death(w, Some(source));
             }

@@ -112,6 +112,7 @@ pub trait StackContext {
 struct LiveUseContext<'a> {
     player: &'a mut Entity,
     world: &'a mut World,
+    broke: bool,
 }
 impl StackContext for LiveUseContext<'_> {
     type Item = i32;
@@ -127,20 +128,30 @@ impl StackContext for LiveUseContext<'_> {
         op: StackOp,
         stack: &mut ItemStack,
     ) -> Result<StackValue, StackError> {
-        let StackOp::Use { position, side } = op else {
-            return Err(StackError::Callback);
-        };
-        Ok(StackValue::Bool(self.player.item_use_on_block181(
+        match op {
+            StackOp::MaxDamage => Ok(StackValue::Int(stack.max_damage_checked181()?)),
+            StackOp::Use { position, side } => Ok(StackValue::Bool(self.player.item_use_on_block181(
             self.world,
             stack,
             position[0],
             position[1],
             position[2],
             side,
-        )))
+            ))),
+            _ => Err(StackError::Callback),
+        }
     }
     fn entity_is_player(&self) -> bool {
-        true
+        self.player.player_state().is_some()
+    }
+    fn skip_damage10(&mut self, _amount: i32, _stack: &mut ItemStack) -> Result<bool, StackError> {
+        let level = crate::enchantment::level(34, self.player.held_item());
+        Ok(level > 0 && self.world.rand.next_int(level.wrapping_add(1)) > 0)
+    }
+    fn break_animation10(&mut self, stack: &mut ItemStack) -> Result<(), StackError> {
+        self.broke = true;
+        self.player.broken_item_particles(self.world, *stack);
+        Ok(())
     }
     fn stat(
         &mut self,
@@ -170,10 +181,15 @@ impl ItemStack {
         side: i32,
     ) -> Result<bool, StackError> {
         self.dispatch181(
-            &mut LiveUseContext { player, world },
+            &mut LiveUseContext { player, world, broke: false },
             StackOp::Use { position, side },
         )
         .map(StackValue::boolean)
+    }
+    pub fn damage_item10(&mut self, amount: i32, entity: &mut Entity, world: &mut World) -> bool {
+        let mut context = LiveUseContext { player: entity, world, broke: false };
+        self.dispatch181(&mut context, StackOp::Damage { amount }).expect("ItemStack.damageItem");
+        context.broke
     }
     pub fn max_stack_checked181(&self) -> Result<i32, StackError> {
         if !(0..32000).contains(&self.id) {

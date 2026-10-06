@@ -195,7 +195,7 @@ impl Entity {
                 if charge>1.0 {charge=1.0;}
                 let mut arrow=Entity::arrow_from_owner_power(w,self,charge*2.0);
                 if let EntityKind::Arrow(a) = &mut arrow.kind { a.critical = charge == 1.0; }
-                self.damage_held(1);
+                self.damage_held10(w, 1);
                 let pitch=1.0/(w.item_random.next_float()*0.4+1.2)+charge*0.5;
                 w.play_sound_at_entity(self,"random.bow",1.0,pitch);
                 self.player_state_mut().unwrap().inventory.consume(262);

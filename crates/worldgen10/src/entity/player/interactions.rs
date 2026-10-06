@@ -18,7 +18,20 @@ impl Entity {
         };
         let mut damage = registry::attack_damage(self.held_item().map_or(-1, |s| s.id));
         damage = self.potion_attack_damage(damage);
-        if damage > 0 {
+        let mut knockback = 0i32;
+        let mut bonus = 0i32;
+        if target.kind.is_living() {
+            let attribute = match target.creature_attribute() {
+                crate::entity::living10::EnumCreatureAttribute::Undefined => crate::enchantment::CreatureAttribute::Undefined,
+                crate::entity::living10::EnumCreatureAttribute::Undead => crate::enchantment::CreatureAttribute::Undead,
+                crate::entity::living10::EnumCreatureAttribute::Arthropod => crate::enchantment::CreatureAttribute::Arthropod,
+            };
+            bonus = crate::enchantment::with_modifier_random(|rng|
+                crate::enchantment::modifier_living(rng, self.held_item(), attribute));
+            knockback = crate::enchantment::level(19, self.held_item());
+        }
+        if self.player_state().unwrap().sprinting { knockback = knockback.wrapping_add(1); }
+        if damage > 0 || bonus > 0 {
             let critical = self.fall_distance > 0.0 && !self.on_ground
                 && !self.is_on_ladder(w) && !self.in_water
                 && self.potion_effect(15).is_none()
@@ -27,6 +40,7 @@ impl Entity {
             if critical {
                 damage = damage.wrapping_add(self.rand.next_int(damage / 2 + 2));
             }
+            damage = damage.wrapping_add(bonus);
             // Vanilla passes the live player object to attackEntityFrom.
             w.entities.insert(self.entity_id, self.clone());
             let hit = target.attack_from(w, crate::entity::damage::DamageSource::entity(
@@ -34,28 +48,27 @@ impl Entity {
             if let Some(player) = w.entities.remove(&self.entity_id) {
                 *self = player;
             }
-            if hit && self.player_state().unwrap().sprinting {
+            if hit && knockback > 0 {
                 let yaw = self.yaw * math::PI_F32 / 180.0;
-                target.add_velocity(w, (-math::sin(yaw) * 0.5) as f64, 0.1,
-                    (math::cos(yaw) * 0.5) as f64,);
+                target.add_velocity(w, (-math::sin(yaw) * knockback as f32 * 0.5) as f64, 0.1,
+                    (math::cos(yaw) * knockback as f32 * 0.5) as f64,);
                 target.velocity_changed = true;
                 self.motion.x *= 0.6;
                 self.motion.z *= 0.6;
                 self.set_sprinting(false);
             }
-            if hit && damage >= 18 {
-                self.add_stat(5242880 + 25, 1);
-            }
             if hit && critical {
                 self.player_state_mut().unwrap().events.push(PlayerEvent::CriticalHit { target: Box::new(target.clone()), });
             }
+            if hit && bonus > 0 { self.magic_critical_hit(&target); }
+            if hit && damage >= 18 { self.add_stat(5242880 + 25, 1); }
             if target.kind.is_living() {
                 if let Some(s) = self.held_item() {
                     if matches!(s.id, 267 | 268 | 272 | 276 | 283) {
-                        self.damage_held(1);
+                        self.damage_held10(w, 1);
                         self.add_stat(stat::used(s.id), 1);
                     } else if matches!(s.id,256..=258|269..=271|273..=275|277..=279|284..=286) {
-                        self.damage_held(2);
+                        self.damage_held10(w, 2);
                         self.add_stat(stat::used(s.id), 1);
                     } else if s.id == 329 {
                         self.saddle(&mut target);
@@ -66,6 +79,8 @@ impl Entity {
                     self.alert_wolves(w, &target, true);
                 }
                 self.add_stat(stat::DAMAGE_DEALT, damage);
+                let fire_aspect = crate::enchantment::level(20, self.held_item());
+                if fire_aspect > 0 { target.set_fire_seconds(fire_aspect.wrapping_mul(4)); }
             }
             self.add_exhaustion(0.3);
         }
@@ -157,7 +172,7 @@ impl Entity {
                         e.motion.z += dz;
                     }
                 }
-                self.damage_held(1);
+                self.damage_held10(w, 1);
             }
         }
         if matches!(target.kind, EntityKind::Mooshroom) && target.living.growing_age >= 0 {

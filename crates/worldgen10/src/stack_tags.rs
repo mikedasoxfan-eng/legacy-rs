@@ -8,18 +8,27 @@ use crate::{
 };
 use std::{
     collections::HashMap,
-    sync::{Mutex, OnceLock},
+    sync::{Arc, Mutex, OnceLock},
 };
-fn tags() -> &'static Mutex<HashMap<u64, Compound>> {
-    static TAGS: OnceLock<Mutex<HashMap<u64, Compound>>> = OnceLock::new();
+/// A Java NBTTagCompound reference. Snapshot reads are available through tag();
+/// callers retaining the reference can mutate it through this handle.
+pub type StackTag = Arc<Mutex<Compound>>;
+fn tags() -> &'static Mutex<HashMap<u64, StackTag>> {
+    static TAGS: OnceLock<Mutex<HashMap<u64, StackTag>>> = OnceLock::new();
     TAGS.get_or_init(|| Mutex::new(HashMap::new()))
 }
 impl ItemStack {
     pub fn tag(&self) -> Option<Compound> {
-        tags().lock().unwrap().get(&self.identity).cloned()
+        self.tag_handle().map(|tag| tag.lock().unwrap_or_else(|e| e.into_inner()).clone())
+    }
+    pub fn tag_handle(&self) -> Option<StackTag> {
+        tags().lock().unwrap_or_else(|e| e.into_inner()).get(&self.identity).cloned()
     }
     pub fn set_tag(&self, tag: Option<Compound>) {
-        let mut tags = tags().lock().unwrap();
+        self.set_tag_handle(tag.map(|tag| Arc::new(Mutex::new(tag))));
+    }
+    pub fn set_tag_handle(&self, tag: Option<StackTag>) {
+        let mut tags = tags().lock().unwrap_or_else(|e| e.into_inner());
         if let Some(tag) = tag {
             tags.insert(self.identity, tag);
         } else {
@@ -29,14 +38,20 @@ impl ItemStack {
     /// The public Java tag setter rejects stackable items. NBT loading and
     /// copying assign the field directly and use set_tag above.
     pub fn set_tag_checked(&self, tag: Option<Compound>) {
+        self.set_tag_handle_checked(tag.map(|tag| Arc::new(Mutex::new(tag))));
+    }
+    pub fn set_tag_handle_checked(&self, tag: Option<StackTag>) {
         assert_eq!(
             self.max_stack(),
             1,
             "IllegalArgumentException: Cannot add tag data to a stackable item"
         );
-        self.set_tag(tag);
+        self.set_tag_handle(tag);
     }
     pub fn tags_equal(&self, other: &Self) -> bool {
+        if let (Some(a), Some(b)) = (self.tag_handle(), other.tag_handle()) {
+            if Arc::ptr_eq(&a, &b) { return true; }
+        }
         match (self.tag(), other.tag()) {
             (None, None) => true,
             (Some(a), Some(b)) => compound_equal(&a, &b),
@@ -44,34 +59,27 @@ impl ItemStack {
         }
     }
     pub fn has_tag(&self) -> bool {
-        tags().lock().unwrap().contains_key(&self.identity)
+        tags().lock().unwrap_or_else(|e| e.into_inner()).contains_key(&self.identity)
     }
     pub fn is_enchanted(&self) -> bool {
         self.tag().is_some_and(|n| n.has("ench"))
     }
     pub fn enchantments(&self) -> Vec<EnchantmentData> {
-        self.tag()
-            .map(|n| {
-                n.list("ench")
-                    .iter()
-                    .map(|t| {
-                        let Tag::Compound(c) = t else {
-                            panic!("ClassCastException");
-                        };
-                        EnchantmentData {
-                            id: c.short("id") as i32,
-                            level: c.short("lvl") as i32,
-                        }
-                    })
-                    .collect()
-            })
-            .unwrap_or_default()
+        self.enchantment_tags().iter().map(enchantment_data).collect()
+    }
+    pub(crate) fn enchantment_tags(&self) -> Vec<Tag> {
+        self.tag().map_or_else(Vec::new, |n| match n.get("ench") {
+            None => Vec::new(),
+            Some(Tag::List(_, list)) => list.clone(),
+            Some(_) => panic!("ClassCastException"),
+        })
     }
     pub fn add_enchantment(&self, id: i32, level: i32) {
         if !self.has_tag() {
             self.set_tag_checked(Some(Compound::new()));
         }
-        let mut n = self.tag().unwrap();
+        let handle = self.tag_handle().unwrap();
+        let mut n = handle.lock().unwrap_or_else(|e| e.into_inner());
         if !n.has("ench") {
             n.put("ench", Tag::List(10, Vec::new()));
         }
@@ -83,11 +91,20 @@ impl ItemStack {
         e.put("id", Tag::Short(id as i16));
         e.put("lvl", Tag::Short(level as i8 as i16));
         list.push(Tag::Compound(e));
-        self.set_tag(Some(n));
     }
     pub fn is_enchantable(&self) -> bool {
-        self.max_stack() == 1 && self.max_damage() > 0 && !self.is_enchanted()
+        self.max_stack() == 1 && self.max_damage() > 0
+            && !crate::entity::player::registry::item(self.id).unwrap().subtypes && !self.is_enchanted()
     }
+}
+pub(crate) fn enchantment_data(t: &Tag) -> EnchantmentData {
+    let Tag::Compound(c) = t else { panic!("ClassCastException"); };
+    let short = |key| match c.get(key) {
+        None => 0,
+        Some(Tag::Short(value)) => *value as i32,
+        Some(_) => panic!("ClassCastException"),
+    };
+    EnchantmentData { id: short("id"), level: short("lvl") }
 }
 #[cfg(test)]
 mod tests {
@@ -136,7 +153,7 @@ impl ItemStack {
         let mut lines = vec![display(self)];
         additional(self, &mut lines);
         if self.has_tag() {
-            for data in self.enchantments() {
+            for data in self.enchantment_tags().iter().map(enchantment_data) {
                 if let Some(e) = crate::enchantment::get(data.id) {
                     lines.push(e.translated_name(data.level, &translate));
                 }

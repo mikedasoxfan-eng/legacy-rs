@@ -752,21 +752,29 @@ impl Entity {
     pub(super) fn damage_living_from(
         &mut self,
         source: super::damage::DamageSource,
+        amount: i32,
+    ) {
+        self.damage_living_context10(None, source, amount);
+    }
+    pub(super) fn damage_living_context10(
+        &mut self,
+        mut world: Option<&mut World>,
+        source: super::damage::DamageSource,
         mut amount: i32,
     ) {
         if !source.bypasses_armor() && self.is_blocking() {
             amount = (1 + amount) >> 1;
         }
-        amount = self.armor_damage(source,amount);
+        amount = self.armor_damage_context10(source, amount, world.as_deref_mut());
             amount =
-                self.resistance_damage(amount);
+                self.enchantment_damage10(source, amount);
         if self.player_state().is_some() {
             self.add_exhaustion(source.exhaustion());
         }
         // EntityPlayer calls super.damageEntity: the release source applies
         // armor/resistance again through the same virtual methods and remainder.
-        amount = self.armor_damage(source, amount);
-        amount = self.resistance_damage(amount);
+        amount = self.armor_damage_context10(source, amount, world.as_deref_mut());
+        amount = self.enchantment_damage10(source, amount);
         self.living.health -= amount;
     }
     pub(super) fn player_death(&mut self, w: &mut World, source: Option<super::damage::DamageSource>,) {

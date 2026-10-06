@@ -72,7 +72,7 @@ pub fn can_place_at(w: &mut World, id: u8, x: i32, y: i32, z: i32, side: i32) ->
                 || w.is_block_normal_cube(x, y, z + 1)
         }
         64 | 71 => {
-            y < 127
+            y < w.height10.wrapping_sub(1)
                 && w.is_block_normal_cube(x, y - 1, z)
                 && base
                 && {let above=w.get_block_id(x,y+1,z);above==0 || mat(material_of(above)).ground_cover}
@@ -263,6 +263,7 @@ struct LiveBlockItemContext<'a> {
 }
 impl crate::entity::item_block::BlockItemContext for LiveBlockItemContext<'_> {
     type Block = u8;
+    fn height(&self) -> i32 { self.world.height10 }
     fn get_block_id(&mut self, p: [i32; 3]) -> Result<i32, crate::entity::item::ItemError> {
         Ok(self.world.get_block_id(p[0], p[1], p[2]) as i32)
     }

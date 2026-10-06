@@ -170,7 +170,8 @@ pub fn fire_neighbor(w: &mut World, x: i32, y: i32, z: i32) {
 
 /// `BlockFire.updateTick`
 pub fn fire(w: &mut World, x: i32, y: i32, z: i32, rs: RandSel) {
-    let on_netherrack = w.get_block_id(x, y - 1, z) == NETHERRACK;
+    let on_netherrack = w.get_block_id(x, y - 1, z) == NETHERRACK
+        || (w.dimension == super::Dimension::Sky && w.get_block_id(x, y - 1, z) == block::BEDROCK);
     if !fire_can_place(w, x, y, z) {
         w.set_block_with_notify(x, y, z, block::AIR);
     }
@@ -372,7 +373,7 @@ pub fn portal_neighbor(w: &mut World, x: i32, y: i32, z: i32) {
 
 /// `BlockMushroom.updateTick`: rare spread to a nearby dark spot.
 pub fn mushroom(w: &mut World, id: u8, mut x: i32, mut y: i32, mut z: i32, rs: RandSel) {
-    if w.rng(rs).next_int(100) != 0 { return; }
+    if w.rng(rs).next_int(25) != 0 { return; }
     let mut remaining = 5;
     for bx in x - 4..=x + 4 { for bz in z - 4..=z + 4 { for by in y - 1..=y + 1 {
         if w.get_block_id(bx, by, bz) == id {

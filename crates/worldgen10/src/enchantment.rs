@@ -1,5 +1,13 @@
 //! Release 1.0 enchantments, material tables and EnchantmentHelper.
 use crate::{entity::player::ItemStack, JavaRandom};
+/// EnchantmentHelper.enchantmentRand is independent of World.rand and itemRand.
+pub fn with_modifier_random<T>(call: impl FnOnce(&mut JavaRandom) -> T) -> T {
+    static RNG: std::sync::OnceLock<std::sync::Mutex<JavaRandom>> = std::sync::OnceLock::new();
+    let mut rng = RNG.get_or_init(|| std::sync::Mutex::new(JavaRandom::new(
+        crate::entity::EntitySeedSource::Time.next_seed(),
+    ))).lock().unwrap_or_else(|e| e.into_inner());
+    call(&mut rng)
+}
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum ArmorMaterial {
@@ -331,7 +339,7 @@ impl crate::weighted::Weighted for EnchantmentData {
 }
 pub fn level(id: i32, stack: Option<ItemStack>) -> i32 {
     stack
-        .and_then(|s| s.enchantments().into_iter().find(|e| e.id == id))
+        .and_then(|s| s.enchantment_tags().iter().map(crate::stack_tags::enchantment_data).find(|e| e.id == id))
         .map_or(0, |e| e.level)
 }
 pub fn max_level(id: i32, stacks: &[Option<ItemStack>]) -> i32 {
@@ -344,7 +352,7 @@ pub fn modifier_damage(
 ) -> i32 {
     let mut value = 0i32;
     for s in stacks.iter().flatten() {
-        for data in s.enchantments() {
+        for data in s.enchantment_tags().iter().map(crate::stack_tags::enchantment_data) {
             if let Some(e) = get(data.id) {
                 value = value.wrapping_add(e.modifier_damage(data.level, source));
             }
@@ -360,7 +368,7 @@ pub fn modifier_living(
 ) -> i32 {
     let mut value = 0i32;
     if let Some(s) = stack {
-        for data in s.enchantments() {
+        for data in s.enchantment_tags().iter().map(crate::stack_tags::enchantment_data) {
             if let Some(e) = get(data.id) {
                 value = value.wrapping_add(e.modifier_living(data.level, attribute));
             }
