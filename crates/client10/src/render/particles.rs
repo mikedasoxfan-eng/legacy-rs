@@ -23,6 +23,7 @@ pub enum Kind {
     RedDust,
     Heart,
     Lava,
+    Breaking { icon: i32, velocity: bool },
     Snowball,
     Slime,
     SnowShovel,
@@ -107,6 +108,7 @@ pub struct Particle {
     pub rand: JavaRandom,
     pub pickup: Option<Box<worldgen::entity::Entity>>,
     pub target: i32,
+    pub emitter_name: &'static str,
     pub cloud_player: Option<[f64; 5]>,
     pub duration: i32,
     pub emitted: Vec<(&'static str, [f64; 3], [f64; 3])>,
@@ -115,8 +117,8 @@ impl Particle {
     /// Scalar counterpart to the new particle packed-light overrides.
     pub fn brightness_from(&self, base: f32) -> f32 {
         match self.kind {
-            Kind::DripLava => 1.0,
-            Kind::Enchantment => {
+            Kind::DripLava | Kind::Lava => 1.0,
+            Kind::Enchantment | Kind::Portal => {
                 let mut t = self.age as f32 / self.max_age as f32;
                 t *= t;
                 t *= t;
@@ -124,6 +126,14 @@ impl Particle {
             }
             _ => base,
         }
+    }
+    pub fn scalar_brightness(&self, terrain: &Snapshot, partial: f32) -> f32 {
+        let base = terrain.brightness([self.pos[0], self.pos[1] - self.y_offset as f64
+            + (self.bounds[4] - self.bounds[1]) * 0.66, self.pos[2]]);
+        if self.kind == Kind::Flame {
+            let t = ((self.age as f32 + partial) / self.max_age as f32).clamp(0.0, 1.0);
+            base * t + (1.0 - t)
+        } else { self.brightness_from(base) }
     }
     /// Entity.func_35115_a and the three particle overrides. The partial tick
     /// affects Flame, but Portal deliberately uses the integer age alone.
@@ -177,7 +187,8 @@ impl Particle {
         let mut r = JavaRandom::new(seed);
         let input = if matches!(
             kind,
-            Kind::Crit
+            Kind::Breaking { .. }
+                | Kind::Crit
                 | Kind::MobSpell
                 | Kind::DripWater
                 | Kind::DripLava
@@ -246,6 +257,7 @@ impl Particle {
             rand: r,
             pickup: None,
             target: 0,
+            emitter_name: "crit",
             cloud_player: None,
             duration: 0,
             emitted: Vec::new(),
@@ -453,6 +465,10 @@ impl Particle {
                 p.max_age = (16.0 / (m.next_double() * 0.8 + 0.2)) as i32;
                 p.texture = 49;
             }
+            Kind::Breaking { icon, velocity: explicit } => {
+                p.texture = icon; p.gravity = 1.0; p.scale /= 2.0;
+                if explicit { for i in 0..3 { p.motion[i] = p.motion[i] * 0.1f32 as f64 + velocity[i]; } }
+            }
             Kind::Snowball | Kind::Slime => {
                 p.texture = if kind == Kind::Snowball { 14 } else { 30 };
                 p.gravity = 1.0;
@@ -489,7 +505,7 @@ impl Particle {
     pub fn layer(&self) -> usize {
         match self.kind {
             Kind::Digging { .. } | Kind::HugeExplode => 1,
-            Kind::Slime | Kind::Snowball => 2,
+            Kind::Breaking { .. } | Kind::Slime | Kind::Snowball => 2,
             Kind::Footstep | Kind::Pickup | Kind::LargeExplode | Kind::CritEmitter => 3,
             _ => 0,
         }
@@ -521,7 +537,7 @@ impl Particle {
                         let pos = [target.pos.x + v[0] * target.width as f64 / 4.0,
                             target.bounding_box.min_y + (target.height / 2.0) as f64 + v[1] * target.height as f64 / 4.0,
                             target.pos.z + v[2] * target.width as f64 / 4.0];
-                        self.emitted.push(("crit", pos, [v[0], v[1] + 0.2, v[2]]));
+                        self.emitted.push((self.emitter_name, pos, [v[0], v[1] + 0.2, v[2]]));
                     }
                 }
             }
@@ -666,7 +682,7 @@ impl Particle {
                 }
                 self.motion[1] -= 0.03;
             }
-            Kind::Base | Kind::Digging { .. } | Kind::Slime | Kind::Snowball => {
+            Kind::Base | Kind::Digging { .. } | Kind::Breaking { .. } | Kind::Slime | Kind::Snowball => {
                 self.motion[1] -= 0.04 * self.gravity as f64
             }
             _ => {}
@@ -817,7 +833,7 @@ impl Particle {
         let color = packed_color(self.color, 1.0);
         let fragment = matches!(
             self.kind,
-            Kind::Digging { .. } | Kind::Snowball | Kind::Slime
+            Kind::Digging { .. } | Kind::Breaking { .. } | Kind::Snowball | Kind::Slime
         );
         let frame = ((self.timer as f32 + partial) * 15.0 / self.duration as f32) as i32;
         if self.kind == Kind::LargeExplode && frame > 15 { return Vec::new(); }

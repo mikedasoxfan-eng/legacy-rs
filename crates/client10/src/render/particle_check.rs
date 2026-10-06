@@ -79,7 +79,8 @@ pub fn check(path: &str) -> bool {
         at: 0,
     };
     let magic = d.bytes::<8>();
-    let light = magic == *b"B181PRT2";
+    let release = magic == *b"R10PRT03";
+    let light = release || magic == *b"B181PRT2";
     assert!(light || magic == *b"B173PRT1");
     let mut s = Snapshot::default();
     let width = d.i();
@@ -112,7 +113,8 @@ pub fn check(path: &str) -> bool {
         let mathseed = d.l();
         let pos = std::array::from_fn(|_| d.d());
         let velocity = std::array::from_fn(|_| d.d());
-        let block = d.i() as u8;
+        let item_or_block = d.i();
+        let block = item_or_block as u8;
         let metadata = d.i();
         let frames = d.i();
         let kind = match id {
@@ -140,6 +142,9 @@ pub fn check(path: &str) -> bool {
             21 => Kind::Aura,
             22 => Kind::Suspend,
             23 => Kind::LargeExplode,
+            24 => Kind::DripWater, 25 => Kind::DripLava, 26 => Kind::Enchantment,
+            27 => Kind::Spell, 28 => Kind::InstantSpell, 29 => Kind::MobSpell,
+            30 | 31 => Kind::Breaking { icon: super::entity::item_table::properties(item_or_block as i16, 0).0, velocity: id == 31 },
             _ => panic!(),
         };
         let mut m = JavaRandom::new(mathseed);
@@ -170,6 +175,10 @@ pub fn check(path: &str) -> bool {
                     let rust = p.packed_brightness(&s, partial);
                     if rust != java { if bad < 12 { eprintln!("particle {kind:?} tick {tick} light {rust:08x}/{java:08x}"); } bad += 1; }
                 }
+                if release {
+                    let java = d.f(); let rust = p.scalar_brightness(&s, partial);
+                    if rust.to_bits() != java.to_bits() { if bad < 12 { eprintln!("particle {kind:?} tick {tick} scalar {rust}/{java}"); } bad += 1; }
+                }
                 let vs = p.vertices(&s, [0.125, 65.0, -0.25], rotation(37.25, -21.5), partial);
                 if light { assert_eq!(d.i() as usize, vs.len(), "particle vertex count"); }
                 for v in vs {
@@ -188,6 +197,7 @@ pub fn check(path: &str) -> bool {
                             bad += 1;
                         }
                     }
+                    if release { let java=d.i();let rust=p.packed_brightness(&s,partial);if rust!=java {bad+=1;} }
                     vertices += 1;
                 }
             }
