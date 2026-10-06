@@ -147,7 +147,6 @@ impl Renderer {
         for pass in 0..4 {
             self.armor_pass(&mut g, e, pass, pose);
         }
-        super::raw_living181::embedded_arrows(&mut g, &self.main, e.entity_id, e.living.arrows_stuck, t);
         if let Some(helmet) = p.inventory.armor[3].filter(|s| s.id < 256) {
             g.push();
             special::part(&mut g, &self.main["bipedHead"], true);

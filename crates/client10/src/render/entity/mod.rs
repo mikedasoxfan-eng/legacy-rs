@@ -12,6 +12,8 @@ pub mod inventory;
 pub mod item_table;
 pub mod living;
 pub mod models;
+pub mod models_release;
+pub mod models_release_check;
 pub mod object_check;
 pub mod objects;
 pub mod pipeline;
@@ -32,3 +34,5 @@ pub mod tile_special;
 pub mod tile_special_check9;
 pub mod tile_manager;
 pub mod tile_manager_check9;
+
+pub mod render_release;

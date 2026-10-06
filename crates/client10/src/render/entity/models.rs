@@ -1,7 +1,7 @@
 //! `ModelBase` and the mob model constructors/`setRotationAngles`.
 //! Java part names are retained as keys, so oracle diagnostics identify the exact field.
 
-use super::geometry::ModelRenderer;
+use super::geometry::{ModelRenderer, TextureOffset};
 use std::collections::BTreeMap;
 use std::ops::{Index, IndexMut};
 use worldgen::math::{self, PI_F32};
@@ -31,6 +31,13 @@ pub enum ModelKind {
     Minecart,
     Boat,
     Sign,
+    Dragon,
+    Villager,
+    SnowMan,
+    Blaze,
+    MagmaCube,
+    EnderCrystal,
+    Book,
 }
 
 #[derive(Clone, Debug)]
@@ -42,6 +49,15 @@ pub struct Model {
     /// `ModelBase.onGround`: interpolated attack swing progress.
     pub on_ground: f32,
     pub is_riding: bool,
+    pub texture_size: [i32; 2],
+    pub texture_offsets: BTreeMap<String, TextureOffset>,
+    pub child_links: Vec<(String, String)>,
+    pub is_child: bool,
+    pub child_head_y: f32,
+    pub child_head_z: f32,
+    pub held_left_pose: i32,
+    pub held_right_pose: i32,
+    pub aimed_bow: bool,
     pub held_left: bool,
     pub held_right: bool,
     pub is_sneak: bool,
@@ -62,7 +78,7 @@ impl IndexMut<&str> for Model {
 }
 
 impl Model {
-    fn insert_part(&mut self, name: String, part: ModelRenderer) {
+    pub(super) fn insert_part(&mut self, name: String, part: ModelRenderer) {
         if let Some(old) = self.parts.remove(&name) {
             let index = self.registered.iter().rposition(|n| n == &name).unwrap();
             self.retired.insert(index, old);
@@ -87,6 +103,15 @@ impl Model {
             parts: BTreeMap::new(),
             registered: Vec::new(),
             retired: BTreeMap::new(),
+            texture_size: [64, 32],
+            texture_offsets: BTreeMap::new(),
+            child_links: Vec::new(),
+            is_child: true,
+            child_head_y: 8.0,
+            child_head_z: 4.0,
+            held_left_pose: 0,
+            held_right_pose: 0,
+            aimed_bow: false,
             on_ground: 0.0,
             is_riding: false,
             held_left: false,
@@ -96,7 +121,9 @@ impl Model {
             screaming: false,
         };
         match kind {
-            ModelKind::Biped | ModelKind::Zombie => m.init_biped(inflate, offset),
+            ModelKind::Dragon | ModelKind::Villager | ModelKind::SnowMan | ModelKind::Blaze | ModelKind::MagmaCube | ModelKind::EnderCrystal | ModelKind::Book => m.init_release(inflate, offset),
+            ModelKind::Biped => m.init_biped(inflate, offset),
+            ModelKind::Zombie => m.init_biped(0.0, 0.0),
             ModelKind::Skeleton => {
                 m.init_biped(0.0, 0.0);
                 m.init_skeleton();
@@ -104,10 +131,8 @@ impl Model {
             ModelKind::Quadruped => m.init_quadruped(legs, inflate),
             ModelKind::Pig => {
                 m.init_quadruped(6, inflate);
-                let mut r = ModelRenderer::new(16, 16);
-                r.add_box(-2.0, 0.0, -9.0, 4, 3, 1, inflate);
-                r.set_rotation_point(0.0, 12.0, -6.0);
-                m.insert_part("field_35401_a".into(), r);
+                m["head"].set_texture_offset(16, 16).add_box(-2.0, 0.0, -9.0, 4, 3, 1, inflate);
+                m.child_head_y = 4.0;
             }
             ModelKind::Cow => m.init_cow(),
             ModelKind::SheepFur => m.init_sheep1(),
@@ -148,6 +173,7 @@ impl Model {
     /// `setRotationAngles(limbSwing, limbAmount, age, headYaw, headPitch, scale)`.
     pub fn set_rotation_angles(&mut self, p: [f32; 6]) {
         match self.kind {
+            ModelKind::Dragon | ModelKind::Villager | ModelKind::SnowMan | ModelKind::Blaze | ModelKind::MagmaCube | ModelKind::EnderCrystal | ModelKind::Book => self.pose_release(p),
             ModelKind::Enderman => {
                 self.pose_biped(p);
                 self.pose_enderman();
@@ -157,28 +183,17 @@ impl Model {
             ModelKind::Minecart => self.parts.get_mut("side[5]").unwrap().rotation_point_y = 4.0 - p[2],
             ModelKind::Biped => self.pose_biped(p),
             ModelKind::Zombie | ModelKind::Skeleton => {
+                if self.kind == ModelKind::Skeleton { self.aimed_bow = true; }
                 self.pose_biped(p);
                 self.pose_zombie(p);
-                if self.kind == ModelKind::Skeleton {
-                    self.pose_skeleton(p[2]);
-                }
             }
             ModelKind::Quadruped | ModelKind::Pig | ModelKind::SheepFur | ModelKind::Sheep => {
                 self.pose_quadruped(p);
-                if self.kind == ModelKind::Pig {
-                    let h = self["head"].clone();
-                    let r = &mut self["field_35401_a"];
-                    r.rotation_point_x = h.rotation_point_x;
-                    r.rotation_point_y = h.rotation_point_y;
-                    r.rotation_point_z = h.rotation_point_z;
-                    r.rotate_angle_x = h.rotate_angle_x;
-                    r.rotate_angle_y = h.rotate_angle_y;
-                    r.rotate_angle_z = h.rotate_angle_z;
-                }
+
             }
             ModelKind::Cow => {
                 self.pose_quadruped(p);
-                self.pose_cow(p);
+
             }
             ModelKind::Chicken => self.pose_chicken(p),
             ModelKind::Spider => self.pose_spider(p),
@@ -548,19 +563,13 @@ impl Model {
         self.insert_part("head".into(), ModelRenderer::new(0, 0));
         self["head"].add_box(-4.0f32, -4.0f32, -6.0f32, 8, 8, 6, 0.0f32);
         self["head"].set_rotation_point(0.0f32, 4.0f32, -8.0f32);
-        self.insert_part("horn1".into(), ModelRenderer::new(22, 0));
-        self["horn1"].add_box(-4.0f32, -5.0f32, -4.0f32, 1, 3, 1, 0.0f32);
-        self["horn1"].set_rotation_point(0.0f32, 3.0f32, -7.0f32);
-        self.insert_part("horn2".into(), ModelRenderer::new(22, 0));
-        self["horn2"].add_box(3.0f32, -5.0f32, -4.0f32, 1, 3, 1, 0.0f32);
-        self["horn2"].set_rotation_point(0.0f32, 3.0f32, -7.0f32);
-        self.insert_part("udders".into(), ModelRenderer::new(52, 0));
-        self["udders"].add_box(-2.0f32, -3.0f32, 0.0f32, 4, 6, 2, 0.0f32);
-        self["udders"].set_rotation_point(0.0f32, 14.0f32, 6.0f32);
-        self["udders"].rotate_angle_x = PI_F32 * 0.5f32;
+        self["head"].set_texture_offset(22, 0).add_box(-5.0, -5.0, -4.0, 1, 3, 1, 0.0);
+        self["head"].set_texture_offset(22, 0).add_box(4.0, -5.0, -4.0, 1, 3, 1, 0.0);
         self.insert_part("body".into(), ModelRenderer::new(18, 4));
         self["body"].add_box(-6.0f32, -10.0f32, -7.0f32, 12, 18, 10, 0.0f32);
         self["body"].set_rotation_point(0.0f32, 5.0f32, 2.0f32);
+        self["body"].set_texture_offset(52, 0).add_box(-2.0, 2.0, -8.0, 4, 6, 1, 0.0);
+        self.child_head_z += 2.0;
         self["leg1"].rotation_point_x -= 1.0;
         self["leg2"].rotation_point_x += 1.0;
         self["leg1"].rotation_point_z += 0.0f32;
@@ -581,6 +590,8 @@ impl Model {
         self.insert_part("body".into(), ModelRenderer::new(28, 8));
         self["body"].add_box(-4.0f32, -10.0f32, -7.0f32, 8, 16, 6, 1.75f32);
         self["body"].set_rotation_point(0.0f32, 5.0f32, 2.0f32);
+        self["body"].set_texture_offset(52, 0).add_box(-2.0, 2.0, -8.0, 4, 6, 1, 0.0);
+        self.child_head_z += 2.0;
         let mut var1: f32 = 0.5f32;
         self.insert_part("leg1".into(), ModelRenderer::new(0, 16));
         self["leg1"].add_box(-2.0f32, 0.0f32, -2.0f32, 4, 6, 4, var1);
@@ -606,6 +617,8 @@ impl Model {
         self.insert_part("body".into(), ModelRenderer::new(28, 8));
         self["body"].add_box(-4.0f32, -10.0f32, -7.0f32, 8, 16, 6, 0.0f32);
         self["body"].set_rotation_point(0.0f32, 5.0f32, 2.0f32);
+        self["body"].set_texture_offset(52, 0).add_box(-2.0, 2.0, -8.0, 4, 6, 1, 0.0);
+        self.child_head_z += 2.0;
     }
 
     /// `ModelChicken` constructor.
@@ -751,15 +764,9 @@ impl Model {
         self.insert_part("wolfTail".into(), ModelRenderer::new(9, 18));
         self["wolfTail"].add_box(-1.0f32, 0.0f32, -1.0f32, 2, 8, 2, var1);
         self["wolfTail"].set_rotation_point(-1.0f32, 12.0f32, 8.0f32);
-        self.insert_part("wolfRightEar".into(), ModelRenderer::new(16, 14));
-        self["wolfRightEar"].add_box(-3.0f32, -5.0f32, 0.0f32, 2, 2, 1, var1);
-        self["wolfRightEar"].set_rotation_point(-1.0f32, var2, -7.0f32);
-        self.insert_part("wolfLeftEar".into(), ModelRenderer::new(16, 14));
-        self["wolfLeftEar"].add_box(1.0f32, -5.0f32, 0.0f32, 2, 2, 1, var1);
-        self["wolfLeftEar"].set_rotation_point(-1.0f32, var2, -7.0f32);
-        self.insert_part("wolfSnout".into(), ModelRenderer::new(0, 10));
-        self["wolfSnout"].add_box(-2.0f32, 0.0f32, -5.0f32, 3, 3, 4, var1);
-        self["wolfSnout"].set_rotation_point(-0.5f32, var2, -7.0f32);
+        self["wolfHeadMain"].set_texture_offset(16, 14).add_box(-3.0, -5.0, 0.0, 2, 2, 1, var1);
+        self["wolfHeadMain"].set_texture_offset(16, 14).add_box(1.0, -5.0, 0.0, 2, 2, 1, var1);
+        self["wolfHeadMain"].set_texture_offset(0, 10).add_box(-1.5, 0.0, -5.0, 3, 3, 4, var1);
     }
 
     /// `ModelBiped.setRotationAngles`.
@@ -789,14 +796,14 @@ impl Model {
             self["bipedLeftLeg"].rotate_angle_y = PI_F32 * -0.1f32;
         }
 
-        if self.held_left {
+        if self.held_left || self.held_left_pose != 0 {
             self["bipedLeftArm"].rotate_angle_x =
-                self["bipedLeftArm"].rotate_angle_x * 0.5f32 - PI_F32 * 0.1f32;
+                self["bipedLeftArm"].rotate_angle_x * 0.5f32 - PI_F32 * 0.1f32 * if self.held_left_pose != 0 { self.held_left_pose as f32 } else { 1.0 };
         }
 
-        if self.held_right {
+        if self.held_right || self.held_right_pose != 0 {
             self["bipedRightArm"].rotate_angle_x =
-                self["bipedRightArm"].rotate_angle_x * 0.5f32 - PI_F32 * 0.1f32;
+                self["bipedRightArm"].rotate_angle_x * 0.5f32 - PI_F32 * 0.1f32 * if self.held_right_pose != 0 { self.held_right_pose as f32 } else { 1.0 };
         }
 
         self["bipedRightArm"].rotate_angle_y = 0.0f32;
@@ -855,6 +862,7 @@ impl Model {
         self["bipedLeftArm"].rotate_angle_z -= math::cos(var3 * 0.09f32) * 0.05f32 + 0.05f32;
         self["bipedRightArm"].rotate_angle_x += math::sin(var3 * 0.067f32) * 0.05f32;
         self["bipedLeftArm"].rotate_angle_x -= math::sin(var3 * 0.067f32) * 0.05f32;
+        if self.aimed_bow { self.pose_skeleton(var3); }
     }
 
     /// `ModelZombie.setRotationAngles`.
@@ -895,14 +903,7 @@ impl Model {
 
     /// `ModelCow.setRotationAngles`.
     #[allow(unused_variables, unused_mut)]
-    fn pose_cow(&mut self, p: [f32; 6]) {
-        let [var1, var2, var3, var4, var5, var6] = p;
 
-        self["horn1"].rotate_angle_y = self["head"].rotate_angle_y;
-        self["horn1"].rotate_angle_x = self["head"].rotate_angle_x;
-        self["horn2"].rotate_angle_y = self["head"].rotate_angle_y;
-        self["horn2"].rotate_angle_x = self["head"].rotate_angle_x;
-    }
 
     /// `ModelChicken.setRotationAngles`.
     #[allow(unused_variables, unused_mut)]
@@ -998,12 +999,6 @@ impl Model {
 
         self["wolfHeadMain"].rotate_angle_x = var5 / (180.0f32 / PI_F32);
         self["wolfHeadMain"].rotate_angle_y = var4 / (180.0f32 / PI_F32);
-        self["wolfRightEar"].rotate_angle_y = self["wolfHeadMain"].rotate_angle_y;
-        self["wolfRightEar"].rotate_angle_x = self["wolfHeadMain"].rotate_angle_x;
-        self["wolfLeftEar"].rotate_angle_y = self["wolfHeadMain"].rotate_angle_y;
-        self["wolfLeftEar"].rotate_angle_x = self["wolfHeadMain"].rotate_angle_x;
-        self["wolfSnout"].rotate_angle_y = self["wolfHeadMain"].rotate_angle_y;
-        self["wolfSnout"].rotate_angle_x = self["wolfHeadMain"].rotate_angle_x;
         self["wolfTail"].rotate_angle_x = var3;
     }
 
@@ -1070,9 +1065,6 @@ impl Model {
 
         let var6: f32 = wolf.interested_angle(var4) + wolf.shake_angle(var4, 0.0f32);
         self["wolfHeadMain"].rotate_angle_z = var6;
-        self["wolfRightEar"].rotate_angle_z = var6;
-        self["wolfLeftEar"].rotate_angle_z = var6;
-        self["wolfSnout"].rotate_angle_z = var6;
         self["wolfMane"].rotate_angle_z = wolf.shake_angle(var4, -0.08f32);
         self["wolfBody"].rotate_angle_z = wolf.shake_angle(var4, -0.16f32);
         self["wolfTail"].rotate_angle_z = wolf.shake_angle(var4, -0.2f32);
@@ -1082,6 +1074,7 @@ impl Model {
         if matches!(self.kind, ModelKind::Minecart | ModelKind::Boat | ModelKind::Sign) {
             return self.registered.iter().map(|name| (&self.parts[name], false)).collect();
         }
+        if matches!(self.kind, ModelKind::Dragon | ModelKind::Villager | ModelKind::SnowMan | ModelKind::Blaze | ModelKind::MagmaCube | ModelKind::EnderCrystal | ModelKind::Book) { return self.release_parts(); }
         let names: &[(&str, bool)] = match self.kind {
             ModelKind::Biped | ModelKind::Zombie | ModelKind::Skeleton | ModelKind::Enderman => &[
                 ("bipedHead", false),
@@ -1148,9 +1141,6 @@ impl Model {
                 ("wolfLeg2", false),
                 ("wolfLeg3", false),
                 ("wolfLeg4", false),
-                ("wolfRightEar", true),
-                ("wolfLeftEar", true),
-                ("wolfSnout", true),
                 ("wolfTail", true),
                 ("wolfMane", false),
             ],
@@ -1160,20 +1150,12 @@ impl Model {
                 ("field_35403_b", false),
             ],
             ModelKind::Squid | ModelKind::Ghast | ModelKind::Silverfish
-                | ModelKind::Minecart | ModelKind::Boat | ModelKind::Sign => &[],
+                | ModelKind::Minecart | ModelKind::Boat | ModelKind::Sign | ModelKind::Dragon | ModelKind::Villager | ModelKind::SnowMan | ModelKind::Blaze | ModelKind::MagmaCube | ModelKind::EnderCrystal | ModelKind::Book => &[],
         };
         let mut parts: Vec<_> = names
             .iter()
             .filter_map(|(n, r)| self.parts.get(*n).map(|p| (p, *r)))
             .collect();
-        if self.kind == ModelKind::Pig {
-            parts.push((&self["field_35401_a"], false));
-        }
-        if self.kind == ModelKind::Cow {
-            for name in ["horn1", "horn2", "udders"] {
-                parts.push((&self[name], false));
-            }
-        }
         if self.kind == ModelKind::Squid {
             parts.push((&self["squidBody"], false));
             for i in 0..8 {

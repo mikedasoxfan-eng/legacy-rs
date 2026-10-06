@@ -215,7 +215,7 @@ impl Effects {
                         color: vs[i].color,
                     })
                     .to_vec();
-                batches.push(Batch {
+                batches.push(Batch { alpha_cutoff: 0.1, cull: 0,
                     texture: Some(if p.kind == Kind::LargeExplode { "misc/explosion.png" } else { "misc/footprint.png" }),
                     pass: Pass::Alpha,
                     vertices,

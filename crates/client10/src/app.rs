@@ -1214,6 +1214,8 @@ impl App {
                             gui.ui.world_saved = done;
                         }
                     }
+                    Ok(FromWorker::ReleaseTiles(books)) => {gpu.entities.books = books;}
+                    Ok(FromWorker::DragonCrystals(crystals)) => {gpu.entities.dragon_crystals = crystals.into_iter().map(|(id, position, rotation)| (id, (position, rotation))).collect();}
                     Ok(FromWorker::Signs(signs,chests,spawners)) => {gpu.entities.signs=signs;gpu.entities.chests=chests;gpu.entities.spawners=spawners;}
                     Ok(FromWorker::Mesh { cx, cz, opaque, translucent }) => {
                         gpu.upload_chunk(cx, cz, &opaque, &translucent);

@@ -441,6 +441,10 @@ pub fn run() {
         }
         return;
     }
+    if args.get(1).map(String::as_str) == Some("--release-modelshot") {
+        if let Err(e) = render::entity::shot::release_shot(std::path::Path::new(&args[2])) {eprintln!("{e}");std::process::exit(1);}
+        return;
+    }
     if args.get(1).map(String::as_str) == Some("--livingrenderercheck") {
         let ok =
             render::entity::object_check::living_check(args.get(2).expect("--livingrenderercheck oracle-living.bin"));
@@ -493,6 +497,36 @@ pub fn run() {
         let ok = render::entity::check::model_check(args.get(2).expect("--modelcheck oracle-models.bin"));
         println!("{}", if ok { "MODELS EXACT" } else { "MODELS DIFFER" });
         std::process::exit(if ok { 0 } else { 1 });
+    }
+    if args.get(1).map(String::as_str) == Some("--render-models10-check") {
+        std::process::exit(if render::entity::models_release_check::check(&args[2]) {0} else {1});
+    }
+    if args.get(1).map(String::as_str) == Some("--render-tiles10-check") {
+        std::process::exit(if render::entity::models_release_check::tile_check(&args[2]) {0} else {1});
+    }
+    if args.get(1).map(String::as_str) == Some("--render-effects10-check") {
+        std::process::exit(if render::entity::models_release_check::effects_check(&args[2]) {0} else {1});
+    }
+    if args.get(1).map(String::as_str) == Some("--render-living10-check") {
+        std::process::exit(if render::entity::models_release_check::living_check(&args[2]) {0} else {1});
+    }
+    if args.get(1).map(String::as_str) == Some("--render-dragonbeam10-check") {
+        std::process::exit(if render::entity::models_release_check::beam_check(&args[2]) {0} else {1});
+    }
+    if args.get(1).map(String::as_str) == Some("--render-dragon10-check") {
+        std::process::exit(if render::entity::models_release_check::dragon_check(&args[2]) {0} else {1});
+    }
+    if args.get(1).map(String::as_str) == Some("--render-boss10-check") {
+        std::process::exit(if render::entity::models_release_check::boss_check(&args[2]) {0} else {1});
+    }
+    if args.get(1).map(String::as_str) == Some("--render-registry10-check") {
+        std::process::exit(if render::entity::models_release_check::registry_check(&args[2]) {0} else {1});
+    }
+    if args.get(1).map(String::as_str) == Some("--render-geometry10-check") {
+        std::process::exit(if render::entity::models_release_check::geometry_check(&args[2]) {0} else {1});
+    }
+    if args.get(1).map(String::as_str) == Some("--render-modeldraw10-check") {
+        std::process::exit(if render::entity::models_release_check::draw_check(&args[2]) {0} else {1});
     }
     // `--statsfile write <dir> id=n,id=n...` writes <dir>/stats/stats_player_unsent.dat;
     // `--statsfile read <file>` prints the stats a file holds, sorted ("null" if rejected).

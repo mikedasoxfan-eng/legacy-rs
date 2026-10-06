@@ -233,6 +233,8 @@ pub enum Loading {
 
 pub enum FromWorker {
     MinecraftActions { actions:Vec<crate::minecraft_input::Action>, settings:crate::gui::settings::GameSettings, },
+    ReleaseTiles(Vec<crate::render::entity::render_release::BookTile>),
+    DragonCrystals(Vec<(i32, [f64; 3], i32)>),
     Signs(Vec<crate::render::sign::Snapshot>, Vec<crate::render::entity::chest::Tile>, Vec<crate::render::spawner::Snapshot>,),
     /// Ordered after old meshes, before meshes using the new settings.
     ResetMeshes,
@@ -730,7 +732,7 @@ fn run(opts: WorldOptions, mut col: Colorizers, mut video: VideoSettings, rx: Re
                         // drawn; snowballs, eggs, fireballs and bobbers override it with 4x.
                         use worldgen::entity::EntityKind as K;
                         let range = e.bounding_box.average_edge_length()
-                            * if matches!(e.kind, K::Fish(_) | K::Snowball(_) | K::Egg(_) | K::Fireball(_)) { 4.0 } else { 1.0 }
+                            * if matches!(e.kind, K::Fish(_) | K::Snowball(_) | K::Egg(_) | K::Fireball(_) | K::SmallFireball(_) | K::EnderPearl(_) | K::EnderEye(_) | K::Potion(..)) { 4.0 } else { 1.0 }
                             * 64.0;
                         dx * dx + dy * dy + dz * dz < range * range
                     })
@@ -794,6 +796,16 @@ fn run(opts: WorldOptions, mut col: Colorizers, mut video: VideoSettings, rx: Re
                 }
             }));
             let _ = tx.send(FromWorker::Entities(snapshot));
+            // A dragon can render while its healing crystal is outside the
+            // crystal's own draw range. Read the linked simulation object directly.
+            let crystals = world.loaded_entity_list.iter().filter_map(|id| {
+                let e = world.entities.get(id)?;
+                let worldgen::entity::EntityKind::Dragon(state) = &e.kind else {return None;};
+                let crystal_id = state.healing_crystal?;let crystal = world.entities.get(&crystal_id)?;
+                let worldgen::entity::EntityKind::EnderCrystal {rotation, ..} = crystal.kind else {return None;};
+                let p = crystal.pos;Some((crystal_id, [p.x, p.y, p.z], rotation))
+            }).collect();
+            let _ = tx.send(FromWorker::DragonCrystals(crystals));
             let mut pistons=Vec::new();
             for id in &world.loaded_tile_entities {
                 let object=&world.tile_objects[id];
@@ -845,6 +857,16 @@ fn run(opts: WorldOptions, mut col: Colorizers, mut video: VideoSettings, rx: Re
                 let (yaw,prev_yaw)=world.spawner_animations.get(&(x,y,z)).copied().unwrap_or((0.0,0.0));
                 spawners.push(crate::render::spawner::Snapshot{position:[x,y,z],mob,yaw,prev_yaw,light:world.packed_light181(x,y,z,0) as u32,});
             }
+            let mut books = Vec::new();
+            for id in world.loaded_tile_entities.iter().copied().filter(|id| !world.tile_objects[id].invalid).collect::<Vec<_>>() {
+                let (x,y,z) = world.tile_objects[&id].position;
+                let distance = (x as f64+0.5-cam.0).powi(2)+(y as f64+0.5-cam.1).powi(2)+(z as f64+0.5-cam.2).powi(2);
+                if distance >= 4096.0 {continue;}
+                let Some(worldgen::world::tile::TileEntity::EnchantmentTable(tile)) = world.tile_object(id) else {continue;};
+                let state = crate::render::entity::render_release::BookState::from(tile);
+                books.push(crate::render::entity::render_release::BookTile {position: [x,y,z], light: world.packed_light181(x,y,z,0) as u32, state});
+            }
+            let _ = tx.send(FromWorker::ReleaseTiles(books));
             let _=tx.send(FromWorker::Signs(signs,chests,spawners));
             if let Some(id) = player {
                 let events = world.take_player_events(id);

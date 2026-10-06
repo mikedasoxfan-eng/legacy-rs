@@ -92,6 +92,8 @@ impl Input {
                 })
                 .collect();
             js.push(Draw {
+                cull: 0,
+                alpha_cutoff: 0.1,
                 ops,
                 texture,
                 material,

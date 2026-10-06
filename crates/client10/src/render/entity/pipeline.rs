@@ -18,25 +18,36 @@ struct Uniforms {
 }
 
 struct Draw {
+    cull: u8,
     range: Range<u32>,
     texture: String,
     pass: Pass,
 }
 
+struct RasterPipelines {variants: [crate::render::color_mask::Pipelines; 3]}
+impl RasterPipelines {
+    fn new(mut create: impl FnMut(Option<wgpu::Face>) -> crate::render::color_mask::Pipelines) -> Self {
+        Self { variants: [create(None), create(Some(wgpu::Face::Front)), create(Some(wgpu::Face::Back))] }
+    }
+    fn get(&self, mask: usize, cull: u8) -> &wgpu::RenderPipeline {self.variants[cull as usize].get(mask)}
+}
+
 pub struct EntityPipeline {
     pub states: Vec<RenderState>,
-    line: crate::render::color_mask::Pipelines,
-    opaque: crate::render::color_mask::Pipelines,
-    alpha: crate::render::color_mask::Pipelines,
-    eyes: crate::render::color_mask::Pipelines,
-    eyes_overlay: crate::render::color_mask::Pipelines,
-    additive: crate::render::color_mask::Pipelines,
-    overlay: crate::render::color_mask::Pipelines,
-    shadow: crate::render::color_mask::Pipelines,
-    tnt_flash: crate::render::color_mask::Pipelines,
-    damage: crate::render::color_mask::Pipelines,
-    untested: crate::render::color_mask::Pipelines,
-    untested_alpha: crate::render::color_mask::Pipelines,
+    line: RasterPipelines,
+    opaque: RasterPipelines,
+    opaque_equal: RasterPipelines,
+    alpha: RasterPipelines,
+    eyes: RasterPipelines,
+    eyes_overlay: RasterPipelines,
+    additive: RasterPipelines,
+    rays: RasterPipelines,
+    overlay: RasterPipelines,
+    shadow: RasterPipelines,
+    tnt_flash: RasterPipelines,
+    damage: RasterPipelines,
+    untested: RasterPipelines,
+    untested_alpha: RasterPipelines,
     pub extra: Vec<Batch>,
     pub fog_override: Option<[f32; 3]>,
     pub fog_view: Mat4,
@@ -47,6 +58,8 @@ pub struct EntityPipeline {
     pub signs: Vec<crate::render::sign::Snapshot>,
     /// Batches whose vertices carry their own lightmap brightness (batch index, per vertex).
     vertex_lights: Vec<(usize, Vec<u32>)>,
+    pub books: Vec<super::render_release::BookTile>,
+    pub dragon_crystals: std::collections::HashMap<i32, ([f64; 3], i32)>,
     pub chests: Vec<super::chest::Tile>,
     pub spawners: Vec<crate::render::spawner::Snapshot>,
     pub partial: f32,
@@ -145,7 +158,7 @@ impl EntityPipeline {
             source: wgpu::ShaderSource::Wgsl(include_str!("shader.wgsl").into()),
         });
         let make = |label, blend, depth, fragment, write| {
-            crate::render::color_mask::Pipelines::new(|mask| device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
+            RasterPipelines::new(|cull| crate::render::color_mask::Pipelines::new(|mask| device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
                 label: Some(label),
                 layout: Some(&layout),
                 vertex: wgpu::VertexState {
@@ -159,13 +172,13 @@ impl EntityPipeline {
                             attributes: &wgpu::vertex_attr_array![0=>Float32x3,1=>Float32x2,2=>Float32x4],
                         }),
                         Some(wgpu::VertexBufferLayout {
-                            array_stride: 4,
+                            array_stride: 8,
                             step_mode: wgpu::VertexStepMode::Vertex,
-                            attributes: &wgpu::vertex_attr_array![3=>Uint32],
+                            attributes: &wgpu::vertex_attr_array![3=>Uint32,4=>Float32],
                         }),
                     ],
                 },
-                primitive: wgpu::PrimitiveState { topology: if label=="fishing line" {wgpu::PrimitiveTopology::LineStrip}else{wgpu::PrimitiveTopology::TriangleList}, cull_mode: None, ..Default::default() },
+                primitive: wgpu::PrimitiveState { topology: if label=="fishing line" {wgpu::PrimitiveTopology::LineStrip}else{wgpu::PrimitiveTopology::TriangleList}, cull_mode: cull, ..Default::default() },
                 depth_stencil: Some(wgpu::DepthStencilState {
                     format: wgpu::TextureFormat::Depth32Float,
                     depth_write_enabled: Some(write),
@@ -182,11 +195,12 @@ impl EntityPipeline {
                 }),
                 multiview_mask: None,
                 cache: None,
-            }))
+            })))
         };
         use wgpu::CompareFunction::{Equal, LessEqual};
         let line=make("fishing line",None,LessEqual,"fs_main",true);
         let opaque = make("entity opaque", None, LessEqual, "fs_test", true);
+        let opaque_equal = make("entity opaque equal", None, Equal, "fs_test", true);
         let alpha =
             make("entity translucent slime", Some(wgpu::BlendState::ALPHA_BLENDING), LessEqual, "fs_test", true);
         let eye_blend = wgpu::BlendState { color: wgpu::BlendComponent { src_factor: wgpu::BlendFactor::One, dst_factor: wgpu::BlendFactor::One, operation: wgpu::BlendOperation::Add }, alpha: wgpu::BlendComponent { src_factor: wgpu::BlendFactor::One, dst_factor: wgpu::BlendFactor::One, operation: wgpu::BlendOperation::Add } };
@@ -210,6 +224,10 @@ impl EntityPipeline {
             "fs_test",
             true,
         );
+        let rays = make("dragon death rays", Some(wgpu::BlendState {
+            color: wgpu::BlendComponent {src_factor: wgpu::BlendFactor::SrcAlpha, dst_factor: wgpu::BlendFactor::One, operation: wgpu::BlendOperation::Add},
+            alpha: wgpu::BlendComponent {src_factor: wgpu::BlendFactor::SrcAlpha, dst_factor: wgpu::BlendFactor::One, operation: wgpu::BlendOperation::Add},
+        }), LessEqual, "fs_main", false);
         let overlay = make("entity hurt/flash", Some(wgpu::BlendState::ALPHA_BLENDING), Equal, "fs_main", true);
         let shadow = make("entity shadow", Some(wgpu::BlendState::ALPHA_BLENDING), LessEqual, "fs_test", false);
         let tnt_flash = make(
@@ -372,7 +390,7 @@ impl EntityPipeline {
         });
         let lights = device.create_buffer(&wgpu::BufferDescriptor {
             label: Some("entity lights"),
-            size: 4,
+            size: 8,
             usage: wgpu::BufferUsages::VERTEX | wgpu::BufferUsages::COPY_DST,
             mapped_at_creation: false,
         });
@@ -392,6 +410,8 @@ impl EntityPipeline {
             third_person: false,
             signs: Vec::new(),
             vertex_lights: Vec::new(),
+            books: Vec::new(),
+            dragon_crystals: std::collections::HashMap::new(),
             chests: Vec::new(),
             spawners: Vec::new(),
             partial: 0.0,
@@ -402,10 +422,12 @@ impl EntityPipeline {
             tnt_flash,
             line,
             opaque,
+            opaque_equal,
             alpha,
             eyes,
             eyes_overlay,
             additive,
+            rays,
             overlay,
             uniforms,
             frame_bind,
@@ -532,6 +554,9 @@ impl EntityPipeline {
                                 let g=crate::render::painting::render(e,relative,&lights);batches.extend(g.draws.iter().map(|d|d.batch()));
                             }
                             if let Some(mut s) = super::bridge::render_state(e, self.partial, snapshot.brightness) {
+                                if let Some(crystal_id) = s.dragon.as_ref().and_then(|d| d.healing_crystal) {
+                                    s.dragon_crystal = self.dragon_crystals.get(&crystal_id).copied();
+                                }
                                 s.overlay_brightness = overlay_brightness;
                                 if s.kind == living::MobKind::Enderman && s.screaming { s.scream_jitter = [self.enderman_random.gaussian()*0.02,self.enderman_random.gaussian()*0.02]; }
                                 {
@@ -586,6 +611,13 @@ impl EntityPipeline {
             }));
         }
         lights.resize(batches.len(), NO_LIGHTMAP);
+        for tile in &self.books {
+            let relative = std::array::from_fn(|i| tile.position[i] as f64 - camera.to_array()[i]);
+            let g = super::render_release::book(tile.state, relative, self.partial);
+            let start = batches.len();batches.extend(g.draws.iter().map(|d| d.batch()));
+            lights.resize(batches.len(), tile.light);
+            debug_assert!(batches.len() >= start);
+        }
         batches.append(&mut self.extra);
         lights.resize(batches.len(), NO_LIGHTMAP);
         // Moving pistons: RenderBlocks geometry with per-vertex lightmap brightness.
@@ -674,16 +706,17 @@ impl EntityPipeline {
         );
         self.draws.clear();
         let mut all = Vec::new();
-        let mut light_of = Vec::new();
+        let mut light_of: Vec<[u32; 2]> = Vec::new();
         let mut per_vertex: std::collections::HashMap<usize, Vec<u32>> = std::mem::take(&mut self.vertex_lights).into_iter().collect();
         for (i, b) in batches.into_iter().enumerate() {
             let start = all.len() as u32;
             all.extend_from_slice(&b.vertices);
             match per_vertex.remove(&i) {
-                Some(l) if l.len() == b.vertices.len() => light_of.extend(l),
-                _ => light_of.resize(all.len(), batch_lights.get(i).copied().unwrap_or(NO_LIGHTMAP)),
+                Some(l) if l.len() == b.vertices.len() => light_of.extend(l.into_iter().map(|l| [l, b.alpha_cutoff.to_bits()])),
+                _ => light_of.resize(all.len(), [batch_lights.get(i).copied().unwrap_or(NO_LIGHTMAP), b.alpha_cutoff.to_bits()]),
             }
             self.draws.push(Draw {
+                cull: b.cull,
                 range: start..all.len() as u32,
                 texture: b.texture.unwrap_or("__white").into(),
                 pass: b.pass,
@@ -699,7 +732,7 @@ impl EntityPipeline {
             });
             self.lights = device.create_buffer(&wgpu::BufferDescriptor {
                 label: Some("entity lights"),
-                size: (self.capacity * 4) as u64,
+                size: (self.capacity * 8) as u64,
                 usage: wgpu::BufferUsages::VERTEX | wgpu::BufferUsages::COPY_DST,
                 mapped_at_creation: false,
             });
@@ -722,17 +755,19 @@ impl EntityPipeline {
             rp.set_pipeline((match d.pass {
                 Pass::Line => &self.line,
                 Pass::Opaque => &self.opaque,
+                Pass::OpaqueEqual => &self.opaque_equal,
                 Pass::Alpha => &self.alpha,
                 Pass::Eyes => &self.eyes,
                 Pass::EyesOverlay => &self.eyes_overlay,
                 Pass::Additive => &self.additive,
+                Pass::Rays => &self.rays,
                 Pass::Overlay => &self.overlay,
                 Pass::Shadow => &self.shadow,
                 Pass::TntFlash => &self.tnt_flash,
                 Pass::Damage => &self.damage,
                 Pass::Untested => &self.untested,
                 Pass::UntestedAlpha => &self.untested_alpha,
-            }).get(mask));
+            }).get(mask, d.cull));
             rp.set_bind_group(1, &self.textures[&d.texture], &[]);
             rp.draw(d.range.clone(), 0..1);
         }
