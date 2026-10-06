@@ -28,11 +28,11 @@
 <!-- b181-progress:start -->
 ## Beta 1.8.1 progress
 
-The port of **Minecraft Beta 1.8.1** (the Adventure Update) is complete, next to Beta 1.7.3
-(which stays exact). Run it with `beta.exe --mc b1.8.1`.
+The port of **Minecraft Beta 1.8.1** (the Adventure Update) is under way, next to the finished
+b1.7.3 (which stays exact). Run it with `beta.exe --mc b1.8.1`.
 
 ```
-Beta 1.8.1  ████████████████████████████████████████  100.0 %  (20,982 / 20,982 lines)
+Beta 1.8.1  ███████████████████████████████░░░░░░░░░  77.8 %  (16,323 / 20,982 lines)
 ```
 
 Exact, not estimated: the work is every class that b1.8.1 added or changed (compared
@@ -48,14 +48,14 @@ matching. Every other screen is compared with zero tolerance.
 | Area | Done | Lines | Classes |
 |---|---:|---:|---:|
 | World generation (biomes, rivers, villages, strongholds, mineshafts, ravines) | 100.0 % | 6,549 / 6,549 | 107 / 107 |
-| World, chunks, lighting, saves | 100.0 % | 2,494 / 2,494 | 49 / 49 |
-| Mobs and entities (Endermen, Silverfish, Cave Spiders, XP orbs, damage) | 100.0 % | 1,746 / 1,746 | 47 / 47 |
-| Player (hunger, sprinting, experience, creative) | 100.0 % | 947 / 947 | 11 / 11 |
-| Blocks and items (vines, stems, melons, panes, fence gates, food, bow) | 100.0 % | 2,320 / 2,320 | 80 / 80 |
+| World, chunks, lighting, saves | 44.2 % | 1,103 / 2,494 | 21 / 49 |
+| Mobs and entities (Endermen, Silverfish, Cave Spiders, XP orbs, damage) | 62.8 % | 1,096 / 1,746 | 25 / 47 |
+| Player (hunger, sprinting, experience, creative) | 91.7 % | 868 / 947 | 10 / 11 |
+| Blocks and items (vines, stems, melons, panes, fence gates, food, bow) | 14.4 % | 334 / 2,320 | 25 / 80 |
 | Screens and HUD (hunger/XP bars, creative inventory, new menus, stats) | 100.0 % | 1,787 / 1,787 | 66 / 66 |
-| Rendering (lightmap lighting, new block shapes, models, particles) | 100.0 % | 5,139 / 5,139 | 81 / 81 |
+| Rendering (lightmap lighting, new block shapes, models, particles) | 89.2 % | 4,586 / 5,139 | 54 / 81 |
 
-Oracle checks (`tools/verify181.sh`): **1067 of 1067** sections exact.
+Oracle checks (`tools/verify181.sh`): **1059 of 1067** sections exact.
 <!-- b181-progress:end -->
 
 <!-- r10-progress:start -->
