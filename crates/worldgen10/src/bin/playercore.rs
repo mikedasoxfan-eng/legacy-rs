@@ -1,11 +1,13 @@
 use std::io::{self, Write};
-use worldgen::{JavaRandom, nbt::{Compound, Tag}, entity::player::food::{FoodStats, FoodAction, Experience, PlayerCapabilities}};
+use worldgen::{
+    entity::player::food::{Experience, FoodAction, FoodStats, PlayerCapabilities}, nbt::{Compound, Tag},
+    JavaRandom,};
 fn int(w: &mut impl Write,v:i32)->io::Result<()> { w.write_all(&v.to_be_bytes()) }
 fn state(w:&mut impl Write,f:&FoodStats,health:i32,action:i32)->io::Result<()> {
     int(w,f.level)?;int(w,f.prev_level)?;int(w,f.tick_timer)?;w.write_all(&f.saturation.to_be_bytes())?;w.write_all(&f.exhaustion.to_be_bytes())?;int(w,health)?;int(w,action)?;w.write_all(&[f.needs_food() as u8])
 }
-fn tick(w:&mut impl Write,f:&mut FoodStats,difficulty:i32,health:&mut i32)->io::Result<()> {
-    let action=match f.tick(difficulty,*health) { FoodAction::None=>0,FoodAction::Heal=>{*health=(*health+1).min(20);1},FoodAction::Starve=>{*health-=1;2} };state(w,f,*health,action)
+fn tick(w:&mut impl Write,f:&mut FoodStats,difficulty:i32,health:&mut i32,)->io::Result<()> {
+    let action=match f.tick(difficulty,*health) { FoodAction::None=>0,FoodAction::Heal=>{*health=(*health+1).min(20);1}FoodAction::Starve=>{*health-=1;2} };state(w,f,*health,action)
 }
 fn main()->io::Result<()> {
     let path=std::env::args().nth(1).expect("playercore181 output.bin");
@@ -23,10 +25,11 @@ fn main()->io::Result<()> {
         tick(&mut out,&mut food,2,&mut health)?;
     }
     let mut xp=Experience::default();
-    for _ in 0..10000 { xp.add(random.next_int(200)-3);for value in [xp.points,xp.level,xp.total,xp.bar_cap()] { int(&mut out,value)?; } }
-    let mut c=PlayerCapabilities::default();out.write_all(&[c.disable_damage as u8,c.flying as u8,c.allow_flying as u8,c.creative as u8])?;
-    c.set_creative(true);out.write_all(&[c.disable_damage as u8,c.flying as u8,c.allow_flying as u8,c.creative as u8])?;
-    c.flying=true;c.set_creative(false);out.write_all(&[c.disable_damage as u8,c.flying as u8,c.allow_flying as u8,c.creative as u8])?;
+    for _ in 0..10000 { xp.add(random.next_int(200)-3);
+        out.write_all(&xp.points.to_be_bytes())?;for value in [xp.level,xp.total,xp.bar_cap()] { int(&mut out,value)?; } }
+    let mut c=PlayerCapabilities::default();out.write_all(&[c.disable_damage as u8,c.flying as u8,c.allow_flying as u8,c.creative as u8,])?;
+    c.set_creative(true);out.write_all(&[c.disable_damage as u8,c.flying as u8,c.allow_flying as u8,c.creative as u8,])?;
+    c.flying=true;c.set_creative(false);out.write_all(&[c.disable_damage as u8,c.flying as u8,c.allow_flying as u8,c.creative as u8,])?;
     for seed in [0i64,181,-1,i64::MIN,i64::MAX] { for mode in [0,1,2] { for features in [false,true] {
         let settings=worldgen::entity::player::food::WorldSettings::new(seed,mode,features);
         out.write_all(&settings.seed.to_be_bytes())?;int(&mut out,settings.game_mode)?;out.write_all(&[settings.map_features as u8])?;

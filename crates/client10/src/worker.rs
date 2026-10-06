@@ -15,7 +15,7 @@ use worldgen::world::server::PlayerManager;
 use worldgen::{BiomeSource, World};
 
 pub enum ToWorker {
-    EditSign { position:(i32,i32,i32), text:[String;4] },
+    EditSign { position:(i32,i32,i32), text:[String;4], },
     Camera {
         x: f64,
         y: f64,
@@ -29,10 +29,10 @@ pub enum ToWorker {
     QuickSave(i32),
     /// The player's keys and mouse since the last message (merged until the next tick).
     Input(InputFrame),
-    MinecraftEvents { settings:crate::gui::settings::GameSettings, events:crate::minecraft_input::Events, screen:bool, focused:bool },
+    MinecraftEvents { settings:crate::gui::settings::GameSettings, events:crate::minecraft_input::Events, screen:bool, focused:bool, },
     /// A completed window-side screen/focus callback acknowledges the logical
     /// state already changed by runTick on the worker.
-    MinecraftContext { screen:bool, focused:bool },
+    MinecraftContext { screen:bool, focused:bool, },
     MinecraftSettings(crate::gui::settings::GameSettings),
     /// `GuiGameOver` "Respawn".
     Respawn,
@@ -164,12 +164,12 @@ impl crate::minecraft_input::Host for MinecraftHost<'_> {
     fn action(&mut self, action:crate::minecraft_input::Action) {
         use crate::minecraft_input::Action;
         match action {
-            Action::Focus=>{self.focused=true;self.screen=false;*self.left_counter()=10000;},
+            Action::Focus=>{self.focused=true;self.screen=false;*self.left_counter()=10000;}
             Action::Menu|Action::Inventory|Action::Chat=>{
                 self.screen=true;
                 if self.focused {crate::gui::settings::KeyBinding::release_all();self.focused=false;}
-            },
-            _=>{},
+            }
+            _=>{}
         }
         self.actions.push(action);
     }
@@ -188,10 +188,11 @@ impl crate::minecraft_input::Host for MinecraftHost<'_> {
         for bit in 0..6 {if callbacks&(1<<bit)!=0 {self.clicks[bit]+=1;}}
         // Original block/entity callbacks can display a screen inside clickMouse.
         // Its key release affects the remaining press-count loops immediately.
-        if self.player.player_state().unwrap().events[before..].iter().any(|e|matches!(e,
+        if self.player.player_state().unwrap().events[before..].iter().any(|e| {matches!(e,
             worldgen::entity::player::PlayerEvent::OpenContainer{..}
             |worldgen::entity::player::PlayerEvent::OpenVehicleInventory{..}
-            |worldgen::entity::player::PlayerEvent::EditSign{..})) {
+            |worldgen::entity::player::PlayerEvent::EditSign{..})
+            }) {
             self.screen=true;
             if self.focused {crate::gui::settings::KeyBinding::release_all();self.focused=false;}
             self.actions.push(crate::minecraft_input::Action::Container);
@@ -207,16 +208,16 @@ impl crate::minecraft_input::Host for MinecraftHost<'_> {
 }
 
 fn minecraft_events(world:&mut World,id:i32,settings:&mut crate::gui::settings::GameSettings,
-    events:crate::minecraft_input::Events,screen:bool,focused:bool,paused:bool)->(Vec<crate::minecraft_input::Action>,bool,bool) {
+    events:crate::minecraft_input::Events,screen:bool,focused:bool,paused:bool,)->(Vec<crate::minecraft_input::Action>,bool,bool) {
     let Some(mut player)=world.entities.remove(&id) else {return (Vec::new(),screen,focused);};
     let mut controller=std::mem::take(&mut player.player_state_mut().unwrap().controller);
     if !paused {controller.update_for_mode(player.player_state().unwrap().capabilities.creative);}
     let target=player.mouse_over(world,1.0);
     let multiplayer=world.multiplayer_world;
     let mut host=MinecraftHost {world,player,controller,target,screen,focused,multiplayer,
-        allow_input:false,actions:Vec::new(),drops:0,clicks:[0;6]};
+        allow_input:false,actions:Vec::new(),drops:0,clicks:[0;6],};
     crate::minecraft_input::run_tick(settings,&mut host,events);
-    let states=["key.forward","key.back","key.left","key.right","key.jump","key.sneak"].map(|name|settings.binding_pressed(name));
+    let states=["key.forward","key.back","key.left","key.right","key.jump","key.sneak",].map(|name|settings.binding_pressed(name));
     host.player.set_player_input(worldgen::entity::player::PlayerInput {forward:states[0],back:states[1],left:states[2],right:states[3],jump:states[4],sneak:states[5],..Default::default()});
     host.player.player_state_mut().unwrap().controller=host.controller;
     host.world.entities.insert(id,host.player);
@@ -231,8 +232,8 @@ pub enum Loading {
 }
 
 pub enum FromWorker {
-    MinecraftActions { actions:Vec<crate::minecraft_input::Action>, settings:crate::gui::settings::GameSettings },
-    Signs(Vec<crate::render::sign::Snapshot>, Vec<crate::render::entity::chest::Tile>, Vec<crate::render::spawner::Snapshot>),
+    MinecraftActions { actions:Vec<crate::minecraft_input::Action>, settings:crate::gui::settings::GameSettings, },
+    Signs(Vec<crate::render::sign::Snapshot>, Vec<crate::render::entity::chest::Tile>, Vec<crate::render::spawner::Snapshot>,),
     /// Ordered after old meshes, before meshes using the new settings.
     ResetMeshes,
     Ready {
@@ -268,7 +269,7 @@ pub enum FromWorker {
     /// Entities near the camera after a tick, with `getEntityBrightness`.
     Entities(Vec<crate::render::entity::effects::Snapshot>),
     /// Moving tile geometry and block audio events, separate from entity snapshots.
-    BlockTiles { pistons:Vec<crate::render::pistons::Snapshot>,events:Vec<worldgen::world::notes::BlockEvent> },
+    BlockTiles { pistons:Vec<crate::render::pistons::Snapshot>,events:Vec<worldgen::world::notes::BlockEvent>, },
     /// `addChatMessageTranslate(key)` (e.g. "tile.bed.notValid" on respawn).
     Chat(String),
     /// A container window opened (inventory key or a block activation).
@@ -276,7 +277,7 @@ pub enum FromWorker {
     /// The open container's contents after a click or a tick.
     ContainerUpdate(worldgen::container::ContainerSnapshot),
     /// Ordered presentation callbacks and collision/light data for EntityFX.
-    Effects { events: Vec<worldgen::world::events::WorldEvent>, terrain: crate::render::weather::Snapshot },
+    Effects { events: Vec<worldgen::world::events::WorldEvent>, terrain: crate::render::weather::Snapshot, },
     /// The player after a tick: entity (positions, rotation), HUD state, events.
     Player {
         entity: Box<worldgen::entity::Entity>,
@@ -317,7 +318,7 @@ pub fn spawn(
     opts: WorldOptions,
     col: Colorizers,
     video: VideoSettings,
-) -> (Sender<ToWorker>, Receiver<FromWorker>, std::thread::JoinHandle<()>) {
+) -> (Sender<ToWorker>, Receiver<FromWorker>, std::thread::JoinHandle<()>,) {
     let (to_tx, to_rx) = mpsc::channel();
     let (from_tx, from_rx) = mpsc::channel();
     let h = std::thread::Builder::new()
@@ -347,7 +348,7 @@ pub(crate) fn window_axis(p: i32, wide: i32) -> Vec<i32> {
         .collect()
 }
 
-fn run(opts: WorldOptions, mut col: Colorizers, mut video: VideoSettings, rx: Receiver<ToWorker>, tx: Sender<FromWorker>) {
+fn run(opts: WorldOptions, mut col: Colorizers, mut video: VideoSettings, rx: Receiver<ToWorker>, tx: Sender<FromWorker>,) {
     let t = Instant::now();
     let mut last_progress = -2;
     let mut progress = |step: worldgen::scenario::LoadStep| {
@@ -376,7 +377,8 @@ fn run(opts: WorldOptions, mut col: Colorizers, mut video: VideoSettings, rx: Re
             worldgen::convert::convert_map_format(dir, &mut progress);
             // convertMapFormat restarts through startWorld with WorldSettings(0,0,true).
             open_seed=0;
-            open_settings=Some(worldgen::entity::player::food::WorldSettings {seed:0,game_mode:0,map_features:true});
+            open_settings=Some(worldgen::entity::player::food::WorldSettings {seed:0,game_mode:0,map_features:true,
+                hardcore: false,});
         }
     }
     progress(worldgen::scenario::LoadStep::Title("Switching level"));
@@ -445,7 +447,7 @@ fn run(opts: WorldOptions, mut col: Colorizers, mut video: VideoSettings, rx: Re
     // Singleplayer: the real player (Minecraft.changeWorld creates thePlayer).
     let player = if opts.server { None } else { Some(world.spawn_player("Player")) };
     if let Some(id) = player {
-        if let Some(e) = world.entities.get_mut(&id) { e.initialize_player_mode(worldgen::entity::player::controller::PlayerControllerSP::saved_world_is_creative(world.info.game_type)); }
+        if let Some(e) = world.entities.get_mut(&id) { e.initialize_player_mode(worldgen::entity::player::controller::PlayerControllerSP::saved_world_is_creative(world.info.game_type,),); }
     }
     let mut input = InputFrame::default();
     let mut minecraft_input_active = false;
@@ -456,7 +458,7 @@ fn run(opts: WorldOptions, mut col: Colorizers, mut video: VideoSettings, rx: Re
         Some(e) => (e.pos.x, e.pos.y, e.pos.z),
         None => start,
     };
-    let _ = tx.send(FromWorker::Ready { spawn: start, seed: world.seed, name: world.info.name.clone() });
+    let _ = tx.send(FromWorker::Ready { spawn: start, seed: world.seed, name: world.info.name.clone(), });
 
     let mut players = if opts.server {
         let mut pm = PlayerManager::new(opts.view_distance.clamp(3, 15));
@@ -530,20 +532,20 @@ fn run(opts: WorldOptions, mut col: Colorizers, mut video: VideoSettings, rx: Re
                     minecraft_context=Some((screen,focused));
                 }
                 Ok(ToWorker::MinecraftSettings(settings)) => {minecraft_settings=Some(settings);}
-                Ok(ToWorker::MinecraftEvents {settings,events,screen,focused}) => {
+                Ok(ToWorker::MinecraftEvents {settings,events,screen,focused,}) => {
                     if let Some(id)=player {
                         minecraft_input_active=true;
                         let settings=minecraft_settings.get_or_insert(settings);
                         let (screen,focused)=minecraft_context.unwrap_or((screen,focused));
-                        let (actions,screen,focused)=minecraft_events(&mut world,id,settings,events,screen,focused,paused);
+                        let (actions,screen,focused)=minecraft_events(&mut world,id,settings,events,screen,focused,paused,);
                         minecraft_context=Some((screen,focused));
-                        let policy=crate::minecraft_input::tick_policy(&mut join_player_counter,settings.difficulty,paused,world.multiplayer_world);
+                        let policy=crate::minecraft_input::tick_policy(&mut join_player_counter,settings.difficulty,paused,world.multiplayer_world,);
                         world.difficulty=policy.difficulty;
                         if policy.world {world.spawn_hostile_mobs=settings.difficulty>0;world.spawn_peaceful_mobs=true;}
                         if policy.join {
                             if let Some(e)=world.entities.get(&id) {let pos=e.pos;world.join_entity_in_surroundings(pos);}
                         }
-                        let _=tx.send(FromWorker::MinecraftActions {actions,settings:settings.clone()});
+                        let _=tx.send(FromWorker::MinecraftActions {actions,settings:settings.clone(),});
                     }
                 }
                 Ok(ToWorker::Container(command)) => {
@@ -562,7 +564,7 @@ fn run(opts: WorldOptions, mut col: Colorizers, mut video: VideoSettings, rx: Re
                         }
                     }
                 }
-                Ok(ToWorker::EditSign { position:(x,y,z), text }) => {
+                Ok(ToWorker::EditSign { position:(x,y,z), text, }) => {
                     if let Some(worldgen::world::tile::TileEntity::Sign(sign))=world.get_block_tile_entity(x,y,z) { sign.text=text; }
                     if let Some(c)=world.chunks.get_mut(&(x>>4,z>>4)) {c.modified=true;}
                 }
@@ -585,14 +587,14 @@ fn run(opts: WorldOptions, mut col: Colorizers, mut video: VideoSettings, rx: Re
                             let _ = tx.send(FromWorker::Chat(key.to_string()));
                         }
                         if let Some(e)=world.entities.get_mut(&old){e.initialize_player_mode(worldgen::entity::player::controller::PlayerControllerSP::saved_world_is_creative(world.info.game_type));}
-                        if let (Some((left,right)),Some(s))=(click_counters,world.entities.get_mut(&old).and_then(|e|e.player_state_mut())) {
+                        if let (Some((left,right)),Some(s))=(click_counters,world.entities.get_mut(&old).and_then(|e|e.player_state_mut()),) {
                             s.left_click_counter=left;s.right_click_delay=right;
                         }
                         life += 1;
                         if let Some(e) = world.entities.get(&old) {
                             cam = (e.pos.x, e.pos.y, e.pos.z);
                         }
-                        let _ = tx.send(FromWorker::Ready { spawn: cam, seed: world.seed, name: world.info.name.clone() });
+                        let _ = tx.send(FromWorker::Ready { spawn: cam, seed: world.seed, name: world.info.name.clone(), });
                     }
                 }
                 Ok(ToWorker::Pause(p)) => {
@@ -712,7 +714,7 @@ fn run(opts: WorldOptions, mut col: Colorizers, mut video: VideoSettings, rx: Re
                 crate::render::weather::Snapshot::default()
             };
             let brightness = entity_brightness(&mut world, cam);
-            let l = world.get_block_light_value(cam.0.floor() as i32, cam.1.floor() as i32, cam.2.floor() as i32);
+            let l = world.get_block_light_value(cam.0.floor() as i32, cam.1.floor() as i32, cam.2.floor() as i32,);
             let fog_brightness = world.light_brightness_table[l as usize];
             // Entities near the camera, with their brightness, for the renderer.
             let near: Vec<i32> = world
@@ -739,10 +741,10 @@ fn run(opts: WorldOptions, mut col: Colorizers, mut video: VideoSettings, rx: Re
                 let e = world.entities[&id].clone();
                 let b = living_brightness(&mut world, &e);
                 let biomes = RefCell::new(biome_source(&world));
-                let access = Access::new(&world, e.chunk_x, e.chunk_z, world.skylight_subtracted, &biomes);
+                let access = Access::new(&world, e.chunk_x, e.chunk_z, world.skylight_subtracted, &biomes,);
                 let fl = worldgen::math::floor_double;
                 let (x, y, z) = (fl(e.pos.x), fl(e.pos.y), fl(e.pos.z));
-                let ds = [[0, 0, 0], [0, -1, 0], [0, 1, 0], [0, 0, -1], [0, 0, 1], [-1, 0, 0], [1, 0, 0]];
+                let ds = [[0, 0, 0], [0, -1, 0], [0, 1, 0], [0, 0, -1], [0, 0, 1], [-1, 0, 0], [1, 0, 0],];
                 let falling_light = ds.map(|[dx, dy, dz]| {
                     world.light_brightness_table[access.light_value(x + dx, y + dy, z + dz) as usize]
                 });
@@ -767,11 +769,11 @@ fn run(opts: WorldOptions, mut col: Colorizers, mut video: VideoSettings, rx: Re
                     }
                 }
                 for xyz in crate::render::painting::light_positions(&e) {
-                    let [x,y,z]=xyz;surfaces.push(crate::render::entity::effects::Surface{xyz,block:0,brightness:world.light_brightness_table[access.light_value(x,y,z) as usize]});
+                    let [x,y,z]=xyz;surfaces.push(crate::render::entity::effects::Surface{xyz,block:0,brightness:world.light_brightness_table[access.light_value(x,y,z) as usize],});
                 }
                 snapshot.push(crate::render::entity::effects::Snapshot {
                     vehicle_rails: if matches!(e.kind,worldgen::entity::EntityKind::Minecart(..)) {
-                        Some(crate::render::entity::vehicles::RailSnapshot::capture(&e,|x,y,z|(access.block(x,y,z),access.meta(x,y,z))))
+                        Some(crate::render::entity::vehicles::RailSnapshot::capture(&e,|x,y,z|(access.block(x,y,z),access.meta(x,y,z)),))
                     } else {None},
                     light: Some(entity_light(&mut world, &e)),
                     entity: e,
@@ -782,13 +784,14 @@ fn run(opts: WorldOptions, mut col: Colorizers, mut video: VideoSettings, rx: Re
             }
             // Lightning lives in World.weatherEffects, separately from loadedEntityList.
             // Keep even inactive bolts so their next restrike uses the updated entity seed.
-            snapshot.extend(world.weather_effects.iter().map(|e| crate::render::entity::effects::Snapshot {
+            snapshot.extend(world.weather_effects.iter().map(|e| { crate::render::entity::effects::Snapshot {
                 entity: e.clone(),
                 brightness: 1.0,
                 light: None,
                 falling_light: [1.0; 7],
                 vehicle_rails: None,
                 surfaces: Vec::new(),
+                }
             }));
             let _ = tx.send(FromWorker::Entities(snapshot));
             let mut pistons=Vec::new();
@@ -800,19 +803,19 @@ fn run(opts: WorldOptions, mut col: Colorizers, mut video: VideoSettings, rx: Re
                     if (x as f64-cam.0).abs()>128.0 || (z as f64-cam.2).abs()>128.0 {continue;}
                     let mut access=Access::new(&world,x>>4,z>>4,world.skylight_subtracted,&biomes);
                     access.fancy=video.fancy;
-                    pistons.push(crate::render::pistons::Snapshot::new(&access,&col,video.ao,[x,y,z],p.clone()));
+                    pistons.push(crate::render::pistons::Snapshot::new(&access,&col,video.ao,[x,y,z],p.clone(),));
                 }
             }
-            let _=tx.send(FromWorker::BlockTiles {pistons,events:std::mem::take(&mut world.block_events)});
+            let _=tx.send(FromWorker::BlockTiles {pistons,events:std::mem::take(&mut world.block_events),});
             let mut signs=Vec::new();
             for (x,y,z) in world.loaded_tile_entities.iter().filter(|id| !world.tile_objects[id].invalid).map(|id| world.tile_objects[id].position).collect::<Vec<_>>() {
                 let d=(x as f64+0.5-cam.0).powi(2)+(y as f64+0.5-cam.1).powi(2)+(z as f64+0.5-cam.2).powi(2);
                 if d>=4096.0 {continue;}
-                let sign=match world.get_block_tile_entity(x,y,z) {Some(worldgen::world::tile::TileEntity::Sign(s))=>s.clone(),_=>continue};
+                let sign=match world.get_block_tile_entity(x,y,z) {Some(worldgen::world::tile::TileEntity::Sign(s))=>s.clone(),_=>continue,};
                 let block=world.get_block_id(x,y,z);let metadata=world.get_block_metadata(x,y,z);
                 // b1.8.1 TileEntityRenderer: colour 1, lightmap at the tile's packed brightness.
                 let light=world.packed_light181(x,y,z,0) as u32;
-                signs.push(crate::render::sign::Snapshot{position:[x,y,z],block,metadata,sign,brightness:1.0,light});
+                signs.push(crate::render::sign::Snapshot{position:[x,y,z],block,metadata,sign,brightness:1.0,light,});
             }
             // Chests are tile-entity models in b1.8.1 (TileEntityChestRenderer), not chunk geometry.
             let mut chests=Vec::new();
@@ -825,22 +828,22 @@ fn run(opts: WorldOptions, mut col: Colorizers, mut video: VideoSettings, rx: Re
                 // The renderer orients unset chests (BlockChest.func_35306_h) and finds neighbours.
                 if world.get_block_metadata(x,y,z)==0 {world.orient_chest181(x,y,z);}
                 world.check_chest_adjacency181(id);
-                let (metadata,light)=(world.get_block_metadata(x,y,z),world.packed_light181(x,y,z,0) as u32);
+                let (metadata,light)=(world.get_block_metadata(x,y,z),world.packed_light181(x,y,z,0) as u32,);
                 let a=&world.chest_animations[&id];
                 chests.push(crate::render::entity::chest::Tile{position:[x,y,z],metadata,
-                    adjacent:a.adjacent.map(|o|o.is_some()),lid:a.lid,prev_lid:a.previous_lid,light});
+                    adjacent:a.adjacent.map(|o|o.is_some()),lid:a.lid,prev_lid:a.previous_lid,light,});
             }
             // TileEntityMobSpawnerRenderer: the spinning mob, lit at the spawner.
             let mut spawners=Vec::new();
             let ids:Vec<_>=world.loaded_tile_entities.iter().copied().filter(|id| !world.tile_objects[id].invalid).collect();
             for id in ids {
-                let Some(worldgen::world::tile::TileEntity::MobSpawner{mob,..})=world.tile_object(id) else {continue};
+                let Some(worldgen::world::tile::TileEntity::MobSpawner{mob,..})=world.tile_object(id) else {continue;};
                 let mob=mob.clone();
                 let (x,y,z)=world.tile_objects[&id].position;
                 let d=(x as f64+0.5-cam.0).powi(2)+(y as f64+0.5-cam.1).powi(2)+(z as f64+0.5-cam.2).powi(2);
                 if d>=4096.0 {continue;}
                 let (yaw,prev_yaw)=world.spawner_animations.get(&(x,y,z)).copied().unwrap_or((0.0,0.0));
-                spawners.push(crate::render::spawner::Snapshot{position:[x,y,z],mob,yaw,prev_yaw,light:world.packed_light181(x,y,z,0) as u32});
+                spawners.push(crate::render::spawner::Snapshot{position:[x,y,z],mob,yaw,prev_yaw,light:world.packed_light181(x,y,z,0) as u32,});
             }
             let _=tx.send(FromWorker::Signs(signs,chests,spawners));
             if let Some(id) = player {
@@ -867,7 +870,7 @@ fn run(opts: WorldOptions, mut col: Colorizers, mut video: VideoSettings, rx: Re
                         if let Some(e) = world.entities.get(&id) {
                             cam = (e.pos.x, e.pos.y, e.pos.z);
                         }
-                        let _ = tx.send(FromWorker::Ready { spawn: cam, seed: world.seed, name: world.info.name.clone() });
+                        let _ = tx.send(FromWorker::Ready { spawn: cam, seed: world.seed, name: world.info.name.clone(), });
                     }
                 }
                 if let (Some(e), Some(hud)) = (world.entities.get(&id).cloned(), world.player_hud(id, 1.0)) {
@@ -888,7 +891,7 @@ fn run(opts: WorldOptions, mut col: Colorizers, mut video: VideoSettings, rx: Re
             // World effects: drain once after the player and world tick, before Time.
             let events = world.drain_events();
             let effect_terrain = weather_snapshot_radius(&mut world, cam, 20);
-            let _ = tx.send(FromWorker::Effects { events, terrain: effect_terrain });
+            let _ = tx.send(FromWorker::Effects { events, terrain: effect_terrain, });
             let chunks = world.chunks.len();
             let _ = tx.send(FromWorker::Time {
                 time: world.world_time,
@@ -975,7 +978,7 @@ fn run(opts: WorldOptions, mut col: Colorizers, mut video: VideoSettings, rx: Re
             let (opaque, translucent) = mesh_chunk(&world, cx, cz, sky_sub, &biomes, &col, video);
             meshed.insert((cx, cz), version);
             did_work = true;
-            if tx.send(FromWorker::Mesh { cx, cz, opaque, translucent }).is_err() {
+            if tx.send(FromWorker::Mesh { cx, cz, opaque, translucent, }).is_err() {
                 return;
             }
         }
@@ -1048,17 +1051,17 @@ pub fn mesh_chunk(
 }
 
 /// World.getLightBrightness uses World (y>=128 clamps to 127), not ChunkCache.
-pub fn weather_snapshot(world: &mut World, cam: (f64, f64, f64)) -> crate::render::weather::Snapshot {
+pub fn weather_snapshot(world: &mut World, cam: (f64, f64, f64),) -> crate::render::weather::Snapshot {
     weather_snapshot_radius(world, cam, 10)
 }
 
-fn weather_snapshot_radius(world: &mut World, cam: (f64, f64, f64), radius: i32) -> crate::render::weather::Snapshot {
+fn weather_snapshot_radius(world: &mut World, cam: (f64, f64, f64), radius: i32,) -> crate::render::weather::Snapshot {
     use crate::render::weather::{Column, Snapshot};
-    let (cx, cz) = (worldgen::math::floor_double(cam.0), worldgen::math::floor_double(cam.2));
+    let (cx, cz) = (worldgen::math::floor_double(cam.0), worldgen::math::floor_double(cam.2),);
     // The Nether's single hell biome has no rain or snow.
     let mut bs = biome_source(world);
     let mut biomes = Vec::new();
-    bs.biomes(&mut biomes, cx - radius, cz - radius, radius * 2 + 1, radius * 2 + 1);
+    bs.biomes(&mut biomes, cx - radius, cz - radius, radius * 2 + 1, radius * 2 + 1,);
     let mut columns = Vec::with_capacity(((radius * 2 + 1) * (radius * 2 + 1)) as usize);
     for x in cx - radius..=cx + radius {
         for z in cz - radius..=cz + radius {

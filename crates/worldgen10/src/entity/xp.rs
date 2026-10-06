@@ -35,7 +35,7 @@ pub fn texture_index(value: i32) -> i32 {
 }
 impl Entity {
     pub fn xp_orb_base(w: &mut World) -> Self {
-        let phase = (w.math_random.next_double() * std::f64::consts::PI * 2.0) as f32;
+        let phase = 0.0;
         let mut e = Self::base(
             w,
             EntityKind::XPOrb(XPOrbState {
@@ -143,11 +143,11 @@ impl Entity {
         let Some(p) = player.player_state_mut() else {
             return;
         };
-        if s.pickup_delay == 0 && p.xp_pickup_cooldown == 0 {
+        if !w.multiplayer_world && s.pickup_delay == 0 && p.xp_pickup_cooldown == 0 {
             p.xp_pickup_cooldown = 2;
             let value = s.value;
-            let pitch = 0.5 * ((self.rand.next_float() - self.rand.next_float()) * 0.7 + 1.0);
-            w.play_sound_at_entity(self, "random.pop", 0.2, pitch);
+            let pitch = 0.5 * ((self.rand.next_float() - self.rand.next_float()) * 0.7 + 1.8);
+            w.play_sound_at_entity(self, "random.orb", 0.1, pitch);
             if let Some(p) = player.player_state_mut() {
                 p.events.push(super::player::PlayerEvent::Pickup {
                     entity: self.entity_id,

@@ -15,7 +15,8 @@ pub fn finish_spawn_identity_replay181() {
     });
 }
 fn replay_spawn_identity181() -> Option<i32> {
-    REPLAY_SPAWN_IDENTITIES.with(|stream| stream.borrow_mut().as_mut().map(|s| s.next().expect("spawning identity stream exhausted")))
+    REPLAY_SPAWN_IDENTITIES.with(|stream| { stream.borrow_mut().as_mut().map(|s| s.next().expect("spawning identity stream exhausted"))
+    })
 }
 pub(crate) fn spawn_identity(x: i32, z: i32) -> i32 {
     ((((x as u32 & 0x7fff) << 16 | (z as u32 & 0xffff)).wrapping_add(1) & 0x7fffffff) as i32).max(1)
@@ -27,7 +28,10 @@ impl Entity {
             floor(self.bounding_box.min_y),
             floor(self.pos.z),
         );
-        if let EntityKind::Slime { size, .. } = self.kind {
+        if matches!(self.kind, EntityKind::MagmaCube { .. }) {
+            return w.difficulty > 0 && self.base_spawn_check(w);
+        }
+        if let EntityKind::Slime { size, .. } | EntityKind::MagmaCube { size, .. } = self.kind {
             let cx = x >> 4;
             let cz = z >> 4;
             let seed = w
@@ -40,10 +44,13 @@ impl Entity {
             return (size == 1 || w.difficulty > 0)
                 && self.rand.next_int(10) == 0
                 && JavaRandom::new(seed).next_int(10) == 0
-                && self.pos.y < 16.0;
+                && self.pos.y < 40.0
+                && self.base_spawn_check(w);
         }
         if matches!(self.kind, EntityKind::Squid(..)) {
-            return w.check_if_aabb_is_clear(self.bounding_box);
+            return self.pos.y > 45.0
+                && self.pos.y < 63.0
+                && w.check_if_aabb_is_clear(self.bounding_box);
         }
         if matches!(self.kind, EntityKind::Ghast(..)) {
             if self.rand.next_int(20) != 0 {
@@ -54,7 +61,10 @@ impl Entity {
         if matches!(self.kind, EntityKind::PigZombie { .. }) {
             return w.difficulty > 0 && self.base_spawn_check(w);
         }
-        if self.kind.is_mob() {
+        if self.kind.is_mob()
+            && !matches!(
+                self.kind,
+                EntityKind::Blaze(..) | EntityKind::Silverfish { .. }) {
             if w.get_saved_light_value(crate::world::chunk::LightKind::Sky, x, y, z)
                 > self.rand.next_int(32)
             {
@@ -70,11 +80,13 @@ impl Entity {
             if light > self.rand.next_int(8) {
                 return false;
             }
-        } else if w.get_block_id(x, y - 1, z) != GRASS || w.get_full_block_light_value(x, y, z) <= 8
+        } else if self.kind.is_animal() && (w.get_block_id(x, y - 1, z) != GRASS || w.get_full_block_light_value(x, y, z) <= 8)
         {
             return false;
         }
         self.base_spawn_check(w) && self.block_path_weight(w, x, y, z) >= 0.0
+            && (!matches!(self.kind, EntityKind::Silverfish { .. })
+                || w.closest_player(self.pos, 5.0).is_none())
     }
     fn base_spawn_check(&self, w: &mut World) -> bool {
         w.check_if_aabb_is_clear(self.bounding_box)
@@ -94,14 +106,23 @@ impl Entity {
 pub fn spawn_list181(biome: i32, category: i32) -> Vec<(&'static str, i32, i32, i32)> {
     if biome == 8 {
         return if category == 0 {
-            vec![("Ghast", 10, 4, 4), ("PigZombie", 10, 4, 4)]
+            vec![("Ghast", 50, 4, 4), ("PigZombie", 100, 4, 4),
+                ("LavaSlime", 1, 4, 4),
+            ]
         } else {
             vec![]
         };
     }
     if biome == 9 {
+        return if category == 0 {
+            vec![("Enderman", 10, 4, 4)]
+        } else {
+            vec![]
+        };
+    }
+    if biome == 14 {
         return if category == 1 {
-            vec![("Chicken", 10, 4, 4)]
+            vec![("MushroomCow", 8, 4, 8)]
         } else {
             vec![]
         };
@@ -113,7 +134,7 @@ pub fn spawn_list181(biome: i32, category: i32) -> Vec<(&'static str, i32, i32, 
             ("Skeleton", 10, 4, 4),
             ("Creeper", 10, 4, 4),
             ("Slime", 10, 4, 4),
-            ("Enderman", 2, 4, 4),
+            ("Enderman", 1, 1, 4),
         ],
         1 => {
             if matches!(biome, 0 | 2 | 7) {
@@ -144,7 +165,7 @@ fn spawn_list(biome: Biome, category: i32) -> Vec<(&'static str, i32)> {
         .collect()
 }
 fn category(kind: &EntityKind) -> i32 {
-    if kind.is_mob() || matches!(kind, EntityKind::Slime { .. } | EntityKind::Ghast(..)) {
+    if kind.is_mob() || matches!(kind, EntityKind::Slime { .. } | EntityKind::MagmaCube { .. } | EntityKind::Ghast(..)) {
         0
     } else if matches!(kind, EntityKind::Squid(..)) {
         2
@@ -153,6 +174,7 @@ fn category(kind: &EntityKind) -> i32 {
         EntityKind::Pig { .. }
             | EntityKind::Sheep { .. }
             | EntityKind::Cow
+            | EntityKind::Mooshroom
             | EntityKind::Chicken { .. }
             | EntityKind::Wolf(..)
     ) {
@@ -180,12 +202,16 @@ impl World {
         }
         let mut eligible = std::mem::take(&mut self.spawn_eligible_chunks);
         eligible.clear();
+        let mut interior = std::collections::HashSet::new();
         for &(x, _, z) in &self.players {
             let cx = floor(x / 16.0);
             let cz = floor(z / 16.0);
             for dx in -8..=8 {
                 for dz in -8..=8 {
                     let key = (cx + dx, cz + dz);
+                    if dx != -8 && dx != 8 && dz != -8 && dz != 8 {
+                        interior.insert(key);
+                    }
                     eligible.insert_with_identity(key.0 ^ key.1, identity(key.0, key.1), key);
                 }
             }
@@ -210,20 +236,8 @@ impl World {
                 continue;
             }
             'chunks: for (cx, cz) in eligible.iter() {
-                let biome = self.terrain.biome_source.biome_at(cx << 4, cz << 4);
-                let list = spawn_list(biome, cat);
-                if list.is_empty() {
+                if !interior.contains(&(cx, cz)) {
                     continue;
-                }
-                let sum = list.iter().map(|(_, n)| *n).sum();
-                let mut pick = self.rand.next_int(sum);
-                let mut name = list[0].0;
-                for &(id, weight) in &list {
-                    pick -= weight;
-                    if pick < 0 {
-                        name = id;
-                        break;
-                    }
                 }
                 let x = cx * 16 + self.rand.next_int(16);
                 let y = self.rand.next_int(128);
@@ -236,6 +250,7 @@ impl World {
                 }
                 let mut spawned = 0;
                 for _ in 0..3 {
+                    let mut selected = None;
                     let (mut px, mut py, mut pz) = (x, y, z);
                     for _ in 0..4 {
                         px += self.rand.next_int(6) - self.rand.next_int(6);
@@ -264,6 +279,23 @@ impl World {
                         if dx * dx + dy * dy + dz * dz < 576.0 {
                             continue;
                         }
+                        if selected.is_none() {
+                            let biome = self.terrain.biome_source.biome_at(px, pz);
+                            let list = spawn_list(biome, cat);
+                            if list.is_empty() {
+                                break;
+                            }
+                            let sum = list.iter().map(|(_, weight)| *weight).sum();
+                            let mut pick = self.rand.next_int(sum);
+                            for &(name, weight) in &list {
+                                pick -= weight;
+                                if pick < 0 {
+                                    selected = Some(name);
+                                    break;
+                                }
+                            }
+                        }
+                        let name = selected.unwrap();
                         let mut e = Entity::living(self, name).unwrap();
                         e.set_location_and_angles(
                             pos.x,
@@ -617,5 +649,18 @@ impl World {
             && !self.is_block_normal_cube(x, y, z)
             && !crate::block::mat(self.get_block_material(x, y, z)).is_liquid
             && !self.is_block_normal_cube(x, y + 1, z)
+    }
+}
+
+#[cfg(test)]
+mod release_tests {
+    #[test]
+    fn new_creatures_and_darkness_overrides_do_not_require_grass() {
+        let mut world=super::super::verify181::world();
+        for name in ["Blaze","Silverfish","SnowMan","Villager"] {
+            let mut entity=super::Entity::living(&mut world,name).unwrap();
+            entity.set_position(8.0,64.0,8.0);
+            assert!(entity.get_can_spawn_here(&mut world),"{name}");
+        }
     }
 }

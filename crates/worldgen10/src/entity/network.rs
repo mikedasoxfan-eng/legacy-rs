@@ -25,6 +25,20 @@ impl Entity {
             return;
         }
         self.motion = Vec3D::new(x, y, z);
+        if matches!(
+            self.kind,
+            EntityKind::Snowball(..)
+                | EntityKind::Egg(..)
+                | EntityKind::EnderPearl(..)
+                | EntityKind::Potion(..)
+                | EntityKind::EnderEye(..)
+        ) && self.prev_pitch == 0.0
+            && self.prev_yaw == 0.0
+        {
+            self.projectile_angles();
+            self.prev_pitch = self.pitch;
+            self.prev_yaw = self.yaw;
+        }
         if matches!(self.kind, EntityKind::Boat(..) | EntityKind::Minecart(..)) {
             self.network.velocity = self.motion;
         }

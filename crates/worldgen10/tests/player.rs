@@ -1,3 +1,4 @@
+mod support;
 use worldgen::{
     entity::{
         player::{ItemStack, PlayerEvent, PlayerInput, PlayerTarget, PlayerTickInput},
@@ -120,7 +121,10 @@ fn level_dat_roundtrip_keeps_player_out_of_chunk_entities() {
     drop(w);
     let mut storage = Storage::open(&dir).unwrap();
     let info = storage.load_level().unwrap();
-    assert_eq!(info.player.as_ref().unwrap(), &expected);
+    assert_eq!(
+        support::canonical(info.player.as_ref().unwrap()),
+        support::canonical(&expected)
+    );
     assert!(storage.load_chunk(0, 0).unwrap().raw_entities.is_empty());
     let mut w = flat_world();
     w.info = info;

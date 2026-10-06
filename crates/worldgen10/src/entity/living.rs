@@ -12,6 +12,13 @@ pub enum Target {
 #[derive(Clone, Debug)]
 pub struct LivingState {
     pub effects: Vec<super::potion::PotionEffect>,
+    pub effects_changed: bool,
+    pub damage_remainder: i32,
+    pub jump_delay: i32,
+    pub growing_age: i32,
+    pub slime_squish: f32,
+    pub in_love: i32,
+    pub breeding_ticks: i32,
     pub effect_capacity: usize,
     pub flee_ticks: i32,
     pub experience_value: i32,
@@ -64,6 +71,13 @@ impl Default for LivingState {
     fn default() -> Self {
         Self {
             effects: Vec::new(),
+            effects_changed: true,
+            damage_remainder: 0,
+            jump_delay: 0,
+            growing_age: 0,
+            slime_squish: 0.0,
+            in_love: 0,
+            breeding_ticks: 0,
             effect_capacity: 16,
             flee_ticks: 0,
             experience_value: 0,
@@ -117,6 +131,7 @@ impl Default for LivingState {
 impl Entity {
     pub fn living(w: &mut World, name: &str) -> Option<Self> {
         let kind = match name {
+            "EnderDragon" => EntityKind::Dragon(Box::default()),
             "Player" => EntityKind::Player(Box::default()),
             "Pig" => EntityKind::Pig { saddled: false },
             "Sheep" => EntityKind::Sheep {
@@ -124,6 +139,10 @@ impl Entity {
                 fleece_color: 0,
             },
             "Cow" => EntityKind::Cow,
+            "MushroomCow" => EntityKind::Mooshroom,
+            "Blaze" => EntityKind::Blaze(Default::default()),
+            "SnowMan" => EntityKind::Snowman,
+            "Villager" => EntityKind::Villager { profession: 0 },
             "Chicken" => EntityKind::Chicken {
                 flap: 0.0,
                 prev_flap: 0.0,
@@ -152,6 +171,12 @@ impl Entity {
                 powered: false,
             },
             "Squid" => EntityKind::Squid(Default::default()),
+            "LavaSlime" => EntityKind::MagmaCube {
+                size: 1,
+                squish: 0.0,
+                prev_squish: 0.0,
+                jump_delay: 0,
+            },
             "Slime" => EntityKind::Slime {
                 size: 1,
                 squish: 0.0,
@@ -169,12 +194,16 @@ impl Entity {
         e.living.random_animation = w.math_random.next_double() as f32 * 12398.0;
         e.yaw = (w.math_random.next_double() * math::PI_F32 as f64 * 2.0) as f32;
         e.step_height = 0.5;
+        e.living.health = e.max_health();
+        if matches!(e.kind, EntityKind::Dragon(..)) {
+            e.init_dragon(w);
+        }
         match &mut e.kind {
             EntityKind::Pig { .. } => {
                 e.width = 0.9;
                 e.height = 0.9;
             }
-            EntityKind::Sheep { .. } | EntityKind::Cow => {
+            EntityKind::Sheep { .. } | EntityKind::Cow | EntityKind::Mooshroom => {
                 e.width = 0.9;
                 e.height = 1.3;
             }
@@ -187,10 +216,20 @@ impl Entity {
             _ => {}
         }
         if e.kind.is_mob() {
-            e.living.health = 20;
             e.living.experience_value = 5;
         }
         match &mut e.kind {
+            EntityKind::Blaze(..) => {
+                e.immune_to_fire = true;
+                e.living.experience_value = 10;
+            }
+            EntityKind::Snowman => {
+                e.width = 0.4;
+                e.height = 1.8;
+            }
+            EntityKind::Villager { .. } => {
+                e.living.move_speed = 0.5;
+            }
             EntityKind::Ghast(..) => {
                 e.width = 4.0;
                 e.height = 4.0;
@@ -215,7 +254,7 @@ impl Entity {
             }
             EntityKind::Giant => {
                 e.living.move_speed = 0.5;
-                e.living.health *= 10;
+                e.living.health= 100;
                 e.y_offset *= 6.0;
                 e.width *= 6.0;
                 e.height *= 6.0;
@@ -225,7 +264,7 @@ impl Entity {
                 e.height = 0.95;
                 s.rotation_speed = 1.0 / (e.rand.next_float() + 1.0) * 0.2;
             }
-            EntityKind::Slime { jump_delay, .. } => {
+            EntityKind::Slime { jump_delay, .. } | EntityKind::MagmaCube { jump_delay, .. } => {
                 let size = 1 << e.rand.next_int(3);
                 e.y_offset = 0.0;
                 *jump_delay = e.rand.next_int(20) + 10;
@@ -249,8 +288,13 @@ impl Entity {
                 e.height = 0.7;
                 e.living.move_speed = 0.6;
             }
-            EntityKind::Slime { size, .. } => e.living.experience_value = size,
+            EntityKind::Slime { size, .. } | EntityKind::MagmaCube { size, .. } => { e.living.experience_value = size
+            }
             _ => {}
+        }
+        if matches!(e.kind, EntityKind::MagmaCube { .. }) {
+            e.immune_to_fire = true;
+            e.living.ground_acceleration = 0.2;
         }
         Some(e)
     }
@@ -284,9 +328,9 @@ impl Entity {
             return false;
         }
         for i in 0..8 {
-            let x = ((i % 2) as f32 - 0.5) * self.width * 0.9;
+            let x = ((i % 2) as f32 - 0.5) * self.width * 0.8;
             let y = (((i / 2) % 2) as f32 - 0.5) * 0.1;
-            let z = (((i / 4) % 2) as f32 - 0.5) * self.width * 0.9;
+            let z = (((i / 4) % 2) as f32 - 0.5) * self.width * 0.8;
             if w.is_block_normal_cube(
                 floor(self.pos.x + x as f64),
                 floor(self.pos.y + self.eye_height() as f64 + y as f64),
@@ -306,14 +350,16 @@ impl Entity {
             self.living.living_sound_time = if self.kind.is_mob()
                 || matches!(
                     self.kind,
-                    EntityKind::Slime { .. } | EntityKind::Ghast(..) | EntityKind::Player(..)
+                    EntityKind::Dragon(..)
+                        | EntityKind::Slime { .. }
+                        | EntityKind::MagmaCube { .. } | EntityKind::Ghast(..) | EntityKind::Player(..)
                 ) {
                 -80
             } else {
                 -120
             };
             if let Some(name) = self.living_sound() {
-                let pitch = (self.rand.next_float() - self.rand.next_float()) * 0.2 + 1.0;
+                let pitch =self.living_sound_pitch();
                 w.play_sound_at_entity(self, name, self.sound_volume(), pitch);
             }
         }
@@ -333,9 +379,9 @@ impl Entity {
             && !matches!(self.kind, EntityKind::Squid(..))
             && self.potion_effect(super::potion::WATER_BREATHING).is_none()
         {
-            self.air -= 1;
+            self.set_air(self.air - 1);
             if self.air == -20 {
-                self.air = 0;
+                self.set_air( 0);
                 for _ in 0..8 {
                     let x = self.rand.next_float() - self.rand.next_float();
                     let y = self.rand.next_float() - self.rand.next_float();
@@ -354,7 +400,7 @@ impl Entity {
             }
             self.fire = 0;
         } else {
-            self.air = self.max_air;
+            self.set_air(300);
         }
         if self.living.attack_time > 0 {
             self.living.attack_time -= 1;
@@ -366,11 +412,17 @@ impl Entity {
             self.living.hearts_life -= 1;
         }
         if self.living.health <= 0 {
+            if matches!(self.kind, EntityKind::Dragon(..)) {
+                self.dragon_death_update(w);
+            } else {
             self.living.death_time += 1;
-            if self.living.death_time > 20 {
-                if self.living.recently_hit > 0 || self.player_state().is_some() {
+            if self.living.death_time == 20 {
+                if !w.multiplayer_world
+                        && !self.is_child()
+                        && ( self.living.recently_hit > 0 || self.player_state().is_some()) {
                     let mut xp = if let Some(p) = self.player_state() {
-                        p.experience.total >> 1
+                            (
+                        p.experience.level * 7).min(100)
                     } else if matches!(
                         self.kind,
                         EntityKind::Pig { .. }
@@ -393,6 +445,7 @@ impl Entity {
                 }
                 self.set_dead(w);
                 self.death_particles(w);
+                }
             }
         }
         if self.living.recently_hit > 0 {
@@ -434,12 +487,23 @@ impl Entity {
     pub(super) fn update_living(&mut self, w: &mut World) {
         let was_on_ground = self.on_ground;
         if let EntityKind::Slime {
+            size,
+            squish,
+            prev_squish,
+            ..
+        }
+        | EntityKind::MagmaCube {
+            size,
             squish,
             prev_squish,
             ..
         } = &mut self.kind
         {
-            *prev_squish = *squish;
+            if !w.multiplayer_world && w.difficulty == 0 && *size > 0 {
+                self.dead = true;
+            }
+            self.living.slime_squish += (*squish - self.living.slime_squish) * 0.5;
+            *prev_squish = self.living.slime_squish;
         }
         self.living_entity_update(w);
         if self.living.arrows_stuck > 0 {
@@ -511,10 +575,18 @@ impl Entity {
         self.slime_after_update(w, was_on_ground);
     }
     pub(super) fn living_update(&mut self, w: &mut World) {
+        if matches!(self.kind, EntityKind::Dragon(..)) {
+            self.dragon_living_update(w);
+            return;
+        }
+        if self.living.jump_delay > 0 {
+            self.living.jump_delay -= 1;
+        }
         self.interpolate_network(w, true);
         if matches!(self.kind, EntityKind::Player(..)) {
             self.player_before_living(w);
         }
+        self.blaze_before_living(w);
         self.enderman_before_living(w);
         self.mob_before_living(w);
         if self.living.health <= 0 || self.player_state().is_some_and(|s| s.sleeping) {
@@ -527,7 +599,8 @@ impl Entity {
                 EntityKind::Player(..) => self.player_action(),
                 EntityKind::Ghast(..) => self.ghast_action(w),
                 EntityKind::Squid(..) => self.squid_action_state(w),
-                EntityKind::Slime { .. } => self.slime_action_state(w),
+                EntityKind::Slime { .. } | EntityKind::MagmaCube { .. } => { self.slime_action_state(w)
+                }
                 _ => {
                     self.creature_action_state(w);
                     self.silverfish_after_action(w);
@@ -542,12 +615,22 @@ impl Entity {
         if self.living.is_jumping {
             if water || lava {
                 self.motion.y += 0.04f32 as f64;
-            } else if self.on_ground {
-                self.motion.y = 0.42f32 as f64;
+            } else if self.on_ground && self.living.jump_delay == 0 {
+                self.living.jump_delay = 10;
+                self.motion.y = if let EntityKind::MagmaCube { size, .. } = self.kind {
+                    (0.42f32 + size as f32 * 0.1) as f64
+                } else {
+                    0.42f32 as f64
+                };
+                if !matches!(self.kind, EntityKind::MagmaCube { .. }) {
+                    if let Some(effect) = self.potion_effect(super::potion::JUMP) {
+                self.motion.y += (effect.amplifier.wrapping_add(1) as f32 * 0.1) as f64;
+                    }
                 if self.sprinting {
                     let angle = self.yaw * (math::PI_F32 / 180.0);
                     self.motion.x -= (math::sin(angle) * 0.2) as f64;
                     self.motion.z += (math::cos(angle) * 0.2) as f64;
+                }
                 }
                 self.velocity_changed = true;
                 self.add_stat(crate::entity::player::stat::JUMP, 1);
@@ -555,6 +638,9 @@ impl Entity {
                     self.add_exhaustion(if self.sprinting { 0.8 } else { 0.2 });
                 }
             }
+        }
+        if !self.living.is_jumping {
+            self.living.jump_delay = 0;
         }
         self.living.move_strafing *= 0.98;
         self.living.move_forward *= 0.98;
@@ -581,6 +667,7 @@ impl Entity {
         if matches!(self.kind, EntityKind::Player(..)) {
             self.player_after_living(w);
         }
+        self.animal_update(w);
         if let EntityKind::Chicken {
             flap,
             prev_flap,
@@ -603,9 +690,11 @@ impl Entity {
                 self.motion.y *= 0.6;
             }
             *flap += *flap_speed * 2.0;
+            if !w.multiplayer_world && self.living.growing_age >= 0 {
             *egg_timer -= 1;
-            if *egg_timer <= 0 {
-                let pitch = (self.rand.next_float() - self.rand.next_float()) * 0.2 + 1.0;
+            }
+            if !w.multiplayer_world && self.living.growing_age >= 0 && *egg_timer <= 0 {
+                let pitch =self.living_sound_pitch();
                 w.play_sound_at_entity(self, "mob.chickenplop", 1.0, pitch);
                 self.drop_item(w, 344, 1, 0, 0.0);
                 let next = self.rand.next_int(6000) + 6000;
@@ -614,6 +703,7 @@ impl Entity {
                 }
             }
         }
+        self.snowman_after_living(w);
     }
     pub fn apply_entity_collision(&mut self, other: &mut Entity) {
         if self.ridden_by == Some(other.entity_id) || self.riding == Some(other.entity_id) {
@@ -763,7 +853,7 @@ impl Entity {
     pub fn is_on_ladder(&self, w: &mut World) -> bool {
         if matches!(self.kind, EntityKind::Ghast(..)) { return false; }
         if matches!(self.kind, EntityKind::Spider | EntityKind::CaveSpider) {
-            return self.collided_horizontally;
+            return self.data_watcher.byte(16).unwrap_or(0) & 1 != 0;
         }
         w.get_block_id(
             floor(self.pos.x),
@@ -780,7 +870,8 @@ impl Entity {
         if w.multiplayer_world { return false; }
         let attacker = source.attacker;
         self.living.entity_age = 0;
-        if self.living.health <= 0 {
+        if self.living.health <= 0
+            || (source.is_fire() && self.potion_effect(super::potion::FIRE_RESISTANCE).is_some()) {
             return false;
         }
         self.living.limb_amount = 1.5;
@@ -857,7 +948,7 @@ impl Entity {
                 self.living.attacked_at_yaw =
                     (w.math_random.next_double() * 2.0) as i32 as f32 * 180.0;
             }
-            let pitch = (self.rand.next_float() - self.rand.next_float()) * 0.2 + 1.0;
+            let pitch =self.living_sound_pitch();
             if matches!(self.kind, EntityKind::Squid(..)) {
                 w.play_null_sound_at_entity(self, self.sound_volume(), pitch);
             } else {
@@ -878,6 +969,8 @@ impl Entity {
         if self.player_state().is_some() {
             self.damage_living_from(source, damage);
         } else {
+            let damage = self.armor_damage(source, damage);
+            let damage = self.resistance_damage(damage);
             self.living.health = self.living.health.wrapping_sub(damage);
         }
     }
@@ -909,7 +1002,7 @@ impl Entity {
                 }
                 w.entities.insert(a.entity_id, a);
             }
-            if !w.multiplayer_world { self.drop_few_items(w); }
+            if !w.multiplayer_world && !self.is_child() { self.drop_few_items(w); }
             if matches!(self.kind, EntityKind::Player(..)) {
                 self.player_death(w, Some(source));
             }
@@ -964,7 +1057,7 @@ impl Entity {
         }
     }
     fn play_health_sound(&mut self, w: &mut World, death: bool) {
-        let pitch = (self.rand.next_float() - self.rand.next_float()) * 0.2 + 1.0;
+        let pitch =self.living_sound_pitch();
         if matches!(self.kind, EntityKind::Squid(..)) {
             w.play_null_sound_at_entity(self, self.sound_volume(), pitch);
         } else {
@@ -972,6 +1065,44 @@ impl Entity {
         }
     }
     pub fn drop_few_items(&mut self, w: &mut World) {
+        self.drop_few_items_with_looting(w, self.living.recently_hit > 0, 0);
+    }
+    /// Looting is supplied by EnchantmentHelper, whose tagged ItemStack integration is a blocks-area dependency.
+    pub fn drop_few_items_with_looting(&mut self, w: &mut World, recently_hit: bool, looting: i32) {
+        if matches!(self.kind, EntityKind::PigZombie { .. }) {
+            for id in [367, 371] {
+                let n = self.rand.next_int(2i32.wrapping_add(looting));
+                for _ in 0..n {
+                    self.drop_item(w, id, 1, 0, 0.0);
+                }
+            }
+            return;
+        }
+        if matches!(self.kind, EntityKind::Blaze(..)) {
+            if recently_hit {
+                let n = self.rand.next_int(2i32.wrapping_add(looting));
+                for _ in 0..n {
+                    self.drop_item(w, 369, 1, 0, 0.0);
+                }
+            }
+            return;
+        }
+        if matches!(self.kind, EntityKind::Snowman) {
+            let n = self.rand.next_int(16);
+            for _ in 0..n {
+                self.drop_item(w, 332, 1, 0, 0.0);
+            }
+            return;
+        }
+        if matches!(self.kind, EntityKind::Ghast(..)) {
+            for (id, bound) in [(370, 2), (289, 3)] {
+                let n = self.rand.next_int(bound) + self.rand.next_int(looting.wrapping_add(1));
+                for _ in 0..n {
+                    self.drop_item(w, id, 1, 0, 0.0);
+                }
+            }
+            return;
+        }
         if matches!(self.kind, EntityKind::Squid(..)) {
             let n = self.rand.next_int(3) + 1;
             for _ in 0..n {
@@ -991,35 +1122,35 @@ impl Entity {
         }
         if matches!(self.kind, EntityKind::Skeleton) {
             for id in [262, 352] {
-                let n = self.rand.next_int(3);
+                let n = self.rand.next_int(3i32.wrapping_add(looting));
                 for _ in 0..n {
                     self.drop_item(w, id, 1, 0, 0.0);
                 }
             }
             return;
         }
-        if matches!(self.kind, EntityKind::Cow) {
-            let n = self.rand.next_int(3);
+        if matches!(self.kind, EntityKind::Cow | EntityKind::Mooshroom) {
+            let n = self.rand.next_int(3) + self.rand.next_int(looting.wrapping_add(1));
             for _ in 0..n {
                 self.drop_item(w, 334, 1, 0, 0.0);
             }
-            let n = self.rand.next_int(3) + 1;
+            let n = self.rand.next_int(3) + 1 + self.rand.next_int(looting.wrapping_add(1));
             for _ in 0..n {
-                self.drop_item(w, if self.fire > 0 { 364 } else { 363 }, 1, 0, 0.0);
+                self.drop_item(w, if self.is_burning(w) { 364 } else { 363 }, 1, 0, 0.0);
             }
             return;
         }
         if matches!(self.kind, EntityKind::Chicken { .. }) {
-            let n = self.rand.next_int(3);
+            let n = self.rand.next_int(3) + self.rand.next_int(looting.wrapping_add(1));
             for _ in 0..n {
                 self.drop_item(w, 288, 1, 0, 0.0);
             }
-            self.drop_item(w, if self.fire > 0 { 366 } else { 365 }, 1, 0, 0.0);
+            self.drop_item(w, if self.is_burning(w) { 366 } else { 365 }, 1, 0, 0.0);
             return;
         }
         let id = match self.kind {
             EntityKind::Pig { .. } => {
-                if self.fire > 0 {
+                if self.is_burning(w) {
                     320
                 } else {
                     319
@@ -1036,16 +1167,25 @@ impl Entity {
             _ => 0,
         };
         if id > 0 {
-            let n = self
+            let mut n = self
                 .rand
                 .next_int(if matches!(self.kind, EntityKind::Enderman(..)) {
-                    2
+                    2i32.wrapping_add(looting)
                 } else {
                     3
                 });
+            if !matches!(self.kind, EntityKind::Enderman(..)) && looting > 0 {
+                n += self.rand.next_int(looting.wrapping_add(1));
+            }
             for _ in 0..n {
                 self.drop_item(w, id, 1, 0, 0.0);
             }
+        }
+        if matches!(self.kind, EntityKind::Spider | EntityKind::CaveSpider)
+            && recently_hit
+            && (self.rand.next_int(3) == 0 || self.rand.next_int(looting.wrapping_add(1)) > 0)
+        {
+            self.drop_item(w, 375, 1, 0, 0.0);
         }
     }
 }

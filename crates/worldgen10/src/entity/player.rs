@@ -6,11 +6,11 @@ pub mod bucket;
 pub mod controller;
 pub mod dye;
 pub mod food;
-pub mod mechanics;
 pub mod interactions;
 pub mod inventory;
-pub mod list;
 pub mod items;
+pub mod list;
+pub mod mechanics;
 pub mod persistence;
 pub mod picking;
 pub mod placement;
@@ -25,7 +25,7 @@ use crate::{
     World,
 };
 pub use api::{PlayerHud, PlayerTarget, PlayerTickInput};
-pub use food::{FoodStats, PlayerCapabilities, Experience};
+pub use food::{Experience,FoodStats, PlayerCapabilities};
 pub use inventory::{InventoryPlayer, ItemStack};
 
 #[derive(Clone, Copy, Debug, Default)]
@@ -76,6 +76,14 @@ pub enum PlayerEvent {
         source: Box<Entity>,
     },
     ChangeDimension,
+    /// EntityPlayerSP.func_40182_b; handled by the End world/client area.
+    ChangeDimensionTo {
+        dimension: i32,
+    },
+    WinGame,
+    MagicCriticalHit {
+        target: Box<Entity>,
+    },
     /// `EntityPlayer.func_35200_b`: a critical hit (EntityPlayerSP adds an EntityCrit2FX).
     CriticalHit {
         target: Box<Entity>,
@@ -103,6 +111,7 @@ pub enum SleepStatus {
     NotPossibleHere,
     NotPossibleNow,
     TooFarAway,
+    NotSafe,
 }
 #[derive(Clone, Debug)]
 pub struct PlayerState {
@@ -370,7 +379,7 @@ impl Entity {
     }
     pub fn heal(&mut self, amount: i32) {
         if self.living.health > 0 {
-            self.living.health = self.living.health.wrapping_add(amount).min(20);
+            self.living.health = self.living.health.wrapping_add(amount).min(self.max_health());
             self.living.hearts_life = self.living.hearts_halves_life / 2;
         }
     }
@@ -422,7 +431,14 @@ impl Entity {
                 s.time_in_portal = 1.0;
                 s.portal_cooldown = 10;
                 sounds.push("portal.travel");
+                if !w.multiplayer_world {
                 s.events.push(PlayerEvent::ChangeDimension);
+                    s.stat_log.push((5242880 + 18, 1));
+                    s.events.push(PlayerEvent::Stat {
+                        id: 5242880 + 18,
+                        amount: 1,
+                    });
+                }
             }
             s.in_portal = false;
         } else if confused {
@@ -540,7 +556,7 @@ impl Entity {
     }
     fn player_pickup(&mut self, w: &mut World, e: &mut Entity) {
         // EntitySlime.onCollideWithPlayer runs in the same player collision pass as pickups.
-        if let EntityKind::Slime { size, .. } = e.kind {
+        if let EntityKind::Slime { size, .. } | EntityKind::MagmaCube { size, .. } = e.kind {
             let delta = Vec3D::new(
                 e.pos.x - self.pos.x,
                 e.pos.y - self.pos.y,
@@ -548,7 +564,7 @@ impl Entity {
             );
             let distance =
                 (delta.x * delta.x + delta.y * delta.y + delta.z * delta.z).sqrt() as f32;
-            if size > 1
+            if ( size > 1 || matches!(e.kind, EntityKind::MagmaCube { .. }))
                 && w.ray_trace_blocks(
                     e.pos.add(0.0, e.eye_height() as f64, 0.0),
                     self.pos.add(0.0, self.eye_height() as f64, 0.0),
@@ -557,7 +573,11 @@ impl Entity {
                 && (distance as f64) < 0.6 * size as f64
             {
                 w.entities.insert(e.entity_id, e.clone());
-                let hit = self.attack(w, Some(e.entity_id), size);
+                let hit = self.attack(w, Some(e.entity_id), size + if matches!(e.kind, EntityKind::MagmaCube { .. }) {
+                        2
+                    } else {
+                        0
+                    },);
                 w.entities.remove(&e.entity_id);
                 if hit {
                     let pitch = (e.rand.next_float() - e.rand.next_float()) * 0.2 + 1.0;
@@ -569,6 +589,7 @@ impl Entity {
             e.pickup_xp_orb(w, self);
             return;
         }
+        let creative = self.player_state().unwrap().capabilities.creative;
         let mut pickup = None;
         if let EntityKind::Item {
             item, pickup_delay, ..
@@ -577,10 +598,16 @@ impl Entity {
             if *pickup_delay == 0 {
                 let original = item.count as i32;
                 let mut stack = (*item).into();
-                if self.player_state_mut().unwrap().inventory.add(&mut stack) {
+                if self.player_state_mut().unwrap().inventory.add_with_creative(&mut stack, creative) {
                     pickup = Some(original);
                     if stack.id == 17 {
                         self.add_stat(stat::MINE_WOOD, 1);
+                    }
+                    if stack.id == 264 {
+                        self.add_stat(5242880 + 17, 1);
+                    }
+                    if stack.id == 369 {
+                        self.add_stat(5242880 + 20, 1);
                     }
                     if stack.id == 334 {
                         self.add_stat(stat::KILL_COW, 1);
@@ -670,8 +697,8 @@ impl Entity {
         match self.player_state_mut().unwrap().food.tick(w.difficulty, health) {
             food::FoodAction::Heal => self.heal(1),
             food::FoodAction::Starve => {
-                self.attack_from(w, super::damage::DamageSource::new(super::damage::DamageKind::Starve), 1);
-            },
+                self.attack_from(w, super::damage::DamageSource::new(super::damage::DamageKind::Starve), 1,);
+            }
             food::FoodAction::None => {}
         }
         if self.player_state().unwrap().capabilities.disable_damage && self.fire > 0 { self.fire = 0; }
@@ -700,7 +727,7 @@ impl Entity {
         {
             *damage = match w.difficulty {
                 0 => 0,
-                1 => *damage / 3 + 1,
+                1 => *damage / 2 + 1,
                 3 => *damage * 3 / 2,
                 _ => *damage,
             };
@@ -730,21 +757,19 @@ impl Entity {
         if !source.bypasses_armor() && self.is_blocking() {
             amount = (1 + amount) >> 1;
         }
-        if let Some(s) = self.player_state_mut().filter(|_| !source.bypasses_armor()) {
-            let damage = amount * (25 - s.inventory.armor_value()) + s.damage_remainder;
-            let broken = s.inventory.damage_armor(amount);
-            amount = damage / 25;
-            s.damage_remainder = damage % 25;
-            for id in broken {
-                self.add_stat(stat::broken(id), 1);
-            }
-        }
+        amount = self.armor_damage(source,amount);
+            amount =
+                self.resistance_damage(amount);
         if self.player_state().is_some() {
             self.add_exhaustion(source.exhaustion());
         }
+        // EntityPlayer calls super.damageEntity: the release source applies
+        // armor/resistance again through the same virtual methods and remainder.
+        amount = self.armor_damage(source, amount);
+        amount = self.resistance_damage(amount);
         self.living.health -= amount;
     }
-    pub(super) fn player_death(&mut self, w: &mut World, source: Option<super::damage::DamageSource>) {
+    pub(super) fn player_death(&mut self, w: &mut World, source: Option<super::damage::DamageSource>,) {
         self.width = 0.2;
         self.height = 0.2;
         self.set_position(self.pos.x, self.pos.y, self.pos.z);
@@ -853,6 +878,23 @@ impl Entity {
             || (self.pos.z - z as f64).abs() > 3.0
         {
             return SleepStatus::TooFarAway;
+        }
+        if !w.multiplayer_world
+            && w.entities_within_aabb(
+                None,
+                super::AxisAlignedBB::new(
+                    (x - 8) as f64,
+                    (y - 5) as f64,
+                    (z - 8) as f64,
+                    (x + 8) as f64,
+                    (y + 5) as f64,
+                    (z + 8) as f64,
+                ),
+            )
+            .into_iter()
+            .any(|id| w.entities[&id].kind.is_mob())
+        {
+            return SleepStatus::NotSafe;
         }
         self.width = 0.2;
         self.height = 0.2;

@@ -39,6 +39,18 @@ pub struct FireballState {
 }
 impl Entity {
     pub fn can_be_collided_with(&self) -> bool {
+        if matches!(
+            self.kind,
+            EntityKind::Dragon(..) | EntityKind::SmallFireball(..)
+        ) {
+            return false;
+        }
+        if matches!(
+            self.kind,
+            EntityKind::DragonPart { .. } | EntityKind::EnderCrystal { .. }
+        ) {
+            return true;
+        }
         matches!(
             self.kind,
             EntityKind::Fireball(..) | EntityKind::Painting(..)
@@ -178,6 +190,9 @@ impl Entity {
                 self.motion = v;
                 if let EntityKind::Fireball(s) = &mut self.kind {
                     s.acceleration = Vec3D::new(v.x * 0.1, v.y * 0.1, v.z * 0.1);
+                    if w.entities.get(&id).is_some_and(|e| e.kind.is_living()) {
+                        s.arrow.owner = Some(id);
+                    }
                 }
             }
             true
@@ -215,7 +230,8 @@ impl Entity {
         ) {
             let e = &w.entities[&id];
             if e.can_be_collided_with()
-                && (Some(id) != state.owner || state.ticks_air >= if fireball { 25 } else { 5 })
+                && ((!fireball &&Some(id) != state.owner)
+                    || (fireball && !e.entity_identity_matches(state.owner)) || state.ticks_air >= if fireball { 25 } else { 5 })
             {
                 if let Some(Hit::Block { hit: p, .. }) = e
                     .bounding_box
@@ -266,7 +282,7 @@ impl Entity {
             }
         }
         // Arrows do not add zero acceleration: signed zero is observable.
-        if matches!(self.kind, EntityKind::Fireball(..)) {
+        if matches!(self.kind, EntityKind::Fireball(..) | EntityKind::SmallFireball(..)) {
             self.motion.x += accel.x;
             self.motion.y += accel.y;
             self.motion.z += accel.z;
@@ -325,14 +341,14 @@ impl Entity {
                             let speed = self.motion.length() as f32;
                             let mut damage = (speed as f64 * 2.0).ceil() as i32;
                             if s.critical {
-                                damage = damage * 3 / 2 + 1;
+                                damage += self.rand.next_int( damage / 2 + 2);
                             }
                             let hit = target.attack_from(
                                 w,
                                 super::damage::DamageSource::indirect(
                                     super::damage::DamageKind::Arrow,
                                     self.entity_id,
-                                    s.owner,
+                                    s.owner.or(Some(self.entity_id)),
                                 ),
                                 damage,
                             );
@@ -346,7 +362,7 @@ impl Entity {
                         };
                         if success {
                             let pitch = 1.2 / (self.rand.next_float() * 0.2 + 0.9);
-                            w.play_sound_at_entity(self, "random.drr", 1.0, pitch);
+                            w.play_sound_at_entity(self, "random.bowhit", 1.0, pitch);
                             self.dead = true;
                         } else {
                             self.motion.x *= -0.1f32 as f64;
@@ -371,7 +387,7 @@ impl Entity {
                         self.pos.y -= self.motion.y / n * 0.05f32 as f64;
                         self.pos.z -= self.motion.z / n * 0.05f32 as f64;
                         let pitch = 1.2 / (self.rand.next_float() * 0.2 + 0.9);
-                        w.play_sound_at_entity(self, "random.drr", 1.0, pitch);
+                        w.play_sound_at_entity(self, "random.bowhit", 1.0, pitch);
                         s.in_ground = true;
                         s.shake = 7;
                         s.critical = false;
@@ -400,12 +416,16 @@ impl Entity {
     }
     pub(super) fn update_fireball(&mut self, w: &mut World) {
         self.on_entity_update(w);
-        self.fire = 10;
-        let EntityKind::Fireball(mut s) = self.kind.clone() else {
-            return;
+        self.set_fire_seconds(1);
+        let small = matches!(self.kind, EntityKind::SmallFireball(..));
+        let mut s = match &self.kind { EntityKind::Fireball(s) | EntityKind::SmallFireball( s) => s.clone(),
+            _ =>
+            return,
         };
-        if s.arrow.shake > 0 {
-            s.arrow.shake -= 1;
+        if !w.multiplayer_world
+            && s.arrow.owner
+                .is_none_or(|id| w.entities.get(&id).is_none_or(|e| e.dead)) {
+            self.dead= true;
         }
         if s.arrow.in_ground {
             let [x, y, z] = s.arrow.tile;
@@ -414,7 +434,10 @@ impl Entity {
                 if s.arrow.ticks_ground == 1200 {
                     self.dead = true;
                 }
-                self.kind = EntityKind::Fireball(s);
+                self.kind = if small {
+                    EntityKind::SmallFireball(s)
+                } else { EntityKind::Fireball(s)
+                };
                 return;
             }
             s.arrow.in_ground = false;
@@ -428,7 +451,10 @@ impl Entity {
         }
         let impact = self.projectile_intersection(w, &s.arrow, true);
         if let Some(hit) = impact {
-            if !w.multiplayer_world {
+            if small {
+                self.small_fireball_impact(w, hit, &s);
+            } else {
+                if !w.multiplayer_world {
             if let Hit::Entity { id, .. } = hit {
                 if let Some(mut e) = w.entities.remove(&id) {
                     e.attack_from(
@@ -438,7 +464,7 @@ impl Entity {
                             self.entity_id,
                             s.arrow.owner,
                         ),
-                        0,
+                                4,
                     );
                     w.entities.insert(id, e);
                 }
@@ -454,8 +480,9 @@ impl Entity {
                 self.motion = back.motion;
                 self.velocity_changed = back.velocity_changed;
             }
-            }
             self.dead = true;
+                }
+            }
         }
         self.projectile_advance(
             w,
@@ -464,6 +491,9 @@ impl Entity {
             s.acceleration,
         );
         w.spawn_particle("smoke", self.pos.add(0.0, 0.5, 0.0), Vec3D::default());
-        self.kind = EntityKind::Fireball(s);
+        self.kind = if small {
+            EntityKind::SmallFireball(s)
+        } else { EntityKind::Fireball(s)
+        };
     }
 }

@@ -12,14 +12,29 @@ impl World {
             s.world_override = true;
         }
         let mut rand = crate::JavaRandom::new(self.seed);
-        let (mut x,mut z) = self.terrain.biome_source.find_position(0,0,256,
-            &[crate::Biome::Forest,crate::Biome::Swampland,crate::Biome::Taiga],&mut rand).unwrap_or((0,0));
+        let (mut x, mut z) = self
+            .terrain
+            .biome_source
+            .find_position(
+                0,
+                0,
+                256,
+                &[
+                    crate::Biome::Forest,
+                    crate::Biome::Swampland,
+                    crate::Biome::Taiga,
+                ],
+                &mut rand,
+            )
+            .unwrap_or((0, 0));
         let mut attempts = 0;
         while !self.can_coordinate_be_spawn(x, z) {
             x += rand.next_int(64) - rand.next_int(64);
             z += rand.next_int(64) - rand.next_int(64);
             attempts += 1;
-            if attempts == 1000 {break;}
+            if attempts == 1000 {
+                break;
+            }
         }
         self.spawn = (x, 64, z);
         if let Some(s) = &mut self.server {
@@ -58,10 +73,16 @@ impl World {
     pub fn preload_spawn_area_with(&mut self, progress: &mut dyn FnMut(i32)) {
         let (sx, _, sz) = self.spawn;
         // Both vanilla singleplayer controllers inherit func_35643_e == false.
-        preload_grid(sx,sz,false,true,&mut |call| match call {
-            PreloadCall::Progress(n)=>{progress(n);false},
-            PreloadCall::Block(x,z)=>{self.get_block_id(x,64,z);false},
-            PreloadCall::Lighting=>self.updating_lighting(),
+        preload_grid(sx, sz, false, true, &mut |call| match call {
+            PreloadCall::Progress(n) => {
+                progress(n);
+                false
+            }
+            PreloadCall::Block(x, z) => {
+                self.get_block_id(x, 64, z);
+                false
+            }
+            PreloadCall::Lighting => self.updating_lighting(),
         });
     }
 
@@ -131,9 +152,14 @@ impl World {
             None => None,
         };
         let existing = storage.as_ref().and_then(|s| s.load_level());
-        let seed = existing.as_ref().map_or(settings.map_or(seed, |s| s.seed), |i| i.seed);
+        let seed = existing
+            .as_ref()
+            .map_or(settings.map_or(seed, |s| s.seed), |i| i.seed);
         // World's constructor: a player saved in the Nether reopens it (WorldInfo.getDimension).
-        let dimension = existing.as_ref().and_then(|i|crate::world::Dimension::from_id(i.dimension())).unwrap_or(crate::world::Dimension::Overworld);
+        let dimension = existing
+            .as_ref()
+            .and_then(|i| crate::world::Dimension::from_id(i.dimension()))
+            .unwrap_or(crate::world::Dimension::Overworld);
         let mut w = World::with_dimension(seed, world_rand_seed, dimension);
         if server {
             w.server = Some(Default::default());
@@ -143,7 +169,11 @@ impl World {
             s => s,
         };
         let is_new = existing.is_none();
-        let title = if is_new { "Generating level" } else { "Loading level" };
+        let title = if is_new {
+            "Generating level"
+        } else {
+            "Loading level"
+        };
         progress(LoadStep::Title(title));
         progress(LoadStep::Text(""));
         if let Some(info) = existing {
@@ -155,9 +185,13 @@ impl World {
             if let Some(settings) = settings {
                 w.info.game_type = settings.game_mode;
                 w.info.map_features = settings.map_features;
+                w.info.hardcore = settings.hardcore;
             }
             if let Some(d) = dir {
-                w.info.name = d.file_name().map(|n| n.to_string_lossy().into_owned()).unwrap_or_else(|| "world".into());
+                w.info.name = d
+                    .file_name()
+                    .map(|n| n.to_string_lossy().into_owned())
+                    .unwrap_or_else(|| "world".into());
             }
             if let Some(n) = new_name {
                 w.info.name = n.to_string();
@@ -189,20 +223,35 @@ impl World {
     }
 }
 
-#[derive(Clone,Copy,Debug)]
-pub enum PreloadCall { Progress(i32), Block(i32,i32), Lighting }
+#[derive(Clone, Copy, Debug)]
+pub enum PreloadCall {
+    Progress(i32),
+    Block(i32, i32),
+    Lighting,
+}
 
 /// The exact preloadWorld loop. A controller with reduced preload omits every
 /// lighting poll; a missing LoadingScreenRenderer omits progress callbacks.
-pub fn preload_grid(sx:i32,sz:i32,reduced:bool,loading:bool,call:&mut dyn FnMut(PreloadCall)->bool) {
-    let radius=if reduced {64}else{128};
-    let total=(radius*2/16+1)*(radius*2/16+1);
-    let mut n=0;
+pub fn preload_grid(
+    sx: i32,
+    sz: i32,
+    reduced: bool,
+    loading: bool,
+    call: &mut dyn FnMut(PreloadCall) -> bool,
+) {
+    let radius = if reduced { 64 } else { 128 };
+    let total = (radius * 2 / 16 + 1) * (radius * 2 / 16 + 1);
+    let mut n = 0;
     for dx in (-radius..=radius).step_by(16) {
         for dz in (-radius..=radius).step_by(16) {
-            if loading {call(PreloadCall::Progress(n*100/total));n+=1;}
-            call(PreloadCall::Block(sx.wrapping_add(dx),sz.wrapping_add(dz)));
-            if !reduced {while call(PreloadCall::Lighting) {}}
+            if loading {
+                call(PreloadCall::Progress(n * 100 / total));
+                n += 1;
+            }
+            call(PreloadCall::Block(sx.wrapping_add(dx), sz.wrapping_add(dz)));
+            if !reduced {
+                while call(PreloadCall::Lighting) {}
+            }
         }
     }
 }
@@ -225,24 +274,71 @@ mod player_gui_settings_checks {
 
     #[test]
     fn new_settings_reach_preload_and_first_save_existing_settings_win() {
-        let stamp = std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_nanos();
-        let dir = std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../target").join(format!("player-gui-settings-{stamp}"));
+        let stamp = std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .unwrap()
+            .as_nanos();
+        let dir = std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+            .join("../../target")
+            .join(format!("player-gui-settings-{stamp}"));
         let mut progress_count = 0;
-        let (world, new) = World::open_with_settings(Some(&dir), 99, 100, false, Some("Settings fixture"),
-            Some(WorldSettings::new(42, 1, false)), &mut |step| {
-                if matches!(step, LoadStep::Progress(_)) { progress_count += 1; }
-            }).unwrap();
+        let (world, new) = World::open_with_settings(
+            Some(&dir),
+            99,
+            100,
+            false,
+            Some("Settings fixture"),
+            Some(WorldSettings::new(42, 1, false)),
+            &mut |step| {
+                if matches!(step, LoadStep::Progress(_)) {
+                    progress_count += 1;
+                }
+            },
+        )
+        .unwrap();
         assert!(new);
         assert_eq!(progress_count, 289);
-        assert_eq!((world.seed, world.info.seed, world.info.game_type, world.info.map_features), (42,42,1,false));
-        assert!(world.structure_locations.strongholds.is_none(), "features were enabled during initial terrain generation");
-        let saved = crate::storage::Storage::open(&dir).unwrap().load_level().unwrap();
-        assert_eq!((saved.seed, saved.game_type, saved.map_features), (42,1,false));
+        assert_eq!(
+            (
+                world.seed,
+                world.info.seed,
+                world.info.game_type,
+                world.info.map_features
+            ),
+            (42, 42, 1, false)
+        );
+        assert!(
+            world.structure_locations.strongholds.is_none(),
+            "features were enabled during initial terrain generation"
+        );
+        let saved = crate::storage::Storage::open(&dir)
+            .unwrap()
+            .load_level()
+            .unwrap();
+        assert_eq!(
+            (saved.seed, saved.game_type, saved.map_features),
+            (42, 1, false)
+        );
         drop(world);
-        let (reopened,new) = World::open_with_settings(Some(&dir), 99, 100, false, None,
-            Some(WorldSettings::new(105,0,true)), &mut |_| {}).unwrap();
+        let (reopened, new) = World::open_with_settings(
+            Some(&dir),
+            99,
+            100,
+            false,
+            None,
+            Some(WorldSettings::new(105, 0, true)),
+            &mut |_| {},
+        )
+        .unwrap();
         assert!(!new);
-        assert_eq!((reopened.seed,reopened.info.game_type,reopened.info.map_features),(42,1,false));
+        assert_eq!(
+            (
+                reopened.seed,
+                reopened.info.game_type,
+                reopened.info.map_features
+            ),
+            (42, 1, false)
+        );
     }
 }
 

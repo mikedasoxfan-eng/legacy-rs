@@ -1,6 +1,6 @@
 //! EntityMinecart and EntityBoat, singleplayer paths from Beta 1.7.3.
 use super::{AxisAlignedBB, Entity, EntityKind, Vec3D};
-use crate::{World, math::floor_double as floor, world::tile::ItemStack};
+use crate::{math::floor_double as floor, world::tile::ItemStack, World};
 
 pub const RAIL_ENDPOINTS: [[[i32; 3]; 2]; 10] = [
     [[0, 0, -1], [0, 0, 1]],
@@ -89,6 +89,18 @@ impl Default for BoatState {
     }
 }
 impl Entity {
+    pub fn sync_vehicle_watcher(&mut self) {
+        let (time, direction, damage) = match &self.kind {
+            EntityKind::Minecart(s) => (s.time_since_hit, s.rock_direction, s.damage),
+            EntityKind::Boat(s) => (s.time_since_hit, s.rock_direction, s.damage),
+            _ => return,
+        };
+        for (id, value) in [(17, time), (18, direction), (19, damage)] {
+            self.data_watcher
+                .update(id, super::data_watcher::Value::Int(value))
+                .unwrap();
+        }
+    }
     pub fn minecart(w: &mut World, x: f64, y: f64, z: f64, cart_type: i32) -> Self {
         let mut e = Self::minecart_base(w);
         if let EntityKind::Minecart(s) = &mut e.kind {
@@ -232,6 +244,7 @@ impl Entity {
             }
             _ => return false,
         };
+        self.sync_vehicle_watcher();
         self.been_attacked = true;
         if broken {
             self.dismount_vehicle_rider(w);
@@ -271,6 +284,7 @@ impl Entity {
         *direction = -*direction;
         *time = 10;
         *damage = damage.wrapping_add(damage.wrapping_mul(10));
+        self.sync_vehicle_watcher();
     }
     pub(super) fn update_boat(&mut self, w: &mut World) {
         self.on_entity_update(w);
@@ -295,36 +309,7 @@ impl Entity {
                 submerged += 1.0 / 5.0;
             }
         }
-        if w.multiplayer_world {
-            if self.network.increments > 0 {
-                self.interpolate_network(w, false);
-            } else {
-                self.set_position(self.pos.x + self.motion.x, self.pos.y + self.motion.y, self.pos.z + self.motion.z);
-                if self.on_ground { self.motion.x *= 0.5; self.motion.y *= 0.5; self.motion.z *= 0.5; }
-                self.motion.x *= 0.99f32 as f64; self.motion.y *= 0.95f32 as f64; self.motion.z *= 0.99f32 as f64;
-            }
-            return;
-        }
-        if submerged < 1.0 {
-            self.motion.y += 0.04f32 as f64 * (submerged * 2.0 - 1.0);
-        } else {
-            if self.motion.y < 0.0 {
-                self.motion.y /= 2.0;
-            }
-            self.motion.y += 0.007f32 as f64;
-        }
-        if let Some(rider) = self.ridden_by.and_then(|id| w.entities.get(&id)) {
-            self.motion.x += rider.motion.x * 0.2;
-            self.motion.z += rider.motion.z * 0.2;
-        }
-        self.motion.x = self.motion.x.clamp(-0.4, 0.4);
-        self.motion.z = self.motion.z.clamp(-0.4, 0.4);
-        if self.on_ground {
-            self.motion.x *= 0.5;
-            self.motion.y *= 0.5;
-            self.motion.z *= 0.5;
-        }
-        self.move_vehicle(w, self.motion.x, self.motion.y, self.motion.z);
+        self.sync_vehicle_watcher();
         let speed = (self.motion.x * self.motion.x + self.motion.z * self.motion.z).sqrt();
         if speed > 0.15 {
             let a = self.yaw as f64 * std::f64::consts::PI / 180.0;
@@ -349,7 +334,47 @@ impl Entity {
                 i += 1;
             }
         }
-        if self.collided_horizontally && speed > 0.15 {
+        if w.multiplayer_world {
+            if self.network.increments > 0 {
+                self.interpolate_network(w, false);
+            } else {
+                self.set_position(
+                    self.pos.x + self.motion.x,
+                    self.pos.y + self.motion.y,
+                    self.pos.z + self.motion.z,
+                );
+                if self.on_ground {
+                    self.motion.x *= 0.5;
+                    self.motion.y *= 0.5;
+                    self.motion.z *= 0.5;
+                }
+                self.motion.x *= 0.99f32 as f64;
+                self.motion.y *= 0.95f32 as f64;
+                self.motion.z *= 0.99f32 as f64;
+            }
+            return;
+        }
+        if submerged < 1.0 {
+            self.motion.y += 0.04f32 as f64 * (submerged * 2.0 - 1.0);
+        } else {
+            if self.motion.y < 0.0 {
+                self.motion.y /= 2.0;
+            }
+            self.motion.y += 0.007f32 as f64;
+        }
+        if let Some(rider) = self.ridden_by.and_then(|id| w.entities.get(&id)) {
+            self.motion.x += rider.motion.x * 0.2;
+            self.motion.z += rider.motion.z * 0.2;
+        }
+        self.motion.x = self.motion.x.clamp(-0.4, 0.4);
+        self.motion.z = self.motion.z.clamp(-0.4, 0.4);
+        if self.on_ground {
+            self.motion.x *= 0.5;
+            self.motion.y *= 0.5;
+            self.motion.z *= 0.5;
+        }
+        self.move_vehicle(w, self.motion.x, self.motion.y, self.motion.z);
+        if self.collided_horizontally && speed > 0.2 {
             self.set_entity_dead(w);
             self.drop_boat_parts(w);
         } else {
@@ -390,12 +415,17 @@ impl Entity {
         self.move_entity(w, x, y, z);
         w.entities.remove(&self.entity_id);
     }
-    fn clear_dead_rider(&mut self, w: &World) {
+    fn clear_dead_rider(&mut self, w: &mut World) {
         if self
             .ridden_by
             .and_then(|id| w.entities.get(&id))
             .is_some_and(|e| e.dead)
         {
+            if matches!(self.kind, EntityKind::Minecart(..)) {
+                if let Some(rider) = self.ridden_by.and_then(|id| w.entities.get_mut(&id)) {
+                    rider.riding = None;
+                }
+            }
             self.ridden_by = None;
         }
     }
@@ -430,8 +460,16 @@ impl Entity {
                 s.damage -= 1;
             }
         }
-        if w.multiplayer_world && self.network.increments > 0 {
-            self.interpolate_network(w, false);
+        self.sync_vehicle_watcher();
+        if self.data_watcher.byte(16).unwrap() & 1 != 0 && self.rand.next_int(4) == 0 {
+            w.spawn_particle("largesmoke", self.pos.add(0.0, 0.8, 0.0), Vec3D::default());
+        }
+        if w.multiplayer_world {
+            if self.network.increments > 0 {
+                self.interpolate_network(w, false);
+            } else {
+                self.set_position(self.pos.x, self.pos.y, self.pos.z);
+            }
             return;
         }
         // EntityMinecart deliberately does not call Entity.onUpdate.
@@ -444,7 +482,7 @@ impl Entity {
             y -= 1;
         }
         let id = w.get_block_id(x, y, z);
-        let mut burning = false;
+
         if is_rail(id) {
             let old = Self::rail_position(w, self.pos.x, self.pos.y, self.pos.z);
             let mut meta = w.get_block_metadata(x, y, z);
@@ -523,7 +561,6 @@ impl Entity {
                     if s.cart_type == 2 {
                         let len = (s.push_x * s.push_x + s.push_z * s.push_z).sqrt() as f32 as f64;
                         if len > 0.01 {
-                            burning = true;
                             s.push_x /= len;
                             s.push_z /= len;
                             self.motion.x *= 0.8f32 as f64;
@@ -639,19 +676,25 @@ impl Entity {
         self.pitch %= 360.0;
         self.collide_vehicles(w, true);
         self.clear_dead_rider(w);
-        if burning && self.rand.next_int(4) == 0 {
-            if let EntityKind::Minecart(s) = &mut self.kind {
+        if let EntityKind::Minecart(s) = &mut self.kind {
+            if s.fuel > 0 {
                 s.fuel -= 1;
-                if s.fuel < 0 {
-                    s.push_x = 0.0;
-                    s.push_z = 0.0;
-                }
             }
-            w.spawn_particle(
-                "largesmoke",
-                Vec3D::new(self.pos.x, self.pos.y + 0.8, self.pos.z),
-                Vec3D::default(),
-            );
+            if s.fuel <= 0 {
+                s.push_x = 0.0;
+                s.push_z = 0.0;
+            }
+            let flags = self.data_watcher.byte(16).unwrap();
+            self.data_watcher
+                .update(
+                    16,
+                    super::data_watcher::Value::Byte(if s.fuel > 0 {
+                        flags | 1
+                    } else {
+                        flags & !1
+                    }),
+                )
+                .unwrap();
         }
     }
     /// EntityMinecart.func_514_g (also used by RenderMinecart).

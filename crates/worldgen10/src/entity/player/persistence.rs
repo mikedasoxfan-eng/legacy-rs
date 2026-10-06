@@ -1,6 +1,16 @@
 use super::*;
 use crate::nbt::{Compound, Tag};
 impl Entity {
+    /// EntityPlayer.func_41014_d, used when carrying a player into a replacement world.
+    pub fn copy_player_from(&mut self, other: &Entity) {
+        let source = other.player_state().expect("EntityPlayer source");
+        self.living.health = other.living.health;
+        let destination = self.player_state_mut().expect("EntityPlayer destination");
+        destination.inventory.copy_from_inventory(&source.inventory);
+        destination.food = source.food.clone();
+        destination.experience = source.experience;
+        destination.score = source.score;
+    }
     /// EntityPlayer.preparePlayerToSpawn, before the controller's yaw flip.
     pub fn prepare_player_to_spawn(&mut self, w: &mut World) {
         self.y_offset = 1.62;
@@ -40,6 +50,7 @@ impl Entity {
             n.put("SpawnZ", Tag::Int(z));
         }
         s.food.write_nbt(&mut n);
+        s.capabilities.write_nbt(&mut n);
         n.put("Score", Tag::Int(s.score));
         Some(n)
     }
@@ -62,6 +73,7 @@ impl Entity {
         s.score = n.int("Score");
         s.food.read_nbt(n);
         s.experience.read_nbt(n);
+        s.capabilities.read_nbt(n);
         if n.has("SpawnX") && n.has("SpawnY") && n.has("SpawnZ") {
             s.spawn = Some((n.int("SpawnX"), n.int("SpawnY"), n.int("SpawnZ")));
         }
@@ -79,7 +91,7 @@ impl World {
         let mut e = super::controller::PlayerControllerSP::create_player(self, &username);
         e.prepare_player_to_spawn(self);
         super::controller::PlayerControllerSP::flip_player(&mut e,
-            super::controller::PlayerControllerSP::saved_world_is_creative(self.info.game_type));
+            super::controller::PlayerControllerSP::saved_world_is_creative(self.info.game_type),);
         if let Some(n) = saved {
             let _ = e.read_existing_nbt(self, &n);
         }

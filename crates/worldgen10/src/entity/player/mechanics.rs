@@ -1,6 +1,63 @@
 //! EntityPlayer / EntityPlayerSP additions introduced in Beta 1.8.1.
 use super::*;
 impl Entity {
+    /// EntityPlayer.getItemIcon: the item/renderer supplies the inherited base icon.
+    pub fn player_item_icon(&self,item:ItemStack,pass:i32,base_icon:i32)->i32 {
+        let state=self.player_state().expect("EntityPlayer");
+        if item.id==346 && state.fish_entity.is_some() {return base_icon+16;}
+        if item.id==373 {return if pass==1 {base_icon}else {141};}
+        if state.item_in_use.is_some() && item.id==261 {
+            let elapsed=registry::use_duration(item.id)-state.item_use_ticks;
+            if elapsed>=18 {return 133;}if elapsed>13 {return 117;}if elapsed>0 {return 101;}
+        }
+        base_icon
+    }
+    pub fn enter_end(&mut self, w: &mut World, dimension: i32) {
+        if w.multiplayer_world {
+            return;
+        }
+        if self.player_state().unwrap().dimension == 1 && dimension == 1 {
+            self.add_stat(5242880 + 23, 1);
+            self.player_state_mut()
+                .unwrap()
+                .events
+                .push(PlayerEvent::WinGame);
+        } else {
+            self.add_stat(5242880 + 22, 1);
+            let pitch = self.rand.next_float() * 0.4 + 0.8;
+            w.direct_sound("portal.travel", None, 1.0, pitch);
+            self.player_state_mut()
+                .unwrap()
+                .events
+                .push(PlayerEvent::ChangeDimensionTo { dimension: 1 });
+        }
+    }
+    pub fn magic_critical_hit(&mut self, target: &Entity) {
+        self.player_state_mut()
+            .unwrap()
+            .events
+            .push(PlayerEvent::MagicCriticalHit {
+                target: Box::new(target.clone()),
+            });
+    }
+    pub fn open_enchantment(&mut self, position: (i32, i32, i32)) {
+        self.player_state_mut()
+            .unwrap()
+            .events
+            .push(PlayerEvent::OpenContainer {
+                block: 116,
+                position,
+            });
+    }
+    pub fn open_brewing_stand(&mut self, position: (i32, i32, i32)) {
+        self.player_state_mut()
+            .unwrap()
+            .events
+            .push(PlayerEvent::OpenContainer {
+                block: 117,
+                position,
+            });
+    }
     /// EntityPlayerSP.setHealth: remote health changes bypass armor and blocking.
     pub fn set_player_health(&mut self, health: i32) {
         let damage = self.living.health.wrapping_sub(health);
@@ -11,16 +68,16 @@ impl Entity {
             }
         } else {
             self.living.last_damage = damage;
-            self.living.prev_health = self.living.health;
+            self.set_entity_health( self.living.health);
             self.living.hearts_life = self.living.hearts_halves_life;
-            self.damage_living_from(super::super::damage::DamageSource::new(super::super::damage::DamageKind::Generic), damage);
+            self.damage_living_from(super::super::damage::DamageSource::new(super::super::damage::DamageKind::Generic), damage,);
             self.living.hurt_time = 10;
             self.living.max_hurt_time = 10;
         }
     }
     /// EntityPlayerSP.func_35219_c, whose argument order differs from its field order.
-    pub fn set_player_experience(&mut self, points: i32, total: i32, level: i32) {
-        self.player_state_mut().unwrap().experience = Experience { points, total, level };
+    pub fn set_player_experience(&mut self, points: f32, total: i32, level: i32) {
+        self.player_state_mut().unwrap().experience = Experience { points, total, level, };
     }
     pub(super) fn player_swing_duration(&self) -> i32 {
         if let Some(effect) = self.potion_effect(3) {
@@ -35,7 +92,8 @@ impl Entity {
         }
     }
     pub fn add_experience(&mut self, amount: i32) {
-        if let Some(s) = self.player_state_mut() { s.experience.add(amount); }
+        if let Some(s) = self.player_state_mut() {
+            s.score = s.score.wrapping_add(amount); s.experience.add(amount); }
     }
     pub fn set_creative(&mut self, enabled: bool) {
         if let Some(s) = self.player_state_mut() {
@@ -60,6 +118,7 @@ impl Entity {
         self.sprinting = enabled;
     }
     pub(super) fn update_sprint_and_flight(&mut self) {
+        let blind = self.potion_effect(15).is_some();
         let on_ground = self.on_ground;
         let collided = self.collided_horizontally;
         let s = self.player_state_mut().unwrap();
@@ -71,9 +130,13 @@ impl Entity {
         let (_, mut forward) = s.input.movement();
         if s.item_in_use.is_some() { forward *= 0.2; s.sprint_toggle_timer = 0; }
         let can_sprint = s.food.level as f32 > 6.0;
-        if on_ground && s.previous_forward < 0.8 && forward >= 0.8 && !s.sprinting && can_sprint && s.item_in_use.is_none() {
+        if on_ground && s.previous_forward < 0.8 && forward >= 0.8 && !s.sprinting && can_sprint && s.item_in_use.is_none()
+            && !blind {
             if s.sprint_toggle_timer == 0 { s.sprint_toggle_timer = 7; }
             else { s.sprinting = true; s.sprint_ticks = 600; s.sprint_toggle_timer = 0; }
+        }
+        if s.input.sneak {
+            s.sprint_toggle_timer = 0;
         }
         if s.sprinting && (forward < 0.8 || collided || !can_sprint) { s.sprinting = false; s.sprint_ticks = 0; }
         if s.capabilities.allow_flying && !s.previous_jump && s.input.jump {
@@ -107,7 +170,8 @@ impl Entity {
         fov
     }
     pub fn is_blocking(&self) -> bool {
-        self.player_state().is_some_and(|s| s.item_in_use.is_some_and(|i| matches!(i.id, 267 | 268 | 272 | 276 | 283)))
+        self.player_state().is_some_and(|s| { s.item_in_use.is_some_and(|i| matches!(i.id, 267 | 268 | 272 | 276 | 283))
+        })
     }
     pub fn start_item_use(&mut self, item: ItemStack, duration: i32) {
         let s = self.player_state_mut().unwrap();
@@ -177,20 +241,24 @@ impl Entity {
         }
     }
     fn eating_effect(&mut self, w: &mut World, item: ItemStack, count: i32) {
+        if item.id == 373 {
+            let pitch = w.rand.next_float() * 0.1 + 0.9;
+            w.play_sound_at_entity(self, "random.drink", 0.5, pitch);
+        }
         if food_value(item.id).is_none() { return; }
         let pitch = -self.pitch * math::PI_F32 / 180.0;
         let yaw = -self.yaw * math::PI_F32 / 180.0;
         for _ in 0..count {
-            let mut velocity = Vec3D::new((self.rand.next_float() as f64 - 0.5) * 0.1, w.math_random.next_double() * 0.1 + 0.1, 0.0);
+            let mut velocity = Vec3D::new((self.rand.next_float() as f64 - 0.5) * 0.1, w.math_random.next_double() * 0.1 + 0.1, 0.0,);
             velocity = rotate_eating(velocity, pitch, yaw);
-            let mut position = Vec3D::new((self.rand.next_float() as f64 - 0.5) * 0.3, -self.rand.next_float() as f64 * 0.6 - 0.3, 0.6);
+            let mut position = Vec3D::new((self.rand.next_float() as f64 - 0.5) * 0.3, -self.rand.next_float() as f64 * 0.6 - 0.3, 0.6,);
             position = rotate_eating(position, pitch, yaw);
-            position = position.add(self.pos.x, self.pos.y + self.eye_height() as f64, self.pos.z);
-            w.spawn_particle(&format!("iconcrack_{}", item.id), position, velocity.add(0.0, 0.05, 0.0));
+            position = position.add(self.pos.x, self.pos.y + self.eye_height() as f64, self.pos.z,);
+            w.spawn_particle(&format!("iconcrack_{}", item.id), position, velocity.add(0.0, 0.05, 0.0),);
         }
         let volume = 0.5 + 0.5 * self.rand.next_int(2) as f32;
         let pitch = (self.rand.next_float() - self.rand.next_float()) * 0.2 + 1.0;
-        w.play_sound_at_entity(self, "mob.eat", volume, pitch);
+        w.play_sound_at_entity(self, "random.eat", volume, pitch);
     }
 }
 fn rotate_eating(v: Vec3D, pitch: f32, yaw: f32) -> Vec3D {

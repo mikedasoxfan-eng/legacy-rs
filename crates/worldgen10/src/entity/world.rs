@@ -26,6 +26,30 @@ impl World {
         }
         best
     }
+    pub fn closest_vulnerable_player(&self, pos: Vec3D, radius: f64) -> Option<usize> {
+        let mut best = None;
+        let mut distance = -1.0;
+        for (i, &(x, y, z)) in self.players.iter().enumerate() {
+            if self
+                .player_entities
+                .get(i)
+                .and_then(|id| *id)
+                .and_then(|id| self.entities.get(&id))
+                .is_some_and(|e| {
+                    e.player_state()
+                        .is_some_and(|s| s.capabilities.disable_damage)
+                })
+            {
+                continue;
+            }
+            let d = pos.square_distance(Vec3D::new(x, y, z));
+            if (radius < 0.0 || d < radius * radius) && (distance < 0.0 || d < distance) {
+                distance = d;
+                best = Some(i);
+            }
+        }
+        best
+    }
     pub fn entity_joined_world(&mut self, mut e: Entity) -> bool {
         let cx = floor(e.pos.x / 16.0);
         let cz = floor(e.pos.z / 16.0);
@@ -79,6 +103,17 @@ impl World {
                                 if let Some(e) = self.entities.get(id) {
                                     if e.bounding_box.intersects(b) {
                                         result.push(*id);
+                                        if let super::EntityKind::Dragon(s) = &e.kind {
+                                            for part in s.parts {
+                                                if Some(part) != exclude
+                                                    && self.entities.get(&part).is_some_and(|p| {
+                                                        p.bounding_box.intersects(b)
+                                                    })
+                                                {
+                                                    result.push(part);
+                                                }
+                                            }
+                                        }
                                     }
                                 }
                             }
@@ -148,7 +183,9 @@ impl World {
                     if !rider.dead && rider.riding == Some(e.entity_id) {
                         self.entities.insert(e.entity_id, e.clone());
                         self.update_entity_with_optional_force(&mut rider, true);
-                        if let Some(parent)=self.entities.remove(&e.entity_id) { *e=parent; }
+                        if let Some(parent) = self.entities.remove(&e.entity_id) {
+                            *e = parent;
+                        }
                     } else {
                         rider.riding = None;
                         e.ridden_by = None;
@@ -172,7 +209,9 @@ impl World {
         for id in unloaded {
             if let Some(e) = self.entities.remove(&id) {
                 self.unfile_entity(&e);
-                if self.fish_has_owner_reference(&e) {self.entities.insert(id,e);}
+                if self.fish_has_owner_reference(&e) {
+                    self.entities.insert(id, e);
+                }
             }
             self.loaded_entity_list.retain(|v| *v != id);
         }

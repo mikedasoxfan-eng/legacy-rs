@@ -214,7 +214,7 @@ impl Entity {
         if let Some(s) = self.player_state_mut() {
             s.prev_camera_yaw = s.camera_yaw;
             s.camera_yaw = 0.0;
-            let d = (self.pos.x - before.x, self.pos.y - before.y, self.pos.z - before.z);
+            let d = (self.pos.x - before.x, self.pos.y - before.y, self.pos.z - before.z,);
             self.add_mounted_movement_stat(w, d.0, d.1, d.2);
         }
     }
@@ -263,12 +263,13 @@ impl Entity {
         }
     }
     pub fn set_dead(&mut self, w: &mut World) {
-        if let EntityKind::Slime { size, .. } = self.kind {
-            if size > 1 && self.living.health == 0 {
-                for k in 0..4 {
+        if let EntityKind::Slime { size, .. } | EntityKind::MagmaCube { size, .. } = self.kind {
+            if !w.multiplayer_world && size > 1 && self.living.health <= 0 {
+                let count = 2 + self.rand.next_int(3);
+                for k in 0..count {
                     let x = (k % 2) as f32 - 0.5;
                     let z = (k / 2) as f32 - 0.5;
-                    let mut child = Self::living(w, "Slime").unwrap();
+                    let mut child = Self::living(w, self.kind.name()).unwrap();
                     child.set_slime_size(size / 2);
                     child.set_location_and_angles(
                         self.pos.x + (x * size as f32 / 4.0) as f64,
@@ -350,7 +351,7 @@ impl Entity {
             old <= 0
         };
         if search {
-            s.target = w.closest_player(self.pos, 100.0).map(Target::Player);
+            s.target = w.closest_vulnerable_player(self.pos, 100.0).map(Target::Player);
             if s.target.is_some() {
                 s.aggro_cooldown = 20;
             }
@@ -377,13 +378,13 @@ impl Entity {
             self.living.render_yaw_offset = self.yaw;
             if self.can_see_target(w, t) {
                 if s.attack_counter == 10 {
-                    let pitch = (self.rand.next_float() - self.rand.next_float()) * 0.2 + 1.0;
-                    w.play_sound_at_entity(self, "mob.ghast.charge", 10.0, pitch);
+                    w.auxiliary_effect(
+                        1007, (self.pos.x as i32, self.pos.y as i32, self.pos.z as i32),0,);
                 }
                 s.attack_counter += 1;
                 if s.attack_counter == 20 {
-                    let pitch = (self.rand.next_float() - self.rand.next_float()) * 0.2 + 1.0;
-                    w.play_sound_at_entity(self, "mob.ghast.fireball", 10.0, pitch);
+                    w.auxiliary_effect(
+                        1008, (self.pos.x as i32, self.pos.y as i32, self.pos.z as i32),0,);
                     let mut fireball = Self::fireball_from_owner(w, self, aim);
                     let look = self.look_vector().unwrap();
                     fireball.pos = Vec3D::new(
@@ -568,11 +569,11 @@ impl Entity {
     pub(super) fn wolf_hearts_or_smoke(&mut self, w: &mut World, hearts: bool) {
         for _ in 0..7 {
             let velocity = Vec3D::new(self.rand.next_gaussian() * 0.02,
-                self.rand.next_gaussian() * 0.02, self.rand.next_gaussian() * 0.02);
+                self.rand.next_gaussian() * 0.02, self.rand.next_gaussian() * 0.02,);
             let position = Vec3D::new(
                 self.pos.x + (self.rand.next_float() * self.width * 2.0) as f64 - self.width as f64,
                 self.pos.y + 0.5 + (self.rand.next_float() * self.height) as f64,
-                self.pos.z + (self.rand.next_float() * self.width * 2.0) as f64 - self.width as f64);
+                self.pos.z + (self.rand.next_float() * self.width * 2.0) as f64 - self.width as f64,);
             w.spawn_particle(if hearts { "heart" } else { "smoke" }, position, velocity);
         }
     }

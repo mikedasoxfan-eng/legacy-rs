@@ -13,6 +13,7 @@ pub enum DamageKind {
     Generic,
     Explosion,
     Magic,
+    IndirectMagic,
     Mob,
     Player,
     Arrow,
@@ -64,6 +65,7 @@ impl DamageSource {
             Generic => "generic",
             Explosion => "explosion",
             Magic => "magic",
+            IndirectMagic => "indirectMagic",
             Mob => "mob",
             Player => "player",
             Arrow => "arrow",
@@ -75,7 +77,19 @@ impl DamageSource {
         use DamageKind::*;
         matches!(
             self.kind,
-            OnFire | InWall | Drown | Starve | OutOfWorld | Generic | Magic
+            OnFire | InWall | Drown | Starve | Fall | OutOfWorld | Generic | Magic | IndirectMagic
+        )
+    }
+    pub fn is_fire(self) -> bool {
+        matches!(
+            self.kind,
+            DamageKind::InFire | DamageKind::OnFire | DamageKind::Lava | DamageKind::Fireball
+        )
+    }
+    pub fn is_projectile(self) -> bool {
+        matches!(
+            self.kind,
+            DamageKind::Arrow | DamageKind::Fireball | DamageKind::Thrown
         )
     }
     pub fn harms_creative(self) -> bool {
@@ -96,6 +110,7 @@ impl DamageSource {
                 | DamageKind::Arrow
                 | DamageKind::Fireball
                 | DamageKind::Thrown
+                | DamageKind::IndirectMagic
         )
     }
 }

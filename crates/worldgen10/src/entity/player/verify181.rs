@@ -12,9 +12,10 @@ fn frame(w: &mut World, p: &mut Entity, o: &mut Vec<u8>) {
     verify::state_bytes(p.player_state().unwrap(),p,&mut bytes);
     p.player_state_mut().unwrap().stat_log.clear();
     let s=p.player_state().unwrap();let food=&s.food;
-    for v in [food.level,food.prev_level,food.tick_timer,s.experience.points,s.experience.level,s.experience.total,s.xp_pickup_cooldown,s.sprint_ticks,s.sprint_toggle_timer,s.fly_toggle_timer,s.item_use_ticks] {i(&mut bytes,v);}
-    for v in [food.saturation,food.exhaustion,p.fov_multiplier(),p.living.swing_progress,p.living.prev_swing_progress,s.previous_forward,s.render_arm_yaw,s.render_arm_pitch,s.prev_render_arm_yaw,s.prev_render_arm_pitch] {f(&mut bytes,v);}
-    for v in [s.sprinting,s.capabilities.disable_damage,s.capabilities.flying,s.capabilities.allow_flying,s.capabilities.creative,s.previous_jump,p.is_blocking()] {bytes.push(v as u8);}
+    for v in [food.level,food.prev_level,food.tick_timer,s.experience.level,s.experience.total,s.xp_pickup_cooldown,s.sprint_ticks,s.sprint_toggle_timer,s.fly_toggle_timer,s.item_use_ticks,] {i(&mut bytes,v);}
+    for v in [
+        s.experience.points,food.saturation,food.exhaustion,p.fov_multiplier(),p.living.swing_progress,p.living.prev_swing_progress,s.previous_forward,s.render_arm_yaw,s.render_arm_pitch,s.prev_render_arm_yaw,s.prev_render_arm_pitch,] {f(&mut bytes,v);}
+    for v in [s.sprinting,s.capabilities.disable_damage,s.capabilities.flying,s.capabilities.allow_flying,s.capabilities.creative,s.previous_jump,p.is_blocking(),] {bytes.push(v as u8);}
     verify::write(&mut bytes,s.item_in_use);
     let arrows:Vec<_> = w.loaded_entity_list.iter().filter_map(|id|w.entities.get(id)).filter(|e|matches!(e.kind,EntityKind::Arrow(_))).collect();
     i(&mut bytes,arrows.len() as i32);
@@ -31,7 +32,7 @@ fn food(p:&mut Entity,level:i32,saturation:f32) {
     let s=p.player_state_mut().unwrap();s.food.level=level;s.food.saturation=saturation;s.food.exhaustion=0.0;s.food.tick_timer=0;
 }
 pub fn replay(kind:&str,ticks:i32)->Vec<u8> {
-    use crate::entity::{damage::{DamageKind,DamageSource},potion::PotionEffect};
+    use crate::entity::{damage::{DamageKind,DamageSource},potion::PotionEffect,};
     let mut w=super::super::verify181::world();w.item_random=crate::JavaRandom::new(600);
     let mut p=Entity::player(&mut w,"Player");p.set_location_and_angles(0.5,64.0,0.5,0.0,0.0);
     if kind=="flight" {p.set_creative(true);}
@@ -56,9 +57,9 @@ pub fn replay(kind:&str,ticks:i32)->Vec<u8> {
         if kind.starts_with("eat")&&t%80==0 {let id=kind[3..].parse().unwrap();food(&mut p,10,0.0);let s=p.player_state_mut().unwrap();s.inventory.main[0]=Some(ItemStack::new(id,3,0));s.inventory.current_item=0;p.use_item(&mut w);}
         if kind=="cancel"&&t%40==0 {food(&mut p,10,0.0);let item=ItemStack::new(260,3,0);let s=p.player_state_mut().unwrap();s.inventory.main[0]=Some(item);s.inventory.current_item=0;p.start_item_use(item,32);}
         if kind=="cancel"&&t%40==10 {p.player_state_mut().unwrap().inventory.current_item=1;}
-        if kind=="xp"&&t%3==0 {let orb=Entity::xp_orb(&mut w,Vec3D::new(p.pos.x,p.bounding_box.min_y,p.pos.z),1+t%37);w.entity_joined_world(orb);}
+        if kind=="xp"&&t%3==0 {let orb=Entity::xp_orb(&mut w,Vec3D::new(p.pos.x,p.bounding_box.min_y,p.pos.z),1+t%37,);w.entity_joined_world(orb);}
         if kind=="damage"&&t%30==0 {p.living.health=20;p.living.hearts_life=0;for j in 0..4 {p.player_state_mut().unwrap().inventory.armor[j]=Some(ItemStack::new(310+j as i32,1,j as i32*40));}let item=ItemStack::new(267,1,0);p.player_state_mut().unwrap().inventory.main[0]=Some(item);p.start_item_use(item,72000);}
-        if kind=="damage"&&t%5==0 {p.attack_from(&mut w,DamageSource::new(if t%10==0 {DamageKind::Starve}else {DamageKind::Cactus}),5);}
+        if kind=="damage"&&t%5==0 {p.attack_from(&mut w,DamageSource::new(if t%10==0 {DamageKind::Starve}else {DamageKind::Cactus}),5,);}
         if kind=="creativevoid"&&t==0 {p.set_creative(true);p.attack_from(&mut w,DamageSource::new(DamageKind::OutOfWorld),4);}
         if kind=="speed"&&t==0 {p.add_potion_effect(PotionEffect::new(1,80,1));}
         if kind=="haste"&&t%100==0 {p.add_potion_effect(PotionEffect::new(3,80,t/100%8));}
@@ -66,7 +67,7 @@ pub fn replay(kind:&str,ticks:i32)->Vec<u8> {
         if kind=="nausea"&&t==0 {p.add_potion_effect(PotionEffect::new(9,300,0));}
         if kind=="creativedamage" {
             p.set_creative(true);
-            if t%5==0 {p.attack_from(&mut w,DamageSource::new(if t%10==0 {DamageKind::Starve}else {DamageKind::Cactus}),5);}
+            if t%5==0 {p.attack_from(&mut w,DamageSource::new(if t%10==0 {DamageKind::Starve}else {DamageKind::Cactus}),5,);}
         }
         if kind=="identity" {
             if t%80==0 {food(&mut p,10,0.0);let s=p.player_state_mut().unwrap();let item=ItemStack::new(260,3,0);s.inventory.main[0]=Some(item);s.inventory.current_item=0;p.start_item_use(item,32);}
@@ -110,7 +111,7 @@ pub fn sp_boundaries()->Vec<u8> {
         };
         p.player_action();
         let s=p.player_state().unwrap();
-        for v in [s.render_arm_yaw,s.render_arm_pitch,s.prev_render_arm_yaw,s.prev_render_arm_pitch,p.living.move_strafing,p.living.move_forward] {f(&mut o,v);}
+        for v in [s.render_arm_yaw,s.render_arm_pitch,s.prev_render_arm_yaw,s.prev_render_arm_pitch,p.living.move_strafing,p.living.move_forward,] {f(&mut o,v);}
         o.push(p.living.is_jumping as u8);
         // Check the actual fields consumed by the first-person renderer too.
         assert_eq!(s.arm_yaw,[s.prev_render_arm_yaw,s.render_arm_yaw]);
@@ -122,7 +123,7 @@ pub fn sp_boundaries()->Vec<u8> {
         s.ground_speed=(r.next_int(2001)-1000) as f32/1000.0;
         if c%4==0 {p.add_potion_effect(PotionEffect::new(1,100,c%8));}
         if c%4==1 {p.add_potion_effect(PotionEffect::new(2,100,c%8));}
-        p.start_item_use(ItemStack::new(if c%3==0 {261}else {267},1,0),72000-(c%101-30));
+        p.start_item_use(ItemStack::new(if c%3==0 {261}else {267},1,0),72000-(c%101-30),);
         f(&mut o,p.fov_multiplier());p.clear_item_use();
     }
     let mut p=Entity::player(&mut w,"Player");p.set_location_and_angles(0.5,64.0,0.5,0.0,0.0);

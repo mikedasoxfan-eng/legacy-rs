@@ -1,36 +1,31 @@
 //! Singleplayer Beta 1.8.1 entity simulation. Arithmetic follows the client source.
-pub mod aquatic;
+pub mod animal;
 pub mod api_verify181;
+pub mod aquatic;
 pub mod block_hooks;
 pub mod block_table;
 pub mod blocks;
-pub mod client_tick;
-pub mod creature;
-pub mod combat_verify181;
 pub mod branches_verify181;
+pub mod client_tick;
+pub mod combat_verify181;
+pub mod creature;
 pub mod damage;
 pub mod data_watcher;
-pub mod registry;
+pub mod dragon;
 pub mod explosion;
+pub mod factory_nbt;
 pub mod fishing;
 pub mod geometry;
 pub mod hostile;
-pub mod living;
 pub mod item;
 pub mod item_block;
 pub mod item_stack;
-pub mod factory_nbt;
-pub mod round10_verify181;
-pub mod round11_verify181;
+pub mod living;
+pub mod living10;
+pub mod mobs10;
 pub mod mobs181;
 pub mod nbt;
 pub mod network;
-pub mod watcher;
-pub mod round4_verify181;
-pub mod round5_verify181;
-pub mod round6_verify181;
-pub mod round7_verify181;
-pub mod round8_verify181;
 pub mod objects;
 pub mod painting;
 pub mod path;
@@ -38,6 +33,15 @@ pub mod physics;
 pub mod player;
 pub mod potion;
 pub mod projectile;
+pub mod projectiles10;
+pub mod registry;
+pub mod round10_verify181;
+pub mod round11_verify181;
+pub mod round4_verify181;
+pub mod round5_verify181;
+pub mod round6_verify181;
+pub mod round7_verify181;
+pub mod round8_verify181;
 mod sounds;
 pub mod spawning;
 pub mod special;
@@ -45,6 +49,7 @@ pub mod vehicle_verify;
 pub mod vehicles;
 pub mod verify;
 pub mod verify181;
+pub mod watcher;
 pub mod world;
 pub mod xp;
 use crate::world::tile::ItemStack;
@@ -88,6 +93,15 @@ impl EntitySeedSource {
 
 #[derive(Clone, Debug)]
 pub enum EntityKind {
+    Dragon(Box<dragon::DragonState>),
+    DragonPart {
+        parent: i32,
+        name: &'static str,
+    },
+    EnderCrystal {
+        rotation: i32,
+        health: i32,
+    },
     Fish(fishing::FishState),
     Painting(painting::PaintingState),
     Minecart(vehicles::MinecartState),
@@ -109,6 +123,10 @@ pub enum EntityKind {
         fuse: i32,
     },
     Arrow(projectile::ArrowState),
+    EnderPearl(projectile::ArrowState),
+    Potion(projectile::ArrowState, i32),
+    EnderEye(projectiles10::EyeState),
+    SmallFireball(projectile::FireballState),
     Snowball(projectile::ArrowState),
     Egg(projectile::ArrowState),
     Fireball(projectile::FireballState),
@@ -147,6 +165,12 @@ pub enum EntityKind {
         fleece_color: u8,
     },
     Cow,
+    Mooshroom,
+    Blaze(mobs10::BlazeState),
+    Snowman,
+    Villager {
+        profession: i32,
+    },
     Chicken {
         flap: f32,
         prev_flap: f32,
@@ -156,6 +180,12 @@ pub enum EntityKind {
         egg_timer: i32,
     },
     Squid(aquatic::SquidState),
+    MagmaCube {
+        size: i32,
+        squish: f32,
+        prev_squish: f32,
+        jump_delay: i32,
+    },
     Slime {
         size: i32,
         squish: f32,
@@ -166,6 +196,9 @@ pub enum EntityKind {
 impl EntityKind {
     pub fn name(&self) -> &'static str {
         match self {
+            Self::Dragon(..) => "EnderDragon",
+            Self::DragonPart { .. } => "DragonPart",
+            Self::EnderCrystal { .. } => "EnderCrystal",
             Self::Fish(..) => "FishingHook",
             Self::Painting(..) => "Painting",
             Self::Minecart(..) => "Minecart",
@@ -175,6 +208,10 @@ impl EntityKind {
             Self::Wolf(..) => "Wolf",
             Self::Tnt { .. } => "PrimedTnt",
             Self::Arrow(..) => "Arrow",
+            Self::EnderPearl(..) => "ThrownEnderpearl",
+            Self::Potion(..) => "Potion",
+            Self::EnderEye(..) => "EyeOfEnderSignal",
+            Self::SmallFireball(..) => "SmallFireball",
             Self::Snowball(..) => "Snowball",
             Self::Egg(..) => "ThrownEgg",
             Self::Fireball(..) => "Fireball",
@@ -194,14 +231,21 @@ impl EntityKind {
             Self::Pig { .. } => "Pig",
             Self::Sheep { .. } => "Sheep",
             Self::Cow => "Cow",
+            Self::Mooshroom => "MushroomCow",
+            Self::Blaze(..) => "Blaze",
+            Self::Snowman => "SnowMan",
+            Self::Villager { .. } => "Villager",
             Self::Chicken { .. } => "Chicken",
             Self::Squid(..) => "Squid",
             Self::Slime { .. } => "Slime",
+            Self::MagmaCube { .. } => "LavaSlime",
         }
     }
     pub fn is_mob(&self) -> bool {
         matches!(
             self,
+            Self::Blaze(..)
+                |
             Self::Zombie
                 | Self::Skeleton
                 | Self::Spider
@@ -217,6 +261,8 @@ impl EntityKind {
         !matches!(
             self,
             Self::Fish(..)
+                | Self::DragonPart { .. }
+                | Self::EnderCrystal { .. }
                 | Self::Painting(..)
                 | Self::Minecart(..)
                 | Self::Boat(..)
@@ -225,6 +271,10 @@ impl EntityKind {
                 | Self::FallingSand { .. }
                 | Self::Tnt { .. }
                 | Self::Arrow(..)
+                | Self::EnderPearl(..)
+                | Self::Potion(..)
+                | Self::EnderEye(..)
+                | Self::SmallFireball(..)
                 | Self::Snowball(..)
                 | Self::Egg(..)
                 | Self::Fireball(..)
@@ -490,6 +540,53 @@ impl Entity {
         mut damage: i32,
     ) -> bool {
         let attacker = source.attacker;
+        if matches!(self.kind, EntityKind::SmallFireball(..)) {
+            return false;
+        }
+        if matches!(self.kind, EntityKind::Dragon(..)) {
+            return false;
+        }
+        if let EntityKind::DragonPart { parent, name } = self.kind {
+            if let Some(mut dragon) = w.entities.remove(&parent) {
+                let hit = dragon.attack_dragon_part(w, name == "head", source, damage);
+                w.entities.insert(parent, dragon);
+                return hit;
+            }
+            return true;
+        }
+        if matches!(self.kind, EntityKind::EnderCrystal { .. }) {
+            if !self.dead && !w.multiplayer_world {
+                if let EntityKind::EnderCrystal { health, .. } = &mut self.kind {
+                    *health = 0;
+                }
+                self.dead = true;
+                w.create_explosion(None, self.pos, 6.0);
+            }
+            return true;
+        }
+        if matches!(self.kind, EntityKind::Enderman(..)) && source.indirect {
+            for _ in 0..64 {
+                if self.enderman_teleport_random(w) {
+                    return true;
+                }
+            }
+            return false;
+        }
+        if matches!(self.kind, EntityKind::Ghast(..))
+            && source.kind == damage::DamageKind::Fireball
+            && attacker.is_some_and(|id| {
+                id < 0
+                    || w.entities
+                        .get(&id)
+                        .is_some_and(|e| e.player_state().is_some())
+            })
+        {
+            self.living_attack(w, source, 1000);
+            if let Some(player) = attacker.and_then(|id| w.entities.get_mut(&id)) {
+                player.add_stat(5242880 + 19, 1);
+            }
+            return true;
+        }
         if matches!(self.kind, EntityKind::Silverfish { .. }) && source.is_entity() {
             if let EntityKind::Silverfish { ally_timer } = &mut self.kind {
                 if *ally_timer <= 0 {
@@ -502,10 +599,13 @@ impl Entity {
             EntityKind::Pig { .. }
                 | EntityKind::Sheep { .. }
                 | EntityKind::Cow
+                | EntityKind::Mooshroom
                 | EntityKind::Chicken { .. }
                 | EntityKind::Wolf(..)
         ) {
             self.living.flee_ticks = 60;
+            self.living.target = None;
+            self.living.in_love = 0;
         }
 
         if matches!(self.kind, EntityKind::Painting(_)) {
@@ -587,6 +687,8 @@ impl Entity {
     }
     pub fn on_update(&mut self, w: &mut World) {
         match self.kind {
+            EntityKind::EnderCrystal { .. } => self.update_ender_crystal(w),
+            EntityKind::DragonPart { .. } => self.on_entity_update(w),
             EntityKind::Fish(..) => self.update_fish(w),
             EntityKind::Painting(..) => self.update_painting(w),
             EntityKind::Minecart(..) => self.update_minecart(w),
@@ -597,7 +699,11 @@ impl Entity {
             EntityKind::FallingSand { .. } => self.update_falling_sand(w),
             EntityKind::Tnt { .. } => self.update_tnt(w),
             EntityKind::Arrow(..) => self.update_arrow(w),
-            EntityKind::Snowball(..) | EntityKind::Egg(..) => self.update_throwable(w),
+            EntityKind::Snowball(..) | EntityKind::Egg(..)
+            | EntityKind::EnderPearl(..)
+            | EntityKind::Potion(..) => self.update_throwable(w),
+            EntityKind::EnderEye(..) => self.update_ender_eye(w),
+            EntityKind::SmallFireball(..) => self.update_small_fireball(w),
             EntityKind::Fireball(..) => self.update_fireball(w),
             EntityKind::Lightning { .. } => self.update_lightning(w),
             _ => self.update_hostile_living(w),

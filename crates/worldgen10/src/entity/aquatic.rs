@@ -24,16 +24,22 @@ pub struct SquidState {
 impl Entity {
     pub fn set_slime_size(&mut self, new_size: i32) {
         self.data_watcher.update(16, super::data_watcher::Value::Byte(new_size as i8)).unwrap();
-        if let EntityKind::Slime { size, .. } = &mut self.kind {
+        if let EntityKind::Slime { size, .. } | EntityKind::MagmaCube { size, .. } = &mut self.kind {
             *size = new_size as i8 as i32;
         }
         self.width = 0.6 * new_size as f32;
         self.height = 0.6 * new_size as f32;
-        self.living.health = new_size * new_size;
+        self.living.health = self.max_health();
         self.set_position(self.pos.x, self.pos.y, self.pos.z);
     }
     pub(super) fn squid_action_state(&mut self, w: &mut World) {
+        self.living.entity_age += 1;
         if let EntityKind::Squid(s) = &mut self.kind {
+            if self.living.entity_age > 100 {
+                s.motion_x = 0.0;
+                s.motion_y = 0.0;
+                s.motion_z = 0.0;
+            } else
             if self.rand.next_int(50) == 0
                 || !self.in_water
                 || (s.motion_x == 0.0 && s.motion_y == 0.0 && s.motion_z == 0.0)
@@ -48,11 +54,18 @@ impl Entity {
     }
     pub(super) fn slime_action_state(&mut self, w: &mut World) {
         self.despawn(w);
-        let player = w.closest_player(self.pos, 16.0);
+        let player = w.closest_vulnerable_player(self.pos, 16.0);
+        let magma = matches!(self.kind, EntityKind::MagmaCube { .. });
         if let Some(p) = player {
-            self.face_target(w, Target::Player(p), 10.0, 20.0);
+            self.face_target(w, Target::Player(p), 10.0, 0.0);
         }
         if let EntityKind::Slime {
+            size,
+            squish,
+            jump_delay,
+            ..
+        }
+        | EntityKind::MagmaCube {
             size,
             squish,
             jump_delay,
@@ -67,7 +80,7 @@ impl Entity {
                 false
             };
             if jump {
-                *jump_delay = self.rand.next_int(20) + 10;
+                *jump_delay = ( self.rand.next_int(20) + 10) * if magma { 4 } else { 1 };
                 if player.is_some() {
                     *jump_delay /= 3;
                 }
@@ -76,9 +89,17 @@ impl Entity {
                     let pitch =
                         ((self.rand.next_float() - self.rand.next_float()) * 0.2 + 1.0) * 0.8;
                     w.play_sound(
-                        "mob.slime",
+                        if magma {
+                            if *size > 1 {
+                                "mob.magmacube.big"
+                            } else {
+                                "mob.magmacube.small"
+                            }
+                        } else {
+                        "mob.slime"
+                        },
                         self.pos.add(0.0, -(self.y_offset as f64), 0.0),
-                        0.6,
+                        0.4 * *size as f32,
                         pitch,
                     );
                 }
@@ -161,7 +182,8 @@ impl Entity {
         }
     }
     pub(super) fn slime_after_update(&mut self, w: &mut World, previous_ground: bool) {
-        if let EntityKind::Slime { size, squish, .. } = &mut self.kind {
+        let magma = matches!(self.kind, EntityKind::MagmaCube { .. });
+        if let EntityKind::Slime { size, squish, .. } | EntityKind::MagmaCube { size, squish, .. } = &mut self.kind {
             if self.on_ground && !previous_ground {
                 for _ in 0..*size * 8 {
                     let angle = self.rand.next_float() * PI * 2.0;
@@ -169,7 +191,8 @@ impl Entity {
                     let dx = math::sin(angle) * *size as f32 * 0.5 * radius;
                     let dz = math::cos(angle) * *size as f32 * 0.5 * radius;
                     w.spawn_particle(
-                        "slime",
+                        if magma { "flame" } else {
+                        "slime" },
                         super::Vec3D::new(
                             self.pos.x + dx as f64,
                             self.bounding_box.min_y,
@@ -178,19 +201,27 @@ impl Entity {
                         super::Vec3D::default(),
                     );
                 }
-                if *size > 2 {
+                if magma || *size > 2 {
                     let pitch =
                         ((self.rand.next_float() - self.rand.next_float()) * 0.2 + 1.0) / 0.8;
                     w.play_sound(
-                        "mob.slime",
+                        if magma {
+                            if *size > 1 {
+                                "mob.magmacube.big"
+                            } else {
+                                "mob.magmacube.small"
+                            }
+                        } else {
+                        "mob.slime"
+                        },
                         self.pos.add(0.0, -(self.y_offset as f64), 0.0),
-                        0.6,
+                        0.4 * *size as f32,
                         pitch,
                     );
                 }
                 *squish = -0.5;
             }
-            *squish *= 0.6;
+            *squish *= if magma { 0.9 } else { 0.6 };
         }
     }
 }

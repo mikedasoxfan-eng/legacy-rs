@@ -13,9 +13,6 @@ impl World {
         if !self.all_players_fully_asleep() {
             return;
         }
-        if self.spawn_hostile_mobs && self.difficulty >= 1 && self.perform_sleep_spawning() {
-            return;
-        }
         let time = self.world_time.wrapping_add(24000);
         self.world_time = time - time % 24000;
         for id in self.player_entities.clone().into_iter().flatten() {

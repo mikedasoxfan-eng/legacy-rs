@@ -9,7 +9,7 @@ use worldgen::world::Dimension;
 use worldgen::World;
 
 #[test]
-fn hell_biome_queries_preserve_shared_climate_buffers() {
+fn hell_biome_queries_replace_shared_climate_buffers() {
     let mut source = BiomeSource::hell();
     assert_eq!(source.biome_at(-12345, 67890), Biome::Hell);
     assert!(source.temperature.is_empty()); // override does not call loadBlockGeneratorData
@@ -21,12 +21,12 @@ fn hell_biome_queries_preserve_shared_climate_buffers() {
     source.temperature[5] = 0.25;
     source.humidity[5] = 0.75;
     source.biomes(&mut biomes, 0, 0, 1, 1);
-    assert_eq!(source.temperature[5], 0.25); // only the requested prefix is filled
-    assert_eq!(source.humidity[5], 0.75);
+    assert_eq!(source.temperature, vec![1.0]);
+    assert_eq!(source.humidity, vec![0.0]);
     let mut temperatures = vec![0.5; 4];
     source.temperatures(&mut temperatures, 0, 0, 1, 2);
-    assert_eq!(temperatures, vec![1.0, 1.0, 0.5, 0.5]);
-    assert_eq!(source.temperature[5], 0.25);
+    assert_eq!(temperatures, vec![1.0, 1.0]);
+    assert_eq!(source.temperature, vec![1.0]);
     assert_eq!(source.raw_temperature(999999, -999999), 1.0);
 }
 
@@ -36,13 +36,16 @@ fn nether_chunks_start_with_uninitialized_height_and_light() {
     w.load_chunk(0, 0);
     let c = w.chunk(0, 0);
     assert!(c.blocks.iter().any(|&b| b == block::NETHERRACK));
-    assert_eq!(c.height_map, [0; 256]);
+    assert_eq!(&*c.height_map, &[0; 256]);
     assert!(c.sky_light.0.iter().all(|&v| v == 0));
     assert!(c.block_light.0.iter().all(|&v| v == 0));
     assert!(w.light_queue.is_empty());
     assert_eq!(w.light_brightness_table[0].to_bits(), 0.1f32.to_bits());
     assert_eq!(w.light_brightness_table[15].to_bits(), 1.0f32.to_bits());
-    assert_eq!(World::new(0, 1).light_brightness_table[0].to_bits(), 0.05f32.to_bits());
+    assert_eq!(
+        World::new(0, 1).light_brightness_table[0].to_bits(),
+        0.0f32.to_bits()
+    );
 }
 
 #[test]
@@ -67,13 +70,15 @@ fn only_metadata_writes_skip_relighting_in_hell() {
 }
 
 #[test]
-fn repairing_a_saved_chunk_honors_the_provider() {
+fn absent_saved_chunk_arrays_remain_empty() {
     let mut nbt = Compound::new();
     nbt.put("Blocks", Tag::ByteArray(vec![0; CHUNK_VOLUME]));
-    // Missing HeightMap/SkyLight forces ChunkLoader's func_1024_c repair path.
+    // Missing tags become non-null, zero-length arrays; NibbleArray.isValid tests null only.
     let hell = worldgen::storage::chunk_from_nbt_for_dimension(&nbt, Dimension::Nether).unwrap();
     let overworld = worldgen::storage::chunk_from_nbt(&nbt).unwrap();
     assert!(hell.sky_light.0.iter().all(|&v| v == 0));
-    assert_eq!(overworld.sky_light.get(0, 127, 0), 15);
+    assert!(overworld.sky_light.0.is_empty());
+    assert!(hell.height_map.is_empty());
+    assert!(overworld.data.0.is_empty());
     assert_eq!(hell.height_map, overworld.height_map);
 }
