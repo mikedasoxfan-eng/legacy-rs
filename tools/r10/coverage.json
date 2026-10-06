@@ -2,6 +2,9 @@
  "AchievementList": [
   "r10gui2 registry original bytecode"
  ],
+ "ActiveRenderInfo": [
+  "ActiveRenderInfo_unproject_view_vectors_eye_block"
+ ],
  "BiomeCache": [
   "r10world3 biomecache/-4172144997902289642",
   "r10world3 biomecache/-9223372036854775808",
@@ -18556,6 +18559,15 @@
  "EntityReddustFX": [
   "particlefx_EntityReddustFX"
  ],
+ "EntityRenderer": [
+  "ActiveRenderInfo_unproject_view_vectors_eye_block",
+  "EntityRenderer_fog_blindness_breathing_nosky_cloud",
+  "EntityRenderer_lightmap_end",
+  "EntityRenderer_lightmap_overworld_nether",
+  "EntityRenderer_rain_snow_temperature_particles",
+  "EntityRenderer_smooth_camera",
+  "FirstPerson_camera_fov_hand_glint_player_poses_targeting_fog_maps"
+ ],
  "EntitySheep": [
   "entities2: breeding"
  ],
@@ -24377,6 +24389,10 @@
   "blocks3: stackdata11",
   "blocks3: stacknbt11"
  ],
+ "ItemRenderer": [
+  "FirstPerson_camera_fov_hand_glint_player_poses_targeting_fog_maps",
+  "RenderBiped_held_potion_passes_glint"
+ ],
  "ItemSpade": [
   "blocks3: animation",
   "blocks3: blockfull11",
@@ -27567,6 +27583,9 @@
   "r10world4 worldinfo/-1",
   "r10world4 worldinfo/0",
   "r10world4 worldinfo/42"
+ ],
+ "MapItemRenderer": [
+  "FirstPerson_camera_fov_hand_glint_player_poses_targeting_fog_maps"
  ],
  "MaterialWeb": [
   "blocks3: animation",
@@ -32784,6 +32803,12 @@
   "r10world3 world/weather",
   "r10world3 worldheight"
  ],
+ "OpenGlCapsChecker": [
+  "OpenGlHelper_OpenGlCapsChecker_units_capabilities"
+ ],
+ "OpenGlHelper": [
+  "OpenGlHelper_OpenGlCapsChecker_units_capabilities"
+ ],
  "PathEntity": [
   "entities2: pathvalues"
  ],
@@ -34479,6 +34504,16 @@
   "r10world3 world/weather",
   "r10world3 worldheight"
  ],
+ "Render": [
+  "Render_shadow_baby_animals",
+  "Render_shadow_fire"
+ ],
+ "RenderBiped": [
+  "RenderBiped_held_potion_passes_glint",
+  "RenderItem_dropped_gui_overlay_renderers",
+  "RenderItem_gui_potion_zlevel_untinted_glint",
+  "RenderItem_pickup_renderers"
+ ],
  "RenderBlaze": [
   "RenderBlaze"
  ],
@@ -34552,6 +34587,9 @@
  "RenderEnchantmentTable": [
   "RenderEnchantmentTable"
  ],
+ "RenderEndPortal": [
+  "RenderEndPortal_layers_texgen_parallax"
+ ],
  "RenderEnderCrystal": [
   "RenderEnderCrystal"
  ],
@@ -34569,6 +34607,28 @@
  ],
  "RenderFish": [
   "fish_renderer"
+ ],
+ "RenderGlobal": [
+  "FirstPerson_camera_fov_hand_glint_player_poses_targeting_fog_maps",
+  "RenderGlobal_clouds_fancy_fast_anaglyph",
+  "RenderGlobal_dimension_sky_end_moon_horizon",
+  "RenderGlobal_particle_factory_names",
+  "RenderGlobal_playAuxSFX_spawnParticle_setting",
+  "RenderGlobal_sky_gl_colors_sunrise"
+ ],
+ "RenderHelper": [
+  "RenderHelper_item_and_gui_lighting"
+ ],
+ "RenderItem": [
+  "RenderItem_dropped_gui_overlay_renderers",
+  "RenderItem_gui_potion_zlevel_untinted_glint",
+  "RenderItem_pickup_renderers"
+ ],
+ "RenderLiving": [
+  "FirstPerson_camera_fov_hand_glint_player_poses_targeting_fog_maps",
+  "RenderLiving_baby_animals_child_models_limbs",
+  "RenderLiving_ghast_pigzombie_giant",
+  "RenderLiving_mob_renderers_passes_overlays"
  ],
  "RenderMagmaCube": [
   "RenderMagmaCube"
@@ -34589,6 +34649,11 @@
  ],
  "RenderPig": [
   "renderfx_RenderPig"
+ ],
+ "RenderPlayer": [
+  "FirstPerson_camera_fov_hand_glint_player_poses_targeting_fog_maps",
+  "RenderPlayer_player_living_round4",
+  "RenderPlayer_player_living_round6"
  ],
  "RenderSheep": [
   "renderfx_RenderSheep"
@@ -39575,6 +39640,9 @@
   "r10world4 worldinfo/-1",
   "r10world4 worldinfo/0",
   "r10world4 worldinfo/42"
+ ],
+ "Tessellator": [
+  "Tessellator_draw_bytes_brightness_units"
  ],
  "TextureOffset": [
   "r10world3 biomecache/-4172144997902289642",
@@ -46206,6 +46274,9 @@
   "r10world3 world/storage",
   "r10world3 world/weather",
   "r10world3 worldheight"
+ ],
+ "WorldRenderer": [
+  "WorldRenderer_sections_passes_skip_tiles"
  ],
  "WorldSavedData": [
   "r10world3 biomecache/-4172144997902289642",
