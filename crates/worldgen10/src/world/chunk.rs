@@ -218,6 +218,8 @@ impl Chunk {
     }
 
     pub fn set_light(&mut self, kind: LightKind, x: i32, y: i32, z: i32, v: i32) {
+        // Chunk.setLightValue marks the chunk before the no-sky guard.
+        self.modified = true;
         match kind {
             LightKind::Sky => { if !self.has_no_sky10 { self.sky_light.set(x, y, z, v); } },
             LightKind::Block => self.block_light.set(x, y, z, v),

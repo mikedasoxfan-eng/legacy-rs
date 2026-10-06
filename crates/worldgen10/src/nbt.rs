@@ -359,17 +359,14 @@ pub fn write_root_canonical<W: Write>(w: &mut W, root: &Compound) -> io::Result<
 
 /// `CompressedStreamTools.func_1141_a`: the root must be a compound.
 pub fn read_root<R: Read>(r: &mut R) -> io::Result<Compound> {
-    let ty = read_n::<1, _>(r)?[0];
-    if ty != 10 {
-        return Err(io::Error::new(
+    // CompressedStreamTools reads the entire named tag before checking its type.
+    // This preserves both stream position and EOF precedence for non-compounds.
+    match NamedTag10::read(r)?.payload {
+        Some(Tag::Compound(c)) => Ok(c),
+        _ => Err(io::Error::new(
             io::ErrorKind::InvalidData,
             "Root tag must be a named compound tag",
-        ));
-    }
-    let _name = read_utf(r)?;
-    match Tag::read_payload(10, r, 0)? {
-        Tag::Compound(c) => Ok(c),
-        _ => unreachable!(),
+        )),
     }
 }
 
@@ -386,6 +383,16 @@ pub fn write_gzip(root: &Compound) -> io::Result<Vec<u8>> {
 #[cfg(test)]
 mod tests10 {
     use super::*;
+    #[test]
+    fn root_type_rejection_consumes_payload_and_preserves_eof_precedence() {
+        let mut bytes = &b"\x03\x00\x01x\x00\x00\x00\x07\xaa"[..];
+        let error = read_root(&mut bytes).unwrap_err();
+        assert_eq!(error.kind(), io::ErrorKind::InvalidData);
+        assert_eq!(error.to_string(), "Root tag must be a named compound tag");
+        assert_eq!(bytes, [0xaa]);
+        let error = read_root(&mut &b"\x03\x00\x01x\x00"[..]).unwrap_err();
+        assert_eq!(error.kind(), io::ErrorKind::UnexpectedEof);
+    }
     #[test]
     fn modified_utf_uses_nul_and_surrogate_pairs_and_rejects_bad_sequences() {
         let mut bytes=vec![];write_utf(&mut bytes,"a\0é😀").unwrap();

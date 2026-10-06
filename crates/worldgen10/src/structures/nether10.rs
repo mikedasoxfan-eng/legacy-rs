@@ -167,6 +167,21 @@ impl NetherBridgeGenerator {
 mod tests {
     use super::*;
     #[test]
+    fn fortress_provider_list_preserves_order_weights_and_registered_factories() {
+        let mut w = World::with_dimension(42, 7, crate::world::Dimension::Nether);
+        let start = NetherStart::new(&mut JavaRandom::new(7), 4, -7);
+        let [x, y, z] = start.pieces[0].bounds().center();
+        w.nether_bridges10.merge_start(super::super::ChunkCoordIntPair { x: 4, z: -7 }.packed(), start);
+        let entries = w.provider_spawn_list10(0, x, y, z);
+        assert_eq!(entries.iter().map(|e| (e.entity, e.weight, e.min, e.max)).collect::<Vec<_>>(),
+            [("Blaze", 10, 2, 3), ("PigZombie", 10, 4, 4), ("LavaSlime", 3, 4, 4)]);
+        for entry in entries {
+            assert!(crate::entity::registry::create(&mut w, entry.entity).is_some());
+        }
+        let outside = w.provider_spawn_list10(0, 0, 64, 0);
+        assert_eq!(outside.iter().map(|e| e.entity).collect::<Vec<_>>(), ["Ghast", "PigZombie", "LavaSlime"]);
+    }
+    #[test]
     fn fortress_throne_uses_a_one_shot_blaze_spawner() {
         let mut w=World::with_dimension(42,7,crate::world::Dimension::Nether);
         w.chunks.insert((0,0),Box::new(crate::world::chunk::Chunk::new(0,0,vec![0;32768].into_boxed_slice())));

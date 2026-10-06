@@ -27,7 +27,7 @@ impl World {
     /// IChunkProvider.func_40377_a, category 0=monster, 1=creature, 2=waterCreature.
     pub fn provider_spawn_list10(&mut self, category:i32,x:i32,y:i32,z:i32)->Vec<crate::weighted::SpawnListEntry> {
         if self.dimension==super::Dimension::Nether&&category==0&&self.nether_bridges10.contains(x,y,z) {
-            return [("Blaze",10,2,3),("PigZombie",10,4,4),("MagmaCube",3,4,4)].into_iter()
+            return [("Blaze",10,2,3),("PigZombie",10,4,4),("LavaSlime",3,4,4)].into_iter()
                 .map(|(entity,weight,min,max)|crate::weighted::SpawnListEntry{entity,weight,min,max}).collect();
         }
         let biome=self.terrain.biome_source.biome_at((x>>4)<<4,(z>>4)<<4);
