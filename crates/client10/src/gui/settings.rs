@@ -139,7 +139,7 @@ pub struct GameSettings {
     pub key_bindings: Vec<KeyBinding>,
     pub difficulty: i32,
     pub hide_gui: bool,
-    pub third_person_view: bool,
+    pub third_person_view: i32,
     pub show_debug_info: bool,
     pub last_server: String,
     pub smooth_camera: bool,
@@ -176,7 +176,7 @@ impl Default for GameSettings {
             key_bindings: [9,10,0,1,2,3,4,8,6,5,7,11,12].map(|i|bindings[i].clone()).to_vec(),
             difficulty: 2,
             hide_gui: false,
-            third_person_view: false,
+            third_person_view: 0,
             show_debug_info: false,
             last_server: String::new(),
             smooth_camera: false,
@@ -194,6 +194,9 @@ fn java_float(f: f32) -> String {
 }
 
 impl GameSettings {
+    pub fn should_render_clouds(&self) -> bool {
+        self.render_distance < 2 && self.clouds
+    }
     pub fn input_event(&mut self,code:i32,pressed:bool) {
         self.key_state(code,pressed);
         if pressed {self.key_tick(code);}

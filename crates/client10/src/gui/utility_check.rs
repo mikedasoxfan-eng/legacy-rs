@@ -12,6 +12,7 @@ pub(super) fn fixture_ui(saves_dir: std::path::PathBuf) -> super::Ui {
         lang.load(jar.text(name).unwrap().as_bytes());
     }
     super::Ui {
+        release: Default::default(),
         packs: crate::texture_packs::TexturePackList::new(&saves_dir, "Default"),
         pack_icons: Vec::new(),
         gl: super::gl::Gl::new(),

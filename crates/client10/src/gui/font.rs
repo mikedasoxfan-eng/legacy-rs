@@ -6,6 +6,8 @@ use crate::render::gpu::Image;
 
 pub struct FontRenderer {
     char_width: [i32; 256],
+    pub line_height: i32,
+    pub random: std::sync::Mutex<worldgen::JavaRandom>,
     pub texture: TexId,
     /// `ChatAllowedCharacters.allowedCharacters` (from `font.txt`).
     allowed: Vec<char>,
@@ -64,7 +66,7 @@ impl FontRenderer {
             .filter(|l| !l.starts_with('#'))
             .flat_map(|l| l.chars())
             .collect();
-        FontRenderer { char_width, texture, allowed, colors }
+        FontRenderer { char_width, texture, allowed, colors, line_height: 8, random: std::sync::Mutex::new(worldgen::JavaRandom::new(0)) }
     }
 
     pub fn allows(&self, c: char) -> bool {
@@ -77,20 +79,15 @@ impl FontRenderer {
         let alpha=if color>>24&255==0 {1.0} else {(color>>24&255) as f32/255.0};
         g.material=[(color>>16&255) as f32/255.0,(color>>8&255) as f32/255.0,(color&255) as f32/255.0,alpha];
         g.push();g.translate(x as f32,y as f32,0.0);
-        let chars:Vec<_>=s.chars().collect();let mut i=0;
-        while i<chars.len() {
-            while i+1<chars.len() && chars[i]=='§' {
-                let code=chars[i+1].to_ascii_lowercase();let k="0123456789abcdef".find(code).unwrap_or(15);
-                let [r,b,c]=self.colors[k];g.material=[r,b,c,1.0];i+=2;
+        for command in self.display_list_commands(s, false) {
+            if command >= 256 {
+                let [r, green, b] = self.colors[(command - 256) as usize];
+                g.material = [r, green, b, 1.0];
+            } else {
+                let c = command as usize; let u = (c % 16 * 8) as f32; let v = (c / 16 * 8) as f32; let size = 7.99;
+                g.begin();g.quad([[0.0,size,0.0],[size,size,0.0],[size,0.0,0.0],[0.0,0.0,0.0]],[[u/128.0,(v+size)/128.0],[(u+size)/128.0,(v+size)/128.0],[(u+size)/128.0,v/128.0],[u/128.0,v/128.0]]);g.end();
+                g.translate(self.char_width[c] as f32, 0.0, 0.0);
             }
-            if i<chars.len() {
-                if let Some(k)=self.index(chars[i]).filter(|k| k+32<256) {
-                    let c=k+32;let u=(c%16*8) as f32;let v=(c/16*8) as f32;let s=7.99;
-                    g.begin();g.quad([[0.0,s,0.0],[s,s,0.0],[s,0.0,0.0],[0.0,0.0,0.0]],[[u/128.0,(v+s)/128.0],[(u+s)/128.0,(v+s)/128.0],[(u+s)/128.0,v/128.0],[u/128.0,v/128.0]]);g.end();
-                    g.translate(self.char_width[c] as f32,0.0,0.0);
-                }
-            }
-            i+=1;
         }
         g.pop();
     }
@@ -139,29 +136,50 @@ impl FontRenderer {
         gl.color4f(r, g, b, a);
         gl.push_matrix();
         gl.translatef(x as f32, y as f32, 0.0);
-        let chars: Vec<char> = s.chars().collect();
+        for command in self.display_list_commands(s, shadow) {
+            if command >= 256 {
+                let [r, g, b] = self.colors[(command - 256) as usize];
+                gl.color3f(r, g, b);
+            } else {
+                self.glyph(gl, command as usize);
+            }
+        }
+        gl.pop_matrix();
+    }
+
+    /// Original display-list offsets; also used by the fixed renderer and bytecode fixture.
+    pub fn display_list_commands(&self, s: &str, shadow: bool) -> Vec<i32> {
+        let chars: Vec<_> = s.chars().collect();
+        let mut commands = Vec::new();
+        let mut obfuscated = false;
         let mut i = 0;
         while i < chars.len() {
-            while chars.len() > i + 1 && chars[i] == '§' {
-                let code = chars[i + 1].to_lowercase().next().unwrap_or(chars[i + 1]);
-                let mut k = "0123456789abcdef".find(code).map_or(-1, |p| p as i32);
-                if !(0..=15).contains(&k) {
-                    k = 15;
+            while i + 1 < chars.len() && chars[i] == '\u{a7}' {
+                let code = chars[i + 1].to_lowercase().next().unwrap();
+                if code == 'k' { obfuscated = true; }
+                else {
+                    obfuscated = false;
+                    commands.push(256 + "0123456789abcdef".find(code).unwrap_or(15) as i32 + if shadow { 16 } else { 0 });
                 }
-                let c = self.colors[k as usize + if shadow { 16 } else { 0 }];
-                gl.color3f(c[0], c[1], c[2]);
                 i += 2;
             }
             if i < chars.len() {
                 if let Some(k) = self.index(chars[i]) {
-                    if k + 32 < 256 {
-                        self.glyph(gl, k + 32);
+                    let mut glyph = k;
+                    if obfuscated {
+                        let mut random = self.random.lock().unwrap();
+                        loop {
+                            glyph = random.next_int(self.allowed.len() as i32) as usize;
+                            if self.char_width[k + 32] == self.char_width[glyph + 32] { break; }
+                        }
+                        commands.push(256 + random.next_int(2) + 8 + if shadow { 16 } else { 0 });
                     }
+                    commands.push(glyph as i32 + 32);
                 }
             }
             i += 1;
         }
-        gl.pop_matrix();
+        commands
     }
 
     pub fn get_string_width(&self, s: &str) -> i32 {
@@ -181,20 +199,59 @@ impl FontRenderer {
         w
     }
 
-    /// `func_27278_a`: draw word-wrapped to `width`.
-    pub fn draw_split_string(&self, gl: &mut Gl, s: &str, x: i32, mut y: i32, width: i32, color: i32) {
-        let lines: Vec<&str> = java_split(s, '\n');
+    /// `drawSplitString` / `func_40609_a`. A newline recursion deliberately clears shadow.
+    pub fn draw_split_string(&self, gl: &mut Gl, s: &str, x: i32, y: i32, width: i32, color: i32) {
+        self.draw_split_shadow(gl, s, x, y, width, color, false);
+    }
+    pub fn draw_split_shadow(&self, gl: &mut Gl, s: &str, x: i32, y: i32, width: i32, color: i32, shadow: bool) {
+        for (line, y, shadow) in self.split_draw_lines(s, y, width, shadow) {
+            self.render_string(gl, &line, x, y, color, shadow);
+        }
+    }
+    pub fn split_draw_lines(&self, s: &str, mut y: i32, width: i32, shadow: bool) -> Vec<(String, i32, bool)> {
+        let mut out = Vec::new();
+        let lines = java_split(s, '\n');
         if lines.len() > 1 {
-            for l in lines {
-                self.draw_split_string(gl, l, x, y, width, color);
-                y += self.split_string_height(l, width);
+            for line in lines {
+                out.extend(self.split_draw_lines(line, y, width, false));
+                y += self.split_string_height(line, width);
             }
-            return;
+            return out;
         }
-        for line in self.wrap(s, width) {
-            self.draw_string(gl, &line, x, y, color);
-            y += 8;
+        for line in self.wrapped_draw_lines(s, width) {
+            out.push((line, y, shadow));
+            y += self.line_height;
         }
+        out
+    }
+    pub fn wrapped_draw_lines(&self, s: &str, width: i32) -> Vec<String> {
+        let words = java_split(s, ' ');
+        let mut out = Vec::new();
+        let mut i = 0;
+        let mut format = String::new();
+        while i < words.len() {
+            let mut line = format!("{format}{} ", words[i]); i += 1;
+            while i < words.len() && self.get_string_width(&format!("{line}{}", words[i])) < width {
+                line.push_str(words[i]); line.push(' '); i += 1;
+            }
+            while self.get_string_width(&line) > width {
+                let chars: Vec<_> = line.chars().collect();
+                let mut n = 0;
+                while n < chars.len() && self.get_string_width(&chars[..n+1].iter().collect::<String>()) <= width { n += 1; }
+                assert!(n > 0, "FontRenderer wrapping width cannot fit a glyph");
+                let head: String = chars[..n].iter().collect();
+                if !head.trim_matches(|c: char| c <= ' ').is_empty() {
+                    retain_format(&head, &mut format);
+                    out.push(head);
+                }
+                line = format!("{format}{}", chars[n..].iter().collect::<String>());
+            }
+            if self.get_string_width(line.trim_matches(|c: char| c <= ' ')) > 0 {
+                retain_format(&line, &mut format);
+                out.push(line);
+            }
+        }
+        out
     }
 
     /// `func_27277_a`: height of the wrapped text.
@@ -203,9 +260,9 @@ impl FontRenderer {
         if lines.len() > 1 {
             return lines.iter().map(|l| self.split_string_height(l, width)).sum();
         }
-        let mut h = self.wrap(s, width).len() as i32 * 8;
-        if h < 8 {
-            h += 8;
+        let mut h = self.wrap(s, width).len() as i32 * self.line_height;
+        if h < self.line_height {
+            h += self.line_height;
         }
         h
     }
@@ -228,12 +285,12 @@ impl FontRenderer {
                     n += 1;
                 }
                 let head: String = cs[..n].iter().collect();
-                if !head.trim().is_empty() {
+                if !head.trim_matches(|c: char| c <= ' ').is_empty() {
                     out.push(head);
                 }
                 line = cs[n..].iter().collect();
             }
-            if !line.trim().is_empty() {
+            if !line.trim_matches(|c: char| c <= ' ').is_empty() {
                 out.push(line);
             }
         }
@@ -251,4 +308,11 @@ pub fn java_split(s: &str, c: char) -> Vec<&str> {
         return vec![""];
     }
     v
+}
+
+fn retain_format(line: &str, format: &mut String) {
+    if let Some(i) = line.rfind('\u{a7}') {
+        let code = line[i..].chars().nth(1).expect("truncated FontRenderer format");
+        *format = format!("\u{a7}{code}");
+    }
 }

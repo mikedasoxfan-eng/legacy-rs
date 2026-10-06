@@ -18,3 +18,9 @@ pub mod chat;
 pub(crate) mod block_items;
 
 pub(crate) mod chest_item;
+pub mod enchantment;
+pub mod brewing;
+pub mod win_game;
+pub mod tooltip;
+pub mod potion_effects;
+pub mod disconnected;

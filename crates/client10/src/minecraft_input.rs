@@ -178,7 +178,7 @@ pub fn run_tick(settings: &mut GameSettings, host: &mut impl Host, events: Event
                     settings.show_debug_info = !settings.show_debug_info;
                 }
                 if event.code == 63 {
-                    settings.third_person_view = !settings.third_person_view;
+                    settings.third_person_view = (settings.third_person_view + 1) % 3;
                 }
             }
             if (2..=10).contains(&event.code) {

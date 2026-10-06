@@ -290,6 +290,7 @@ pub enum FromWorker {
         input_seq: u64,
         /// `getScore()` for the game over screen.
         score: i32,
+        hardcore: bool,
         /// Counts respawns, so messages about the previous (dead) player can be told apart.
         life: u32,
     },
@@ -884,6 +885,7 @@ fn run(opts: WorldOptions, mut col: Colorizers, mut video: VideoSettings, rx: Re
                         in_water,
                         input_seq: input.seq,
                         score,
+                        hardcore: world.info.hardcore,
                         life,
                     });
                 }

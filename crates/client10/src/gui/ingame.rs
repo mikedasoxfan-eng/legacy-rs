@@ -108,6 +108,7 @@ pub struct GuiIngame {
     record_rainbow: bool,
     prev_vignette_brightness: f32,
     rand: worldgen::JavaRandom,
+    last_rendered_dragon: Option<(i32, i32)>,
 }
 
 impl Default for GuiIngame {
@@ -126,6 +127,31 @@ impl GuiIngame {
             record_rainbow: false,
             prev_vignette_brightness: 1.0,
             rand: worldgen::JavaRandom::new(0),
+            last_rendered_dragon: None,
+        }
+    }
+
+    /// RenderDragon's handoff: only a dragon rendered this frame supplies the boss bar.
+    pub fn dragon_rendered(&mut self, dragon: &worldgen::entity::Entity) {
+        self.last_rendered_dragon = Some((dragon.data_watcher.int(16).expect("dragon health watcher"), dragon.max_health()));
+    }
+
+    pub(crate) fn take_boss_rectangles(&mut self, width: i32) -> Option<Vec<[i32; 6]>> {
+        self.last_rendered_dragon.take().map(|(health, max)| {
+            let x = width / 2 - 91;
+            let fill = (health as f32 / max as f32 * 183.0) as i32;
+            let mut rects = vec![[x, 12, 0, 74, 182, 5]; 2];
+            if fill > 0 { rects.push([x, 12, 0, 79, fill, 5]); }
+            rects
+        })
+    }
+
+    fn render_boss(&mut self, ui: &mut Ui, width: i32) {
+        if let Some(rectangles) = self.take_boss_rectangles(width) {
+            for [x, y, u, v, w, h] in rectangles { ui.draw_textured_modal_rect_z(x, y, u, v, w, h, -90.0); }
+            ui.draw_centered_string("Boss health", width / 2, 2, 16711935);
+            ui.gl.color4f(1.0, 1.0, 1.0, 1.0);
+            let icons = ui.texture("gui/icons.png"); ui.gl.bind_texture(icons);
         }
     }
 
@@ -194,8 +220,10 @@ impl GuiIngame {
         ui.gl.blend = true;
         if ui.settings.fancy_graphics {
             self.render_vignette(ui, p.brightness, w, h);
+        } else {
+            ui.gl.blend_func(Factor::SrcAlpha, Factor::OneMinusSrcAlpha);
         }
-        if !ui.settings.third_person_view && p.helmet == Some(86) {
+        if ui.settings.third_person_view == 0 && p.helmet == Some(86) {
             render_pumpkin_blur(ui, w, h);
         }
         let portal = p.prev_time_in_portal + (p.time_in_portal - p.prev_time_in_portal) * partial;
@@ -223,6 +251,8 @@ impl GuiIngame {
         let health = p.health;
         let prev = p.prev_health;
         self.rand.set_seed(self.update_counter.wrapping_mul(312871) as i64);
+        self.render_boss(ui, w);
+        let heart_v = if ui.release.hardcore { 45 } else { 0 };
         if p.survival {
             let left = w / 2 - 91;
             let right = w / 2 + 91;
@@ -248,13 +278,13 @@ impl GuiIngame {
                 let mut y = baseline;
                 if health <= 4 { y += self.rand.next_int(2); }
                 if i == regen_index { y -= 2; }
-                ui.draw_textured_modal_rect_z(x, y, 16 + f * 9, 0, 9, 9, z);
+                ui.draw_textured_modal_rect_z(x, y, 16 + f * 9, heart_v, 9, 9, z);
                 if flash {
-                    if i * 2 + 1 < prev { ui.draw_textured_modal_rect_z(x, y, heart + 54, 0, 9, 9, z); }
-                    if i * 2 + 1 == prev { ui.draw_textured_modal_rect_z(x, y, heart + 63, 0, 9, 9, z); }
+                    if i * 2 + 1 < prev { ui.draw_textured_modal_rect_z(x, y, heart + 54, heart_v, 9, 9, z); }
+                    if i * 2 + 1 == prev { ui.draw_textured_modal_rect_z(x, y, heart + 63, heart_v, 9, 9, z); }
                 }
-                if i * 2 + 1 < health { ui.draw_textured_modal_rect_z(x, y, heart + 36, 0, 9, 9, z); }
-                if i * 2 + 1 == health { ui.draw_textured_modal_rect_z(x, y, heart + 45, 0, 9, 9, z); }
+                if i * 2 + 1 < health { ui.draw_textured_modal_rect_z(x, y, heart + 36, heart_v, 9, 9, z); }
+                if i * 2 + 1 == health { ui.draw_textured_modal_rect_z(x, y, heart + 45, heart_v, 9, 9, z); }
             }
             for i in 0..10 {
                 let mut y = baseline;
@@ -300,9 +330,19 @@ impl GuiIngame {
             ui.gl.depth_test = true;
         }
 
+        if p.survival && p.xp_level > 0 {
+            let text = p.xp_level.to_string();
+            let x = (w - ui.string_width(&text)) / 2;
+            let y = h - 35;
+            for (dx, dy) in [(1, 0), (-1, 0), (0, 1), (0, -1)] {
+                ui.font.draw_string(&mut ui.gl, &text, x + dx, y + dy, 0);
+            }
+            ui.font.draw_string(&mut ui.gl, &text, x, y, 8453920);
+        }
+
         if ui.settings.show_debug_info {
             ui.gl.push_matrix();
-            ui.draw_string(&format!("Minecraft Beta 1.8.1 ({})", debug.fps_line), 2, 2, 16777215,);
+            ui.draw_string(&format!("Minecraft 1.0.0 ({})", debug.fps_line), 2, 2, 16777215,);
             ui.draw_string(&debug.renders, 2, 12, 16777215);
             ui.draw_string(&debug.entities, 2, 22, 16777215);
             ui.draw_string(&debug.particles, 2, 32, 16777215);
@@ -322,8 +362,6 @@ impl GuiIngame {
             ui.draw_string(&format!("f: {f}"), 2, 88, 14737632);
             ui.draw_string(&format!("Seed: {}", p.seed), 2, 104, 14737632);
             ui.gl.pop_matrix();
-        } else {
-            ui.draw_string("Minecraft Beta 1.8.1", 2, 2, 16777215);
         }
 
         if self.record_playing_up_for > 0 {

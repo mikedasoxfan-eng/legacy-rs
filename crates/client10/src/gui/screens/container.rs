@@ -11,6 +11,10 @@ pub struct GuiContainer {
     inventory_name: Option<&'static str>,
     previous_mouse: [f32; 2],
     scroll:f32, dragging:bool, previous_down:bool,
+    left: i32,
+    top: i32,
+    enchantment: super::enchantment::EnchantmentAnimation,
+    galactic: Option<crate::gui::font::FontRenderer>,
 }
 pub type GuiInventory = GuiContainer;
 pub type GuiCrafting = GuiContainer;
@@ -26,6 +30,9 @@ impl GuiContainer {
             inventory_name: snapshot.inventory_name,
             previous_mouse: [0.0; 2],
             scroll:0.0,dragging:false,previous_down:false,
+            left: 0, top: 0,
+            enchantment: super::enchantment::EnchantmentAnimation::new(super::select_world::random_seed()),
+            galactic: None,
         }
     }
     fn update_scroll(&self,ui:&mut Ui) {
@@ -42,9 +49,8 @@ impl GuiContainer {
             },
         )
     }
-    fn origin(&self) -> (i32, i32) {
-        let (w, h) = self.size();
-        ((self.base.width - w) / 2, (self.base.height - h) / 2)
+    pub(crate) fn origin(&self) -> (i32, i32) {
+        (self.left, self.top)
     }
     fn hover(&self, s: &worldgen::container::Slot, x: i32, y: i32) -> bool {
         let (ox, oy) = self.origin();
@@ -66,43 +72,18 @@ impl GuiContainer {
             ContainerKind::Enchantment => "gui/enchant.png",
         };
         ui.gl.bind_texture(ui.texture(texture));
-        if let ContainerKind::Chest { rows } = self.kind {
-            ui.draw_textured_modal_rect(x, y, 0, 0, w, rows as i32 * 18 + 17);
-            ui.draw_textured_modal_rect(x, y + rows as i32 * 18 + 17, 0, 126, w, 96);
-        } else {
-            ui.draw_textured_modal_rect(x, y, 0, 0, w, h);
-        }
-        if self.kind == ContainerKind::Furnace {
-            let [cook, burn, fuel] = s.progress;
-            if burn > 0 {
-                let n = burn.wrapping_mul(12) / if fuel == 0 { 200 } else { fuel };
-                ui.draw_textured_modal_rect(x + 56, y + 48 - n, 176, 12 - n, 14, n + 2);
-            }
-            let n = cook.wrapping_mul(24) / 200;
-            ui.draw_textured_modal_rect(x + 79, y + 34, 176, 14, n + 1, 16);
+        for [x, y, u, v, w, h] in background_rectangles(s, x, y, self.scroll) {
+            ui.draw_textured_modal_rect(x, y, u, v, w, h);
         }
         if self.kind == ContainerKind::Player {
+            let effects = ui.release.effects.clone();
+            super::potion_effects::draw(ui, x - 124, y, &effects);
             super::inventory_model::draw(ui, x, y, self.previous_mouse, s);
         }
     }
     fn foreground(&self, ui: &mut Ui) {
-        let (_, h) = self.size();
-        let (name, x, y) = match self.kind {
-            ContainerKind::Player => ("Crafting", 86, 16),
-            ContainerKind::Creative => ("Item selection",8,6),
-            ContainerKind::Workbench => ("Crafting", 28, 6),
-            ContainerKind::Chest { rows } => {
-                (self.inventory_name.unwrap_or(if rows == 3 { "Chest" } else { "Large chest" }), 8, 6)
-            }
-            ContainerKind::Furnace => ("Furnace", 60, 6),
-            ContainerKind::Dispenser => ("Dispenser", 60, 6),
-            ContainerKind::BrewingStand => ("Brewing Stand", 60, 6),
-            ContainerKind::Enchantment => ("Enchant", 12, 5),
-        };
-        ui.font.draw_string(&mut ui.gl, name, x, y, 4210752);
-        if !matches!(self.kind,ContainerKind::Player|ContainerKind::Creative) {
-            ui.font
-                .draw_string(&mut ui.gl, "Inventory", 8, h - 94, 4210752);
+        for (name, x, y, color) in foreground_labels(self.kind, self.size().1, self.inventory_name) {
+            ui.font.draw_string(&mut ui.gl, name, x, y, color);
         }
     }
 }
@@ -201,6 +182,22 @@ impl Screen for GuiContainer {
     fn init_gui(&mut self, ui: &mut Ui) {
         self.base.buttons.clear();
         self.redirect_inventory(ui);
+        if matches!(self.kind, ContainerKind::Player | ContainerKind::Creative)
+            && ui.container_snapshot.as_ref().is_some_and(|s| s.creative != (self.kind == ContainerKind::Creative)) {
+            return;
+        }
+        let (w, h) = self.size();
+        self.left = (self.base.width - w) / 2;
+        self.top = (self.base.height - h) / 2;
+        if self.kind == ContainerKind::Player && !ui.release.effects.is_empty() {
+            self.left = 160 + (self.base.width - w - 200) / 2;
+        }
+        if self.kind == ContainerKind::Enchantment && self.galactic.is_none() {
+            let mut jar = crate::assets::Jar::open().expect("GuiEnchantment resources");
+            self.galactic = Some(crate::gui::font::FontRenderer::new_with_anaglyph(
+                &jar.image("font/alternate.png").expect("galactic font"), ui.texture("font/alternate.png"),
+                &jar.text("font.txt").expect("font.txt"), ui.settings.anaglyph));
+        }
     }
     fn action_performed(&mut self, ui: &mut Ui, id: i32) {
         if self.kind == ContainerKind::Player {
@@ -227,6 +224,24 @@ impl Screen for GuiContainer {
         };
         ui.draw_world_background(self.base.width, self.base.height, 0);
         self.background(ui, &s);
+        if self.kind == ContainerKind::Enchantment {
+            let (x, y) = self.origin();
+            for (i, name) in super::enchantment::names(s.enchantment_name_seed).iter().enumerate() {
+                let cost = s.progress[i];
+                let hovered = mx >= x + 60 && mx < x + 168 && my >= y + 14 + 19 * i as i32 && my < y + 33 + 19 * i as i32;
+                let (v, color, level_color) = super::enchantment::offer(cost, ui.release.player_level, hovered);
+                ui.gl.bind_texture(ui.texture("gui/enchant.png"));
+                ui.gl.color4f(1.0, 1.0, 1.0, 1.0);
+                ui.draw_textured_modal_rect(x + 60, y + 14 + 19 * i as i32, 0, v, 108, 19);
+                if cost != 0 {
+                    if let Some(font) = &self.galactic { font.draw_split_string(&mut ui.gl, name, x + 62, y + 16 + 19 * i as i32, 104, color); }
+                    let text = cost.to_string();
+                    ui.font.draw_string_with_shadow(&mut ui.gl, &text, x + 166 - ui.font.get_string_width(&text), y + 23 + 19 * i as i32, level_color);
+                }
+            }
+            // ModelBook geometry is owned by the render worker; the exact pose is available here.
+            let _book_pose = self.enchantment.pose(partial);
+        }
         // GuiContainer sets unit 1's current coordinate after the background
         // (and its player figure), even when texturing on that unit is disabled.
         ui.gl.lightmap_coordinates = 240 | (240 << 16);
@@ -263,37 +278,20 @@ impl Screen for GuiContainer {
         self.foreground(ui);
         if s.cursor.is_none() {
             if let Some(stack) = hover.and_then(|i| s.contents[i]) {
-                let name = ui.lang.translate_named_key(item_name(stack));
-                let name = name.trim();
-                if !name.is_empty() {
-                    let x = mx - ox + 12;
-                    let y = my - oy - 12;
-                    let w = ui.font.get_string_width(name);
-                    ui.draw_gradient_rect(
-                        x - 3,
-                        y - 3,
-                        x + w + 3,
-                        y + 11,
-                        -1073741824,
-                        -1073741824,
-                    );
-                    ui.font.draw_string_with_shadow(&mut ui.gl, name, x, y, -1);
-                }
+                let lines = super::tooltip::lines(ui, stack);
+                super::tooltip::draw(ui, &lines, worldgen::item10::rarity(stack).color(), mx - ox + 12, my - oy - 12);
             }
         }
         ui.gl.pop_matrix();
         self.draw_buttons(ui, mx, my);
         ui.gl.depth_test = true;
         let _ = partial;
-        if self.kind==ContainerKind::Creative {
-            ui.gl.color4f(1.0,1.0,1.0,1.0);ui.gl.bind_texture(ui.texture("gui/allitems.png"));
-            ui.draw_textured_modal_rect(ox+154,oy+17+(145.0*self.scroll) as i32,0,208,16,16);
-        }
         self.previous_mouse = [mx as f32, my as f32];
     }
     fn mouse_clicked(&mut self, ui: &mut Ui, x: i32, y: i32, button: i32) {
         crate::gui::default_mouse_clicked(self, ui, x, y, button);
         if button != 0 && button != 1 {
+            self.click_enchantment(ui, x, y);
             return;
         }
         let Some(s) = ui
@@ -322,6 +320,7 @@ impl Screen for GuiContainer {
                 shift: slot != -999 && ui.shift_down,
             });
         }
+            self.click_enchantment(ui, x, y);
     }
     fn mouse_scrolled(&mut self,ui:&mut Ui,amount:i32) {
         if self.kind==ContainerKind::Creative && amount!=0 {
@@ -347,6 +346,11 @@ impl Screen for GuiContainer {
         });
     }
     fn update_screen(&mut self, ui: &mut Ui) {
+        if self.kind == ContainerKind::Enchantment {
+            if let Some(s) = ui.container_snapshot.as_ref().filter(|s| s.window == self.window) {
+                self.enchantment.tick(s.contents[0], s.progress);
+            }
+        }
         if matches!(self.kind, ContainerKind::Player | ContainerKind::Creative) {
             self.redirect_inventory(ui);
             return;
@@ -373,5 +377,73 @@ impl GuiContainer {
         {
             ui.actions.push(crate::gui::Action::RedirectInventory);
         }
+    }
+}
+
+impl GuiContainer {
+    fn click_enchantment(&self, ui: &mut Ui, x: i32, y: i32) {
+        if self.kind == ContainerKind::Enchantment {
+            let (ox, oy) = self.origin();
+            if let Some(s) = ui.container_snapshot.as_ref().filter(|s| s.window == self.window) {
+                for offer in 0..3 {
+                    let dx = x - (ox + 60);
+                    let dy = y - (oy + 14 + 19 * offer as i32);
+                    if dx >= 0 && dx < 108 && dy >= 0 && dy < 19 && s.progress[offer] > 0
+                        && ui.release.player_level >= s.progress[offer] && s.contents[0].is_some() {
+                        ui.container_commands.push(ContainerCommand::Enchant { window: self.window, offer });
+                    }
+                }
+            }
+        }
+    }
+}
+
+fn background_rectangles(s: &ContainerSnapshot, x: i32, y: i32, scroll: f32) -> Vec<[i32; 6]> {
+    if s.kind == ContainerKind::BrewingStand { return super::brewing::rectangles(s.progress[0], x, y); }
+    let height = match s.kind { ContainerKind::Chest { rows } => 114 + rows as i32 * 18, ContainerKind::Creative => 208, _ => 166 };
+    let mut out = if let ContainerKind::Chest { rows } = s.kind {
+        vec![[x, y, 0, 0, 176, rows as i32 * 18 + 17], [x, y + rows as i32 * 18 + 17, 0, 126, 176, 96]]
+    } else { vec![[x, y, 0, 0, 176, height]] };
+    if s.kind == ContainerKind::Furnace {
+        let [cook, burn, fuel] = s.progress;
+        if burn > 0 { let n = burn.wrapping_mul(12) / if fuel == 0 { 200 } else { fuel }; out.push([x+56, y+48-n, 176, 12-n, 14, n+2]); }
+        let n = cook.wrapping_mul(24) / 200; out.push([x+79, y+34, 176, 14, n+1, 16]);
+    }
+    if s.kind == ContainerKind::Creative { out.push([x+154, y+17+(145.0*scroll) as i32, 0, 208, 16, 16]); }
+    out
+}
+fn foreground_labels(kind: ContainerKind, h: i32, inventory_name: Option<&'static str>) -> Vec<(&'static str, i32, i32, i32)> {
+
+        let (name, x, y) = match kind {
+            ContainerKind::Player => ("Crafting", 86, 16),
+            ContainerKind::Creative => ("Item selection",8,6),
+            ContainerKind::Workbench => ("Crafting", 28, 6),
+            ContainerKind::Chest { rows } => {
+                (inventory_name.unwrap_or(if rows == 3 { "Chest" } else { "Large chest" }), 8, 6)
+            }
+            ContainerKind::Furnace => ("Furnace", 60, 6),
+            ContainerKind::Dispenser => ("Dispenser", 60, 6),
+            ContainerKind::BrewingStand => ("Brewing Stand", 56, 6),
+            ContainerKind::Enchantment => ("Enchant", 12, 6),
+        };
+        let mut labels = vec![(name, x, y, 4210752)];
+        if !matches!(kind, ContainerKind::Player | ContainerKind::Creative) { labels.push(("Inventory", 8, h - 94, 4210752)); }
+        labels
+}
+pub(crate) fn check_backgrounds10(out: &mut Vec<u8>) {
+    use crate::gui::check10_round2::{i, s};
+    use worldgen::container::{Container, InventoryPlayer};
+    let mut random = worldgen::JavaRandom::new(10607);
+    for c in 0..2000 {
+        let rows = 1 + random.next_int(9); let width = random.next_int(1800); let height = random.next_int(1200);
+        let cook = random.next_int(400)-50; let burn = random.next_int(500)-50; let fuel = random.next_int(2000);
+        let kind = match c%5 { 0=>ContainerKind::Furnace, 1=>ContainerKind::Workbench, 2=>ContainerKind::Dispenser, 3=>ContainerKind::Chest { rows:rows as usize }, _=>ContainerKind::BrewingStand };
+        let mut snapshot = Container::new(kind, 0).snapshot(&InventoryPlayer::default());snapshot.progress=[cook,burn,fuel];
+        let h = if c%5==3 { 114+rows*18 } else { 166 };
+        let rects = background_rectangles(&snapshot, (width-176)/2, (height-h)/2, 0.0);
+        i(out, rects.len() as i32); for rect in rects { for n in rect { i(out,n); } }
+        let name = if c%5==3 { Some(if rows==3 { "Chest" } else { "Large chest" }) } else { None };
+        let labels = foreground_labels(kind, h, name);i(out,labels.len() as i32);
+        for (text,x,y,color) in labels { s(out,text);for n in [x,y,color] { i(out,n); } }
     }
 }

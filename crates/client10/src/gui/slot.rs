@@ -50,6 +50,28 @@ pub struct GuiSlot {
 }
 
 impl GuiSlot {
+    pub(crate) fn check_wheel10(ui: &mut Ui, out: &mut Vec<u8>) {
+        use crate::gui::check10_round2::i;
+        struct List(i32);
+        impl SlotList for List {
+            fn size(&self) -> i32 { self.0 }
+            fn element_clicked(&mut self, _: &mut Ui, _: i32, _: bool) {}
+            fn is_selected(&self, _: i32) -> bool { false }
+            fn draw_background(&mut self, _: &mut Ui) {}
+            fn draw_slot(&mut self, _: &mut Ui, _: i32, _: i32, _: i32, _: i32) {}
+        }
+        ui.textures.insert("gui/background.png".into(), 0);
+        let mut random = worldgen::JavaRandom::new(11011);
+        for _ in 0..1000 {
+            let width=320+random.next_int(800);let height=200+random.next_int(500);let top=20+random.next_int(40);let bottom=height-30;let sh=8+random.next_int(60);
+            let mut list=List(random.next_int(40));let mut slot=Self::new(width,height,top,bottom,sh);ui.release.wheel_events.clear();
+            for _ in 0..8 {
+                let wheel=random.next_int(1001)-500;ui.mouse_down=random.next_bool();ui.release.wheel_events.push(wheel);
+                slot.initial_click_y=-2.0;ui.gl.begin_frame();slot.draw_screen(ui,&mut list,0,0);
+                out.extend(slot.amount_scrolled.to_le_bytes());out.extend(slot.initial_click_y.to_le_bytes());i(out,slot.slot_at(&list,width/2,top+sh/2));
+            }
+        }
+    }
     pub fn new(width: i32, height: i32, top: i32, bottom: i32, slot_height: i32) -> GuiSlot {
         GuiSlot {
             width,
@@ -180,6 +202,9 @@ impl GuiSlot {
                 self.initial_click_y = my as f32;
             }
         } else {
+            for wheel in ui.release.wheel_events.drain(..) {
+                self.amount_scrolled += (-wheel.signum() * self.slot_height / 2) as f32;
+            }
             self.initial_click_y = -1.0;
         }
         self.bind_amount_scrolled(l);

@@ -60,6 +60,12 @@ impl Screen for GuiOptions {
             &mut self.base,
             &[EnumOptions::Music, EnumOptions::Sound, EnumOptions::InvertMouse, EnumOptions::Sensitivity, EnumOptions::Fov, EnumOptions::Difficulty],
         );
+        if ui.world_open && ui.release.hardcore {
+            let text = format!("{}: {}", ui.translate("options.difficulty"), ui.translate("options.difficulty.hardcore"));
+            let b = self.base.button(EnumOptions::Difficulty.ordinal());
+            b.enabled = false;
+            b.text = text;
+        }
         let (w, h) = (self.base.width, self.base.height);
         self.base.buttons.push(GuiButton::new(101, w / 2 - 100, h / 6 + 96 + 12, ui.translate("options.video")));
         self.base.buttons.push(GuiButton::new(100, w / 2 - 100, h / 6 + 120 + 12, ui.translate("options.controls")));
@@ -101,11 +107,22 @@ pub struct GuiVideoSettings {
     base: ScreenBase,
     parent: Option<Box<dyn Screen>>,
     title: String,
+    pub runtime_64_bit: bool,
 }
 
 impl GuiVideoSettings {
     pub fn new(parent: Box<dyn Screen>) -> GuiVideoSettings {
-        GuiVideoSettings { base: ScreenBase::default(), parent: Some(parent), title: "Video Settings".into() }
+        GuiVideoSettings { base: ScreenBase::default(), parent: Some(parent), title: "Video Settings".into(), runtime_64_bit: usize::BITS == 64 }
+    }
+    pub(crate) fn labels(&self, ui: &Ui) -> Vec<(String, i32, i32, i32)> {
+        let (w, h) = (self.base.width, self.base.height);
+        let mut labels = vec![(self.title.clone(), w / 2, 20, 16777215)];
+        if !self.runtime_64_bit && ui.settings.render_distance == 0 {
+            for (key, y) in [("options.farWarning1", h / 6 + 144), ("options.farWarning2", h / 6 + 156)] {
+                labels.push((ui.translate(key), w / 2, y, 11468800));
+            }
+        }
+        labels
     }
 }
 
@@ -141,21 +158,22 @@ impl Screen for GuiVideoSettings {
         if !self.base.buttons.iter().any(|b| b.id == id && b.enabled) {
             return;
         }
+        let old_scale = ui.settings.gui_scale;
         toggle_option(ui, &mut self.base, id);
         if id == 200 {
             ui.settings.save();
             ui.display(self.parent.take());
         }
-        // Re-layout at the (possibly new) GUI scale, even when leaving.
-        let sr = ui.scaled();
-        set_world_and_resolution(self, ui, sr.width, sr.height);
+        if ui.settings.gui_scale != old_scale {
+            let sr = ui.scaled();
+            set_world_and_resolution(self, ui, sr.width, sr.height);
+        }
     }
 
     fn draw_screen(&mut self, ui: &mut Ui, mx: i32, my: i32, _partial: f32) {
         let (w, h) = (self.base.width, self.base.height);
         ui.draw_world_background(w, h, 0);
-        let t = self.title.clone();
-        ui.draw_centered_string(&t, w / 2, 20, 16777215);
+        for (text, x, y, color) in self.labels(ui) { ui.draw_centered_string(&text, x, y, color); }
         self.draw_buttons(ui, mx, my);
     }
 }

@@ -18,6 +18,7 @@ pub enum GameAction {
         settings: Option<worldgen::entity::player::food::WorldSettings>,
     },
     QuitWorld,
+    DeleteHardcoreWorld,
     Shutdown,
     SettingsChanged,
     RefreshTextures,
@@ -81,6 +82,7 @@ impl GuiSystem {
         let font = FontRenderer::new_with_anaglyph(&res.images["font/default.png"], font_tex, &res.font_txt, settings.anaglyph);
         let packs = crate::texture_packs::TexturePackList::new(saves_dir.parent().unwrap_or(std::path::Path::new(".")), &settings.skin);
         let ui = Ui {
+            release: Default::default(),
             packs,
             pack_icons: Vec::new(),
             gl: Gl::new(),
@@ -223,6 +225,11 @@ impl GuiSystem {
                         out.push(GameAction::StartWorld { folder, name, seed, settings })
                     }
                     Action::QuitWorld => out.push(GameAction::QuitWorld),
+                Action::DeleteHardcoreWorld => out.push(GameAction::DeleteHardcoreWorld),
+                Action::MainMenu => {
+                    let menu = self.main_menu();
+                    self.display_gui_screen(Some(menu), &mut out);
+                }
                     Action::Shutdown => out.push(GameAction::Shutdown),
                     Action::SettingsChanged => out.push(GameAction::SettingsChanged),
                     Action::RefreshTextures => out.push(GameAction::RefreshTextures),
