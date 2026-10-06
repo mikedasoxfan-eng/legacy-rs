@@ -72,7 +72,7 @@ pub fn load_with(pack: Option<&std::path::Path>, anaglyph: bool) -> Result<Asset
     };
     let terrain = read("terrain.png")?;
     let sun = read("terrain/sun.png")?;
-    let moon = read("terrain/moon.png")?;
+    let moon = read("terrain/moon_phases.png")?;
     let clouds = read("environment/clouds.png")?;
     let rain = read("environment/rain.png")?;
     let snow = read("environment/snow.png")?;
@@ -90,6 +90,7 @@ pub fn load_with(pack: Option<&std::path::Path>, anaglyph: bool) -> Result<Asset
         "item/chest.png",
         "item/largechest.png",
         "misc/explosion.png",
+        "misc/tunnel.png",
         "art/kz.png",
         "particles.png",
     ]) {

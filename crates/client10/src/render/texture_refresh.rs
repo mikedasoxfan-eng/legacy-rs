@@ -46,6 +46,7 @@ impl Gpu {
             make_slot(&self.device, &self.texture_layout, &self.sampler, &terrain.create_view(&Default::default()));
         self.sun_slot = slot(&assets.sun);
         self.moon_slot = slot(&assets.moon);
+        self.end_slots = std::array::from_fn(|_| slot(&assets.mobs["misc/tunnel.png"]));
         self.cloud_slot = slot(&assets.clouds);
         self.weather_slots[0] = slot(&assets.snow);
         self.weather_slots[1] = slot(&assets.rain);

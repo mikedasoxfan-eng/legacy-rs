@@ -17,6 +17,54 @@ pub struct Effects {
     biomes: BiomeSource,
     pub collector: Option<worldgen::entity::Entity>,
 }
+
+#[cfg(test)]
+mod release_tests {
+    use super::*;
+
+    fn event(code: i32, data: i32) -> WorldEvent {
+        WorldEvent::Auxiliary { code, data, position: (0,64,0), random: worldgen::JavaRandom::new(42) }
+    }
+    fn effects() -> Effects {
+        let mut effects=Effects::new(42);
+        effects.renderer=EffectRenderer::new(42);
+        effects
+    }
+    #[test]
+    fn splash_potion_emits_eight_bottle_fragments_and_one_hundred_tinted_spells() {
+        let mut fx=effects();
+        fx.receive(vec![event(2002,5)],Snapshot::default(),[0.0,64.0,0.0],None);
+        assert_eq!(fx.renderer.layers[2].len(),8);
+        assert!(fx.renderer.layers[2].iter().all(|p|p.texture==140));
+        assert_eq!(fx.renderer.layers[0].len(),100);
+        assert!(fx.renderer.layers[0].iter().all(|p|p.kind==Kind::InstantSpell));
+        let mut reduced=effects();
+        reduced.renderer.particle_setting=2;
+        reduced.receive(vec![event(2002,5)],Snapshot::default(),[0.0,64.0,0.0],None);
+        assert_eq!(reduced.len(),0);
+    }
+    #[test]
+    fn eye_ring_and_spawner_burst_preserve_ordered_particle_positions() {
+        let mut fx=effects();
+        fx.receive(vec![event(2003,0)],Snapshot::default(),[0.0,64.0,0.0],None);
+        assert_eq!(fx.renderer.layers[2].len(),8);
+        assert!(fx.renderer.layers[2].iter().all(|p|p.texture==155));
+        let portal=&fx.renderer.layers[0];
+        assert_eq!(portal.len(),80);
+        assert_eq!(portal[0].pos,[5.5,63.6,0.5]);
+        assert_eq!(portal[0].pos,portal[1].pos);
+        assert_eq!(portal[0].motion,[-5.0,0.0,-0.0]);
+        assert_eq!(portal[1].motion,[-7.0,0.0,-0.0]);
+        let mut spawner=effects();
+        spawner.receive(vec![event(2004,0)],Snapshot::default(),[0.0,64.0,0.0],None);
+        assert_eq!(spawner.renderer.layers[0].len(),40);
+        for pair in spawner.renderer.layers[0].chunks_exact(2) {
+            assert_eq!(pair[0].kind,Kind::Smoke);
+            assert_eq!(pair[1].kind,Kind::Flame);
+            assert_eq!(pair[0].pos,pair[1].pos);
+        }
+    }
+}
 impl Effects {
     pub fn object_draws(
         state: &crate::render::entity::objects::ObjectState,
@@ -397,6 +445,11 @@ impl Effects {
                             0.5,
                             2.6 + (r.next_float() - r.next_float()) * 0.8,
                         )),
+                        1007..=1009 => Some((
+                            if code == 1007 { "mob.ghast.charge" } else { "mob.ghast.fireball" },
+                            center, if code == 1009 {1.0} else {10.0},
+                            (r.next_float()-r.next_float())*0.2+1.0,
+                        )),
                         _ => None,
                     };
                     if let (Some(s), Some((n, p, v, f))) = (snd.as_deref_mut(), sound) {
@@ -432,7 +485,54 @@ impl Effects {
                                 -0.03 + r.next_gaussian() * 0.01,
                                 dz * speed + r.next_gaussian() * 0.01,
                             ];
-                            self.renderer.spawn("smoke", pos, velocity, view);
+                            self.renderer.try_spawn_return("smoke", pos, velocity, view, &mut r).expect("smoke factory");
+                        }
+                    }
+                    if code == 2002 || code == 2003 {
+                        let origin = if code == 2003 { [p[0]+0.5,p[1],p[2]+0.5] } else {p};
+                        let icon = if code == 2002 {"iconcrack_373"} else {"iconcrack_381"};
+                        for _ in 0..8 {
+                            let velocity = [r.next_gaussian()*0.15,r.next_double()*0.2,r.next_gaussian()*0.15];
+                            self.renderer.try_spawn_return(icon,origin,velocity,view,&mut r).expect("item particle");
+                        }
+                        if code == 2002 {
+                            let (color,instant)=crate::render::potion_color::properties(data);
+                            let rgb=[(color>>16&255) as f32/255.0,(color>>8&255) as f32/255.0,(color&255) as f32/255.0];
+                            let name=if instant {"instantSpell"} else {"spell"};
+                            for _ in 0..100 {
+                                let radius=r.next_double()*4.0;
+                                let angle=r.next_double()*std::f64::consts::PI*2.0;
+                                let dx=angle.cos()*radius;
+                                let dy=0.01+r.next_double()*0.5;
+                                let dz=angle.sin()*radius;
+                                if let Some((layer,index))=self.renderer.try_spawn_return(name,
+                                    [p[0]+dx*0.1,p[1]+0.3,p[2]+dz*0.1],[dx,dy,dz],view,&mut r).expect("spell factory") {
+                                    let tint=12.0f32/16.0+r.next_float()*0.25;
+                                    let particle=&mut self.renderer.layers[layer][index];
+                                    particle.color=rgb.map(|v|v*tint);
+                                    particle.multiply_velocity(radius as f32);
+                                }
+                            }
+                            let pitch=r.next_float()*0.1+0.9;
+                            if let Some(s)=snd.as_deref_mut() {
+                                crate::app::play_world_sound(s,glam::DVec3::from_array(view),"random.glass",center,1.0,pitch);
+                            }
+                        } else {
+                            let mut angle=0.0f64;
+                            while angle<std::f64::consts::PI*2.0 {
+                                let pos=[origin[0]+angle.cos()*5.0,origin[1]-0.4,origin[2]+angle.sin()*5.0];
+                                for speed in [-5.0,-7.0] {
+                                    self.renderer.try_spawn_return("portal",pos,[angle.cos()*speed,0.0,angle.sin()*speed],view,&mut r).expect("portal factory");
+                                }
+                                angle+=std::f64::consts::PI*0.05;
+                            }
+                        }
+                    }
+                    if code == 2004 {
+                        for _ in 0..20 {
+                            let pos=std::array::from_fn(|i|p[i]+0.5+(r.next_float() as f64-0.5)*2.0);
+                            self.renderer.try_spawn_return("smoke",pos,[0.0;3],view,&mut r).expect("smoke factory");
+                            self.renderer.try_spawn_return("flame",pos,[0.0;3],view,&mut r).expect("flame factory");
                         }
                     }
                     if code == 2001 {

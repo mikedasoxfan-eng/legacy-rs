@@ -20,6 +20,8 @@ pub mod gpu;
 pub mod map;
 pub mod player_view;
 pub mod sky;
+pub mod sky_release;
+pub mod potion_color;
 pub mod table;
 pub mod targeting;
 pub mod video;
@@ -100,6 +102,11 @@ impl Tessellator {
 
     pub fn set_color_opaque_f(&mut self, r: f32, g: f32, b: f32) {
         self.color = [Self::channel(r), Self::channel(g), Self::channel(b), 255];
+    }
+
+    /// `setColorOpaque_I`: integer channels bypass float normalization.
+    pub fn set_color_opaque_i(&mut self, color: u32) {
+        self.color = [(color >> 16) as u8, (color >> 8) as u8, color as u8, 255];
     }
 
     /// `setBrightness` (func_35835_b).

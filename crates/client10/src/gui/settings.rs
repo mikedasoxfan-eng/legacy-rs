@@ -27,10 +27,12 @@ pub enum EnumOptions {
     Graphics,
     AmbientOcclusion,
     GuiScale,
+    RenderClouds,
+    Particles,
 }
 
 impl EnumOptions {
-    pub const ALL: [EnumOptions; 15] = [
+    pub const ALL: [EnumOptions; 17] = [
         EnumOptions::Music,
         EnumOptions::Sound,
         EnumOptions::InvertMouse,
@@ -46,6 +48,8 @@ impl EnumOptions {
         EnumOptions::Graphics,
         EnumOptions::AmbientOcclusion,
         EnumOptions::GuiScale,
+        EnumOptions::RenderClouds,
+        EnumOptions::Particles,
     ];
 
     pub fn ordinal(self) -> i32 {
@@ -73,6 +77,8 @@ impl EnumOptions {
             EnumOptions::Graphics => "options.graphics",
             EnumOptions::AmbientOcclusion => "options.ao",
             EnumOptions::GuiScale => "options.guiScale",
+            EnumOptions::RenderClouds => "options.renderClouds",
+            EnumOptions::Particles => "options.particles",
         }
     }
 
@@ -88,6 +94,7 @@ impl EnumOptions {
                 | EnumOptions::Anaglyph
                 | EnumOptions::AdvancedOpengl
                 | EnumOptions::AmbientOcclusion
+                | EnumOptions::RenderClouds
         )
     }
 }
@@ -124,6 +131,8 @@ pub struct GameSettings {
     pub anaglyph: bool,
     pub advanced_opengl: bool,
     pub limit_framerate: i32,
+    pub particles: i32,
+    pub clouds: bool,
     pub fancy_graphics: bool,
     pub ambient_occlusion: bool,
     pub skin: String,
@@ -159,6 +168,8 @@ impl Default for GameSettings {
             anaglyph: false,
             advanced_opengl: false,
             limit_framerate: 1,
+            particles: 0,
+            clouds: true,
             fancy_graphics: true,
             ambient_occlusion: true,
             skin: "Default".into(),
@@ -231,9 +242,11 @@ impl GameSettings {
                 "anaglyph3d" => self.anaglyph = v()? == "true",
                 "advancedOpengl" => self.advanced_opengl = v()? == "true",
                 "fpsLimit" => self.limit_framerate = int(v()?)?,
+                "particles" => self.particles = int(v()?)?,
                 "difficulty" => self.difficulty = int(v()?)?,
                 "fancyGraphics" => self.fancy_graphics = v()? == "true",
                 "ao" => self.ambient_occlusion = v()? == "true",
+                "clouds" => self.clouds = v()? == "true",
                 "skin" => self.skin = v()?.to_string(),
                 "lastServer" if p.len() >= 2 => self.last_server = p[1].to_string(),
                 _ => {}
@@ -264,6 +277,7 @@ impl GameSettings {
         line("fov",java_float(self.fov));line("gamma",java_float(self.gamma));
         line("viewDistance", self.render_distance.to_string());
         line("guiScale", self.gui_scale.to_string());
+        line("particles", self.particles.to_string());
         line("bobView", self.view_bobbing.to_string());
         line("anaglyph3d", self.anaglyph.to_string());
         line("advancedOpengl", self.advanced_opengl.to_string());
@@ -271,6 +285,7 @@ impl GameSettings {
         line("difficulty", self.difficulty.to_string());
         line("fancyGraphics", self.fancy_graphics.to_string());
         line("ao", self.ambient_occlusion.to_string());
+        line("clouds", self.clouds.to_string());
         line("skin", self.skin.clone());
         line("lastServer", self.last_server.clone());
         for kb in &self.key_bindings {
@@ -304,6 +319,8 @@ impl GameSettings {
             EnumOptions::Difficulty => self.difficulty = (self.difficulty + d) & 3,
             EnumOptions::Graphics => self.fancy_graphics = !self.fancy_graphics,
             EnumOptions::AmbientOcclusion => self.ambient_occlusion = !self.ambient_occlusion,
+            EnumOptions::RenderClouds => self.clouds = !self.clouds,
+            EnumOptions::Particles => self.particles = self.particles.wrapping_add(d) % 3,
             _ => {}
         }
         self.save();
@@ -326,6 +343,7 @@ impl GameSettings {
             EnumOptions::Anaglyph => self.anaglyph,
             EnumOptions::AdvancedOpengl => self.advanced_opengl,
             EnumOptions::AmbientOcclusion => self.ambient_occlusion,
+            EnumOptions::RenderClouds => self.clouds,
             _ => false,
         }
     }
@@ -361,6 +379,7 @@ impl GameSettings {
                 EnumOptions::Difficulty => head + &t(DIFFICULTIES[self.difficulty as usize & 3]),
                 EnumOptions::GuiScale => head + &t(GUISCALES[self.gui_scale as usize & 3]),
                 EnumOptions::FramerateLimit => head + &t(LIMIT_FRAMERATES[self.limit_framerate.clamp(0, 2) as usize]),
+                EnumOptions::Particles => head + &t(["options.particles.all", "options.particles.decreased", "options.particles.minimal"][self.particles as usize]),
                 EnumOptions::Graphics => {
                     head + &t(if self.fancy_graphics { "options.graphics.fancy" } else { "options.graphics.fast" })
                 }
