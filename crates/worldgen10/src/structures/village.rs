@@ -70,6 +70,11 @@ impl VillagePiece {
             if !clip.contains(x,y,z) {break;}
             self.villagers10+=1;
             let profession=match self.kind {1=>2,2=>1,7=>3,4 if n==0=>4,_=>0};
+            let mut villager = crate::entity::Entity::living(w, "Villager")
+                .expect("Release villager constructor");
+            villager.kind = crate::entity::EntityKind::Villager { profession };
+            villager.set_location_and_angles(x as f64 + 0.5, y as f64, z as f64 + 0.5, 0.0, 0.0);
+            w.entity_joined_world(villager);
             w.villager_spawns10.push(VillagerSpawn10 {position:[x as f64+0.5,y as f64,z as f64+0.5],profession});
         }
     }
@@ -82,6 +87,40 @@ fn inclusive(r: &mut JavaRandom, lo: i32, hi: i32) -> i32 {
         lo
     } else {
         r.next_int(hi - lo + 1) + lo
+    }
+}
+
+#[cfg(test)]
+mod inhabitants_tests {
+    use super::*;
+    #[test]
+    fn inhabitants_join_in_clip_order_with_professions_and_persistent_counts() {
+        for (kind, first) in [(0, 0), (1, 2), (2, 1), (3, 0), (4, 4), (7, 3), (8, 0)] {
+            for orientation in 0..4 {
+                let mut w = World::new(42, 7);
+                w.next_entity_id = 100;
+                w.entity_seed_source = crate::entity::EntitySeedSource::Deterministic(500);
+                let mut chunk = crate::world::chunk::Chunk::new(0, 0, vec![0; 32768].into_boxed_slice());
+                chunk.loaded = true;
+                w.chunks.insert((0, 0), Box::new(chunk));
+                let mut piece = VillagePiece::new(kind, 1, B::new([0, 64, 0, 8, 70, 8]), orientation, &mut JavaRandom::new(1));
+                let (x, y, z) = piece.component.position(1, 1, 2);
+                piece.spawn_villagers10(&mut w, B::new([x, 0, z, x, 127, z]), 1, 1, 2, 2);
+                assert_eq!(piece.villagers10, 1);
+                assert_eq!(w.loaded_entity_list, [100]);
+                assert!(matches!(w.entities[&100].kind, crate::entity::EntityKind::Villager { profession } if profession == first));
+                assert_eq!(w.entities[&100].pos, crate::entity::Vec3D::new(x as f64 + 0.5, y as f64, z as f64 + 0.5));
+                let clip = B::new([0, 0, 0, 15, 127, 15]);
+                piece.spawn_villagers10(&mut w, clip, 1, 1, 2, 2);
+                piece.spawn_villagers10(&mut w, clip, 1, 1, 2, 2);
+                assert_eq!(piece.villagers10, 2);
+                assert_eq!(w.loaded_entity_list, [100, 101]);
+                let second = if kind == 4 { 0 } else { first };
+                assert!(matches!(w.entities[&101].kind, crate::entity::EntityKind::Villager { profession } if profession == second));
+                assert_eq!(w.next_entity_id, 102);
+                assert!(matches!(w.entity_seed_source, crate::entity::EntitySeedSource::Deterministic(502)));
+            }
+        }
     }
 }
 fn top_solid(w: &mut World, x: i32, z: i32) -> i32 {

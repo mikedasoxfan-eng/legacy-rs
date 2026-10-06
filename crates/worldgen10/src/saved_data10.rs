@@ -24,8 +24,13 @@ pub trait WorldSavedData {
     fn is_dirty(&self) -> bool { self.state().is_dirty() }
 }
 
-/// IEnchantmentModifier's callback contract. The blocks worker supplies the
-/// concrete Enchantment type; a type parameter preserves its reference argument.
-pub trait IEnchantmentModifier<Enchantment> {
+/// IEnchantmentModifier's callback contract, using the Release registry type.
+pub trait IEnchantmentModifier<Enchantment = crate::enchantment::Enchantment> {
     fn calculate_modifier(&mut self, enchantment: &Enchantment, level: i32);
+}
+
+impl<F: FnMut(&crate::enchantment::Enchantment, i32)> IEnchantmentModifier for F {
+    fn calculate_modifier(&mut self, enchantment: &crate::enchantment::Enchantment, level: i32) {
+        self(enchantment, level);
+    }
 }

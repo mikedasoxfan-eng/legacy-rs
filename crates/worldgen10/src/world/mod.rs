@@ -190,7 +190,7 @@ pub struct World {
     /// `World.rand`
     pub rand: JavaRandom,
     pub(crate) population_uses_world10: bool,
-    /// Entity classes belong to the entities area; requests preserve generation decisions.
+    /// Generation observations; entities are constructed and joined synchronously.
     pub villager_spawns10: Vec<crate::structures::village::VillagerSpawn10>,
     pub end_entity_spawns10: Vec<crate::end::EndEntitySpawn>,
     /// `World.lightingToUpdate`

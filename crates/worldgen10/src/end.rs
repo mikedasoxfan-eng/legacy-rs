@@ -27,7 +27,7 @@ pub fn populate(w: &mut crate::World, cx: i32, cz: i32) {
     let previous = w.population_uses_world10;
     w.population_uses_world10 = true;
     crate::decorator10::begin(Biome::Sky);
-    let (x0, z0) = (cx * 16, cz * 16);
+    let (x0, z0) = (cx.wrapping_mul(16), cz.wrapping_mul(16));
     crate::populate::generate_ores(w, x0, z0);
     if w.prand().next_int(5) == 0 {
         let x = x0 + w.prand().next_int(16) + 8;
@@ -36,7 +36,13 @@ pub fn populate(w: &mut crate::World, cx: i32, cz: i32) {
         generate_spike(w, x, y, z);
     }
     if x0 == 0 && z0 == 0 {
+        // Construct before drawing the yaw: the constructor allocates the dragon's
+        // seven parts and their Randoms, as in BiomeEndDecorator.decorate_do.
+        let mut dragon = crate::entity::Entity::living(w, "EnderDragon")
+            .expect("Release dragon constructor");
         let yaw = w.prand().next_float() * 360.0;
+        dragon.set_location_and_angles(0.0, 128.0, 0.0, yaw, 0.0);
+        w.entity_joined_world(dragon);
         w.end_entity_spawns10.push(EndEntitySpawn::Dragon { yaw });
     }
     crate::decorator10::finish(Biome::Sky);
@@ -67,7 +73,12 @@ pub fn generate_spike(w: &mut crate::World, x: i32, y: i32, z: i32) -> bool {
             }
         }
     }
+    let mut crystal = crate::entity::Entity::ender_crystal(w, crate::entity::Vec3D::default());
     let yaw = w.prand().next_float() * 360.0;
+    let position = crate::entity::Vec3D::new(
+        (x as f32 + 0.5) as f64, (y + height) as f64, (z as f32 + 0.5) as f64);
+    crystal.set_location_and_angles(position.x, position.y, position.z, yaw, 0.0);
+    w.entity_joined_world(crystal);
     w.end_entity_spawns10.push(EndEntitySpawn::Crystal {
         x: (x as f32 + 0.5) as f64, y: (y + height) as f64, z: (z as f32 + 0.5) as f64, yaw,
     });
@@ -105,7 +116,43 @@ mod tests {
         } }
         assert_eq!(w.get_block_id(8, 64 + height, 8), 7);
         assert_eq!(w.end_entity_spawns10, vec![EndEntitySpawn::Crystal {x: 8.5, y: (64 + height) as f64, z: 8.5, yaw}]);
+        let crystal = w.entities.values().find(|e| matches!(e.kind, crate::entity::EntityKind::EnderCrystal { .. })).unwrap();
+        // Entity.setLocationAndAngles adds the crystal's one-block yOffset.
+        assert_eq!(crystal.pos, crate::entity::Vec3D::new(8.5, (65 + height) as f64, 8.5));
+        assert_eq!(crystal.yaw, yaw);
+        assert!(w.loaded_entity_list.contains(&crystal.entity_id));
+        assert!(w.chunk(0, 0).entity_lists.iter().any(|ids| ids.contains(&crystal.entity_id)));
         assert_eq!(w.prand().next_int_unbounded(), expected.next_int_unbounded());
+    }
+    #[test]
+    fn origin_population_joins_one_dragon_and_allocates_seven_parts() {
+        let mut w = crate::World::with_dimension(42, 7, crate::world::Dimension::End);
+        w.entity_seed_source = crate::entity::EntitySeedSource::Deterministic(500);
+        w.next_entity_id = 100;
+        // Empty resident chunks make ore/spike attempts fail without recursive population.
+        for x in 0..=2 { for z in 0..=2 {
+            let mut c = crate::world::chunk::Chunk::new(x, z, vec![0; CHUNK_VOLUME].into_boxed_slice());
+            c.loaded = true;
+            c.populated = true;
+            w.chunks.insert((x, z), Box::new(c));
+        } }
+        populate(&mut w, 0, 0);
+        assert_eq!(w.loaded_entity_list, [100]);
+        assert_eq!(w.next_entity_id, 108);
+        let dragon = &w.entities[&100];
+        assert_eq!(dragon.pos, crate::entity::Vec3D::new(0.0, 128.0, 0.0));
+        let crate::entity::EntityKind::Dragon(state) = &dragon.kind else { panic!("missing dragon") };
+        assert_eq!(state.parts, [101, 102, 103, 104, 105, 106, 107]);
+        for id in state.parts {
+            assert!(matches!(w.entities[&id].kind, crate::entity::EntityKind::DragonPart { parent: 100, .. }));
+            assert!(!w.loaded_entity_list.contains(&id));
+        }
+        assert!(matches!(w.entity_seed_source, crate::entity::EntitySeedSource::Deterministic(508)));
+        populate(&mut w, 1, 0);
+        assert_eq!(w.loaded_entity_list, [100]);
+        assert_eq!(w.next_entity_id, 108);
+        assert!(!w.sand_fall_instantly);
+        assert!(!w.population_uses_world10);
     }
     #[test]
     fn spike_rejection_does_not_place_blocks_or_consume_yaw() {
@@ -152,8 +199,8 @@ impl EndGenerator {
             vec![0; CHUNK_VOLUME].into_boxed_slice().try_into().unwrap();
         let mut biomes = Vec::new();
         self.biome_source
-            .biomes(&mut biomes, cx * 16, cz * 16, 16, 16);
-        let d = self.density(cx * 2, cz * 2);
+            .biomes(&mut biomes, cx.wrapping_mul(16), cz.wrapping_mul(16), 16, 16);
+        let d = self.density(cx.wrapping_mul(2), cz.wrapping_mul(2));
         for a in 0..2 {
             for b in 0..2 {
                 for c in 0..32 {
@@ -230,8 +277,8 @@ impl EndGenerator {
         let mut out = vec![0.0; 297];
         for a in 0..3 {
             for b in 0..3 {
-                let fx = (a as i32 + x) as f32;
-                let fz = (b as i32 + z) as f32;
+                let fx = (a as i32).wrapping_add(x) as f32;
+                let fz = (b as i32).wrapping_add(z) as f32;
                 let radius = ((fx * fx + fz * fz) as f64).sqrt() as f32;
                 let island = (100.0f32 - radius * 8.0f32).clamp(-100.0, 80.0);
                 for y in 0..33 {

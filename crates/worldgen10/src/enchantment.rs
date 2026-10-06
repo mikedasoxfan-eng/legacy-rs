@@ -106,7 +106,7 @@ pub struct Enchantment {
     pub kind: EnchantmentType,
     pub name: &'static str,
 }
-pub const ENCHANTMENTS: [Enchantment; 17] = [
+pub static ENCHANTMENTS: [Enchantment; 17] = [
     Enchantment {
         id: 0,
         weight: 10,
@@ -211,8 +211,11 @@ pub const ENCHANTMENTS: [Enchantment; 17] = [
     },
 ];
 pub fn get(id: i32) -> Option<Enchantment> {
+    get_ref(id).copied()
+}
+pub fn get_ref(id: i32) -> Option<&'static Enchantment> {
     assert!((0..256).contains(&id), "ArrayIndexOutOfBoundsException");
-    ENCHANTMENTS.iter().find(|e| e.id == id).copied()
+    ENCHANTMENTS.iter().find(|e| e.id == id)
 }
 #[derive(Clone, Copy, Debug, Default)]
 pub struct ProtectionSource {
@@ -337,19 +340,40 @@ pub fn level(id: i32, stack: Option<ItemStack>) -> i32 {
 pub fn max_level(id: i32, stacks: &[Option<ItemStack>]) -> i32 {
     stacks.iter().fold(0, |n, s| n.max(level(id, *s)))
 }
+pub fn apply_modifier(
+    modifier: &mut impl crate::saved_data10::IEnchantmentModifier,
+    stack: Option<ItemStack>,
+) {
+    if let Some(tag) = stack.and_then(|stack| stack.tag()) {
+        for data in tag.list("ench") {
+            let crate::nbt::Tag::Compound(data) = data else {
+                panic!("ClassCastException");
+            };
+            let id = data.short("id") as i32;
+            let level = data.short("lvl") as i32;
+            if let Some(enchantment) = get_ref(id) {
+                modifier.calculate_modifier(enchantment, level);
+            }
+        }
+    }
+}
+pub fn apply_modifier_array(
+    modifier: &mut impl crate::saved_data10::IEnchantmentModifier,
+    stacks: &[Option<ItemStack>],
+) {
+    for stack in stacks {
+        apply_modifier(modifier, *stack);
+    }
+}
 pub fn modifier_damage(
     rng: &mut JavaRandom,
     stacks: &[Option<ItemStack>],
     source: ProtectionSource,
 ) -> i32 {
     let mut value = 0i32;
-    for s in stacks.iter().flatten() {
-        for data in s.enchantments() {
-            if let Some(e) = get(data.id) {
-                value = value.wrapping_add(e.modifier_damage(data.level, source));
-            }
-        }
-    }
+    apply_modifier_array(&mut |e: &Enchantment, level| {
+        value = value.wrapping_add(e.modifier_damage(level, source));
+    }, stacks);
     value = value.min(25);
     (value.wrapping_add(1) >> 1).wrapping_add(rng.next_int((value >> 1).wrapping_add(1)))
 }
@@ -359,13 +383,9 @@ pub fn modifier_living(
     attribute: CreatureAttribute,
 ) -> i32 {
     let mut value = 0i32;
-    if let Some(s) = stack {
-        for data in s.enchantments() {
-            if let Some(e) = get(data.id) {
-                value = value.wrapping_add(e.modifier_living(data.level, attribute));
-            }
-        }
-    }
+    apply_modifier(&mut |e: &Enchantment, level| {
+        value = value.wrapping_add(e.modifier_living(level, attribute));
+    }, stack);
     if value > 0 {
         1 + rng.next_int(value)
     } else {
@@ -475,6 +495,33 @@ impl EnchantmentNameParts {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn modifier_callback_preserves_registry_identity_order_and_failure_prefix() {
+        let first = ItemStack::new(276, 1, 0);
+        first.add_enchantment(16, 2);
+        first.add_enchantment(15, 9); // An empty registry slot is skipped.
+        first.add_enchantment(17, 3);
+        let second = ItemStack::new(267, 1, 0);
+        second.add_enchantment(16, 4);
+        let mut seen = Vec::new();
+        apply_modifier_array(&mut |e: &Enchantment, level| {
+            assert!(std::ptr::eq(e, get_ref(e.id).unwrap()));
+            seen.push((e.id, level));
+        }, &[None, Some(first), Some(second)]);
+        assert_eq!(seen, [(16, 2), (17, 3), (16, 4)]);
+
+        let mut tag = first.tag().unwrap();
+        let crate::nbt::Tag::List(_, list) = &mut tag.0.iter_mut()
+            .find(|(key, _)| key == "ench").unwrap().1 else { unreachable!() };
+        list.push(crate::nbt::Tag::Int(0));
+        first.set_tag(Some(tag));
+        seen.clear();
+        let result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+            apply_modifier(&mut |e: &Enchantment, level| seen.push((e.id, level)), Some(first));
+        }));
+        assert!(result.is_err());
+        assert_eq!(seen, [(16, 2), (17, 3)]);
+    }
     #[test]
     fn original_materials_and_ranges() {
         assert_eq!(ArmorMaterial::Diamond.durability(1), 528);
