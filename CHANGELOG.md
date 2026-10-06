@@ -3,6 +3,18 @@
 All notable changes to beta-rs. Versions follow [Semantic Versioning](https://semver.org);
 "exact" always means checked bit for bit against the original bytecode of that version.
 
+## [Unreleased] - 3.0.0
+
+Minecraft 1.0 (the first full release), next to Beta 1.7.3 and Beta 1.8.1 in the same program.
+
+### Versions
+- The version picker offers Minecraft 1.0; `beta.exe --mc 1.0` starts it directly. It keeps its own saves,
+  options and statistics in `1.0\`. Beta 1.7.3 and Beta 1.8.1 are unchanged and still checked bit for bit.
+- Plain launches keep saves next to the exe, whatever folder they are started from.
+
+### Minecraft 1.0 (in progress; see the README for the exact verified share)
+- Ported forward from the exact Beta 1.8.1 code, class by class, against the original 1.0 bytecode.
+
 ## [2.0.0] - 2026-10-05
 
 Minecraft Beta 1.8.1 (the Adventure Update), next to Beta 1.7.3 in the same program.
