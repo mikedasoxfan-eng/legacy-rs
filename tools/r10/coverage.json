@@ -16840,6 +16840,10 @@
  "GuiGameOver": [
   "r10gui2 gameover original bytecode"
  ],
+ "GuiIngame": [
+  "r10gui3 hud original bytecode",
+  "r10gui3 regression boss original bytecode"
+ ],
  "GuiInventory": [
   "r10gui2 inventory original bytecode"
  ],
