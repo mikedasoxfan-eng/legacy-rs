@@ -41,8 +41,8 @@ pub fn render(s: &ChestState) -> Fixed {
     lid = 1.0 - lid;
     lid = 1.0 - lid * lid * lid;
     let angle = -(lid * worldgen::math::PI_F32 / 2.0);
-    model.parts.get_mut("field_35405_a").unwrap().rotate_angle_x = angle;
-    model.parts.get_mut("field_35404_c").unwrap().rotate_angle_x = angle;
+    model.parts.get_mut("chestLid").unwrap().rotate_angle_x = angle;
+    model.parts.get_mut("chestKnob").unwrap().rotate_angle_x = angle;
     special::model(&mut g, &model);
     g.enable(2, false);
     g.pop();

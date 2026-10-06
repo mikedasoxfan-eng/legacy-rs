@@ -9,7 +9,7 @@ public final class Mode_tilemanager9_10 {
  static void i(int v)throws IOException{EntityOracle.i(out,v);}static void f(float v)throws IOException{EntityOracle.f(out,v);}static void d(double v)throws IOException{EntityOracle.d(out,v);}
  static final class ChildSign extends TileEntitySign {}static final class GrandSign extends SignBase {}static class SignBase extends TileEntitySign {}static final class ChildPiston extends TileEntityPiston {}
  // Include the intermediate class in the captured hash inputs as well.
- static Class[] all(){Class[] a=Arrays.copyOf(classes,classes.length+1);a[a.length-1]=SignBase.class;return a;}
+ static Class[] all(){Class[] a=Arrays.copyOf(classes,classes.length+3);a[a.length-3]=SignBase.class;a[a.length-2]=TileEntityEnchantmentTable.class;a[a.length-1]=TileEntityEndPortal.class;return a;}
  static Map map(TileEntityRenderer m)throws Exception{return (Map)Oracle.getField(m,"specialRendererMap");}
  static TileEntityRenderer manager()throws Exception{Constructor<TileEntityRenderer> c=TileEntityRenderer.class.getDeclaredConstructor();c.setAccessible(true);return c.newInstance();}
  static int error(Runnable r){try{r.run();return 0;}catch(NullPointerException e){return 1;}catch(RuntimeException e){return 2;}}
@@ -76,7 +76,7 @@ public final class Mode_tilemanager9_10 {
   drawFail=-1;
  }
  public static void main(String[] a)throws Exception{
-  Mode_entities10.world();try(DataOutputStream o=new DataOutputStream(new BufferedOutputStream(new FileOutputStream(a[1])))){
+  Mode_entities10.world();OpenGlHelper.initializeTextures();GL13.activeTexture=0;try(DataOutputStream o=new DataOutputStream(new BufferedOutputStream(new FileOutputStream(a[1])))){
    out=o;i(0x39383154);i(all().length);for(Class c:all())i(c.hashCode());registry();cache();dispatch();
   }System.out.println("tilemanager9: 4 registrations, recursive/null caches, 540 active caches and 1080 range/dispatch calls (real JVM Class hashes)");
  }

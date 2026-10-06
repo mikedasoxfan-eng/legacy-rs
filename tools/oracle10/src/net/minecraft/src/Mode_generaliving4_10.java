@@ -27,7 +27,7 @@ public final class Mode_generaliving4_10 {
     case 13:e=new EntityGhast(w);renderer=new RenderGhast();((EntityGhast)e).prevAttackCounter=c-5;((EntityGhast)e).attackCounter=c+5;e.texture=c%2!=0?"/mob/ghast_fire.png":"/mob/ghast.png";break;
     case 14:e=new EntityPigZombie(w);renderer=new RenderBiped(new ModelZombie(),.5F);break;
     case 15:e=new EntityGiantZombie(w);renderer=new RenderGiantZombie(new ModelZombie(),.5F,6);break;
-    case 16:e=new EntitySlime(w);renderer=new RenderSlime(new ModelSlime(16),new ModelSlime(0),.25F);e.dataWatcher.updateObject(16,Byte.valueOf((byte)(1<<(c%3))));((EntitySlime)e).field_767_b=.2F;((EntitySlime)e).field_40139_a=.8F;break;
+    case 16:e=new EntitySlime(w);renderer=new RenderSlime(new ModelSlime(16),new ModelSlime(0),.25F);e.dataWatcher.updateObject(16,Byte.valueOf((byte)(1<<(c%3))));((EntitySlime)e).field_767_b=.2F;((EntitySlime)e).field_768_a=.8F;break;
     default:e=new EntityCreeper(w);renderer=new RenderCreeper();((EntityCreeper)e).lastActiveTime=c;((EntityCreeper)e).timeSinceIgnited=c+3;e.dataWatcher.updateObject(17,Byte.valueOf((byte)(c&1)));break;
    }
    renderer.setRenderManager(manager);e.entityId=c*337;e.field_35172_bP=arrows;e.setPosition(.25,70.5,-2.75);

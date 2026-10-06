@@ -1642,7 +1642,7 @@ impl App {
                     render::entity::manager::Context {
                         world: Some(()), engine: Some(()), font: Some(()),
                         player: Some(()), options: Some(()),
-                    }, Some(camera), partial,
+                    }, Some(camera), partial, camera_settings.front_view,
                     |_| Ok(bed.map_or((0, 0), |metadata| (26, metadata))),
                 ).expect("active singleplayer render context");
                 gpu.entities.view = gpu.entities.manager.view;

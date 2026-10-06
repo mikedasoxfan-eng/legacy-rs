@@ -132,12 +132,15 @@ pub fn model_check(path: &str) -> bool {
             let j = d.u32();
             let flags = r.mirror as u32 | (r.show_model as u32) << 1 | (r.hidden as u32) << 2;
             d.equal(j as u64, flags as u64, &format!("{path}.flags"));
-            assert_eq!(d.u32(), 8, "corners");
-            for (i, v) in r.corners.iter().enumerate() {
+            // 1.0 ModelRenderer: every ModelBox's eight corners, then every box's faces.
+            let corners: Vec<_> = r.cube_list.iter().flat_map(|c| c.corners).collect();
+            let faces: Vec<_> = r.cube_list.iter().flat_map(|c| c.faces.iter().cloned()).collect();
+            assert_eq!(d.u32() as usize, corners.len(), "{path}: corners");
+            for (i, v) in corners.iter().enumerate() {
                 d.vertex(*v, &format!("{path}.corners[{i}]"));
             }
-            assert_eq!(d.u32() as usize, r.faces.len(), "quads");
-            for (i, q) in r.faces.iter().enumerate() {
+            assert_eq!(d.u32() as usize, faces.len(), "quads");
+            for (i, q) in faces.iter().enumerate() {
                 assert_eq!(d.u32(), 4, "quad vertices");
                 for (k, v) in q.vertices.iter().enumerate() {
                     d.vertex(*v, &format!("{path}.faces[{i}][{k}]"));
