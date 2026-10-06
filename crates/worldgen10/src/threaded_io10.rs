@@ -1,6 +1,6 @@
 //! ThreadedFileIOBase and ThreadedChunkLoader's synchronized queues.
 use crate::nbt::{self, Compound};
-use std::{collections::HashSet, io::{self, Write}, path::{Path, PathBuf}, sync::{Arc, LazyLock, Mutex}, time::Duration};
+use std::{collections::HashSet, io, path::{Path, PathBuf}, sync::{Arc, LazyLock, Mutex}, time::Duration};
 
 pub trait IThreadedFileIO: Send + Sync {
     /// True after processing an entry; false only when called on an empty queue.
@@ -119,9 +119,7 @@ impl ThreadedChunkLoader {
     pub fn write_pending(&self, pending: ThreadedChunkLoaderPending) -> io::Result<()> {
         let mut raw = Vec::new();
         nbt::write_root(&mut raw, &pending.root)?;
-        let mut zlib = flate2::write::ZlibEncoder::new(Vec::new(), flate2::Compression::default());
-        zlib.write_all(&raw)?;
-        crate::region_cache181::write_chunk(&self.directory, pending.x, pending.z, &zlib.finish()?)
+        crate::region_cache181::write_chunk(&self.directory, pending.x, pending.z, &crate::compression10::zlib(&raw)?)
     }
 }
 impl IThreadedFileIO for ThreadedChunkLoader {

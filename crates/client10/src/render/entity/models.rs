@@ -590,8 +590,6 @@ impl Model {
         self.insert_part("body".into(), ModelRenderer::new(28, 8));
         self["body"].add_box(-4.0f32, -10.0f32, -7.0f32, 8, 16, 6, 1.75f32);
         self["body"].set_rotation_point(0.0f32, 5.0f32, 2.0f32);
-        self["body"].set_texture_offset(52, 0).add_box(-2.0, 2.0, -8.0, 4, 6, 1, 0.0);
-        self.child_head_z += 2.0;
         let mut var1: f32 = 0.5f32;
         self.insert_part("leg1".into(), ModelRenderer::new(0, 16));
         self["leg1"].add_box(-2.0f32, 0.0f32, -2.0f32, 4, 6, 4, var1);
@@ -617,8 +615,6 @@ impl Model {
         self.insert_part("body".into(), ModelRenderer::new(28, 8));
         self["body"].add_box(-4.0f32, -10.0f32, -7.0f32, 8, 16, 6, 0.0f32);
         self["body"].set_rotation_point(0.0f32, 5.0f32, 2.0f32);
-        self["body"].set_texture_offset(52, 0).add_box(-2.0, 2.0, -8.0, 4, 6, 1, 0.0);
-        self.child_head_z += 2.0;
     }
 
     /// `ModelChicken` constructor.

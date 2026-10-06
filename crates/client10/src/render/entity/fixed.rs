@@ -57,8 +57,17 @@ pub struct Fixed {
     /// Degrees the GUI rotated the lights about X before enabling them (0 in the world).
     pub light_rotation: f32,
     pub light_transform: Option<Mat4>,
+    /// Current lightmap coordinates (OpenGlHelper.setLightmapTextureCoords on
+    /// unit 1), recorded per draw in `draw_lightmaps` (parallel to `draws` for
+    /// draws made through `end`).
+    pub lightmap: [f32; 2],
+    pub draw_lightmaps: Vec<[f32; 2]>,
 }
 impl Fixed {
+    /// Lightmap coordinates of a packed brightness, as 1.0 renderers pass them.
+    pub fn set_packed_lightmap(&mut self, packed: i32) {
+        self.lightmap = [(packed % 65536) as f32, (packed / 65536) as f32];
+    }
     pub fn new(brightness: f32) -> Self {
         Self {
             alpha_cutoff: 0.1,
@@ -82,6 +91,8 @@ impl Fixed {
             textured: false,
             light_rotation: 0.0,
             light_transform: None,
+            lightmap: [0.0; 2],
+            draw_lightmaps: vec![],
         }
     }
     pub fn push(&mut self) {
@@ -157,6 +168,7 @@ impl Fixed {
             | if self.textured { 512 } else { 0 }
             | if self.vertex_color.is_some() { 64 } else { 0 }
             | if self.vertex_normal.is_some() { 128 } else { 0 };
+        self.draw_lightmaps.push(self.lightmap);
         self.draws.push(Draw {
             alpha_cutoff: self.alpha_cutoff,
             cull: if self.culling {self.cull_face} else {0},

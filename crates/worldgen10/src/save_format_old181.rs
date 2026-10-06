@@ -73,11 +73,15 @@ impl SaveFormatOld181 {
         }
     }
     pub fn delete(&self, name: &str) {
-        fn remove(path: &Path) {
+        fn remove(path: &Path, top: bool) {
             if path.is_dir() {
+                // Release 1.0 deleteFiles logs every nested directory.
+                if !top {
+                    println!("Deleting {}", path.display());
+                }
                 if let Ok(children) = fs::read_dir(path) {
                     for child in children.flatten() {
-                        remove(&child.path());
+                        remove(&child.path(), false);
                     }
                 }
                 let _ = fs::remove_dir(path);
@@ -87,7 +91,7 @@ impl SaveFormatOld181 {
         }
         let path = self.directory.join(name);
         if path.exists() {
-            remove(&path);
+            remove(&path, true);
         }
     }
     pub fn loader(&self, name: &str, players: bool) -> io::Result<Storage> {

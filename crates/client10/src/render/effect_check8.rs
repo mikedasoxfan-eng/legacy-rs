@@ -110,8 +110,7 @@ pub fn check(path: &str) -> bool {
                         r.render_particles(
                             &terrain,
                             origin(partial),
-                            yaw,
-                            pitch,
+                            super::particles::active_render_rotation(yaw, pitch, count == 6),
                             partial,
                             |layer, p, cam, rot, light, material| {
                                 if let Some(material) = material {
@@ -174,8 +173,7 @@ pub fn check(path: &str) -> bool {
                         r.render_particles(
                             &terrain,
                             origin(partial),
-                            -yaw,
-                            -pitch,
+                            super::particles::active_render_rotation(-yaw, -pitch, count == 6),
                             partial,
                             |layer, p, cam, rot, light, material| {
                                 if let Some(material) = material {

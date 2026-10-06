@@ -26,7 +26,7 @@ pub struct TexturedQuad {
 }
 
 impl TexturedQuad {
-    fn new(
+    pub(crate) fn new(
         mut vertices: [PositionTextureVertex; 4],
         u0: i32,
         v0: i32,

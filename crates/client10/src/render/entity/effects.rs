@@ -16,6 +16,11 @@ pub struct Snapshot {
     pub falling_light: [f32; 7],
     pub vehicle_rails: Option<super::vehicles::RailSnapshot>,
     pub surfaces: Vec<Surface>,
+    /// Packed lights a renderer samples itself: RenderPainting's tiles (in
+    /// `painting::light_positions` order) or RenderFallingSand's cell.
+    pub tile_lights: Vec<i32>,
+    /// RenderFallingSand's dragon egg: world-lit RenderBlocks vertices.
+    pub block_mesh: Vec<crate::render::Vertex>,
 }
 /// `Render.renderShadow`'s radius: the renderer's shadow size times the living size
 /// multiplier (1 in 1.0), halved for baby animals (1.0).

@@ -151,14 +151,13 @@ impl Effects {
     pub fn vertices(
         &mut self,
         cam: [f64; 3],
-        yaw: f32,
-        pitch: f32,
+        rot: [f32; 5],
         partial: f32,
         lightmap: &[u32; 256],
     ) -> [Vec<WeatherVertex>; 3] {
-        // b1.8.1 EntityFX: Tessellator brightness from func_35115_a, drawn through the lightmap.
+        // EntityFX: Tessellator brightness from getEntityBrightnessForRender, drawn through the lightmap.
         self.renderer
-            .lightmapped_vertices(&self.terrain, cam, yaw, pitch, partial)
+            .lightmapped_vertices(&self.terrain, cam, rot, partial)
             .map(|layer| {
                 layer
                     .into_iter()

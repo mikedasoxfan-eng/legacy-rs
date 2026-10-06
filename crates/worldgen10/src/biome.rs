@@ -155,6 +155,19 @@ impl Biome {
     }
     pub fn water_color10(self)->i32 {if self==Self::Swampland {14745456} else {16777215}}
     pub fn tint_color10(self,color:u32)->u32 {if self==Self::Swampland {((color&16711422)+5115470)/2} else {color}}
+    /// BiomeGenBase grass/foliage getters use cached float climate, widened to double.
+    pub fn grass_color10(self, source: &BiomeSource, x: i32, y: i32, z: i32, colors: &[u32]) -> u32 {
+        self.climate_color10(source, x, y, z, colors)
+    }
+    pub fn foliage_color10(self, source: &BiomeSource, x: i32, y: i32, z: i32, colors: &[u32]) -> u32 {
+        self.climate_color10(source, x, y, z, colors)
+    }
+    fn climate_color10(self, source: &BiomeSource, x: i32, y: i32, z: i32, colors: &[u32]) -> u32 {
+        let temperature = source.temperature_at_height(x, y, z) as f64;
+        let rainfall = (source.raw_rainfall(x, z) as f32) as f64 * temperature;
+        let index = (((1.0 - rainfall) * 255.0) as usize) << 8 | ((1.0 - temperature) * 255.0) as usize;
+        self.tint_color10(colors[index])
+    }
     pub fn enable_snow(self) -> bool {
         false
     }

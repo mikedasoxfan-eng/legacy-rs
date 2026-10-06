@@ -105,13 +105,14 @@ public final class DecorationOracle {
         }}System.out.println("fishing: 30 casts, 48000 ticks, rain/bites/catches/mobs/ground/line breaks/interpolation/rod durability/events");
     }
     public static void fishRenderers(String path)throws Exception {
-        RendererOracle.field("convertQuadsToTriangles").setBoolean(null,false);World w=Oracle.newWorld(0);w.chunkProvider=new EntityOracle.FlatProvider(w);RenderManager m=RendererOracle.manager(w);((Map)Oracle.getField(m.renderEngine,"textureMap")).put("/particles.png",17);RenderFish r=new RenderFish();r.setRenderManager(m);Oracle.DataOut o=new Oracle.DataOut();o.i32(2*4*5*3);
+        RendererOracle.field("convertQuadsToTriangles").setBoolean(null,false);World w=Oracle.newWorld(0);w.chunkProvider=new EntityOracle.FlatProvider(w);RenderManager m=RendererOracle.manager(w);((Map)Oracle.getField(m.renderEngine,"textureMap")).put("/particles.png",17);RenderFish r=new RenderFish();r.setRenderManager(m);Oracle.DataOut o=new Oracle.DataOut();o.i32(3*4*5*3);
         SignPlayer p=new SignPlayer((net.minecraft.client.Minecraft)Oracle.allocate(PlayerOracle.HeadlessMinecraft.class),w);EntityFishHook f=new EntityFishHook(w);f.prevPosX=-1.5;f.prevPosY=65.25;f.prevPosZ=2.75;f.setPosition(.25,64.5,-.75);p.prevPosX=1.5;p.prevPosY=66.25;p.prevPosZ=3.75;p.setPosition(-.25,65.5,.75);
-        for(int third=0;third<2;third++)for(float yaw:new float[]{-181,-30,0,217})for(float swing:new float[]{0,.125F,.5F,.875F,1})for(float partial:new float[]{0,.5F,1}) {
+        // 1.0 thirdPersonView is an int: 2 (front view) also draws the third-person line.
+        for(int third=0;third<3;third++)for(float yaw:new float[]{-181,-30,0,217})for(float swing:new float[]{0,.125F,.5F,.875F,1})for(float partial:new float[]{0,.5F,1}) {
             p.prevRotationYaw=yaw-17;p.rotationYaw=yaw;p.prevRotationPitch=-23;p.rotationPitch=37;p.prevRenderYawOffset=yaw+11;p.renderYawOffset=yaw-7;p.prevSwingProgress=swing;p.swingProgress=(swing+.2F)%1;f.angler=p;m.options.thirdPersonView=third;m.playerViewY=37;m.playerViewX=-17;
             o.i32(third);Oracle.modelFloat(o,yaw);Oracle.modelFloat(o,swing);Oracle.modelFloat(o,partial);RendererOracle.reset(.73F);RendererOracle.active=true;r.doRender(f,-.25,10.5,3.75,0,partial);RendererOracle.active=false;o.i32(RendererOracle.count);o.bytes(RendererOracle.draws.buf.toByteArray());
         }
-        try(OutputStream out=new FileOutputStream(path)){o.writeTo(out);}System.out.println("fish renderers: 120 cases, first/third person, swing and partial ticks");
+        try(OutputStream out=new FileOutputStream(path)){o.writeTo(out);}System.out.println("fish renderers: 180 cases, first/third/front person, swing and partial ticks");
     }
     static void paintingState(Oracle.DataOut o,EntityPainting p,World w)throws Exception {
         o.i32(p.art.ordinal());o.i32(p.direction);for(int v:new int[]{p.xPosition,p.yPosition,p.zPosition,EntityOracle.intField(EntityPainting.class,"tickCounter1",p)})o.i32(v);

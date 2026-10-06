@@ -85,7 +85,6 @@ impl LevelInfo {
         let mut c = Compound::new();
         c.put("RandomSeed", Tag::Long(self.seed));
         c.put("GameType", Tag::Int(self.game_type));
-        c.put("hardcore", Tag::Byte(self.hardcore as i8));
         c.put("MapFeatures", Tag::Byte(self.map_features as i8));
         c.put("SpawnX", Tag::Int(self.spawn.0));
         c.put("SpawnY", Tag::Int(self.spawn.1));
@@ -103,6 +102,7 @@ impl LevelInfo {
         c.put("raining", Tag::Byte(self.raining as i8));
         c.put("thunderTime", Tag::Int(self.thunder_time));
         c.put("thundering", Tag::Byte(self.thundering as i8));
+        c.put("hardcore", Tag::Byte(self.hardcore as i8));
         if let Some(p) = &self.player {
             c.put("Player", Tag::Compound(p.clone()));
         }
@@ -313,6 +313,7 @@ pub struct Storage {
 }
 
 impl Storage {
+    pub fn uses_threaded_chunks10(&self) -> bool { !self.legacy_chunks }
     /// Open (creating if needed) a save directory and take the session lock.
     pub fn open(dir: &Path) -> io::Result<Storage> {
         Self::open_with_players(dir, true)

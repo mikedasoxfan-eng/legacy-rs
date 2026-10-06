@@ -753,6 +753,15 @@ fn run(opts: WorldOptions, mut col: Colorizers, mut video: VideoSettings, rx: Re
             for id in near {
                 let e = world.entities[&id].clone();
                 let b = living_brightness(&mut world, &e);
+                // 1.0 RenderPainting: getLightBrightnessForSkyBlocks(x, y, z, 0) per tile.
+                let mut tile_lights: Vec<i32> = crate::render::painting::light_positions(&e).into_iter()
+                    .map(|[x, y, z]| world.packed_light181(x, y, z, 0)).collect();
+                // 1.0 RenderBlocks.renderBlockFallingSand: getMixedBrightnessForBlock at the cell.
+                let falling_block = match e.kind { worldgen::entity::EntityKind::FallingSand { block, .. } => Some(block), _ => None };
+                if let Some(block) = falling_block {
+                    let fl = worldgen::math::floor_double;
+                    tile_lights.push(world.packed_light181(fl(e.pos.x), fl(e.pos.y), fl(e.pos.z), worldgen::block::light_value(block)));
+                }
                 let biomes = RefCell::new(biome_source(&world));
                 let access = Access::new(&world, e.chunk_x, e.chunk_z, world.skylight_subtracted, &biomes,);
                 let fl = worldgen::math::floor_double;
@@ -784,7 +793,15 @@ fn run(opts: WorldOptions, mut col: Colorizers, mut video: VideoSettings, rx: Re
                 for xyz in crate::render::painting::light_positions(&e) {
                     let [x,y,z]=xyz;surfaces.push(crate::render::entity::effects::Surface{xyz,block:0,brightness:world.light_brightness_table[access.light_value(x,y,z) as usize],});
                 }
+                // 1.0 RenderFallingSand: a falling dragon egg renders as a world block.
+                let block_mesh = if falling_block == Some(crate::render::falling::DRAGON_EGG) {
+                    let fl = worldgen::math::floor_double;
+                    let egg_access = Access::new(&world, fl(e.pos.x) >> 4, fl(e.pos.z) >> 4, world.skylight_subtracted, &biomes);
+                    crate::render::falling::egg_vertices(&egg_access, &col, video.ao, [e.pos.x, e.pos.y, e.pos.z])
+                } else { Vec::new() };
                 snapshot.push(crate::render::entity::effects::Snapshot {
+                    tile_lights,
+                    block_mesh,
                     vehicle_rails: if matches!(e.kind,worldgen::entity::EntityKind::Minecart(..)) {
                         Some(crate::render::entity::vehicles::RailSnapshot::capture(&e,|x,y,z|(access.block(x,y,z),access.meta(x,y,z)),))
                     } else {None},
@@ -804,6 +821,8 @@ fn run(opts: WorldOptions, mut col: Colorizers, mut video: VideoSettings, rx: Re
                 falling_light: [1.0; 7],
                 vehicle_rails: None,
                 surfaces: Vec::new(),
+                tile_lights: Vec::new(),
+                block_mesh: Vec::new(),
                 }
             }));
             let _ = tx.send(FromWorker::Entities(snapshot));

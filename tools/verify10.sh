@@ -531,6 +531,9 @@ bash "$root/tools/verify_r10entities2.sh" --built || fail=1
 
 # Release 1.0 world, round 3.
 bash "$root/tools/verify_r10world3.sh" --built || fail=1
+# Release 1.0 world, round 4.
+bash "$root/tools/verify_r10world4.sh" --built || fail=1
+
 
 # --- rendering (1.0), restored shared-recorder checks ---
 bash "$root/tools/verify_r10render2.sh" --built || fail=1
@@ -544,6 +547,10 @@ bash "$root/tools/verify_r10blocks3.sh" --built || fail=1
 # --- gui (1.0), round 3 ---
 bash "$root/tools/verify_r10gui3.sh" --built || fail=1
 # --- end gui ---
+
+# --- renderfx (1.0), round 1: particles, EffectRenderer and the simple entity renderers ---
+bash "$root/tools/verify_r10renderfx1.sh" --built || fail=1
+# --- end renderfx ---
 
 pflush
 [ $fail -eq 0 ] && echo "ALL CASES EXACT" || echo "SOME CASES DIFFER"
