@@ -285,7 +285,7 @@ fn read_n<const N: usize, R: Read>(r: &mut R) -> io::Result<[u8; N]> {
 }
 
 /// DataOutputStream.writeUTF encodes UTF-16 units, including NUL as C0 80.
-fn write_utf<W: Write>(w: &mut W, s: &str) -> io::Result<()> {
+pub(crate) fn write_utf<W: Write>(w: &mut W, s: &str) -> io::Result<()> {
     let mut bytes=Vec::new();
     for unit in s.encode_utf16() {
         if (1..=127).contains(&unit) { bytes.push(unit as u8); }

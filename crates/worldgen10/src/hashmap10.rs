@@ -7,6 +7,12 @@ impl<T: PartialEq> PartialEq for IntHashMapEntry<T> {
 impl<T> IntHashMapEntry<T> {
     pub fn hash_code(&self) -> i32 { compute_hash(self.key) }
 }
+impl<T: std::fmt::Display> std::fmt::Display for IntHashMapEntry<T> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}=", self.key)?;
+        if let Some(value) = &self.value { value.fmt(f) } else { f.write_str("null") }
+    }
+}
 
 #[derive(Clone, Debug)]
 pub struct LongHashMapEntry<T> {
@@ -20,6 +26,12 @@ impl<T: PartialEq> PartialEq for LongHashMapEntry<T> {
 }
 impl<T> LongHashMapEntry<T> {
     pub fn hash_code(&self) -> i32 { long_hash(self.key) }
+}
+impl<T: std::fmt::Display> std::fmt::Display for LongHashMapEntry<T> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}=", self.key)?;
+        if let Some(value) = &self.value { value.fmt(f) } else { f.write_str("null") }
+    }
 }
 pub fn long_hash(key: i64) -> i32 { compute_hash((key ^ ((key as u64 >> 32) as i64)) as i32) }
 

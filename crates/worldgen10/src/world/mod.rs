@@ -293,8 +293,12 @@ pub struct World {
     pub difficulty: i32,
     /// World.multiplayerWorld: remote simulation guards in entity callbacks.
     pub multiplayer_world: bool,
-    /// Release 1.0 World.field_35472_c, consulted by ItemBlock's top-layer guard.
+    /// Release 1.0's independently mutable world-height fields.
+    pub height_bits10: i32,
+    pub x_shift10: i32,
     pub height10: i32,
+    pub height_mask10: i32,
+    pub sea_level10: i32,
     pub spawn_hostile_mobs: bool,
     pub spawn_peaceful_mobs: bool,
     pub block_bounds: [crate::entity::AxisAlignedBB; 256],
@@ -421,6 +425,10 @@ impl World {
             difficulty: 2,
             multiplayer_world: false,
             height10: 128,
+            height_bits10: 7,
+            x_shift10: 11,
+            height_mask10: 127,
+            sea_level10: 63,
             spawn_hostile_mobs: true,
             spawn_peaceful_mobs: true,
             block_bounds: {let mut bounds=crate::entity::block_table::INITIAL_BOUNDS;for id in 110..=122 {if let Some(b)=blocks10::initial_bounds(id){bounds[id as usize]=b;}}bounds},
@@ -632,7 +640,7 @@ impl World {
 
     /// `getBlockId`. Loads the chunk for in-range y.
     pub fn get_block_id(&mut self, x: i32, y: i32, z: i32) -> u8 {
-        if !in_xz_bounds(x, z) || !(0..128).contains(&y) {
+        if !in_xz_bounds(x, z) || !(0..self.height10).contains(&y) {
             return block::AIR;
         }
         if !self.access_chunk(x >> 4, z >> 4) {
@@ -653,7 +661,7 @@ impl World {
     }
 
     pub fn get_block_metadata(&mut self, x: i32, y: i32, z: i32) -> i32 {
-        if !in_xz_bounds(x, z) || !(0..128).contains(&y) {
+        if !in_xz_bounds(x, z) || !(0..self.height10).contains(&y) {
             return 0;
         }
         if !self.access_chunk(x >> 4, z >> 4) {
@@ -663,7 +671,7 @@ impl World {
     }
 
     pub fn set_block_and_metadata(&mut self, x: i32, y: i32, z: i32, id: u8, meta: i32) -> bool {
-        if !in_xz_bounds(x, z) || !(0..128).contains(&y) {
+        if !in_xz_bounds(x, z) || !(0..self.height10).contains(&y) {
             return false;
         }
         if !self.access_chunk(x >> 4, z >> 4) {
@@ -675,7 +683,7 @@ impl World {
     }
 
     pub fn set_block(&mut self, x: i32, y: i32, z: i32, id: u8) -> bool {
-        if !in_xz_bounds(x, z) || !(0..128).contains(&y) {
+        if !in_xz_bounds(x, z) || !(0..self.height10).contains(&y) {
             return false;
         }
         if !self.access_chunk(x >> 4, z >> 4) {
@@ -687,7 +695,7 @@ impl World {
     }
 
     pub fn set_block_metadata(&mut self, x: i32, y: i32, z: i32, meta: i32) -> bool {
-        if !in_xz_bounds(x, z) || !(0..128).contains(&y) {
+        if !in_xz_bounds(x, z) || !(0..self.height10).contains(&y) {
             return false;
         }
         if !self.access_chunk(x >> 4, z >> 4) {
@@ -902,7 +910,7 @@ impl World {
         if y < 0 {
             return 0;
         }
-        let y = y.min(127);
+        let y = if y >= self.height10 { self.height10.wrapping_sub(1) } else { y };
         if !self.access_chunk(x >> 4, z >> 4) {
             return 0;
         }
@@ -914,7 +922,7 @@ impl World {
         if !in_xz_bounds(x, z) || y < 0 {
             return false;
         }
-        if y >= 128 {
+        if y >= self.height10 {
             return true;
         }
         if !self.chunk_exists(x >> 4, z >> 4) {
@@ -925,11 +933,11 @@ impl World {
     }
 
     pub fn block_exists(&self, x: i32, y: i32, z: i32) -> bool {
-        (0..128).contains(&y) && self.chunk_exists(x >> 4, z >> 4)
+        (0..self.height10).contains(&y) && self.chunk_exists(x >> 4, z >> 4)
     }
 
     pub fn check_chunks_exist(&self, x0: i32, y0: i32, z0: i32, x1: i32, y1: i32, z1: i32) -> bool {
-        if y1 >= 0 && y0 < 128 {
+        if y1 >= 0 && y0 < self.height10 {
             for cx in x0 >> 4..=x1 >> 4 {
                 for cz in z0 >> 4..=z1 >> 4 {
                     if !self.chunk_exists(cx, cz) {
@@ -950,7 +958,7 @@ impl World {
         }
         let c = self.chunk(x >> 4, z >> 4);
         let (lx, lz) = (x & 15, z & 15);
-        let mut y = 127;
+        let mut y = self.height10.wrapping_sub(1);
         while y > 0 {
             let m = mat(material_of(c.block(lx, y, lz)));
             if m.blocks_movement || m.is_liquid {
@@ -984,8 +992,9 @@ impl World {
     // ------------------------------------------------------------ light
 
     pub fn get_saved_light_value(&self, kind: LightKind, x: i32, y: i32, z: i32) -> i32 {
-        let y = y.clamp(0, 127);
-        if in_xz_bounds(x, z) {
+        let mut y = y.max(0);
+        if y >= self.height10 { y = self.height10.wrapping_sub(1); }
+        if (0..self.height10).contains(&y) && in_xz_bounds(x, z) {
             if !self.chunk_exists(x >> 4, z >> 4) {
                 return 0;
             }
@@ -997,7 +1006,7 @@ impl World {
     }
 
     pub fn set_light_value(&mut self, kind: LightKind, x: i32, y: i32, z: i32, v: i32) {
-        if in_xz_bounds(x, z) && (0..128).contains(&y) && self.chunk_exists(x >> 4, z >> 4) {
+        if in_xz_bounds(x, z) && (0..self.height10).contains(&y) && self.chunk_exists(x >> 4, z >> 4) {
             self.chunk_mut(x >> 4, z >> 4)
                 .set_light(kind, x & 15, y, z & 15, v);
             self.touch(x >> 4, z >> 4);

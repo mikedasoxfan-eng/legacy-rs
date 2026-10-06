@@ -63,7 +63,7 @@ pub fn generate_spike(w: &mut crate::World, x: i32, y: i32, z: i32) -> bool {
             }
         }
     }
-    for by in y..(y + height).min(128) {
+    for by in y..(y + height).min(w.height10) {
         for bx in x - radius..=x + radius {
             for bz in z - radius..=z + radius {
                 let (dx, dz) = (bx - x, bz - z);
@@ -245,7 +245,7 @@ impl EndGenerator {
             biomes,
         }
     }
-    fn density(&self, x: i32, z: i32) -> Vec<f64> {
+    pub(crate) fn density(&self, x: i32, z: i32) -> Vec<f64> {
         let mut scale = Vec::new();
         let mut depth = Vec::new();
         let mut main = Vec::new();

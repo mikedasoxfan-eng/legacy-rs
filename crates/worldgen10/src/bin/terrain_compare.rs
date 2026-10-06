@@ -1,6 +1,10 @@
 use worldgen::{genlayer, OverworldGenerator};
 fn main() {
     let a: Vec<String> = std::env::args().skip(1).collect();
+    if a[0] == "world3" {
+        compare(worldgen::world3_verify::dump(&a[1], a[2].parse().unwrap()), std::fs::read(&a[3]).unwrap());
+        return;
+    }
     if a[0] == "component" {
         compare(
             worldgen::structures::verify::component(a[1].parse().unwrap()),
@@ -76,7 +80,8 @@ fn main() {
     let mut actual = Vec::new();
     match a[0].as_str() {
         "layers" => {
-            for layer in genlayer::stack(seed) {
+            let layers = genlayer::stack(seed);
+            for layer in [&layers[0], &layers[1], &layers[2], &layers[3], &layers[0]] {
                 for v in layer.get(x, z, w, h).into_iter().take((w * h) as usize) {
                     actual.extend_from_slice(&v.to_be_bytes());
                 }
@@ -91,7 +96,7 @@ fn main() {
             }
         }
         "sky" => {
-            let mut gen = worldgen::sky::SkyGenerator::new(seed);
+            let mut gen = worldgen::end::EndGenerator::new(seed);
             for cx in x..x + w {
                 for cz in z..z + h {
                     actual.extend_from_slice(&gen.generate(cx, cz).blocks[..]);

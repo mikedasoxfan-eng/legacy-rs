@@ -32,11 +32,11 @@ impl<'a> ChunkCache181<'a> {
         self.world.chunks.get(&(x >> 4, z >> 4)).map(|c|c.as_ref())
     }
     pub fn block_id(&self, x: i32, y: i32, z: i32) -> u8 {
-        if !(0..128).contains(&y) || !self.contains(x, z) { return 0; }
+        if !(0..self.world.height10).contains(&y) || !self.contains(x, z) { return 0; }
         self.world.chunks.get(&(x >> 4, z >> 4)).map_or(0, |c| c.block(x & 15, y, z & 15))
     }
     pub fn metadata(&self, x: i32, y: i32, z: i32) -> i32 {
-        if !(0..128).contains(&y) { return 0; }
+        if !(0..self.world.height10).contains(&y) { return 0; }
         self.indexed(x, z).map_or(0,|c|c.data.get(x & 15, y, z & 15))
     }
     pub fn tile_entity(&mut self, x: i32, y: i32, z: i32) -> Option<&mut super::tile::TileEntity> {
@@ -51,7 +51,7 @@ impl<'a> ChunkCache181<'a> {
     }
     pub fn air_block(&self, x: i32, y: i32, z: i32) -> bool { !block::props(self.block_id(x, y, z)).exists }
     pub fn biome_source(&self) -> &BiomeSource { &self.world.terrain.biome_source }
-    pub fn height(&self) -> i32 { 128 }
+    pub fn height(&self) -> i32 { self.world.height10 }
     // ChunkCache's positive z limit is inclusive; World's is exclusive.
     fn in_bounds(x: i32, z: i32) -> bool { x >= -30000000 && z >= -30000000 && x < 30000000 && z <= 30000000 }
     pub fn light_value(&self, x: i32, y: i32, z: i32) -> i32 { self.light_value_ext(x, y, z, true) }
@@ -62,16 +62,17 @@ impl<'a> ChunkCache181<'a> {
                 .map(|(dx,dy,dz)| self.light_value_ext(x+dx,y+dy,z+dz,false)).max().unwrap();
         }
         if y < 0 { return 0; }
-        if y >= 128 { return (15 - self.world.skylight_subtracted).max(0); }
+        if y >= self.world.height10 { return (15 - self.world.skylight_subtracted).max(0); }
         self.indexed(x, z).map_or(0,|c|c.block_light_value(x & 15, y, z & 15, self.world.skylight_subtracted))
     }
     pub fn saved_light_raw(&self, kind: LightKind, x: i32, y: i32, z: i32) -> i32 {
-        if !Self::in_bounds(x, z) { return kind.default_value(); }
-        self.indexed(x, z).map_or(0,|c|c.saved_light(kind, x & 15, y.clamp(0,127), z & 15))
+        let y = if y.max(0) >= self.world.height10 { self.world.height10.wrapping_sub(1) } else { y.max(0) };
+        if !(0..self.world.height10).contains(&y) || !Self::in_bounds(x, z) { return kind.default_value(); }
+        self.indexed(x, z).map_or(0,|c|c.saved_light(kind, x & 15, y, z & 15))
     }
     pub fn saved_light(&self, kind: LightKind, x: i32, y: i32, z: i32) -> i32 {
-        let y = y.clamp(0,127);
-        if !Self::in_bounds(x, z) { return kind.default_value(); }
+        let y = if y.max(0) >= self.world.height10 { self.world.height10.wrapping_sub(1) } else { y.max(0) };
+        if !(0..self.world.height10).contains(&y) || !Self::in_bounds(x, z) { return kind.default_value(); }
         if crate::block::use_neighbor_brightness(self.block_id(x, y, z)) {
             [(0,1,0),(1,0,0),(-1,0,0),(0,0,1),(0,0,-1)].into_iter()
                 .map(|(dx,dy,dz)| self.saved_light_raw(kind,x+dx,y+dy,z+dz)).max().unwrap()

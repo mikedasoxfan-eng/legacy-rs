@@ -36,7 +36,7 @@ impl World {
                 break;
             }
         }
-        self.spawn = (x, 64, z);
+        self.spawn = (x, self.height10 / 2, z);
         if let Some(s) = &mut self.server {
             s.world_override = false;
         }
@@ -56,7 +56,7 @@ impl World {
 
     /// `World.getFirstUncoveredBlock`
     pub fn get_first_uncovered_block(&mut self, x: i32, z: i32) -> u8 {
-        let mut y = 63;
+        let mut y = self.sea_level10;
         while !self.is_air_block(x, y + 1, z) {
             y += 1;
         }
