@@ -110,6 +110,10 @@ pub(crate) fn generate_ores(w: &mut World, x0: i32, z0: i32) {
 }
 
 pub fn decorate(w: &mut World, biome: Biome, x0: i32, z0: i32) {
+    // BiomeGenEnd's decorator is a BiomeEndDecorator (ores, spikes, the dragon).
+    if biome == Biome::Sky {
+        return crate::end::decorate(w, x0, z0);
+    }
     decorate_with_settings(w, biome, x0, z0, crate::decorator10::DecoratorSettings::for_biome(biome));
 }
 pub fn decorate_with_settings(w: &mut World, biome: Biome, x0: i32, z0: i32, d: crate::decorator10::DecoratorSettings) {
