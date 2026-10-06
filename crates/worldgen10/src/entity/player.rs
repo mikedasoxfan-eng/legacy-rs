@@ -115,7 +115,7 @@ pub enum SleepStatus {
 }
 #[derive(Clone, Debug)]
 pub struct PlayerState {
-    pub food: FoodStats,
+    pub food: food::SharedFoodStats,
     pub capabilities: PlayerCapabilities,
     pub experience: Experience,
     pub xp_pickup_cooldown: i32,

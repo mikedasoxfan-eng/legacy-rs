@@ -137,14 +137,14 @@ pub(super) fn base_block(o: &mut Vec<u8>) {
                         w.multiplayer_world = remote;
                         let state = p.player_state_mut().unwrap();
                         state.capabilities.disable_damage = disabled;
-                        state.food.exhaustion = start;
+                        state.food.write().exhaustion = start;
                         state.stat_log.clear();
                         w.loaded_entity_list.clear();
                         w.entities.clear();
                         seed(&mut w);
                         p.harvest_block(&mut w, id, 8, 64, 8, meta);
                         let state = p.player_state().unwrap();
-                        f181(o, state.food.exhaustion);
+                        f181(o, state.food.read().exhaustion);
                         i(o, state.stat_log.len() as i32);
                         for &(id, n) in &state.stat_log {
                             i(o, id);

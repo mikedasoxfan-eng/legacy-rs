@@ -11,7 +11,7 @@ fn frame(w: &mut World, p: &mut Entity, o: &mut Vec<u8>) {
     super::super::verify181::state(w,p,&mut bytes);
     verify::state_bytes(p.player_state().unwrap(),p,&mut bytes);
     p.player_state_mut().unwrap().stat_log.clear();
-    let s=p.player_state().unwrap();let food=&s.food;
+    let s=p.player_state().unwrap();let food=s.food.read();
     for v in [food.level,food.prev_level,food.tick_timer,s.experience.points.to_bits() as i32,s.experience.level,s.experience.total,s.xp_pickup_cooldown,s.sprint_ticks,s.sprint_toggle_timer,s.fly_toggle_timer,s.item_use_ticks,] {i(&mut bytes,v);}
     for v in [
         food.saturation,food.exhaustion,p.fov_multiplier(),p.living.swing_progress,p.living.prev_swing_progress,s.previous_forward,s.render_arm_yaw,s.render_arm_pitch,s.prev_render_arm_yaw,s.prev_render_arm_pitch,] {f(&mut bytes,v);}
@@ -29,7 +29,7 @@ fn frame(w: &mut World, p: &mut Entity, o: &mut Vec<u8>) {
     i(o,bytes.len() as i32);o.extend(bytes);
 }
 fn food(p:&mut Entity,level:i32,saturation:f32) {
-    let s=p.player_state_mut().unwrap();s.food.level=level;s.food.saturation=saturation;s.food.exhaustion=0.0;s.food.tick_timer=0;
+    let s=p.player_state_mut().unwrap();s.food.write().level=level;s.food.write().saturation=saturation;s.food.write().exhaustion=0.0;s.food.write().tick_timer=0;
 }
 pub fn replay(kind:&str,ticks:i32)->Vec<u8> {
     use crate::entity::{damage::{DamageKind,DamageSource},potion::PotionEffect,};

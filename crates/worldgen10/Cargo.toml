@@ -97,3 +97,7 @@ path = "src/bin/controllerinput181.rs"
 [[bin]]
 name = "inventoryinterfaces10"
 path = "src/bin/inventoryinterfaces181.rs"
+
+[[bin]]
+name = "r10entities3"
+path = "src/bin/r10entities3.rs"

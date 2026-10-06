@@ -186,7 +186,7 @@ pub fn check(path: &str) -> bool {
             ));
         }
         s.inventory.main[8] = Some(ItemStack::new(262, 64, 0));
-        s.food.level = 10;
+        s.food.write().level = 10;
         let controller = std::mem::take(&mut s.controller);
         world.multiplayer_world = scenario == 8;
         let mut host = MinecraftHost {

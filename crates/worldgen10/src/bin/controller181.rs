@@ -8,7 +8,7 @@ fn state(w:&mut World,p:&mut Entity,c:&PlayerControllerSP,creative:bool,result:i
     if creative {i(o,c.block_hit_wait);} else {for v in [c.cur_block_damage,c.prev_block_damage,c.step_sound_counter]{f(o,v);}for v in [c.target.0,c.target.1,c.target.2,c.block_hit_wait]{i(o,v);}}
     for y in 64..=65 {for x in 3..=5 {for z in 3..=5 {i(o,w.get_block_id(x,y,z)as i32);i(o,w.get_block_metadata(x,y,z));}}}
     for s in p.player_state().unwrap().inventory.main {stack(o,s);}
-    f(o,p.player_state().unwrap().food.exhaustion);
+    f(o,p.player_state().unwrap().food.read().exhaustion);
     let log=std::mem::take(&mut p.player_state_mut().unwrap().stat_log);i(o,log.len()as i32);for (id,n) in log {i(o,id);i(o,n);}
     o.extend(w.rand.state().to_le_bytes());o.extend(w.item_random.state().to_le_bytes());
     worldgen::world::events::write_events(&w.drain_events(),o);

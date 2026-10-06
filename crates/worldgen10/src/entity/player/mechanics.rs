@@ -129,7 +129,7 @@ impl Entity {
         if s.sprint_toggle_timer > 0 { s.sprint_toggle_timer -= 1; }
         let (_, mut forward) = s.input.movement();
         if s.item_in_use.is_some() { forward *= 0.2; s.sprint_toggle_timer = 0; }
-        let can_sprint = s.food.level as f32 > 6.0;
+        let can_sprint = s.food.read().level as f32 > 6.0;
         if on_ground && s.previous_forward < 0.8 && forward >= 0.8 && !s.sprinting && can_sprint && s.item_in_use.is_none()
             && !blind {
             if s.sprint_toggle_timer == 0 { s.sprint_toggle_timer = 7; }

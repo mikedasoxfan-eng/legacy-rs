@@ -63,7 +63,7 @@ fn main() {
             p.width,
             p.height,
             p.y_offset,
-            p.player_state().unwrap().food.exhaustion,
+            p.player_state().unwrap().food.read().exhaustion,
         ] {
             out.extend(n.to_le_bytes());
         }

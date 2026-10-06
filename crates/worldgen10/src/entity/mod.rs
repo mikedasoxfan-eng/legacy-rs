@@ -36,6 +36,7 @@ pub mod projectile;
 pub mod projectiles10;
 pub mod registry;
 pub mod round2_verify10;
+pub mod round3_verify10;
 pub mod round10_verify181;
 pub mod round11_verify181;
 pub mod round4_verify181;
