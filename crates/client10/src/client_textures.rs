@@ -47,21 +47,12 @@ impl App {
             for f in &mut self.fx[3..] {
                 f.tick_anaglyph(&mut self.fx_rng, video.anaglyph);
             }
-        }
-        if fx_ticks > 0 {
             if let Some(gpu) = &self.gpu {
                 gpu.update_fx(&self.fx);
                 if let Some(gui) = &self.gui {
                     for f in &self.fx {
-                        for i in 0..f.tile_size {
-                            for j in 0..f.tile_size {
-                                gui.renderer.update_atlas_tile(
-                                    gpu.queue(),
-                                    gui.ui.texture("terrain.png"),
-                                    f.icon + i + j * 16,
-                                    &f.image,
-                                );
-                            }
+                        for (x,y) in crate::gui::render_engine::dynamic_tiles(f.icon as i32,f.tile_size as i32) {
+                            gui.renderer.update_atlas_tile(gpu.queue(),gui.ui.texture("terrain.png"),(x/16+y/16*16) as u32,&f.image);
                         }
                     }
                     if let Some(fx) = &self.item_fx {

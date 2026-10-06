@@ -36,6 +36,7 @@ pub enum ToWorker {
     MinecraftSettings(crate::gui::settings::GameSettings),
     /// `GuiGameOver` "Respawn".
     Respawn,
+    EndReturn,
     /// A container screen request: open the inventory, click, close (see gui/CONTAINERS.md).
     Container(worldgen::container::ContainerCommand),
     Quit,
@@ -571,7 +572,8 @@ fn run(opts: WorldOptions, mut col: Colorizers, mut video: VideoSettings, rx: Re
                     if let Some(worldgen::world::tile::TileEntity::Sign(sign))=world.get_block_tile_entity(x,y,z) { sign.text=text; }
                     if let Some(c)=world.chunks.get_mut(&(x>>4,z>>4)) {c.modified=true;}
                 }
-                Ok(ToWorker::Respawn) => {
+                Ok(command @ (ToWorker::Respawn | ToWorker::EndReturn)) => {
+                    let keep = matches!(command, ToWorker::EndReturn);
                     // Minecraft.respawn(false, 0): out of the Nether first (it can't be
                     // respawned in), then a new player at the bed or the spawn point.
                     if let Some(old) = player {
@@ -580,13 +582,21 @@ fn run(opts: WorldOptions, mut col: Colorizers, mut video: VideoSettings, rx: Re
                         // reset either click counter.
                         let click_counters=world.entities.get(&old).and_then(|e|e.player_state())
                             .map(|s|(s.left_click_counter,s.right_click_delay));
-                        if world.dimension.is_hell_world() {
+                        if keep && world.dimension != worldgen::world::Dimension::Overworld {
+                            // End return uses the same save's Overworld, without a Nether portal.
+                            world.save_world_indirectly();
+                            let carried = world.entities.get(&old).cloned();
+                            let mut next = world.for_dimension(worldgen::world::Dimension::Overworld, fresh_seed());
+                            if let Some(e) = carried { next.entity_joined_world(e); }
+                            world = next;
+                            switched_world!();
+                        } else if world.dimension.is_hell_world() {
                             if let Some(next) = world.use_portal(old, fresh_seed(), fresh_seed(), &mut progress) {
                                 world = next;
                                 switched_world!();
                             }
                         }
-                        if let Some(key) = world.respawn_player(old, &mut progress) {
+                        if let Some(key) = world.respawn_player_with_inventory(old, keep, &mut progress) {
                             let _ = tx.send(FromWorker::Chat(key.to_string()));
                         }
                         if let Some(e)=world.entities.get_mut(&old){e.initialize_player_mode(worldgen::entity::player::controller::PlayerControllerSP::saved_world_is_creative(world.info.game_type));}

@@ -4,14 +4,14 @@ use std::sync::OnceLock;
 pub fn catalog() -> &'static [ItemStack] {
  static ITEMS: OnceLock<Vec<ItemStack>> = OnceLock::new();
  ITEMS.get_or_init(|| {
-  let blocks = [4,1,56,14,15,16,21,73,98,98,98,82,57,41,42,7,22,45,48,44,44,44,44,44,44,49,87,88,89,17,17,17,18,3,2,12,24,13,30,5,6,6,6,32,19,79,80,37,38,39,40,83,81,103,86,91,106,101,102,54,58,20,46,47,35,35,35,35,35,35,35,35,35,35,35,35,35,35,35,35,23,61,25,84,29,33,85,107,65,66,27,28,50,53,67,108,109,69,70,72,76,77,92,96];
-  let mut counters = [0;5]; let mut items = Vec::new();
+  let blocks = [4,1,56,14,15,16,21,73,98,98,98,82,57,41,42,7,22,45,48,44,44,44,44,44,44,49,87,88,89,17,17,17,18,18,18,3,2,12,24,13,30,5,6,6,6,32,19,79,80,37,38,39,40,81,103,86,91,106,101,102,112,113,114,121,110,111,31,31,54,58,20,46,47,35,35,35,35,35,35,35,35,35,35,35,35,35,35,35,35,23,61,25,84,29,33,85,107,65,66,27,28,50,53,67,108,109,69,70,72,76,77,96,116];
+  let mut counters = [0,0,0,0,0,0,1]; let mut items = Vec::new();
   for id in blocks {
-   let c = match id {35=>Some(0),44=>Some(1),17=>Some(2),6=>Some(3),98=>Some(4),_=>None};
+   let c = match id {35=>Some(0),44=>Some(1),17=>Some(2),6=>Some(3),98=>Some(4),18=>Some(5),31=>Some(6),_=>None};
    let damage=c.map_or(0,|i|{let n=counters[i];counters[i]+=1;n});
    items.push(ItemStack::new(id,1,damage));
   }
-  for id in 256..32000 {if registry::item(id).is_some(){items.push(ItemStack::new(id,1,0));}}
+  for id in 256..32000 {if id!=373 && registry::item(id).is_some(){items.push(ItemStack::new(id,1,0));}}
   for damage in 1..16 {items.push(ItemStack::new(351,1,damage));} items
  })
 }

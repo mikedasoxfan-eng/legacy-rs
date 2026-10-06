@@ -56,7 +56,7 @@ fn state(
     for s in p.player_state().unwrap().inventory.main {
         stack(o, s);
     }
-    f(o, p.player_state().unwrap().food.exhaustion);
+    f(o, p.player_state().unwrap().food.read().exhaustion);
     let log = std::mem::take(&mut p.player_state_mut().unwrap().stat_log);
     i(o, log.len() as i32);
     for (id, n) in log {
@@ -97,7 +97,7 @@ fn main() {
                     0,
                 ));
                 s.inventory.main[8] = Some(ItemStack::new(262, 0, 0));
-                s.food.level = 10;
+                s.food.write().level = 10;
                 raw(
                     &mut w,
                     4,

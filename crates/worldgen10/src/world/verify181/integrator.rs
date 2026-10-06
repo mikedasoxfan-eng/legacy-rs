@@ -14,8 +14,8 @@ pub(super) fn cake(o: &mut Vec<u8>) {
                         raw(&mut w, 8, 63, 8, 1, 0);
                         raw(&mut w, 8, 64, 8, 92, meta);
                         let s = p.player_state_mut().unwrap();
-                        s.food.level = food;
-                        s.food.saturation = sat;
+                        s.food.write().level = food;
+                        s.food.write().saturation = sat;
                         s.capabilities.disable_damage = creative;
                         if hook == 0 {
                             p.block_clicked(&mut w, 92, 8, 64, 8);
@@ -23,8 +23,8 @@ pub(super) fn cake(o: &mut Vec<u8>) {
                             o.push(p.activate_block(&mut w, 8, 64, 8) as u8);
                         }
                         let s = p.player_state().unwrap();
-                        i(o, s.food.level);
-                        i(o, s.food.saturation.to_bits() as i32);
+                        i(o, s.food.read().level);
+                        i(o, s.food.read().saturation.to_bits() as i32);
                         i(o, w.get_block_id(8, 64, 8) as i32);
                         i(o, w.get_block_metadata(8, 64, 8));
                     }

@@ -78,8 +78,8 @@ impl AchievementToast {
             ui.font.draw_string(&mut ui.gl, &title, x + 30, y + 7, -256);
             ui.font.draw_string(&mut ui.gl, &text, x + 30, y + 18, -1);
         }
-        // glRotatef(180, 1, 0, 0); enableStandardItemLighting; GL_RESCALE_NORMAL
-        gui_item::set_gui_light_rotation(120.0);
+        // Release GUI lighting; GL_RESCALE_NORMAL
+        gui_item::set_gui_release_lighting();
         gui_item::set_gui_rescale_normal(true);
         let icon = ACHIEVEMENTS[index].icon;
         let stack = ItemStack::new(icon.0 as i32, 1, icon.1 as i32);

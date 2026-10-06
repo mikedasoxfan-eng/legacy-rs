@@ -24,6 +24,7 @@ pub enum GameAction {
     RefreshTextures,
     /// `GuiGameOver` "Respawn".
     Respawn,
+    EndReturn,
     /// No screen any more: give the mouse back to the game.
     IngameFocus,
     /// A screen opened over the game: release the mouse.
@@ -234,6 +235,7 @@ impl GuiSystem {
                     Action::SettingsChanged => out.push(GameAction::SettingsChanged),
                     Action::RefreshTextures => out.push(GameAction::RefreshTextures),
                     Action::Respawn => out.push(GameAction::Respawn),
+                    Action::EndReturn => out.push(GameAction::EndReturn),
                     Action::RedirectInventory => {
                         if let Some(old) = self.ui.container_snapshot.clone() {
                             use worldgen::container::{Container, ContainerKind, ContainerCommand};
