@@ -342,6 +342,100 @@ fn tessellator(d: &mut Reader) {
     }
 }
 
+fn smooth(d: &mut Reader) {
+    let mut s = camera::SmoothCamera::default();
+    for tick in 0..d.u() {
+        d.label = format!("smooth camera tick {tick}");
+        let frames = d.u();
+        let sensitivity = d.f();
+        for _ in 0..frames {
+            let k = sensitivity * 0.6 + 0.2;
+            let k = k * k * k * 8.0;
+            let (dx, dy, partial) = (d.i(), d.i(), d.f());
+            let (x, y) = s.frame(dx as f32 * k, dy as f32 * k, partial);
+            d.ef(x, "frame yaw");
+            d.ef(y, "frame pitch");
+        }
+        s.tick(sensitivity);
+        for v in [s.filter_x, s.filter_y, s.yaw, s.pitch, s.partial] {
+            d.ef(v, "tick state");
+        }
+    }
+}
+
+fn aux_sfx(d: &mut Reader) {
+    let view = [-3.5, 85.25, 4.5];
+    let n = d.u();
+    for c in 0..n as i64 {
+        let (k, setting) = (d.i(), d.i());
+        let mut fx = crate::world_effects::Effects::new(0);
+        fx.renderer = super::particles::EffectRenderer::new(0);
+        fx.renderer.next_seed = 100;
+        fx.renderer.math_random.set_seed(200);
+        fx.renderer.particle_setting = setting;
+        fx.sound_log = Some(Vec::new());
+        let mut r = worldgen::JavaRandom::new(777 + c);
+        if k < 20 {
+            let (code, data, x, y, z) = (d.i(), d.i(), d.i(), d.i(), d.i());
+            d.label = format!("auxSFX {code}:{data} particles {setting}");
+            let event = worldgen::world::events::WorldEvent::Auxiliary { code, data, position: (x, y, z), random: r };
+            fx.receive(vec![event], Default::default(), view, None);
+            r = fx.last_random.expect("auxiliary random");
+        } else {
+            let len = d.u() as usize;
+            let name = String::from_utf8(d.data[d.at..d.at + len].to_vec()).unwrap();
+            d.at += len;
+            let dist = d.d();
+            d.label = format!("spawnParticle {name} at {dist} particles {setting}");
+            let _ = fx.renderer.try_spawn_return(&name, [-3.5 + dist, 85.25, 4.5], [0.125, -0.1, 0.2], view, &mut r);
+        }
+        let mut actual = Vec::new();
+        for layer in &fx.renderer.layers {
+            actual.extend((layer.len() as i32).to_le_bytes());
+            for p in layer {
+                // The oracle serializes the timer only for footsteps and pickups; spells and
+                // drips keep their base texture there in the port.
+                let mut p = p.clone();
+                if !matches!(p.kind, super::particles::Kind::Footstep | super::particles::Kind::Pickup) {
+                    p.timer = 0;
+                }
+                actual.extend(super::particle_check::state(&p, &fx.renderer.math_random));
+            }
+        }
+        let expected = d.data[d.at..d.at + actual.len()].to_vec();
+        if let Some(at) = actual.iter().zip(&expected).position(|(a, b)| a != b) {
+            d.bad += 1;
+            let w = |v: &[u8]| v.get(at - (at - 4) % 8..at - (at - 4) % 8 + 8).map(|b| f64::from_le_bytes(b.try_into().unwrap()));
+            eprintln!("{}: particle state differs at byte {at}: java {:?} rust {:?}", d.label, w(&expected), w(&actual));
+            return;
+        }
+        d.checks += actual.len();
+        d.at += actual.len();
+        let math = d.d().to_bits();
+        d.same(math, fx.renderer.math_random.state() as u64, "Math.random state");
+        let world = d.d().to_bits();
+        d.same(world, r.state() as u64, "World.rand state");
+        let sounds = fx.sound_log.take().unwrap();
+        let count = d.u() as usize;
+        d.same(count as u64, sounds.len() as u64, "sound count");
+        for (name, p, volume, pitch) in sounds.iter().take(count) {
+            let len = d.u() as usize;
+            let j = String::from_utf8(d.data[d.at..d.at + len].to_vec()).unwrap();
+            d.at += len;
+            if &j != name {
+                d.bad += 1;
+                eprintln!("{}: sound {j} vs {name}", d.label);
+            }
+            for v in p {
+                let j = d.d();
+                d.same(j.to_bits(), v.to_bits(), "sound position");
+            }
+            d.ef(*volume, "sound volume");
+            d.ef(*pitch, "sound pitch");
+        }
+    }
+}
+
 pub fn check(kind: &str, path: &str) -> bool {
     let mut d = Reader { data: std::fs::read(path).expect("round 4 dump"), at: 0, checks: 0, bad: 0, label: String::new() };
     assert_eq!(d.u(), 0x34524452);
@@ -355,6 +449,8 @@ pub fn check(kind: &str, path: &str) -> bool {
         "renderhelper" => render_helper(&mut d),
         "shadow" => shadow(&mut d),
         "tessellator" => tessellator(&mut d),
+        "smooth" => smooth(&mut d),
+        "auxsfx" => aux_sfx(&mut d),
         _ => panic!("round 4 kind {kind}"),
     }
     assert_eq!(d.at, d.data.len(), "unread round 4 bytes");

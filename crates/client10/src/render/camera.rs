@@ -32,6 +32,59 @@ pub struct Settings {
     pub zoom_yaw: f64,
     pub zoom_pitch: f64,
 }
+/// `MouseFilter.func_22386_a`.
+#[derive(Clone, Copy, Debug, Default)]
+pub struct MouseFilter {
+    sum: f32,
+    applied: f32,
+    smoothed: f32,
+}
+impl MouseFilter {
+    pub fn smooth(&mut self, v: f32, k: f32) -> f32 {
+        self.sum += v;
+        let mut v = (self.sum - self.applied) * k;
+        self.smoothed += (v - self.smoothed) * 0.5;
+        if v > 0.0 && v > self.smoothed || v < 0.0 && v < self.smoothed {
+            v = self.smoothed;
+        }
+        self.applied += v;
+        v
+    }
+}
+
+/// 1.0 smooth (cinematic) camera: frames accumulate the mouse turn and apply the filtered
+/// speed times the elapsed partial tick; each tick (updateRenderer) runs the filters.
+#[derive(Clone, Copy, Debug, Default)]
+pub struct SmoothCamera {
+    pub yaw: f32,
+    pub pitch: f32,
+    pub filter_x: f32,
+    pub filter_y: f32,
+    pub partial: f32,
+    x: MouseFilter,
+    y: MouseFilter,
+}
+impl SmoothCamera {
+    /// `updateCameraAndRender`: the angles passed to setAngles for this frame's turn.
+    pub fn frame(&mut self, x: f32, y: f32, partial: f32) -> (f32, f32) {
+        self.yaw += x;
+        self.pitch += y;
+        let elapsed = partial - self.partial;
+        self.partial = partial;
+        (self.filter_x * elapsed, self.filter_y * elapsed)
+    }
+    /// `updateRenderer` with smoothCamera on.
+    pub fn tick(&mut self, sensitivity: f32) {
+        let k = sensitivity * 0.6 + 0.2;
+        let k = k * k * k * 8.0;
+        self.filter_x = self.x.smooth(self.yaw, 0.05 * k);
+        self.filter_y = self.y.smooth(self.pitch, 0.05 * k);
+        self.partial = 0.0;
+        self.yaw = 0.0;
+        self.pitch = 0.0;
+    }
+}
+
 pub fn lerp(a: f32, b: f32, t: f32) -> f32 {
     a + (b - a) * t
 }

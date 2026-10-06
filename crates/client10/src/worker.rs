@@ -1098,12 +1098,16 @@ fn weather_snapshot_radius(world: &mut World, cam: (f64, f64, f64), radius: i32,
     let mut bs = biome_source(world);
     let mut biomes = Vec::new();
     bs.biomes(&mut biomes, cx - radius, cz - radius, radius * 2 + 1, radius * 2 + 1,);
+    let mut temperatures = Vec::new();
+    bs.temperatures(&mut temperatures, cx - radius, cz - radius, radius * 2 + 1, radius * 2 + 1);
     let mut columns = Vec::with_capacity(((radius * 2 + 1) * (radius * 2 + 1)) as usize);
     for x in cx - radius..=cx + radius {
         for z in cz - radius..=cz + radius {
+            // 1.0 reads the biome and temperature arrays at the column's own (z-major) index.
+            let index = ((z - (cz - radius)) * (radius * 2 + 1) + x - (cx - radius)) as usize;
             // b1.8.1 func_35461_e: the cached precipitation height.
             let top = world.precipitation_height181(x, z);
-            let biome = biomes[columns.len()];
+            let biome = biomes[index];
             let mut c = Column {
                 x,
                 z,
@@ -1111,6 +1115,8 @@ fn weather_snapshot_radius(world: &mut World, cam: (f64, f64, f64), radius: i32,
                 biome,
                 rain: biome.enable_rain(),
                 snow: biome.enable_snow(),
+                temperature: temperatures[index] as f32,
+                cache_temperature: bs.temperature_at_height(x, 64, z),
                 particle_rain: crate::render::weather::rains(bs.biome_at(x, z)),
                 blocks: [0; 128],
                 meta: [0; 128],

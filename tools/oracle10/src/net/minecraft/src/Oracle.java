@@ -1082,6 +1082,8 @@ public class Oracle {
         long seed=Long.parseLong(a[1]);
         double x=Double.parseDouble(a[2]),y=Double.parseDouble(a[3]),z=Double.parseDouble(a[4]);
         int tick=Integer.parseInt(a[5]); float partial=Float.parseFloat(a[6]), rain=Float.parseFloat(a[7]);
+        // Minecraft.startGame selects the lightmap units; enable/disableLightmap switch them.
+        OpenGlHelper.initializeTextures();org.lwjgl.opengl.GL13.activeTexture=0;
         World w=newWorld(seed); w.setWorldTime(6000L); w.rainingStrength=w.prevRainingStrength=rain;
         w.skylightSubtracted=w.calculateSkylightSubtracted(1.0F);
         int cx=MathHelper.floor_double(x),cz=MathHelper.floor_double(z);
@@ -1103,15 +1105,20 @@ public class Oracle {
         setField(r,"rendererUpdateCount",tick);setField(r,"rainSoundCounter",soundCounter);
         weatherVertices.clear();weatherLights.clear();
         DataOut o=new DataOut();o.bytes("B173WTH1".getBytes("US-ASCII"));o.i32(soundCounter);
-        BiomeGenBase[] biomes=w.getWorldChunkManager().func_4069_a(cx-10,cz-10,21,21);int k=0;
+        if(a.length>12)((net.minecraft.client.Minecraft)weatherMc.get(r)).gameSettings.field_41087_P=Integer.parseInt(a[12]);
+        // 1.0 renderRainSnow walks z-major, so each column reads its own biome and temperature.
+        BiomeGenBase[] biomes=w.getWorldChunkManager().func_4069_a(cx-10,cz-10,21,21).clone();
+        float[] temperatures=w.getWorldChunkManager().func_40539_b(cx-10,cz-10,21,21).clone();
         for(int xx=cx-10;xx<=cx+10;xx++) for(int zz=cz-10;zz<=cz+10;zz++) {
             o.i32(xx);o.i32(zz);o.i32(w.func_35461_e(xx,zz));
-            BiomeGenBase b=biomes[k++];o.u8(b.getEnableSnow()?0:b.canSpawnLightningBolt()?1:2);
+            int k=(zz-(cz-10))*21+xx-(cx-10);
+            BiomeGenBase b=biomes[k];o.u8(b.getEnableSnow()?0:b.canSpawnLightningBolt()?1:2);
             for(int yy=0;yy<=128;yy++)o.i32(w.getLightBrightnessForSkyBlocks(xx,yy,zz,0));  // 1.0 packed light
             o.u8(w.getWorldChunkManager().getBiomeGenAt(xx,zz).canSpawnLightningBolt()?1:0);
             for(int yy=0;yy<128;yy++)o.u8(w.getBlockId(xx,yy,zz));
             for(int yy=0;yy<128;yy++)o.u8(w.getBlockMetadata(xx,yy,zz));
             for(int yy=0;yy<=128;yy++)o.i32(Float.floatToIntBits(w.getLightBrightness(xx,yy,zz)));
+            o.i32(Float.floatToIntBits(temperatures[k]));o.i32(Float.floatToIntBits(w.getWorldChunkManager().func_35554_b(xx,64,zz)));
         }
         Field convert=Tessellator.class.getDeclaredField("convertQuadsToTriangles");convert.setAccessible(true);convert.setBoolean(null,false);
         r.renderRainSnow(partial);

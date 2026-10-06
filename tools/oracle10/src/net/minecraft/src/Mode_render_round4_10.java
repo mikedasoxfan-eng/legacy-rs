@@ -207,10 +207,61 @@ public final class Mode_render_round4_10 {
         }
     }
 
+    /** EntityRenderer's 1.0 smooth camera: per-tick MouseFilter steps in updateRenderer over
+     * the yaw/pitch the frames accumulated (frame lines of updateCameraAndRender replayed). */
+    static void smooth()throws Exception{
+        World w=FirstPersonOracle.world();PlayerOracle.HeadlessPlayer p=FirstPersonOracle.player(w,1);FirstPersonOracle.setup(p);EntityRenderer er=p.mc.entityRenderer;
+        p.mc.theWorld=w;p.mc.gameSettings.smoothCamera=true;w.rainingStrength=w.prevRainingStrength=0;
+        Oracle.setField(er,"mouseFilterXAxis",new MouseFilter());Oracle.setField(er,"mouseFilterYAxis",new MouseFilter());Oracle.setField(er,"random",new Random());
+        Field yaw=EntityRenderer.class.getDeclaredField("smoothCamYaw"),pitch=EntityRenderer.class.getDeclaredField("smoothCamPitch"),fx=EntityRenderer.class.getDeclaredField("smoothCamFilterX"),fy=EntityRenderer.class.getDeclaredField("smoothCamFilterY"),part=EntityRenderer.class.getDeclaredField("smoothCamPartialTicks");
+        for(Field f:new Field[]{yaw,pitch,fx,fy,part})f.setAccessible(true);
+        Random r=new Random(22386);i(200);
+        for(int tick=0;tick<200;tick++){
+            float sensitivity=tick<100?.5F:r.nextFloat();p.mc.gameSettings.mouseSensitivity=sensitivity;
+            int frames=r.nextInt(5);i(frames);f(sensitivity);
+            for(int k=0;k<frames;k++){
+                float var2=sensitivity*.6F+.2F,var3=var2*var2*var2*8.0F;int dx=r.nextInt(81)-40,dy=r.nextInt(61)-30;float partial=Math.min(1,(k+r.nextFloat())/frames);
+                float var4=(float)dx*var3,var5=(float)dy*var3;
+                yaw.setFloat(er,yaw.getFloat(er)+var4);pitch.setFloat(er,pitch.getFloat(er)+var5);
+                float var7=partial-part.getFloat(er);part.setFloat(er,partial);
+                i(dx);i(dy);f(partial);f(fx.getFloat(er)*var7);f(fy.getFloat(er)*var7);
+            }
+            er.updateRenderer();
+            f(fx.getFloat(er));f(fy.getFloat(er));f(yaw.getFloat(er));f(pitch.getFloat(er));f(part.getFloat(er));
+        }
+    }
+
+    /** RenderGlobal.playAuxSFX (1.0 ghast sounds, potion splash, ender eye, spawner flames)
+     * and spawnParticle's particle setting, with Math.random, World.rand and sounds. */
+    static void auxSfx()throws Exception{
+        int[][] cases={{1000,0},{1001,0},{1002,0},{1003,0},{1004,0},{1007,0},{1008,0},{1009,0},{2000,0},{2000,4},{2000,8},
+            {2002,0},{2002,16},{2002,8193},{2002,16385},{2002,16389},{2002,16396},{2002,32767},{2003,0},{2004,0}};
+        String[] names={"smoke","explode","hugeexplosion","largeexplode","iconcrack_373","flame","reddust","spell","instantSpell","mobSpell","magicCrit","dripWater","dripLava","enchantmenttable"};
+        i((cases.length+names.length*2)*3);
+        int c=0;
+        for(int k=0;k<cases.length+names.length*2;k++)for(int setting=0;setting<3;setting++,c++){
+            World w=Mode_entities10.world();EntityPig view=new EntityPig(w);view.setPosition(-3.5,85.25,4.5);RenderManager manager=RendererOracle.manager(w);
+            EffectRenderer effects=new EffectRenderer(w,manager.renderEngine);Map textures=(Map)Oracle.getField(manager.renderEngine,"textureMap");textures.put("/misc/explosion.png",60);textures.put("/misc/footprint.png",61);
+            net.minecraft.client.Minecraft mc=(net.minecraft.client.Minecraft)Oracle.allocate(MinecraftImpl.class);mc.gameSettings=(GameSettings)Oracle.allocate(GameSettings.class);mc.gameSettings.field_41087_P=setting;
+            mc.renderViewEntity=view;mc.effectRenderer=effects;RenderGlobal global=(RenderGlobal)Oracle.allocate(RenderGlobal.class);Oracle.setField(global,"mc",mc);Oracle.setField(global,"worldObj",w);Oracle.setField(global,"renderEngine",manager.renderEngine);
+            mc.sndManager=(SoundManager)Oracle.allocate(SoundManager.class);w.addWorldAccess(global);
+            final ArrayList<Object[]> sounds=new ArrayList<Object[]>();
+            w.addWorldAccess((IWorldAccess)Proxy.newProxyInstance(Mode_render_round4_10.class.getClassLoader(),new Class[]{IWorldAccess.class},(proxy,method,args)->{if(method.getName().equals("playSound"))sounds.add(args);return null;}));
+            w.rand.setSeed(777+c);OracleHooks.reset(100);EntityOracle.mathRandom().setSeed(200);
+            i(k);i(setting);
+            if(k<cases.length){int x=-2+k%5,y=84,z=3+k%3;i(cases[k][0]);i(cases[k][1]);i(x);i(y);i(z);global.playAuxSFX(null,cases[k][0],x,y,z,cases[k][1]);}
+            else{String name=names[(k-cases.length)%names.length];double d=(k-cases.length)<names.length?2:20;WorldEventOracle.text(new DataOutputStream(new ByteArrayOutputStream()),name);
+                byte[] b=name.getBytes("UTF-8");i(b.length);out.write(b);d(d);global.spawnParticle(name,-3.5+d,85.25,4.5,.125,-.1,.2);}
+            for(List layer:Mode_effectlifecycle4_10.layers(effects)){i(layer.size());ByteArrayOutputStream bytes=new ByteArrayOutputStream();DataOutputStream o=new DataOutputStream(bytes);for(Object q:layer)Mode_particles10.state((EntityFX)q,o);o.flush();out.write(bytes.toByteArray());}
+            out.writeLong(Long.reverseBytes(EntityOracle.rngState(EntityOracle.mathRandom())));out.writeLong(Long.reverseBytes(EntityOracle.rngState(w.rand)));
+            i(sounds.size());for(Object[] s:sounds){byte[] b=((String)s[0]).getBytes("UTF-8");i(b.length);out.write(b);d((Double)s[1]);d((Double)s[2]);d((Double)s[3]);f((Float)s[4]);f((Float)s[5]);}
+        }
+    }
+
     public static void main(String[] a)throws Exception{
         String kind=a[0];out=new DataOutputStream(new BufferedOutputStream(new FileOutputStream(a[1])));i(0x34524452);i(kind.hashCode());
         if(kind.equals("gui"))gui();else if(kind.equals("activeinfo"))activeInfo();else if(kind.equals("fog"))fog();else if(kind.equals("lightmap"))lightmapEnd();
-        else if(kind.equals("glhelper"))glHelper();else if(kind.equals("renderhelper"))renderHelper();else if(kind.equals("shadow"))shadow();else if(kind.equals("tessellator"))tessellator();
+        else if(kind.equals("glhelper"))glHelper();else if(kind.equals("renderhelper"))renderHelper();else if(kind.equals("shadow"))shadow();else if(kind.equals("tessellator"))tessellator();else if(kind.equals("smooth"))smooth();else if(kind.equals("auxsfx"))auxSfx();
         else throw new IllegalArgumentException(kind);
         out.close();System.out.println("Original 1.0 rendering round 4: "+kind);
     }

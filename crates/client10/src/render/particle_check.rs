@@ -27,7 +27,7 @@ impl Reader {
         f32::from_bits(self.i() as u32)
     }
 }
-fn state(p: &Particle, m: &JavaRandom) -> Vec<u8> {
+pub(crate) fn state(p: &Particle, m: &JavaRandom) -> Vec<u8> {
     let mut o = Vec::new();
     for v in p
         .pos
@@ -92,6 +92,8 @@ pub fn check(path: &str) -> bool {
         s.columns.push(Column {
             rain: false,
             snow: false,
+            temperature: 0.8,
+            cache_temperature: 0.8,
             x,
             z,
             top,
@@ -289,6 +291,8 @@ pub fn effects_check(path: &str) -> bool {
             terrain.columns.push(Column {
                 rain: false,
                 snow: false,
+                temperature: 0.8,
+                cache_temperature: 0.8,
                     x,
                 z,
                 top,
