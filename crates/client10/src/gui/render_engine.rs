@@ -308,3 +308,27 @@ pub fn unwrap_columns(image: &Image) -> Result<Image, Error> {
     }
     Ok(out)
 }
+/// RenderEngine.updateDynamicTextures: callbacks stay in registration order, with one
+/// atlas binding per change of icon index. Release 1.0 has no mipmap or textureId pass.
+pub trait TextureEffect {
+    fn icon(&self) -> i32;
+    fn tile_size(&self) -> i32;
+    fn tick(&mut self, anaglyph: bool);
+    fn image(&self) -> &[u8];
+    fn bind(&mut self);
+}
+pub fn dynamic_tiles(icon: i32, tile_size: i32) -> impl Iterator<Item = (i32, i32)> {
+    (0..tile_size).flat_map(move |x| (0..tile_size).map(move |y| (icon % 16 * 16 + x * 16, icon / 16 * 16 + y * 16)))
+}
+impl Engine {
+    pub fn update_texture_fx(&mut self, effects: &mut [impl TextureEffect], mut upload: impl FnMut(i32,i32,&[u8])) {
+        let mut last_icon=-1;
+        for effect in effects {
+            effect.tick(self.anaglyph);
+            self.buffer_position=0;
+            self.buffer_limit=effect.image().len();
+            if effect.icon()!=last_icon {effect.bind();last_icon=effect.icon();}
+            for (x,y) in dynamic_tiles(effect.icon(),effect.tile_size()) {upload(x,y,effect.image());}
+        }
+    }
+}

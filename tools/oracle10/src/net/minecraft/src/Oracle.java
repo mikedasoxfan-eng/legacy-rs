@@ -67,6 +67,11 @@ public class Oracle {
     }
 
     public static void main(String[] a) throws Exception {
+        if(a.length>0 && a[0].startsWith("render_") && a[0].endsWith("10")) {
+            Class<?> mode=Class.forName("net.minecraft.src.Mode_"+a[0]);
+            mode.getMethod("main",String[].class).invoke(null,(Object)java.util.Arrays.copyOfRange(a,1,a.length));return;
+        }
+
         String mode = a.length > 0 ? a[0] : "";
         // The worldgen10 binaries retain the inherited Beta CLI mode arguments.
         mode = mode.replace("181", "10");

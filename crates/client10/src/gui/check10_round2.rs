@@ -445,7 +445,7 @@ pub fn check(mode: &str, path: &str) -> bool {
         "boss" => {
             let mut world = worldgen::World::new(1, 1);
             let mut dragon = worldgen::entity::Entity::living(&mut world, "EnderDragon").unwrap();
-            let mut g = super::ingame::GuiIngame::new();
+            use crate::render::entity::render_release::{submit_boss_health, take_boss_plan};
             let mut random = worldgen::JavaRandom::new(11415);
             for _ in 0..1000 {
                 let width = 320 + random.next_int(1000);
@@ -456,20 +456,17 @@ pub fn check(mode: &str, path: &str) -> bool {
                         worldgen::entity::data_watcher::Value::Int(random.next_int(251) - 25),
                     )
                     .unwrap();
-                g.dragon_rendered(&dragon);
-                let rectangles = g.take_boss_rectangles(width).unwrap();
-                i(&mut out, rectangles.len() as i32);
-                for rect in rectangles {
-                    for n in rect {
-                        i(&mut out, n);
-                    }
-                }
-                out.push(g.take_boss_rectangles(width).is_none() as u8);
-                i(&mut out, 1);
-                s(&mut out, "Boss health");
-                for n in [width / 2 - ui.string_width("Boss health") / 2, 2, 16711935] {
-                    i(&mut out, n);
-                }
+                submit_boss_health(dragon.data_watcher.int(16).unwrap());
+                ui.settings.gui_scale=1;ui.display_width=width;ui.display_height=480;
+                ui.textures.insert("gui/icons.png".into(),0);
+                ui.gl.begin_frame();super::draw_trace10::begin();
+                crate::render::entity::render_release::boss_overlay(&mut ui,-90.0);
+                let calls=super::draw_trace10::take();
+                let rects:Vec<_>=calls.iter().filter_map(|c|if let super::draw_trace10::Call::Rect(v,_)=c{Some(*v)}else{None}).collect();
+                i(&mut out,rects.len() as i32);for rect in rects{for v in rect{i(&mut out,v);}}
+                out.push(take_boss_plan(width,ui.string_width("Boss health")).is_none() as u8);
+                let texts:Vec<_>=calls.iter().filter_map(|c|if let super::draw_trace10::Call::Text(text,[_,x,y,_,color])=c{Some((text,*x,*y,*color))}else{None}).collect();
+                i(&mut out,texts.len() as i32);for (text,x,y,color) in texts{s(&mut out,text);for v in [x,y,color]{i(&mut out,v);}}
             }
         }
         "gameover" => {

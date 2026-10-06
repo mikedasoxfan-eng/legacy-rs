@@ -19,7 +19,7 @@ public final class Mode_render_geometry10 {
             p.setRotationPoint(c%4==0?0:-.25F*c,c%4==0?0:1.5F,c%4==0?0:-2);
             p.rotateAngleX=c%4==0?0:.13F*c;p.rotateAngleY=c%4==0?0:-.17F;p.rotateAngleZ=c%4==0?0:.31F;
             if(c==6){p.setTextureOffset(18,19).addBox(-1,-2,-3,1,2,3);a.addBox(0,1,2,0,2,3);}
-            GL11.reset();float scale=new float[]{.125F,.0625F,.25F}[c%3];
+            RendererOracle.reset10();float scale=new float[]{.125F,.0625F,.25F}[c%3];
             if(c%3==0)p.postRender(scale);else if(c%3==1)p.render(scale);else p.renderWithRotation(scale);
             Mode_render_modeldraw10.draws();
         }

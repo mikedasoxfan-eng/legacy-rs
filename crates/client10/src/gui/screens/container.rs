@@ -35,6 +35,7 @@ impl GuiContainer {
             galactic: None,
         }
     }
+    pub(crate) fn check_set_scroll(&mut self, scroll:f32) {self.scroll=scroll;}
     fn update_scroll(&self,ui:&mut Ui) {
         if let Some(s)=ui.container_snapshot.as_mut() {let contents=worldgen::container::creative::contents(self.scroll);s.contents[..72].copy_from_slice(&contents);}
         ui.container_commands.push(ContainerCommand::ScrollCreative {window:self.window,position:self.scroll});
@@ -59,7 +60,6 @@ impl GuiContainer {
     }
     fn background(&mut self, ui: &mut Ui, s: &ContainerSnapshot) {
         let (x, y) = self.origin();
-        let (w, h) = self.size();
         ui.gl.color4f(1.0, 1.0, 1.0, 1.0);
         let texture = match self.kind {
             ContainerKind::Player => "gui/inventory.png",
@@ -108,11 +108,16 @@ pub(crate) fn item_name(s: ItemStack) -> &'static str {
         .copied()
         .unwrap_or("")
 }
-fn draw_item(ui: &mut Ui, s: Option<ItemStack>, x: i32, y: i32) {
+fn draw_item(ui: &mut Ui, s: Option<ItemStack>, x: i32, y: i32, z: f32) {
+    use crate::gui::draw_trace10::{record,Call};
+    let values=s.map_or([-1,0,0],|s|[s.id,s.count,s.damage]);
+    record(||Call::Item([0,values[0],values[1],values[2],x,y],z));
     let count = s.map_or(0, |s| s.count);
     let s = s.map(worldgen::world::tile::ItemStack::from);
     if let Some(s) = s.as_ref() {
         let g = gui_item::geometry(s, x, y, true);
+        ui.gl.push_matrix();
+        ui.gl.translatef(0.0, 0.0, z);
         for d in &g.draws {
             let mut batch = d.batch();
             if d.flags & 1 != 0 && d.flags & 128 != 0 {
@@ -137,6 +142,7 @@ fn draw_item(ui: &mut Ui, s: Option<ItemStack>, x: i32, y: i32) {
                         } else {
                             d.material
                         };
+                        if let Some(light)=d.light_transform { n=light.inverse().transform_vector3(n); }
                         v.color = crate::render::entity::living::lit_color_rotated(
                             n,
                             c,
@@ -158,8 +164,10 @@ fn draw_item(ui: &mut Ui, s: Option<ItemStack>, x: i32, y: i32) {
                 ui.gl.triangles(&front);
             }else {ui.gl.triangles(&batch.vertices);}
         }
+        ui.gl.pop_matrix();
         ui.gl.color = g.material;
     }
+    record(||Call::Item([1,values[0],values[1],values[2],x,y],z));
     if count > 1 {
         let text = count.to_string();
         ui.gl.depth_test = false;
@@ -224,36 +232,35 @@ impl Screen for GuiContainer {
         };
         ui.draw_world_background(self.base.width, self.base.height, 0);
         self.background(ui, &s);
+        if self.kind == ContainerKind::Enchantment { super::enchantment::draw_book(ui, &self.enchantment, partial); }
         if self.kind == ContainerKind::Enchantment {
             let (x, y) = self.origin();
-            for (i, name) in super::enchantment::names(s.enchantment_name_seed).iter().enumerate() {
-                let cost = s.progress[i];
-                let hovered = mx >= x + 60 && mx < x + 168 && my >= y + 14 + 19 * i as i32 && my < y + 33 + 19 * i as i32;
-                let (v, color, level_color) = super::enchantment::offer(cost, ui.release.player_level, hovered);
+            let (rects, texts) = super::enchantment::offer_draws(s.enchantment_name_seed, s.progress, ui.release.player_level, x, y, mx, my, |text|ui.font.get_string_width(text));
+            for (index,[x,y,u,v,w,h]) in rects.into_iter().enumerate() {
                 ui.gl.bind_texture(ui.texture("gui/enchant.png"));
-                ui.gl.color4f(1.0, 1.0, 1.0, 1.0);
-                ui.draw_textured_modal_rect(x + 60, y + 14 + 19 * i as i32, 0, v, 108, 19);
-                if cost != 0 {
-                    if let Some(font) = &self.galactic { font.draw_split_string(&mut ui.gl, name, x + 62, y + 16 + 19 * i as i32, 104, color); }
-                    let text = cost.to_string();
-                    ui.font.draw_string_with_shadow(&mut ui.gl, &text, x + 166 - ui.font.get_string_width(&text), y + 23 + 19 * i as i32, level_color);
+                ui.gl.color4f(1.0,1.0,1.0,1.0);
+                ui.draw_textured_modal_rect(x,y,u,v,w,h);
+                if s.progress[index]!=0 {
+                    let offset=s.progress[..index].iter().filter(|&&v|v!=0).count()*2;
+                    for (text,[kind,x,y,w,color]) in &texts[offset..offset+2] {
+                        if *kind==2 {if let Some(font)=&self.galactic {font.draw_split_string(&mut ui.gl,text,*x,*y,*w,*color);}}
+                        else {ui.font.draw_string_with_shadow(&mut ui.gl,text,*x,*y,*color);}
+                    }
                 }
             }
-            // ModelBook geometry is owned by the render worker; the exact pose is available here.
-            let _book_pose = self.enchantment.pose(partial);
         }
         // GuiContainer sets unit 1's current coordinate after the background
         // (and its player figure), even when texturing on that unit is disabled.
         ui.gl.lightmap_coordinates = 240 | (240 << 16);
         let (ox, oy) = self.origin();
-        gui_item::set_gui_light_rotation(120.0);
+        gui_item::set_gui_release_lighting();
         gui_item::set_gui_rescale_normal(true);
         ui.gl.push_matrix();
         ui.gl.translatef(ox as f32, oy as f32, 0.0);
         ui.gl.color4f(1.0, 1.0, 1.0, 1.0);
         let mut hover = None;
         for (i, slot) in s.slots.iter().enumerate() {
-            draw_item(ui, s.contents[i], slot.x, slot.y);
+            draw_item(ui, s.contents[i], slot.x, slot.y, 100.0);
             if self.hover(slot, mx, my) {
                 hover = Some(i);
                 ui.gl.depth_test = false;
@@ -270,7 +277,7 @@ impl Screen for GuiContainer {
         }
         if s.cursor.is_some() {
             ui.gl.translatef(0.0, 0.0, 32.0);
-            draw_item(ui, s.cursor, mx - ox - 8, my - oy - 8);
+            draw_item(ui, s.cursor, mx - ox - 8, my - oy - 8, 200.0);
         }
         gui_item::set_gui_rescale_normal(false);
         gui_item::set_gui_light_rotation(0.0);

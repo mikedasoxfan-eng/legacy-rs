@@ -16,7 +16,7 @@ pub struct ArmorPassState {
     riding: [bool; 2],
 }
 
-fn light(x: f32, z: f32) -> Vec3 {
+pub(super) fn light(x: f32, z: f32) -> Vec3 {
     let len = ((x as f64 * x as f64 + 1.0 + z as f64 * z as f64).sqrt() as f32) as f64;
     Vec3::new(
         (x as f64 / len) as f32,
@@ -34,7 +34,7 @@ pub(super) fn byte_normal(packed: u32) -> Vec3 {
     };
     Vec3::new(b(0), b(8), b(16))
 }
-fn part(
+pub(super) fn part(
     ui: &mut Ui,
     part: &ModelRenderer,
     parent: Mat4,

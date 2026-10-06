@@ -222,7 +222,8 @@ impl Entity {
                     return ItemStack::new(373, 1, 0);
                 }
                 let mut potion = ItemStack::new(373, 1, 0);
-                if !self.player_state_mut().unwrap().inventory.add(&mut potion) {
+                let creative = self.player_state().unwrap().capabilities.creative;
+                if !self.player_state_mut().unwrap().inventory.add_with_creative(&mut potion, creative) {
                     self.drop_player_item(w, ItemStack::new(373, 1, 0), false);
                 }
             }
@@ -512,7 +513,7 @@ impl Entity {
                     target,
                 );
                 let pitch = 0.4f32 / (world.item_random.next_float() * 0.4f32 + 0.8f32);
-                world.play_sound("random.bow", self.pos, 0.5, pitch);
+                world.play_sound_at_entity(self, "random.bow", 0.5, pitch);
                 world.auxiliary_effect(
                     1002,
                     (self.pos.x as i32, self.pos.y as i32, self.pos.z as i32),

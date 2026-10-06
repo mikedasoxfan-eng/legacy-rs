@@ -14,12 +14,12 @@ public final class Mode_render_effects10 {
         Fireball(float scale){super(scale);setRenderManager(RenderManager.instance);}
         protected void loadTexture(String name){if(!name.equals("/gui/items.png"))throw new AssertionError(name);GL11.texture=2;}
     }
-    static void ops(ArrayList<GL11.Op> ops)throws Exception{i(ops.size());for(GL11.Op o:ops){i(o.code);for(float a:o.args)f(a);}}
+    static void ops(ArrayList<RendererOracle.Op10> ops)throws Exception{i(ops.size());for(RendererOracle.Op10 o:ops){i(o.code);for(float a:o.args)f(a);}}
     static void draws()throws Exception{
-        i(GL11.draws.size());
-        for(GL11.Draw v:GL11.draws){ops(v.ops);i(v.cull);i(v.flags);i(v.texture);i(v.src);i(v.dst);i(v.depth);i(v.face.mode);f(v.alpha);for(float a:v.material)f(a);i(v.face.vertices.size());
-            for(int n=0;n<v.face.vertices.size();n++){i(v.face.normal);i(v.face.colors.get(n));for(float a:v.face.vertices.get(n))f(a);}}
-        ops(GL11.ops);i(GL11.flags);i(GL11.src);i(GL11.dst);i(GL11.depth);f(GL11.alpha);for(float a:GL11.material)f(a);
+        i(RendererOracle.draws10.size());
+        for(RendererOracle.Draw10 v:RendererOracle.draws10){ops(v.ops);i(v.cull);i(v.flags);i(v.texture);i(v.src);i(v.dst);i(v.depth);i(v.face.mode);f(v.alpha);for(float a:v.material)f(a);i(v.face.vertices.size());
+            for(int n=0;n<v.face.vertices.size();n++){i(v.face.normals.get(n));i(v.face.colors.get(n));for(float a:v.face.vertices.get(n))f(a);}}
+        ops(RendererOracle.operations10());i(RendererOracle.flags);i(RendererOracle.src);i(RendererOracle.dst);i(RendererOracle.depth);f(RendererOracle.alpha10);for(float a:GL11.color)f(a);
     }
     public static void main(String[] args)throws Exception{
         int kind=Integer.parseInt(args[0]);out=new DataOutputStream(new BufferedOutputStream(new FileOutputStream(args[1])));i(0x30314552);i(1);i(kind);i(64);
@@ -27,7 +27,7 @@ public final class Mode_render_effects10 {
         if(kind!=1)Class.forName("net.minecraft.src.Block");
         RenderDragon renderer=kind==1?new RenderDragon():null;EntityDragon dragon=kind==1?new EntityDragon(null):null;
         for(int c=0;c<64;c++){
-            GL11.reset();
+            RendererOracle.reset10();
             if(kind!=1){
                 int icon=kind==2?46:new int[]{154,107,155,14,12}[c%5],damage=c<16?new int[]{0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15}[c]:random.nextInt(32768);
                 double x=(random.nextDouble()-.5)*64,y=(random.nextDouble()-.5)*64,z=(random.nextDouble()-.5)*64;

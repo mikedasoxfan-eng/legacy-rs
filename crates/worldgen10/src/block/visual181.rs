@@ -1,5 +1,5 @@
 //! Immutable block texture/render defaults and the original creative item list.
-//! Regenerate visual181.bin with oracle181 mode wbvisual (original bytecode).
+//! Regenerate visual181.bin with oracle10 mode wbvisual (original release bytecode).
 use crate::entity::player::ItemStack;
 const DATA: &[u8] = include_bytes!("visual181.bin");
 const SIZE: usize = 4 + 6 * 4 + 16 * 7 * 4;
@@ -91,11 +91,9 @@ fn base(id: u8, fancy: bool) -> usize {
     (fancy as usize * 256 + id as usize) * SIZE
 }
 pub fn render_type(id: u8) -> i32 {
-    if id>=110{return match id {111=>23,113=>11,114=>10,115=>6,117=>25,118=>24,119=>-1,120=>26,122=>27,_=>0};}
     int(base(id, false))
 }
 pub fn texture_from_side(id: u8, side: usize, fancy: bool) -> i32 {
-    if let Some(v)=crate::world::blocks10::texture(id,side as i32,0){return v;}
     if id == 84 { return jukebox_texture181(side as i32); }
     assert!(side < 6);
     if id == 81 {return cactus_texture181(side as i32);}
@@ -106,8 +104,6 @@ pub fn jukebox_texture181(side: i32) -> i32 { 74 + if side == 1 { 1 } else { 0 }
 pub fn texture_result(id: u8, side: usize, metadata: usize, fancy: bool) -> Result<i32, ()> {
     assert!(side < 6 && metadata < 16);
     if let Some(v)=crate::world::blocks10::texture(id,side as i32,metadata as i32){return Ok(v);}
-    if matches!(id,99|100)&&metadata==14{return Ok(126+(id-99) as i32);}
-    if matches!(id,99|100)&&metadata==15{return Ok(141);}
     if id == 81 {return Ok(cactus_texture181(side as i32));}
     if stairs_model181(id).is_some() {return Ok(stairs_texture181(id,side as i32,metadata as i32));}
     if id==35 {return Ok(cloth_texture181(metadata as i32));}
@@ -225,8 +221,6 @@ pub fn should_side_render(
 }
 pub fn render_color(id: u8, metadata: usize, grass: &[u32]) -> i32 {
     assert!(metadata < 16);
-    if id==111{return 2129968;}
-    if id>=110{return 0xffffff;}
     if id == 2 {
         lookup(grass, 0.5, 1.0) as i32
     } else {

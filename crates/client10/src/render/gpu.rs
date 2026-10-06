@@ -429,21 +429,7 @@ impl Gpu {
         let sky_plane = vbuf(&tri_list(&sky::sky_plane(16.0, true), white), "sky plane");
         let void_plane = vbuf(&tri_list(&sky::sky_plane(-16.0, false), white), "void plane");
         let stars = vbuf(&tri_list(&sky::stars(), white), "stars");
-        let quad = |y: f32, s: f32, uvs: [[f32; 2]; 4], pts: [[f32; 3]; 4]| -> Vec<Vertex> {
-            let v: Vec<Vertex> = (0..4).map(|i| Vertex { pos: pts[i], uv: uvs[i], color: white, light: 0 }).collect();
-            let _ = (y, s);
-            vec![v[0], v[1], v[2], v[0], v[2], v[3]]
-        };
-        let s = 30.0;
-        let sun_quad = vbuf(
-            &quad(
-                100.0,
-                s,
-                [[0.0, 0.0], [1.0, 0.0], [1.0, 1.0], [0.0, 1.0]],
-                [[-s, 100.0, -s], [s, 100.0, -s], [s, 100.0, s], [-s, 100.0, s]],
-            ),
-            "sun",
-        );
+        let sun_quad = vbuf(&super::sky_release::sun_quad(), "sun");
         // Retain signed phases too: Java's remainder is negative for negative days.
         let moons: Vec<Vertex> = (-7..=7).flat_map(super::sky_release::moon_quad).collect();
         let moon_quad = vbuf(&moons, "moon phases");
@@ -932,9 +918,7 @@ impl Gpu {
         if sunrise.is_some() {
             let fan = sky::sunrise_fan(p.celestial, p.video.anaglyph).unwrap();
             self.queue.write_buffer(&self.fan, 0, bytemuck::cast_slice(&fan));
-            let z = if worldgen::math::sin(p.celestial * std::f32::consts::PI * 2.0f32) < 0.0 { 180.0f32 } else { 0.0 };
-            let model = Mat4::from_rotation_x(90f32.to_radians()) * Mat4::from_rotation_z(z.to_radians())
-                * Mat4::from_rotation_z(90f32.to_radians());
+            let model = super::entity::fixed::matrix(&super::sky_release::sunrise_operations(p.celestial));
             let u = Uniforms {
                 view_proj: view_proj.to_cols_array_2d(),
                 fog_view: rot.to_cols_array_2d(),
@@ -945,8 +929,7 @@ impl Gpu {
             };
             self.write_uniforms(&self.slots[1], &u);
         }
-        let celestial_rot = Mat4::from_rotation_y(-90f32.to_radians())
-            * Mat4::from_rotation_x((p.celestial * 360.0).to_radians());
+        let celestial_rot = super::entity::fixed::matrix(&super::sky_release::celestial_operations(p.celestial));
         let sunmoon_u = Uniforms {
             view_proj: view_proj.to_cols_array_2d(),
             fog_view: rot.to_cols_array_2d(),

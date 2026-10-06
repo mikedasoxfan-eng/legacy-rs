@@ -26,11 +26,8 @@ impl World {
                     if offer < 3 {
                         let bookshelves = enchanting::world_bookshelves(self, c.positions[0]);
                         let level = &mut entity.player_state_mut().unwrap().experience.level;
-                        let e = c.enchanting.as_mut().unwrap();
-                        if e.enchant(offer, level, self.multiplayer_world, bookshelves) {
-                            c.tile[0] = e.item;
-                            c.progress = e.costs;
-                        }
+                        c.multiplayer=self.multiplayer_world;c.bookshelves=bookshelves;
+                        c.enchant_item(level,offer);
                     }
                 }
             }
@@ -314,9 +311,8 @@ impl World {
         let result=if let Some(c)=session.active.as_mut().filter(|c|c.window==window&&c.kind==ContainerKind::Enchantment) {
             c.bookshelves=enchanting::world_bookshelves(self,c.positions[0]);
             if let Some(p)=self.entities.get_mut(&player).and_then(|e|e.player_state_mut()) {
-                let e=c.enchanting.as_mut().unwrap();
-                let result=e.enchant(button,&mut p.experience.level,self.multiplayer_world,c.bookshelves);
-                c.tile[0]=e.item;c.progress=e.costs;result
+                c.multiplayer=self.multiplayer_world;
+                c.enchant_item(&mut p.experience.level,button)
             }else{false}
         }else{false};
         self.container_sessions.insert(player,session);result

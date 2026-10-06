@@ -609,12 +609,12 @@ impl App {
                     if self.grabbed {if let Some(g)=&mut self.gui {g.ui.settings.release_keys();}}
                     self.set_grab(false);
                 }
-                gui::system::GameAction::Respawn => {
+                action @ (gui::system::GameAction::Respawn | gui::system::GameAction::EndReturn) => {
                     // Minecraft.respawn: a new player object replaces the dead one.
                     self.life += 1;
                     self.pending_look.clear();
                     if let Some(tx) = &self.tx {
-                        let _ = tx.send(ToWorker::Respawn);
+                        let _ = tx.send(if matches!(action, gui::system::GameAction::EndReturn) { ToWorker::EndReturn } else { ToWorker::Respawn });
                     }
                 }
             }
@@ -1162,6 +1162,13 @@ impl App {
                                 worldgen::entity::player::PlayerEvent::CriticalHit { target } => self.particles.renderer.critical_hit(&target, self.cam.pos.to_array()),
                                 // The world thread switches dimension itself (usePortal).
                                 worldgen::entity::player::PlayerEvent::ChangeDimension => {}
+                                worldgen::entity::player::PlayerEvent::WinGame => {
+                                    if let Some(g) = &mut self.gui {
+                                        let username = entity.player_state().map_or("Player", |s| s.username.as_str());
+                                        g.ui.display(Some(Box::new(gui::screens::win_game::GuiWinGame::new(username))));
+                                        ungrab = true;
+                                    }
+                                }
                                 worldgen::entity::player::PlayerEvent::Chat(key) => {
                                     if let Some(g) = &self.gui {
                                         let text = g.ui.lang.translate_key(key);

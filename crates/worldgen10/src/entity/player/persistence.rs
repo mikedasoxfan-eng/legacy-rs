@@ -7,7 +7,7 @@ impl Entity {
         self.living.health = other.living.health;
         let destination = self.player_state_mut().expect("EntityPlayer destination");
         destination.inventory.copy_from_inventory(&source.inventory);
-        destination.food = source.food.clone();
+        destination.food = source.food.share();
         destination.experience = source.experience;
         destination.score = source.score;
     }
@@ -27,7 +27,7 @@ impl Entity {
         }
         self.motion = Vec3D::default();
         self.pitch = 0.0;
-        self.living.health = 20;
+        self.set_entity_health(20);
         self.living.death_time = 0;
     }
     /// level.dat's Player compound does not contain an EntityList id.
@@ -95,11 +95,7 @@ impl World {
         if let Some(n) = saved {
             let _ = e.read_existing_nbt(self, &n);
         }
-        e.player_state_mut().unwrap().dimension = if self.dimension.is_hell_world() {
-            -1
-        } else {
-            0
-        };
+        e.player_state_mut().unwrap().dimension = self.dimension.id();
         let id = e.entity_id;
         self.join_entity_in_surroundings(e.pos);
         self.entity_joined_world(e);

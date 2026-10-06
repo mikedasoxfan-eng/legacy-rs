@@ -1,4 +1,4 @@
-//! `Minecraft.usePortal`: the singleplayer switch between the Overworld and the Nether.
+//! Release `Minecraft.usePortal` and respawn across the Overworld, Nether and End.
 
 use super::{Dimension, World};
 use crate::scenario::LoadStep;
@@ -66,34 +66,46 @@ impl World {
         teleporter_rand: i64,
         progress: &mut dyn FnMut(LoadStep),
     ) -> Option<World> {
+        let dimension = if self.entities.get(&id)?.player_state()?.dimension == -1 {
+            Dimension::Overworld
+        } else { Dimension::Nether };
+        self.use_portal_to(id, dimension, fresh_rand, teleporter_rand, progress)
+    }
+
+    /// Release Minecraft.usePortal(int): explicit destination, including the End.
+    /// Client ChangeDimensionTo events should call this with Dimension::from_id.
+    pub fn use_portal_to(
+        &mut self, id: i32, dimension: Dimension, fresh_rand: i64,
+        teleporter_rand: i64, progress: &mut dyn FnMut(LoadStep),
+    ) -> Option<World> {
         let mut e = self.take_player(id)?;
-        let to_nether = {
-            let s = e.player_state_mut()?;
-            s.dimension = if s.dimension == -1 { 0 } else { -1 };
-            s.dimension == -1
-        };
+        let old_dimension = e.player_state()?.dimension;
+        e.player_state_mut()?.dimension = dimension.id();
+        e.dead = false;
         let alive = |e: &crate::entity::Entity| !e.dead && e.living.health > 0;
-        let (mut x, mut z) = (e.pos.x, e.pos.z);
-        let scale = 8.0;
-        if to_nether {
-            x /= scale;
-            z /= scale;
-        } else {
-            x *= scale;
-            z *= scale;
+        let scale = if old_dimension > -1 && dimension == Dimension::Nether { 0.125 }
+            else if old_dimension == -1 && dimension != Dimension::Nether { 8.0 }
+            else { 1.0 };
+        let (mut x, mut z) = (e.pos.x * scale, e.pos.z * scale);
+        if dimension == Dimension::Nether || dimension == Dimension::Overworld && alive(&e) {
+            e.set_location_and_angles(x, e.pos.y, z, e.yaw, e.pitch);
+            if alive(&e) { self.update_entity_with_optional_force(&mut e, false); }
         }
-        // setLocationAndAngles(x, posY, z, ...) adds yOffset to posY again (vanilla).
-        let (yaw, pitch) = (e.yaw, e.pitch);
-        let y = e.pos.y;
-        e.set_location_and_angles(x, y, z, yaw, pitch);
-        if alive(&e) {
-            self.update_entity_with_optional_force(&mut e, false);
-        }
-        let dimension = if to_nether { Dimension::Nether } else { Dimension::Overworld };
         let mut w = self.for_dimension(dimension, fresh_rand);
+        if dimension == Dimension::End {
+            // WorldProviderEnd.getEntrancePortalLocation / World.func_40472_j.
+            x = 100.0; z = 0.0; e.pos.y = 50.0;
+            e.set_location_and_angles(x, e.pos.y, z, 90.0, 0.0);
+            if alive(&e) { w.update_entity_with_optional_force(&mut e, false); }
+        }
 
         // changeWorld(world, title, player)
-        let title = if to_nether { "Entering the Nether" } else { "Leaving the Nether" };
+        let title = match dimension {
+            Dimension::Nether => "Entering the Nether",
+            Dimension::End => "Entering the End",
+            Dimension::Overworld if old_dimension == -1 => "Leaving the Nether",
+            Dimension::Overworld => "Leaving the End",
+        };
         progress(LoadStep::Title(title));
         progress(LoadStep::Text(""));
         // saveWorldIndirectly: func_594_b("Saving level"), then "Saving chunks".
@@ -115,7 +127,7 @@ impl World {
 
         // Back in usePortal: thePlayer.worldObj = theWorld.
         let e = w.entities.get(&id)?.clone();
-        if alive(&e) {
+        if alive(&e) && old_dimension < 1 {
             let mut e = e;
             let y = e.pos.y;
             let (yaw, pitch) = (e.yaw, e.pitch);
@@ -201,6 +213,13 @@ impl World {
     /// one with the same entity id, at its bed if the bed is still there, else at spawn.
     /// Returns the chat message to show (`tile.bed.notValid`), if any.
     pub fn respawn_player(&mut self, old: i32, progress: &mut dyn FnMut(LoadStep)) -> Option<&'static str> {
+        self.respawn_player_with_inventory(old, false, progress)
+    }
+
+    /// Minecraft.respawn's keep-inventory flag (GuiWinGame uses true).
+    pub fn respawn_player_with_inventory(
+        &mut self, old: i32, keep_inventory: bool, progress: &mut dyn FnMut(LoadStep),
+    ) -> Option<&'static str> {
         let mut chat = None;
         let bed = self.entities.get(&old).and_then(|e| e.player_state()).and_then(|s| s.spawn);
         let mut target = None;
@@ -221,9 +240,13 @@ impl World {
         self.set_spawn_location();
         self.update_entity_list();
         // world.setEntityDead(thePlayer)
-        self.take_player(old);
+        let previous = self.take_player(old);
         // playerController.createPlayer: a new EntityPlayerSP for the session's user.
-        let mut e = crate::entity::player::controller::PlayerControllerSP::create_player(self, "Player");
+        let username = previous.as_ref().and_then(|e| e.player_state()).map_or("Player", |s| s.username.as_str());
+        let mut e = crate::entity::player::controller::PlayerControllerSP::create_player(self, username);
+        if keep_inventory {
+            if let Some(previous) = previous.as_ref() { e.copy_player_from(previous); }
+        }
         if let Some(s) = e.player_state_mut() {
             s.dimension = 0;
         }
@@ -244,6 +267,7 @@ impl World {
         crate::entity::player::controller::PlayerControllerSP::flip_player(&mut e,
             crate::entity::player::controller::PlayerControllerSP::saved_world_is_creative(self.info.game_type));
         // spawnPlayerWithLoadedChunks; then thePlayer.entityId = the old id.
+        e.initialize_player_mode(crate::entity::player::controller::PlayerControllerSP::saved_world_is_creative(self.info.game_type));
         e.entity_id = old;
         let (px, pz) = (e.pos.x, e.pos.z);
         self.entity_joined_world(e);
@@ -257,5 +281,18 @@ impl World {
         progress(LoadStep::Text("Simulating world for a bit"));
         self.unload_oldest_chunks();
         chat
+    }
+}
+
+impl World {
+    /// Complete GuiWinGame's respawn(false, 0, true) simulation operation.
+    /// Returns the replacement world and the optional invalid-bed chat message.
+    pub fn return_from_end(
+        &mut self, id: i32, fresh_rand: i64, teleporter_rand: i64,
+        progress: &mut dyn FnMut(LoadStep),
+    ) -> Option<(World, Option<&'static str>)> {
+        let mut world = self.use_portal_to(id, Dimension::Overworld, fresh_rand, teleporter_rand, progress)?;
+        let chat = world.respawn_player_with_inventory(id, true, progress);
+        Some((world, chat))
     }
 }

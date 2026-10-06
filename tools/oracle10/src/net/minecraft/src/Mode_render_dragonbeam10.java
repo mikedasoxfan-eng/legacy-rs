@@ -25,7 +25,7 @@ public final class Mode_render_dragonbeam10 {
             dragon.prevPosX=points[1][0];dragon.prevPosY=points[1][1];dragon.prevPosZ=points[1][2];
             dragon.posX=points[2][0];dragon.posY=points[2][1];dragon.posZ=points[2][2];dragon.ticksExisted=ticks;
             crystal.posX=points[3][0];crystal.posY=points[3][1];crystal.posZ=points[3][2];crystal.field_41032_a=rotation;
-            GL11.reset();renderer.doRender(dragon,points[0][0],points[0][1],points[0][2],0,partial);Mode_render_effects10.draws();
+            RendererOracle.reset10();renderer.doRender(dragon,points[0][0],points[0][1],points[0][2],0,partial);Mode_render_effects10.draws();
         }
         out.close();System.out.println("Original RenderDragon crystal beam: 64 cases");
     }
