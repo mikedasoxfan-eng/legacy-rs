@@ -149,7 +149,8 @@ pub fn render(s: &RenderState, camera: [f64; 3], normalize: bool) -> Fixed {
         g.scale(0.5, -0.5, 0.5);
         g.material = [1.0; 4];
         g.texture = 1;
-        super::inventory::inventory(&mut g, s.carried_block, s.carried_data, 1.0, false);
+        // Render.renderBlocks keeps useInventoryTint: leaves/grass are coloured.
+        super::inventory::inventory(&mut g, s.carried_block, s.carried_data, 1.0, true);
         g.pop();
         g.enable(2, false);
     }
@@ -394,6 +395,8 @@ fn general(s: &RenderState, camera: [f64; 3], normalize: bool) -> Fixed {
                     if s.kind != MobKind::Slime { g.texture = *texture; }
                     special::model(&mut g, model);
                 }
+                // RenderSlime.func_40287_a for inherited pass 1: blend off, glColor4f(1, 1, 1, 1).
+                if s.kind == MobKind::Slime { g.enable(16, false); g.material = [1.0; 4]; }
             }
         }
         if flash > 0 {

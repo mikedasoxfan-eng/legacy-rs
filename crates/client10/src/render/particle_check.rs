@@ -152,7 +152,7 @@ pub fn check(path: &str) -> bool {
         if id == 20 {
             p.cloud_player = Some([0.5, 64.1, 1.5, 64.1 - 1.62f32 as f64, 0.0]);
         }
-        if id == 16 && case % 8 == 7 {
+        if id == 16 && (if release { case == 7 } else { case % 8 == 7 }) {
             p.multiply_velocity(0.2);
             p.multiply_scale(0.6);
         }
@@ -197,7 +197,11 @@ pub fn check(path: &str) -> bool {
                             bad += 1;
                         }
                     }
-                    if release { let java=d.i();let rust=p.packed_brightness(&s,partial);if rust!=java {bad+=1;} }
+                    if release {
+                        let java = d.i();
+                        let rust = super::particles::tessellator_brightness(p.kind, p.packed_brightness(&s, partial)).unwrap_or(-1);
+                        if rust != java { if bad < 12 { eprintln!("particle {kind:?} tick {tick} vertex brightness {rust:08x}/{java:08x}"); } bad += 1; }
+                    }
                     vertices += 1;
                 }
             }
@@ -471,7 +475,10 @@ pub fn emitter_check(path: &str) -> bool {
     let mut r = Reader { data: std::fs::read(path).unwrap(), at: 0 };
     let cases = r.i(); let mut bad = 0;
     for case in 0..cases {
-        let kind = if r.i() == 0 { Kind::HugeExplode } else { Kind::CritEmitter };
+        // 0 HugeExplode, 1 EntityCrit2FX(world, target), 2/3 the 1.0 named
+        // constructor with "magicCrit"/"crit".
+        let code = r.i();
+        let kind = if code == 0 { Kind::HugeExplode } else { Kind::CritEmitter };
         let seed = r.l(); let mathseed = r.l();
         let mut w = worldgen::entity::verify181::world();
         let mut target = worldgen::entity::Entity::living(&mut w, "Pig").unwrap();
@@ -481,6 +488,7 @@ pub fn emitter_check(path: &str) -> bool {
         let mut m = JavaRandom::new(mathseed);
         let terrain = Snapshot::default();
         let mut p = Particle::new(kind,pos,motion,&mut m,seed);
+        if code == 2 { p.emitter_name = "magicCrit"; }
         if kind == Kind::CritEmitter { p.pickup=Some(Box::new(target.clone()));p.tick(&terrain,&mut m); }
         for tick in 0..10 {
             let mut bytes = state(&p,&m);

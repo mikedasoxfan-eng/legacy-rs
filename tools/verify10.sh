@@ -545,6 +545,10 @@ bash "$root/tools/verify_r10blocks3.sh" --built || fail=1
 bash "$root/tools/verify_r10gui3.sh" --built || fail=1
 # --- end gui ---
 
+# --- renderfx (1.0), round 1: particles, EffectRenderer and the simple entity renderers ---
+bash "$root/tools/verify_r10renderfx1.sh" --built || fail=1
+# --- end renderfx ---
+
 pflush
 [ $fail -eq 0 ] && echo "ALL CASES EXACT" || echo "SOME CASES DIFFER"
 exit $fail

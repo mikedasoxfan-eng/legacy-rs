@@ -1160,6 +1160,8 @@ impl App {
                                 }
                                 worldgen::entity::player::PlayerEvent::Pickup { source, .. } => self.particles.pickup(source, entity.entity_id),
                                 worldgen::entity::player::PlayerEvent::CriticalHit { target } => self.particles.renderer.critical_hit(&target, self.cam.pos.to_array()),
+                                // EntityPlayerSP.func_40183_c: EntityCrit2FX(world, target, "magicCrit").
+                                worldgen::entity::player::PlayerEvent::MagicCriticalHit { target } => self.particles.renderer.critical_hit_named(&target, self.cam.pos.to_array(), "magicCrit"),
                                 // The world thread switches dimension itself (usePortal).
                                 worldgen::entity::player::PlayerEvent::ChangeDimension => {}
                                 worldgen::entity::player::PlayerEvent::WinGame => {
@@ -1558,8 +1560,8 @@ impl App {
         };
         let particles = self.particles.vertices(
             self.cam.pos.to_array(),
-            self.cam.yaw,
-            self.cam.pitch,
+            render::particles::active_render_rotation(self.cam.yaw, self.cam.pitch,
+                self.gui.as_ref().is_some_and(|g| g.ui.settings.third_person_view == 2)),
             partial,
             &lightmap,
         );

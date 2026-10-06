@@ -14,6 +14,8 @@ pub mod item_fx;
 pub mod texture_check;
 pub mod particles;
 pub mod particle_check;
+pub mod falling;
+pub mod renderfx_check;
 pub mod render_list;
 pub mod effect_check8;
 pub mod gpu;

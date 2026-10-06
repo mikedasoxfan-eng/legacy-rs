@@ -41,6 +41,11 @@ public final class Mode_render_particlesfx10 {
             if(x==0&&z<0)EntityOracle.rawBlock(w,x,64,z,9,3);
             if(x==-1&&z<0)EntityOracle.rawBlock(w,x,64,z,30,0);
             if(x==1&&z<0)EntityOracle.rawBlock(w,x,63,z,88,0);
+            // 1.0 collision shapes: fences, gates, panes, new stairs, brewing stand,
+            // cauldron, end portal frame, lily pad, enchantment table, dragon egg.
+            // The arrangement rotates with the selected kind, under the odd variants' paths (z=1.5, drifting +z).
+            if(z>=1&&x!=-2&&x!=2){int[] ids={85,113,107,101,102,108,109,114,117,118,120,111,116,122,107,85};int i=((x+4)*5+z+selected*3)%ids.length;
+                EntityOracle.rawBlock(w,x,(z&1)==1?63:64,z,ids[i],ids[i]==107?(x+z+selected)&7:ids[i]==120?((z+selected)&4)|(x&3):(x+z+selected)&3);}
         }
         for(int x=-20;x<=20;x++)for(int z=-20;z<=20;z++)for(int y=0;y<128;y++) {
             Chunk c=w.getChunkFromChunkCoords(x>>4,z>>4);c.skylightMap.setNibble(x&15,y,z&15,(x+y+z)&15);c.blocklightMap.setNibble(x&15,y,z&15,(x*3+y*7+z*5)&15);
@@ -48,7 +53,7 @@ public final class Mode_render_particlesfx10 {
         Mode_entities10.Player player=new Mode_entities10.Player(w);player.setPosition(.5,64.1,1.5);w.playerEntities.add(player);
         RenderEngine engine=(RenderEngine)Oracle.allocate(RenderEngine.class);HashMap<String,Integer> textures=new HashMap<>();textures.put("/misc/footprint.png",3);textures.put("/misc/explosion.png",4);Oracle.setField(engine,"textureMap",textures);Oracle.setField(engine,"texturePack",Oracle.allocate(TexturePackList.class));
         Field convert=Tessellator.class.getDeclaredField("convertQuadsToTriangles");convert.setAccessible(true);convert.setBoolean(null,false);
-        Field raw=Tessellator.class.getDeclaredField("rawBuffer");raw.setAccessible(true);
+        Field raw=Tessellator.class.getDeclaredField("rawBuffer");raw.setAccessible(true);Field lit=Tessellator.class.getDeclaredField("hasBrightness");lit.setAccessible(true);
         try(DataOutputStream o=new DataOutputStream(new BufferedOutputStream(new FileOutputStream(path)))) {
             o.writeBytes("R10PRT03");EntityOracle.i(o,41);
             for(int x=-20;x<=20;x++)for(int z=-20;z<=20;z++) {
@@ -59,7 +64,7 @@ public final class Mode_render_particlesfx10 {
             for(int kind=selected;kind<=selected;kind++)for(int variant=0;variant<32;variant++) {
                 long seed=100+variant;long mathseed=200+variant;OracleHooks.reset(seed);EntityOracle.mathRandom().setSeed(mathseed);
                 double x=-3.5+(variant%8)*0.75,y=variant%8==7?66.1:64.1+(variant%8)*0.03125,z=variant%2==0?-1.5:1.5;
-                double vx=variant==0?0.0:(variant-4)*0.125,vy=variant%3==0?0.0:-0.1,vz=variant%4==0?0:0.2;
+                double vx=variant==0?0.0:(variant%8-4)*0.125,vy=variant%3==0?0.0:-0.1,vz=variant%4==0?0:0.2;
                 int block=new int[]{1,2,18,35,12,79,53,88}[variant%8],meta=variant&15;if(kind>=30)block=new int[]{332,341,373,381,264,368,280,265}[variant%8];
                 EntityOracle.i(o,kind);EntityOracle.l(o,seed);EntityOracle.l(o,mathseed);for(double v:new double[]{Trace10.namedDouble("x", x),Trace10.namedDouble("y", y),Trace10.namedDouble("z", z),Trace10.namedDouble("vx", vx),Trace10.namedDouble("vy", vy),Trace10.namedDouble("vz", vz)})EntityOracle.d(o,v);EntityOracle.i(o,block);EntityOracle.i(o,meta);EntityOracle.i(o,340);
                 EntityFX p=create(kind,w,engine,x,y,z,vx,vy,vz,block,meta);
@@ -71,7 +76,7 @@ public final class Mode_render_particlesfx10 {
                         EntityOracle.i(o,Trace10.namedInt("p.getEntityBrightnessForRender(partial)", p.getEntityBrightnessForRender(partial)));EntityOracle.f(o,p.getEntityBrightness(partial));Tessellator t=Tessellator.instance;t.startDrawingQuads();t.setBrightness(p.getEntityBrightnessForRender(partial));
                         float yaw=37.25F,pitch=-21.5F;float cy=MathHelper.cos(yaw*(float)Math.PI/180.0F),sy=MathHelper.sin(yaw*(float)Math.PI/180.0F),sp=MathHelper.sin(pitch*(float)Math.PI/180.0F),cp=MathHelper.cos(pitch*(float)Math.PI/180.0F);
                         if(kind==17||kind==23){t.draw();p.renderParticle(t,partial,cy,cp,sy,-sy*sp,cy*sp);}else p.renderParticle(t,partial,cy,cp,sy,-sy*sp,cy*sp);
-                        int count=kind==23&&((int)((EntityOracle.intField(EntityLargeExplodeFX.class,"field_35130_a",p)+partial)*15.0F/EntityOracle.intField(EntityLargeExplodeFX.class,"field_35129_ay",p)))>15?0:4;EntityOracle.i(o,count);int[] data=(int[])raw.get(t);for(int i=0;i<count;i++){for(int j=0;j<5;j++)EntityOracle.i(o,Trace10.namedInt("data[i*8+j]", data[i*8+j]));EntityOracle.i(o,Trace10.namedInt("data[i*8+5]", data[i*8+5]));EntityOracle.i(o,data[i*8+7]);}
+                        int count=kind==23&&((int)((EntityOracle.intField(EntityLargeExplodeFX.class,"field_35130_a",p)+partial)*15.0F/EntityOracle.intField(EntityLargeExplodeFX.class,"field_35129_ay",p)))>15?0:4;EntityOracle.i(o,count);int[] data=(int[])raw.get(t);for(int i=0;i<count;i++){for(int j=0;j<5;j++)EntityOracle.i(o,Trace10.namedInt("data[i*8+j]", data[i*8+j]));EntityOracle.i(o,Trace10.namedInt("data[i*8+5]", data[i*8+5]));EntityOracle.i(o,lit.getBoolean(t)?data[i*8+7]:-1);}
                         if(kind!=17&&kind!=23)t.draw();
                     }
                     if(!p.isDead)p.onUpdate();

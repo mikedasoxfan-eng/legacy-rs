@@ -609,6 +609,7 @@ pub fn run() {
     }
     if args.get(1).map(String::as_str) == Some("--arrowcheck") {std::process::exit(if render::entity::object_check::arrow_check(&args[2]) {0}else{1});}
     if args.get(1).map(String::as_str) == Some("--bedmodelcheck") {std::process::exit(if render::entity::object_check::bed_check(&args[2]) {0}else{1});}
+    if args.get(1).map(String::as_str) == Some("--renderfx-simple-check") { std::process::exit(if render::renderfx_check::simple_check(&args[2]) {0}else{1}); }
     if args.get(1).map(String::as_str) == Some("--particlefactorycheck") { std::process::exit(if render::particle_check::factory_check(&args[2]) {0}else{1}); }
     if args.get(1).map(String::as_str) == Some("--effectlifecyclecheck") { std::process::exit(if render::particle_check::lifecycle_check(&args[2]) {0}else{1}); }
     if args.get(1).map(String::as_str) == Some("--managervisual9check") {
