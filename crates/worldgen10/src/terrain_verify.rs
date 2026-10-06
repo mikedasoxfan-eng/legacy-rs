@@ -276,7 +276,9 @@ pub fn biomes(seed: i64) -> Vec<u8> {
     ];
     let mut rand = JavaRandom::new(seed);
     for radius in [4, 64, 256, 16, 0] {
-        let p = m.find_position(-17, 31, radius, &allowed, &mut rand);
+        let p = m.find_position10(-17, 31, radius, &allowed, &mut rand);
+        out.push(p.is_err() as u8);
+        let p = p.unwrap_or(None);
         out.push(p.is_some() as u8);
         if let Some((x, z)) = p {
             out.extend_from_slice(&x.to_be_bytes());

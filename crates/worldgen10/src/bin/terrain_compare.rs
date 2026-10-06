@@ -1,6 +1,13 @@
 use worldgen::{genlayer, OverworldGenerator};
 fn main() {
     let a: Vec<String> = std::env::args().skip(1).collect();
+    if a[0] == "world4" {
+        let expected = std::fs::read(&a[3]).unwrap();
+        let out = worldgen::world4_verify::dump_expected(&a[1], a[2].parse().unwrap(), &expected);
+        if let Ok(path) = std::env::var("WORLD4_RUST_OUT") { std::fs::write(path, &out).unwrap(); }
+        compare(out, expected);
+        return;
+    }
     if a[0] == "world3" {
         compare(worldgen::world3_verify::dump(&a[1], a[2].parse().unwrap()), std::fs::read(&a[3]).unwrap());
         return;

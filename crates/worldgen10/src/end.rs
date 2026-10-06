@@ -24,10 +24,17 @@ pub enum EndEntitySpawn {
 /// BiomeEndDecorator.decorate_do. It uses World.rand, without reseeding it.
 pub fn populate(w: &mut crate::World, cx: i32, cz: i32) {
     w.sand_fall_instantly = true;
+    // ChunkProviderEnd.populate hands World.rand to the decorator.
     let previous = w.population_uses_world10;
     w.population_uses_world10 = true;
+    decorate(w, cx.wrapping_mul(16), cz.wrapping_mul(16));
+    w.population_uses_world10 = previous;
+    w.sand_fall_instantly = false;
+}
+
+/// BiomeGenEnd.func_35477_a: BiomeEndDecorator.decorate with the caller's Random.
+pub fn decorate(w: &mut crate::World, x0: i32, z0: i32) {
     crate::decorator10::begin(Biome::Sky);
-    let (x0, z0) = (cx.wrapping_mul(16), cz.wrapping_mul(16));
     crate::populate::generate_ores(w, x0, z0);
     if w.prand().next_int(5) == 0 {
         let x = x0 + w.prand().next_int(16) + 8;
@@ -46,8 +53,6 @@ pub fn populate(w: &mut crate::World, cx: i32, cz: i32) {
         w.end_entity_spawns10.push(EndEntitySpawn::Dragon { yaw });
     }
     crate::decorator10::finish(Biome::Sky);
-    w.population_uses_world10 = previous;
-    w.sand_fall_instantly = false;
 }
 
 /// WorldGenSpikes: validate the whole footprint before changing any blocks.

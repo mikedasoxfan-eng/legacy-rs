@@ -198,6 +198,11 @@ pub struct World {
     /// `scheduledTickSet`: entry -> (scheduled time, `tickEntryID`).
     pub pending_ticks: HashMap<TickKey, (i64, i64)>,
     pub(crate) scheduled_tick_set10: java_hash::JavaHashSet<TickKey>,
+    /// Recorded System.identityHashCode values for NextTickListEntry objects added to
+    /// scheduledTickSet. HashMap.TreeNode.tieBreakOrder orders equal-hash entries by them
+    /// (NextTickListEntry's classfile has no generic Comparable signature). They are VM
+    /// internals; oracle replays pin them, otherwise insertion order stands in.
+    pub tick_identity_replay10: Option<std::collections::VecDeque<i32>>,
     /// `scheduledTickTreeSet`, ordered like `NextTickListEntry.compareTo`.
     pub tick_order: std::collections::BTreeSet<(i64, i64, TickKey)>,
     pub world_time: i64,
@@ -347,6 +352,7 @@ impl World {
             light_queue: Vec::new(),
             pending_ticks: HashMap::new(),
             scheduled_tick_set10: Default::default(),
+            tick_identity_replay10: None,
             tick_order: Default::default(),
             world_time: 0,
             immediate_updates: false,
@@ -581,6 +587,11 @@ impl World {
             self.chunks.insert((cx, cz), c);
             self.chunk_list.push((cx, cz));
             self.touch(cx, cz);
+            // generateSkylightMap sets isModified; ChunkProviderHell never calls it, so a
+            // generated Nether chunk only needs saving once something writes to it.
+            if self.dimension == Dimension::Nether {
+                self.chunk_mut(cx, cz).modified = false;
+            }
         }
 
         if !self.chunk(cx, cz).populated
@@ -1094,7 +1105,7 @@ impl World {
             let t = if id>0 {self.world_time.wrapping_add(delay as i64)} else {0};
             if let std::collections::hash_map::Entry::Vacant(e) = self.pending_ticks.entry(key) {
                 e.insert((t, entry_id));
-                self.scheduled_tick_set10.insert(key.java_hash181(), key);
+                self.add_scheduled_tick10(key);
                 self.tick_order.insert((t, entry_id, key));
             }
         }

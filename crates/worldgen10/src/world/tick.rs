@@ -426,8 +426,16 @@ impl World {
         let id = super::next_tick_entry_id181();
         if let std::collections::hash_map::Entry::Vacant(e) = self.pending_ticks.entry(key) {
             e.insert((time, id));
-            self.scheduled_tick_set10.insert(key.java_hash181(), key);
+            self.add_scheduled_tick10(key);
             self.tick_order.insert((time, id, key));
         }
+    }
+    /// scheduledTickSet.add for a new entry.
+    pub(crate) fn add_scheduled_tick10(&mut self, key: TickKey) {
+        let hash = key.java_hash181();
+        match self.tick_identity_replay10.as_mut().and_then(|q| q.pop_front()) {
+            Some(identity) => self.scheduled_tick_set10.insert_with_identity(hash, identity, key),
+            None => self.scheduled_tick_set10.insert(hash, key),
+        };
     }
 }
