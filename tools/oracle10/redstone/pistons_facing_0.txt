@@ -1,0 +1,1561 @@
+# All lengths, normal/sticky, every intermediate tile progress and sound draw.
+remove 0 90 0
+remove 1 90 0
+remove 1 89 0
+remove 0 89 0
+remove 0 88 0
+remove 0 87 0
+remove 0 86 0
+remove 0 85 0
+remove 0 84 0
+remove 0 83 0
+remove 0 82 0
+remove 0 81 0
+remove 0 80 0
+remove 0 79 0
+remove 0 78 0
+remove 0 77 0
+remove 0 76 0
+remove 0 75 0
+place 0 89 0 1 1
+place 0 90 0 33 0
+place 1 89 0 1 0
+place 1 90 0 69 5
+use 1 90 0
+state
+events
+check 0 75 0 0 90 0
+tick 1
+state
+check 0 75 0 0 90 0
+events
+tick 1
+state
+check 0 75 0 0 90 0
+events
+tick 1
+state
+check 0 75 0 0 90 0
+events
+use 1 90 0
+state
+check 0 75 0 0 90 0
+events
+tick 1
+state
+check 0 75 0 0 90 0
+events
+tick 1
+state
+check 0 75 0 0 90 0
+events
+tick 1
+state
+check 0 75 0 0 90 0
+events
+remove 0 90 0
+remove 1 90 0
+remove 1 89 0
+remove 0 89 0
+remove 0 88 0
+remove 0 87 0
+remove 0 86 0
+remove 0 85 0
+remove 0 84 0
+remove 0 83 0
+remove 0 82 0
+remove 0 81 0
+remove 0 80 0
+remove 0 79 0
+remove 0 78 0
+remove 0 77 0
+remove 0 76 0
+remove 0 75 0
+place 0 89 0 1 1
+place 0 88 0 1 2
+place 0 90 0 33 0
+place 1 89 0 1 0
+place 1 90 0 69 5
+use 1 90 0
+state
+events
+check 0 75 0 0 90 0
+tick 1
+state
+check 0 75 0 0 90 0
+events
+tick 1
+state
+check 0 75 0 0 90 0
+events
+tick 1
+state
+check 0 75 0 0 90 0
+events
+use 1 90 0
+state
+check 0 75 0 0 90 0
+events
+tick 1
+state
+check 0 75 0 0 90 0
+events
+tick 1
+state
+check 0 75 0 0 90 0
+events
+tick 1
+state
+check 0 75 0 0 90 0
+events
+remove 0 90 0
+remove 1 90 0
+remove 1 89 0
+remove 0 89 0
+remove 0 88 0
+remove 0 87 0
+remove 0 86 0
+remove 0 85 0
+remove 0 84 0
+remove 0 83 0
+remove 0 82 0
+remove 0 81 0
+remove 0 80 0
+remove 0 79 0
+remove 0 78 0
+remove 0 77 0
+remove 0 76 0
+remove 0 75 0
+place 0 89 0 1 1
+place 0 88 0 1 2
+place 0 87 0 1 3
+place 0 90 0 33 0
+place 1 89 0 1 0
+place 1 90 0 69 5
+use 1 90 0
+state
+events
+check 0 75 0 0 90 0
+tick 1
+state
+check 0 75 0 0 90 0
+events
+tick 1
+state
+check 0 75 0 0 90 0
+events
+tick 1
+state
+check 0 75 0 0 90 0
+events
+use 1 90 0
+state
+check 0 75 0 0 90 0
+events
+tick 1
+state
+check 0 75 0 0 90 0
+events
+tick 1
+state
+check 0 75 0 0 90 0
+events
+tick 1
+state
+check 0 75 0 0 90 0
+events
+remove 0 90 0
+remove 1 90 0
+remove 1 89 0
+remove 0 89 0
+remove 0 88 0
+remove 0 87 0
+remove 0 86 0
+remove 0 85 0
+remove 0 84 0
+remove 0 83 0
+remove 0 82 0
+remove 0 81 0
+remove 0 80 0
+remove 0 79 0
+remove 0 78 0
+remove 0 77 0
+remove 0 76 0
+remove 0 75 0
+place 0 89 0 1 1
+place 0 88 0 1 2
+place 0 87 0 1 3
+place 0 86 0 1 4
+place 0 90 0 33 0
+place 1 89 0 1 0
+place 1 90 0 69 5
+use 1 90 0
+state
+events
+check 0 75 0 0 90 0
+tick 1
+state
+check 0 75 0 0 90 0
+events
+tick 1
+state
+check 0 75 0 0 90 0
+events
+tick 1
+state
+check 0 75 0 0 90 0
+events
+use 1 90 0
+state
+check 0 75 0 0 90 0
+events
+tick 1
+state
+check 0 75 0 0 90 0
+events
+tick 1
+state
+check 0 75 0 0 90 0
+events
+tick 1
+state
+check 0 75 0 0 90 0
+events
+remove 0 90 0
+remove 1 90 0
+remove 1 89 0
+remove 0 89 0
+remove 0 88 0
+remove 0 87 0
+remove 0 86 0
+remove 0 85 0
+remove 0 84 0
+remove 0 83 0
+remove 0 82 0
+remove 0 81 0
+remove 0 80 0
+remove 0 79 0
+remove 0 78 0
+remove 0 77 0
+remove 0 76 0
+remove 0 75 0
+place 0 89 0 1 1
+place 0 88 0 1 2
+place 0 87 0 1 3
+place 0 86 0 1 4
+place 0 85 0 1 5
+place 0 90 0 33 0
+place 1 89 0 1 0
+place 1 90 0 69 5
+use 1 90 0
+state
+events
+check 0 75 0 0 90 0
+tick 1
+state
+check 0 75 0 0 90 0
+events
+tick 1
+state
+check 0 75 0 0 90 0
+events
+tick 1
+state
+check 0 75 0 0 90 0
+events
+use 1 90 0
+state
+check 0 75 0 0 90 0
+events
+tick 1
+state
+check 0 75 0 0 90 0
+events
+tick 1
+state
+check 0 75 0 0 90 0
+events
+tick 1
+state
+check 0 75 0 0 90 0
+events
+remove 0 90 0
+remove 1 90 0
+remove 1 89 0
+remove 0 89 0
+remove 0 88 0
+remove 0 87 0
+remove 0 86 0
+remove 0 85 0
+remove 0 84 0
+remove 0 83 0
+remove 0 82 0
+remove 0 81 0
+remove 0 80 0
+remove 0 79 0
+remove 0 78 0
+remove 0 77 0
+remove 0 76 0
+remove 0 75 0
+place 0 89 0 1 1
+place 0 88 0 1 2
+place 0 87 0 1 3
+place 0 86 0 1 4
+place 0 85 0 1 5
+place 0 84 0 1 6
+place 0 90 0 33 0
+place 1 89 0 1 0
+place 1 90 0 69 5
+use 1 90 0
+state
+events
+check 0 75 0 0 90 0
+tick 1
+state
+check 0 75 0 0 90 0
+events
+tick 1
+state
+check 0 75 0 0 90 0
+events
+tick 1
+state
+check 0 75 0 0 90 0
+events
+use 1 90 0
+state
+check 0 75 0 0 90 0
+events
+tick 1
+state
+check 0 75 0 0 90 0
+events
+tick 1
+state
+check 0 75 0 0 90 0
+events
+tick 1
+state
+check 0 75 0 0 90 0
+events
+remove 0 90 0
+remove 1 90 0
+remove 1 89 0
+remove 0 89 0
+remove 0 88 0
+remove 0 87 0
+remove 0 86 0
+remove 0 85 0
+remove 0 84 0
+remove 0 83 0
+remove 0 82 0
+remove 0 81 0
+remove 0 80 0
+remove 0 79 0
+remove 0 78 0
+remove 0 77 0
+remove 0 76 0
+remove 0 75 0
+place 0 89 0 1 1
+place 0 88 0 1 2
+place 0 87 0 1 3
+place 0 86 0 1 4
+place 0 85 0 1 5
+place 0 84 0 1 6
+place 0 83 0 1 7
+place 0 90 0 33 0
+place 1 89 0 1 0
+place 1 90 0 69 5
+use 1 90 0
+state
+events
+check 0 75 0 0 90 0
+tick 1
+state
+check 0 75 0 0 90 0
+events
+tick 1
+state
+check 0 75 0 0 90 0
+events
+tick 1
+state
+check 0 75 0 0 90 0
+events
+use 1 90 0
+state
+check 0 75 0 0 90 0
+events
+tick 1
+state
+check 0 75 0 0 90 0
+events
+tick 1
+state
+check 0 75 0 0 90 0
+events
+tick 1
+state
+check 0 75 0 0 90 0
+events
+remove 0 90 0
+remove 1 90 0
+remove 1 89 0
+remove 0 89 0
+remove 0 88 0
+remove 0 87 0
+remove 0 86 0
+remove 0 85 0
+remove 0 84 0
+remove 0 83 0
+remove 0 82 0
+remove 0 81 0
+remove 0 80 0
+remove 0 79 0
+remove 0 78 0
+remove 0 77 0
+remove 0 76 0
+remove 0 75 0
+place 0 89 0 1 1
+place 0 88 0 1 2
+place 0 87 0 1 3
+place 0 86 0 1 4
+place 0 85 0 1 5
+place 0 84 0 1 6
+place 0 83 0 1 7
+place 0 82 0 1 8
+place 0 90 0 33 0
+place 1 89 0 1 0
+place 1 90 0 69 5
+use 1 90 0
+state
+events
+check 0 75 0 0 90 0
+tick 1
+state
+check 0 75 0 0 90 0
+events
+tick 1
+state
+check 0 75 0 0 90 0
+events
+tick 1
+state
+check 0 75 0 0 90 0
+events
+use 1 90 0
+state
+check 0 75 0 0 90 0
+events
+tick 1
+state
+check 0 75 0 0 90 0
+events
+tick 1
+state
+check 0 75 0 0 90 0
+events
+tick 1
+state
+check 0 75 0 0 90 0
+events
+remove 0 90 0
+remove 1 90 0
+remove 1 89 0
+remove 0 89 0
+remove 0 88 0
+remove 0 87 0
+remove 0 86 0
+remove 0 85 0
+remove 0 84 0
+remove 0 83 0
+remove 0 82 0
+remove 0 81 0
+remove 0 80 0
+remove 0 79 0
+remove 0 78 0
+remove 0 77 0
+remove 0 76 0
+remove 0 75 0
+place 0 89 0 1 1
+place 0 88 0 1 2
+place 0 87 0 1 3
+place 0 86 0 1 4
+place 0 85 0 1 5
+place 0 84 0 1 6
+place 0 83 0 1 7
+place 0 82 0 1 8
+place 0 81 0 1 9
+place 0 90 0 33 0
+place 1 89 0 1 0
+place 1 90 0 69 5
+use 1 90 0
+state
+events
+check 0 75 0 0 90 0
+tick 1
+state
+check 0 75 0 0 90 0
+events
+tick 1
+state
+check 0 75 0 0 90 0
+events
+tick 1
+state
+check 0 75 0 0 90 0
+events
+use 1 90 0
+state
+check 0 75 0 0 90 0
+events
+tick 1
+state
+check 0 75 0 0 90 0
+events
+tick 1
+state
+check 0 75 0 0 90 0
+events
+tick 1
+state
+check 0 75 0 0 90 0
+events
+remove 0 90 0
+remove 1 90 0
+remove 1 89 0
+remove 0 89 0
+remove 0 88 0
+remove 0 87 0
+remove 0 86 0
+remove 0 85 0
+remove 0 84 0
+remove 0 83 0
+remove 0 82 0
+remove 0 81 0
+remove 0 80 0
+remove 0 79 0
+remove 0 78 0
+remove 0 77 0
+remove 0 76 0
+remove 0 75 0
+place 0 89 0 1 1
+place 0 88 0 1 2
+place 0 87 0 1 3
+place 0 86 0 1 4
+place 0 85 0 1 5
+place 0 84 0 1 6
+place 0 83 0 1 7
+place 0 82 0 1 8
+place 0 81 0 1 9
+place 0 80 0 1 10
+place 0 90 0 33 0
+place 1 89 0 1 0
+place 1 90 0 69 5
+use 1 90 0
+state
+events
+check 0 75 0 0 90 0
+tick 1
+state
+check 0 75 0 0 90 0
+events
+tick 1
+state
+check 0 75 0 0 90 0
+events
+tick 1
+state
+check 0 75 0 0 90 0
+events
+use 1 90 0
+state
+check 0 75 0 0 90 0
+events
+tick 1
+state
+check 0 75 0 0 90 0
+events
+tick 1
+state
+check 0 75 0 0 90 0
+events
+tick 1
+state
+check 0 75 0 0 90 0
+events
+remove 0 90 0
+remove 1 90 0
+remove 1 89 0
+remove 0 89 0
+remove 0 88 0
+remove 0 87 0
+remove 0 86 0
+remove 0 85 0
+remove 0 84 0
+remove 0 83 0
+remove 0 82 0
+remove 0 81 0
+remove 0 80 0
+remove 0 79 0
+remove 0 78 0
+remove 0 77 0
+remove 0 76 0
+remove 0 75 0
+place 0 89 0 1 1
+place 0 88 0 1 2
+place 0 87 0 1 3
+place 0 86 0 1 4
+place 0 85 0 1 5
+place 0 84 0 1 6
+place 0 83 0 1 7
+place 0 82 0 1 8
+place 0 81 0 1 9
+place 0 80 0 1 10
+place 0 79 0 1 11
+place 0 90 0 33 0
+place 1 89 0 1 0
+place 1 90 0 69 5
+use 1 90 0
+state
+events
+check 0 75 0 0 90 0
+tick 1
+state
+check 0 75 0 0 90 0
+events
+tick 1
+state
+check 0 75 0 0 90 0
+events
+tick 1
+state
+check 0 75 0 0 90 0
+events
+use 1 90 0
+state
+check 0 75 0 0 90 0
+events
+tick 1
+state
+check 0 75 0 0 90 0
+events
+tick 1
+state
+check 0 75 0 0 90 0
+events
+tick 1
+state
+check 0 75 0 0 90 0
+events
+remove 0 90 0
+remove 1 90 0
+remove 1 89 0
+remove 0 89 0
+remove 0 88 0
+remove 0 87 0
+remove 0 86 0
+remove 0 85 0
+remove 0 84 0
+remove 0 83 0
+remove 0 82 0
+remove 0 81 0
+remove 0 80 0
+remove 0 79 0
+remove 0 78 0
+remove 0 77 0
+remove 0 76 0
+remove 0 75 0
+place 0 89 0 1 1
+place 0 88 0 1 2
+place 0 87 0 1 3
+place 0 86 0 1 4
+place 0 85 0 1 5
+place 0 84 0 1 6
+place 0 83 0 1 7
+place 0 82 0 1 8
+place 0 81 0 1 9
+place 0 80 0 1 10
+place 0 79 0 1 11
+place 0 78 0 1 12
+place 0 90 0 33 0
+place 1 89 0 1 0
+place 1 90 0 69 5
+use 1 90 0
+state
+events
+check 0 75 0 0 90 0
+tick 1
+state
+check 0 75 0 0 90 0
+events
+tick 1
+state
+check 0 75 0 0 90 0
+events
+tick 1
+state
+check 0 75 0 0 90 0
+events
+use 1 90 0
+state
+check 0 75 0 0 90 0
+events
+tick 1
+state
+check 0 75 0 0 90 0
+events
+tick 1
+state
+check 0 75 0 0 90 0
+events
+tick 1
+state
+check 0 75 0 0 90 0
+events
+remove 0 90 0
+remove 1 90 0
+remove 1 89 0
+remove 0 89 0
+remove 0 88 0
+remove 0 87 0
+remove 0 86 0
+remove 0 85 0
+remove 0 84 0
+remove 0 83 0
+remove 0 82 0
+remove 0 81 0
+remove 0 80 0
+remove 0 79 0
+remove 0 78 0
+remove 0 77 0
+remove 0 76 0
+remove 0 75 0
+place 0 89 0 1 1
+place 0 88 0 1 2
+place 0 87 0 1 3
+place 0 86 0 1 4
+place 0 85 0 1 5
+place 0 84 0 1 6
+place 0 83 0 1 7
+place 0 82 0 1 8
+place 0 81 0 1 9
+place 0 80 0 1 10
+place 0 79 0 1 11
+place 0 78 0 1 12
+place 0 77 0 1 13
+place 0 90 0 33 0
+place 1 89 0 1 0
+place 1 90 0 69 5
+use 1 90 0
+state
+events
+check 0 75 0 0 90 0
+tick 1
+state
+check 0 75 0 0 90 0
+events
+tick 1
+state
+check 0 75 0 0 90 0
+events
+tick 1
+state
+check 0 75 0 0 90 0
+events
+use 1 90 0
+state
+check 0 75 0 0 90 0
+events
+tick 1
+state
+check 0 75 0 0 90 0
+events
+tick 1
+state
+check 0 75 0 0 90 0
+events
+tick 1
+state
+check 0 75 0 0 90 0
+events
+remove 0 90 0
+remove 1 90 0
+remove 1 89 0
+remove 0 89 0
+remove 0 88 0
+remove 0 87 0
+remove 0 86 0
+remove 0 85 0
+remove 0 84 0
+remove 0 83 0
+remove 0 82 0
+remove 0 81 0
+remove 0 80 0
+remove 0 79 0
+remove 0 78 0
+remove 0 77 0
+remove 0 76 0
+remove 0 75 0
+place 0 89 0 1 1
+place 0 90 0 29 0
+place 1 89 0 1 0
+place 1 90 0 69 5
+use 1 90 0
+state
+events
+check 0 75 0 0 90 0
+tick 1
+state
+check 0 75 0 0 90 0
+events
+tick 1
+state
+check 0 75 0 0 90 0
+events
+tick 1
+state
+check 0 75 0 0 90 0
+events
+use 1 90 0
+state
+check 0 75 0 0 90 0
+events
+tick 1
+state
+check 0 75 0 0 90 0
+events
+tick 1
+state
+check 0 75 0 0 90 0
+events
+tick 1
+state
+check 0 75 0 0 90 0
+events
+remove 0 90 0
+remove 1 90 0
+remove 1 89 0
+remove 0 89 0
+remove 0 88 0
+remove 0 87 0
+remove 0 86 0
+remove 0 85 0
+remove 0 84 0
+remove 0 83 0
+remove 0 82 0
+remove 0 81 0
+remove 0 80 0
+remove 0 79 0
+remove 0 78 0
+remove 0 77 0
+remove 0 76 0
+remove 0 75 0
+place 0 89 0 1 1
+place 0 88 0 1 2
+place 0 90 0 29 0
+place 1 89 0 1 0
+place 1 90 0 69 5
+use 1 90 0
+state
+events
+check 0 75 0 0 90 0
+tick 1
+state
+check 0 75 0 0 90 0
+events
+tick 1
+state
+check 0 75 0 0 90 0
+events
+tick 1
+state
+check 0 75 0 0 90 0
+events
+use 1 90 0
+state
+check 0 75 0 0 90 0
+events
+tick 1
+state
+check 0 75 0 0 90 0
+events
+tick 1
+state
+check 0 75 0 0 90 0
+events
+tick 1
+state
+check 0 75 0 0 90 0
+events
+remove 0 90 0
+remove 1 90 0
+remove 1 89 0
+remove 0 89 0
+remove 0 88 0
+remove 0 87 0
+remove 0 86 0
+remove 0 85 0
+remove 0 84 0
+remove 0 83 0
+remove 0 82 0
+remove 0 81 0
+remove 0 80 0
+remove 0 79 0
+remove 0 78 0
+remove 0 77 0
+remove 0 76 0
+remove 0 75 0
+place 0 89 0 1 1
+place 0 88 0 1 2
+place 0 87 0 1 3
+place 0 90 0 29 0
+place 1 89 0 1 0
+place 1 90 0 69 5
+use 1 90 0
+state
+events
+check 0 75 0 0 90 0
+tick 1
+state
+check 0 75 0 0 90 0
+events
+tick 1
+state
+check 0 75 0 0 90 0
+events
+tick 1
+state
+check 0 75 0 0 90 0
+events
+use 1 90 0
+state
+check 0 75 0 0 90 0
+events
+tick 1
+state
+check 0 75 0 0 90 0
+events
+tick 1
+state
+check 0 75 0 0 90 0
+events
+tick 1
+state
+check 0 75 0 0 90 0
+events
+remove 0 90 0
+remove 1 90 0
+remove 1 89 0
+remove 0 89 0
+remove 0 88 0
+remove 0 87 0
+remove 0 86 0
+remove 0 85 0
+remove 0 84 0
+remove 0 83 0
+remove 0 82 0
+remove 0 81 0
+remove 0 80 0
+remove 0 79 0
+remove 0 78 0
+remove 0 77 0
+remove 0 76 0
+remove 0 75 0
+place 0 89 0 1 1
+place 0 88 0 1 2
+place 0 87 0 1 3
+place 0 86 0 1 4
+place 0 90 0 29 0
+place 1 89 0 1 0
+place 1 90 0 69 5
+use 1 90 0
+state
+events
+check 0 75 0 0 90 0
+tick 1
+state
+check 0 75 0 0 90 0
+events
+tick 1
+state
+check 0 75 0 0 90 0
+events
+tick 1
+state
+check 0 75 0 0 90 0
+events
+use 1 90 0
+state
+check 0 75 0 0 90 0
+events
+tick 1
+state
+check 0 75 0 0 90 0
+events
+tick 1
+state
+check 0 75 0 0 90 0
+events
+tick 1
+state
+check 0 75 0 0 90 0
+events
+remove 0 90 0
+remove 1 90 0
+remove 1 89 0
+remove 0 89 0
+remove 0 88 0
+remove 0 87 0
+remove 0 86 0
+remove 0 85 0
+remove 0 84 0
+remove 0 83 0
+remove 0 82 0
+remove 0 81 0
+remove 0 80 0
+remove 0 79 0
+remove 0 78 0
+remove 0 77 0
+remove 0 76 0
+remove 0 75 0
+place 0 89 0 1 1
+place 0 88 0 1 2
+place 0 87 0 1 3
+place 0 86 0 1 4
+place 0 85 0 1 5
+place 0 90 0 29 0
+place 1 89 0 1 0
+place 1 90 0 69 5
+use 1 90 0
+state
+events
+check 0 75 0 0 90 0
+tick 1
+state
+check 0 75 0 0 90 0
+events
+tick 1
+state
+check 0 75 0 0 90 0
+events
+tick 1
+state
+check 0 75 0 0 90 0
+events
+use 1 90 0
+state
+check 0 75 0 0 90 0
+events
+tick 1
+state
+check 0 75 0 0 90 0
+events
+tick 1
+state
+check 0 75 0 0 90 0
+events
+tick 1
+state
+check 0 75 0 0 90 0
+events
+remove 0 90 0
+remove 1 90 0
+remove 1 89 0
+remove 0 89 0
+remove 0 88 0
+remove 0 87 0
+remove 0 86 0
+remove 0 85 0
+remove 0 84 0
+remove 0 83 0
+remove 0 82 0
+remove 0 81 0
+remove 0 80 0
+remove 0 79 0
+remove 0 78 0
+remove 0 77 0
+remove 0 76 0
+remove 0 75 0
+place 0 89 0 1 1
+place 0 88 0 1 2
+place 0 87 0 1 3
+place 0 86 0 1 4
+place 0 85 0 1 5
+place 0 84 0 1 6
+place 0 90 0 29 0
+place 1 89 0 1 0
+place 1 90 0 69 5
+use 1 90 0
+state
+events
+check 0 75 0 0 90 0
+tick 1
+state
+check 0 75 0 0 90 0
+events
+tick 1
+state
+check 0 75 0 0 90 0
+events
+tick 1
+state
+check 0 75 0 0 90 0
+events
+use 1 90 0
+state
+check 0 75 0 0 90 0
+events
+tick 1
+state
+check 0 75 0 0 90 0
+events
+tick 1
+state
+check 0 75 0 0 90 0
+events
+tick 1
+state
+check 0 75 0 0 90 0
+events
+remove 0 90 0
+remove 1 90 0
+remove 1 89 0
+remove 0 89 0
+remove 0 88 0
+remove 0 87 0
+remove 0 86 0
+remove 0 85 0
+remove 0 84 0
+remove 0 83 0
+remove 0 82 0
+remove 0 81 0
+remove 0 80 0
+remove 0 79 0
+remove 0 78 0
+remove 0 77 0
+remove 0 76 0
+remove 0 75 0
+place 0 89 0 1 1
+place 0 88 0 1 2
+place 0 87 0 1 3
+place 0 86 0 1 4
+place 0 85 0 1 5
+place 0 84 0 1 6
+place 0 83 0 1 7
+place 0 90 0 29 0
+place 1 89 0 1 0
+place 1 90 0 69 5
+use 1 90 0
+state
+events
+check 0 75 0 0 90 0
+tick 1
+state
+check 0 75 0 0 90 0
+events
+tick 1
+state
+check 0 75 0 0 90 0
+events
+tick 1
+state
+check 0 75 0 0 90 0
+events
+use 1 90 0
+state
+check 0 75 0 0 90 0
+events
+tick 1
+state
+check 0 75 0 0 90 0
+events
+tick 1
+state
+check 0 75 0 0 90 0
+events
+tick 1
+state
+check 0 75 0 0 90 0
+events
+remove 0 90 0
+remove 1 90 0
+remove 1 89 0
+remove 0 89 0
+remove 0 88 0
+remove 0 87 0
+remove 0 86 0
+remove 0 85 0
+remove 0 84 0
+remove 0 83 0
+remove 0 82 0
+remove 0 81 0
+remove 0 80 0
+remove 0 79 0
+remove 0 78 0
+remove 0 77 0
+remove 0 76 0
+remove 0 75 0
+place 0 89 0 1 1
+place 0 88 0 1 2
+place 0 87 0 1 3
+place 0 86 0 1 4
+place 0 85 0 1 5
+place 0 84 0 1 6
+place 0 83 0 1 7
+place 0 82 0 1 8
+place 0 90 0 29 0
+place 1 89 0 1 0
+place 1 90 0 69 5
+use 1 90 0
+state
+events
+check 0 75 0 0 90 0
+tick 1
+state
+check 0 75 0 0 90 0
+events
+tick 1
+state
+check 0 75 0 0 90 0
+events
+tick 1
+state
+check 0 75 0 0 90 0
+events
+use 1 90 0
+state
+check 0 75 0 0 90 0
+events
+tick 1
+state
+check 0 75 0 0 90 0
+events
+tick 1
+state
+check 0 75 0 0 90 0
+events
+tick 1
+state
+check 0 75 0 0 90 0
+events
+remove 0 90 0
+remove 1 90 0
+remove 1 89 0
+remove 0 89 0
+remove 0 88 0
+remove 0 87 0
+remove 0 86 0
+remove 0 85 0
+remove 0 84 0
+remove 0 83 0
+remove 0 82 0
+remove 0 81 0
+remove 0 80 0
+remove 0 79 0
+remove 0 78 0
+remove 0 77 0
+remove 0 76 0
+remove 0 75 0
+place 0 89 0 1 1
+place 0 88 0 1 2
+place 0 87 0 1 3
+place 0 86 0 1 4
+place 0 85 0 1 5
+place 0 84 0 1 6
+place 0 83 0 1 7
+place 0 82 0 1 8
+place 0 81 0 1 9
+place 0 90 0 29 0
+place 1 89 0 1 0
+place 1 90 0 69 5
+use 1 90 0
+state
+events
+check 0 75 0 0 90 0
+tick 1
+state
+check 0 75 0 0 90 0
+events
+tick 1
+state
+check 0 75 0 0 90 0
+events
+tick 1
+state
+check 0 75 0 0 90 0
+events
+use 1 90 0
+state
+check 0 75 0 0 90 0
+events
+tick 1
+state
+check 0 75 0 0 90 0
+events
+tick 1
+state
+check 0 75 0 0 90 0
+events
+tick 1
+state
+check 0 75 0 0 90 0
+events
+remove 0 90 0
+remove 1 90 0
+remove 1 89 0
+remove 0 89 0
+remove 0 88 0
+remove 0 87 0
+remove 0 86 0
+remove 0 85 0
+remove 0 84 0
+remove 0 83 0
+remove 0 82 0
+remove 0 81 0
+remove 0 80 0
+remove 0 79 0
+remove 0 78 0
+remove 0 77 0
+remove 0 76 0
+remove 0 75 0
+place 0 89 0 1 1
+place 0 88 0 1 2
+place 0 87 0 1 3
+place 0 86 0 1 4
+place 0 85 0 1 5
+place 0 84 0 1 6
+place 0 83 0 1 7
+place 0 82 0 1 8
+place 0 81 0 1 9
+place 0 80 0 1 10
+place 0 90 0 29 0
+place 1 89 0 1 0
+place 1 90 0 69 5
+use 1 90 0
+state
+events
+check 0 75 0 0 90 0
+tick 1
+state
+check 0 75 0 0 90 0
+events
+tick 1
+state
+check 0 75 0 0 90 0
+events
+tick 1
+state
+check 0 75 0 0 90 0
+events
+use 1 90 0
+state
+check 0 75 0 0 90 0
+events
+tick 1
+state
+check 0 75 0 0 90 0
+events
+tick 1
+state
+check 0 75 0 0 90 0
+events
+tick 1
+state
+check 0 75 0 0 90 0
+events
+remove 0 90 0
+remove 1 90 0
+remove 1 89 0
+remove 0 89 0
+remove 0 88 0
+remove 0 87 0
+remove 0 86 0
+remove 0 85 0
+remove 0 84 0
+remove 0 83 0
+remove 0 82 0
+remove 0 81 0
+remove 0 80 0
+remove 0 79 0
+remove 0 78 0
+remove 0 77 0
+remove 0 76 0
+remove 0 75 0
+place 0 89 0 1 1
+place 0 88 0 1 2
+place 0 87 0 1 3
+place 0 86 0 1 4
+place 0 85 0 1 5
+place 0 84 0 1 6
+place 0 83 0 1 7
+place 0 82 0 1 8
+place 0 81 0 1 9
+place 0 80 0 1 10
+place 0 79 0 1 11
+place 0 90 0 29 0
+place 1 89 0 1 0
+place 1 90 0 69 5
+use 1 90 0
+state
+events
+check 0 75 0 0 90 0
+tick 1
+state
+check 0 75 0 0 90 0
+events
+tick 1
+state
+check 0 75 0 0 90 0
+events
+tick 1
+state
+check 0 75 0 0 90 0
+events
+use 1 90 0
+state
+check 0 75 0 0 90 0
+events
+tick 1
+state
+check 0 75 0 0 90 0
+events
+tick 1
+state
+check 0 75 0 0 90 0
+events
+tick 1
+state
+check 0 75 0 0 90 0
+events
+remove 0 90 0
+remove 1 90 0
+remove 1 89 0
+remove 0 89 0
+remove 0 88 0
+remove 0 87 0
+remove 0 86 0
+remove 0 85 0
+remove 0 84 0
+remove 0 83 0
+remove 0 82 0
+remove 0 81 0
+remove 0 80 0
+remove 0 79 0
+remove 0 78 0
+remove 0 77 0
+remove 0 76 0
+remove 0 75 0
+place 0 89 0 1 1
+place 0 88 0 1 2
+place 0 87 0 1 3
+place 0 86 0 1 4
+place 0 85 0 1 5
+place 0 84 0 1 6
+place 0 83 0 1 7
+place 0 82 0 1 8
+place 0 81 0 1 9
+place 0 80 0 1 10
+place 0 79 0 1 11
+place 0 78 0 1 12
+place 0 90 0 29 0
+place 1 89 0 1 0
+place 1 90 0 69 5
+use 1 90 0
+state
+events
+check 0 75 0 0 90 0
+tick 1
+state
+check 0 75 0 0 90 0
+events
+tick 1
+state
+check 0 75 0 0 90 0
+events
+tick 1
+state
+check 0 75 0 0 90 0
+events
+use 1 90 0
+state
+check 0 75 0 0 90 0
+events
+tick 1
+state
+check 0 75 0 0 90 0
+events
+tick 1
+state
+check 0 75 0 0 90 0
+events
+tick 1
+state
+check 0 75 0 0 90 0
+events
+remove 0 90 0
+remove 1 90 0
+remove 1 89 0
+remove 0 89 0
+remove 0 88 0
+remove 0 87 0
+remove 0 86 0
+remove 0 85 0
+remove 0 84 0
+remove 0 83 0
+remove 0 82 0
+remove 0 81 0
+remove 0 80 0
+remove 0 79 0
+remove 0 78 0
+remove 0 77 0
+remove 0 76 0
+remove 0 75 0
+place 0 89 0 1 1
+place 0 88 0 1 2
+place 0 87 0 1 3
+place 0 86 0 1 4
+place 0 85 0 1 5
+place 0 84 0 1 6
+place 0 83 0 1 7
+place 0 82 0 1 8
+place 0 81 0 1 9
+place 0 80 0 1 10
+place 0 79 0 1 11
+place 0 78 0 1 12
+place 0 77 0 1 13
+place 0 90 0 29 0
+place 1 89 0 1 0
+place 1 90 0 69 5
+use 1 90 0
+state
+events
+check 0 75 0 0 90 0
+tick 1
+state
+check 0 75 0 0 90 0
+events
+tick 1
+state
+check 0 75 0 0 90 0
+events
+tick 1
+state
+check 0 75 0 0 90 0
+events
+use 1 90 0
+state
+check 0 75 0 0 90 0
+events
+tick 1
+state
+check 0 75 0 0 90 0
+events
+tick 1
+state
+check 0 75 0 0 90 0
+events
+tick 1
+state
+check 0 75 0 0 90 0
+events

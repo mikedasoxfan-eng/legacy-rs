@@ -1,0 +1,160 @@
+# Container screen fixtures, 854x480, scaled to 427x240.
+world 42
+clear 128
+open inventory
+mouse -1 -1
+shot inventory_empty
+stack 9 35 32 14
+stack 10 278 1 700
+stack 11 263 16 1
+stack 12 351 64 12
+stack 13 61 1 0
+mouse 132 122
+shot inventory_items
+mouse 165 130
+shot inventory_turn
+cursor 264 37 0
+mouse 200 120
+shot inventory_cursor
+open crafting
+stack 1 5 4 0
+stack 2 5 4 0
+stack 4 5 4 0
+stack 5 5 4 0
+stack 10 280 64 0
+mouse -1 -1
+shot crafting_items
+mouse 252 73
+shot crafting_tooltip
+open chest
+stack 0 35 64 5
+stack 1 264 32 0
+stack 2 61 1 0
+stack 3 351 64 4
+stack 27 278 1 555
+mouse 133 50
+shot chest_items
+cursor 35 12 14
+mouse 290 155
+shot chest_cursor
+open largechest
+stack 0 264 64 0
+stack 53 35 7 6
+stack 54 263 21 0
+mouse -1 -1
+shot largechest_items
+open furnace
+stack 0 15 12 0
+stack 1 263 3 0
+stack 2 265 8 0
+furnace 103 777 1600
+mouse -1 -1
+shot furnace_mid
+furnace 0 0 0
+shot furnace_idle
+furnace 80 100 0
+shot furnace_missing_fuel_duration
+open dispenser
+stack 0 262 64 0
+stack 1 332 16 0
+stack 2 344 16 0
+stack 3 35 32 3
+stack 9 278 1 500
+mouse 188 73
+shot dispenser_items
+
+# Equipment, both the armor passes and all held-item transforms.
+open inventory
+stack 5 310 1 0
+stack 6 311 1 0
+stack 7 312 1 0
+stack 8 313 1 0
+stack 36 278 1 0
+mouse -1 -1
+shot inventory_diamond_pickaxe
+mouse 200 120
+shot inventory_equipped_turn
+stack 5 86 1 0
+stack 36 5 1 0
+shot inventory_pumpkin_block
+stack 36 346 1 0
+shot inventory_fishing_rod
+stack 36 261 1 0
+shot inventory_bow
+stack 36 351 1 4
+shot inventory_dye
+
+# Real UI clicks, including right button and shift, feed the simulation.
+open chest
+stack 0 264 9 0
+mouse 133 50
+click 1
+shot chest_right_pickup
+mouse 151 50
+click 1
+shot chest_right_place
+cursor -1 0 0
+mouse 133 50
+shift on
+click
+shift off
+shot chest_shift_transfer
+open crafting
+stack 1 5 4 0
+stack 2 5 4 0
+stack 4 5 4 0
+stack 5 5 4 0
+mouse 252 73
+click
+shot crafting_click_result
+
+# Living animation state is published with the authoritative snapshot.
+open inventory
+pose 37 2.5 0.6 0.4 off on
+mouse -1 -1
+shot inventory_sneak_swing
+pose 81 4.0 0.8 0.0 on off
+shot inventory_riding
+stack 5 310 1 0
+stack 6 311 1 0
+stack 7 312 1 0
+stack 8 313 1 0
+shot inventory_riding_armor
+pose 99 1.5 0.5 0.3 off on
+shot inventory_sneak_armor
+shot inventory_sneak_armor_next_frame
+pose 99 1.5 0.5 0.3 off on 5
+shot inventory_hurt_armor
+open inventory
+pose 27 0.0 0.0 0.0 off off 5
+shot inventory_hurt
+
+# All original armor texture families.
+pose 37 0.0 0.0 0.0 off off
+stack 5 298 1 0
+stack 6 299 1 0
+stack 7 300 1 0
+stack 8 301 1 0
+shot inventory_cloth
+stack 5 302 1 0
+stack 6 303 1 0
+stack 7 304 1 0
+stack 8 305 1 0
+shot inventory_chain
+stack 5 306 1 0
+stack 6 307 1 0
+stack 7 308 1 0
+stack 8 309 1 0
+shot inventory_iron
+stack 5 314 1 0
+stack 6 315 1 0
+stack 7 316 1 0
+stack 8 317 1 0
+shot inventory_gold
+open inventory
+stack 9 264 -1 0
+stack 10 264 127 0
+stack 11 264 300 0
+cursor 264 -1 0
+mouse 220 130
+shot inventory_signed_counts

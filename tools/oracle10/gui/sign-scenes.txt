@@ -1,0 +1,31 @@
+world 0
+open sign 63 0
+shot sign_empty
+key 0 72
+key 0 101
+key 0 108
+key 0 108
+key 0 111
+shot sign_text_cursor
+update 6
+shot sign_text_no_cursor
+key 28 0
+key 0 87
+key 0 111
+key 0 114
+key 0 108
+key 0 100
+update 6
+shot sign_second_line
+key 200 0
+key 14 0
+key 1 0
+shot sign_backspace_escape
+open sign 68 2
+shot sign_wall_2
+open sign 68 3
+shot sign_wall_3
+open sign 68 4
+shot sign_wall_4
+open sign 68 5
+shot sign_wall_5

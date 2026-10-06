@@ -31,6 +31,12 @@ fn flat_world() -> World {
     w
 }
 
+fn canonical(nbt: &worldgen::nbt::Compound) -> Vec<u8> {
+    let mut bytes = Vec::new();
+    worldgen::nbt::write_root_canonical(&mut bytes, nbt).unwrap();
+    bytes
+}
+
 #[test]
 fn public_tick_moves_player_and_exposes_hud_and_container_requests() {
     let mut w = flat_world();
@@ -120,12 +126,12 @@ fn level_dat_roundtrip_keeps_player_out_of_chunk_entities() {
     drop(w);
     let mut storage = Storage::open(&dir).unwrap();
     let info = storage.load_level().unwrap();
-    assert_eq!(info.player.as_ref().unwrap(), &expected);
+    assert_eq!(canonical(info.player.as_ref().unwrap()), canonical(&expected));
     assert!(storage.load_chunk(0, 0).unwrap().raw_entities.is_empty());
     let mut w = flat_world();
     w.info = info;
     let id = w.spawn_player("Alex");
-    assert_eq!(w.entities[&id].player_nbt().unwrap(), expected);
+    assert_eq!(canonical(&w.entities[&id].player_nbt().unwrap()), canonical(&expected));
     assert_eq!(
         w.entities[&id]
             .player_state()

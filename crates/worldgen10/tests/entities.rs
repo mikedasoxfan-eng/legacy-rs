@@ -15,6 +15,12 @@ fn empty_chunk(x: i32, z: i32) -> Chunk {
     c
 }
 
+fn canonical(nbt: &Compound) -> Vec<u8> {
+    let mut bytes = Vec::new();
+    worldgen::nbt::write_root_canonical(&mut bytes, nbt).unwrap();
+    bytes
+}
+
 #[test]
 fn region_roundtrip_simulates_supported_entities_and_preserves_unknown_tags() {
     let dir = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
@@ -55,10 +61,11 @@ fn region_roundtrip_simulates_supported_entities_and_preserves_unknown_tags() {
     let id = w.loaded_entity_list[0];
     assert_eq!(w.entities[&id].to_nbt().unwrap(), expected);
     assert_eq!(w.chunk(0, 0).entity_lists[4], vec![id]);
-    assert_eq!(
-        w.chunk(0, 0).raw_entities,
-        vec![Tag::Compound(unsupported.clone())]
-    );
+    assert_eq!(w.chunk(0, 0).raw_entities.len(), 1);
+    let Tag::Compound(saved_unknown) = &w.chunk(0, 0).raw_entities[0] else {
+        panic!("unknown entity must remain an NBT compound");
+    };
+    assert_eq!(canonical(saved_unknown), canonical(&unsupported));
     w.world_time = 240;
     w.set_block_with_notify(8, 64, 8, 52);
     w.spawner_animations.insert((8, 64, 8), (123.0, 122.0));
@@ -79,8 +86,12 @@ fn region_roundtrip_simulates_supported_entities_and_preserves_unknown_tags() {
     let mut s = Storage::open(&dir).unwrap();
     let saved = s.load_chunk(0, 0).unwrap();
     assert_eq!(saved.raw_entities.len(), 2);
-    assert!(saved.raw_entities.contains(&Tag::Compound(unsupported)));
-    assert!(saved.raw_entities.contains(&Tag::Compound(expected)));
+    let compounds: Vec<_> = saved.raw_entities.iter().map(|tag| {
+        let Tag::Compound(compound) = tag else { panic!("entity must be a compound") };
+        canonical(compound)
+    }).collect();
+    assert!(compounds.contains(&canonical(&unsupported)));
+    assert!(compounds.contains(&canonical(&expected)));
 }
 
 #[test]

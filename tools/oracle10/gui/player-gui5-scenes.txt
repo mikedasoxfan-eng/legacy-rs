@@ -1,0 +1,69 @@
+# --- player-gui round 5 (1.0) ---
+saves ../out/guisaves
+open create
+key 14 0
+key 14 0
+key 14 0
+key 14 0
+key 14 0
+key 14 0
+key 14 0
+key 14 0
+key 14 0
+mouse 0 0
+shot b10_create_empty_name
+key 57 32
+key 57 32
+shot b10_create_spaces_name
+key 14 0
+key 14 0
+key 17 87
+key 24 111
+key 19 114
+key 38 108
+key 32 100
+key 2 49
+shot b10_create_folder_collision
+mouse 213 180
+click
+key 15 9
+mouse 213 70
+click
+key 12 45
+key 2 49
+key 3 50
+key 4 51
+mouse 0 0
+shot b10_create_tab_seed
+open rename World1
+key 14 0
+key 14 0
+key 14 0
+key 14 0
+key 14 0
+key 14 0
+key 14 0
+key 14 0
+key 14 0
+key 14 0
+key 14 0
+key 14 0
+key 14 0
+key 14 0
+key 57 32
+key 28 13
+screenstate open
+mouse 0 0
+shot b10_rename_spaces_disabled
+open select
+mouse 213 50
+click
+mouse 165 220
+click
+mouse 0 0
+shot b10_delete_confirmation
+mouse 290 145
+click
+shot b10_delete_cancel
+screenstate open
+# --- end player-gui round 5 ---

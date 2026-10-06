@@ -1,0 +1,1085 @@
+# Entities on a moving block, compared by raw double position/motion/AABB bits.
+remove 0 64 0
+remove 0 64 1
+place 1 64 0 1 0
+place 0 64 0 33 5
+place 0 64 1 69 5
+item 1500 65000 500 1 1 0
+use 0 64 1
+state
+tick 1
+state
+tick 1
+state
+tick 1
+state
+tick 1
+state
+use 0 64 1
+tick 1
+state
+tick 1
+state
+tick 1
+state
+tick 1
+state
+events
+remove 0 64 0
+remove 0 64 1
+place 0 65 0 1 0
+place 0 64 0 33 1
+place 0 64 1 69 5
+item 500 66000 500 1 1 0
+use 0 64 1
+state
+tick 1
+state
+tick 1
+state
+tick 1
+state
+tick 1
+state
+use 0 64 1
+tick 1
+state
+tick 1
+state
+tick 1
+state
+tick 1
+state
+events
+remove 0 64 0
+remove 0 64 1
+place -1 64 0 1 0
+place 0 64 0 33 4
+place 0 64 1 69 5
+item -500 65000 500 1 1 0
+use 0 64 1
+state
+tick 1
+state
+tick 1
+state
+tick 1
+state
+tick 1
+state
+use 0 64 1
+tick 1
+state
+tick 1
+state
+tick 1
+state
+tick 1
+state
+events
+remove 0 64 0
+remove 0 64 1
+place 1 64 0 1 0
+place 0 64 0 29 5
+place 0 64 1 69 5
+item 1500 65000 500 1 1 0
+use 0 64 1
+state
+tick 1
+state
+tick 1
+state
+tick 1
+state
+tick 1
+state
+use 0 64 1
+tick 1
+state
+tick 1
+state
+tick 1
+state
+tick 1
+state
+events
+remove 0 64 0
+remove 0 64 1
+place 0 65 0 1 0
+place 0 64 0 29 1
+place 0 64 1 69 5
+item 500 66000 500 1 1 0
+use 0 64 1
+state
+tick 1
+state
+tick 1
+state
+tick 1
+state
+tick 1
+state
+use 0 64 1
+tick 1
+state
+tick 1
+state
+tick 1
+state
+tick 1
+state
+events
+remove 0 64 0
+remove 0 64 1
+place -1 64 0 1 0
+place 0 64 0 29 4
+place 0 64 1 69 5
+item -500 65000 500 1 1 0
+use 0 64 1
+state
+tick 1
+state
+tick 1
+state
+tick 1
+state
+tick 1
+state
+use 0 64 1
+tick 1
+state
+tick 1
+state
+tick 1
+state
+tick 1
+state
+events
+place 10 64 0 33 5
+place 11 64 0 1 0
+place 10 64 1 69 5
+mob 11500 65000 500 90
+use 10 64 1
+state
+tick 1
+state
+tick 1
+state
+tick 1
+state
+tick 1
+state
+tick 1
+state
+
+# Additional entity pushes, block 33, facing 0.
+remove 18 78 8
+remove 18 78 9
+remove 18 78 10
+remove 18 78 11
+remove 18 78 12
+remove 18 79 8
+remove 18 79 9
+remove 18 79 10
+remove 18 79 11
+remove 18 79 12
+remove 18 80 8
+remove 18 80 9
+remove 18 80 10
+remove 18 80 11
+remove 18 80 12
+remove 18 81 8
+remove 18 81 9
+remove 18 81 10
+remove 18 81 11
+remove 18 81 12
+remove 18 82 8
+remove 18 82 9
+remove 18 82 10
+remove 18 82 11
+remove 18 82 12
+remove 19 78 8
+remove 19 78 9
+remove 19 78 10
+remove 19 78 11
+remove 19 78 12
+remove 19 79 8
+remove 19 79 9
+remove 19 79 10
+remove 19 79 11
+remove 19 79 12
+remove 19 80 8
+remove 19 80 9
+remove 19 80 10
+remove 19 80 11
+remove 19 80 12
+remove 19 81 8
+remove 19 81 9
+remove 19 81 10
+remove 19 81 11
+remove 19 81 12
+remove 19 82 8
+remove 19 82 9
+remove 19 82 10
+remove 19 82 11
+remove 19 82 12
+remove 20 78 8
+remove 20 78 9
+remove 20 78 10
+remove 20 78 11
+remove 20 78 12
+remove 20 79 8
+remove 20 79 9
+remove 20 79 10
+remove 20 79 11
+remove 20 79 12
+remove 20 80 8
+remove 20 80 9
+remove 20 80 10
+remove 20 80 11
+remove 20 80 12
+remove 20 81 8
+remove 20 81 9
+remove 20 81 10
+remove 20 81 11
+remove 20 81 12
+remove 20 82 8
+remove 20 82 9
+remove 20 82 10
+remove 20 82 11
+remove 20 82 12
+remove 21 78 8
+remove 21 78 9
+remove 21 78 10
+remove 21 78 11
+remove 21 78 12
+remove 21 79 8
+remove 21 79 9
+remove 21 79 10
+remove 21 79 11
+remove 21 79 12
+remove 21 80 8
+remove 21 80 9
+remove 21 80 10
+remove 21 80 11
+remove 21 80 12
+remove 21 81 8
+remove 21 81 9
+remove 21 81 10
+remove 21 81 11
+remove 21 81 12
+remove 21 82 8
+remove 21 82 9
+remove 21 82 10
+remove 21 82 11
+remove 21 82 12
+remove 22 78 8
+remove 22 78 9
+remove 22 78 10
+remove 22 78 11
+remove 22 78 12
+remove 22 79 8
+remove 22 79 9
+remove 22 79 10
+remove 22 79 11
+remove 22 79 12
+remove 22 80 8
+remove 22 80 9
+remove 22 80 10
+remove 22 80 11
+remove 22 80 12
+remove 22 81 8
+remove 22 81 9
+remove 22 81 10
+remove 22 81 11
+remove 22 81 12
+remove 22 82 8
+remove 22 82 9
+remove 22 82 10
+remove 22 82 11
+remove 22 82 12
+place 21 79 10 1 0
+place 20 79 10 1 0
+place 20 80 10 33 0
+place 21 80 10 69 5
+item 20500 80000 10500 1 1 0
+use 21 80 10
+state
+tick 1
+state
+tick 1
+state
+tick 1
+state
+tick 1
+state
+use 21 80 10
+tick 1
+state
+tick 1
+state
+tick 1
+state
+tick 1
+state
+events
+
+# Additional entity pushes, block 33, facing 2.
+remove 18 78 8
+remove 18 78 9
+remove 18 78 10
+remove 18 78 11
+remove 18 78 12
+remove 18 79 8
+remove 18 79 9
+remove 18 79 10
+remove 18 79 11
+remove 18 79 12
+remove 18 80 8
+remove 18 80 9
+remove 18 80 10
+remove 18 80 11
+remove 18 80 12
+remove 18 81 8
+remove 18 81 9
+remove 18 81 10
+remove 18 81 11
+remove 18 81 12
+remove 18 82 8
+remove 18 82 9
+remove 18 82 10
+remove 18 82 11
+remove 18 82 12
+remove 19 78 8
+remove 19 78 9
+remove 19 78 10
+remove 19 78 11
+remove 19 78 12
+remove 19 79 8
+remove 19 79 9
+remove 19 79 10
+remove 19 79 11
+remove 19 79 12
+remove 19 80 8
+remove 19 80 9
+remove 19 80 10
+remove 19 80 11
+remove 19 80 12
+remove 19 81 8
+remove 19 81 9
+remove 19 81 10
+remove 19 81 11
+remove 19 81 12
+remove 19 82 8
+remove 19 82 9
+remove 19 82 10
+remove 19 82 11
+remove 19 82 12
+remove 20 78 8
+remove 20 78 9
+remove 20 78 10
+remove 20 78 11
+remove 20 78 12
+remove 20 79 8
+remove 20 79 9
+remove 20 79 10
+remove 20 79 11
+remove 20 79 12
+remove 20 80 8
+remove 20 80 9
+remove 20 80 10
+remove 20 80 11
+remove 20 80 12
+remove 20 81 8
+remove 20 81 9
+remove 20 81 10
+remove 20 81 11
+remove 20 81 12
+remove 20 82 8
+remove 20 82 9
+remove 20 82 10
+remove 20 82 11
+remove 20 82 12
+remove 21 78 8
+remove 21 78 9
+remove 21 78 10
+remove 21 78 11
+remove 21 78 12
+remove 21 79 8
+remove 21 79 9
+remove 21 79 10
+remove 21 79 11
+remove 21 79 12
+remove 21 80 8
+remove 21 80 9
+remove 21 80 10
+remove 21 80 11
+remove 21 80 12
+remove 21 81 8
+remove 21 81 9
+remove 21 81 10
+remove 21 81 11
+remove 21 81 12
+remove 21 82 8
+remove 21 82 9
+remove 21 82 10
+remove 21 82 11
+remove 21 82 12
+remove 22 78 8
+remove 22 78 9
+remove 22 78 10
+remove 22 78 11
+remove 22 78 12
+remove 22 79 8
+remove 22 79 9
+remove 22 79 10
+remove 22 79 11
+remove 22 79 12
+remove 22 80 8
+remove 22 80 9
+remove 22 80 10
+remove 22 80 11
+remove 22 80 12
+remove 22 81 8
+remove 22 81 9
+remove 22 81 10
+remove 22 81 11
+remove 22 81 12
+remove 22 82 8
+remove 22 82 9
+remove 22 82 10
+remove 22 82 11
+remove 22 82 12
+place 21 79 10 1 0
+place 20 80 9 1 0
+place 20 80 10 33 2
+place 21 80 10 69 5
+item 20500 81000 9500 1 1 0
+use 21 80 10
+state
+tick 1
+state
+tick 1
+state
+tick 1
+state
+tick 1
+state
+use 21 80 10
+tick 1
+state
+tick 1
+state
+tick 1
+state
+tick 1
+state
+events
+
+# Additional entity pushes, block 33, facing 3.
+remove 18 78 8
+remove 18 78 9
+remove 18 78 10
+remove 18 78 11
+remove 18 78 12
+remove 18 79 8
+remove 18 79 9
+remove 18 79 10
+remove 18 79 11
+remove 18 79 12
+remove 18 80 8
+remove 18 80 9
+remove 18 80 10
+remove 18 80 11
+remove 18 80 12
+remove 18 81 8
+remove 18 81 9
+remove 18 81 10
+remove 18 81 11
+remove 18 81 12
+remove 18 82 8
+remove 18 82 9
+remove 18 82 10
+remove 18 82 11
+remove 18 82 12
+remove 19 78 8
+remove 19 78 9
+remove 19 78 10
+remove 19 78 11
+remove 19 78 12
+remove 19 79 8
+remove 19 79 9
+remove 19 79 10
+remove 19 79 11
+remove 19 79 12
+remove 19 80 8
+remove 19 80 9
+remove 19 80 10
+remove 19 80 11
+remove 19 80 12
+remove 19 81 8
+remove 19 81 9
+remove 19 81 10
+remove 19 81 11
+remove 19 81 12
+remove 19 82 8
+remove 19 82 9
+remove 19 82 10
+remove 19 82 11
+remove 19 82 12
+remove 20 78 8
+remove 20 78 9
+remove 20 78 10
+remove 20 78 11
+remove 20 78 12
+remove 20 79 8
+remove 20 79 9
+remove 20 79 10
+remove 20 79 11
+remove 20 79 12
+remove 20 80 8
+remove 20 80 9
+remove 20 80 10
+remove 20 80 11
+remove 20 80 12
+remove 20 81 8
+remove 20 81 9
+remove 20 81 10
+remove 20 81 11
+remove 20 81 12
+remove 20 82 8
+remove 20 82 9
+remove 20 82 10
+remove 20 82 11
+remove 20 82 12
+remove 21 78 8
+remove 21 78 9
+remove 21 78 10
+remove 21 78 11
+remove 21 78 12
+remove 21 79 8
+remove 21 79 9
+remove 21 79 10
+remove 21 79 11
+remove 21 79 12
+remove 21 80 8
+remove 21 80 9
+remove 21 80 10
+remove 21 80 11
+remove 21 80 12
+remove 21 81 8
+remove 21 81 9
+remove 21 81 10
+remove 21 81 11
+remove 21 81 12
+remove 21 82 8
+remove 21 82 9
+remove 21 82 10
+remove 21 82 11
+remove 21 82 12
+remove 22 78 8
+remove 22 78 9
+remove 22 78 10
+remove 22 78 11
+remove 22 78 12
+remove 22 79 8
+remove 22 79 9
+remove 22 79 10
+remove 22 79 11
+remove 22 79 12
+remove 22 80 8
+remove 22 80 9
+remove 22 80 10
+remove 22 80 11
+remove 22 80 12
+remove 22 81 8
+remove 22 81 9
+remove 22 81 10
+remove 22 81 11
+remove 22 81 12
+remove 22 82 8
+remove 22 82 9
+remove 22 82 10
+remove 22 82 11
+remove 22 82 12
+place 21 79 10 1 0
+place 20 80 11 1 0
+place 20 80 10 33 3
+place 21 80 10 69 5
+item 20500 81000 11500 1 1 0
+use 21 80 10
+state
+tick 1
+state
+tick 1
+state
+tick 1
+state
+tick 1
+state
+use 21 80 10
+tick 1
+state
+tick 1
+state
+tick 1
+state
+tick 1
+state
+events
+
+# Additional entity pushes, block 29, facing 0.
+remove 18 78 8
+remove 18 78 9
+remove 18 78 10
+remove 18 78 11
+remove 18 78 12
+remove 18 79 8
+remove 18 79 9
+remove 18 79 10
+remove 18 79 11
+remove 18 79 12
+remove 18 80 8
+remove 18 80 9
+remove 18 80 10
+remove 18 80 11
+remove 18 80 12
+remove 18 81 8
+remove 18 81 9
+remove 18 81 10
+remove 18 81 11
+remove 18 81 12
+remove 18 82 8
+remove 18 82 9
+remove 18 82 10
+remove 18 82 11
+remove 18 82 12
+remove 19 78 8
+remove 19 78 9
+remove 19 78 10
+remove 19 78 11
+remove 19 78 12
+remove 19 79 8
+remove 19 79 9
+remove 19 79 10
+remove 19 79 11
+remove 19 79 12
+remove 19 80 8
+remove 19 80 9
+remove 19 80 10
+remove 19 80 11
+remove 19 80 12
+remove 19 81 8
+remove 19 81 9
+remove 19 81 10
+remove 19 81 11
+remove 19 81 12
+remove 19 82 8
+remove 19 82 9
+remove 19 82 10
+remove 19 82 11
+remove 19 82 12
+remove 20 78 8
+remove 20 78 9
+remove 20 78 10
+remove 20 78 11
+remove 20 78 12
+remove 20 79 8
+remove 20 79 9
+remove 20 79 10
+remove 20 79 11
+remove 20 79 12
+remove 20 80 8
+remove 20 80 9
+remove 20 80 10
+remove 20 80 11
+remove 20 80 12
+remove 20 81 8
+remove 20 81 9
+remove 20 81 10
+remove 20 81 11
+remove 20 81 12
+remove 20 82 8
+remove 20 82 9
+remove 20 82 10
+remove 20 82 11
+remove 20 82 12
+remove 21 78 8
+remove 21 78 9
+remove 21 78 10
+remove 21 78 11
+remove 21 78 12
+remove 21 79 8
+remove 21 79 9
+remove 21 79 10
+remove 21 79 11
+remove 21 79 12
+remove 21 80 8
+remove 21 80 9
+remove 21 80 10
+remove 21 80 11
+remove 21 80 12
+remove 21 81 8
+remove 21 81 9
+remove 21 81 10
+remove 21 81 11
+remove 21 81 12
+remove 21 82 8
+remove 21 82 9
+remove 21 82 10
+remove 21 82 11
+remove 21 82 12
+remove 22 78 8
+remove 22 78 9
+remove 22 78 10
+remove 22 78 11
+remove 22 78 12
+remove 22 79 8
+remove 22 79 9
+remove 22 79 10
+remove 22 79 11
+remove 22 79 12
+remove 22 80 8
+remove 22 80 9
+remove 22 80 10
+remove 22 80 11
+remove 22 80 12
+remove 22 81 8
+remove 22 81 9
+remove 22 81 10
+remove 22 81 11
+remove 22 81 12
+remove 22 82 8
+remove 22 82 9
+remove 22 82 10
+remove 22 82 11
+remove 22 82 12
+place 21 79 10 1 0
+place 20 79 10 1 0
+place 20 80 10 29 0
+place 21 80 10 69 5
+item 20500 80000 10500 1 1 0
+use 21 80 10
+state
+tick 1
+state
+tick 1
+state
+tick 1
+state
+tick 1
+state
+use 21 80 10
+tick 1
+state
+tick 1
+state
+tick 1
+state
+tick 1
+state
+events
+
+# Additional entity pushes, block 29, facing 2.
+remove 18 78 8
+remove 18 78 9
+remove 18 78 10
+remove 18 78 11
+remove 18 78 12
+remove 18 79 8
+remove 18 79 9
+remove 18 79 10
+remove 18 79 11
+remove 18 79 12
+remove 18 80 8
+remove 18 80 9
+remove 18 80 10
+remove 18 80 11
+remove 18 80 12
+remove 18 81 8
+remove 18 81 9
+remove 18 81 10
+remove 18 81 11
+remove 18 81 12
+remove 18 82 8
+remove 18 82 9
+remove 18 82 10
+remove 18 82 11
+remove 18 82 12
+remove 19 78 8
+remove 19 78 9
+remove 19 78 10
+remove 19 78 11
+remove 19 78 12
+remove 19 79 8
+remove 19 79 9
+remove 19 79 10
+remove 19 79 11
+remove 19 79 12
+remove 19 80 8
+remove 19 80 9
+remove 19 80 10
+remove 19 80 11
+remove 19 80 12
+remove 19 81 8
+remove 19 81 9
+remove 19 81 10
+remove 19 81 11
+remove 19 81 12
+remove 19 82 8
+remove 19 82 9
+remove 19 82 10
+remove 19 82 11
+remove 19 82 12
+remove 20 78 8
+remove 20 78 9
+remove 20 78 10
+remove 20 78 11
+remove 20 78 12
+remove 20 79 8
+remove 20 79 9
+remove 20 79 10
+remove 20 79 11
+remove 20 79 12
+remove 20 80 8
+remove 20 80 9
+remove 20 80 10
+remove 20 80 11
+remove 20 80 12
+remove 20 81 8
+remove 20 81 9
+remove 20 81 10
+remove 20 81 11
+remove 20 81 12
+remove 20 82 8
+remove 20 82 9
+remove 20 82 10
+remove 20 82 11
+remove 20 82 12
+remove 21 78 8
+remove 21 78 9
+remove 21 78 10
+remove 21 78 11
+remove 21 78 12
+remove 21 79 8
+remove 21 79 9
+remove 21 79 10
+remove 21 79 11
+remove 21 79 12
+remove 21 80 8
+remove 21 80 9
+remove 21 80 10
+remove 21 80 11
+remove 21 80 12
+remove 21 81 8
+remove 21 81 9
+remove 21 81 10
+remove 21 81 11
+remove 21 81 12
+remove 21 82 8
+remove 21 82 9
+remove 21 82 10
+remove 21 82 11
+remove 21 82 12
+remove 22 78 8
+remove 22 78 9
+remove 22 78 10
+remove 22 78 11
+remove 22 78 12
+remove 22 79 8
+remove 22 79 9
+remove 22 79 10
+remove 22 79 11
+remove 22 79 12
+remove 22 80 8
+remove 22 80 9
+remove 22 80 10
+remove 22 80 11
+remove 22 80 12
+remove 22 81 8
+remove 22 81 9
+remove 22 81 10
+remove 22 81 11
+remove 22 81 12
+remove 22 82 8
+remove 22 82 9
+remove 22 82 10
+remove 22 82 11
+remove 22 82 12
+place 21 79 10 1 0
+place 20 80 9 1 0
+place 20 80 10 29 2
+place 21 80 10 69 5
+item 20500 81000 9500 1 1 0
+use 21 80 10
+state
+tick 1
+state
+tick 1
+state
+tick 1
+state
+tick 1
+state
+use 21 80 10
+tick 1
+state
+tick 1
+state
+tick 1
+state
+tick 1
+state
+events
+
+# Additional entity pushes, block 29, facing 3.
+remove 18 78 8
+remove 18 78 9
+remove 18 78 10
+remove 18 78 11
+remove 18 78 12
+remove 18 79 8
+remove 18 79 9
+remove 18 79 10
+remove 18 79 11
+remove 18 79 12
+remove 18 80 8
+remove 18 80 9
+remove 18 80 10
+remove 18 80 11
+remove 18 80 12
+remove 18 81 8
+remove 18 81 9
+remove 18 81 10
+remove 18 81 11
+remove 18 81 12
+remove 18 82 8
+remove 18 82 9
+remove 18 82 10
+remove 18 82 11
+remove 18 82 12
+remove 19 78 8
+remove 19 78 9
+remove 19 78 10
+remove 19 78 11
+remove 19 78 12
+remove 19 79 8
+remove 19 79 9
+remove 19 79 10
+remove 19 79 11
+remove 19 79 12
+remove 19 80 8
+remove 19 80 9
+remove 19 80 10
+remove 19 80 11
+remove 19 80 12
+remove 19 81 8
+remove 19 81 9
+remove 19 81 10
+remove 19 81 11
+remove 19 81 12
+remove 19 82 8
+remove 19 82 9
+remove 19 82 10
+remove 19 82 11
+remove 19 82 12
+remove 20 78 8
+remove 20 78 9
+remove 20 78 10
+remove 20 78 11
+remove 20 78 12
+remove 20 79 8
+remove 20 79 9
+remove 20 79 10
+remove 20 79 11
+remove 20 79 12
+remove 20 80 8
+remove 20 80 9
+remove 20 80 10
+remove 20 80 11
+remove 20 80 12
+remove 20 81 8
+remove 20 81 9
+remove 20 81 10
+remove 20 81 11
+remove 20 81 12
+remove 20 82 8
+remove 20 82 9
+remove 20 82 10
+remove 20 82 11
+remove 20 82 12
+remove 21 78 8
+remove 21 78 9
+remove 21 78 10
+remove 21 78 11
+remove 21 78 12
+remove 21 79 8
+remove 21 79 9
+remove 21 79 10
+remove 21 79 11
+remove 21 79 12
+remove 21 80 8
+remove 21 80 9
+remove 21 80 10
+remove 21 80 11
+remove 21 80 12
+remove 21 81 8
+remove 21 81 9
+remove 21 81 10
+remove 21 81 11
+remove 21 81 12
+remove 21 82 8
+remove 21 82 9
+remove 21 82 10
+remove 21 82 11
+remove 21 82 12
+remove 22 78 8
+remove 22 78 9
+remove 22 78 10
+remove 22 78 11
+remove 22 78 12
+remove 22 79 8
+remove 22 79 9
+remove 22 79 10
+remove 22 79 11
+remove 22 79 12
+remove 22 80 8
+remove 22 80 9
+remove 22 80 10
+remove 22 80 11
+remove 22 80 12
+remove 22 81 8
+remove 22 81 9
+remove 22 81 10
+remove 22 81 11
+remove 22 81 12
+remove 22 82 8
+remove 22 82 9
+remove 22 82 10
+remove 22 82 11
+remove 22 82 12
+place 21 79 10 1 0
+place 20 80 11 1 0
+place 20 80 10 29 3
+place 21 80 10 69 5
+item 20500 81000 11500 1 1 0
+use 21 80 10
+state
+tick 1
+state
+tick 1
+state
+tick 1
+state
+tick 1
+state
+use 21 80 10
+tick 1
+state
+tick 1
+state
+tick 1
+state
+tick 1
+state
+events

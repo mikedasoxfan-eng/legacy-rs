@@ -1,0 +1,337 @@
+# Breaking moving blocks, piston head/base linkage, failed sticky pull.
+remove 0 64 0
+remove 1 64 0
+remove 2 64 0
+remove 0 64 1
+place 1 64 0 1 0
+place 0 64 0 29 5
+place 0 64 1 69 5
+use 0 64 1
+tick 0
+remove 0 64 0
+state
+check 0 64 0 3 64 0 4
+state
+events
+remove 0 64 0
+remove 1 64 0
+remove 2 64 0
+remove 0 64 1
+place 1 64 0 1 0
+place 0 64 0 29 5
+place 0 64 1 69 5
+use 0 64 1
+tick 0
+remove 1 64 0
+state
+check 0 64 0 3 64 0 4
+state
+events
+remove 0 64 0
+remove 1 64 0
+remove 2 64 0
+remove 0 64 1
+place 1 64 0 1 0
+place 0 64 0 29 5
+place 0 64 1 69 5
+use 0 64 1
+tick 0
+remove 2 64 0
+state
+check 0 64 0 3 64 0 4
+state
+events
+remove 0 64 0
+remove 1 64 0
+remove 2 64 0
+remove 0 64 1
+place 1 64 0 1 0
+place 0 64 0 29 5
+place 0 64 1 69 5
+use 0 64 1
+tick 1
+remove 0 64 0
+state
+check 0 64 0 3 64 0 4
+state
+events
+remove 0 64 0
+remove 1 64 0
+remove 2 64 0
+remove 0 64 1
+place 1 64 0 1 0
+place 0 64 0 29 5
+place 0 64 1 69 5
+use 0 64 1
+tick 1
+remove 1 64 0
+state
+check 0 64 0 3 64 0 4
+state
+events
+remove 0 64 0
+remove 1 64 0
+remove 2 64 0
+remove 0 64 1
+place 1 64 0 1 0
+place 0 64 0 29 5
+place 0 64 1 69 5
+use 0 64 1
+tick 1
+remove 2 64 0
+state
+check 0 64 0 3 64 0 4
+state
+events
+remove 0 64 0
+remove 1 64 0
+remove 2 64 0
+remove 0 64 1
+place 1 64 0 1 0
+place 0 64 0 29 5
+place 0 64 1 69 5
+use 0 64 1
+tick 2
+remove 0 64 0
+state
+check 0 64 0 3 64 0 4
+state
+events
+remove 0 64 0
+remove 1 64 0
+remove 2 64 0
+remove 0 64 1
+place 1 64 0 1 0
+place 0 64 0 29 5
+place 0 64 1 69 5
+use 0 64 1
+tick 2
+remove 1 64 0
+state
+check 0 64 0 3 64 0 4
+state
+events
+remove 0 64 0
+remove 1 64 0
+remove 2 64 0
+remove 0 64 1
+place 1 64 0 1 0
+place 0 64 0 29 5
+place 0 64 1 69 5
+use 0 64 1
+tick 2
+remove 2 64 0
+state
+check 0 64 0 3 64 0 4
+state
+events
+remove 0 64 0
+remove 1 64 0
+remove 2 64 0
+remove 0 64 1
+place 1 64 0 1 0
+place 0 64 0 29 5
+place 0 64 1 69 5
+use 0 64 1
+tick 3
+remove 0 64 0
+state
+check 0 64 0 3 64 0 4
+state
+events
+remove 0 64 0
+remove 1 64 0
+remove 2 64 0
+remove 0 64 1
+place 1 64 0 1 0
+place 0 64 0 29 5
+place 0 64 1 69 5
+use 0 64 1
+tick 3
+remove 1 64 0
+state
+check 0 64 0 3 64 0 4
+state
+events
+remove 0 64 0
+remove 1 64 0
+remove 2 64 0
+remove 0 64 1
+place 1 64 0 1 0
+place 0 64 0 29 5
+place 0 64 1 69 5
+use 0 64 1
+tick 3
+remove 2 64 0
+state
+check 0 64 0 3 64 0 4
+state
+events
+remove 0 64 0
+remove 1 64 0
+remove 2 64 0
+remove 0 64 1
+place 1 64 0 1 0
+place 0 64 0 33 5
+place 0 64 1 69 5
+use 0 64 1
+tick 0
+remove 0 64 0
+state
+check 0 64 0 3 64 0 4
+state
+events
+remove 0 64 0
+remove 1 64 0
+remove 2 64 0
+remove 0 64 1
+place 1 64 0 1 0
+place 0 64 0 33 5
+place 0 64 1 69 5
+use 0 64 1
+tick 0
+remove 1 64 0
+state
+check 0 64 0 3 64 0 4
+state
+events
+remove 0 64 0
+remove 1 64 0
+remove 2 64 0
+remove 0 64 1
+place 1 64 0 1 0
+place 0 64 0 33 5
+place 0 64 1 69 5
+use 0 64 1
+tick 0
+remove 2 64 0
+state
+check 0 64 0 3 64 0 4
+state
+events
+remove 0 64 0
+remove 1 64 0
+remove 2 64 0
+remove 0 64 1
+place 1 64 0 1 0
+place 0 64 0 33 5
+place 0 64 1 69 5
+use 0 64 1
+tick 1
+remove 0 64 0
+state
+check 0 64 0 3 64 0 4
+state
+events
+remove 0 64 0
+remove 1 64 0
+remove 2 64 0
+remove 0 64 1
+place 1 64 0 1 0
+place 0 64 0 33 5
+place 0 64 1 69 5
+use 0 64 1
+tick 1
+remove 1 64 0
+state
+check 0 64 0 3 64 0 4
+state
+events
+remove 0 64 0
+remove 1 64 0
+remove 2 64 0
+remove 0 64 1
+place 1 64 0 1 0
+place 0 64 0 33 5
+place 0 64 1 69 5
+use 0 64 1
+tick 1
+remove 2 64 0
+state
+check 0 64 0 3 64 0 4
+state
+events
+remove 0 64 0
+remove 1 64 0
+remove 2 64 0
+remove 0 64 1
+place 1 64 0 1 0
+place 0 64 0 33 5
+place 0 64 1 69 5
+use 0 64 1
+tick 2
+remove 0 64 0
+state
+check 0 64 0 3 64 0 4
+state
+events
+remove 0 64 0
+remove 1 64 0
+remove 2 64 0
+remove 0 64 1
+place 1 64 0 1 0
+place 0 64 0 33 5
+place 0 64 1 69 5
+use 0 64 1
+tick 2
+remove 1 64 0
+state
+check 0 64 0 3 64 0 4
+state
+events
+remove 0 64 0
+remove 1 64 0
+remove 2 64 0
+remove 0 64 1
+place 1 64 0 1 0
+place 0 64 0 33 5
+place 0 64 1 69 5
+use 0 64 1
+tick 2
+remove 2 64 0
+state
+check 0 64 0 3 64 0 4
+state
+events
+remove 0 64 0
+remove 1 64 0
+remove 2 64 0
+remove 0 64 1
+place 1 64 0 1 0
+place 0 64 0 33 5
+place 0 64 1 69 5
+use 0 64 1
+tick 3
+remove 0 64 0
+state
+check 0 64 0 3 64 0 4
+state
+events
+remove 0 64 0
+remove 1 64 0
+remove 2 64 0
+remove 0 64 1
+place 1 64 0 1 0
+place 0 64 0 33 5
+place 0 64 1 69 5
+use 0 64 1
+tick 3
+remove 1 64 0
+state
+check 0 64 0 3 64 0 4
+state
+events
+remove 0 64 0
+remove 1 64 0
+remove 2 64 0
+remove 0 64 1
+place 1 64 0 1 0
+place 0 64 0 33 5
+place 0 64 1 69 5
+use 0 64 1
+tick 3
+remove 2 64 0
+state
+check 0 64 0 3 64 0 4
+state
+events
