@@ -34,7 +34,7 @@ public final class Mode_render_boss10 {
             int health=c<8?new int[]{0,1,100,199,200,201,-1,Integer.MAX_VALUE}[c]:random.nextInt(241)-20;
             dragon.dataWatcher.updateObject(16,Integer.valueOf(health));RenderDragon.field_41038_a=c%7==0?null:dragon;
             i(new ScaledResolution(minecraft.gameSettings,minecraft.displayWidth,minecraft.displayHeight).getScaledWidth());i(font.width);i(health);i(RenderDragon.field_41038_a==null?0:1);
-            GL11.reset();rects.clear();strings.clear();texts.clear();method.invoke(hud);method.invoke(hud);
+            RendererOracle.reset10();rects.clear();strings.clear();texts.clear();method.invoke(hud);method.invoke(hud);
             i(rects.size());for(int[] rectangle:rects)for(int v:rectangle)i(v);
             i(strings.size());for(int n=0;n<strings.size();n++){s(strings.get(n));for(int v:texts.get(n))i(v);}
             i(RenderDragon.field_41038_a==null?1:0);

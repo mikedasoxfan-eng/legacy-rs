@@ -148,7 +148,9 @@ pub fn in_3d(id: i16) -> bool {
     (0..256).contains(&id) && matches!(item_props(id as u8).render_type, 0 | 13 | 10 | 11 | 16 | 21 | 22 | 27)
 }
 pub fn block_color(id: u8, meta: i32) -> u32 {
-    if id == 18 {
+    if id == 111 {
+        2129968
+    } else if id == 18 {
         if meta & 1 == 1 {
             0x619961
         } else if meta & 2 == 2 {

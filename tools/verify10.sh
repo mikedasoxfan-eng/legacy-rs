@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Compare the Rust generator against the Java oracle (Mojang's original 1.0 code
 # running on the launcher's Java 8u51) across a fixed set of seeds and scenarios.
-# Usage: tools/verify10.sh [quick]     exit code 0 only if every case is an exact match
+# Usage: tools/verify10.sh [quick|render]     exit code 0 only if every selected case is exact
 set -uo pipefail
 root="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$root"
@@ -23,6 +23,12 @@ cmp="$root/target/release/compare10"
 quick="${1:-}"
 
 fail=0
+if [ "$quick" = render ]; then
+  bash "$root/tools/verify_r10render2.sh" --built || fail=1
+  bash "$root/tools/verify_r10render3.sh" --built || fail=1
+  [ "$fail" = 0 ] && echo "ALL RENDER CASES EXACT" || echo "SOME RENDER CASES DIFFER"
+  exit "$fail"
+fi
 bash "$root/tools/verify_vehicles10.sh" --built || fail=1
 run_one() { # label, oracle args..., then "--", compare args (oracle output file appended)
   local label="$1"; shift
@@ -519,6 +525,10 @@ bash tools/verify_player_gui11_10.sh --built || fail=1
 # --- gui (1.0), round 2 ---
 bash tools/verify_r10gui2.sh --built || fail=1
 # --- end gui ---
+
+# --- rendering (1.0), restored shared-recorder checks ---
+bash "$root/tools/verify_r10render2.sh" --built || fail=1
+bash "$root/tools/verify_r10render3.sh" --built || fail=1
 
 pflush
 [ $fail -eq 0 ] && echo "ALL CASES EXACT" || echo "SOME CASES DIFFER"

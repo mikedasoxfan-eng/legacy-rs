@@ -65,7 +65,7 @@ public final class Mode_render_living10 {
             entity.field_705_Q=entity.field_704_R=amount;entity.field_703_S=swing;entity.prevSwingProgress=entity.swingProgress=attack;entity.ticksExisted=ticks;entity.hurtTime=hurt;entity.deathTime=death;
             if(kind==1){EntityMagmaCube e=(EntityMagmaCube)entity;e.setSlimeSize(size);e.field_767_b=squish0;e.field_768_a=squish1;}
             if(kind==3)((EntityMooshroom)entity).func_40142_a_(child?-100:0);
-            GL11.reset();renderer.doRender(entity,position[0],position[1],position[2],0,partial);Mode_render_effects10.draws();
+            RendererOracle.reset10();renderer.doRender(entity,position[0],position[1],position[2],0,partial);Mode_render_effects10.draws();
         }
         out.close();System.out.println("Original 1.0 living renderer "+kind+": 64 full delegated cases");
     }

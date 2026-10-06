@@ -825,3 +825,35 @@ pub fn registry_check(path: &str) -> bool {
     );
     d.bad == 0
 }
+
+/// The release inventory delta, using the same production RenderBlocks adapter.
+pub fn block_inventory_check(path: &str) -> bool {
+    let mut d = Dump { bytes: std::fs::read(path).expect("block inventory dump"), at: 0, checks: 0, bad: 0 };
+    assert_eq!(d.int(), 0x30314942); assert_eq!(d.int(), 1);
+    let count = d.int();
+    for case in 0..count {
+        let id=d.int() as u8; let meta=d.int(); let brightness=d.float(); let tint=d.int()!=0;
+        let mut gl=super::fixed::Fixed::new(1.0);
+        super::inventory::inventory(&mut gl,id,meta,brightness,tint);
+        d.full_draws(&gl,&format!("inventory[{case}] id {id} meta {meta}"));
+    }
+    assert_eq!(d.at,d.bytes.len(),"inventory EOF");
+    println!("BLOCK INVENTORY10 {}: {count} cases, {} raw-bit comparisons, {} mismatches",if d.bad==0 {"EXACT"}else{"DIFFER"},d.checks,d.bad);
+    d.bad==0
+}
+
+/// Full sky draws and final GL state, with world color/time values supplied by the fixture.
+pub fn global_sky_check(path: &str) -> bool {
+    let mut d = Dump { bytes: std::fs::read(path).expect("sky dump"), at: 0, checks: 0, bad: 0 };
+    assert_eq!(d.int(), 0x30314752); assert_eq!(d.int(), 1);
+    let count = d.int();
+    for case in 0..count {
+        let dimension=d.int(); let anaglyph=d.int()!=0; let angle=d.float(); let rain=d.float(); let stars=d.float();
+        let phase=d.int(); let height=f64::from_bits(u64::from_le_bytes(d.take())); let rgb=std::array::from_fn(|_|d.float());
+        let gl=crate::render::sky_release_check::draw(dimension,anaglyph,angle,rain,stars,phase,height,rgb);
+        d.full_draws(&gl,&format!("sky[{case}]"));
+    }
+    assert_eq!(d.at,d.bytes.len(),"sky EOF");
+    println!("GLOBAL SKY10 {}: {count} cases, {} raw-bit comparisons, {} mismatches",if d.bad==0 {"EXACT"}else{"DIFFER"},d.checks,d.bad);
+    d.bad==0
+}
