@@ -170,9 +170,16 @@ fn bucket_replay(kind: &str) -> Vec<u8> {
                                                 335 => -1,
                                                 _ => 0,
                                             };
-                                            let ray = p.bucket_ray181();
+                                            // 1.0 ItemBucketMilk.onItemRightClick only calls
+                                            // setItemInUse: no ray, no writes, stack returned as is.
+                                            let milk = id == 335;
+                                            let ray = if milk {
+                                                (Vec3D::default(), Vec3D::default())
+                                            } else {
+                                                p.bucket_ray181()
+                                            };
                                             let writes = std::cell::RefCell::new(Vec::new());
-                                            let result = p.bucket_hit_with_writes181(
+                                            let result = if milk { original } else { p.bucket_hit_with_writes181(
                                                 &mut w,
                                                 original,
                                                 full,
@@ -184,7 +191,7 @@ fn bucket_replay(kind: &str) -> Vec<u8> {
                                                 |_, x, y, z, id| {
                                                     writes.borrow_mut().push([1, x, y, z, id, 0])
                                                 },
-                                            );
+                                            ) };
                                             bucket_snapshot(
                                                 &mut w,
                                                 original,
@@ -241,8 +248,12 @@ fn bucket_replay(kind: &str) -> Vec<u8> {
                                         335 => -1,
                                         _ => 0,
                                     };
-                                    let ray = p.bucket_ray181();
-                                    let result = p.bucket_right_click181(&mut w, original, full);
+                                    // 1.0 ItemBucketMilk.onItemRightClick: no ray, stack unchanged.
+                                    let (ray, result) = if id == 335 {
+                                        ((Vec3D::default(), Vec3D::default()), original)
+                                    } else {
+                                        (p.bucket_ray181(), p.bucket_right_click181(&mut w, original, full))
+                                    };
                                     bucket_snapshot(
                                         &mut w,
                                         original,
@@ -388,8 +399,12 @@ pub fn replay(kind: &str) -> Vec<u8> {
                     i(&mut o, icon);
                     i(&mut o, color as i32);
                     i(&mut o, registry::placed_block_metadata(id, damage));
-                    if let Some(name) = registry::block_item_name(id, damage) {
-                        text(&mut o, &name);
+                    // Mode_itemmetadata7_10 writes getItemNameIS only for ItemSlab (44) and
+                    // ItemCloth (35); other ItemBlock subclasses (ItemColored 31) emit no name.
+                    if matches!(id, 44 | 35) {
+                        if let Some(name) = registry::block_item_name(id, damage) {
+                            text(&mut o, &name);
+                        }
                     }
                 }
             }

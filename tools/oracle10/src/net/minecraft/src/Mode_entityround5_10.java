@@ -95,7 +95,7 @@ public final class Mode_entityround5_10 {
  static void potionExpiry(DataOutputStream o)throws Exception {
   for(boolean remote:new boolean[]{false,true})for(int id:new int[]{1,2,6,7,10,13,17,19})for(int duration:new int[]{-1,0,1,2,25})for(int amplifier:new int[]{0,1,31}) {
    World w=Mode_entities10.world();w.multiplayerWorld=remote;EntityPig e=new EntityPig(w);e.health=7;e.addPotionEffect(new PotionEffect(id,duration,amplifier));
-   for(int tick=0;tick<4;tick++){e.dropFewItems(true, 0);state(w,e,o);}
+   for(int tick=0;tick<4;tick++){e.updatePotionEffects();state(w,e,o);}
   }
  }
  static void dyeSheep(DataOutputStream o)throws Exception {
