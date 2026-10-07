@@ -1,0 +1,19 @@
+# Walk into a lit Nether portal and stand in it ~80 ticks (Entity.setInPortal / timeInPortal): arrive in
+# the Nether (x/8, z/8) and stand there 300 ticks while the natural spawner (ghasts, zombie pigmen,
+# magma cubes) runs. No crash.
+#! setup mobs_nether_mobs
+#! seed 7
+#! expect in_portal 88.5 75.62 258.5 0.8
+#! expect arrived 19 * 35 8
+10 shot before
+20 key W down
+28 key W up
+40 shot in_portal
+140 shot arrived
+150 key W down
+160 key W up
+170 shot out_of_portal
+200 shot n200
+300 shot n300
+440 shot n440
+450 quit

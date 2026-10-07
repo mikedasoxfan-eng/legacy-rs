@@ -1,0 +1,31 @@
+# Feed a penned wild wolf bones until it is tamed (hearts).
+#! setup mobs_wolf_tame
+#! seed 7
+10 shot t10
+12 look 0 438
+20 shot aimed
+22 mouse right down
+24 mouse right up
+27 shot after_click1
+30 mouse right down
+32 mouse right up
+34 shot after_click2
+38 mouse right down
+40 mouse right up
+42 shot c3
+46 mouse right down
+48 mouse right up
+49 shot c4
+50 shot t50
+54 mouse right down
+56 mouse right up
+58 shot c5
+62 mouse right down
+64 mouse right up
+66 shot c6
+70 mouse right down
+72 mouse right up
+80 shot t80
+100 shot t100
+300 shot t300
+310 quit

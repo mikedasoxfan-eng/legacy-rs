@@ -1,0 +1,56 @@
+# Hit four weakened monsters with a diamond sword: attack path, death, drops, pickup.
+#! setup mobs_killbox
+#! seed 7
+10 shot t10
+18 mouse left down
+20 mouse left up
+24 mouse left down
+26 mouse left up
+30 mouse left down
+32 mouse left up
+36 mouse left down
+38 mouse left up
+42 mouse left down
+44 mouse left up
+48 mouse left down
+50 mouse left up
+54 shot mid
+54 mouse left down
+56 mouse left up
+60 mouse left down
+62 mouse left up
+66 mouse left down
+68 mouse left up
+72 mouse left down
+74 mouse left up
+78 mouse left down
+80 mouse left up
+84 mouse left down
+86 mouse left up
+90 mouse left down
+92 mouse left up
+96 mouse left down
+98 mouse left up
+102 mouse left down
+104 mouse left up
+108 mouse left down
+110 mouse left up
+114 mouse left down
+116 mouse left up
+120 mouse left down
+122 mouse left up
+126 mouse left down
+128 mouse left up
+132 mouse left down
+134 mouse left up
+138 mouse left down
+140 mouse left up
+144 mouse left down
+146 mouse left up
+150 mouse left down
+152 mouse left up
+156 mouse left down
+158 mouse left up
+172 shot done
+262 shot later
+272 quit

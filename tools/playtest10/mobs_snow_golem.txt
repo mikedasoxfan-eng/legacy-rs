@@ -1,0 +1,15 @@
+# Build a snow golem the game's way: pumpkin on two stacked snow blocks (BlockPumpkin.onBlockAdded).
+#! setup mobs_snow_golem
+#! seed 7
+10 shot t10
+12 look 0 260
+20 shot aimed
+22 mouse right down
+24 mouse right up
+40 shot built
+42 look 0 -170
+50 shot golem
+100 shot t100
+200 shot t200
+300 shot t300
+310 quit
