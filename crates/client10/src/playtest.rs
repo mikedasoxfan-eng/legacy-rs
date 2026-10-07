@@ -105,3 +105,21 @@ fn end_portal(w: &mut World, player: i32) {
         }
     }
 }
+
+/// Put `count` of item `id` (with damage/metadata `damage`) into hotbar slot `slot` (0-8) and select it.
+pub fn give(w: &mut World, player: i32, slot: usize, id: i32, count: i32, damage: i32) {
+    let s = w.entities.get_mut(&player).and_then(|e| e.player_state_mut()).expect("playtest: player");
+    s.inventory.main[slot] = Some(worldgen::entity::player::ItemStack::new(id, count, damage));
+    s.inventory.current_item = slot as i32;
+}
+
+/// Spawn the entity with save id `name` (EntityList names: "Blaze", "LavaSlime", "MushroomCow",
+/// "SnowMan", "Villager", "EnderDragon", "EnderCrystal", ...) standing at (x, y, z), facing north.
+/// Returns its entity id.
+pub fn spawn(w: &mut World, name: &str, x: f64, y: f64, z: f64) -> i32 {
+    let mut e = worldgen::entity::registry::create(w, name).unwrap_or_else(|| panic!("playtest: no entity {name}"));
+    e.set_location_and_angles(x, y, z, 180.0, 0.0);
+    let id = e.entity_id;
+    w.entity_joined_world(e);
+    id
+}
