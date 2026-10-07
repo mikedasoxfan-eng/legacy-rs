@@ -100,18 +100,52 @@ impl PendingChunks {
         Some(pending)
     }
 }
+/// Oracle replays only: make each File IO write atomic with respect to chunk loads (see
+/// `ThreadedChunkLoader::load_root`). Off in the game, which keeps the original's race.
+pub static ATOMIC_IO_FOR_REPLAY: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(false);
+static IO_GATE: Mutex<()> = Mutex::new(());
+/// Loads that coincided with the File IO thread writing that same chunk.
+pub static LOADS_DURING_WRITE: std::sync::atomic::AtomicUsize = std::sync::atomic::AtomicUsize::new(0);
+/// Of those, the loads that found neither the pending entry nor region data (regenerated).
+pub static LOADS_MISSED_DURING_WRITE: std::sync::atomic::AtomicUsize = std::sync::atomic::AtomicUsize::new(0);
+fn io_gate() -> Option<std::sync::MutexGuard<'static, ()>> {
+    ATOMIC_IO_FOR_REPLAY.load(std::sync::atomic::Ordering::SeqCst).then(|| IO_GATE.lock().unwrap_or_else(|e| e.into_inner()))
+}
 pub struct ThreadedChunkLoader {
     pub directory: PathBuf,
     pending: Mutex<PendingChunks>,
+    /// The entry `write_next` has taken off the list and is still writing.
+    in_flight: Mutex<Option<(i32, i32)>>,
 }
 impl ThreadedChunkLoader {
     pub(crate) fn queued_snapshot10(&self) -> Vec<ThreadedChunkLoaderPending> {
         self.pending.lock().unwrap().entries.clone()
     }
     pub fn new(directory: &Path) -> Arc<Self> {
-        Arc::new(Self { directory: directory.to_owned(), pending: Mutex::new(PendingChunks::default()) })
+        Arc::new(Self { directory: directory.to_owned(), pending: Mutex::new(PendingChunks::default()), in_flight: Mutex::new(None) })
     }
     pub fn load_pending(&self, x: i32, z: i32) -> Option<Compound> { self.pending.lock().unwrap().load(x, z) }
+    /// ThreadedChunkLoader.loadChunk up to the NBT read: the pending entry, else the region
+    /// file (None when absent or unreadable). Like the original, the pending lookup and the
+    /// file read are not atomic with respect to `write_next`: a load of the chunk the File IO
+    /// thread has just taken off the list but not yet written sees neither, and the chunk is
+    /// regenerated (or a stale copy read). Oracle replays pin that thread interleaving with
+    /// `ATOMIC_IO_FOR_REPLAY`, as the server oracle does on the original classes.
+    pub fn load_root(&self, x: i32, z: i32) -> Option<Compound> {
+        let _gate = io_gate();
+        let during = |l: &Self| *l.in_flight.lock().unwrap() == Some((x, z));
+        let before = during(self);
+        let root = match self.load_pending(x, z) {
+            Some(root) => Some(root),
+            None => crate::region_cache181::read_chunk(&self.directory, x, z).ok().flatten()
+                .and_then(|raw| nbt::read_root(&mut &raw[..]).ok()),
+        };
+        if before || during(self) {
+            LOADS_DURING_WRITE.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+            if root.is_none() { LOADS_MISSED_DURING_WRITE.fetch_add(1, std::sync::atomic::Ordering::Relaxed); }
+        }
+        root
+    }
     pub fn save(self: &Arc<Self>, x: i32, z: i32, root: Compound) {
         let mut pending = self.pending.lock().unwrap();
         if pending.enqueue(ThreadedChunkLoaderPending { x, z, root }) { FILE_IO.enqueue(self.clone()); }
@@ -123,10 +157,19 @@ impl ThreadedChunkLoader {
     }
 }
 impl IThreadedFileIO for ThreadedChunkLoader {
+    /// ThreadedChunkLoader.func_40324_c: the head entry leaves the list (and its coordinate
+    /// set) inside the lock; it is serialized and written to the region file outside it.
     fn write_next(&self) -> bool {
-        let pending = self.pending.lock().unwrap().pop();
+        let _gate = io_gate();
+        let pending = {
+            let mut list = self.pending.lock().unwrap();
+            let pending = list.pop();
+            *self.in_flight.lock().unwrap() = pending.as_ref().map(|p| (p.x, p.z));
+            pending
+        };
         let Some(pending) = pending else { return false; };
         if let Err(error) = self.write_pending(pending) { eprintln!("saving queued chunk: {error}"); }
+        *self.in_flight.lock().unwrap() = None;
         true
     }
 }

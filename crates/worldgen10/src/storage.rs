@@ -418,10 +418,8 @@ impl Storage {
         let root = if self.legacy_chunks {
             crate::legacy_chunk181::LegacyChunkLoader181::new(&self.chunk_dir, true)
                 .read_root(cx, cz)?
-        } else if let Some(root) = self.threaded_loader10.load_pending(cx, cz) { root }
-        else {
-            let raw = crate::region_cache181::read_chunk(&self.chunk_dir,cx,cz).ok()??;
-            nbt::read_root(&mut &raw[..]).ok()?
+        } else {
+            self.threaded_loader10.load_root(cx, cz)?
         };
         let level = match root.compound("Level") {
             Some(l) if l.has("Blocks") => l.clone(),

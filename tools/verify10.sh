@@ -205,7 +205,7 @@ if [ "$quick" != quick ]; then
   r10_compare "$cmp" savecheck "$root/1.0/saves/_verify_srv_rust" "$out/v_srv_saved.bin" | tail -1 | grep -q "EXACT MATCH" && echo "on disk: EXACT MATCH" || { echo "on disk: DIFFERS"; fail=1; }
   python "$root/tools/oracle10/compare_regions.py" "$root/1.0/saves/_verify_srv_java" "$root/1.0/saves/_verify_srv_rust" && echo "serialized chunk NBT: EXACT MATCH" || { echo "serialized chunk NBT: DIFFERS"; fail=1; }
 fi
-rm -rf "$root"/1.0/saves/_verify_* "$out"/v_*.bin "$out"/v_*.bin.txt "$out"/v_*.bin.identities "$out"/v_*.bin.events "$out"/v_*.bin.frames "$out/v_srv.log"
+rm -rf "$root"/1.0/saves/_verify_* "$out"/v_*.bin "$out"/v_*.bin.txt "$out"/v_*.bin.identities "$out"/v_*.bin.tickids "$out"/v_*.bin.events "$out"/v_*.bin.frames "$out/v_srv.log"
 
 # ---- world ticking: weather, scheduled and random block ticks, cave-sound and lightning
 # draws, chunk loading around the player. seed wrand lcg sound ticks weather dx dz [fires]

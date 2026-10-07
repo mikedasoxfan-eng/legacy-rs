@@ -26,6 +26,59 @@ public class ServerOracle {
         public void sendPacket(Packet p) {}
     }
 
+    /**
+     * The original ThreadedChunkLoader, with the one File IO interleaving the Rust replay
+     * reproduces. ThreadedChunkLoader.func_40324_c takes the head entry off the pending list
+     * inside its lock but serializes and writes it outside; a main-thread loadChunk of that
+     * chunk inside the window finds neither the pending entry nor the region data and
+     * regenerates (or reads a stale copy of) the chunk. Whether that window is hit is thread
+     * scheduling, so the oracle makes each write atomic with respect to loads. The number
+     * of loads that coincided with an in-flight write is reported either way.
+     */
+    static class AtomicIOChunkLoader extends ThreadedChunkLoader {
+        static final Object GATE = new Object();
+        static volatile int races, missed;
+        final boolean atomic;
+        final Object lock;
+        final List<?> pending;
+        volatile ChunkCoordIntPair inFlight;
+        AtomicIOChunkLoader(File dir, boolean atomic) throws Exception {
+            super(dir);
+            this.atomic = atomic;
+            Field l = ThreadedChunkLoader.class.getDeclaredField("field_40329_c");
+            l.setAccessible(true);
+            lock = l.get(this);
+            Field q = ThreadedChunkLoader.class.getDeclaredField("field_40330_a");
+            q.setAccessible(true);
+            pending = (List<?>) q.get(this);
+        }
+        public boolean func_40324_c() {
+            if (!atomic) return writeNext();
+            synchronized (GATE) { return writeNext(); }
+        }
+        private boolean writeNext() {
+            synchronized (lock) {
+                inFlight = pending.isEmpty() ? null : ((ThreadedChunkLoaderPending) pending.get(0)).field_40613_a;
+            }
+            try { return super.func_40324_c(); } finally { inFlight = null; }
+        }
+        public Chunk loadChunk(World w, int x, int z) throws IOException {
+            if (!atomic) return load(w, x, z);
+            synchronized (GATE) { return load(w, x, z); }
+        }
+        private Chunk load(World w, int x, int z) throws IOException {
+            ChunkCoordIntPair before = inFlight;
+            Chunk c = super.loadChunk(w, x, z);
+            ChunkCoordIntPair after = inFlight;
+            if (before != null && before.chunkXPos == x && before.chunkZPos == z
+                    || after != null && after.chunkXPos == x && after.chunkZPos == z) {
+                races++;
+                if (c == null) missed++; // neither pending nor written yet: the chunk is regenerated
+            }
+            return c;
+        }
+    }
+
     static sun.misc.Unsafe unsafe() throws Exception {
         Field f = sun.misc.Unsafe.class.getDeclaredField("theUnsafe");
         f.setAccessible(true);
@@ -73,9 +126,30 @@ public class ServerOracle {
                 if (first) { first = false; return new WorldInfo(new WorldSettings(seed, 0, true, false), name); }
                 return super.loadWorldInfo();
             }
+            public IChunkLoader getChunkLoader(WorldProvider provider) {
+                try { return new AtomicIOChunkLoader(getWorldDir(), !"0".equals(System.getProperty("oracle.atomicio", "1"))); }
+                catch (Exception e) { throw new RuntimeException(e); }
+            }
         };
         WorldServer w = new WorldServer(mc, handler, name, 0, new WorldSettings(seed, 0, true, false));
         mc.worldMngr = new WorldServer[] {w, null};
+        // Saved TileTicks follow scheduledTickSet's HashMap order; its tree bins break the
+        // many equal hashCodes (x and x+16 collide) by System.identityHashCode, a VM input:
+        // record it for every NextTickListEntry added, in add order, for the Rust replay.
+        Field tickSet = World.class.getDeclaredField("scheduledTickSet");
+        tickSet.setAccessible(true);
+        if (!((Set<?>) tickSet.get(w)).isEmpty()) throw new IllegalStateException("ticks scheduled before the recorder");
+        final DataOutputStream tickIds = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(a[6] + ".tickids")));
+        tickSet.set(w, new HashSet<Object>() {
+            public boolean add(Object e) {
+                boolean added = super.add(e);
+                if (added) {
+                    try { tickIds.writeInt(System.identityHashCode(e)); }
+                    catch (IOException x) { throw new UncheckedIOException(x); }
+                }
+                return added;
+            }
+        });
         w.rand.setSeed(wrand);
         w.generateSpawnPoint();
         ChunkCoordinates sp = w.getSpawnPoint();
@@ -143,6 +217,9 @@ public class ServerOracle {
         }
         pm.removePlayer(p);
         w.saveWorld(true, null);
+        tickIds.close();
+        System.out.println("java: " + AtomicIOChunkLoader.races + " chunk loads during that chunk's File IO write, "
+            + AtomicIOChunkLoader.missed + " of them found no data");
         dump(w, a[6], sp);
         try (PrintWriter state = new PrintWriter(a[6] + ".txt")) {
             state.println("time " + w.getWorldTime());

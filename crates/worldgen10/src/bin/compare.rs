@@ -239,6 +239,13 @@ fn main() -> ExitCode {
             // Pin item/drop RNGs before spawn search and population can create items.
             // This fixture, like ServerOracle, always creates a fresh server world.
             let mut w = World::new(p(2), p(3));
+            // The oracle's NextTickListEntry identity hashes (VM input): scheduledTickSet's
+            // tree bins order equal hashCodes by them, and saved TileTicks follow that order.
+            let ids = std::fs::read(format!("{}.tickids", a[7])).expect("server tick identity dump");
+            w.tick_identity_replay10 = Some(ids.chunks_exact(4)
+                .map(|b| i32::from_be_bytes(b.try_into().unwrap())).collect());
+            // The oracle's File IO interleaving: each region write is atomic with respect to loads.
+            worldgen::threaded_io10::ATOMIC_IO_FOR_REPLAY.store(true, std::sync::atomic::Ordering::SeqCst);
             w.set_entity_determinism(100, 200, 0);
             w.container_drop_random = std::array::from_fn(|i| worldgen::JavaRandom::new(700 + i as i64));
             w.server = Some(Default::default());
@@ -266,6 +273,11 @@ fn main() -> ExitCode {
             w.save_world(true);
             worldgen::threaded_io10::FILE_IO.flush();
             worldgen::world::tick::finish_chunk_identity_replay181();
+            let unused = w.tick_identity_replay10.as_ref().map_or(0, |q| q.len());
+            assert_eq!(unused, 0, "{unused} recorded tick identities were never used");
+            println!("rust: {} chunk loads during that chunk's File IO write, {} of them found no data",
+                worldgen::threaded_io10::LOADS_DURING_WRITE.load(std::sync::atomic::Ordering::Relaxed),
+                worldgen::threaded_io10::LOADS_MISSED_DURING_WRITE.load(std::sync::atomic::Ordering::Relaxed));
             println!("rust: {} chunks loaded at the end", w.chunks.len());
             let state = format!("time {}\nlcg {}\nsound {}\nrand {}\n",
                 w.world_time, w.update_lcg, w.sound_counter, w.rand.next_long());

@@ -12,6 +12,7 @@ fi
 fail=0
 out="$root/tools/oracle10/out"
 save="$root/target/r10/serverfix"
+rm -rf "$save/java" "$save/rust"  # a leftover save would be loaded instead of generated
 mkdir -p "$save"
 echo "== server mode: 900-tick walk (real World.tick), unload/reload through region files"
 if r10_oracle "$root/tools/oracle10/server_oracle.sh" serverwalk 0 1 10 "$save/java" 900 harness-fix10-server.bin; then
