@@ -97,6 +97,11 @@ pub fn class(e: &Entity) -> &'static str {
         EntityKind::PigZombie { .. } => "EntityPigZombie",
         // The simulation names the mooshroom by its save id; its class is EntityMooshroom.
         EntityKind::Mooshroom => "EntityMooshroom",
+        // Likewise for the other 1.0 entities whose save id differs from the class name.
+        EntityKind::Dragon(..) => "EntityDragon",
+        EntityKind::EnderEye(..) => "EntityEnderEye",
+        EntityKind::EnderPearl(..) => "EntityEnderPearl",
+        EntityKind::MagmaCube { .. } => "EntityMagmaCube",
         _ => {
             RENDERERS
                 .iter()
@@ -354,5 +359,25 @@ impl<T> RenderManager<T> {
             callback(Event::ShadowAndFire(renderer, args))?;
         }
         Ok(())
+    }
+}
+
+#[cfg(test)]
+mod every_entity_has_a_renderer {
+    /// Every entity the 1.0 EntityList can create must resolve to its class's renderer; a missing one
+    /// used to kill the world thread (the dragon in the End, thrown eyes and pearls, magma cubes).
+    #[test]
+    fn every_registered_entity_resolves() {
+        let mut w = worldgen::World::new(42, 42);
+        let mut checked = 0;
+        for entry in worldgen::entity::registry::ENTRIES {
+            let Some(e) = worldgen::entity::registry::create(&mut w, entry.name) else { continue };
+            let class = std::panic::catch_unwind(|| super::class(&e))
+                .unwrap_or_else(|_| panic!("no renderer for {} ({})", entry.name, entry.class));
+            assert_eq!(class, entry.class, "{}", entry.name);
+            let _ = super::renderer_for(&e);
+            checked += 1;
+        }
+        assert!(checked >= 37, "only {checked} entities created");
     }
 }
