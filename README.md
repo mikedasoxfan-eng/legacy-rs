@@ -6,7 +6,7 @@
 
 <sub>Formerly beta-rs. Renamed in 3.0.0 because it is no longer only Beta.</sub>
 
-[![release](https://img.shields.io/badge/release-v3.0.0-2ea44f?style=flat&labelColor=3b3b3b)](https://github.com/mikedasoxfan-eng/legacy-rs/releases/latest)
+[![release](https://img.shields.io/badge/release-v3.0.1-2ea44f?style=flat&labelColor=3b3b3b)](https://github.com/mikedasoxfan-eng/legacy-rs/releases/latest)
 [![CI](https://github.com/mikedasoxfan-eng/legacy-rs/actions/workflows/ci.yml/badge.svg)](https://github.com/mikedasoxfan-eng/legacy-rs/actions/workflows/ci.yml)
 [![Minecraft](https://img.shields.io/badge/Minecraft-Beta_1.7.3_%2B_Beta_1.8.1_%2B_1.0-6aa84f?style=flat&labelColor=3b3b3b)](#)
 [![Rust](https://img.shields.io/badge/built_with-Rust-b7410e?style=flat&logo=rust&logoColor=white&labelColor=3b3b3b)](#)
@@ -100,7 +100,7 @@ Oracle checks (`tools/verify10.sh`): **761 of 761** sections exact.
 
 ## Download
 
-Grab `legacy-rs-3.0.0-windows-x64.exe` from the
+Grab `legacy-rs-3.0.1-windows-x64.exe` from the
 [latest release](https://github.com/mikedasoxfan-eng/legacy-rs/releases/latest), put it in its own
 folder and run it. It asks which version to play: **Beta 1.7.3**, **Beta 1.8.1** (the Adventure
 Update) or **1.0**. `--mc b1.7.3`, `--mc b1.8.1` or `--mc 1.0` skips the question.

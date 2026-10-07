@@ -927,6 +927,22 @@ fn run(opts: WorldOptions, mut col: Colorizers, mut video: VideoSettings, rx: Re
                         let _ = tx.send(FromWorker::Ready { spawn: cam, seed: world.seed, name: world.info.name.clone(), });
                     }
                 }
+                // EntityPlayerSP.func_40182_b → Minecraft.usePortal(1): an End portal block sends the
+                // player to the End (the exit portal's second visit raises WinGame instead).
+                let to = events.iter().find_map(|e| match e {
+                    worldgen::entity::player::PlayerEvent::ChangeDimensionTo { dimension } => Some(*dimension),
+                    _ => None,
+                });
+                if let Some(dimension) = to.and_then(worldgen::world::Dimension::from_id) {
+                    if let Some(next) = world.use_portal_to(id, dimension, fresh_seed(), fresh_seed(), &mut progress) {
+                        world = next;
+                        switched_world!();
+                        if let Some(e) = world.entities.get(&id) {
+                            cam = (e.pos.x, e.pos.y, e.pos.z);
+                        }
+                        let _ = tx.send(FromWorker::Ready { spawn: cam, seed: world.seed, name: world.info.name.clone(), });
+                    }
+                }
                 if let (Some(e), Some(hud)) = (world.entities.get(&id).cloned(), world.player_hud(id, 1.0)) {
                     let in_water = e.is_inside_material(&mut world, worldgen::block::table::MAT_WATER);
                     let score = e.player_state().map_or(0, |s| s.score);

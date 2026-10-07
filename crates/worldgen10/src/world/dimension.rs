@@ -296,3 +296,34 @@ impl World {
         Some((world, chat))
     }
 }
+
+#[cfg(test)]
+mod end_portal_travel {
+    use crate::entity::player::PlayerEvent;
+    use crate::world::{Dimension, World};
+
+    /// BlockEndPortal.onEntityCollidedWithBlock → EntityPlayerSP.func_40182_b(1) raises the event the
+    /// client turns into Minecraft.usePortal(1); that must land the player on the End's obsidian platform.
+    #[test]
+    fn standing_in_an_end_portal_reaches_the_end() {
+        let mut w = World::new(42, 42);
+        let id = w.spawn_player("Player");
+        let mut p = w.entities.remove(&id).unwrap();
+        let (x, y, z) = (p.pos.x.floor() as i32, p.pos.y.floor() as i32, p.pos.z.floor() as i32);
+        p.on_entity_collided_with_block(&mut w, crate::block::END_PORTAL, x, y, z);
+        let to = p.player_state().unwrap().events.iter().find_map(|e| match e {
+            PlayerEvent::ChangeDimensionTo { dimension } => Some(*dimension),
+            _ => None,
+        });
+        assert_eq!(to, Some(1));
+        w.entities.insert(id, p);
+        let mut end = w.use_portal_to(id, Dimension::from_id(1).unwrap(), 1, 2, &mut |_| {}).unwrap();
+        assert_eq!(end.dimension, Dimension::End);
+        let p = &end.entities[&id];
+        assert_eq!(p.player_state().unwrap().dimension, 1);
+        // Teleporter.placeInPortal (End): obsidian one below the feet; posY is the eye height (+1.62).
+        let (px, py, pz) = (p.pos.x.floor() as i32, (p.pos.y - 1.62).round() as i32, p.pos.z.floor() as i32);
+        eprintln!("End arrival at {:?}", (p.pos.x, p.pos.y, p.pos.z));
+        assert_eq!(end.get_block_id(px, py - 1, pz), crate::block::OBSIDIAN);
+    }
+}

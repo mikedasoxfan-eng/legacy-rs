@@ -3,6 +3,17 @@
 All notable changes to legacy-rs (formerly beta-rs). Versions follow [Semantic Versioning](https://semver.org);
 "exact" always means checked bit for bit against the original bytecode of that version.
 
+## [3.0.1] - 2026-10-06
+
+### Fixed
+- Minecraft 1.0: stepping into an End portal now takes you to the End (onto the obsidian platform, as in
+  the original). The portal raised the right event, but the client never acted on it.
+
+### Added
+- `give.exe`, a small separate tool that puts items into a singleplayer world's inventory (with a
+  backup), for things the original game has no way to hand you, like End portal frames. New stacks go
+  into the hotbar, since 1.0's creative inventory screen shows only the hotbar.
+
 ## [3.0.0] - 2026-10-06
 
 The project is now called **legacy-rs** (formerly beta-rs), because it is no longer only Beta. The
