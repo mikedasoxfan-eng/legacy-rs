@@ -3273,6 +3273,13 @@
   "r10world3 world/weather",
   "r10world3 worldheight"
  ],
+ "Block": [
+  "blocks4: colors",
+  "blocks4: harvest"
+ ],
+ "BlockBed": [
+  "blocks4: bed9"
+ ],
  "BlockBookshelf": [
   "blocks3: animation",
   "blocks3: blockfull11",
@@ -3299,6 +3306,11 @@
   "blocks3: sounds",
   "blocks3: stackdata11",
   "blocks3: stacknbt11"
+ ],
+ "BlockBrewingStand": [
+  "blocks4: containertiles",
+  "blocks4: ticks",
+  "blocks4: tiles"
  ],
  "BlockButton": [
   "blocks3: animation",
@@ -3353,6 +3365,9 @@
   "blocks3: sounds",
   "blocks3: stackdata11",
   "blocks3: stacknbt11"
+ ],
+ "BlockCake": [
+  "blocks4: cake9"
  ],
  "BlockCauldron": [
   "blocks3: animation",
@@ -3465,6 +3480,30 @@
   "blocks3: stackdata11",
   "blocks3: stacknbt11"
  ],
+ "BlockDispenser": [
+  "blocks4: ticks"
+ ],
+ "BlockDoor": [
+  "blocks4: door9",
+  "blocks4: doors6"
+ ],
+ "BlockDragonEgg": [
+  "blocks4: ticks"
+ ],
+ "BlockEnchantmentTable": [
+  "blocks4: containertiles",
+  "blocks4: ticks",
+  "blocks4: tiles"
+ ],
+ "BlockEndPortal": [
+  "blocks4: containertiles",
+  "blocks4: ticks",
+  "blocks4: tiles"
+ ],
+ "BlockEndPortalFrame": [
+  "blocks4: harvest",
+  "blocks4: use"
+ ],
  "BlockFarmland": [
   "blocks3: animation",
   "blocks3: blockfull11",
@@ -3518,6 +3557,9 @@
   "blocks3: sounds",
   "blocks3: stackdata11",
   "blocks3: stacknbt11"
+ ],
+ "BlockFire": [
+  "blocks4: ticks"
  ],
  "BlockFlower": [
   "blocks3: animation",
@@ -3573,6 +3615,14 @@
   "blocks3: stackdata11",
   "blocks3: stacknbt11"
  ],
+ "BlockFluid": [
+  "blocks4: colors",
+  "blocks4: ticks"
+ ],
+ "BlockFurnace": [
+  "blocks4: furnace7",
+  "blocks4: machines7"
+ ],
  "BlockGlowStone": [
   "blocks3: animation",
   "blocks3: blockfull11",
@@ -3600,6 +3650,10 @@
   "blocks3: stackdata11",
   "blocks3: stacknbt11"
  ],
+ "BlockGrass": [
+  "blocks4: colors",
+  "blocks4: ticks"
+ ],
  "BlockGravel": [
   "blocks3: animation",
   "blocks3: blockfull11",
@@ -3626,6 +3680,9 @@
   "blocks3: sounds",
   "blocks3: stackdata11",
   "blocks3: stacknbt11"
+ ],
+ "BlockIce": [
+  "blocks4: harvest"
  ],
  "BlockJukeBox": [
   "blocks3: animation",
@@ -3681,6 +3738,10 @@
   "blocks3: stackdata11",
   "blocks3: stacknbt11"
  ],
+ "BlockLeaves": [
+  "blocks4: colors",
+  "blocks4: harvest"
+ ],
  "BlockLever": [
   "blocks3: animation",
   "blocks3: blockfull11",
@@ -3707,6 +3768,12 @@
   "blocks3: sounds",
   "blocks3: stackdata11",
   "blocks3: stacknbt11"
+ ],
+ "BlockLilyPad": [
+  "blocks3: eyeright",
+  "blocks4: colors",
+  "blocks4: harvest",
+  "blocks4: right"
  ],
  "BlockLog": [
   "blocks3: animation",
@@ -3843,6 +3910,14 @@
   "blocks3: stackdata11",
   "blocks3: stacknbt11"
  ],
+ "BlockMycelium": [
+  "blocks4: harvest",
+  "blocks4: ticks"
+ ],
+ "BlockNetherStalk": [
+  "blocks4: harvest",
+  "blocks4: ticks"
+ ],
  "BlockNote": [
   "blocks3: animation",
   "blocks3: blockfull11",
@@ -3951,6 +4026,11 @@
   "blocks3: stackdata11",
   "blocks3: stacknbt11"
  ],
+ "BlockPistonBase": [
+  "blocks4: piston5",
+  "blocks4: piston6",
+  "blocks4: push6"
+ ],
  "BlockPistonExtension": [
   "blocks3: animation",
   "blocks3: blockfull11",
@@ -3978,6 +4058,13 @@
   "blocks3: stackdata11",
   "blocks3: stacknbt11"
  ],
+ "BlockPistonMoving": [
+  "blocks4: harvest",
+  "blocks4: piston6"
+ ],
+ "BlockPortal": [
+  "blocks4: ticks"
+ ],
  "BlockPressurePlate": [
   "blocks3: animation",
   "blocks3: blockfull11",
@@ -4004,6 +4091,9 @@
   "blocks3: sounds",
   "blocks3: stackdata11",
   "blocks3: stacknbt11"
+ ],
+ "BlockPumpkin": [
+  "blocks4: ticks"
  ],
  "BlockRail": [
   "blocks3: animation",
@@ -4356,6 +4446,10 @@
   "blocks3: stackdata11",
   "blocks3: stacknbt11"
  ],
+ "BlockStem": [
+  "blocks4: harvest",
+  "blocks4: ticks"
+ ],
  "BlockStep": [
   "blocks3: release block and geometry definitions"
  ],
@@ -4386,6 +4480,13 @@
   "blocks3: stackdata11",
   "blocks3: stacknbt11"
  ],
+ "BlockTNT": [
+  "blocks4: harvest"
+ ],
+ "BlockTallGrass": [
+  "blocks4: colors",
+  "blocks4: harvest"
+ ],
  "BlockTorch": [
   "blocks3: blockfull11"
  ],
@@ -4415,6 +4516,11 @@
   "blocks3: sounds",
   "blocks3: stackdata11",
   "blocks3: stacknbt11"
+ ],
+ "BlockVine": [
+  "blocks4: colors",
+  "blocks4: harvest",
+  "blocks4: ticks"
  ],
  "BlockWeb": [
   "blocks3: animation",
@@ -24276,6 +24382,17 @@
   "entities2: itempickup",
   "entities3: covered-inventorycopy"
  ],
+ "Item": [
+  "blocks3: eyeright",
+  "blocks3: itemstack11",
+  "blocks4: items",
+  "blocks4: right"
+ ],
+ "ItemAppleGold": [
+  "blocks3: itemstack11",
+  "blocks4: eat",
+  "blocks4: items"
+ ],
  "ItemArmor": [
   "blocks3: animation",
   "blocks3: blockfull11",
@@ -24330,10 +24447,45 @@
   "blocks3: stackdata11",
   "blocks3: stacknbt11"
  ],
+ "ItemBed": [
+  "blocks4: use"
+ ],
  "ItemBlock": [
   "blocks3: blockfull11",
   "blocks3: itembase10",
   "blocks3: stackdata11"
+ ],
+ "ItemBoat": [
+  "blocks3: eyeright",
+  "blocks4: right"
+ ],
+ "ItemBow": [
+  "blocks3: eyeright",
+  "blocks4: eat",
+  "blocks4: right"
+ ],
+ "ItemBucket": [
+  "blocks3: eyeright",
+  "blocks4: right"
+ ],
+ "ItemBucketMilk": [
+  "blocks3: eyeright",
+  "blocks4: eat",
+  "blocks4: right"
+ ],
+ "ItemColored": [
+  "blocks3: itemstack11",
+  "blocks4: items",
+  "blocks4: use"
+ ],
+ "ItemDye": [
+  "blocks3: itemstack11",
+  "blocks4: items",
+  "blocks4: use"
+ ],
+ "ItemEgg": [
+  "blocks3: eyeright",
+  "blocks4: right"
  ],
  "ItemEnderEye": [
   "blocks3: animation",
@@ -24362,6 +24514,33 @@
   "blocks3: stackdata11",
   "blocks3: stacknbt11"
  ],
+ "ItemEnderPearl": [
+  "blocks3: eyeright",
+  "blocks4: right"
+ ],
+ "ItemFood": [
+  "blocks3: eyeright",
+  "blocks4: eat",
+  "blocks4: right"
+ ],
+ "ItemGlassBottle": [
+  "blocks3: eyeright",
+  "blocks4: right"
+ ],
+ "ItemLilyPad": [
+  "blocks3: eyeright",
+  "blocks3: itemstack11",
+  "blocks4: items",
+  "blocks4: right"
+ ],
+ "ItemMap": [
+  "blocks4: maps"
+ ],
+ "ItemMetadata": [
+  "blocks3: itemstack11",
+  "blocks4: items",
+  "blocks4: use"
+ ],
  "ItemPickaxe": [
   "blocks3: animation",
   "blocks3: blockfull11",
@@ -24389,9 +24568,32 @@
   "blocks3: stackdata11",
   "blocks3: stacknbt11"
  ],
+ "ItemPotion": [
+  "blocks3: eyeright",
+  "blocks3: itemstack11",
+  "blocks4: eat",
+  "blocks4: items",
+  "blocks4: right",
+  "blocks4: ticks"
+ ],
+ "ItemRecord": [
+  "blocks3: itemstack11",
+  "blocks4: items",
+  "blocks4: use"
+ ],
  "ItemRenderer": [
   "FirstPerson_camera_fov_hand_glint_player_poses_targeting_fog_maps",
   "RenderBiped_held_potion_passes_glint"
+ ],
+ "ItemSeeds": [
+  "blocks4: use"
+ ],
+ "ItemSlab": [
+  "blocks4: use"
+ ],
+ "ItemSnowball": [
+  "blocks3: eyeright",
+  "blocks4: right"
  ],
  "ItemSpade": [
   "blocks3: animation",
@@ -24419,6 +24621,13 @@
   "blocks3: sounds",
   "blocks3: stackdata11",
   "blocks3: stacknbt11"
+ ],
+ "ItemStack": [
+  "blocks3: itemstack11",
+  "blocks3: stackdata11",
+  "blocks3: stacknbt11",
+  "blocks4: items",
+  "blocks4: stack"
  ],
  "ItemSword": [
   "blocks3: animation",
@@ -27586,6 +27795,10 @@
  ],
  "MapItemRenderer": [
   "FirstPerson_camera_fov_hand_glint_player_poses_targeting_fog_maps"
+ ],
+ "Material": [
+  "blocks4: maps",
+  "blocks4: ticks"
  ],
  "MaterialWeb": [
   "blocks3: animation",
@@ -41454,6 +41667,10 @@
   "r10world4 worldinfo/0",
   "r10world4 worldinfo/42"
  ],
+ "TileEntity": [
+  "blocks4: containertiles",
+  "blocks4: tiles"
+ ],
  "TileEntityBrewingStand": [
   "blocks3: animation",
   "blocks3: blockfull11",
@@ -41534,6 +41751,17 @@
   "blocks3: sounds",
   "blocks3: stackdata11",
   "blocks3: stacknbt11"
+ ],
+ "TileEntityEndPortal": [
+  "blocks4: containertiles",
+  "blocks4: ticks",
+  "blocks4: tiles"
+ ],
+ "TileEntityFurnace": [
+  "blocks4: containertiles",
+  "blocks4: furnace7",
+  "blocks4: inventory7",
+  "blocks4: machines7"
  ],
  "TileEntityMobSpawner": [
   "blocks3: animation",
