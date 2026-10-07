@@ -469,8 +469,11 @@ shot b10_hud5_sleep_exit
 hud health=20 prev=20 food=20 saturation=5 xp=0 level=0 item=0 armor=0 helmet=-1 creative=0 sleep=0 portal=0 prev_portal=0 nausea=0 pos=0.5,120,0.5 brightness=1.0 sleep=110
 counter 0
 shot b10_hud5_sleep_end
-hud health=20 prev=20 food=20 saturation=5 xp=0 level=0 item=0 armor=0 helmet=-1 creative=0 sleep=0 portal=0 prev_portal=0 nausea=0 pos=0.5,120,0.5 brightness=1.0 xp=2147483647 level=0
+hud health=20 prev=20 food=20 saturation=5 xp=0 level=0 item=0 armor=0 helmet=-1 creative=0 sleep=0 portal=0 prev_portal=0 nausea=0 pos=0.5,120,0.5 brightness=1.0 xp=0 level=2147483647
 counter 0
+# XP-bar overflow: the largest level (level*7 wraps in the bar cap 7+(level*7>>1); the level number is drawn). The fraction
+# currentXP is always below 1 in the game (levelling up resets it), so the old xp=2147483647 case drew a
+# quad billions of pixels wide that only the graphics drivers disagreed about.
 shot b10_hud5_xp_overflow
 hud health=20 prev=20 food=20 saturation=5 xp=0 level=0 item=0 armor=0 helmet=-1 creative=0 sleep=0 portal=0 prev_portal=0 nausea=0 pos=0.5,120,0.5 brightness=1.0 xp=10 level=2147483647
 counter 0
