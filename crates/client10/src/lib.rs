@@ -19,6 +19,7 @@ mod assets;
 mod texture_packs;
 mod gui;
 mod playscript;
+mod playtest;
 mod render;
 mod meshbench;
 mod sound;
@@ -53,6 +54,7 @@ Options:
   --shot <file.png> [--shot-ticks n]
                                  take a screenshot after n ticks and exit
   --play-script <file.txt>       drive the player from a script (unattended testing)
+  --setup <scenario>             prepare a test situation once the world is open (see playtest.rs)
   --version                      print the version
   --help                         print this help
 ";
@@ -109,6 +111,9 @@ fn parse_args() -> Options {
     };
     let has = |name: &str| args.iter().any(|a| a == name);
     let seed_arg = get("--seed");
+    if let Some(name) = get("--setup") {
+        let _ = playtest::SETUP.set(name);
+    }
     let seed = match &seed_arg {
         Some(s) => s.parse::<i64>().unwrap_or_else(|_| java_string_hash(s) as i64),
         None => {

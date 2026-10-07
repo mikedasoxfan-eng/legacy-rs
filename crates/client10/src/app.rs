@@ -893,8 +893,14 @@ impl App {
         if !menus && (!self.ready || self.loading.is_some() || self.player.is_none()) {
             return None;
         }
-        // The script plays the role of the focused window.
-        self.grabbed = self.gui.as_ref().is_some_and(|g| g.screen.is_none());
+        // The script plays the role of the focused window, for the world thread's runTick too
+        // (an unfocused game unpresses every key binding each tick).
+        // Repeating it is harmless: the world thread only acts on changes.
+        let focused = self.gui.as_ref().is_some_and(|g| g.screen.is_none());
+        self.grabbed = focused;
+        if let Some(tx) = &self.tx {
+            let _ = tx.send(ToWorker::MinecraftContext { screen: !focused, focused });
+        }
         let script = self.script.as_mut()?;
         let dir = script.dir.clone();
         let mut shot = None;
@@ -1896,6 +1902,9 @@ impl ApplicationHandler for App {
                     self.minecraft_events.mouse.push(crate::minecraft_input::MouseEvent {button:-1,pressed:false,wheel:y.signum() as i32,fresh:true});
                 }
             }
+            // A `--play-script` plays the focused window; the real window's focus (an unattended
+            // run opens in the background) must not unpress the script's keys.
+            WindowEvent::Focused(false) if self.script.is_some() => {}
             WindowEvent::Focused(false) => {
                 if self.gpu.as_ref().is_some_and(|g|g.window.fullscreen().is_some()) {self.toggle_fullscreen();}
                 if self.ready && self.loading.is_none() && self.script.is_none() {

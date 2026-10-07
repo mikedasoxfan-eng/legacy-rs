@@ -452,6 +452,8 @@ fn run(opts: WorldOptions, mut col: Colorizers, mut video: VideoSettings, rx: Re
     let player = if opts.server { None } else { Some(world.spawn_player("Player")) };
     if let Some(id) = player {
         if let Some(e) = world.entities.get_mut(&id) { e.initialize_player_mode(worldgen::entity::player::controller::PlayerControllerSP::saved_world_is_creative(world.info.game_type,),); }
+        // `--setup <scenario>` (tests only): prepare the situation a play script plays through.
+        crate::playtest::run(&mut world, id);
     }
     let mut input = InputFrame::default();
     let mut minecraft_input_active = false;
