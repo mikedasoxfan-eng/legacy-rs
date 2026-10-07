@@ -279,6 +279,11 @@ impl BlockItemProperties for BlockProbe {
 }
 impl BlockItemContext for BlockProbe {
     type Block = Option<i32>;
+    /// Mode_itemblock10_10 allocates ProbeWorld with Unsafe.allocateInstance, so
+    /// World.field_35472_c (the ItemBlock height-limit check) is 0, not 128.
+    fn height(&self) -> i32 {
+        0
+    }
     fn get_block_id(&mut self, p: [i32; 3]) -> Result<i32, ItemError> {
         if self.absent == 3 {
             return Err(ItemError::NullPointer);
