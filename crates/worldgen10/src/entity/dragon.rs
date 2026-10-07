@@ -538,7 +538,11 @@ impl Entity {
         }
     }
     fn dragon_exit_portal(&self, w: &mut World, x: i32, z: i32) {
+        use std::sync::atomic::Ordering::Relaxed;
         let level = 64; // World.field_35472_c is 128 in release 1.0.
+        // EntityDragon.func_41012_a sets BlockEndPortal.field_41051_a around the build, so the
+        // portal blocks survive BlockEndPortal.onBlockAdded (which clears them outside the Overworld).
+        crate::world::blocks10::END_PORTAL_ALLOW.store(true, Relaxed);
         for y in level - 1..=level + 32 {
             for bx in x - 4..=x + 4 {
                 for bz in z - 4..=z + 4 {
@@ -579,6 +583,7 @@ impl Entity {
         ] {
             w.set_block_with_notify(x + dx, level + dy, z + dz, block);
         }
+        crate::world::blocks10::END_PORTAL_ALLOW.store(false, Relaxed);
     }
 }
 
@@ -645,6 +650,7 @@ mod tests {
     }
     #[test]
     fn death_rewards_and_exit_portal_at_tick_200() {
+        let _serial = PORTAL_FLAG.lock().unwrap_or_else(|e| e.into_inner());
         let mut w = super::super::verify181::world();
         let mut dragon = Entity::living(&mut w, "EnderDragon").unwrap();
         dragon.set_position(0.0, 80.0, 0.0);
@@ -683,5 +689,25 @@ mod tests {
         assert_eq!(w.get_block_id(1, 64, 0), 119);
         assert_eq!(w.get_block_id(3, 64, 0), 7);
         assert_eq!(w.get_block_id(0, 67, 0), 7);
+    }
+    /// BlockEndPortal.field_41051_a is a process-wide static: tests that build exit portals take turns.
+    static PORTAL_FLAG: std::sync::Mutex<()> = std::sync::Mutex::new(());
+    /// In the End, BlockEndPortal.onBlockAdded removes portal blocks unless the dragon's
+    /// func_41012_a has set BlockEndPortal.field_41051_a: the exit portal must keep its 3x3+ pool.
+    #[test]
+    fn exit_portal_keeps_its_portal_blocks_in_the_end() {
+        let _serial = PORTAL_FLAG.lock().unwrap_or_else(|e| e.into_inner());
+        let mut w = World::with_dimension(42, 42, crate::world::Dimension::End);
+        for cx in -1..=1 {
+            for cz in -1..=1 {
+                w.load_chunk(cx, cz);
+            }
+        }
+        let dragon = Entity::living(&mut w, "EnderDragon").unwrap();
+        dragon.dragon_exit_portal(&mut w, 0, 0);
+        let portals = (-3..=3).flat_map(|x| (-3..=3).map(move |z| (x, z))).filter(|&(x, z)| w.get_block_id(x, 64, z) == 119).count();
+        assert_eq!(portals, 20, "exit portal pool");
+        assert_eq!(w.get_block_id(0, 68, 0), 122);
+        assert!(!crate::world::blocks10::END_PORTAL_ALLOW.load(std::sync::atomic::Ordering::Relaxed));
     }
 }

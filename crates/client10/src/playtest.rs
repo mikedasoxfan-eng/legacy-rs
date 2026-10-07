@@ -39,6 +39,22 @@ pub fn run(w: &mut World, player: i32) {
     }
 }
 
+/// A scenario's second part, run once each time the player arrives in another dimension
+/// through a portal (journey: set the End up after the real portal trip). `dimension` is the
+/// new dimension's id.
+pub type Arrival = fn(&mut World, i32, i32);
+
+/// Run the requested scenario's arrival part, if it has one (the worker calls this after
+/// `Minecraft.usePortal` switched worlds).
+pub fn arrived(w: &mut World, player: i32) {
+    let Some(name) = SETUP.get() else { return };
+    let dimension = w.entities.get(&player).and_then(|e| e.player_state()).map_or(0, |s| s.dimension);
+    if let Some((_, f)) = journey::ARRIVALS.iter().find(|(n, _)| n == name) {
+        f(w, player, dimension);
+        eprintln!("playtest: scenario '{name}' arrived in dimension {dimension}");
+    }
+}
+
 /// The ground block under the player (the highest non-air block of its column), with the
 /// player put standing on it, facing south (+Z). The player may still be falling at setup.
 pub fn ground(w: &mut World, player: i32) -> (i32, i32, i32) {

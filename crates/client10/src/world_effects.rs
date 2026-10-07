@@ -69,6 +69,13 @@ mod release_tests {
         }
     }
 }
+/// `ItemRecord.recordName` of item `id` (RenderGlobal.playAuxSFX 1005): 1.0 has all eleven
+/// discs, 2256 "13" to 2266 "11" (Item.record13 .. Item.record11).
+fn record(id: i32) -> Option<&'static str> {
+    const NAMES: [&str; 11] = ["13", "cat", "blocks", "chirp", "far", "mall", "mellohi", "stal", "strad", "ward", "11"];
+    (2256..=2266).contains(&id).then(|| NAMES[(id - 2256) as usize])
+}
+
 impl Effects {
     pub fn object_draws(
         state: &crate::render::entity::objects::ObjectState,
@@ -93,16 +100,7 @@ impl Effects {
     pub fn record_name(event: &WorldEvent) -> Option<&str> {
         match event {
             WorldEvent::Record { name, .. } => name.as_deref(),
-            WorldEvent::Auxiliary {
-                code: 1005,
-                data: 2256,
-                ..
-            } => Some("13"),
-            WorldEvent::Auxiliary {
-                code: 1005,
-                data: 2257,
-                ..
-            } => Some("cat"),
+            WorldEvent::Auxiliary { code: 1005, data, .. } => record(*data),
             _ => None,
         }
     }
@@ -466,11 +464,7 @@ impl Effects {
                     if code == 1005 {
                         if let Some(s) = snd.as_deref_mut() {
                             s.play_streaming(
-                                match data {
-                                    2256 => Some("13"),
-                                    2257 => Some("cat"),
-                                    _ => None,
-                                },
+                                record(data),
                                 [x as f32, y as f32, z as f32],
                                 1.0,
                                 1.0,

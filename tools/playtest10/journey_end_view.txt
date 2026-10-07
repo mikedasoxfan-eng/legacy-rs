@@ -1,0 +1,17 @@
+# The End as the original renders it, for Part C of the journey QA: the same three views that
+# tools/oracle10/journey/endshot.sh captures from the real 1.0 client (standing on the arrival
+# platform: the island at yaw 90, the platform and island at pitch 45, the sky behind at yaw 270
+# pitch -30). End stone is lit only by WorldProviderEnd's lightmap (0.22/0.28/0.25 with no block
+# light: dim and greenish in the original too) and the fog is 0x8080A0 * 0.15 pulled toward black.
+# The shots come early: the dragon may knock the player off the platform later on.
+#! setup end_view
+#! seed 7
+#! expect island 100 53.62 0 0.01
+#! expect ground 100 53.62 0 0.01
+#! expect sky 100 53.62 0 0.01
+40 shot island
+45 look 0 300
+70 shot ground
+75 look 1200 -500
+100 shot sky
+110 quit

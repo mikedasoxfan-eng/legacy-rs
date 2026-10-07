@@ -1,0 +1,17 @@
+# Drop into a lit End portal and arrive on the End's obsidian platform (x 100, z 0), then stand
+# there for 400 ticks: the dragon flies its circuit, its crystals heal it (it arrives hurt, 150 of
+# 200), the boss health bar shows. Nothing may crash. (The dragon may well knock the player off
+# the platform into the void, as it does in the original; positions after arrival are not checked.)
+#! setup end_idle
+#! seed 7
+#! expect arrived 100 53.62 0 0.01
+#! expect idle1 * * * 0
+#! expect idle2 * * * 0
+#! expect idle3 * * * 0
+30 shot arrived
+130 shot idle1
+230 look 1440 0
+250 shot idle2
+330 look -720 -200
+430 shot idle3
+440 quit

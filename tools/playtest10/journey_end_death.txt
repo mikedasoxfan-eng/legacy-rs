@@ -1,0 +1,14 @@
+# Die in the End: arrive on the platform with one and a half hearts, walk west off it and die of
+# the fall (or the void). GuiGameOver's Respawn (Minecraft.respawn: the End can't be respawned in,
+# so usePortal(0) first) puts the player back at the Overworld spawn, not in the Nether.
+#! setup end_death
+#! seed 7
+#! expect arrived 100 53.62 0 0.01
+#! expect respawned 88.5 * 256.5 1
+30 shot arrived
+40 key W down
+70 key W up
+200 shot dead
+210 button 1
+260 shot respawned
+270 quit

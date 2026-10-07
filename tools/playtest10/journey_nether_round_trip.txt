@@ -1,0 +1,27 @@
+# Walk into a lit Nether portal (obsidian frame, portal blocks) 3 blocks south and stop inside it:
+# after the portal delay (timeInPortal reaches 1) the player arrives in the Nether, in a portal the
+# Teleporter builds near x/8, z/8. Turn to face out of it, step out, wait for the portal cooldown
+# (timeUntilPortal), step back in and wait: the player returns to the Overworld. (--no-save keeps no chunks
+# between worlds, so the Overworld is generated afresh and the Teleporter builds the return portal
+# near 8x the Nether position instead of finding the one the trip started from.)
+#! setup nether_round_trip
+#! seed 7
+#! expect before 88.5 75.62 256.5 0.01
+#! expect entering 88.5 75.62 * 0.01
+#! expect nether 17.5 * 36 8
+#! expect back 132.5 * 284 24
+5 key F3 down
+6 key F3 up
+10 shot before
+20 key W down
+36 key W up
+60 shot entering
+200 shot nether
+210 key W down
+215 key W up
+225 shot outside
+240 key S down
+245 key S up
+260 shot inside
+420 shot back
+430 quit
