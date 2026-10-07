@@ -85,6 +85,9 @@ impl Entity {
         let Some(hit) = hit else { return; };
         let (x,y,z) = match hit { MovingObjectPosition::Block {x,y,z,..} => (x,y,z), _ => (0,0,0) };
         let block = match w.get_block_id(x,y,z) { 2=>3,43=>44,7=>1,b=>b as i32 };
+        // Air (a block mined earlier in the same tick): 1.0 throws here (Item.itemsList[0] is null)
+        // and the game crashes before anything changes; the port keeps the hotbar as it is instead.
+        if block == 0 { return; }
         // 1.0: Item.itemsList[block].getHasSubtypes() selects by metadata too (ItemCloth, the log and
         // stone-brick ItemMetadata, ItemSlab, ItemSapling, ItemLeaves, tall grass ItemColored).
         let subtypes = matches!(block, 6 | 17 | 18 | 31 | 35 | 44 | 98);

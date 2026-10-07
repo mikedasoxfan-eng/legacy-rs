@@ -59,7 +59,11 @@ public final class Mode_controller10 {
                     if(c instanceof PlayerControllerSP){Field prev=PlayerControllerSP.class.getDeclaredField("prevBlockDamage");prev.setAccessible(true);prev.setFloat(c,EntityOracle.floatField(PlayerControllerSP.class,"curBlockDamage",c));}
                     // Source runTick queue branch; handlers and registry are original bytecode.
                     if(t%20==5||t%20==6)KeyBinding.onTick(-98);
-                    if(p.isUsingItem()){if(t>=100)c.onStoppedUsingItem(p);}else while(p.mc.gameSettings.keyBindPickBlock.isPressed())pick.invoke(p.mc);
+                    // Minecraft.runTick: while an item is in use, queued pick presses are drained without picking.
+                    if(p.isUsingItem()){if(t>=100)c.onStoppedUsingItem(p);while(p.mc.gameSettings.keyBindPickBlock.isPressed()){}}else while(p.mc.gameSettings.keyBindPickBlock.isPressed()){try{pick.invoke(p.mc);}catch(java.lang.reflect.InvocationTargetException ex){// The original 1.0 throws here when the picked block was mined to air earlier in the same tick
+                        // (Item.itemsList[0] is null): the game would crash. The port treats it as a no-op pick; so does
+                        // this check (nothing changed before the throw).
+                        if(!(ex.getCause() instanceof NullPointerException)||w.getBlockId(4,64,4)!=0)throw ex;}}
                     held.invoke(p.mc,0,t%20<18);
                     ByteArrayOutputStream frame=new ByteArrayOutputStream();DataOutputStream d=new DataOutputStream(frame);state(w,p,c,-1,d);i(d,Trace10.namedInt("p.swingProgressInt", p.swingProgressInt));Trace10.writeBoolean(d, "p.isSwinging", p.isSwinging);i(d,Trace10.namedInt("p.func_35205_Y()", p.func_35205_Y()));i(d,Trace10.namedInt("p.inventory.currentItem", p.inventory.currentItem));i(d,Trace10.namedInt("p.mc.gameSettings.keyBindPickBlock.pressTime", p.mc.gameSettings.keyBindPickBlock.pressTime));i(o,Trace10.namedInt("frame.size()", frame.size()));Trace10.writeBytes(o, "frame.toByteArray()", frame.toByteArray());
                 }
@@ -70,7 +74,10 @@ public final class Mode_controller10 {
                 p.inventory.mainInventory[slot]=new ItemStack(block==2?3:block==7?1:block==43?44:block,1,0);p.inventory.currentItem=5;
                 raw(w,4,64,4,block,0);raw(w,0,0,0,block,0);
                 p.mc.objectMouseOver=hit==0?null:hit==1?new MovingObjectPosition(4,64,4,1,Vec3D.createVector(4,65,4)):new MovingObjectPosition(p);
-                pick.invoke(p.mc);i(o,Trace10.namedInt("p.inventory.currentItem", p.inventory.currentItem));
+                // 1.0 clickMiddleMouseButton throws (Item.itemsList[0] is null) when the picked block is air: the
+                // original would crash. The port treats it as a no-op pick; the slot stays as it was.
+                try{pick.invoke(p.mc);}catch(java.lang.reflect.InvocationTargetException ex){if(!(ex.getCause() instanceof NullPointerException)||block!=0)throw ex;}
+                i(o,Trace10.namedInt("p.inventory.currentItem", p.inventory.currentItem));
             }
             // Original getMouseOver tests creative's 32-block entity ray and 5-block block ray.
             for(int mode=0;mode<2;mode++)for(int distance=2;distance<=35;distance++)for(int obstruction=0;obstruction<2;obstruction++) {

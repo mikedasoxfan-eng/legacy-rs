@@ -24,13 +24,13 @@ quick="${1:-}"
 
 fail=0
 if [ "$quick" = render ]; then
-  bash "$root/tools/verify_r10render2.sh" --built || fail=1
-  bash "$root/tools/verify_r10render3.sh" --built || fail=1
-  bash "$root/tools/verify_r10render4.sh" --built || fail=1
+  bash "$root/tools/verify_r10render2.sh" --built || { fail=1; echo "FAILED (exit code) at verify10.sh line $LINENO"; }
+  bash "$root/tools/verify_r10render3.sh" --built || { fail=1; echo "FAILED (exit code) at verify10.sh line $LINENO"; }
+  bash "$root/tools/verify_r10render4.sh" --built || { fail=1; echo "FAILED (exit code) at verify10.sh line $LINENO"; }
   [ "$fail" = 0 ] && echo "ALL RENDER CASES EXACT" || echo "SOME RENDER CASES DIFFER"
   exit "$fail"
 fi
-bash "$root/tools/verify_vehicles10.sh" --built || fail=1
+bash "$root/tools/verify_vehicles10.sh" --built || { fail=1; echo "FAILED (exit code) at verify10.sh line $LINENO"; }
 run_one() { # label, oracle args..., then "--", compare args (oracle output file appended)
   local label="$1"; shift
   local oargs=() cargs=()
@@ -78,7 +78,7 @@ pflush() {
   local o
   for o in "$pdir"/*.out; do
     [ -e "$o" ] || continue
-    cat "$o"; [ "$(cat "${o%.out}.rc")" = 0 ] || fail=1
+    cat "$o"; [ "$(cat "${o%.out}.rc")" = 0 ] || { fail=1; echo "FAILED (exit code) at verify10.sh line $LINENO"; }
     [ "${VERIFY10_KEEP:-}" = 1 ] || rm -f "$o" "${o%.out}.rc"
   done
 }
@@ -86,21 +86,21 @@ run() { par run_one "$@"; }
 run_extra() { par run_extra_one "$@"; }
 
 echo "== MathHelper sine table"
-r10_oracle "$oracle" sin sin.bin && r10_compare "$cmp" sin "$out/sin.bin" && echo "sine table EXACT" || fail=1
+r10_oracle "$oracle" sin sin.bin && r10_compare "$cmp" sin "$out/sin.bin" && echo "sine table EXACT" || { fail=1; echo "FAILED (exit code) at verify10.sh line $LINENO"; }
 
 echo "== player inventory (10000 original-bytecode operations)"
-r10_oracle "$oracle" playerinventory player_inventory.bin && r10_compare "$cmp" playerinventory "$out/player_inventory.bin" || fail=1
+r10_oracle "$oracle" playerinventory player_inventory.bin && r10_compare "$cmp" playerinventory "$out/player_inventory.bin" || { fail=1; echo "FAILED (exit code) at verify10.sh line $LINENO"; }
 echo "== container clicks, recipes, furnace and dispenser world replay"
-bash "$root/tools/verify_containers10.sh" || fail=1
+bash "$root/tools/verify_containers10.sh" || { fail=1; echo "FAILED (exit code) at verify10.sh line $LINENO"; }
 for player_case in "movement 1000" "damage 1000" "pickup 1000" "sleep 300" "portal 300" "nbt 300" "look 1000" "dig 1000" "place 360" "use 300" "shoot 300" "interact 210" "fertilize 50" "activate 100" "api 200" "pipeline 100" "night 150" "sleepworld 150" "survival 800" "bucket 100" "combat 400" "pickentities 200" "digextras 1600" "slimecontact 360" "stats 400"; do
   read -r kind ticks <<<"$player_case"
   run "player: $kind, every frame and final world" playerintegration181 "$kind" "$ticks" -- player "$kind" "$ticks"
 done
 
 echo "== entity geometry (10000 original-bytecode cases)"
-r10_oracle "$oracle" entitygeometry entity_geometry.bin && r10_compare "$cmp" entitygeometry "$out/entity_geometry.bin" || fail=1
+r10_oracle "$oracle" entitygeometry entity_geometry.bin && r10_compare "$cmp" entitygeometry "$out/entity_geometry.bin" || { fail=1; echo "FAILED (exit code) at verify10.sh line $LINENO"; }
 echo "== all Beta block collision/selection states (10000 cases)"
-r10_oracle "$oracle" entityblocks entity_blocks.bin && r10_compare "$cmp" entityblocks "$out/entity_blocks.bin" || fail=1
+r10_oracle "$oracle" entityblocks entity_blocks.bin && r10_compare "$cmp" entityblocks "$out/entity_blocks.bin" || { fail=1; echo "FAILED (exit code) at verify10.sh line $LINENO"; }
 for entity_case in "items 6005" "sand 300" "tnt 300" "arrows 1300" "passive 13000" "aquatic 3000" "hostile 3000" "special 3000" "spawning 3000" "spawner 3000" "client 3000" "nbt 1000" "nbtall 1000" "slimes 3000" "hooks 1000" "combat 3000" "stormclient 3000" "lightning 1000" "rider 3000" "nether 3000"; do
   read -r kind ticks <<<"$entity_case"
   run "entities: $kind, every frame for $ticks ticks" entityintegration181 "$kind" "$ticks" -- entities "$kind" "$ticks"
@@ -429,7 +429,7 @@ for f in rust/stats/stats_player_unsent.dat odd/stats/stats_player_unsent.dat ta
 done
 popd >/dev/null
 [ "$(printf '%s' "$j" | head -1)" = "null" ] || { echo "tampered stats file was accepted"; sf_ok=0; }
-[ $sf_ok -eq 1 ] && echo "STATS FILE EXACT: written and read by both, checksum rejection and unknown ids" || fail=1
+[ $sf_ok -eq 1 ] && echo "STATS FILE EXACT: written and read by both, checksum rejection and unknown ids" || { fail=1; echo "FAILED (exit code) at verify10.sh line $LINENO"; }
 rm -rf "$sf"
 
 # ---- converting a pre-McRegion (Alpha) save: the original's SaveConverterMcRegion and the port's
@@ -449,121 +449,121 @@ else
 fi
 rm -rf "$cv"
 
-bash "$root/tools/verify_decorations10.sh" || fail=1
+bash "$root/tools/verify_decorations10.sh" || { fail=1; echo "FAILED (exit code) at verify10.sh line $LINENO"; }
 
 # --- render-world (1.0) ---
 echo "== lightmap texels (EntityRenderer.func_35808_e): day, night, rain, thunder, flashes, flicker, brightness"
 if r10_oracle "$oracle" lightmap lightmap_case.bin >/dev/null 2>&1 && beta --lightmapcheck "$out/lightmap_case.bin" | tail -1 | grep -q " 0 differences"; then echo "LIGHTMAP EXACT"; else echo "lightmap DIFFERS"; fail=1; fi
 # --- end render-world ---
 # --- world-blocks (1.0) ---
-bash "$root/tools/verify_world_blocks10.sh" --built || fail=1
+bash "$root/tools/verify_world_blocks10.sh" --built || { fail=1; echo "FAILED (exit code) at verify10.sh line $LINENO"; }
 # --- end world-blocks ---
 # --- terrain (1.0) ---
-bash "$root/tools/verify_terrain10.sh" --built || fail=1
-bash "$root/tools/verify_terrain2_10.sh" --built || fail=1
-bash "$root/tools/verify_terrain3_10.sh" --built || fail=1
+bash "$root/tools/verify_terrain10.sh" --built || { fail=1; echo "FAILED (exit code) at verify10.sh line $LINENO"; }
+bash "$root/tools/verify_terrain2_10.sh" --built || { fail=1; echo "FAILED (exit code) at verify10.sh line $LINENO"; }
+bash "$root/tools/verify_terrain3_10.sh" --built || { fail=1; echo "FAILED (exit code) at verify10.sh line $LINENO"; }
 # --- end terrain ---
 # --- entities (1.0) ---
-bash "$root/tools/verify_entities10.sh" || fail=1
+bash "$root/tools/verify_entities10.sh" || { fail=1; echo "FAILED (exit code) at verify10.sh line $LINENO"; }
 # --- end entities ---
 # --- player-gui (1.0) ---
 echo "== player/gui: hunger, experience, FOV, creative catalog, options, keys and pixels"
-bash "$root/tools/verify_player_gui10.sh" || fail=1
+bash "$root/tools/verify_player_gui10.sh" || { fail=1; echo "FAILED (exit code) at verify10.sh line $LINENO"; }
 # --- end player-gui ---
 # --- entities (1.0) ---
-bash "$root/tools/verify_entities3_10.sh" --built || fail=1
+bash "$root/tools/verify_entities3_10.sh" --built || { fail=1; echo "FAILED (exit code) at verify10.sh line $LINENO"; }
 # --- end entities ---
 # --- entities (1.0) ---
-bash "$root/tools/verify_entities4_10.sh" --built || fail=1
+bash "$root/tools/verify_entities4_10.sh" --built || { fail=1; echo "FAILED (exit code) at verify10.sh line $LINENO"; }
 # --- end entities ---
 # --- entities (1.0) ---
-bash "$root/tools/verify_entities5_10.sh" --built || fail=1
+bash "$root/tools/verify_entities5_10.sh" --built || { fail=1; echo "FAILED (exit code) at verify10.sh line $LINENO"; }
 # --- end entities ---
 # --- entities (1.0) ---
-bash "$root/tools/verify_entities6_10.sh" --built || fail=1
+bash "$root/tools/verify_entities6_10.sh" --built || { fail=1; echo "FAILED (exit code) at verify10.sh line $LINENO"; }
 # --- end entities ---
 # --- player-gui (1.0), round 7 ---
-bash tools/verify_player_gui7_10.sh --built || fail=1
+bash tools/verify_player_gui7_10.sh --built || { fail=1; echo "FAILED (exit code) at verify10.sh line $LINENO"; }
 # --- end player-gui ---
 # --- entities (1.0) ---
-bash "$root/tools/verify_entities7_10.sh" --built || fail=1
+bash "$root/tools/verify_entities7_10.sh" --built || { fail=1; echo "FAILED (exit code) at verify10.sh line $LINENO"; }
 # --- end entities ---
 # --- player-gui (1.0) ---
 # Round 8: player replay fixes and completed GUI class deltas.
-bash tools/verify_player_gui8_10.sh --built || fail=1
+bash tools/verify_player_gui8_10.sh --built || { fail=1; echo "FAILED (exit code) at verify10.sh line $LINENO"; }
 # --- end player-gui ---
 # --- entities (1.0) ---
-bash "$root/tools/verify_entities8_10.sh" --built || fail=1
+bash "$root/tools/verify_entities8_10.sh" --built || { fail=1; echo "FAILED (exit code) at verify10.sh line $LINENO"; }
 # --- end entities ---
 # --- terrain (1.0 integration round 6) ---
-bash "$root/tools/verify_drawtrace10.sh" || fail=1
+bash "$root/tools/verify_drawtrace10.sh" || { fail=1; echo "FAILED (exit code) at verify10.sh line $LINENO"; }
 # --- end terrain ---
 # --- player-gui (1.0) ---
 # Round 9: inventory death/material state and original framebuffer alpha.
-bash tools/verify_player_gui9_10.sh --built || fail=1
+bash tools/verify_player_gui9_10.sh --built || { fail=1; echo "FAILED (exit code) at verify10.sh line $LINENO"; }
 # --- end player-gui ---
 # --- entities (1.0) ---
-bash "$root/tools/verify_entities9_10.sh" --built || fail=1
+bash "$root/tools/verify_entities9_10.sh" --built || { fail=1; echo "FAILED (exit code) at verify10.sh line $LINENO"; }
 # --- end entities ---
 # --- minecraft (1.0), round 1 ---
-bash "$root/tools/verify_minecraft10.sh" --built || fail=1
+bash "$root/tools/verify_minecraft10.sh" --built || { fail=1; echo "FAILED (exit code) at verify10.sh line $LINENO"; }
 # --- end minecraft ---
 # --- entities (1.0) ---
-bash "$root/tools/verify_entities10_10.sh" --built || fail=1
+bash "$root/tools/verify_entities10_10.sh" --built || { fail=1; echo "FAILED (exit code) at verify10.sh line $LINENO"; }
 # --- end entities ---
 # --- player-gui (1.0) ---
 # Round 10: title driver precision, callbacks, texture prefixes and stat schema.
-bash tools/verify_player_gui10_10.sh --built || fail=1
+bash tools/verify_player_gui10_10.sh --built || { fail=1; echo "FAILED (exit code) at verify10.sh line $LINENO"; }
 # --- end player-gui ---
 # --- entities (1.0) ---
 # Round 11: complete ItemBlock dependencies and ItemStack alias/NBT/delegation audit.
-bash "$root/tools/verify_entities11_10.sh" --built || fail=1
+bash "$root/tools/verify_entities11_10.sh" --built || { fail=1; echo "FAILED (exit code) at verify10.sh line $LINENO"; }
 # --- end entities ---
 
 # --- player-gui (1.0) ---
 # Round 11: StatFileWriter constructor/UTF16/charset and RenderEngine cache/failure/map/buffer.
-bash tools/verify_player_gui11_10.sh --built || fail=1
+bash tools/verify_player_gui11_10.sh --built || { fail=1; echo "FAILED (exit code) at verify10.sh line $LINENO"; }
 # --- end player-gui ---
 
 # --- gui (1.0), round 2 ---
-bash tools/verify_r10gui2.sh --built || fail=1
+bash tools/verify_r10gui2.sh --built || { fail=1; echo "FAILED (exit code) at verify10.sh line $LINENO"; }
 # --- end gui ---
 
 # Release 1.0 entities, round 2.
-bash "$root/tools/verify_r10entities2.sh" --built || fail=1
+bash "$root/tools/verify_r10entities2.sh" --built || { fail=1; echo "FAILED (exit code) at verify10.sh line $LINENO"; }
 
 # Release 1.0 world, round 3.
-bash "$root/tools/verify_r10world3.sh" --built || fail=1
+bash "$root/tools/verify_r10world3.sh" --built || { fail=1; echo "FAILED (exit code) at verify10.sh line $LINENO"; }
 # Release 1.0 world, round 4.
-bash "$root/tools/verify_r10world4.sh" --built || fail=1
+bash "$root/tools/verify_r10world4.sh" --built || { fail=1; echo "FAILED (exit code) at verify10.sh line $LINENO"; }
 
 
 # --- rendering (1.0), restored shared-recorder checks ---
-bash "$root/tools/verify_r10render2.sh" --built || fail=1
-bash "$root/tools/verify_r10render3.sh" --built || fail=1
+bash "$root/tools/verify_r10render2.sh" --built || { fail=1; echo "FAILED (exit code) at verify10.sh line $LINENO"; }
+bash "$root/tools/verify_r10render3.sh" --built || { fail=1; echo "FAILED (exit code) at verify10.sh line $LINENO"; }
 
 # Release 1.0 entities, round 3.
-bash "$root/tools/verify_r10entities3.sh" --built || fail=1
+bash "$root/tools/verify_r10entities3.sh" --built || { fail=1; echo "FAILED (exit code) at verify10.sh line $LINENO"; }
 
-bash "$root/tools/verify_r10blocks3.sh" --built || fail=1
+bash "$root/tools/verify_r10blocks3.sh" --built || { fail=1; echo "FAILED (exit code) at verify10.sh line $LINENO"; }
 
 # --- gui (1.0), round 3 ---
-bash "$root/tools/verify_r10gui3.sh" --built || fail=1
+bash "$root/tools/verify_r10gui3.sh" --built || { fail=1; echo "FAILED (exit code) at verify10.sh line $LINENO"; }
 # --- end gui ---
 
 # --- renderfx (1.0), round 1: particles, EffectRenderer and the simple entity renderers ---
-bash "$root/tools/verify_r10renderfx1.sh" --built || fail=1
+bash "$root/tools/verify_r10renderfx1.sh" --built || { fail=1; echo "FAILED (exit code) at verify10.sh line $LINENO"; }
 # --- end renderfx ---
 
 # --- rendering (1.0), round 4: the big renderers ---
-bash "$root/tools/verify_r10render4.sh" --built || fail=1
+bash "$root/tools/verify_r10render4.sh" --built || { fail=1; echo "FAILED (exit code) at verify10.sh line $LINENO"; }
 # --- end rendering round 4 ---
 
 # Release 1.0 blocks, round 4.
-bash "$root/tools/verify_r10blocks4.sh" --built || fail=1
+bash "$root/tools/verify_r10blocks4.sh" --built || { fail=1; echo "FAILED (exit code) at verify10.sh line $LINENO"; }
 
 # --- end-to-end play tests of the real client ---
-bash "$root/tools/verify_playtest10.sh" --built || fail=1
+bash "$root/tools/verify_playtest10.sh" --built || { fail=1; echo "FAILED (exit code) at verify10.sh line $LINENO"; }
 
 pflush
 [ $fail -eq 0 ] && echo "ALL CASES EXACT" || echo "SOME CASES DIFFER"
