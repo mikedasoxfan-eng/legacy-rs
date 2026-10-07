@@ -6,12 +6,12 @@
 
 <sub>Formerly beta-rs. Renamed in 3.0.0 because it is no longer only Beta.</sub>
 
-[![release](https://img.shields.io/badge/release-v3.0.1-2ea44f?style=flat&labelColor=3b3b3b)](https://github.com/mikedasoxfan-eng/legacy-rs/releases/latest)
+[![release](https://img.shields.io/badge/release-v3.0.2-2ea44f?style=flat&labelColor=3b3b3b)](https://github.com/mikedasoxfan-eng/legacy-rs/releases/latest)
 [![CI](https://github.com/mikedasoxfan-eng/legacy-rs/actions/workflows/ci.yml/badge.svg)](https://github.com/mikedasoxfan-eng/legacy-rs/actions/workflows/ci.yml)
 [![Minecraft](https://img.shields.io/badge/Minecraft-Beta_1.7.3_%2B_Beta_1.8.1_%2B_1.0-6aa84f?style=flat&labelColor=3b3b3b)](#)
 [![Rust](https://img.shields.io/badge/built_with-Rust-b7410e?style=flat&logo=rust&logoColor=white&labelColor=3b3b3b)](#)
 [![wgpu](https://img.shields.io/badge/graphics-wgpu-4b6ec2?style=flat&labelColor=3b3b3b)](#)
-[![oracle](https://img.shields.io/badge/oracle-Beta_ALL_EXACT,_1.0_final_rerun_pending-d4a017?style=flat&logo=openjdk&logoColor=white&labelColor=3b3b3b)](#how-exact-is-exact)
+[![oracle](https://img.shields.io/badge/oracle-ALL_CASES_EXACT-2ea44f?style=flat&logo=openjdk&logoColor=white&labelColor=3b3b3b)](#how-exact-is-exact)
 [![GUI](https://img.shields.io/badge/GUI_pixel_diff-92_exact,_8_within_1_shade-2ea44f?style=flat&labelColor=3b3b3b)](#the-gui-pixel-diff)
 
 [![progress](https://img.shields.io/badge/goal_progress-100%25-8fbc3a?style=flat&labelColor=3b3b3b)](#beta-173-progress)
@@ -65,8 +65,8 @@ Oracle checks (`tools/verify181.sh`): **1059 of 1067** sections exact.
 
 The port of **Minecraft 1.0** is complete, next to Beta 1.7.3 and Beta 1.8.1
 (both stay exact). Run it with `beta.exe --mc 1.0`.
-Every 1.0 class is checked against the original; the final rerun of the complete 1.0 suite
-(about 1,400 sections) on the release build is still to come.
+Every 1.0 class is checked against the original, and the complete 1.0 suite (2,006 sections,
+including end-to-end play tests of the real client) matches on the release build.
 
 ```
 Minecraft 1.0  ████████████████████████████████████████  100.0 %  (16,910 / 16,910 lines)
@@ -100,7 +100,7 @@ Oracle checks (`tools/verify10.sh`): **761 of 761** sections exact.
 
 ## Download
 
-Grab `legacy-rs-3.0.1-windows-x64.exe` from the
+Grab `legacy-rs-3.0.2-windows-x64.exe` from the
 [latest release](https://github.com/mikedasoxfan-eng/legacy-rs/releases/latest), put it in its own
 folder and run it. It asks which version to play: **Beta 1.7.3**, **Beta 1.8.1** (the Adventure
 Update) or **1.0**. `--mc b1.7.3`, `--mc b1.8.1` or `--mc 1.0` skips the question.

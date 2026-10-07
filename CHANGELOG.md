@@ -3,6 +3,31 @@
 All notable changes to legacy-rs (formerly beta-rs). Versions follow [Semantic Versioning](https://semver.org);
 "exact" always means checked bit for bit against the original bytecode of that version.
 
+## [3.0.2] - 2026-10-06
+
+Minecraft 1.0 fixes found by playing through the new features in the real client: new end-to-end
+play tests set up a situation (`--setup`) and play it with a script, in the actual game.
+
+### Fixed
+- The End was empty and frozen: drawing the Ender Dragon crashed the game's world thread. The same
+  crash happened when throwing an eye of ender or an ender pearl, or near a magma cube.
+- Killing the dragon now builds the exit portal (its portal blocks were removed as soon as they were
+  placed) and drops the dragon egg; walking in shows the end poem and credits, then the Overworld.
+- Dying in the End respawns you in the Overworld (it sent you to the Nether).
+- The End's sky and fog now follow the original End (it used the Overworld's sun angle, biome and fog
+  colour); the compass and clock spin there as in the original.
+- After changing dimension the game no longer races through catch-up ticks.
+- All eleven music discs play.
+- Four checks that still differed from the original now match: potion effect expiry, an item icon,
+  and aiming a bucket at water.
+
+### Tests
+- `tools/verify_playtest10.sh`: end-to-end play tests of the real 1.0 client (End portal, dragon and
+  credits, Nether round trip, death in the End, hardcore death, every new item, block, screen and mob).
+
+### Verified
+- The complete 1.0 suite on this build: 2,006 sections, every one matching the original (the final rerun 3.0.0 and 3.0.1 still owed). Beta 1.7.3 and Beta 1.8.1: ALL CASES EXACT, screens included.
+
 ## [3.0.1] - 2026-10-06
 
 ### Fixed

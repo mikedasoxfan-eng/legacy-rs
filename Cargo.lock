@@ -284,7 +284,7 @@ dependencies = [
 
 [[package]]
 name = "client"
-version = "3.0.1"
+version = "3.0.2"
 dependencies = [
  "bytemuck",
  "chrono",
@@ -305,7 +305,7 @@ dependencies = [
 
 [[package]]
 name = "client10"
-version = "3.0.1"
+version = "3.0.2"
 dependencies = [
  "bytemuck",
  "chrono",
@@ -323,7 +323,7 @@ dependencies = [
 
 [[package]]
 name = "client181"
-version = "3.0.1"
+version = "3.0.2"
 dependencies = [
  "bytemuck",
  "chrono",
@@ -666,7 +666,7 @@ dependencies = [
 
 [[package]]
 name = "give"
-version = "3.0.1"
+version = "3.0.2"
 dependencies = [
  "flate2",
 ]
@@ -2842,21 +2842,21 @@ checksum = "1ebf944e87a7c253233ad6766e082e3cd714b5d03812acc24c318f549614536e"
 
 [[package]]
 name = "worldgen"
-version = "3.0.1"
+version = "3.0.2"
 dependencies = [
  "flate2",
 ]
 
 [[package]]
 name = "worldgen10"
-version = "3.0.1"
+version = "3.0.2"
 dependencies = [
  "flate2",
 ]
 
 [[package]]
 name = "worldgen181"
-version = "3.0.1"
+version = "3.0.2"
 dependencies = [
  "flate2",
 ]
