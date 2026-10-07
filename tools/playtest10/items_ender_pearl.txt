@@ -1,0 +1,11 @@
+# Throw an ender pearl straight ahead: after it lands the player is teleported forward (+Z).
+#! setup items_ender_pearl
+#! seed 7
+#! expect before * * 256.5 0.01
+#! expect landed * * 270 12
+10 shot before
+15 mouse right down
+17 mouse right up
+22 shot flying
+60 shot landed
+70 quit

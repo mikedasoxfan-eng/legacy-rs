@@ -1,0 +1,11 @@
+# Right-click the last empty End portal frame with an eye of ender: the frame fills, the ring is
+# complete and the 3x3 End portal appears (ItemEnderEye.onItemUse).
+#! setup items_end_frame_eye
+#! seed 7
+40 shot before
+42 look 0 190
+48 shot aimed
+50 mouse right down
+52 mouse right up
+75 shot portal
+80 quit

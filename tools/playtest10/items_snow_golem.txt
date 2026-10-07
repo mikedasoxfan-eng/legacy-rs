@@ -1,0 +1,11 @@
+# Place a pumpkin on two stacked snow blocks: BlockPumpkin.onBlockAdded replaces them with a snow golem.
+#! setup items_snow_golem
+#! seed 7
+40 shot before
+42 look 0 120
+48 shot aimed
+50 mouse right down
+52 mouse right up
+75 shot golem
+100 shot later
+110 quit

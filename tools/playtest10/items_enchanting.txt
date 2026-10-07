@@ -1,0 +1,32 @@
+# Right-click an enchantment table ringed by bookshelves at XP level 30, put a diamond sword in its slot,
+# click an offer: the sword is enchanted (glint) and the levels drop.
+#! setup items_enchanting
+#! seed 7
+40 shot before
+42 look 0 250
+45 shot aimed
+50 mouse right down
+52 mouse right up
+90 shot screen
+95 move 282 374
+100 mouse left down
+101 mouse left up
+105 move 316 184
+110 mouse left down
+111 mouse left up
+130 shot placed
+135 move 470 121
+140 shot hover
+145 mouse left down
+146 mouse left up
+170 shot enchanted
+175 move 316 184
+180 mouse left down
+181 mouse left up
+185 move 282 374
+190 mouse left down
+191 mouse left up
+195 key E down
+196 key E up
+240 shot closed
+250 quit
