@@ -55,7 +55,10 @@ EOF2
 # The original's run renames and deletes fixture worlds; the port starts from the same fixtures.
 python "$root/tools/oracle10/gui/make_saves.py" "$root/tools/oracle10/out/guisaves" >/dev/null || exit 1
 GUI_MSAA=1 r10_client "$root/target/release/beta" --mc 1.0 --guishot "$root/tools/oracle10/gui/scenes.txt" "$rust_out" >/dev/null || exit 1
-python "$root/tools/oracle10/compare_gui_strict.py" "$root/tools/oracle10/gui/scenes.txt" "$java_out" "$rust_out" "$root/shots10/gui_diff" || fail=1
+# Same rule as Beta 1.7.3 and 1.8.1: a screen whose only differences are a few pixels one colour level off
+# (GPU lighting rounding on lit 3D block icons) is reported apart as "within one level"; anything else fails.
+echo "== gui10: main screens"
+"$root/target/release/beta" --mc 1.0 --guidiff "$java_out" "$rust_out" "$root/shots10/gui_diff" || fail=1
 scenes="$root/tools/oracle10/gui/container-scenes.txt"
 java_containers="$root/tools/oracle10/out/containers_gui_java"
 rust_containers="$root/shots10/containers"

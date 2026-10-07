@@ -25,6 +25,29 @@ use crate::render::gpu::Image;
 
 pub const SIZE: (u32, u32) = (854, 480);
 
+/// `Entity.getEntityBrightness` of the player GuiShot's `world <seed>` leaves behind:
+/// `Minecraft.startWorld` with `WorldSettings(seed, 0, false, false)` preloads the spawn
+/// area and spawns a fresh player there, or (`saved`, the world reopened after a `hud pos=`)
+/// reads the saved position back and loads the chunks around it
+/// (`spawnPlayerWithLoadedChunks`). GuiShot never ticks the world, so this is the value
+/// RenderLiving's hurt overlay uses in later container captures.
+fn world_player_brightness(seed: i64, saved: Option<[f64; 3]>) -> Result<f32, String> {
+    use worldgen::entity::player::food::WorldSettings;
+    let settings = WorldSettings::with_hardcore(seed, 0, false, false);
+    let (mut w, _) = worldgen::world::World::open_with_settings(
+        None, seed, seed ^ 0x5DEECE66D, false, Some("guishot_world"), Some(settings), &mut |_| {},
+    )
+    .map_err(|e| format!("world {seed}: {e}"))?;
+    w.skylight_subtracted = w.calculate_skylight_subtracted(1.0);
+    let id = w.spawn_player("Player");
+    let mut e = w.entities.remove(&id).ok_or("world: no player")?;
+    if let Some([x, y, z]) = saved {
+        e.set_position(x, y, z);
+        w.join_entity_in_surroundings(e.pos);
+    }
+    Ok(e.brightness(&mut w))
+}
+
 pub fn run(script: &str, out_dir: &std::path::Path) -> Result<(), String> {
     let text = std::fs::read_to_string(script).map_err(|e| format!("{script}: {e}"))?;
     std::fs::create_dir_all(out_dir).map_err(|e| e.to_string())?;
@@ -100,6 +123,9 @@ pub fn run(script: &str, out_dir: &std::path::Path) -> Result<(), String> {
         worldgen::container::InventoryPlayer,
     )> = None;
     let mut preview = worldgen::container::PlayerPreview::default();
+    // The in-world player's light (1.0 with no world, as the screens outside a world never
+    // draw a hurt player).
+    let mut player_brightness = 1.0f32;
     for line in text.lines() {
         let line = line.split('#').next().unwrap().trim();
         if line.is_empty() {
@@ -196,7 +222,10 @@ pub fn run(script: &str, out_dir: &std::path::Path) -> Result<(), String> {
                     Box::new(screens::main_menu::GuiMainMenu::with_splash(&splash));
                 let s: Box<dyn super::Screen> = match arg(0).as_str() {
                     "creative" | "inventory" | "crafting" | "chest" | "largechest" | "furnace" | "dispenser" | "brewing" | "enchantment" => {
-                        preview = Default::default();
+                        preview = worldgen::container::PlayerPreview {
+                            brightness: player_brightness,
+                            ..Default::default()
+                        };
                         use worldgen::container::*;
                         let kind = match arg(0).as_str() {
                             "inventory" => ContainerKind::Player,
@@ -248,6 +277,8 @@ pub fn run(script: &str, out_dir: &std::path::Path) -> Result<(), String> {
             // and changeWorld calls preparePlayerToSpawn (health 20).
             "world" => {
                 sys.ui.world_open = true;
+                let seed: i64 = arg(0).parse().map_err(|_| "world seed")?;
+                player_brightness = world_player_brightness(seed, hud_player.as_ref().map(|p| p.pos))?;
                 if let Some(p) = &mut hud_player {
                     p.survival = true;
                     p.health = 20;
@@ -373,6 +404,8 @@ pub fn run(script: &str, out_dir: &std::path::Path) -> Result<(), String> {
                     None => {}
                 }
                 p.head_in_water = hud_water.contains(&eye);
+                // GuiShot prints this player's getEntityBrightness; the brightness= hint is it.
+                player_brightness = p.brightness;
                 hud_player = Some(p.clone());
                 hud = Some(p);
             }

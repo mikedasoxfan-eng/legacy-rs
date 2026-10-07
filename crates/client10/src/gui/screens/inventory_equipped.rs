@@ -12,6 +12,8 @@ pub struct HeldSprite {
     pub full_3d: bool,
     /// Non-3D blocks use terrain.png; items use gui/items.png.
     pub terrain: bool,
+    /// `Item.bow`: RenderPlayer's own held transform, ahead of the full-3D branch.
+    pub bow: bool,
 }
 
 pub fn render_item(
@@ -26,7 +28,13 @@ pub fn render_item(
     let mut gl = crate::gui::gl::Gl::new();
     gl.set_modelview(model["bipedRightArm"].post_render(m, 1.0 / 16.0));
     gl.translatef(-1.0 / 16.0, 7.0 / 16.0, 1.0 / 16.0);
-    if item.full_3d {
+    if item.bow {
+        gl.translatef(0.0, 2.0 / 16.0, 5.0 / 16.0);
+        gl.rotatef(-20.0, 0.0, 1.0, 0.0);
+        gl.scalef(10.0 / 16.0, -10.0 / 16.0, 10.0 / 16.0);
+        gl.rotatef(-100.0, 1.0, 0.0, 0.0);
+        gl.rotatef(45.0, 0.0, 1.0, 0.0);
+    } else if item.full_3d {
         if rotate {
             gl.rotatef(180.0, 0.0, 0.0, 1.0);
             gl.translatef(0.0, -2.0 / 16.0, 0.0);

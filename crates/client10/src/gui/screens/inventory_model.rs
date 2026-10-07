@@ -221,6 +221,7 @@ pub fn draw(
                 icon,
                 full_3d: DATA.get(at) == Some(&1),
                 terrain: item.id < 256,
+                bow: item.id == 261,
             };
             let material = [1.0; 4];
             let (batch, matrix) = super::inventory_equipped::render_item(
