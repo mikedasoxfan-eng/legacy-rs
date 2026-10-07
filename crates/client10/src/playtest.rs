@@ -4,8 +4,9 @@
 //! a player or the game could (placing blocks, items, entities, positions); they never
 //! change how the game behaves.
 //!
-//! Add a scenario: write `fn name(w: &mut World, player: i32)` in a `playtest/*.rs` file,
-//! then list it in `SCENARIOS`. The player stands at its spawn, looking south (+Z, yaw 0).
+//! Add a scenario: write `fn name(w: &mut World, player: i32)` in a `playtest/*.rs` file
+//! (journey: dimensions and the dragon; items: items, blocks and screens; mobs: creatures),
+//! then list it in that file's `SCENARIOS`. The player stands at its spawn, looking south (+Z, yaw 0).
 
 use std::sync::OnceLock;
 use worldgen::World;
@@ -13,7 +14,11 @@ use worldgen::World;
 /// The `--setup` argument, set once while the options are parsed.
 pub static SETUP: OnceLock<String> = OnceLock::new();
 
-type Scenario = fn(&mut World, i32);
+pub type Scenario = fn(&mut World, i32);
+
+mod items;
+mod journey;
+mod mobs;
 
 /// Every scenario by name.
 const SCENARIOS: &[(&str, Scenario)] = &[("end_portal", end_portal)];
@@ -21,13 +26,14 @@ const SCENARIOS: &[(&str, Scenario)] = &[("end_portal", end_portal)];
 /// Run the requested scenario once (the worker calls this after the player joins).
 pub fn run(w: &mut World, player: i32) {
     let Some(name) = SETUP.get() else { return };
-    match SCENARIOS.iter().find(|(n, _)| n == name) {
+    let all = || SCENARIOS.iter().chain(journey::SCENARIOS).chain(items::SCENARIOS).chain(mobs::SCENARIOS);
+    match all().find(|(n, _)| n == name) {
         Some((_, f)) => {
             f(w, player);
             eprintln!("playtest: scenario '{name}' ready");
         }
         None => {
-            let names: Vec<&str> = SCENARIOS.iter().map(|(n, _)| *n).collect();
+            let names: Vec<&str> = all().map(|(n, _)| *n).collect();
             eprintln!("playtest: unknown scenario '{name}' (known: {})", names.join(", "));
         }
     }
