@@ -1,6 +1,6 @@
 # Beta 1.8.1
 
-beta-rs 2.0.0 adds Minecraft Beta 1.8.1 (the Adventure Update, September 2011) next to
+legacy-rs (then called beta-rs) 2.0.0 added Minecraft Beta 1.8.1 (the Adventure Update, September 2011) next to
 Beta 1.7.3. Both live in the same program and share nothing at run time: each version has
 its own simulation crate, its own client and its own oracle, so a change for one can never
 move the other. Beta 1.7.3 is still checked by `tools/verify.sh` after every merge.

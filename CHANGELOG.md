@@ -1,19 +1,28 @@
 # Changelog
 
-All notable changes to beta-rs. Versions follow [Semantic Versioning](https://semver.org);
+All notable changes to legacy-rs (formerly beta-rs). Versions follow [Semantic Versioning](https://semver.org);
 "exact" always means checked bit for bit against the original bytecode of that version.
 
-## [Unreleased] - 3.0.0
+## [3.0.0] - 2026-10-06
+
+The project is now called **legacy-rs** (formerly beta-rs), because it is no longer only Beta. The
+program file is still `beta.exe` and every save and options folder stays where it was.
 
 Minecraft 1.0 (the first full release), next to Beta 1.7.3 and Beta 1.8.1 in the same program.
 
 ### Versions
 - The version picker offers Minecraft 1.0; `beta.exe --mc 1.0` starts it directly. It keeps its own saves,
-  options and statistics in `1.0\`. Beta 1.7.3 and Beta 1.8.1 are unchanged and still checked bit for bit.
+  options and statistics in `1.0\`. Beta 1.7.3 and Beta 1.8.1 are unchanged
+  (apart from the program name in their help text).
 - Plain launches keep saves next to the exe, whatever folder they are started from.
 
-### Minecraft 1.0 (in progress; see the README for the exact verified share)
-- Ported forward from the exact Beta 1.8.1 code, class by class, against the original 1.0 bytecode.
+### Minecraft 1.0
+- Everything 1.0 added or changed in singleplayer: the End and the Ender Dragon, enchanting, brewing
+  and potions, Nether fortresses and blazes, magma cubes, mooshrooms, snow golems, villagers, breeding,
+  mushroom islands, hardcore mode and the rest. All 16,910 changed lines of the 1.0 classes are
+  ported and checked bit for bit against the original bytecode (761 focused oracle sections, all exact).
+- The final rerun of the whole 1.0 suite (about 1,400 sections, including the older checks carried
+  forward from Beta 1.8.1) on the release build, and of the Beta 1.7.3 and 1.8.1 suites, is still to come.
 
 ## [2.0.0] - 2026-10-05
 

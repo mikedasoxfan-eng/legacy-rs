@@ -55,7 +55,7 @@ impl Screen for GuiVersionSelect {
     fn draw_screen(&mut self, ui: &mut Ui, mx: i32, my: i32, _partial: f32) {
         let (w, h) = (self.base.width, self.base.height);
         ui.draw_world_background(w, h, 0);
-        ui.draw_centered_string("beta-rs", w / 2, h / 4 - 20, 16777215);
+        ui.draw_centered_string("legacy-rs", w / 2, h / 4 - 20, 16777215);
         ui.draw_centered_string("Choose a Minecraft version", w / 2, h / 4 + 10, 10526880);
         if let Some(e) = &self.error {
             ui.draw_centered_string(e, w / 2, h / 4 + 100, 16733525);

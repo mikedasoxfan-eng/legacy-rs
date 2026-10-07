@@ -1,4 +1,4 @@
-//! Minecraft Beta 1.8.1 in Rust: the original menus and the singleplayer game on the
+//! Minecraft 1.0 in Rust: the original menus and the singleplayer game on the
 //! bit-exact world simulation.
 //!
 //! Controls are the original's (rebindable in Options): WASD, Space, Shift, mouse, 1-9,
@@ -34,12 +34,12 @@ use worker::WorldOptions;
 use worldgen::BiomeSource;
 
 const HELP: &str = "\
-beta-rs: Minecraft Beta 1.8.1 in Rust
+legacy-rs: Minecraft 1.0 in Rust
 
 Usage: beta [options]
 
 Without options the title screen opens, exactly like the original. Textures, sounds and fonts
-are read from your own installation (%APPDATA%\\.minecraft\\versions\\b1.8.1\\b1.8.1.jar).
+are read from your own installation (%APPDATA%\\.minecraft\\versions\\1.0\\1.0.jar).
 
 Options:
   --seed <number or text>        create and enter a world with this seed
@@ -398,7 +398,7 @@ pub fn run() {
     if enhanced() { let _ = std::fs::create_dir_all(ENHANCED_OPTIONS_DIR); }
     match args.get(1).map(String::as_str) {
         Some("--version" | "-V") => {
-            println!("beta-rs {} (Minecraft Beta 1.8.1)", env!("CARGO_PKG_VERSION"));
+            println!("legacy-rs {} (Minecraft 1.0)", env!("CARGO_PKG_VERSION"));
             return;
         }
         Some("--help" | "-h") => {

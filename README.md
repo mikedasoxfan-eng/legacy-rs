@@ -1,19 +1,21 @@
 <div align="center">
 
-# beta-rs
+# legacy-rs
 
-**Minecraft Beta 1.7.3 and Beta 1.8.1, rewritten in Rust, proven identical to the originals.**
+**Minecraft Beta 1.7.3, Beta 1.8.1 and 1.0, rewritten in Rust, proven identical to the originals.**
 
-[![release](https://img.shields.io/badge/release-v2.0.0-2ea44f?style=flat&labelColor=3b3b3b)](https://github.com/mikedasoxfan-eng/beta-rs/releases/latest)
-[![CI](https://github.com/mikedasoxfan-eng/beta-rs/actions/workflows/ci.yml/badge.svg)](https://github.com/mikedasoxfan-eng/beta-rs/actions/workflows/ci.yml)
-[![Minecraft](https://img.shields.io/badge/Minecraft-Beta_1.7.3_%2B_1.8.1-6aa84f?style=flat&labelColor=3b3b3b)](#)
+<sub>Formerly beta-rs. Renamed in 3.0.0 because it is no longer only Beta.</sub>
+
+[![release](https://img.shields.io/badge/release-v3.0.0-2ea44f?style=flat&labelColor=3b3b3b)](https://github.com/mikedasoxfan-eng/legacy-rs/releases/latest)
+[![CI](https://github.com/mikedasoxfan-eng/legacy-rs/actions/workflows/ci.yml/badge.svg)](https://github.com/mikedasoxfan-eng/legacy-rs/actions/workflows/ci.yml)
+[![Minecraft](https://img.shields.io/badge/Minecraft-Beta_1.7.3_%2B_Beta_1.8.1_%2B_1.0-6aa84f?style=flat&labelColor=3b3b3b)](#)
 [![Rust](https://img.shields.io/badge/built_with-Rust-b7410e?style=flat&logo=rust&logoColor=white&labelColor=3b3b3b)](#)
 [![wgpu](https://img.shields.io/badge/graphics-wgpu-4b6ec2?style=flat&labelColor=3b3b3b)](#)
-[![oracle](https://img.shields.io/badge/oracle-ALL_CASES_EXACT-2ea44f?style=flat&logo=openjdk&logoColor=white&labelColor=3b3b3b)](#how-exact-is-exact)
+[![oracle](https://img.shields.io/badge/oracle-Beta_ALL_EXACT,_1.0_final_rerun_pending-d4a017?style=flat&logo=openjdk&logoColor=white&labelColor=3b3b3b)](#how-exact-is-exact)
 [![GUI](https://img.shields.io/badge/GUI_pixel_diff-92_exact,_8_within_1_shade-2ea44f?style=flat&labelColor=3b3b3b)](#the-gui-pixel-diff)
 
 [![progress](https://img.shields.io/badge/goal_progress-100%25-8fbc3a?style=flat&labelColor=3b3b3b)](#beta-173-progress)
-[![verified sections](https://img.shields.io/badge/verified_sections-1232-2ea44f?style=flat&labelColor=3b3b3b)](#what-is-checked)
+[![verified sections](https://img.shields.io/badge/verified_sections-1993-2ea44f?style=flat&labelColor=3b3b3b)](#what-is-checked)
 [![Rust lines](https://img.shields.io/badge/Rust-64k_lines-b7410e?style=flat&labelColor=3b3b3b)](#layout)
 [![Mojang assets](https://img.shields.io/badge/Mojang_assets_bundled-0_bytes-2ea44f?style=flat&labelColor=3b3b3b)](#you-need-your-own-copy)
 [![multiplayer](https://img.shields.io/badge/multiplayer-not_planned-9e9e9e?style=flat&labelColor=3b3b3b)](#scope)
@@ -63,6 +65,8 @@ Oracle checks (`tools/verify181.sh`): **1059 of 1067** sections exact.
 
 The port of **Minecraft 1.0** is complete, next to Beta 1.7.3 and Beta 1.8.1
 (both stay exact). Run it with `beta.exe --mc 1.0`.
+Every 1.0 class is checked against the original; the final rerun of the complete 1.0 suite
+(about 1,400 sections) on the release build is still to come.
 
 ```
 Minecraft 1.0  ████████████████████████████████████████  100.0 %  (16,910 / 16,910 lines)
@@ -96,14 +100,14 @@ Oracle checks (`tools/verify10.sh`): **761 of 761** sections exact.
 
 ## Download
 
-Grab `beta-rs-2.0.0-windows-x64.exe` from the
-[latest release](https://github.com/mikedasoxfan-eng/beta-rs/releases/latest), put it in its own
-folder and run it. It asks which version to play: **Beta 1.7.3** or **Beta 1.8.1** (the Adventure
-Update). `--mc b1.8.1` or `--mc b1.7.3` skips the question.
+Grab `legacy-rs-3.0.0-windows-x64.exe` from the
+[latest release](https://github.com/mikedasoxfan-eng/legacy-rs/releases/latest), put it in its own
+folder and run it. It asks which version to play: **Beta 1.7.3**, **Beta 1.8.1** (the Adventure
+Update) or **1.0**. `--mc b1.7.3`, `--mc b1.8.1` or `--mc 1.0` skips the question.
 
 **You need the versions you want to play installed through the official launcher first**
 (Installations → tick "Historical versions" → New installation → "old_beta b1.7.3" and/or
-"old_beta b1.8.1", then play each once). beta-rs reads the textures, sounds and fonts from those
+"old_beta b1.8.1" and/or "release 1.0", then play each once). legacy-rs reads the textures, sounds and fonts from those
 installations; it ships none of its own. Windows 10/11 64-bit with a DirectX 12, Vulkan or
 OpenGL capable GPU.
 
@@ -111,8 +115,9 @@ OpenGL capable GPU.
 |---|---|---|
 | Beta 1.7.3 | `saves\` next to the exe | next to the exe, as in 1.0.0 |
 | Beta 1.8.1 | `b1.8.1\saves\` | `b1.8.1\` |
+| 1.0 | `1.0\saves\` | `1.0\` |
 
-Both use the original save formats: copy a world into `%APPDATA%\.minecraft\saves` to open it
+All use the original save formats: copy a world into `%APPDATA%\.minecraft\saves` to open it
 in the real game of the same version, or the other way round.
 
 ---
@@ -237,6 +242,14 @@ mobs, potion effects and critical hits; the lightmap; the new blocks and items; 
 screens and HUD. How the progress figure is counted, and the per-area reports:
 [docs/beta-1.8.1.md](docs/beta-1.8.1.md).
 
+### Minecraft 1.0
+
+The same method again, against the original 1.0 bytecode: `tools/verify10.sh` and its focused suites
+(761 focused sections, every one EXACT) plus `tools/verify_gui10.sh` for the screens: the End and the Ender
+Dragon, enchanting, brewing and potions, Nether fortresses, the new mobs, mushroom islands and the
+other 1.0 changes. The progress figure counts every class 1.0 added or changed against Beta 1.8.1
+(renamed identifiers do not count).
+
 ### The GUI pixel diff
 
 `tools/verify_gui.sh` opens the **real** b1.7.3 client for a few seconds, drives it through
@@ -270,7 +283,7 @@ reads them from your own installation:
 
 The verification harness additionally needs the original client decompiled with
 [RetroMCP](https://github.com/MCPHackers/RetroMCP-Java) into `tools/retromcp` (ignored by
-git) and Beta 1.8.1 into `tools/retromcp-b181`, and Mojang's Java 8u51 runtime, which the
+git), Beta 1.8.1 into `tools/retromcp-b181` and 1.0 into `tools/retromcp-r10`, and Mojang's Java 8u51 runtime, which the
 official launcher installs.
 
 ---
@@ -286,10 +299,11 @@ target\release\beta.exe
 ```
 
 or double-click `play.bat`. `beta --help` lists the command-line options. Started without
-arguments, beta-rs first asks which version to play: **Beta 1.7.3** or **Beta 1.8.1** (the
-Adventure Update; `beta.exe --mc b1.8.1` skips the question). The game then starts at the title
-screen: **Singleplayer → Create New World**, exactly like the original. Beta 1.7.3 worlds go to
-`saves\` next to the exe; Beta 1.8.1 keeps its own saves, options and statistics in `b1.8.1\`.
+arguments, legacy-rs first asks which version to play: **Beta 1.7.3**, **Beta 1.8.1** (the
+Adventure Update) or **1.0** (`beta.exe --mc b1.7.3`, `--mc b1.8.1` or `--mc 1.0` skips the
+question). The game then starts at the title screen: **Singleplayer → Create New World**, exactly
+like the original. Beta 1.7.3 worlds go to `saves\` next to the exe; Beta 1.8.1 and 1.0 keep their
+own saves, options and statistics in `b1.8.1\` and `1.0\`.
 
 ### Controls
 
@@ -354,6 +368,7 @@ crates/
                       ingame.rs (HUD), font, language files, settings
     sound.rs          SoundManager / SoundPool semantics over cpal
   worldgen181/, client181/  Beta 1.8.1: the same layout, ported forward class by class
+  worldgen10/, client10/    Minecraft 1.0, ported forward from Beta 1.8.1
                       (see docs/beta-1.8.1.md)
 docs/                 design notes and verification coverage per subsystem
 assets/               the exe icon (original pixel art, not a Mojang texture)
@@ -413,8 +428,8 @@ Being exact means keeping these too:
 
 ## Not yet
 
-Nothing in singleplayer, in either version. The one known difference from the original is cosmetic: 3D block
-icons on the achievement and statistics screens can be one colour shade off on a few hundred
+Nothing in singleplayer, in any of the three versions. The one known difference from the original is cosmetic: 3D block
+icons on the achievement, statistics and (1.0) creative-inventory screens can be one colour shade off on a few hundred
 pixels, which comes from the graphics driver's own rounding of item lighting (measured, but
 not reproducible bit for bit). Multiplayer, the launcher and online skins were never in
 scope.
@@ -423,7 +438,7 @@ scope.
 
 ## License
 
-beta-rs is a personal, unofficial project and is **not** released under an open-source
+legacy-rs is a personal, unofficial project and is **not** released under an open-source
 license: much of it follows the structure of Mojang's decompiled game code, so the code is
 for personal use only and may not be redistributed. Minecraft's textures, sounds and fonts
 are never included; they are read from your own installation at runtime.

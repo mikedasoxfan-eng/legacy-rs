@@ -34,7 +34,7 @@ use worker::WorldOptions;
 use worldgen::BiomeSource;
 
 const HELP: &str = "\
-beta-rs: Minecraft Beta 1.8.1 in Rust
+legacy-rs: Minecraft Beta 1.8.1 in Rust
 
 Usage: beta [options]
 
@@ -397,7 +397,7 @@ pub fn run() {
     if enhanced() { let _ = std::fs::create_dir_all(ENHANCED_OPTIONS_DIR); }
     match args.get(1).map(String::as_str) {
         Some("--version" | "-V") => {
-            println!("beta-rs {} (Minecraft Beta 1.8.1)", env!("CARGO_PKG_VERSION"));
+            println!("legacy-rs {} (Minecraft Beta 1.8.1)", env!("CARGO_PKG_VERSION"));
             return;
         }
         Some("--help" | "-h") => {

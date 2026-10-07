@@ -3,10 +3,10 @@ resolver = "2"
 members = ["crates/*"]
 
 [workspace.package]
-version = "2.0.0"
+version = "3.0.0"
 edition = "2021"
 authors = ["logiu"]
-repository = "https://github.com/mikedasoxfan-eng/beta-rs"
+repository = "https://github.com/mikedasoxfan-eng/legacy-rs"
 publish = false
 
 [profile.release]
