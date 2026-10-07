@@ -1,0 +1,9 @@
+# Drink a milk bucket (hold right mouse 32 ticks): ItemBucketMilk.onFoodEaten leaves an empty bucket.
+#! setup items_milk_bucket
+#! seed 7
+40 shot before
+45 mouse right down
+65 shot drinking
+90 mouse right up
+95 shot drunk
+100 quit

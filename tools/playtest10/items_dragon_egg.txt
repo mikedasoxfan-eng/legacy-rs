@@ -1,0 +1,9 @@
+# Left-click a dragon egg: BlockDragonEgg.onBlockClicked teleports it away (it does not break).
+#! setup items_dragon_egg
+#! seed 7
+40 shot before
+50 mouse left down
+52 mouse left up
+56 shot after
+80 shot later
+90 quit

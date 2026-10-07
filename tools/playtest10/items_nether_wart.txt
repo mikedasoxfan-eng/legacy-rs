@@ -1,0 +1,10 @@
+# Right-click the top of soul sand with nether wart: ItemSeeds-like placement (BlockNetherStalk, id 115).
+#! setup items_nether_wart
+#! seed 7
+40 shot before
+42 look 0 300
+48 shot aimed
+50 mouse right down
+52 mouse right up
+70 shot planted
+80 quit

@@ -1,0 +1,27 @@
+# A creative-mode player: the inventory key opens the creative screen (tabs + scrolling item grid);
+# taking an item from the grid into the hotbar works and the block can be placed.
+#! setup items_creative_inventory
+#! seed 7
+40 shot before
+50 key E down
+51 key E up
+90 shot creative
+95 move 426 82
+100 scroll -3
+110 shot scrolled
+115 mouse left down
+116 mouse left up
+120 move 570 414
+125 mouse left down
+126 mouse left up
+130 shot taken
+135 key E down
+136 key E up
+138 key Digit9 down
+139 key Digit9 up
+170 shot closed
+175 look 0 300
+180 mouse right down
+182 mouse right up
+200 shot placed
+210 quit

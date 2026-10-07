@@ -1,0 +1,11 @@
+# Right-click an eye of ender into the air: an EntityEye flies off and the stack drops to 3.
+#! setup items_eye_of_ender
+#! seed 7
+10 shot before
+12 look 0 -200
+15 mouse right down
+17 mouse right up
+20 shot thrown
+30 shot flying
+50 shot later
+60 quit

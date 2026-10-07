@@ -1,0 +1,14 @@
+# Hold right mouse on a swiftness potion: ItemPotion.onFoodEaten applies Speed, the inventory lists it,
+# and an empty glass bottle is left in the hand. (Starts late: the world thread is still meshing at first
+# and answers the inventory key slowly.)
+#! setup items_drink_potion
+#! seed 7
+30 shot before
+40 mouse right down
+55 shot drinking
+80 mouse right up
+82 shot drunk
+85 key E down
+86 key E up
+130 shot effects
+140 quit
