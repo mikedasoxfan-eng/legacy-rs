@@ -1,5 +1,5 @@
 //! Texture-pack refresh and original dynamic-texture registration/tick order.
-use super::{assets, render, sky, App, Colorizers, ToWorker, VideoSettings};
+use super::{assets, render, App, Colorizers, ToWorker, VideoSettings};
 impl App {
     pub(super) fn refresh_textures(&mut self) {
         let (Some(gui), Some(gpu)) = (&mut self.gui, &mut self.gpu) else { return };
@@ -27,16 +27,18 @@ impl App {
             for f in &mut self.fx[..3] {
                 f.tick_anaglyph(&mut self.fx_rng, video.anaglyph);
             }
+            let angle = self.celestial_angle(1.0);
             if let Some(fx) = &mut self.item_fx {
                 let mut target = self.player.as_ref().map_or([0.0; 2], |p| {
                     render::item_fx::ItemFx::targets(
                         [p.entity.pos.x, p.entity.pos.y, p.entity.pos.z],
                         p.entity.yaw,
                         p.world.spawn,
-                        if self.nether { 0.5 } else { sky::celestial_angle(self.world_time, 1.0) },
+                        angle,
                     )
                 });
-                if self.nether {
+                // TextureCompassFX / TextureWatchFX: `worldProvider.isNether` (the Nether and the End) spins them.
+                if self.nether || self.end {
                     target = [
                         self.fx_rng.random() * std::f64::consts::PI as f32 as f64 * 2.0,
                         self.fx_rng.random() * std::f64::consts::PI as f32 as f64 * 2.0,

@@ -495,6 +495,9 @@ fn run(opts: WorldOptions, mut col: Colorizers, mut video: VideoSettings, rx: Re
             sort_pos = (f64::MAX, f64::MAX, f64::MAX);
             idle_reported = false;
             let _ = tx.send(FromWorker::ResetMeshes);
+            // Timer.updateTimer: after a frame that took over a second (changeWorld's save and
+            // preload), no ticks are caught up; the game carries on from now.
+            next_tick = Instant::now() + Duration::from_millis(50);
         };
     }
 
@@ -584,16 +587,12 @@ fn run(opts: WorldOptions, mut col: Colorizers, mut video: VideoSettings, rx: Re
                         // reset either click counter.
                         let click_counters=world.entities.get(&old).and_then(|e|e.player_state())
                             .map(|s|(s.left_click_counter,s.right_click_delay));
-                        if keep && world.dimension != worldgen::world::Dimension::Overworld {
-                            // End return uses the same save's Overworld, without a Nether portal.
-                            world.save_world_indirectly();
-                            let carried = world.entities.get(&old).cloned();
-                            let mut next = world.for_dimension(worldgen::world::Dimension::Overworld, fresh_seed());
-                            if let Some(e) = carried { next.entity_joined_world(e); }
-                            world = next;
-                            switched_world!();
-                        } else if world.dimension.is_hell_world() {
-                            if let Some(next) = world.use_portal(old, fresh_seed(), fresh_seed(), &mut progress) {
+                        // Minecraft.respawn: `if (!worldProvider.canRespawnHere()) usePortal(0)`.
+                        // Always the Overworld: dying in the End (or finishing the credits there)
+                        // must not go through use_portal's Nether/Overworld toggle, which sent a
+                        // player who died in the End to the Nether (WorldProviderEnd is a "hell world").
+                        if !world.dimension.can_respawn_here() {
+                            if let Some(next) = world.use_portal_to(old, worldgen::world::Dimension::Overworld, fresh_seed(), fresh_seed(), &mut progress) {
                                 world = next;
                                 switched_world!();
                             }
@@ -646,13 +645,13 @@ fn run(opts: WorldOptions, mut col: Colorizers, mut video: VideoSettings, rx: Re
             }
         }
 
-        // Ticks (at most a second's worth of catch-up).
+        // Ticks (Timer.updateTimer: at most 10 a frame, the rest dropped).
         let mut ticks = 0;
         if paused {
             // No ticks while paused, but keep the clock moving so meshing isn't starved.
             next_tick = Instant::now() + Duration::from_millis(50);
         }
-        while !paused && Instant::now() >= next_tick && ticks < 20 {
+        while !paused && Instant::now() >= next_tick && ticks < 10 {
             if let Some(id) = player {
                 // Minecraft.runTick with thePlayer: input/controller, joinEntityInSurroundings
                 // every 30 ticks, updateEntities, World.tick, randomDisplayUpdates.
@@ -923,6 +922,7 @@ fn run(opts: WorldOptions, mut col: Colorizers, mut video: VideoSettings, rx: Re
                     if let Some(next) = world.use_portal(id, fresh_seed(), fresh_seed(), &mut progress) {
                         world = next;
                         switched_world!();
+                        crate::playtest::arrived(&mut world, id);
                         if let Some(e) = world.entities.get(&id) {
                             cam = (e.pos.x, e.pos.y, e.pos.z);
                         }
@@ -939,6 +939,7 @@ fn run(opts: WorldOptions, mut col: Colorizers, mut video: VideoSettings, rx: Re
                     if let Some(next) = world.use_portal_to(id, dimension, fresh_seed(), fresh_seed(), &mut progress) {
                         world = next;
                         switched_world!();
+                        crate::playtest::arrived(&mut world, id);
                         if let Some(e) = world.entities.get(&id) {
                             cam = (e.pos.x, e.pos.y, e.pos.z);
                         }
@@ -978,7 +979,7 @@ fn run(opts: WorldOptions, mut col: Colorizers, mut video: VideoSettings, rx: Re
             next_tick += Duration::from_millis(50);
             ticks += 1;
         }
-        if ticks == 20 {
+        if ticks == 10 {
             next_tick = Instant::now();
         }
 
@@ -1176,12 +1177,14 @@ fn weather_snapshot_radius(world: &mut World, cam: (f64, f64, f64), radius: i32,
     Snapshot { columns }
 }
 
-/// The biome source the mesher colors with: the Nether's is a single hell biome.
+/// The biome source the mesher colors with: the Nether's is a single hell biome
+/// (WorldProviderHell), the End's a single sky biome (WorldProviderEnd:
+/// WorldChunkManagerHell(BiomeGenBase.sky, 0.5, 0.0)).
 fn biome_source(world: &World) -> BiomeSource {
-    if world.dimension.is_hell_world() {
-        BiomeSource::hell()
-    } else {
-        BiomeSource::new(world.seed)
+    match world.dimension {
+        worldgen::world::Dimension::Overworld => BiomeSource::new(world.seed),
+        worldgen::world::Dimension::Nether => BiomeSource::hell(),
+        _ => BiomeSource::sky(),
     }
 }
 

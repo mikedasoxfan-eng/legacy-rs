@@ -273,8 +273,10 @@ pub struct App {
     script: Option<crate::playscript::Script>,
     /// 20 Hz steps since the world became ready, paused or not (the script's clock).
     script_ticks: i64,
-    /// The player is in the Nether (`worldProvider.isNether`).
+    /// The player is in the Nether (dimension -1).
     nether: bool,
+    /// The player is in the End (dimension 1, `WorldProviderEnd`).
+    end: bool,
 }
 
 impl App {
@@ -342,6 +344,7 @@ impl App {
             script: None,
             script_ticks: 0,
             nether: false,
+            end: false,
             fps_frames: 0,
             fps_time: Instant::now(),
             fps: 0,
@@ -360,6 +363,10 @@ impl App {
         }
     }
 
+    /// `World.getCelestialAngle`: WorldProviderHell's is always 0.5, WorldProviderEnd's 0.
+    fn celestial_angle(&self, partial: f32) -> f32 {
+        if self.nether { 0.5 } else if self.end { 0.0 } else { sky::celestial_angle(self.world_time, partial) }
+    }
     fn video_settings(&self) -> VideoSettings {
         self.gui.as_ref().map_or_else(VideoSettings::default, |g| VideoSettings::from(&g.ui.settings))
     }
@@ -934,6 +941,14 @@ impl App {
                             "script {name}: pos {:.2} {:.2} {:.2} portal {} prev {} nether {}",
                             p.entity.pos.x, p.entity.pos.y, p.entity.pos.z, self.hud.time_in_portal, self.hud.prev_time_in_portal, self.nether
                         );
+                        let dragon = self.entities.iter().find_map(|s| match &s.entity.kind {
+                            worldgen::entity::EntityKind::Dragon(..) => s.entity.data_watcher.int(16),
+                            _ => None,
+                        });
+                        let orbs = self.entities.iter().filter(|s| matches!(s.entity.kind, worldgen::entity::EntityKind::XPOrb(..))).count();
+                        eprintln!("script {name}: dimension {} health {} level {} dragon {dragon:?} orbs {orbs} yaw {} pitch {} screen {}",
+                            p.entity.player_state().map_or(0, |s| s.dimension), self.hud.health, self.hud.xp_level, self.look[0], self.look[1],
+                            self.gui.as_ref().and_then(|g| g.screen.as_ref()).is_some());
                     }
                     shot = Some((dir.clone(), name))
                 }
@@ -999,7 +1014,10 @@ impl App {
         if gui_ticks == 20 {
             self.gui_ticks = now;
         }
-        if (self.ready && self.player.is_some()) || (!self.ready && self.loading.is_none()) {
+        // The script's clock stops while a loading screen is up (a portal trip or a respawn
+        // preloading terrain): the original runs no ticks inside changeWorld either, and a
+        // slow or fast load must not shift what the script does after it.
+        if self.loading.is_none() && ((self.ready && self.player.is_some()) || !self.ready) {
             self.script_ticks += gui_ticks as i64;
         }
         if let Some(g) = &mut self.gui {
@@ -1227,9 +1245,12 @@ impl App {
                         }
                         self.particles.collector = Some((*entity).clone());
                         let nether = entity.player_state().is_some_and(|s| s.dimension == -1);
-                        if nether != self.nether {
+                        let end = entity.player_state().is_some_and(|s| s.dimension == 1);
+                        if nether != self.nether || end != self.end {
                             self.nether = nether;
-                            self.temps = if nether { BiomeSource::hell() } else { BiomeSource::new(self.seed) };
+                            self.end = end;
+                            // The dimension's WorldChunkManager: Hell(hell, 1, 0), End's Hell(sky, 0.5, 0).
+                            self.temps = if nether { BiomeSource::hell() } else if end { BiomeSource::sky() } else { BiomeSource::new(self.seed) };
                         }
                         if let Some(p) = &mut self.player {
                             p.update(*entity, *hud, view);
@@ -1509,17 +1530,17 @@ impl App {
         if let Some(snd) = &mut self.sound {
             snd.set_listener(self.cam.pos.to_array(), self.cam.yaw);
         }
-        // WorldProviderHell.calculateCelestialAngle is always 0.5.
-        let angle = if self.nether { 0.5 } else { sky::celestial_angle(self.world_time, partial) };
+        // WorldProviderHell.calculateCelestialAngle is always 0.5, WorldProviderEnd's 0.
+        let angle = self.celestial_angle(partial);
         let temp = self.temps.raw_temperature(self.cam.pos.x.floor() as i32, self.cam.pos.z.floor() as i32) as f32;
         let rain = self.weather.rain_at(partial);
         let thunder = self.weather.thunder_at(partial);
         let precipitation = {
             let dim = if self.nether { worldgen::world::Dimension::Nether } else { worldgen::world::Dimension::Overworld };
-            let angle1 = if self.nether { 0.5 } else { sky::celestial_angle(self.world_time, 1.0) };
+            let angle1 = self.celestial_angle(1.0);
             let sky_factor = render::lightmap::sky_factor(angle1, self.weather.rain_at(1.0), self.weather.thunder_at(1.0));
             let gamma = self.gui.as_ref().map_or(0.0, |g| g.ui.settings.gamma);
-            let texels = render::lightmap::compute_dimension(&dim.light_brightness_table(), sky_factor, self.flicker.x, self.weather.flash > 0, gamma, self.player.as_ref().and_then(|p| p.entity.player_state()).is_some_and(|s| s.dimension == 1));
+            let texels = render::lightmap::compute_dimension(&dim.light_brightness_table(), sky_factor, self.flicker.x, self.weather.flash > 0, gamma, self.end);
             let mut out: [Vec<render::weather::WeatherVertex>; 2] = [Vec::new(), Vec::new()];
             for (tex, mut v, light) in render::weather::precipitation10(
                 &self.weather_terrain,
@@ -1552,11 +1573,11 @@ impl App {
         // EntityRenderer.func_35808_e: the lightmap, with the world read at partial tick 1.
         let lightmap = {
             let dim = if self.nether { worldgen::world::Dimension::Nether } else { worldgen::world::Dimension::Overworld };
-            let angle1 = if self.nether { 0.5 } else { sky::celestial_angle(self.world_time, 1.0) };
+            let angle1 = self.celestial_angle(1.0);
             let sky_factor = render::lightmap::sky_factor(angle1, self.weather.rain_at(1.0), self.weather.thunder_at(1.0));
             // The Brightness option (GameSettings.field_35380_M).
             let gamma = self.gui.as_ref().map_or(0.0, |g| g.ui.settings.gamma);
-            render::lightmap::compute_dimension(&dim.light_brightness_table(), sky_factor, self.flicker.x, self.weather.flash > 0, gamma, self.player.as_ref().and_then(|p| p.entity.player_state()).is_some_and(|s| s.dimension == 1))
+            render::lightmap::compute_dimension(&dim.light_brightness_table(), sky_factor, self.flicker.x, self.weather.flash > 0, gamma, self.end)
         };
         let particles = self.particles.vertices(
             self.cam.pos.to_array(),
@@ -1605,12 +1626,14 @@ impl App {
             fov_y_deg: 70.0,
             celestial: angle,
             moon_phase: render::sky_release::moon_phase(self.world_time),
-            end: self.player.as_ref().and_then(|p| p.entity.player_state()).is_some_and(|s| s.dimension == 1),
+            end: self.end,
             sky_color: sky::sky_color(angle, temp, rain, thunder, self.weather.flash, partial),
             fog_color: render::camera::fog_color_release(
                 if self.nether {
                     let sky = sky::sky_color(angle, temp, rain, thunder, self.weather.flash, partial);
                     sky::nether_fog_color(sky, video.distance, rain, thunder)
+                } else if self.end {
+                    sky::end_fog_color(angle, video.distance, rain, thunder, self.weather.flash, partial)
                 } else {
                     sky::fog_color(angle, temp, video.distance, rain, thunder, self.weather.flash, partial, sky::look(self.cam.yaw, self.cam.pitch, self.cam.yaw, self.cam.pitch, partial))
                 },

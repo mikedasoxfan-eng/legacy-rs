@@ -72,8 +72,12 @@ pub fn sky_color_by_temp(temp: f32) -> u32 {
 
 /// `World.func_4079_a`: sky color at the camera. `temp` is `WorldChunkManager.getTemperature`.
 pub fn sky_color(angle: f32, temp: f32, rain: f32, thunder: f32, flash: i32, partial: f32) -> [f32; 3] {
+    sky_color_rgb(angle, sky_color_by_temp(temp), rain, thunder, flash, partial)
+}
+
+/// `World.getSkyColor` with the biome's `getSkyColorByTemp` result `c` already chosen.
+pub fn sky_color_rgb(angle: f32, c: u32, rain: f32, thunder: f32, flash: i32, partial: f32) -> [f32; 3] {
     let d = daylight(angle);
-    let c = sky_color_by_temp(temp);
     let mut rgb = [(c >> 16 & 255) as f32 / 255.0 * d, (c >> 8 & 255) as f32 / 255.0 * d, (c & 255) as f32 / 255.0 * d];
     desaturate(&mut rgb, rain, 0.6, 12.0f32 / 16.0f32);
     desaturate(&mut rgb, thunder, 0.2, 12.0f32 / 16.0f32);
@@ -190,6 +194,32 @@ pub fn nether_fog_color(sky: [f32; 3], render_distance: i32, rain: f32, thunder:
     let mut k = 1.0f32 / (4 - render_distance) as f32;
     k = 1.0f32 - (k as f64).powf(0.25) as f32;
     let mut f = [0.2f32, 0.03f32, 0.03f32];
+    for i in 0..3 {
+        f[i] += (sky[i] - f[i]) * k;
+    }
+    if rain > 0.0 {
+        f[0] *= 1.0f32 - rain * 0.5f32;
+        f[1] *= 1.0f32 - rain * 0.5f32;
+        f[2] *= 1.0f32 - rain * 0.4f32;
+    }
+    if thunder > 0.0 {
+        for c in &mut f {
+            *c *= 1.0f32 - thunder * 0.5f32;
+        }
+    }
+    f
+}
+
+/// `EntityRenderer.updateFogColor` in the End: `WorldProviderEnd.getFogColor` (0x8080A0 * 0.15)
+/// pulled toward the sky colour by render distance, where the sky is `BiomeGenEnd.getSkyColorByTemp`
+/// = 0 (black, before rain, thunder and the lightning flash); `calcSunriseSunsetColors` is null, so
+/// there is no sunrise tint. Then rain and thunder darkening, as everywhere.
+pub fn end_fog_color(angle: f32, render_distance: i32, rain: f32, thunder: f32, flash: i32, partial: f32) -> [f32; 3] {
+    let mut k = 1.0f32 / (4 - render_distance) as f32;
+    k = 1.0f32 - (k as f64).powf(0.25) as f32;
+    let sky = sky_color_rgb(angle, 0, rain, thunder, flash, partial);
+    let base = worldgen::world::Dimension::End.end_fog_color(angle).expect("End fog");
+    let mut f = [base.x as f32, base.y as f32, base.z as f32];
     for i in 0..3 {
         f[i] += (sky[i] - f[i]) * k;
     }
