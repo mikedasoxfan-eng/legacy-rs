@@ -1,0 +1,5 @@
+Minecraft 1.1 RenderManager burning light
+
+RenderManager now calls the entity brightness method first, then overrides its result with15728880 when the actual entity reports burning. The actual pipeline uses that light for drawn batches. Entity burning state is shared with existing simulation behavior: normal mobs use fire or flag0; blazes use their charging flag; magma cubes always return false.
+
+Validation: tools/verify_r11_burninglight.ps1 runs720 unchanged original RenderManager dispatch cases versus actual production Entity-to-CameraState bridge and manager callback. 2,880 comparisons matched with zero differences. Includes three entity types, fire -1/0/1, both flags, eight packed-light values including signed extrema, five partial ticks, and proof that brightness is queried before overriding. Full frame pixels are not claimed by this callback test.

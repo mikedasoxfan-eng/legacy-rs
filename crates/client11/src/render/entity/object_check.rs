@@ -835,3 +835,13 @@ fn held_item_passes_match_original_11() {
  }
  assert_eq!(d.at,d.data.len());println!("{n} held cases, {} comparisons, {} differences",d.checks,d.bad);assert_eq!(d.bad,0);
 }
+
+#[test]
+#[ignore = "requires original 1.1 burning-light packet"]
+fn burning_light_matches_original_11() {
+ let path=std::env::var("BURNING_LIGHT11_FIXTURE").unwrap();let mut d=Input{data:std::fs::read(path).unwrap(),at:0,checks:0,bad:0};assert_eq!(d.u(),u32::from_le_bytes(*b"R11B"));assert_eq!(d.u(),1);let n=d.u();
+ let mut world=worldgen::entity::verify181::world();
+ for case in 0..n {let kind=d.u();let fire=d.u() as i32;let flag=d.u() as i8;let light=d.u() as i32;let partial=d.f();let mut e=worldgen::entity::registry::create(&mut world,match kind {0=>"Pig",1=>"Blaze",_=>"LavaSlime"}).unwrap();e.fire=fire;e.data_watcher.update(0,worldgen::entity::data_watcher::Value::Byte(flag)).unwrap();if kind==1{e.data_watcher.update(16,worldgen::entity::data_watcher::Value::Byte(flag)).unwrap();}
+ let pose=super::manager::CameraState::from(&e);d.eq(pose.burning as u32,"burning");let mut manager:super::manager::RenderManager=Default::default();let mut observed=None;let mut queries=0;manager.render_entity(Some(super::manager::class(&e)),Some(pose),partial,|_|{queries+=1;Ok(light)},|event|{if let super::manager::Event::Lightmap(v)=event{observed=Some(v);}Ok(())}).unwrap();let output=observed.unwrap();d.eq(output[0].to_bits(),&format!("case {case} light U"));d.eq(output[1].to_bits(),&format!("case {case} light V"));d.eq(queries,"brightness queried before override"); }
+ assert_eq!(d.at,d.data.len());println!("{n} burning-light cases, {} comparisons, {} differences",d.checks,d.bad);assert_eq!(d.bad,0);
+}

@@ -17,7 +17,8 @@ impl Entity {
         }
         damage
     }
-    pub fn is_burning(&self, _w: &World) -> bool {
+    pub fn is_burning(&self, _w: &World) -> bool { self.is_burning_state() }
+    pub fn is_burning_state(&self) -> bool {
         match self.kind {
             EntityKind::Blaze(..) => self.data_watcher.byte(16).unwrap() & 1 != 0,
             EntityKind::MagmaCube { .. } => false,

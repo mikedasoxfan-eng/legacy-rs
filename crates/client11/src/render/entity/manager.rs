@@ -136,6 +136,7 @@ pub struct CameraState {
     pub previous_rotation: [f32; 2],
     pub rotation: [f32; 2],
     pub sleeping: bool,
+    pub burning: bool,
 }
 impl From<&Entity> for CameraState {
     fn from(e: &Entity) -> Self {
@@ -145,6 +146,7 @@ impl From<&Entity> for CameraState {
             previous_rotation: [e.prev_yaw, e.prev_pitch],
             rotation: [e.yaw, e.pitch],
             sleeping: e.player_state().is_some_and(|p| p.sleeping),
+            burning: e.is_burning_state(),
         }
     }
 }
@@ -336,6 +338,7 @@ impl<T> RenderManager<T> {
         let p = position(e.last, e.position, partial);
         let yaw = e.previous_rotation[0] + (e.rotation[0] - e.previous_rotation[0]) * partial;
         let light = brightness(partial)?;
+        let light = if e.burning { 15728880 } else { light };
         callback(Event::Lightmap(lightmap_coordinates(light)))?;
         callback(Event::White)?;
         self.render_entity_with_pos_yaw(

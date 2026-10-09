@@ -578,7 +578,7 @@ impl EntityPipeline {
             // the colour no longer carries the brightness.
             let overlay_brightness = snapshot.brightness;
             let brightness = if snapshot.light.is_some() { 1.0 } else { snapshot.brightness };
-            let snapshot = &super::effects::Snapshot { brightness, ..snapshot.clone() };
+            let snapshot = &super::effects::Snapshot { brightness, light: if e.is_burning_state() {Some(15728880)} else {snapshot.light}, ..snapshot.clone() };
             self.manager.render_origin = camera.to_array();
             let distance_camera = self.manager.camera;
             self.manager.render_entity(

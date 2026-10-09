@@ -101,6 +101,7 @@ pub(super) fn pose(c: usize) -> CameraState {
         previous_rotation: [[-33.7, 11.3], [1e10, -1e10], [-0.0, 0.0], [179.0, -90.0]][c],
         rotation: [[123.5, -26.75], [-1e10, 1e10], [0.0, -0.0], [-179.0, 90.0]][c],
         sleeping: false,
+        burning: false,
     }
 }
 fn camera_values(m: &RenderManager<i32>, out: &mut Vec<u8>) {
