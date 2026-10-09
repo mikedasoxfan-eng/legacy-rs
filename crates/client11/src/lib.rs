@@ -164,6 +164,7 @@ fn parse_args() -> Options {
             }),
             time: get("--time").map(|s| s.parse().expect("--time ticks")),
             name: None,
+            name_utf16: None,
         },
         flowtest: get("--flowtest").map(Into::into),
         // Beta 1.8.1 keeps its options, saves, stats and screenshots apart from b1.7.3's.

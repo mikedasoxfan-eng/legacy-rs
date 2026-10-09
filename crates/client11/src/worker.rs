@@ -316,6 +316,7 @@ pub struct WorldOptions {
     pub time: Option<i64>,
     /// Name for a newly created world (`GuiCreateWorld`'s text box).
     pub name: Option<String>,
+    pub name_utf16: Option<Vec<u16>>,
 }
 
 pub fn spawn(
@@ -386,12 +387,13 @@ fn run(opts: WorldOptions, mut col: Colorizers, mut video: VideoSettings, rx: Re
     }
     progress(worldgen::scenario::LoadStep::Title("Switching level"));
     progress(worldgen::scenario::LoadStep::Text(""));
-    let opened = World::open_with_settings(
+    let opened = World::open_with_utf16_settings(
         opts.dir.as_deref(),
         open_seed,
         opts.world_rand,
         opts.server,
         opts.name.as_deref(),
+        opts.name_utf16.as_deref(),
         open_settings,
         &mut progress,
     );
@@ -1196,6 +1198,17 @@ fn fresh_seed() -> i64 {
 fn converted_world_settings() -> worldgen::entity::player::food::WorldSettings {
     worldgen::entity::player::food::WorldSettings { seed: 0, game_mode: 0,
         map_features: true, hardcore: false, world_type: worldgen::storage::WorldType::Default }
+}
+
+/// Java File on Windows carries UTF-16 units, including unmatched surrogates.
+pub(crate) fn java_path_units(units: &[u16]) -> PathBuf {
+    #[cfg(windows)] {
+        use std::os::windows::ffi::OsStringExt;
+        std::ffi::OsString::from_wide(units).into()
+    }
+    #[cfg(not(windows))] {
+        std::char::decode_utf16(units.iter().copied()).map(|unit| unit.unwrap_or('?')).collect::<String>().into()
+    }
 }
 
 #[cfg(test)]

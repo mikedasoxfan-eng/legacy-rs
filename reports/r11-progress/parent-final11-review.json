@@ -822,13 +822,13 @@
         }
       ],
       "rust_source_sha256": {
-        "crates/client11/src/app.rs": "9d121ab989eceb29b21fed13db2dec9bb7ff78937d45f5c85840213ac346537c",
-        "crates/client11/src/gui/system.rs": "43df38245bc5d27f9eef22a1b29f8848d02f8eb9d2a29065fff90cc776e81069",
+        "crates/client11/src/app.rs": "3c3d8323e34d31035afea71889887b20481dbf255c86da6e34373123abba5540",
+        "crates/client11/src/gui/system.rs": "9c20fc5ec282feee588633317a371f2a3bb1d2998dcb20ba9f87903e42d09eb3",
         "crates/client11/src/gui/screens/container.rs": "302dc17ba5310c2a960334e94b7aa0ba50340931faae15e850bfa6b573d1efd4",
         "crates/client11/src/gui/lang.rs": "c87ec914c3fcd385c21fcd08a8c02b260c10a70e39037bb5ba91aef38211368f",
         "crates/client11/src/gui/loading.rs": "7ef5ec2e430850dd44eee95492bb63bbaaded7b9e7a83d0b81acdb0c9faa4478",
         "crates/client11/src/minecraft_input.rs": "2a85d1c4d6a1b1d34991ff69a1f94ae288ba813d4eda722670bf018e9ea157b1",
-        "crates/client11/src/worker.rs": "c33fd4e0d4dc4489886e9379729109e1bbaaae416260dfb96f9de839e0b47f2c"
+        "crates/client11/src/worker.rs": "94c93d8b161447a516d740627d214a88d2a1d99d501a6ad07132756c942e4e0c"
       }
     }
   ],

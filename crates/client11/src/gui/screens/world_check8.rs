@@ -273,6 +273,7 @@ pub fn check_select(path: &str) -> bool {
                     name,
                     seed,
                     settings,
+                    ..
                 } => {
                     out.push(2);
                     string(&mut out, &folder);

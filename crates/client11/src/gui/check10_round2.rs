@@ -519,6 +519,8 @@ pub fn check(mode: &str, path: &str) -> bool {
                 let y = random.next_int(1200) - 100;
                 let n = c % 4;
                 let save = super::saves::SaveEntry {
+                    file_name_utf16: None,
+                    display_name_utf16: None,
                     file_name: format!("World_{n}"),
                     display_name: if n % 2 == 0 {
                         String::new()

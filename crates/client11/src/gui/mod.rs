@@ -147,6 +147,8 @@ pub enum Action {
     StartWorld {
         folder: String,
         name: String,
+        folder_utf16: Option<Vec<u16>>,
+        name_utf16: Option<Vec<u16>>,
         seed: Option<i64>,
         settings: Option<worldgen::entity::player::food::WorldSettings>,
     },

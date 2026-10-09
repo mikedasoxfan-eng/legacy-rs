@@ -1,0 +1,245 @@
+   Compiling worldgen v3.0.2 (C:\Users\Robbie\Documents\Codex\2026-10-09\https-github-com-mikedasoxfan-eng-legacy\work\legacy-rs\crates\worldgen)
+warning: use of deprecated method `std::sync::atomic::Atomic::<u32>::fetch_update`: renamed to `try_update` for consistency
+  --> crates\worldgen11\src\decorator10.rs:53:20
+   |
+53 |     assert!(ACTIVE.fetch_update(Ordering::SeqCst, Ordering::SeqCst,
+   |                    ^^^^^^^^^^^^
+   |
+   = note: `#[warn(deprecated)]` on by default
+help: replace the use of the deprecated method
+   |
+53 -     assert!(ACTIVE.fetch_update(Ordering::SeqCst, Ordering::SeqCst,
+53 +     assert!(ACTIVE.try_update(Ordering::SeqCst, Ordering::SeqCst,
+   |
+
+warning: function `use_neighbor_brightness` is never used
+ --> crates\worldgen11\src\world\release10.rs:5:15
+  |
+5 | pub(crate) fn use_neighbor_brightness(id: u8) -> bool {
+  |               ^^^^^^^^^^^^^^^^^^^^^^^
+  |
+  = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+   Compiling worldgen10 v3.0.2 (C:\Users\Robbie\Documents\Codex\2026-10-09\https-github-com-mikedasoxfan-eng-legacy\work\legacy-rs\crates\worldgen10)
+   Compiling worldgen181 v3.0.2 (C:\Users\Robbie\Documents\Codex\2026-10-09\https-github-com-mikedasoxfan-eng-legacy\work\legacy-rs\crates\worldgen181)
+warning: `worldgen11` (lib test) generated 2 warnings (run `cargo fix --lib -p worldgen11 --tests` to apply 1 suggestion)
+warning: use of deprecated method `std::sync::atomic::Atomic::<u16>::fetch_update`: renamed to `try_update` for consistency
+  --> crates\worldgen10\src\decorator10.rs:52:20
+   |
+52 |     assert!(ACTIVE.fetch_update(Ordering::SeqCst, Ordering::SeqCst,
+   |                    ^^^^^^^^^^^^
+   |
+   = note: `#[warn(deprecated)]` on by default
+help: replace the use of the deprecated method
+   |
+52 -     assert!(ACTIVE.fetch_update(Ordering::SeqCst, Ordering::SeqCst,
+52 +     assert!(ACTIVE.try_update(Ordering::SeqCst, Ordering::SeqCst,
+   |
+
+warning: function `use_neighbor_brightness` is never used
+ --> crates\worldgen10\src\world\release10.rs:5:15
+  |
+5 | pub(crate) fn use_neighbor_brightness(id: u8) -> bool {
+  |               ^^^^^^^^^^^^^^^^^^^^^^^
+  |
+  = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: `worldgen10` (lib test) generated 2 warnings (run `cargo fix --lib -p worldgen10 --tests` to apply 1 suggestion)
+    Finished `release` profile [optimized + debuginfo] target(s) in 12.95s
+     Running unittests src\lib.rs (target\release\deps\worldgen-20148d91c2bcc10a.exe)
+
+running 4 tests
+test convert::tests::chunk_names ... ok
+test entity::vehicle_verify::tests::chest_cart_window_mutates_entity_and_closes_at_distance ... ok
+test entity::vehicle_verify::tests::passenger_can_dismount_or_break_vehicle_during_recursive_tick ... ok
+test random::tests::matches_java_seed_42 ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
+     Running unittests src\lib.rs (target\release\deps\worldgen-901e4168870268c8.exe)
+
+running 50 tests
+test compression10::tests::output_inflates_back_to_the_input ... ok
+test container::brewing::tests::full_brew_and_abort ... ok
+test container::brewing::tests::slot_and_nbt_quirks ... ok
+test container::enchanting::tests::shelves_and_client_rng ... ok
+test convert::tests::chunk_names ... ok
+test enchantment::tests::candidate_levels_and_rng ... ok
+test enchantment::tests::modifier_callback_preserves_registry_identity_order_and_failure_prefix ... ok
+test enchantment::tests::original_materials_and_ranges ... ok
+test end::tests::accepted_spike_has_circular_footprint_cap_and_crystal_request ... ok
+test end::tests::end_island_and_void_are_end_stone_only ... ok
+test end::tests::origin_population_joins_one_dragon_and_allocates_seven_parts ... ok
+test end::tests::spike_rejection_does_not_place_blocks_or_consume_yaw ... ok
+test entity::dragon::tests::crystal_tick_does_not_run_entity_base_tick ... ok
+test entity::dragon::tests::death_rewards_and_exit_portal_at_tick_200 ... ok
+test entity::dragon::tests::exit_portal_keeps_its_portal_blocks_in_the_end ... ok
+test entity::dragon::tests::history_wraps_yaw_and_death_forces_previous_sample ... ok
+test entity::dragon::tests::multipart_constructor_and_damage_routing ... ok
+test entity::living10::release_tests::armor_keeps_full_protection_when_damaged ... ok
+test entity::player::food::release_tests::abilities_preserve_release_flying_serialization_bug ... ok
+test entity::player::food::release_tests::experience_uses_initial_cap_for_all_awarded_points ... ok
+test entity::potion::tests::equal_amplifier_does_not_shorten_existing_effect ... ok
+test entity::potion::tests::release_metadata_selects_durations_and_instant_effects ... ok
+test entity::potion::tests::undead_inverts_healing_and_rejects_regeneration ... ok
+test entity::spawning::release_tests::new_creatures_and_darkness_overrides_do_not_require_grass ... ok
+test entity::vehicle_verify::tests::chest_cart_window_mutates_entity_and_closes_at_distance ... ok
+test entity::vehicle_verify::tests::passenger_can_dismount_or_break_vehicle_during_recursive_tick ... ok
+test genlayer::tests::biome_queries_agree_across_negative_coordinate_tiles ... ok
+test hashmap10::tests::duplicate_keys_remain_after_one_remove_and_resize_reverses_chains ... ok
+test hashmap10::tests::int_map_retains_key_set_when_cleared ... ok
+test item10::tests::potion_cache_names_and_drink ... ok
+test nbt::tests10::compound_equality_ignores_insertion_order_and_copies_are_independent ... ok
+test nbt::tests10::modified_utf_uses_nul_and_surrogate_pairs_and_rejects_bad_sequences ... ok
+test nbt::tests10::root_type_rejection_consumes_payload_and_preserves_eof_precedence ... ok
+test potion_helper::tests::brewing_chain ... ok
+test potion_helper::tests::original_parser_edges ... ok
+test profiler::tests::nested_sections_account_for_remainder_and_decay_once_per_query ... ok
+test random::tests::matches_java_seed_42 ... ok
+test scenario::player_gui_settings_checks::new_settings_reach_preload_and_first_save_existing_settings_win ... ok
+test stack_tags::tests::copied_and_split_tags_are_independent ... ok
+test structures::nether10::tests::fortress_graphs_keep_limits_and_the_vertical_offset ... ok
+test structures::nether10::tests::fortress_provider_list_preserves_order_weights_and_registered_factories ... ok
+test structures::nether10::tests::fortress_throne_uses_a_one_shot_blaze_spawner ... ok
+test structures::stronghold::release10::tests::generated_starts_retry_until_the_portal_exists ... ok
+test structures::village::inhabitants_tests::inhabitants_join_in_clip_order_with_professions_and_persistent_counts ... ok
+test threaded_io10::tests::replacement_retains_fifo_position_and_pending_read_uses_latest_data ... ok
+test threaded_io10::tests::singleton_flush_makes_the_latest_snapshots_readable_from_region_files ... ok
+test world::blocks10::tests::source_geometry ... ok
+test world::dimension::end_portal_travel::standing_in_an_end_portal_reaches_the_end ... ok
+test world::release10::tests::loaded_ticks_deduplicate_and_remove_both_indexes ... ok
+test world::release10::tests::no_sky_provider_has_zero_sky_brightness_at_all_heights ... ok
+
+test result: ok. 50 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.55s
+
+     Running unittests src\lib.rs (target\release\deps\worldgen-7d9f96b56fb1ddc2.exe)
+
+running 114 tests
+test biome::release11_tests::new_biomes_keep_subclass_generation_and_spawn_rules ... ok
+test block::visual181::release11_tint_tests::block_neighborhood_tints_match_original_11_bytecode ... ok
+test compression10::tests::output_inflates_back_to_the_input ... ok
+test container::brewing::tests::brewing_timeline_matches_original_11_bytecode ... ok
+test container::brewing::tests::full_brew_and_abort ... ok
+test container::brewing::tests::slot_and_nbt_quirks ... ok
+test container::enchanting::tests::shelves_and_client_rng ... ok
+test container::release11_tag_tests::nullable_stack_tags_match_original_11_bytecode ... ok
+test container::release11_tag_tests::stack_tag_root_names_match_original_11_bytecode ... ok
+test container::release11_tag_tests::tagged_inventory_copy_independence_matches_original_11_bytecode ... ok
+test container::release11_tag_tests::tagged_slot_click_and_shift_match_original_11_bytecode ... ok
+test container::release_11_tests::crafting_remainders_match_original_11_bytecode ... ok
+test container::release_11_tests::golden_apple_uses_original_11_recipe_table ... ok
+test convert::tests::chunk_names ... ok
+test enchantment::tests::bow_enchantment_selection_matches_original_11_bytecode ... ok
+test enchantment::tests::candidate_levels_and_rng ... ok
+test enchantment::tests::modifier_callback_preserves_registry_identity_order_and_failure_prefix ... ok
+test enchantment::tests::offers_match_original_11_bytecode_and_rng_tail ... ok
+test enchantment::tests::original_materials_and_ranges ... ok
+test end::tests::accepted_spike_has_circular_footprint_cap_and_crystal_request ... ok
+test end::tests::end_island_and_void_are_end_stone_only ... ok
+test end::tests::origin_population_joins_one_dragon_and_allocates_seven_parts ... ok
+test end::tests::spike_rejection_does_not_place_blocks_or_consume_yaw ... ok
+test entity::animal::release11_delta_tests::animal_search_matches_original_11_bytecode ... ok
+test entity::animal::release11_delta_tests::animal_target_clear_matches_original_11_bytecode ... ok
+test entity::aquatic::release11_guard_tests::living_action_guards_match_original_11_bytecode ... ok
+test entity::aquatic::release11_guard_tests::squid_motion_guards_match_original_11_bytecode ... ok
+test entity::blocks11::tests::block_boxes_match_original_11_bytecode ... ok
+test entity::blocks11::tests::detector_height_matches_original_11_bytecode ... ok
+test entity::blocks11::tests::farmland_landings_match_original_11_bytecode ... ok
+test entity::blocks11::tests::farmland_walking_matches_original_11_bytecode ... ok
+test entity::blocks11::tests::gate_notifications_match_original_11_bytecode ... ok
+test entity::blocks11::tests::powered_rail_additions_match_original_11_bytecode ... ok
+test entity::blocks11::tests::snow_support_matches_original_11_bytecode ... ok
+test entity::blocks11::tests::stem_soils_match_original_11_bytecode ... ok
+test entity::blocks11::tests::trapdoor_neighbors_match_original_11_bytecode ... ok
+test entity::blocks11::tests::web_distance_matches_original_11_bytecode ... ok
+test entity::damage::release11_tests::indirect_source_and_skeleton_death_match_original_11_bytecode ... ok
+test entity::damage::release11_tests::lethal_arrow_impact_delivers_original_11_sniper_callback ... ok
+test entity::dragon::release11_owner_tests::dragon_part_attacker_gate_matches_original_11_bytecode ... ok
+test entity::dragon::tests::crystal_tick_does_not_run_entity_base_tick ... ok
+test entity::dragon::tests::death_rewards_and_exit_portal_at_tick_200 ... ok
+test entity::dragon::tests::exit_portal_keeps_its_portal_blocks_in_the_end ... ok
+test entity::dragon::tests::history_wraps_yaw_and_death_forces_previous_sample ... ok
+test entity::dragon::tests::multipart_constructor_and_damage_routing ... ok
+test entity::living10::release_tests::armor_keeps_full_protection_when_damaged ... ok
+test entity::living::creeper_release11_tests::creeper_records_match_original_11_bytecode ... ok
+test entity::nbt::arrow_release_11_nbt_tests::arrow_nbt_matches_original_11_bytecode ... ok
+test entity::physics::release11_landing_tests::landing_boundaries_match_original_11_bytecode ... ok
+test entity::physics::release11_landing_tests::movement_landing_uses_original_11_block_callback ... ok
+test entity::player::block_hooks::release11_door_tests::doors_match_original_11_bytecode ... ok
+test entity::player::damage_release_11_tests::damage_matches_original_11_bytecode_single_armor_pass ... ok
+test entity::player::food::release_tests::abilities_preserve_release_flying_serialization_bug ... ok
+test entity::player::food::release_tests::experience_matches_original_11_bytecode_vectors ... ok
+test entity::player::mechanics::bow_release_11_tests::bow_release_matches_original_11_bytecode ... ok
+test entity::player::mechanics::release11_golden_food_tests::golden_apple_finish_matches_original_11_bytecode ... ok
+test entity::player::picking::release11_pick_tests::middle_click_matches_original_11_bytecode ... ok
+test entity::potion::tests::equal_amplifier_does_not_shorten_existing_effect ... ok
+test entity::potion::tests::release_metadata_selects_durations_and_instant_effects ... ok
+test entity::potion::tests::undead_inverts_healing_and_rejects_regeneration ... ok
+test entity::projectile::release_11_impact_tests::arrow_impact_matches_original_11_bytecode ... ok
+test entity::sheep11::tests::magma_drops_match_original_11_bytecode ... ok
+test entity::sheep11::tests::shearing_matches_original_11_bytecode ... ok
+test entity::sheep11::tests::sheep_actions_match_original_11_bytecode ... ok
+test entity::sheep11::tests::sheep_head_boundaries_match_original_11_bytecode ... ok
+test entity::sheep11::tests::sheep_status_jump_and_movement_match_original_11_bytecode ... ok
+test entity::sheep11::tests::sheep_tick_growth_order_matches_original_11_bytecode ... ok
+test entity::spawn_egg11::tests::creative_inventory_matches_original_11_bytecode ... ok
+test entity::spawn_egg11::tests::egg_constructor_save_tick_matches_original_11_bytecode ... ok
+test entity::spawn_egg11::tests::egg_invalid_side_matches_original_11_bytecode ... ok
+test entity::spawn_egg11::tests::egg_metadata_matches_original_11_bytecode ... ok
+test entity::spawn_egg11::tests::egg_names_match_original_11_bytecode ... ok
+test entity::spawn_egg11::tests::egg_spawns_match_original_11_bytecode ... ok
+test entity::spawn_egg11::tests::egg_stack_use_and_statistics_match_original_11_bytecode ... ok
+test entity::spawning::release_tests::new_creatures_and_darkness_overrides_do_not_require_grass ... ok
+test entity::special::wolf_release11_guard_tests::wolf_world_guard_matches_original_11_bytecode ... ok
+test entity::vehicle_verify::tests::chest_cart_window_mutates_entity_and_closes_at_distance ... ok
+test entity::vehicle_verify::tests::passenger_can_dismount_or_break_vehicle_during_recursive_tick ... ok
+test genlayer::tests::biome_queries_agree_across_negative_coordinate_tiles ... ok
+test genlayer::tests::hills_require_all_cardinal_neighbors ... ok
+test genlayer::tests::shores_preserve_swamps_rivers_and_extreme_hills_rules ... ok
+test hashmap10::tests::duplicate_keys_remain_after_one_remove_and_resize_reverses_chains ... ok
+test hashmap10::tests::int_map_retains_key_set_when_cleared ... ok
+test item10::tests::potion_cache_names_and_drink ... ok
+test nbt::tests10::compound_equality_ignores_insertion_order_and_copies_are_independent ... ok
+test nbt::tests10::modified_utf_uses_nul_and_surrogate_pairs_and_rejects_bad_sequences ... ok
+test nbt::tests10::root_type_rejection_consumes_payload_and_preserves_eof_precedence ... ok
+test potion_helper::tests::brewing_chain ... ok
+test potion_helper::tests::original_parser_edges ... ok
+test profiler::tests::nested_sections_account_for_remainder_and_decay_once_per_query ... ok
+test random::tests::matches_java_seed_42 ... ok
+test scenario::player_gui_settings_checks::new_settings_reach_preload_and_first_save_existing_settings_win ... ok
+test scenario::release11_provider_tests::nether_spawn_predicate_does_not_load_chunks ... ok
+test stack_tags::tests::copied_and_split_tags_are_independent ... ok
+test stack_tags::tests::stackable_tags_and_inventory_match_original_11_bytecode ... ok
+test storage::release11_world_name_units_tests::world_name_utf16_matches_original_11_nbt_and_reopen ... ok
+test structures::bounds_tests::population_clip_excludes_bedrock_and_uses_java_ceiling ... ok
+test structures::nether10::tests::fortress_graphs_keep_limits_and_the_vertical_offset ... ok
+test structures::nether10::tests::fortress_provider_list_preserves_order_weights_and_registered_factories ... ok
+test structures::nether10::tests::fortress_throne_uses_a_one_shot_blaze_spawner ... ok
+test structures::stronghold::release10::tests::generated_starts_retry_until_the_portal_exists ... ok
+test structures::village::inhabitants_tests::inhabitants_join_in_clip_order_with_professions_and_persistent_counts ... ok
+test threaded_io10::tests::replacement_retains_fifo_position_and_pending_read_uses_latest_data ... ok
+test threaded_io10::tests::singleton_flush_makes_the_latest_snapshots_readable_from_region_files ... ok
+test world::behavior::leaves_release11_tests::leaves_drops_and_decay_match_original_11_bytecode ... ok
+test world::blocks10::tests::source_geometry ... ok
+test world::dimension::end_portal_travel::standing_in_an_end_portal_reaches_the_end ... ok
+test world::redstone::release11_tests::wire_connections_match_original_11_bytecode ... ok
+test world::redstone::release11_tests::wire_removal_notifications_match_original_11_bytecode ... ok
+test world::redstone::release11_tests::wire_rising_updates_match_original_11_bytecode ... ok
+test world::release10::release11_flat_location_tests::flat_structure_lookup_returns_none_without_side_effects ... ok
+test world::release10::tests::loaded_ticks_deduplicate_and_remove_both_indexes ... ok
+test world::release10::tests::no_sky_provider_has_zero_sky_brightness_at_all_heights ... ok
+test world::tile_lifecycle::release11_coordinate_tests::chunk_tile_coordinates_match_original_11 ... ok
+
+test result: ok. 114 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 6.96s
+
+     Running unittests src\lib.rs (target\release\deps\worldgen-c9ed83c4abf88766.exe)
+
+running 5 tests
+test convert::tests::chunk_names ... ok
+test entity::vehicle_verify::tests::chest_cart_window_mutates_entity_and_closes_at_distance ... ok
+test entity::vehicle_verify::tests::passenger_can_dismount_or_break_vehicle_during_recursive_tick ... ok
+test random::tests::matches_java_seed_42 ... ok
+test scenario::player_gui_settings_checks::new_settings_reach_preload_and_first_save_existing_settings_win ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.75s
+

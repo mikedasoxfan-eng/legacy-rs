@@ -206,7 +206,7 @@ impl GuiAchievements {
 
         if let Some(i) = hovered {
             let a = &ACHIEVEMENTS[i];
-            let name = ui.translate(&format!("achievement.{}", a.key));
+            let name = tooltip_name(ui,i);
             let tx = mx + 12;
             let ty = my - 4;
             if ui.stats.can_unlock(i) {
@@ -224,8 +224,7 @@ impl GuiAchievements {
                 }
             } else {
                 let width = ui.string_width(&name).max(120);
-                let parent = ui.translate(&format!("achievement.{}", ACHIEVEMENTS[a.parent.unwrap()].key));
-                let req = ui.lang.translate_key_format("achievement.requires", &[parent]);
+                let req = tooltip_requirement(ui,i).unwrap_or_else(|error|panic!("{}: {}",error.class,error.message));
                 let height = ui.font.split_string_height(&req, width);
                 ui.draw_gradient_rect(tx - 3, ty - 3, tx + width + 3, ty + height + 12 + 3, -1073741824, -1073741824);
                 ui.font.draw_split_string(&mut ui.gl, &req, tx, ty + 12, width, -9416624);
@@ -340,4 +339,23 @@ pub fn description(ui: &Ui, i: usize) -> String {
         };
     }
     desc
+}
+
+fn tooltip_name(ui:&Ui,index:usize)->String {ui.translate(&format!("achievement.{}",ACHIEVEMENTS[index].key))}
+fn tooltip_requirement(ui:&Ui,index:usize)->Result<String,crate::gui::lang::FormatError>{
+    let parent=tooltip_name(ui,ACHIEVEMENTS[index].parent.unwrap());
+    ui.lang.try_translate_key_format("achievement.requires",&[parent])
+}
+
+#[cfg(test)]
+mod remaining_gui11_tests {
+ use super::*;
+ #[test]
+ #[ignore="requires original ACHIEVEMENT_TOOLTIP11_FIXTURE and installed assets"]
+ fn original_hovered_achievement_and_parent_names(){
+  let bytes=std::fs::read(std::env::var("ACHIEVEMENT_TOOLTIP11_FIXTURE").unwrap()).unwrap();let mut at=0;fn int(b:&[u8],a:&mut usize)->i32{let n=i32::from_be_bytes(b[*a..*a+4].try_into().unwrap());*a+=4;n}fn bit(b:&[u8],a:&mut usize)->bool{let n=b[*a];*a+=1;n!=0}fn text(b:&[u8],a:&mut usize)->String{let n=int(b,a);String::from_utf16(&(0..n).map(|_|{let n=u16::from_be_bytes(b[*a..*a+2].try_into().unwrap());*a+=2;n}).collect::<Vec<_>>()).unwrap()}
+  assert_eq!(int(&bytes,&mut at),0x41545431);let count=int(&bytes,&mut at);let mut ui=crate::gui::utility_check::fixture_ui("target/r11/achievement-tooltip".into());let mut errors=0;
+  for _ in 0..count{let code=text(&bytes,&mut at);let index=int(&bytes,&mut at)as usize;let can=bit(&bytes,&mut at);ui.set_language(&code).unwrap();assert_eq!(tooltip_name(&ui,index),text(&bytes,&mut at));let success=bit(&bytes,&mut at);if success{let expected=text(&bytes,&mut at);if can{assert!(expected.is_empty());}else{assert_eq!(tooltip_requirement(&ui,index).unwrap(),expected,"{code} parent{index}");}}else{assert!(!can);let error=tooltip_requirement(&ui,index).unwrap_err();assert_eq!(error.class,text(&bytes,&mut at));assert_eq!(error.message,text(&bytes,&mut at));errors+=1;}}
+  assert_eq!(at,bytes.len());println!("ACHIEVEMENTS TOOLTIP EXACT: {count} original genAchievementBackground hovered/locked calls,57 locales,{errors} original formatter exceptions");
+ }
 }

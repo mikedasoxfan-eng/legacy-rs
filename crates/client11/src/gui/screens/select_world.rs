@@ -75,7 +75,8 @@ impl GuiSelectWorld {
             self.selected = true;
             let folder = self.save_file_name(i).unwrap_or_else(|| format!("World{i}"));
             let name = self.save_name(ui, i);
-            ui.actions.push(Action::StartWorld { folder, name, seed: None, settings: None });
+            let entry=&self.saves[i as usize];
+            ui.actions.push(Action::StartWorld { folder, name, folder_utf16: entry.file_name_utf16.clone(), name_utf16: entry.display_name_utf16.clone(), seed: None, settings: None });
             ui.display(None);
         }
     }
@@ -123,8 +124,10 @@ impl SlotList for WorldSlot<'_> {
     }
 
     fn draw_slot(&mut self, ui: &mut Ui, i: i32, x: i32, y: i32, _h: i32) {
-        for (text, x, y, color) in world_slot_labels(ui, &self.saves[i as usize], i, x, y, self.world_label, self.conversion_label, self.game_mode_labels) {
-            ui.draw_string(&text, x, y, color);
+        let save=&self.saves[i as usize];
+        for (index,(text, x, y, color)) in world_slot_labels(ui, save, i, x, y, self.world_label, self.conversion_label, self.game_mode_labels).into_iter().enumerate() {
+            let raw=if index==0 {save.display_name_utf16.clone()}else if index==1 {save.file_name_utf16.as_ref().map(|units|{let mut raw=units.clone();raw.extend(format!(" ({})",saves::format_date(save.last_played)).encode_utf16());raw})}else{None};
+            if let Some(raw)=raw {ui.font.draw_utf16_with_shadow(&mut ui.gl,&raw,x,y,color);}else{ui.draw_string(&text, x, y, color);}
         }
     }
 }
@@ -192,13 +195,15 @@ impl Screen for GuiSelectWorld {
                 let yes = ui.translate("selectWorld.deleteButton");
                 let no = ui.translate("gui.cancel");
                 let n = self.selected_world;
-                ui.display_child(move |me| Box::new(GuiYesNo::new(me, q, warn, yes, no, n)));
+                let raw_warning=self.saves[n as usize].display_name_utf16.as_ref().map(|units|{let mut raw=vec![39];raw.extend_from_slice(units);raw.extend(format!("' {}",ui.translate("selectWorld.deleteWarning")).encode_utf16());raw});
+                ui.display_child(move |me| {let mut screen=GuiYesNo::new(me,q,warn,yes,no,n);screen.message2_utf16=raw_warning;Box::new(screen)});
             }
             1 => self.select_world(ui, self.selected_world),
             3 => ui.display_child(|me| Box::new(GuiCreateWorld::new(me))),
             6 => {
                 if let Some(folder) = self.save_file_name(self.selected_world) {
-                    ui.display_child(move |me| Box::new(GuiRenameWorld::new(me, folder)));
+                    let raw=self.saves[self.selected_world as usize].file_name_utf16.clone();
+                    ui.display_child(move |me| {let mut screen=GuiRenameWorld::new(me,folder);screen.folder_utf16=raw;Box::new(screen)});
                 }
             }
             0 => ui.display(self.parent.take()),
@@ -227,7 +232,7 @@ impl Screen for GuiSelectWorld {
         self.deleting = false;
         if yes {
             if let Some(f) = self.save_file_name(i) {
-                saves::delete(&ui.saves_dir, &f);
+                if let Some(raw)=&self.saves[i as usize].file_name_utf16 {saves::delete_utf16(&ui.saves_dir,raw);}else{saves::delete(&ui.saves_dir, &f);}
             }
             self.load_saves(ui);
         }
@@ -265,12 +270,42 @@ pub struct GuiCreateWorld {
     name: GuiTextField,
     seed: GuiTextField,
     folder_name: String,
+    folder_name_units: Vec<u16>,
     create_clicked: bool,
     creative: bool,
     hardcore: bool,
     map_features: bool,
     world_type: worldgen::storage::WorldType,
     more_options: bool,
+}
+
+fn folder_world_info(saves_dir: &std::path::Path, units: &[u16]) -> bool {
+    let dir=saves_dir.join(crate::worker::java_path_units(units));
+    ["level.dat","level.dat_old"].iter().any(|name|std::fs::read(dir.join(name)).ok().and_then(|bytes|worldgen::nbt::read_gzip(&bytes).ok()).is_some_and(|root|root.compound("Data").is_some()))
+}
+
+#[cfg(test)]
+mod remaining_gui11_tests {
+ use super::*;
+ struct Input{bytes:Vec<u8>,at:usize}
+ impl Input {fn int(&mut self)->i32{let n=i32::from_be_bytes(self.bytes[self.at..self.at+4].try_into().unwrap());self.at+=4;n}fn long(&mut self)->i64{let n=i64::from_be_bytes(self.bytes[self.at..self.at+8].try_into().unwrap());self.at+=8;n}fn units(&mut self)->Vec<u16>{let n=self.int();(0..n).map(|_|{let n=u16::from_be_bytes(self.bytes[self.at..self.at+2].try_into().unwrap());self.at+=2;n}).collect()}}
+ fn events(g:&mut GuiCreateWorld,ui:&mut Ui,seq:i32,seed:bool){
+  if seq==1||seq==2 {g.key_typed(ui,'\u{1f600}',0);if seq==2{g.key_typed(ui,'\0',14);}}
+  else {let unit=if seq==0{0xd83d}else{0xde00};if seed{g.seed.key_unit(ui,unit,0,None);}else{g.name.key_unit(ui,unit,0,None);}g.key_typed(ui,'\0',0);}
+ }
+ #[test]
+ #[ignore="requires original CREATE_WORLD_UNICODE11_FIXTURE and installed assets"]
+ fn original_create_world_unicode_callbacks(){
+  let mut input=Input{bytes:std::fs::read(std::env::var("CREATE_WORLD_UNICODE11_FIXTURE").unwrap()).unwrap(),at:0};assert_eq!(input.int(),0x43575531);let count=input.int();let mut ui=crate::gui::utility_check::fixture_ui(format!("target/r11/create-unicode-{}",std::process::id()).into());
+  for case in 0..count {let initial=input.int();let seq=input.int();let seed_initial=input.int();let mut g=GuiCreateWorld::new(Box::new(super::super::main_menu::GuiMainMenu::with_splash("parent")));crate::gui::set_world_and_resolution(&mut g,&mut ui,427,240);g.name.text="A".repeat(initial as usize);events(&mut g,&mut ui,seq,false);g.action_performed(&mut ui,3);g.seed.text="S".repeat(seed_initial as usize);g.name.focused=false;g.seed.focused=true;events(&mut g,&mut ui,seq,true);g.key_typed(&mut ui,'X',0);assert_eq!(g.name.display_units(),input.units(),"case{case} name");assert_eq!(g.seed.display_units(),input.units(),"case{case} seed");crate::gui::set_world_and_resolution(&mut g,&mut ui,444,251);assert_eq!(g.name.display_units(),input.units(),"case{case} resize name");assert_eq!(g.seed.display_units(),input.units(),"case{case} resize seed");ui.actions.clear();g.action_performed(&mut ui,0);let action=ui.actions.iter().find(|a|matches!(a,Action::StartWorld{..})).unwrap();let Action::StartWorld{folder,name,folder_utf16,name_utf16,seed,..}=action else{unreachable!()};let raw_folder=folder_utf16.clone().unwrap_or_else(||folder.encode_utf16().collect());let raw_name=name_utf16.clone().unwrap_or_else(||name.encode_utf16().collect());assert_eq!(raw_folder,input.units(),"case{case} folder");assert_eq!(raw_name,input.units(),"case{case} start name");assert_eq!(*seed,Some(input.long()),"case{case} Java seed hash");let n=input.int()as usize;let expected=&input.bytes[input.at..input.at+n];input.at+=n;let tag=worldgen::nbt::NamedTag10::new(Some(""),Some(worldgen::nbt::Tag::StringUtf16(raw_name)));let mut bytes=Vec::new();tag.write(&mut bytes).unwrap();assert_eq!(&bytes[3..],expected,"case{case} original DataOutputStream.writeUTF name");}
+  assert_eq!(input.at,input.bytes.len());println!("CREATE WORLD UNICODE EXACT: {count} original key/resize/start callbacks,32-unit name truncation,seed lengths0/127/128/129,raw folder/name and modifiedUTF8 payloads");
+ }
+ #[test]
+ #[ignore="requires installed assets; creates a native UTF16 save directory in target"]
+ fn malformed_name_select_rename_delete_callbacks(){
+  let root=std::path::PathBuf::from(format!("target/r11/unicode-save-callbacks-{}",std::process::id()));std::fs::create_dir_all(&root).unwrap();let folder=vec![65,0xd83d];let name=vec![78,0xde00];let path=root.join(crate::worker::java_path_units(&folder));std::fs::create_dir_all(&path).unwrap();let mut data=worldgen::nbt::Compound::new();data.put("LevelName",worldgen::nbt::Tag::StringUtf16(name.clone()));data.put("version",worldgen::nbt::Tag::Int(19132));let mut saved=worldgen::nbt::Compound::new();saved.put("Data",worldgen::nbt::Tag::Compound(data));std::fs::write(path.join("level.dat"),worldgen::nbt::write_gzip(&saved).unwrap()).unwrap();let mut ui=crate::gui::utility_check::fixture_ui(root.clone());let mut selected=GuiSelectWorld::new(Box::new(super::super::main_menu::GuiMainMenu::with_splash("parent")));crate::gui::set_world_and_resolution(&mut selected,&mut ui,427,240);assert_eq!(selected.saves.len(),1);selected.select_world(&mut ui,0);let Action::StartWorld{folder_utf16,name_utf16,..}=ui.actions.iter().find(|a|matches!(a,Action::StartWorld{..})).unwrap()else{unreachable!()};assert_eq!(folder_utf16.as_deref(),Some(folder.as_slice()));assert_eq!(name_utf16.as_deref(),Some(name.as_slice()));
+  let mut renamed=GuiRenameWorld::new(Box::new(super::super::main_menu::GuiMainMenu::with_splash("parent")),String::from_utf16_lossy(&folder));renamed.folder_utf16=Some(folder.clone());crate::gui::set_world_and_resolution(&mut renamed,&mut ui,427,240);assert_eq!(renamed.field.display_units(),name);renamed.field.text="A".repeat(31);renamed.key_typed(&mut ui,'\u{1f600}',0);let mut expected=vec![65;31];expected.push(0xd83d);assert_eq!(renamed.field.display_units(),expected);renamed.action_performed(&mut ui,0);assert_eq!(saves::world_info_utf16(&root,&folder).unwrap().string_utf16("LevelName"),expected);selected.deleting=true;assert!(selected.delete_world(&mut ui,true,0));assert!(!path.exists());println!("UTF16 SAVE CALLBACKS PASS: native malformed folder reopen,raw rename initialization,32-unit truncation saved losslessly,correct folder delete");
+ }
 }
 
 impl GuiCreateWorld {
@@ -281,6 +316,7 @@ impl GuiCreateWorld {
             name: GuiTextField::new(0, 0, 0, 0, ""),
             seed: GuiTextField::new(0, 0, 0, 0, ""),
             folder_name: String::new(),
+            folder_name_units: Vec::new(),
             create_clicked: false,
             creative: false,
             hardcore: false,
@@ -296,14 +332,15 @@ impl GuiCreateWorld {
 
     /// `func_22129_j`: the folder name the world will get.
     fn update_folder_name(&mut self, ui: &Ui) {
-        let mut f = self.name.text.trim_matches(|c: char| c <= ' ').to_string();
-        for c in ['/', '\n', '\r', '\t', '\0', '\x0c', '`', '?', '*', '\\', '<', '>', '|', '"', ':'] {
-            f = f.replace(c, "_");
-        }
-        if f.is_empty() {
-            f = "World".into();
-        }
-        self.folder_name = saves::unused_folder_name(&ui.saves_dir, f);
+        let units = self.name.display_units();
+        let start=units.iter().position(|&u|u>32).unwrap_or(units.len());
+        let end=units.iter().rposition(|&u|u>32).map_or(start,|i|i+1);
+        let forbidden:[u16;15]=[47,10,13,9,0,12,96,63,42,92,60,62,124,34,58];
+        let mut f:Vec<u16>=units[start..end].iter().map(|&u|if forbidden.contains(&u){95}else{u}).collect();
+        if f.is_empty(){f="World".encode_utf16().collect();}
+        while folder_world_info(&ui.saves_dir,&f) {f.push(45);}
+        self.folder_name=String::from_utf16_lossy(&f);
+        self.folder_name_units=f;
     }
 
     fn update_labels(&mut self, ui: &Ui) {
@@ -327,8 +364,11 @@ impl GuiCreateWorld {
         self.create_clicked = true;
         // Vanilla draws nextLong before inspecting the field, even for a numeric seed.
         let random = random_seed();
-        let seed = seed_from_units(&self.seed.text.encode_utf16().collect::<Vec<_>>()).unwrap_or(random);
-        ui.actions.push(Action::StartWorld { folder: self.folder_name.clone(), name: self.name.text.clone(), seed: Some(seed), settings: Some(worldgen::entity::player::food::WorldSettings::with_hardcore(seed, self.creative as i32, self.map_features, self.hardcore).with_world_type(self.world_type)) });
+        let seed = seed_from_units(&self.seed.display_units()).unwrap_or(random);
+        let raw_name=self.name.display_units();
+        let name_utf16=String::from_utf16(&raw_name).is_err().then_some(raw_name);
+        let folder_utf16=String::from_utf16(&self.folder_name_units).is_err().then(||self.folder_name_units.clone());
+        ui.actions.push(Action::StartWorld { folder: self.folder_name.clone(), name: self.name.text.clone(), folder_utf16, name_utf16, seed: Some(seed), settings: Some(worldgen::entity::player::food::WorldSettings::with_hardcore(seed, self.creative as i32, self.map_features, self.hardcore).with_world_type(self.world_type)) });
         ui.display(None);
     }
 }
@@ -493,6 +533,7 @@ pub fn check_callbacks(path: &str) -> bool {
                     name,
                     seed,
                     settings,
+                    ..
                 } => {
                     calls.push(2);
                     string(&mut calls, &folder);
@@ -558,12 +599,14 @@ impl Screen for GuiCreateWorld {
         self.base.buttons.push(GuiButton::small(5, w / 2 + 5, 100, ""));
         self.base.button(4).visible = false;
         self.base.button(5).visible = false;
-        let name = if self.name.width == 0 { ui.translate("selectWorld.newWorld") } else { self.name.text.clone() };
-        let seed = self.seed.text.clone();
-        self.name = GuiTextField::new(w / 2 - 100, 60, 200, 20, name);
+        let name = if self.name.width == 0 { ui.translate("selectWorld.newWorld").encode_utf16().collect() } else { self.name.display_units() };
+        let seed = self.seed.display_units();
+        self.name = GuiTextField::new(w / 2 - 100, 60, 200, 20, "");
+        self.name.set_units(&name);
         self.name.focused = true;
         self.name.max_length = 32;
-        self.seed = GuiTextField::new(w / 2 - 100, 60, 200, 20, seed);
+        self.seed = GuiTextField::new(w / 2 - 100, 60, 200, 20, "");
+        self.seed.set_units(&seed);
         self.update_labels(ui);
         self.update_folder_name(ui);
     }
@@ -636,8 +679,9 @@ impl Screen for GuiCreateWorld {
         if !self.more_options {
             let label = ui.translate("selectWorld.enterName");
             ui.draw_string(&label, w / 2 - 100, 47, 10526880);
-            let label = format!("{} {}", ui.translate("selectWorld.resultFolder"), self.folder_name);
-            ui.draw_string(&label, w / 2 - 100, 85, 10526880);
+            let mut label:Vec<u16>=format!("{} ",ui.translate("selectWorld.resultFolder")).encode_utf16().collect();
+            label.extend_from_slice(&self.folder_name_units);
+            ui.font.draw_utf16_with_shadow(&mut ui.gl,&label,w / 2 - 100,85,10526880);
             self.name.draw_text_box(ui);
             let mode = self.mode();
             let label = ui.translate(&format!("selectWorld.gameMode.{mode}.line1"));
@@ -684,11 +728,12 @@ pub struct GuiRenameWorld {
     parent: Option<Box<dyn Screen>>,
     field: GuiTextField,
     folder: String,
+    folder_utf16: Option<Vec<u16>>,
 }
 
 impl GuiRenameWorld {
     pub fn new(parent: Box<dyn Screen>, folder: String) -> GuiRenameWorld {
-        GuiRenameWorld { base: ScreenBase::default(), parent: Some(parent), field: GuiTextField::new(0, 0, 0, 0, ""), folder }
+        GuiRenameWorld { base: ScreenBase::default(), parent: Some(parent), field: GuiTextField::new(0, 0, 0, 0, ""), folder, folder_utf16:None }
     }
 }
 
@@ -708,8 +753,9 @@ impl Screen for GuiRenameWorld {
         self.base.buttons.push(GuiButton::new(0, w / 2 - 100, h / 4 + 96 + 12, ui.translate("selectWorld.renameButton")));
         self.base.buttons.push(GuiButton::new(1, w / 2 - 100, h / 4 + 120 + 12, ui.translate("gui.cancel")));
         // The original dereferences getWorldInfo: a missing/corrupt save fails initialization.
-        let name = saves::world_info(&ui.saves_dir, &self.folder).expect("missing WorldInfo").string("LevelName");
-        self.field = GuiTextField::new(w / 2 - 100, 60, 200, 20, name);
+        let info=if let Some(raw)=&self.folder_utf16 {saves::world_info_utf16(&ui.saves_dir,raw)}else{saves::world_info(&ui.saves_dir,&self.folder)}.expect("missing WorldInfo");
+        self.field = GuiTextField::new(w / 2 - 100, 60, 200, 20, "");
+        self.field.set_units(&info.string_utf16("LevelName"));
         self.field.focused = true;
         self.field.max_length = 32;
     }
@@ -721,7 +767,10 @@ impl Screen for GuiRenameWorld {
         if id == 1 {
             ui.display(self.parent.take());
         } else if id == 0 {
-            saves::rename(&ui.saves_dir, &self.folder, self.field.text.trim_matches(|c: char| c <= ' '));
+            let raw=self.field.display_units();
+            let start=raw.iter().position(|&u|u>32).unwrap_or(raw.len());let end=raw.iter().rposition(|&u|u>32).map_or(start,|i|i+1);
+            let folder=self.folder_utf16.clone().unwrap_or_else(||self.folder.encode_utf16().collect());
+            saves::rename_utf16(&ui.saves_dir,&folder,&raw[start..end]);
             ui.display(self.parent.take());
         }
     }
@@ -757,6 +806,7 @@ pub struct GuiYesNo {
     parent: Option<Box<dyn Screen>>,
     message1: String,
     message2: String,
+    message2_utf16: Option<Vec<u16>>,
     yes: String,
     no: String,
     world_number: i32,
@@ -764,7 +814,7 @@ pub struct GuiYesNo {
 
 impl GuiYesNo {
     pub fn new(parent: Box<dyn Screen>, m1: String, m2: String, yes: String, no: String, n: i32) -> GuiYesNo {
-        GuiYesNo { base: ScreenBase::default(), parent: Some(parent), message1: m1, message2: m2, yes, no, world_number: n }
+        GuiYesNo { base: ScreenBase::default(), parent: Some(parent), message1: m1, message2: m2, message2_utf16:None, yes, no, world_number: n }
     }
 }
 
@@ -798,7 +848,7 @@ impl Screen for GuiYesNo {
         ui.draw_world_background(w, h, 0);
         let (m1, m2) = (self.message1.clone(), self.message2.clone());
         ui.draw_centered_string(&m1, w / 2, 70, 16777215);
-        ui.draw_centered_string(&m2, w / 2, 90, 16777215);
+        if let Some(raw)=&self.message2_utf16 {let x=w/2-ui.font.get_utf16_width(raw)/2;ui.font.draw_utf16_with_shadow(&mut ui.gl,raw,x,90,16777215);}else{ui.draw_centered_string(&m2, w / 2, 90, 16777215);}
         self.draw_buttons(ui, mx, my);
     }
 }

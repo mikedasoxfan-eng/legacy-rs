@@ -21,7 +21,8 @@ jobs:
       - name: Build
         run: cargo build --release --workspace
       - name: Simulation tests
-        run: cargo test --release -p worldgen
+        # Vanilla decorators share singleton state; replay worlds serially.
+        run: cargo test --release -p worldgen -p worldgen181 -p worldgen10 -p worldgen11 --lib -- --test-threads=1
       - name: Version
         run: target/release/beta.exe --version
       - uses: actions/upload-artifact@v7

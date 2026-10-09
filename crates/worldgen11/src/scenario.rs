@@ -162,6 +162,16 @@ impl World {
         settings: Option<crate::entity::player::food::WorldSettings>,
         progress: &mut dyn FnMut(LoadStep),
     ) -> std::io::Result<(World, bool)> {
+        Self::open_with_utf16_settings(dir, seed, world_rand_seed, server, new_name, None, settings, progress)
+    }
+
+    /// Preserve Java text-box UTF-16 before the first newly generated world save.
+    pub fn open_with_utf16_settings(
+        dir: Option<&std::path::Path>, seed: i64, world_rand_seed: i64, server: bool,
+        new_name: Option<&str>, new_name_utf16: Option<&[u16]>,
+        settings: Option<crate::entity::player::food::WorldSettings>,
+        progress: &mut dyn FnMut(LoadStep),
+    ) -> std::io::Result<(World, bool)> {
         let storage = match dir {
             Some(d) => Some(crate::storage::Storage::open(d)?),
             None => None,
@@ -212,6 +222,7 @@ impl World {
             if let Some(n) = new_name {
                 w.info.name = n.to_string();
             }
+            if let Some(units) = new_name_utf16 { w.info.set_name_utf16(units); }
             w.init_weather_and_light();
             w.find_initial_spawn();
         }

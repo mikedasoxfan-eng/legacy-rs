@@ -14,6 +14,8 @@ pub enum GameAction {
     StartWorld {
         folder: String,
         name: String,
+        folder_utf16: Option<Vec<u16>>,
+        name_utf16: Option<Vec<u16>>,
         seed: Option<i64>,
         settings: Option<worldgen::entity::player::food::WorldSettings>,
     },
@@ -227,8 +229,8 @@ impl GuiSystem {
                             self.display_gui_screen(Some(child), &mut out);
                         }
                     }
-                    Action::StartWorld { folder, name, seed, settings } => {
-                        out.push(GameAction::StartWorld { folder, name, seed, settings })
+                    Action::StartWorld { folder, name, folder_utf16, name_utf16, seed, settings } => {
+                        out.push(GameAction::StartWorld { folder, name, folder_utf16, name_utf16, seed, settings })
                     }
                     Action::QuitWorld => out.push(GameAction::QuitWorld),
                 Action::DeleteHardcoreWorld => out.push(GameAction::DeleteHardcoreWorld),

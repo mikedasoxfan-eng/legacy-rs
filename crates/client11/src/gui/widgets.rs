@@ -235,6 +235,12 @@ impl GuiTextField {
         if self.text == self.text_snapshot { self.text_units.clone() } else { self.text.encode_utf16().collect() }
     }
 
+    pub(crate) fn set_units(&mut self, units: &[u16]) {
+        self.text_units = units.to_vec();
+        self.text = String::from_utf16_lossy(units);
+        self.text_snapshot = self.text.clone();
+    }
+
     pub fn mouse_clicked(&mut self, x: i32, y: i32, _button: i32) {
         let hit = self.enabled && x >= self.x && x < self.x + self.width && y >= self.y && y < self.y + self.height;
         self.set_focused(hit);

@@ -563,11 +563,11 @@ impl App {
         }
         for a in acts {
             match a {
-                gui::system::GameAction::StartWorld { folder, name, seed, settings } => {
+                gui::system::GameAction::StartWorld { folder, folder_utf16, name, name_utf16, seed, settings } => {
                     let saves = self.gui.as_ref().unwrap().ui.saves_dir.clone();
                     let seed = seed.unwrap_or(0);
                     let w = WorldOptions {
-                        dir: Some(saves.join(&folder)),
+                        dir: Some(saves.join(folder_utf16.as_deref().map(worker::java_path_units).unwrap_or_else(|| folder.into()))),
                         seed,
                         // World.rand is unseeded in vanilla.
                         world_rand: seed ^ 0x5DEECE66D ^ self.started.elapsed().as_nanos() as i64,
@@ -576,6 +576,7 @@ impl App {
                         weather: None,
                         time: None,
                         name: Some(name),
+                        name_utf16,
                         settings,
                     };
                     self.start_world(w);

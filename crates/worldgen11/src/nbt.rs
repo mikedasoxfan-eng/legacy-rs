@@ -51,6 +51,8 @@ pub enum Tag {
     Double(f64),
     ByteArray(Vec<u8>),
     String(String),
+    /// Java string payload with unpaired UTF-16 units; still NBT type8.
+    StringUtf16(Vec<u16>),
     /// Element type id and elements.
     List(u8, Vec<Tag>),
     Compound(Compound),
@@ -140,7 +142,16 @@ impl Compound {
     pub fn string(&self, key: &str) -> String {
         match self.get(key) {
             Some(Tag::String(v)) => v.clone(),
+            Some(Tag::StringUtf16(v)) => String::from_utf16_lossy(v),
             _ => String::new(),
+        }
+    }
+    /// Lossless Java string units, including unpaired surrogates.
+    pub fn string_utf16(&self, key: &str) -> Vec<u16> {
+        match self.get(key) {
+            Some(Tag::String(v)) => v.encode_utf16().collect(),
+            Some(Tag::StringUtf16(v)) => v.clone(),
+            _ => Vec::new(),
         }
     }
     pub fn bytes(&self, key: &str) -> Option<&[u8]> {
@@ -181,7 +192,7 @@ impl Tag {
             Tag::Float(_) => 5,
             Tag::Double(_) => 6,
             Tag::ByteArray(_) => 7,
-            Tag::String(_) => 8,
+            Tag::String(_) | Tag::StringUtf16(_) => 8,
             Tag::List(..) => 9,
             Tag::Compound(_) => 10,
         }
@@ -200,6 +211,7 @@ impl Tag {
                 w.write_all(v)
             }
             Tag::String(s) => write_utf(w, s),
+            Tag::StringUtf16(units) => write_utf_units(w, units.iter().copied()),
             Tag::List(_, items) => {
                 // NBTTagList writes the type of its first element (1 = byte when empty).
                 let ty = items
@@ -245,7 +257,13 @@ impl Tag {
                 r.read_exact(&mut v)?;
                 Tag::ByteArray(v)
             }
-            8 => Tag::String(read_utf(r)?),
+            8 => {
+                let units = read_utf_units(r)?;
+                match String::from_utf16(&units) {
+                    Ok(s) => Tag::String(s),
+                    Err(_) => Tag::StringUtf16(units),
+                }
+            },
             9 => {
                 let ty = read_n::<1, _>(r)?[0];
                 let n = i32::from_be_bytes(read_n(r)?).max(0) as usize;
@@ -286,8 +304,12 @@ fn read_n<const N: usize, R: Read>(r: &mut R) -> io::Result<[u8; N]> {
 
 /// DataOutputStream.writeUTF encodes UTF-16 units, including NUL as C0 80.
 pub(crate) fn write_utf<W: Write>(w: &mut W, s: &str) -> io::Result<()> {
+    write_utf_units(w, s.encode_utf16())
+}
+
+fn write_utf_units<W: Write>(w: &mut W, units: impl IntoIterator<Item = u16>) -> io::Result<()> {
     let mut bytes=Vec::new();
-    for unit in s.encode_utf16() {
+    for unit in units {
         if (1..=127).contains(&unit) { bytes.push(unit as u8); }
         else if unit>2047 { bytes.extend([(0xe0|(unit>>12)) as u8,(0x80|((unit>>6)&63)) as u8,(0x80|(unit&63)) as u8]); }
         else { bytes.extend([(0xc0|(unit>>6)) as u8,(0x80|(unit&63)) as u8]); }
@@ -298,6 +320,10 @@ pub(crate) fn write_utf<W: Write>(w: &mut W, s: &str) -> io::Result<()> {
 }
 
 fn read_utf<R: Read>(r: &mut R) -> io::Result<String> {
+    String::from_utf16(&read_utf_units(r)?).map_err(|_|io::Error::new(io::ErrorKind::InvalidData,"unpaired UTF-16 surrogate in NBT key"))
+}
+
+fn read_utf_units<R: Read>(r: &mut R) -> io::Result<Vec<u16>> {
     let n = u16::from_be_bytes(read_n(r)?) as usize;
     let mut v = vec![0; n];
     r.read_exact(&mut v)?;
@@ -315,7 +341,7 @@ fn read_utf<R: Read>(r: &mut R) -> io::Result<String> {
             _=>return Err(io::Error::new(io::ErrorKind::InvalidData,"malformed modified UTF-8")),
         }
     }
-    String::from_utf16(&units).map_err(|_|io::Error::new(io::ErrorKind::InvalidData,"unpaired UTF-16 surrogate"))
+    Ok(units)
 }
 
 fn write_named<W: Write>(w: &mut W, name: &str, t: &Tag) -> io::Result<()> {

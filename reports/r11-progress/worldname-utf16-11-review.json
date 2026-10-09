@@ -1,0 +1,47 @@
+{
+  "schema": 1,
+  "scope": "Reachable malformedUTF16 world-name persistence from1.1 GuiTextField/CreateWorld; no blanket String or key-name overhaul",
+  "api": {
+    "LevelInfo.name_utf16": "pub Option<Vec<u16>>, Some only for malformed UTF16 Java string units",
+    "LevelInfo.set_name_utf16": "pub fn(&mut self,units:&[u16]); validunits set name andclear sidecar; invalidunits setlossydisplay name +lossless sidecar",
+    "Tag.StringUtf16": "Vec<u16> stringpayload variant, NBT typeID8; decoder selects only for invalidUTF16. Original Tag.String unchanged for validunits",
+    "Compound.string_utf16": "returns original units; existing Compound.string uses lossydisplay for rawvariant",
+    "save": "LevelInfo.to_nbt prefersraw sidecar; raw modifiedUTF8 encoder retains loneunits, NULC080, valid surrogatepairs,65535byte limit"
+  },
+  "original_authority": {
+    "WorldInfo.java": "4b6272349d56f03261855b5837f299428ac3641f6333e8bfb75ba1a681c66f87",
+    "NBTTagString.java": "2f16e71de6496891f979cf74ec453d4cd80f5191c5a743fc3bd3eeb3d71ff71a",
+    "NBTBase.java": "818dc1d702b2e09f2ebffc58140ec18a6d4c26b1f9ff27a96506975717f43df7"
+  },
+  "verification": {
+    "original_probe": "WorldNameUtf16_11 calls actual original WorldInfo(WorldSettings,String), getNBTTagCompound().getTag(LevelName), NBTBase.writeTag/readTag and WorldInfo(NBTTagCompound). No reimplementation of original UTFencoder",
+    "vectors": 65550,
+    "corpus": "Every individual UTF16 unit0..65535 plus14empty/NUL/paired/reversed/repeated/context-surrogate strings; expected actual originaltag bytes and name-reopen units",
+    "production": "world_name_utf16_matches_original_11_nbt_and_reopen compares originalbytewire, rawdecoderunits, optional-sidecar predicate, setter, LevelInfo.to_nbt encoding and reopen.14mixed cases additionally roundtrip actual Storage.save_level/load_level level.dat files. Setter transitionmalformed->valid clears sidecar",
+    "tests": "focused original65550case productiontestPASS; existing3 NBT testsPASS; cargo check-pworldgen11libPASS",
+    "reproduce": "tools/oracle11/verify_worldname_utf16_11.ps1 -McpPath <original1.1MCP> aftertoolchain env",
+    "log": "reports/r11-progress/worldname-utf16-11-repro.log"
+  },
+  "parent_integration_required": "scenario::open_with_settings must call info.set_name_utf16 before firstsave_world_indirectly fornewworld; constructor presently saves before returning. Parent owns scenario/worker/GUI integration. Existing levels already decode/save sidecar via storage. Ordinary new names keep None. Use setter when replacing rawname toclear sidecar.",
+  "explicit_limits": [
+    "NBT compound/root KEY strings keep existingstrict UTF16 handling; reachable LevelName key is fixedASCII. Malformed PAYLOAD units preserved. No arbitrary malformed key API claimed.",
+    "No renderer/client/accounting/Git edits; parent owns firstsave integration."
+  ],
+  "owned_files": [
+    "crates/worldgen11/src/nbt.rs",
+    "crates/worldgen11/src/storage.rs",
+    "crates/worldgen11/src/fixtures/worldname_utf16_11.txt",
+    "tools/oracle11/src/net/minecraft/src/WorldNameUtf16_11.java",
+    "tools/oracle11/verify_worldname_utf16_11.ps1",
+    "reports/r11-progress/worldname-utf16-11-repro.log",
+    "reports/r11-progress/worldname-utf16-11-review.json"
+  ],
+  "source_sha256": {
+    "crates/worldgen11/src/nbt.rs": "b38c95b2289659d1b1ebc6b100351ed951d8d365407e29bd2f90b8fee8f9ff62",
+    "crates/worldgen11/src/storage.rs": "200ee7722f98ab1f09399b975a32c4c07407ebfe19074f1f533471651007423a",
+    "crates/worldgen11/src/fixtures/worldname_utf16_11.txt": "1e0bf5f5cf1a28513bef1d331f25feddeac9ad589f8cb567821da0b407662239",
+    "tools/oracle11/src/net/minecraft/src/WorldNameUtf16_11.java": "f2b01f60b3baeb0cea0b9c0a63c1830ffc46f430b5f2cb6e2c5bdfc47489d02a",
+    "tools/oracle11/verify_worldname_utf16_11.ps1": "da8160e80d852ae065d5d6b1e9c1aa7897f48879db0de402731c7194e77f25f1",
+    "reports/r11-progress/worldname-utf16-11-repro.log": "ee7fc5be62934c3d9932b7b6908ab789664ad2501bb68ce10aa1eab12b030013"
+  }
+}

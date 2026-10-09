@@ -46,6 +46,8 @@ pub struct LevelInfo {
     pub size_on_disk: i64,
     pub last_played: i64,
     pub name: String,
+    /// Lossless Java world-name units, present only when .name cannot represent them.
+    pub name_utf16: Option<Vec<u16>>,
     pub version: i32,
     pub rain_time: i32,
     pub raining: bool,
@@ -56,6 +58,13 @@ pub struct LevelInfo {
 }
 
 impl LevelInfo {
+    /// Preserve Java world-name code units without changing ordinary String callers.
+    pub fn set_name_utf16(&mut self, units: &[u16]) {
+        match String::from_utf16(units) {
+            Ok(name) => { self.name = name; self.name_utf16 = None; }
+            Err(_) => { self.name = String::from_utf16_lossy(units); self.name_utf16 = Some(units.to_vec()); }
+        }
+    }
     /// `WorldInfo.getDimension`: the saved player's `Dimension` (0 without a player).
     pub fn dimension(&self) -> i32 {
         self.player.as_ref().map_or(0, |p| p.int("Dimension"))
@@ -82,6 +91,7 @@ impl LevelInfo {
             size_on_disk: 0,
             last_played: 0,
             name: name.to_string(),
+            name_utf16: None,
             version: 19132,
             rain_time: 0,
             raining: false,
@@ -96,7 +106,7 @@ impl LevelInfo {
     }
     /// SaveHandler catches malformed WorldInfo and tries level.dat_old.
     pub fn try_from_nbt(c: &Compound) -> Result<Self, &'static str> {
-        if matches!(c.get("generatorName"), Some(t) if !matches!(t, Tag::String(_))) {
+        if matches!(c.get("generatorName"), Some(t) if !matches!(t, Tag::String(_) | Tag::StringUtf16(_))) {
             return Err("WorldInfo generatorName is not a string tag");
         }
         Ok(LevelInfo {
@@ -110,6 +120,7 @@ impl LevelInfo {
             size_on_disk: c.long("SizeOnDisk"),
             last_played: c.long("LastPlayed"),
             name: c.string("LevelName"),
+            name_utf16: match c.get("LevelName") { Some(Tag::StringUtf16(v)) => Some(v.clone()), _ => None },
             version: c.int("version"),
             rain_time: c.int("rainTime"),
             raining: c.boolean("raining"),
@@ -136,7 +147,10 @@ impl LevelInfo {
             .map(|d| d.as_millis() as i64)
             .unwrap_or(0);
         c.put("LastPlayed", Tag::Long(now));
-        c.put("LevelName", Tag::String(self.name.clone()));
+        c.put("LevelName", match &self.name_utf16 {
+            Some(units) => Tag::StringUtf16(units.clone()),
+            None => Tag::String(self.name.clone()),
+        });
         c.put("version", Tag::Int(self.version));
         c.put("rainTime", Tag::Int(self.rain_time));
         c.put("raining", Tag::Byte(self.raining as i8));
@@ -682,4 +696,34 @@ pub fn chunk_from_nbt_for_dimension(
         }
     }
     Some(c)
+}
+#[cfg(test)]
+mod release11_world_name_units_tests {
+ use super::*;
+ fn units(hex: &str) -> Vec<u16> {
+  if hex=="-" {return Vec::new();}
+  hex.as_bytes().chunks_exact(4).map(|x|u16::from_str_radix(std::str::from_utf8(x).unwrap(),16).unwrap()).collect()
+ }
+ fn bytes(hex: &str) -> Vec<u8> {hex.as_bytes().chunks_exact(2).map(|x|u8::from_str_radix(std::str::from_utf8(x).unwrap(),16).unwrap()).collect()}
+ #[test]
+ fn world_name_utf16_matches_original_11_nbt_and_reopen() {
+  let temp=std::env::temp_dir().join(format!("legacy-r11-worldname-{}-{}",std::process::id(),std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_nanos()));
+  let storage=Storage::open(&temp).unwrap();
+  for (i,line) in include_str!("fixtures/worldname_utf16_11.txt").lines().enumerate() {
+   let fields:Vec<&str>=line.split_whitespace().collect();let raw=units(fields[0]);let wire=bytes(fields[1]);let reopened=units(fields[2]);
+   assert_eq!(raw,reopened,"original reopen {i}");
+   let tag=nbt::NamedTag10::read(&mut &wire[..]).unwrap();assert_eq!(tag.key,"LevelName");
+   let mut data=Compound::new();data.put("LevelName",tag.payload.clone().unwrap());
+   assert_eq!(data.string_utf16("LevelName"),raw,"decode {i}");
+   let mut info=LevelInfo::from_nbt(&data);assert_eq!(info.name,String::from_utf16_lossy(&raw),"display {i}");
+   assert_eq!(info.name_utf16.is_some(),String::from_utf16(&raw).is_err(),"sidecar {i}");
+   info.set_name_utf16(&raw);
+   let saved=info.to_nbt();let written=nbt::NamedTag10::new(Some("LevelName"),saved.get("LevelName").cloned());
+   let mut actual=Vec::new();written.write(&mut actual).unwrap();assert_eq!(actual,wire,"original writeUTF {i}");
+   let info2=LevelInfo::from_nbt(&saved);assert_eq!(info2.name_utf16,info.name_utf16,"reopen sidecar {i}");
+   if i>=65536 {storage.save_level(&info).unwrap();let disk=storage.load_level().unwrap();assert_eq!(disk.name_utf16,info.name_utf16,"level.dat reopen {i}");assert_eq!(disk.name,info.name,"disk display {i}");}
+  }
+  let mut info=LevelInfo::new(0,"normal");info.set_name_utf16(&[0xd800]);assert!(info.name_utf16.is_some());info.set_name_utf16(&"valid😀".encode_utf16().collect::<Vec<_>>());assert!(info.name_utf16.is_none());assert_eq!(info.name,"valid😀");
+  std::fs::remove_dir_all(&temp).unwrap();
+ }
 }
