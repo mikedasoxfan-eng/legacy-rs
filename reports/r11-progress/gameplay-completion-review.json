@@ -1,0 +1,889 @@
+{
+  "schema": 1,
+  "scope": "Entire normalized1.1 changed delta only; inherited unchanged behavior requires no new Java-API proof",
+  "candidate_commit": "235b5ebd70b9326dc92857f21e9049815bfa9f21",
+  "original_jar_sha256": "44bb6ace88fdff460d6c428c4becee8cad52f2622e1f800dab7a70f8a716f75b",
+  "original_runtime": "Mojang Java8u51",
+  "required_test_log": "work/progress11-gameplay-tests.log",
+  "required_test_log_sha256": "5d8d6034de5f0e52a422081859cd9347f0dafe4fcac9d09dab0e6d52957b6723",
+  "required_test_result": "29 passed,0failed,55filtered serial original_11 tests",
+  "original_fixture_regeneration_log": "work/progress11-gameplay-oracle.log",
+  "original_fixture_regeneration_log_sha256": "08927ad481e10a1832e0ee41dff1007b57f5b6afd30c823b7f059639e36e86bb",
+  "regeneration_result": "All30 fixtures/tables EXACT original-bytecode reproduction",
+  "accepted_count": 21,
+  "accepted_classes": [
+    {
+      "class_name": "ItemMonsterPlacer",
+      "entire_1_1_delta_covered": true,
+      "whole_inherited_java_api_verified": false,
+      "source_review": "Every substantive1.0\u21921.1 hunk assigned below; method access/name changes alone have no existing-singleplayer behavior delta",
+      "all_delta_hunk_coverage": [
+        {
+          "delta": "constructor max-stack1/subtypes",
+          "authority_and_check": "eggs11.txt:1028 metadata/pass rows; egg_metadata test"
+        },
+        {
+          "delta": "name translation/base trim/numeric registry lookup",
+          "authority_and_check": "eggnames11.txt:257 names; egg_names test"
+        },
+        {
+          "delta": "two-pass bool/icon/color, invalid IDs and negative/zero/positive pass",
+          "authority_and_check": "eggs11.txt; egg_metadata test"
+        },
+        {
+          "delta": "onItemUse multiplayer early return, six side offsets/wrapping coords, EntityList constructor, survival/creative count, setLocationAndAngles and ignored World.join rejection",
+          "authority_and_check": "egguse11.txt:6048 cases; egg_spawns test; eggstackuse11.txt:60 actual ItemStack calls"
+        },
+        {
+          "delta": "invalid side exception before allocation/consumption",
+          "authority_and_check": "egginvalidside11.txt:24 actual ItemStack cases; egg_invalid_side test"
+        }
+      ],
+      "authority": {
+        "old": "work/retromcp-1.0/minecraft/src/net/minecraft/src/ItemMonsterPlacer.java",
+        "new": "work/retromcp-1.1/minecraft/src/net/minecraft/src/ItemMonsterPlacer.java",
+        "old_sha256": null,
+        "new_sha256": "a734d0ddcebcab44660c4c2e37d8f5d1e58f727df402ab64a01312fd8043f57b"
+      },
+      "rust_source_sha256": {
+        "crates/worldgen11/src/entity/spawn_egg11.rs": "07430c13d6afdf82bac4ed379f11e2c1baf1a99991528fcd34605de2098fa926",
+        "crates/worldgen11/src/entity/item_stack.rs": "b6a0c19d1a6983d967af4b32f59b8dac2ec482fced04e88524cb7b5a4ee8c494",
+        "crates/worldgen11/src/entity/player/items.rs": "b409a6375494d5fbc48cff9ab79c0bf5bb46a0fe16d231b696ec093cb1a7fd31"
+      },
+      "fixture_sha256": {
+        "egginvalidside11.txt": "f3f18b64ac7f6cd4fb73de948e4828b9e6bc0a7b4782964cc8303a07777a410e",
+        "eggnames11.txt": "c2750459931790547c8374b9965e3998f61427a1275d13899c6cc110f8cd7130",
+        "eggs11.txt": "d1f9f4df176ee6155dcb22dd6247d1af052629559fcacbd209ec9edbab02d4a3",
+        "eggstackuse11.txt": "314a53750921803ab5ae364b68229dffdabb08a6aa0fec07ee6f763ba4e8b317",
+        "egguse11.txt": "e8d6c9060fc487dc949b0727572f6ea9ae803be11d96dfd33a6e88e6e760f911"
+      },
+      "original_inventory_changed_lines": 43,
+      "completion_blockers": [],
+      "global_release_gates_not_class_delta_blockers": [
+        "Parent live client/rendering integration and complete inherited regression gate remain separate release requirements; narrow fixtures are credited only where their bounds span this entire class delta"
+      ]
+    },
+    {
+      "class_name": "EntityList",
+      "entire_1_1_delta_covered": true,
+      "whole_inherited_java_api_verified": false,
+      "source_review": "Every substantive1.0\u21921.1 hunk assigned below; method access/name changes alone have no existing-singleplayer behavior delta",
+      "all_delta_hunk_coverage": [
+        {
+          "delta": "new20-entry egg map/ID/name/dual colors; existing mappings preserved",
+          "authority_and_check": "eggs11.txt all numericIDs; egg_metadata test; unchanged factory paths are inherited"
+        },
+        {
+          "delta": "new registration helper delegates addMapping and constructs EggInfo",
+          "authority_and_check": "eggs11.txt + creative11.bin ordered20egg tail; egg_metadata and creative_inventory tests"
+        },
+        {
+          "delta": "numericID\u2192class\u2192name helper including null for unknown",
+          "authority_and_check": "eggs11.txt/eggnames11.txt covers-1..255; egg_metadata/egg_names tests"
+        }
+      ],
+      "authority": {
+        "old": "work/retromcp-1.0/minecraft/src/net/minecraft/src/EntityList.java",
+        "new": "work/retromcp-1.1/minecraft/src/net/minecraft/src/EntityList.java",
+        "old_sha256": "b04a2096dada745ea99adfb69f6b7e2987adf9d2b9a89cf13594f859f421cbdc",
+        "new_sha256": "5f4f4fae52b419c523c4d4aaa2fefea0d61186c67f34a66f65b804879f0391f4"
+      },
+      "rust_source_sha256": {
+        "crates/worldgen11/src/entity/registry.rs": "231941624f84c061fbea756621c40c7ee7a1b0c98d2b399d0fde541f72e675aa",
+        "crates/worldgen11/src/entity/spawn_egg11.rs": "07430c13d6afdf82bac4ed379f11e2c1baf1a99991528fcd34605de2098fa926"
+      },
+      "fixture_sha256": {
+        "eggstate11.bin": "c84675810f23c091c15153e4bfcee2914f43454b3eb935516dfca4dc1d1e64cf",
+        "egguse11.txt": "e8d6c9060fc487dc949b0727572f6ea9ae803be11d96dfd33a6e88e6e760f911"
+      },
+      "original_inventory_changed_lines": 29,
+      "completion_blockers": [],
+      "global_release_gates_not_class_delta_blockers": [
+        "Parent live client/rendering integration and complete inherited regression gate remain separate release requirements; narrow fixtures are credited only where their bounds span this entire class delta"
+      ]
+    },
+    {
+      "class_name": "EntityEggInfo",
+      "entire_1_1_delta_covered": true,
+      "whole_inherited_java_api_verified": false,
+      "source_review": "Every substantive1.0\u21921.1 hunk assigned below; method access/name changes alone have no existing-singleplayer behavior delta",
+      "all_delta_hunk_coverage": [
+        {
+          "delta": "new constructor three scalar fields",
+          "authority_and_check": "eggs11.txt20 valid metadata records \u00d7passes; egg_metadata test"
+        }
+      ],
+      "authority": {
+        "old": "work/retromcp-1.0/minecraft/src/net/minecraft/src/EntityEggInfo.java",
+        "new": "work/retromcp-1.1/minecraft/src/net/minecraft/src/EntityEggInfo.java",
+        "old_sha256": null,
+        "new_sha256": "89c122ad0c55a49fd8ecb9efb3c276e8cadbd23d65843d6501693ef75b267ea3"
+      },
+      "rust_source_sha256": {
+        "crates/worldgen11/src/entity/spawn_egg11.rs": "07430c13d6afdf82bac4ed379f11e2c1baf1a99991528fcd34605de2098fa926"
+      },
+      "fixture_sha256": {
+        "eggs11.txt": "d1f9f4df176ee6155dcb22dd6247d1af052629559fcacbd209ec9edbab02d4a3"
+      },
+      "original_inventory_changed_lines": 10,
+      "completion_blockers": [],
+      "global_release_gates_not_class_delta_blockers": [
+        "Parent live client/rendering integration and complete inherited regression gate remain separate release requirements; narrow fixtures are credited only where their bounds span this entire class delta"
+      ]
+    },
+    {
+      "class_name": "Enchantment",
+      "entire_1_1_delta_covered": true,
+      "whole_inherited_java_api_verified": false,
+      "source_review": "Every substantive1.0\u21921.1 hunk assigned below; method access/name changes alone have no existing-singleplayer behavior delta",
+      "all_delta_hunk_coverage": [
+        {
+          "delta": "four appended registry entries48/49/50/51,weights10/2/2/1,names and Bow types",
+          "authority_and_check": "bowenchant11.txt305 actual weighted lists/RNG; source literals compare names/IDs/types in enchantment.rs; bow_enchantment_selection test"
+        }
+      ],
+      "authority": {
+        "old": "work/retromcp-1.0/minecraft/src/net/minecraft/src/Enchantment.java",
+        "new": "work/retromcp-1.1/minecraft/src/net/minecraft/src/Enchantment.java",
+        "old_sha256": "8ac1a21573b8815b55b5351ff6804ea3c0d3eed83b91e63a55b129f4e8f6770d",
+        "new_sha256": "2e20a3c5c777017bd795b46d0fb0b81c6b430cfeea8e974710897f9ac5a77561"
+      },
+      "rust_source_sha256": {
+        "crates/worldgen11/src/enchantment.rs": "962bb6e28a9952d4c6ba732f0bf7a75b7b86105b095d68eed9da28da3dc41b3e"
+      },
+      "fixture_sha256": {
+        "bowenchant11.txt": "a0b7b9c275d35c3f264faf889c27e416fc4943f737ff1686a8b51b4bb14383f9"
+      },
+      "original_inventory_changed_lines": 4,
+      "completion_blockers": [],
+      "global_release_gates_not_class_delta_blockers": [
+        "Parent live client/rendering integration and complete inherited regression gate remain separate release requirements; narrow fixtures are credited only where their bounds span this entire class delta"
+      ]
+    },
+    {
+      "class_name": "EnumEnchantmentType",
+      "entire_1_1_delta_covered": true,
+      "whole_inherited_java_api_verified": false,
+      "source_review": "Every substantive1.0\u21921.1 hunk assigned below; method access/name changes alone have no existing-singleplayer behavior delta",
+      "all_delta_hunk_coverage": [
+        {
+          "delta": "append bow enum and canEnchantItem ItemBow branch; all enum/branch already exists in original1.0",
+          "authority_and_check": "bowenchant11.txt actual ItemBow selection/RNG; enchantment.rs typeBow compatibility; bow_enchantment_selection test"
+        }
+      ],
+      "authority": {
+        "old": "work/retromcp-1.0/minecraft/src/net/minecraft/src/EnumEnchantmentType.java",
+        "new": "work/retromcp-1.1/minecraft/src/net/minecraft/src/EnumEnchantmentType.java",
+        "old_sha256": "a7c3e543e03d3b610fc04a45f09f6081526211be0e98c204c44d6ab42bc98ff4",
+        "new_sha256": "d4b75e742866d4aa11e9daa021b8a127bdc5af86363c879c96d0fbac70dd1485"
+      },
+      "rust_source_sha256": {
+        "crates/worldgen11/src/enchantment.rs": "962bb6e28a9952d4c6ba732f0bf7a75b7b86105b095d68eed9da28da3dc41b3e"
+      },
+      "fixture_sha256": {
+        "bowenchant11.txt": "a0b7b9c275d35c3f264faf889c27e416fc4943f737ff1686a8b51b4bb14383f9"
+      },
+      "original_inventory_changed_lines": 3,
+      "completion_blockers": [],
+      "global_release_gates_not_class_delta_blockers": [
+        "Parent live client/rendering integration and complete inherited regression gate remain separate release requirements; narrow fixtures are credited only where their bounds span this entire class delta"
+      ]
+    },
+    {
+      "class_name": "EnchantmentHelper",
+      "entire_1_1_delta_covered": true,
+      "whole_inherited_java_api_verified": false,
+      "source_review": "Every substantive1.0\u21921.1 hunk assigned below; method access/name changes alone have no existing-singleplayer behavior delta",
+      "all_delta_hunk_coverage": [
+        {
+          "delta": "calcItemStackEnchantability removes first bookshelf random draw, uses fixed-half term",
+          "authority_and_check": "offers11.txt420 rows; offers_match_original_11_bytecode_and_rng_tail"
+        },
+        {
+          "delta": "getEnchantmentLevel visibility private\u2192public",
+          "authority_and_check": "Method body unchanged; access widening alone has no existing singleplayer behavioral delta; new ItemBow calls covered by bows11.txt"
+        }
+      ],
+      "authority": {
+        "old": "work/retromcp-1.0/minecraft/src/net/minecraft/src/EnchantmentHelper.java",
+        "new": "work/retromcp-1.1/minecraft/src/net/minecraft/src/EnchantmentHelper.java",
+        "old_sha256": "30df730732d97b39ee8f49330f757e0a5552da7db74c9f338cc607dc203df977",
+        "new_sha256": "067c64b46de183660c8001b886e820841714e188089a8d557e529796a5004c9f"
+      },
+      "rust_source_sha256": {
+        "crates/worldgen11/src/enchantment.rs": "962bb6e28a9952d4c6ba732f0bf7a75b7b86105b095d68eed9da28da3dc41b3e"
+      },
+      "fixture_sha256": {
+        "bowenchant11.txt": "a0b7b9c275d35c3f264faf889c27e416fc4943f737ff1686a8b51b4bb14383f9",
+        "offers11.txt": "54b07a2c6d4aa7f838cc948cdb03805abc009c1b619cf7a3413f6b50995704f3"
+      },
+      "original_inventory_changed_lines": 2,
+      "completion_blockers": [],
+      "global_release_gates_not_class_delta_blockers": [
+        "Parent live client/rendering integration and complete inherited regression gate remain separate release requirements; narrow fixtures are credited only where their bounds span this entire class delta"
+      ]
+    },
+    {
+      "class_name": "ItemBow",
+      "entire_1_1_delta_covered": true,
+      "whole_inherited_java_api_verified": false,
+      "source_review": "Every substantive1.0\u21921.1 hunk assigned below; method access/name changes alone have no existing-singleplayer behavior delta",
+      "all_delta_hunk_coverage": [
+        {
+          "delta": "release accepts creative or Infinity without consuming arrow; ordinary ammo branch preserved",
+          "authority_and_check": "bows11.txt512 charge/creative/ammo/enchantment masks; bow_release test"
+        },
+        {
+          "delta": "Power damage/Punch knockback/Flame100ticks, Infinity nonpickup; bow enchantability1",
+          "authority_and_check": "bows11.txt getter/field outputs + bowenchant11.txt actual list/RNG"
+        },
+        {
+          "delta": "new enchantments reached via original rightclick and release; actual initial ammo guard remains unchanged",
+          "authority_and_check": "bows11.txt begins-use flag/charge/output/ammo/durability/itemRand tail"
+        }
+      ],
+      "authority": {
+        "old": "work/retromcp-1.0/minecraft/src/net/minecraft/src/ItemBow.java",
+        "new": "work/retromcp-1.1/minecraft/src/net/minecraft/src/ItemBow.java",
+        "old_sha256": "de144d367fd6a49db7c4c01810bcf24f0c007fec936ecb9517400c27bcab7b71",
+        "new_sha256": "ca60d72caf9117ca1e6d806a206a80fe329e4641203d38dc72b98bb36e825b4e"
+      },
+      "rust_source_sha256": {
+        "crates/worldgen11/src/entity/player/mechanics.rs": "0a721941b7c1060357ec5f2dabd1cb9f8ffce6b2646381863e12f548fcee896e",
+        "crates/worldgen11/src/entity/player/items.rs": "b409a6375494d5fbc48cff9ab79c0bf5bb46a0fe16d231b696ec093cb1a7fd31"
+      },
+      "fixture_sha256": {
+        "bows11.txt": "f7583e043168260f2dc68b1fe30905c8eece9c4a0e7f69b4d3ee4f5c0a0a23ae"
+      },
+      "original_inventory_changed_lines": 28,
+      "completion_blockers": [],
+      "global_release_gates_not_class_delta_blockers": [
+        "Parent live client/rendering integration and complete inherited regression gate remain separate release requirements; narrow fixtures are credited only where their bounds span this entire class delta"
+      ]
+    },
+    {
+      "class_name": "EntityArrow",
+      "entire_1_1_delta_covered": true,
+      "whole_inherited_java_api_verified": false,
+      "source_review": "Every substantive1.0\u21921.1 hunk assigned below; method access/name changes alone have no existing-singleplayer behavior delta",
+      "all_delta_hunk_coverage": [
+        {
+          "delta": "new damage2/knockback0 state + damage getters/setters + impact ceil speed*damage",
+          "authority_and_check": "bows11.txt + arrowhits11.txt actual impacts; bow_release/arrow_impact tests"
+        },
+        {
+          "delta": "burning hit setFire(5), horizontal knockback only after successful hit and horizontal speed>0",
+          "authority_and_check": "arrowhits11.txt original impact health/motion/fire/damage/RNG; arrow_impact test"
+        },
+        {
+          "delta": "Double damage saved, missing damage preserves default; knockback not persisted",
+          "authority_and_check": "arrownbt11.txt wrong/missing/Double cases; arrow_nbt test"
+        }
+      ],
+      "authority": {
+        "old": "work/retromcp-1.0/minecraft/src/net/minecraft/src/EntityArrow.java",
+        "new": "work/retromcp-1.1/minecraft/src/net/minecraft/src/EntityArrow.java",
+        "old_sha256": "be91c017a37b7835e8b4bb05a200e6be44ed9f1cad92b987299dcfb50d15f7dc",
+        "new_sha256": "e31cba0ad3ae15c020961c44431f8a299c5dc6d3e40d371dc175f1976d863507"
+      },
+      "rust_source_sha256": {
+        "crates/worldgen11/src/entity/projectile.rs": "59d8bf7314ec9fe30d66adab3ccacaa4bf02d9f180056189a6f53d15e4105227",
+        "crates/worldgen11/src/entity/nbt.rs": "2bf61659b89cfb6505c6cdce38a8187d3c5fd3fc119a6f9aa6217c21addf009b"
+      },
+      "fixture_sha256": {
+        "arrowhits11.txt": "9e6e4872e4a2a669444355e4e90e1e1698ddabb8ba5811dc9d88a17b05fe477a",
+        "arrownbt11.txt": "b9bd0c4582a2786c451f60e5169f455a348ddc192658fc72d644dc397d906c14"
+      },
+      "original_inventory_changed_lines": 26,
+      "completion_blockers": [],
+      "global_release_gates_not_class_delta_blockers": [
+        "Parent live client/rendering integration and complete inherited regression gate remain separate release requirements; narrow fixtures are credited only where their bounds span this entire class delta"
+      ]
+    },
+    {
+      "class_name": "BlockLadder",
+      "entire_1_1_delta_covered": true,
+      "whole_inherited_java_api_verified": false,
+      "source_review": "Every substantive1.0\u21921.1 hunk assigned below; method access/name changes alone have no existing-singleplayer behavior delta",
+      "all_delta_hunk_coverage": [
+        {
+          "delta": "collision box becomes null; entire delta is removed previous collision AABB branch",
+          "authority_and_check": "blockboxes11.txt ladder metadata0..15 \u00d7coordinates0/-19/16777217; collision-none plus selected bounds; block_boxes test"
+        }
+      ],
+      "authority": {
+        "old": "work/retromcp-1.0/minecraft/src/net/minecraft/src/BlockLadder.java",
+        "new": "work/retromcp-1.1/minecraft/src/net/minecraft/src/BlockLadder.java",
+        "old_sha256": "24d51aee014c0bb110a8b344523aa10b4cbfa161629c64d39c33e1ab1665ad9f",
+        "new_sha256": "bef1193bb1556fb037df997340257b625a8497cc25580b9e6a6c08744ae91b3c"
+      },
+      "rust_source_sha256": {
+        "crates/worldgen11/src/entity/blocks11.rs": "7b3b7d612592b367e47bc1ec3a9c20ea5769934f58a0e3d9a0efbf54606ef104",
+        "crates/worldgen11/src/entity/blocks.rs": "f37f8c39e6509678187a6cb2002b28f49f9e0673929262547a004341111cc674",
+        "crates/worldgen11/src/entity/physics.rs": "a55d97cebd8a5a3c8e565cae5ad8139b47fbedb5e0b57eaae64730afa91d27a6",
+        "crates/worldgen11/src/world/behavior.rs": "dc6d60fb0465f2d76248af964de79b1e0a7a1250116c1e0a622d3aee6ce700d0"
+      },
+      "fixture_sha256": {
+        "blockboxes11.txt": "d165b5f0466b0243ceb820949686c971ead70c57370c403bd7c9b47220ad8f35"
+      },
+      "original_inventory_changed_lines": 15,
+      "completion_blockers": [],
+      "global_release_gates_not_class_delta_blockers": [
+        "Parent live client/rendering integration and complete inherited regression gate remain separate release requirements; narrow fixtures are credited only where their bounds span this entire class delta"
+      ]
+    },
+    {
+      "class_name": "BlockFarmland",
+      "entire_1_1_delta_covered": true,
+      "whole_inherited_java_api_verified": false,
+      "source_review": "Every substantive1.0\u21921.1 hunk assigned below; method access/name changes alone have no existing-singleplayer behavior delta",
+      "all_delta_hunk_coverage": [
+        {
+          "delta": "replace walking RNG trample override with inherited no-op walking",
+          "authority_and_check": "farmwalking11.txt5seeds block/RNG; farmland_walking test"
+        },
+        {
+          "delta": "new landing callback nextFloat<fallDistance-.5",
+          "authority_and_check": "farmland11.txt living/nonliving/ground/distance8boundaries/5seeds, real updateFallState; farmland_landings test"
+        }
+      ],
+      "authority": {
+        "old": "work/retromcp-1.0/minecraft/src/net/minecraft/src/BlockFarmland.java",
+        "new": "work/retromcp-1.1/minecraft/src/net/minecraft/src/BlockFarmland.java",
+        "old_sha256": "2fd765c4608737f304571703d09d8e97835cac730f1b3efad40e4490ca409455",
+        "new_sha256": "209e775b6f1d8715c13d502da91d551ed61c269ae6e45f11818c075a38b4bb65"
+      },
+      "rust_source_sha256": {
+        "crates/worldgen11/src/entity/blocks11.rs": "7b3b7d612592b367e47bc1ec3a9c20ea5769934f58a0e3d9a0efbf54606ef104",
+        "crates/worldgen11/src/entity/blocks.rs": "f37f8c39e6509678187a6cb2002b28f49f9e0673929262547a004341111cc674",
+        "crates/worldgen11/src/entity/physics.rs": "a55d97cebd8a5a3c8e565cae5ad8139b47fbedb5e0b57eaae64730afa91d27a6",
+        "crates/worldgen11/src/world/behavior.rs": "dc6d60fb0465f2d76248af964de79b1e0a7a1250116c1e0a622d3aee6ce700d0"
+      },
+      "fixture_sha256": {
+        "farmland11.txt": "2c138de3a57ccce4b6404758349795a1c5d506e755d06fdd52743c5c7cd67988",
+        "farmwalking11.txt": "7cb56e8d15c234d724e0be9ad4e018d188d86e7727d83736eea8a5ff599a9848"
+      },
+      "original_inventory_changed_lines": 2,
+      "completion_blockers": [],
+      "global_release_gates_not_class_delta_blockers": [
+        "Parent live client/rendering integration and complete inherited regression gate remain separate release requirements; narrow fixtures are credited only where their bounds span this entire class delta"
+      ]
+    },
+    {
+      "class_name": "BlockFenceGate",
+      "entire_1_1_delta_covered": true,
+      "whole_inherited_java_api_verified": false,
+      "source_review": "Every substantive1.0\u21921.1 hunk assigned below; method access/name changes alone have no existing-singleplayer behavior delta",
+      "all_delta_hunk_coverage": [
+        {
+          "delta": "narrow axis-dependent1.5-high collision with raw-facing test; selection state-bounds1high",
+          "authority_and_check": "blockboxes11.txt all16metadata/3float-sensitive coordinates; block_boxes test"
+        },
+        {
+          "delta": "new server neighbor hook checks powered/provider/changed0, updates openbit/SFX exactly on transition",
+          "authority_and_check": "gate11.txt320cases metadata0..15,changed0/1/64/69/93,power/remote; gate_notifications test"
+        }
+      ],
+      "authority": {
+        "old": "work/retromcp-1.0/minecraft/src/net/minecraft/src/BlockFenceGate.java",
+        "new": "work/retromcp-1.1/minecraft/src/net/minecraft/src/BlockFenceGate.java",
+        "old_sha256": "4aa185c28f7b2b67b50d5e2039563efe1a362add5fd59689eb0034c514769627",
+        "new_sha256": "a62198f487dfa03191d0c03aa211af139d55ddb8d61e55aa3b955aa9970a16ff"
+      },
+      "rust_source_sha256": {
+        "crates/worldgen11/src/entity/blocks11.rs": "7b3b7d612592b367e47bc1ec3a9c20ea5769934f58a0e3d9a0efbf54606ef104",
+        "crates/worldgen11/src/entity/blocks.rs": "f37f8c39e6509678187a6cb2002b28f49f9e0673929262547a004341111cc674",
+        "crates/worldgen11/src/entity/physics.rs": "a55d97cebd8a5a3c8e565cae5ad8139b47fbedb5e0b57eaae64730afa91d27a6",
+        "crates/worldgen11/src/world/behavior.rs": "dc6d60fb0465f2d76248af964de79b1e0a7a1250116c1e0a622d3aee6ce700d0"
+      },
+      "fixture_sha256": {
+        "blockboxes11.txt": "d165b5f0466b0243ceb820949686c971ead70c57370c403bd7c9b47220ad8f35",
+        "gate11.txt": "9f89c2dbe887e4641f206bf612cfaae28beb22e511b89ef0da8c7f0ef0eb46ad"
+      },
+      "original_inventory_changed_lines": 24,
+      "completion_blockers": [],
+      "global_release_gates_not_class_delta_blockers": [
+        "Parent live client/rendering integration and complete inherited regression gate remain separate release requirements; narrow fixtures are credited only where their bounds span this entire class delta"
+      ]
+    },
+    {
+      "class_name": "BlockDoor",
+      "entire_1_1_delta_covered": true,
+      "whole_inherited_java_api_verified": false,
+      "source_review": "Every substantive1.0\u21921.1 hunk assigned below; method access/name changes alone have no existing-singleplayer behavior delta",
+      "all_delta_hunk_coverage": [
+        {
+          "delta": "upper neighbor forwarding excludes self but forwards any positive change",
+          "authority_and_check": "doors11.txt upper/lower,changed0/1/self64/provider69/93,power0/1,alllower metadata0..7"
+        },
+        {
+          "delta": "lower power hook allows powered OR provider OR changed0, excludes self",
+          "authority_and_check": "doors11.txt final pairedmetadata/SFX/RNG; doors test;304total placement+neighbor cases"
+        },
+        {
+          "delta": "changed power conditions preserve hinge metadata through recursive placement notifications",
+          "authority_and_check": "doors11.txt original ItemDoor.placeDoorBlock144cases;22actual normal/flat village structure/provider grid cases EXACT in worldgen11-structures-verification.log"
+        }
+      ],
+      "authority": {
+        "old": "work/retromcp-1.0/minecraft/src/net/minecraft/src/BlockDoor.java",
+        "new": "work/retromcp-1.1/minecraft/src/net/minecraft/src/BlockDoor.java",
+        "old_sha256": "5504a92b245f9115efee8830a23a3ce916c8f1d9458dcf89afac6746a182d34b",
+        "new_sha256": "2de82dbcf137f8cc7a042f0b681f398670cba82ef5f922c0268131f597d9d7b2"
+      },
+      "rust_source_sha256": {
+        "crates/worldgen11/src/entity/player/block_hooks.rs": "456c50dd255a21a6651e75f2ce314bc223c55be6ac2b3b533a59df0b8d6da6e8",
+        "crates/worldgen11/src/structures/component.rs": "1301046367f870908ec02cf185e6fe0d3ef4eddd4e3f0453327e70fe6cce8661"
+      },
+      "fixture_sha256": {
+        "doors11.txt": "db03e0ac70bc58963620e84a3a364594d6bd1b3d006b2800db480e93b074f7b6"
+      },
+      "original_inventory_changed_lines": 4,
+      "completion_blockers": [],
+      "global_release_gates_not_class_delta_blockers": [
+        "Parent live client/rendering integration and complete inherited regression gate remain separate release requirements; narrow fixtures are credited only where their bounds span this entire class delta"
+      ]
+    },
+    {
+      "class_name": "BlockRail",
+      "entire_1_1_delta_covered": true,
+      "whole_inherited_java_api_verified": false,
+      "source_review": "Every substantive1.0\u21921.1 hunk assigned below; method access/name changes alone have no existing-singleplayer behavior delta",
+      "all_delta_hunk_coverage": [
+        {
+          "delta": "onBlockAdded after shape refresh invokes neighbor hook iff powered rail",
+          "authority_and_check": "railadded11.txt40 metadata0..9/power0/1/remote0/1 final block/meta/RNG; powered_rail_additions test; world/rails.rs call ordering inspected"
+        }
+      ],
+      "authority": {
+        "old": "work/retromcp-1.0/minecraft/src/net/minecraft/src/BlockRail.java",
+        "new": "work/retromcp-1.1/minecraft/src/net/minecraft/src/BlockRail.java",
+        "old_sha256": "996f8f783bd1ff7192a17188ba668d0ea8ca1a3706dcc3b9fc5ca55251b5f646",
+        "new_sha256": "fbb86c310e6ab83c1e244a6d8200b2850a92433f0dcaeded14153fdceb61fda4"
+      },
+      "rust_source_sha256": {
+        "crates/worldgen11/src/entity/blocks11.rs": "7b3b7d612592b367e47bc1ec3a9c20ea5769934f58a0e3d9a0efbf54606ef104",
+        "crates/worldgen11/src/entity/blocks.rs": "f37f8c39e6509678187a6cb2002b28f49f9e0673929262547a004341111cc674",
+        "crates/worldgen11/src/entity/physics.rs": "a55d97cebd8a5a3c8e565cae5ad8139b47fbedb5e0b57eaae64730afa91d27a6",
+        "crates/worldgen11/src/world/behavior.rs": "dc6d60fb0465f2d76248af964de79b1e0a7a1250116c1e0a622d3aee6ce700d0",
+        "crates/worldgen11/src/world/rails.rs": "e974f99b62504b8041c27c446124842c336df3c56b380d58a487c71f514ddc43"
+      },
+      "fixture_sha256": {
+        "railadded11.txt": "9c12fcc211bab8991bf23e32161570fe93f2c39d791481e119d07a53dd61312c"
+      },
+      "original_inventory_changed_lines": 3,
+      "completion_blockers": [],
+      "global_release_gates_not_class_delta_blockers": [
+        "Parent live client/rendering integration and complete inherited regression gate remain separate release requirements; narrow fixtures are credited only where their bounds span this entire class delta"
+      ]
+    },
+    {
+      "class_name": "BlockRedstoneRepeater",
+      "entire_1_1_delta_covered": true,
+      "whole_inherited_java_api_verified": false,
+      "source_review": "Every substantive1.0\u21921.1 hunk assigned below; method access/name changes alone have no existing-singleplayer behavior delta",
+      "all_delta_hunk_coverage": [
+        {
+          "delta": "canProvidePower false\u2192true; sole method delta",
+          "authority_and_check": "gate11.txt and doors11.txt changedID93/not-powered/open closes only if original canProvidePower returns true; Rust entity/block_hooks.rs93|94 true; gate_notifications/doors tests. Same shared class method serves both repeater instances"
+        }
+      ],
+      "authority": {
+        "old": "work/retromcp-1.0/minecraft/src/net/minecraft/src/BlockRedstoneRepeater.java",
+        "new": "work/retromcp-1.1/minecraft/src/net/minecraft/src/BlockRedstoneRepeater.java",
+        "old_sha256": "1dd28e2dd5765193becd968dab7fae33ca36ddaa8d35ead032619339d914154b",
+        "new_sha256": "0f7da5b6e032e4777fc44dc46dff85a4abc19c843c7d5fb8de4ca5e5a2f66831"
+      },
+      "rust_source_sha256": {
+        "crates/worldgen11/src/entity/block_hooks.rs": "472e369fb32b36736fc3514e32c304792b6460f2e3cc6bf7a2c28001e70820cc",
+        "crates/worldgen11/src/world/redstone.rs": "f67e8bb0f9eb6f1b670047c94fb4ef6f84703d6fba4508b2ef3edf29d83cc6c6"
+      },
+      "fixture_sha256": {},
+      "original_inventory_changed_lines": 1,
+      "completion_blockers": [],
+      "global_release_gates_not_class_delta_blockers": [
+        "Parent live client/rendering integration and complete inherited regression gate remain separate release requirements; narrow fixtures are credited only where their bounds span this entire class delta"
+      ]
+    },
+    {
+      "class_name": "EntityMagmaCube",
+      "entire_1_1_delta_covered": true,
+      "whole_inherited_java_api_verified": false,
+      "source_review": "Every substantive1.0\u21921.1 hunk assigned below; method access/name changes alone have no existing-singleplayer behavior delta",
+      "all_delta_hunk_coverage": [
+        {
+          "delta": "getDropItemId0\u2192magmaCream378; size>1 drop count nextInt4-2 plus positive looting draw; size1 consumes no drop RNG",
+          "authority_and_check": "magma11.txt900size/looting/seed cases; magma_drops test"
+        },
+        {
+          "delta": "armor method protected numbered\u2192public getTotalArmorValue",
+          "authority_and_check": "Body remains size*3; access/name change alone has no reachable behavioral delta"
+        }
+      ],
+      "authority": {
+        "old": "work/retromcp-1.0/minecraft/src/net/minecraft/src/EntityMagmaCube.java",
+        "new": "work/retromcp-1.1/minecraft/src/net/minecraft/src/EntityMagmaCube.java",
+        "old_sha256": "b1380deeb78c9f2eeade54f6d9effdeb3a5e785cd8b9e8f32ebe54769e2deb59",
+        "new_sha256": "e473ca5bb225857718624dde61814b3c2a1384e6b3de7f92f42721e62d7ee7ce"
+      },
+      "rust_source_sha256": {
+        "crates/worldgen11/src/entity/living.rs": "607b0b8ca26f3fe261198bfa1b83887bc0c77ca5e65e09092635847370a4aec2",
+        "crates/worldgen11/src/entity/sheep11.rs": "4e306a4be8bd72a2611c5f820664719a60b91aa07660ffc3deaf182f0f782fdb"
+      },
+      "fixture_sha256": {
+        "eggstate11.bin": "c84675810f23c091c15153e4bfcee2914f43454b3eb935516dfca4dc1d1e64cf",
+        "magma11.txt": "b6fb031fbc0de797ffe0eef5f7afe04a78203ccf50843249f82aa84b982ae165"
+      },
+      "original_inventory_changed_lines": 14,
+      "completion_blockers": [],
+      "global_release_gates_not_class_delta_blockers": [
+        "Parent live client/rendering integration and complete inherited regression gate remain separate release requirements; narrow fixtures are credited only where their bounds span this entire class delta"
+      ]
+    },
+    {
+      "class_name": "ContainerCreative",
+      "entire_1_1_delta_covered": true,
+      "whole_inherited_java_api_verified": false,
+      "source_review": "Every substantive1.0\u21921.1 hunk assigned below; method access/name changes alone have no existing-singleplayer behavior delta",
+      "all_delta_hunk_coverage": [
+        {
+          "delta": "generic item loop additionally excludes383, then appends egg map keys in HashMap order",
+          "authority_and_check": "creative11.bin/text285actual stacks,20egg tail; creative_inventory test; potion exclusion inherited"
+        }
+      ],
+      "authority": {
+        "old": "work/retromcp-1.0/minecraft/src/net/minecraft/src/ContainerCreative.java",
+        "new": "work/retromcp-1.1/minecraft/src/net/minecraft/src/ContainerCreative.java",
+        "old_sha256": "d0b867fdda6c1059bff61dd09b89443a4c3d01d4c75162ecc9c48952e9c21ab8",
+        "new_sha256": "917efa252be6955d43bfba167f2b9d10fa4084dc85814d4483c78f158a4132b3"
+      },
+      "rust_source_sha256": {
+        "crates/worldgen11/src/block/visual181.rs": "ba911726abb798fde946c567cc0f49828e6ce83f3e7f9faacf33450a1dcaf3a8",
+        "crates/worldgen11/src/block/creative11.bin": "25327cd25069c5af9f9411f887603fcab143ebe49943eef0137a9e0999e33d21"
+      },
+      "fixture_sha256": {
+        "creative11.bin": "25327cd25069c5af9f9411f887603fcab143ebe49943eef0137a9e0999e33d21",
+        "creative11.txt": "a0ee1f6b878a4d61073e16c3029d35b1ebe745e93396958c4d70f78e77939f05"
+      },
+      "original_inventory_changed_lines": 7,
+      "completion_blockers": [],
+      "global_release_gates_not_class_delta_blockers": [
+        "Parent live client/rendering integration and complete inherited regression gate remain separate release requirements; narrow fixtures are credited only where their bounds span this entire class delta"
+      ]
+    },
+    {
+      "class_name": "SlotCrafting",
+      "entire_1_1_delta_covered": true,
+      "whole_inherited_java_api_verified": false,
+      "source_review": "Every substantive1.0\u21921.1 hunk assigned below; method access/name changes alone have no existing-singleplayer behavior delta",
+      "all_delta_hunk_coverage": [
+        {
+          "delta": "construct remainder; try player inventory then matrix restore iff empty else drop",
+          "authority_and_check": "remainders11.txt8real SlotCrafting callbacks full/not-full inventory\u00d7inputcount1/2\u00d7creative; crafting_remainders test"
+        },
+        {
+          "delta": "container-leave callback guards inventory route",
+          "authority_and_check": "Original Item.func_46059_i always true and full source has no overrides; only Item/SlotCrafting references. Default true is implemented; false branch is unreachable for existing item registry"
+        }
+      ],
+      "authority": {
+        "old": "work/retromcp-1.0/minecraft/src/net/minecraft/src/SlotCrafting.java",
+        "new": "work/retromcp-1.1/minecraft/src/net/minecraft/src/SlotCrafting.java",
+        "old_sha256": "579172ee614506fc93f02016674aa43118d3e2085915798a7ba476b7004ec530",
+        "new_sha256": "741e9f2fee7de68052856d6174b48bf96b10184b0447a90717a99d2d12083cd0"
+      },
+      "rust_source_sha256": {
+        "crates/worldgen11/src/container/mod.rs": "44962fefaa0cdaba97e752ac14bd5251055b945fda9d5da046126858376dd8f8"
+      },
+      "fixture_sha256": {
+        "remainders11.txt": "baaff963b1721ebbdbfc8a30d90ec566cffe2cbe6752c7c735892d2fdb9cc017"
+      },
+      "original_inventory_changed_lines": 8,
+      "completion_blockers": [],
+      "global_release_gates_not_class_delta_blockers": [
+        "Parent live client/rendering integration and complete inherited regression gate remain separate release requirements; narrow fixtures are credited only where their bounds span this entire class delta"
+      ]
+    },
+    {
+      "class_name": "EnchantmentArrowDamage",
+      "entire_1_1_delta_covered": true,
+      "whole_inherited_java_api_verified": false,
+      "source_review": "Every substantive1.0\u21921.1 hunk assigned below; method access/name changes alone have no existing-singleplayer behavior delta",
+      "all_delta_hunk_coverage": [
+        {
+          "delta": "new constructor Bow type/name and min/max enchantability/maxlevel; Power:maxlevel5,min1+10*(level-1),max min+15",
+          "authority_and_check": "Original BowSlice11.buildEnchantmentList305cases (5seeds\u00d7power0..60) with exact weighted selected IDs/levels and RNG; every reachable bow level range represented. Source literal methods matched to Rust enchantment.rs; bow_enchantment_selection test"
+        }
+      ],
+      "authority": {
+        "old": "work/retromcp-1.0/minecraft/src/net/minecraft/src/EnchantmentArrowDamage.java",
+        "new": "work/retromcp-1.1/minecraft/src/net/minecraft/src/EnchantmentArrowDamage.java",
+        "old_sha256": null,
+        "new_sha256": "ea6852daabe004ad6436c2603fe0f4c5dfa9d6037cc1dc464e606f3c23552f02"
+      },
+      "rust_source_sha256": {
+        "crates/worldgen11/src/enchantment.rs": "962bb6e28a9952d4c6ba732f0bf7a75b7b86105b095d68eed9da28da3dc41b3e"
+      },
+      "fixture_sha256": {
+        "bowenchant11.txt": "a0b7b9c275d35c3f264faf889c27e416fc4943f737ff1686a8b51b4bb14383f9"
+      },
+      "original_inventory_changed_lines": 15,
+      "completion_blockers": [],
+      "global_release_gates_not_class_delta_blockers": [
+        "Parent live client/rendering integration and complete inherited regression gate remain separate release requirements; narrow fixtures are credited only where their bounds span this entire class delta"
+      ]
+    },
+    {
+      "class_name": "EnchantmentArrowKnockback",
+      "entire_1_1_delta_covered": true,
+      "whole_inherited_java_api_verified": false,
+      "source_review": "Every substantive1.0\u21921.1 hunk assigned below; method access/name changes alone have no existing-singleplayer behavior delta",
+      "all_delta_hunk_coverage": [
+        {
+          "delta": "new constructor Bow type/name and min/max enchantability/maxlevel; Punch:maxlevel2,min12+20*(level-1),max min+25",
+          "authority_and_check": "Original BowSlice11.buildEnchantmentList305cases (5seeds\u00d7power0..60) with exact weighted selected IDs/levels and RNG; every reachable bow level range represented. Source literal methods matched to Rust enchantment.rs; bow_enchantment_selection test"
+        }
+      ],
+      "authority": {
+        "old": "work/retromcp-1.0/minecraft/src/net/minecraft/src/EnchantmentArrowKnockback.java",
+        "new": "work/retromcp-1.1/minecraft/src/net/minecraft/src/EnchantmentArrowKnockback.java",
+        "old_sha256": null,
+        "new_sha256": "21fc254c8747085721ef994a5c81cabbc4fbb3fddc9656d9a63c96775f04682e"
+      },
+      "rust_source_sha256": {
+        "crates/worldgen11/src/enchantment.rs": "962bb6e28a9952d4c6ba732f0bf7a75b7b86105b095d68eed9da28da3dc41b3e"
+      },
+      "fixture_sha256": {
+        "bowenchant11.txt": "a0b7b9c275d35c3f264faf889c27e416fc4943f737ff1686a8b51b4bb14383f9"
+      },
+      "original_inventory_changed_lines": 15,
+      "completion_blockers": [],
+      "global_release_gates_not_class_delta_blockers": [
+        "Parent live client/rendering integration and complete inherited regression gate remain separate release requirements; narrow fixtures are credited only where their bounds span this entire class delta"
+      ]
+    },
+    {
+      "class_name": "EnchantmentArrowFire",
+      "entire_1_1_delta_covered": true,
+      "whole_inherited_java_api_verified": false,
+      "source_review": "Every substantive1.0\u21921.1 hunk assigned below; method access/name changes alone have no existing-singleplayer behavior delta",
+      "all_delta_hunk_coverage": [
+        {
+          "delta": "new constructor Bow type/name and min/max enchantability/maxlevel; Flame:maxlevel1,min20,max50",
+          "authority_and_check": "Original BowSlice11.buildEnchantmentList305cases (5seeds\u00d7power0..60) with exact weighted selected IDs/levels and RNG; every reachable bow level range represented. Source literal methods matched to Rust enchantment.rs; bow_enchantment_selection test"
+        }
+      ],
+      "authority": {
+        "old": "work/retromcp-1.0/minecraft/src/net/minecraft/src/EnchantmentArrowFire.java",
+        "new": "work/retromcp-1.1/minecraft/src/net/minecraft/src/EnchantmentArrowFire.java",
+        "old_sha256": null,
+        "new_sha256": "4f060453a0bcba1313c04d29a0cea1812e6f4ec48630dc9a8905a81627f329fe"
+      },
+      "rust_source_sha256": {
+        "crates/worldgen11/src/enchantment.rs": "962bb6e28a9952d4c6ba732f0bf7a75b7b86105b095d68eed9da28da3dc41b3e"
+      },
+      "fixture_sha256": {
+        "bowenchant11.txt": "a0b7b9c275d35c3f264faf889c27e416fc4943f737ff1686a8b51b4bb14383f9"
+      },
+      "original_inventory_changed_lines": 15,
+      "completion_blockers": [],
+      "global_release_gates_not_class_delta_blockers": [
+        "Parent live client/rendering integration and complete inherited regression gate remain separate release requirements; narrow fixtures are credited only where their bounds span this entire class delta"
+      ]
+    },
+    {
+      "class_name": "EnchantmentArrowInfinite",
+      "entire_1_1_delta_covered": true,
+      "whole_inherited_java_api_verified": false,
+      "source_review": "Every substantive1.0\u21921.1 hunk assigned below; method access/name changes alone have no existing-singleplayer behavior delta",
+      "all_delta_hunk_coverage": [
+        {
+          "delta": "new constructor Bow type/name and min/max enchantability/maxlevel; Infinity:maxlevel1,min20,max50",
+          "authority_and_check": "Original BowSlice11.buildEnchantmentList305cases (5seeds\u00d7power0..60) with exact weighted selected IDs/levels and RNG; every reachable bow level range represented. Source literal methods matched to Rust enchantment.rs; bow_enchantment_selection test"
+        }
+      ],
+      "authority": {
+        "old": "work/retromcp-1.0/minecraft/src/net/minecraft/src/EnchantmentArrowInfinite.java",
+        "new": "work/retromcp-1.1/minecraft/src/net/minecraft/src/EnchantmentArrowInfinite.java",
+        "old_sha256": null,
+        "new_sha256": "5cc49efd8a509103925e965d20fded1ebda44b187281657bf9f592663164bbd2"
+      },
+      "rust_source_sha256": {
+        "crates/worldgen11/src/enchantment.rs": "962bb6e28a9952d4c6ba732f0bf7a75b7b86105b095d68eed9da28da3dc41b3e"
+      },
+      "fixture_sha256": {
+        "bowenchant11.txt": "a0b7b9c275d35c3f264faf889c27e416fc4943f737ff1686a8b51b4bb14383f9"
+      },
+      "original_inventory_changed_lines": 15,
+      "completion_blockers": [],
+      "global_release_gates_not_class_delta_blockers": [
+        "Parent live client/rendering integration and complete inherited regression gate remain separate release requirements; narrow fixtures are credited only where their bounds span this entire class delta"
+      ]
+    }
+  ],
+  "explicit_hold_classes": [
+    {
+      "class_name": "EntitySheep",
+      "entire_1_1_delta_covered": false,
+      "completion_blockers": [
+        "Grazing trigger/consume/growth/head/shearing verified, but no explicit original handleHealthUpdate(10), forced jump suppression or isMovementCeased vector retained; hold full delta credit."
+      ]
+    },
+    {
+      "class_name": "InventoryPlayer",
+      "entire_1_1_delta_covered": false,
+      "completion_blockers": [
+        "Equal/unequal/tag-free merges covered; new copied compound semantics need an original mutation-after-inventory-accept independence vector."
+      ]
+    },
+    {
+      "class_name": "ItemStack",
+      "entire_1_1_delta_covered": false,
+      "completion_blockers": [
+        "Non-null tagged acceptance/equality checked; nullable helper/factorization must be reconciled with old areItemStacksEqual caller rather than assume9vectors prove whole delta."
+      ]
+    },
+    {
+      "class_name": "Container",
+      "entire_1_1_delta_covered": false,
+      "completion_blockers": [
+        "Changed tag-equality merge/swap/shift paths require direct original slotClick/merge callback snapshots."
+      ]
+    },
+    {
+      "class_name": "Entity",
+      "entire_1_1_delta_covered": false,
+      "completion_blockers": [
+        "Farmland hook and web reset tested; exact new landing-coordinate/fence-substitution dispatch boundaries need explicit reconciliation before full22line delta credit."
+      ]
+    },
+    {
+      "class_name": "EntityPlayer",
+      "entire_1_1_delta_covered": false,
+      "completion_blockers": [
+        "Damage and XP tested; changed per-pass icon dispatch belongs parent client rendering evidence; no full credit from damage/XP only."
+      ]
+    },
+    {
+      "class_name": "EntityLiving",
+      "entire_1_1_delta_covered": false,
+      "completion_blockers": [
+        "Dormant helper branch and constructor effects reviewed; world-vs-entity multiplayer predicate, field renaming/render-yaw/interpolation changes need per-hunk coverage."
+      ]
+    },
+    {
+      "class_name": "EntityWolf",
+      "entire_1_1_delta_covered": false,
+      "completion_blockers": [
+        "World.multiplayerWorld replacing network entity flag in shake trigger still differs at special.rs:564; hold."
+      ]
+    },
+    {
+      "class_name": "EntitySquid",
+      "entire_1_1_delta_covered": false,
+      "completion_blockers": [
+        "World.multiplayerWorld replacing network entity flag in two update paths needs remote/flag disagreement vectors."
+      ]
+    },
+    {
+      "class_name": "EntityAnimal",
+      "entire_1_1_delta_covered": false,
+      "completion_blockers": [
+        "Wheat interaction clears entityToAttack; Rust animal.rs clears target, but no exact original interaction target snapshot retained."
+      ]
+    },
+    {
+      "class_name": "BlockRedstoneWire",
+      "entire_1_1_delta_covered": false,
+      "completion_blockers": [
+        "Rising-nonzero notifications/removal six-neighbor order/directional repeater handling need exact callback sequence check."
+      ]
+    },
+    {
+      "class_name": "EntityCreeper",
+      "entire_1_1_delta_covered": false,
+      "completion_blockers": [
+        "Rust next_int(2) vs original nextInt(10) skeleton-kill record drop; runtime fix/probe pending."
+      ]
+    },
+    {
+      "class_name": "TileEntityBrewingStand",
+      "entire_1_1_delta_covered": false,
+      "completion_blockers": [
+        "Rust brew_time600 vs original400; runtime fix/probe pending."
+      ]
+    },
+    {
+      "class_name": "BlockDetectorRail",
+      "entire_1_1_delta_covered": false,
+      "completion_blockers": [
+        "Detector AABB Ymax changes .25\u2192.875; verify runtime and boundary carts."
+      ]
+    },
+    {
+      "class_name": "BlockSnow",
+      "entire_1_1_delta_covered": false,
+      "completion_blockers": [
+        "Snow support permits leaves; direct support/block-removal vectors pending."
+      ]
+    },
+    {
+      "class_name": "BlockStem",
+      "entire_1_1_delta_covered": false,
+      "completion_blockers": [
+        "Fruit on dirt/grass as well as farmland; direct growth/RNG vectors pending."
+      ]
+    },
+    {
+      "class_name": "BlockTrapDoor",
+      "entire_1_1_delta_covered": false,
+      "completion_blockers": [
+        "Neighbor0 handling/power predicate delta requires original callback vectors."
+      ]
+    },
+    {
+      "class_name": "BlockLeaves",
+      "entire_1_1_delta_covered": false,
+      "completion_blockers": [
+        "Oak apple drop RNG path and shared decay/harvest callers open; biome tint parent evidence separate."
+      ]
+    },
+    {
+      "class_name": "BlockGrass",
+      "entire_1_1_delta_covered": false,
+      "completion_blockers": [
+        "3x3 tint needs parent biome/color/caller evidence."
+      ]
+    },
+    {
+      "class_name": "BlockFluid",
+      "entire_1_1_delta_covered": false,
+      "completion_blockers": [
+        "3x3 water tint needs parent biome/color/caller evidence."
+      ]
+    },
+    {
+      "class_name": "Item",
+      "entire_1_1_delta_covered": false,
+      "completion_blockers": [
+        "Spawn egg/food configuration/remainder hooks/multi-pass defaults span other classes; full static registry/API delta reconciliation open."
+      ]
+    },
+    {
+      "class_name": "ItemPotion",
+      "entire_1_1_delta_covered": false,
+      "completion_blockers": [
+        "New multi-pass icon/color and display-name construction require parent evidence."
+      ]
+    },
+    {
+      "class_name": "StatList",
+      "entire_1_1_delta_covered": false,
+      "completion_blockers": [
+        "Item383 registration covered; eager\u2192lazy localization of basic stats requires parent evidence."
+      ]
+    }
+  ],
+  "not_reviewed_for_credit": "All other classes remain parent accounting pending; no implicit exclusion or completion credit",
+  "parent_action": "Register full-delta credit only against exact hashes/current committed candidate and normalize weights using parent progress inventory; do not use these fixtures to blanket-credit other classes."
+}

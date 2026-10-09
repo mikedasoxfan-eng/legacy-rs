@@ -1,0 +1,157 @@
+{
+  "jvm": "Mojang Java 1.8.0_51",
+  "original_client_sha1": "f690d4136b0026d452163538495b9b0e8513d718",
+  "source_sha256": {
+    "crates/worldgen11/src/genlayer.rs": "01f65e70c84445b405b4af359b4f7b80f3487340df683ab947430acad4404aa4",
+    "crates/worldgen11/src/biome.rs": "8c83b468a6a56e831a1ccf49a187de07c38f8d9245f3786ceedcfd5b54e504e8",
+    "crates/worldgen11/src/flat.rs": "98e3a72fbce435cff3796408811ea4a8b30e7374f7528815f5ad0c8885b3d262",
+    "crates/worldgen11/src/bin/genlayer11_probe.rs": "d2fb76870d85e712a7ea6e46ed1ef7a045cc58ab334b41d5ba64b878a17e104e",
+    "tools/oracle11/probes/LayerProbe11.java": "e8c1a2540904962102ad40331ba297f286605b4550512a2798ecea4df9c6622e"
+  },
+  "results": [
+    {
+      "kind": "layer",
+      "seed": "0",
+      "bytes": 82384,
+      "exact": true,
+      "java_sha256": "0485bf22dfa46df8c59a342d46683ec69926a1d80cc50d5a62d3342d3a5ac39e",
+      "rust_sha256": "0485bf22dfa46df8c59a342d46683ec69926a1d80cc50d5a62d3342d3a5ac39e"
+    },
+    {
+      "kind": "layer",
+      "seed": "1",
+      "bytes": 82384,
+      "exact": true,
+      "java_sha256": "bfb48d9faa61cad6b53785bd7b58154485de94a7826644172e5a6d6f78ad1ce9",
+      "rust_sha256": "bfb48d9faa61cad6b53785bd7b58154485de94a7826644172e5a6d6f78ad1ce9"
+    },
+    {
+      "kind": "layer",
+      "seed": "-7654321",
+      "bytes": 82384,
+      "exact": true,
+      "java_sha256": "bf020d922a79d1f824f0d9012536533e8b9327cd154ce9f321599be3a3cc6679",
+      "rust_sha256": "bf020d922a79d1f824f0d9012536533e8b9327cd154ce9f321599be3a3cc6679"
+    },
+    {
+      "kind": "layer",
+      "seed": "123456789",
+      "bytes": 82384,
+      "exact": true,
+      "java_sha256": "64e8aa0cfa587648286cb37c099e8a04b2da8025dad03e4b2ddbaa9553962220",
+      "rust_sha256": "64e8aa0cfa587648286cb37c099e8a04b2da8025dad03e4b2ddbaa9553962220"
+    },
+    {
+      "kind": "layer",
+      "seed": "9223372036854775807",
+      "bytes": 82384,
+      "exact": true,
+      "java_sha256": "1d7a95ee3b16cc8401ab059ce8edbca9982d4a98da4910a0385e6a5e7af450ae",
+      "rust_sha256": "1d7a95ee3b16cc8401ab059ce8edbca9982d4a98da4910a0385e6a5e7af450ae"
+    },
+    {
+      "kind": "layer",
+      "seed": "-9223372036854775808",
+      "bytes": 82384,
+      "exact": true,
+      "java_sha256": "bbf966e60bab47486097d4f3bd0d71fe18fa6afeb77f2b911b6362983db6cf7f",
+      "rust_sha256": "bbf966e60bab47486097d4f3bd0d71fe18fa6afeb77f2b911b6362983db6cf7f"
+    },
+    {
+      "kind": "flat",
+      "seed": "0",
+      "bytes": 7796,
+      "exact": true,
+      "java_sha256": "47e1cd2fb76a1f48cadf1ad63e492b35e68bc58558da90ed73864e70ecff77b0",
+      "rust_sha256": "47e1cd2fb76a1f48cadf1ad63e492b35e68bc58558da90ed73864e70ecff77b0"
+    },
+    {
+      "kind": "flat",
+      "seed": "1",
+      "bytes": 7796,
+      "exact": true,
+      "java_sha256": "5104232e6e4bcb70ee8bea0cca63c8fec851c371740b1e3ada774f3c04c0954f",
+      "rust_sha256": "5104232e6e4bcb70ee8bea0cca63c8fec851c371740b1e3ada774f3c04c0954f"
+    },
+    {
+      "kind": "flat",
+      "seed": "-7654321",
+      "bytes": 7796,
+      "exact": true,
+      "java_sha256": "41350468af0d9449dc6db9be81eb3c7055c9d53a243f03107d6448b327bcaa78",
+      "rust_sha256": "41350468af0d9449dc6db9be81eb3c7055c9d53a243f03107d6448b327bcaa78"
+    },
+    {
+      "kind": "flat",
+      "seed": "123456789",
+      "bytes": 7796,
+      "exact": true,
+      "java_sha256": "dccd6798edd2d29b7979fae6b1042885b04edf9d391314c7d8277a4b516349f0",
+      "rust_sha256": "dccd6798edd2d29b7979fae6b1042885b04edf9d391314c7d8277a4b516349f0"
+    },
+    {
+      "kind": "flat",
+      "seed": "9223372036854775807",
+      "bytes": 7796,
+      "exact": true,
+      "java_sha256": "d960a1db719152190fef529adac1ad4e227431ccdb2d93b0e96a4c74d5c565f3",
+      "rust_sha256": "d960a1db719152190fef529adac1ad4e227431ccdb2d93b0e96a4c74d5c565f3"
+    },
+    {
+      "kind": "flat",
+      "seed": "-9223372036854775808",
+      "bytes": 7796,
+      "exact": true,
+      "java_sha256": "47e1cd2fb76a1f48cadf1ad63e492b35e68bc58558da90ed73864e70ecff77b0",
+      "rust_sha256": "47e1cd2fb76a1f48cadf1ad63e492b35e68bc58558da90ed73864e70ecff77b0"
+    },
+    {
+      "kind": "flatworld",
+      "seed": "0",
+      "bytes": 246564,
+      "exact": true,
+      "java_sha256": "1f240e1f8360b06b2dcfde7f220476f75adb43b74dc493d375f7035c658330a6",
+      "rust_sha256": "1f240e1f8360b06b2dcfde7f220476f75adb43b74dc493d375f7035c658330a6"
+    },
+    {
+      "kind": "flatworld",
+      "seed": "1",
+      "bytes": 246564,
+      "exact": true,
+      "java_sha256": "feedc0c5a450717b72e67a7e5772a669498a011641066b6b3f41447841f0d19e",
+      "rust_sha256": "feedc0c5a450717b72e67a7e5772a669498a011641066b6b3f41447841f0d19e"
+    },
+    {
+      "kind": "flatworld",
+      "seed": "-7654321",
+      "bytes": 246564,
+      "exact": true,
+      "java_sha256": "e88ee0d4a7762a71af0c755825b2a74b96c51ac401834e0cdc887fd573478caf",
+      "rust_sha256": "e88ee0d4a7762a71af0c755825b2a74b96c51ac401834e0cdc887fd573478caf"
+    },
+    {
+      "kind": "flatworld",
+      "seed": "123456789",
+      "bytes": 246564,
+      "exact": true,
+      "java_sha256": "aef2d4d2917da60ca0b06e1fc8171c7789b7b283db20e94090d52f541b279a1e",
+      "rust_sha256": "aef2d4d2917da60ca0b06e1fc8171c7789b7b283db20e94090d52f541b279a1e"
+    },
+    {
+      "kind": "flatworld",
+      "seed": "9223372036854775807",
+      "bytes": 246564,
+      "exact": true,
+      "java_sha256": "4e112ff7b24a751275d906301ff1ab6a13f3af6e6a07579b4318f662bd008ae6",
+      "rust_sha256": "4e112ff7b24a751275d906301ff1ab6a13f3af6e6a07579b4318f662bd008ae6"
+    },
+    {
+      "kind": "flatworld",
+      "seed": "-9223372036854775808",
+      "bytes": 246564,
+      "exact": true,
+      "java_sha256": "1f240e1f8360b06b2dcfde7f220476f75adb43b74dc493d375f7035c658330a6",
+      "rust_sha256": "1f240e1f8360b06b2dcfde7f220476f75adb43b74dc493d375f7035c658330a6"
+    }
+  ]
+}

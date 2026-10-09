@@ -1,1 +1,145 @@
-{}
+{
+  "GameSettings": [
+    "settings11 language persistence"
+  ],
+  "ItemMonsterPlacer": [
+    "gameplay11 original delta vectors",
+    "gameplay11 fixture authority"
+  ],
+  "EntityList": [
+    "gameplay11 original delta vectors",
+    "gameplay11 fixture authority"
+  ],
+  "EntityEggInfo": [
+    "gameplay11 original delta vectors",
+    "gameplay11 fixture authority"
+  ],
+  "Enchantment": [
+    "gameplay11 original delta vectors",
+    "gameplay11 fixture authority"
+  ],
+  "EnumEnchantmentType": [
+    "gameplay11 original delta vectors",
+    "gameplay11 fixture authority"
+  ],
+  "EnchantmentHelper": [
+    "gameplay11 original delta vectors",
+    "gameplay11 fixture authority"
+  ],
+  "ItemBow": [
+    "gameplay11 original delta vectors",
+    "gameplay11 fixture authority"
+  ],
+  "EntityArrow": [
+    "gameplay11 original delta vectors",
+    "gameplay11 fixture authority"
+  ],
+  "BlockLadder": [
+    "gameplay11 original delta vectors",
+    "gameplay11 fixture authority"
+  ],
+  "BlockFarmland": [
+    "gameplay11 original delta vectors",
+    "gameplay11 fixture authority"
+  ],
+  "BlockFenceGate": [
+    "gameplay11 original delta vectors",
+    "gameplay11 fixture authority"
+  ],
+  "BlockDoor": [
+    "gameplay11 original delta vectors",
+    "gameplay11 fixture authority"
+  ],
+  "BlockRail": [
+    "gameplay11 original delta vectors",
+    "gameplay11 fixture authority"
+  ],
+  "BlockRedstoneRepeater": [
+    "gameplay11 original delta vectors",
+    "gameplay11 fixture authority"
+  ],
+  "EntityMagmaCube": [
+    "gameplay11 original delta vectors",
+    "gameplay11 fixture authority"
+  ],
+  "ContainerCreative": [
+    "gameplay11 original delta vectors",
+    "gameplay11 fixture authority"
+  ],
+  "SlotCrafting": [
+    "gameplay11 original delta vectors",
+    "gameplay11 fixture authority"
+  ],
+  "EnchantmentArrowDamage": [
+    "gameplay11 original delta vectors",
+    "gameplay11 fixture authority"
+  ],
+  "EnchantmentArrowKnockback": [
+    "gameplay11 original delta vectors",
+    "gameplay11 fixture authority"
+  ],
+  "EnchantmentArrowFire": [
+    "gameplay11 original delta vectors",
+    "gameplay11 fixture authority"
+  ],
+  "EnchantmentArrowInfinite": [
+    "gameplay11 original delta vectors",
+    "gameplay11 fixture authority"
+  ],
+  "BiomeGenBase": [
+    "biomes11 changed constants"
+  ],
+  "BiomeGenBeach": [
+    "biomes11 changed constants"
+  ],
+  "BiomeGenSwamp": [
+    "biomes11 changed constants"
+  ],
+  "ChunkProviderGenerate": [
+    "flat11 village layouts maps population"
+  ],
+  "ComponentVillage": [
+    "flat11 village layouts maps population"
+  ],
+  "ComponentVillageHouse2": [
+    "flat11 village layouts maps population"
+  ],
+  "EnumWorldType": [
+    "worldtype11 names settings and saves"
+  ],
+  "GenLayer": [
+    "layer11 graph and fixed manager"
+  ],
+  "MapGenVillage": [
+    "flat11 village layouts maps population"
+  ],
+  "StructureBoundingBox": [
+    "flat11 village layouts maps population"
+  ],
+  "StructureVillageStart": [
+    "flat11 village layouts maps population"
+  ],
+  "WorldChunkManager": [
+    "spawn11 initial repair and reopen"
+  ],
+  "WorldChunkManagerHell": [
+    "layer11 graph and fixed manager"
+  ],
+  "World": [
+    "spawn11 initial repair and reopen",
+    "depthfog11 events and RNG",
+    "worldtype11 names settings and saves"
+  ],
+  "WorldProvider": [
+    "layer11 graph and fixed manager",
+    "flat11 village layouts maps population",
+    "worldtype11 names settings and saves"
+  ],
+  "WorldProviderEnd": [
+    "worldtype11 names settings and saves",
+    "spawn11 initial repair and reopen"
+  ],
+  "WorldSettings": [
+    "worldtype11 names settings and saves"
+  ]
+}

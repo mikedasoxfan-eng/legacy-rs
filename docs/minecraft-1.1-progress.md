@@ -1,19 +1,27 @@
-# Minecraft 1.1 checkpoint and progress accounting
+# Minecraft 1.1 verified progress
 
-The 1.1 port is unfinished. This checkpoint saves the isolated client11/worldgen11 crates, dispatcher, oracle tooling and focused changes; it is not a release or a claim of full-suite parity.
+**20.18% verified complete: 442 / 2,190 normalized changed lines; 47 / 144 classes.**
 
-The existing r10 technique weights added/changed classes by normalized changed lines and credits complete classes only when their covering oracle sections are EXACT. The 1.0→1.1 normalized inventory has144classes and2190weightedlines. The conservative inventory adds candidates that normalization hides; that broader review remains mandatory.
+This uses the repository's r10 changed-line weighting, with the original 1.0-to-1.1 denominator unchanged. Each credited class has a review covering its complete 1.1 delta, a committed implementation, explicit original-bytecode check coverage and passing recorded results pinned to source hashes. Declaration-only changes receive r10's no-behavior-change credit. Partially verified and unreviewed classes receive zero credit, even when substantial implementation exists. This is a conservative verified-completion measure, not a code-written estimate or a release claim. The earlier 70% estimate is withdrawn.
 
-Reproduce the current recorded percentage:
+Recalculate from the repository root:
 
 ```powershell
 python tools/r11/progress.py
 ```
 
-At this checkpoint the registered whole-class completion credit is0/2190lines,0/144classes,0.0%. `coverage.json` and `ported.json` are empty deliberately: bounded focused comparisons do not establish entire-class completion. This is a certification/accounting number, not the fraction of code written. The earlier70% chat estimate was not calculated with this method.
+The calculator reads `changes.json`, `completion-review.json`, `coverage.json`, `ported.json`, `sections.json`, and `source-snapshots.json` under `tools/r11`. Changing covered source or evidence hashes invalidates its saved credit. Detailed hunk reviews and check transcripts are under `reports/r11-progress`. The broader raw source audit has 308 reviewed classes in the central scope ledger; normalization can conceal changes, so that review remains a release gate.
 
-Validation already obtained includes workspace compilation; focused original-bytecode biome/populated-grid/structure, worldtype/save/spawn, gameplay, font draw and language checks. The Bidi production implementation matches233985cases; original public font drawing matches1792cases; language callback/button comparison matches168selections at3resolutions. Original inputs and generated builds remain outside Git.
+| Area | Verified lines | Total lines | Completed classes |
+|---|---:|---:|---:|
+| GUI | 24 | 591 | 6 / 31 |
+| World generation | 106 | 302 | 16 / 21 |
+| Blocks and items | 190 | 308 | 16 / 34 |
+| World and saves | 34 | 68 | 3 / 7 |
+| Entities | 80 | 779 | 5 / 34 |
+| Player | 8 | 32 | 1 / 4 |
+| Rendering | 0 | 110 | 0 / 13 |
 
-Remaining gates include completing per-class behavior audits and explicit coverage registration; text wrapping/formatting; rendered language screens and startup/restart; sheep animation and spawn-egg rendering; complete world/dimension/controller workflows; final stable-candidate1.1suite; older-version regressions; CI/documentation/package updates. The ongoing broad run spans source changes and is diagnostic only.
+Fresh checks for this accounting update: 29 gameplay tests passed serially; all 30 regenerated original-bytecode fixtures matched; three world-type/save streams matched; five complete options.txt language cases matched; five retained original biome fixture comparisons matched. Prior bounded population, layer, spawn and depth-fog comparisons are retained with per-hunk review and current source hashes. Their finite test inputs establish the documented coverage; they are not all-input formal proofs.
 
-Local checkpoint commits preserve work. No remote publishing or release is implied.
+Font/Bidi/wrapping and language callbacks have extensive passing comparisons but retain unresolved integration gates, so their incomplete classes earn no credit yet. Other remaining gates include targeted layer branches, sheep animation/status handling, spawn-egg rendering, world/dimension/controller workflows, final stable-candidate 1.1 verification, older-version regressions, CI, documentation and packaging. Unreachable new AI internals remain uncredited pending a recorded scope disposition. The diagnostic broad suite spanning source changes is not used for completion credit.

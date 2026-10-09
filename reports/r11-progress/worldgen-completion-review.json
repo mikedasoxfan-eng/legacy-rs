@@ -1,0 +1,735 @@
+{
+  "schema": 1,
+  "criterion": "Entire normalized 1.0→1.1 class delta implemented and covered by direct relevant original-bytecode finite comparisons, plus literal authority for nonbehavior declaration/visibility changes; not inherited reproof and not all-input formal proof.",
+  "checkpoint": "235b5ebd70b9326dc92857f21e9049815bfa9f21",
+  "completed_classes": 20,
+  "blocked_classes": 7,
+  "completed_changed_lines": 148,
+  "reviewed_changed_lines": 360,
+  "source_hash_note": "Hashes refreshed after parent whitespace normalization. Original probe evidence predates whitespace-only checkpoint; current biome comparison binary rerun retained now. Do not infer arbitrary later semantic mutations covered.",
+  "original_jar_sha256": "44bb6ace88fdff460d6c428c4becee8cad52f2622e1f800dab7a70f8a716f75b",
+  "classes": [
+    {
+      "class_name": "BiomeGenBase",
+      "area": "worldgen",
+      "normalized_changed_lines": 8,
+      "entire_1_1_delta_complete": true,
+      "source_hunk_review": "static singleton initializers: revised heights/climate and five new biome IDs16..20, exact names/colors/heights/climate and inherited dispatch",
+      "source_authority": "work/retromcp-1.1/minecraft/src/net/minecraft/src/BiomeGenBase.java",
+      "source_java_sha256": "39bae55fd0224c744482df9402d27abde6f3794de364539a115a3d68b6cbd1f8",
+      "old_source_java_sha256": "80f6c86081e95b7ef4f41445c535b166812569631de873005d88d93a9bc88250",
+      "rust_sha256": {
+        "crates/worldgen11/src/biome.rs": "8c83b468a6a56e831a1ccf49a187de07c38f8d9245f3786ceedcfd5b54e504e8",
+        "crates/worldgen11/src/decorator10.rs": "015bd08caf451c79442fbf891144c80bad616f994eec0b984666227e8b097f5e",
+        "crates/worldgen11/src/weighted.rs": "3d9ee2dd41a014aedb31e723b904e9881ba3f271f7a7ff0a3174803f68ecb7fb",
+        "crates/worldgen11/src/populate.rs": "621a941ff8cb99f72c9573c1e395ee5d095bb1810fa6203607bbeedce14871e4"
+      },
+      "evidence": [
+        {
+          "path": "work/biomes11-completion-check.log",
+          "sha256": "aa1054fd1987fe6558e0b602646336a83f86802c345ed8540247f6484ecdb1ac"
+        }
+      ],
+      "required_sections": [
+        "world3 biomes seed 0",
+        "world3 biomes seed 42",
+        "world3 biomes seed -1",
+        "world3 biomes seed 9223372036854775807",
+        "world3 biomes seed -9223372036854775808"
+      ],
+      "accounting_note": "Credit only changed hunks; inherited unchanged methods are not additional requirements. Standalone logs without == section headers require parent registration of their exact result lines; no synthetic pass is emitted here."
+    },
+    {
+      "class_name": "BiomeGenBeach",
+      "area": "worldgen",
+      "normalized_changed_lines": 12,
+      "entire_1_1_delta_complete": true,
+      "source_hunk_review": "whole new constructor: creature clearing, sand top/filler, trees=-999, dead bushes/reeds/cacti=0",
+      "source_authority": "work/retromcp-1.1/minecraft/src/net/minecraft/src/BiomeGenBeach.java",
+      "source_java_sha256": "b0c1114131844f09cd310d94baaf76d8b8d20df953ff94b6f9801891b9c66095",
+      "old_source_java_sha256": null,
+      "rust_sha256": {
+        "crates/worldgen11/src/biome.rs": "8c83b468a6a56e831a1ccf49a187de07c38f8d9245f3786ceedcfd5b54e504e8",
+        "crates/worldgen11/src/decorator10.rs": "015bd08caf451c79442fbf891144c80bad616f994eec0b984666227e8b097f5e",
+        "crates/worldgen11/src/weighted.rs": "3d9ee2dd41a014aedb31e723b904e9881ba3f271f7a7ff0a3174803f68ecb7fb",
+        "crates/worldgen11/src/populate.rs": "621a941ff8cb99f72c9573c1e395ee5d095bb1810fa6203607bbeedce14871e4"
+      },
+      "evidence": [
+        {
+          "path": "work/biomes11-completion-check.log",
+          "sha256": "aa1054fd1987fe6558e0b602646336a83f86802c345ed8540247f6484ecdb1ac"
+        }
+      ],
+      "required_sections": [
+        "world3 biomes seed 0",
+        "world3 biomes seed 42",
+        "world3 biomes seed -1",
+        "world3 biomes seed 9223372036854775807",
+        "world3 biomes seed -9223372036854775808"
+      ],
+      "accounting_note": "Credit only changed hunks; inherited unchanged methods are not additional requirements. Standalone logs without == section headers require parent registration of their exact result lines; no synthetic pass is emitted here."
+    },
+    {
+      "class_name": "BiomeGenSwamp",
+      "area": "worldgen",
+      "normalized_changed_lines": 1,
+      "entire_1_1_delta_complete": true,
+      "source_hunk_review": "constructor waterColorMultiplier=14745518",
+      "source_authority": "work/retromcp-1.1/minecraft/src/net/minecraft/src/BiomeGenSwamp.java",
+      "source_java_sha256": "c112db01da1ec55a5708d02f03e2ccf17ebdc913a117f1d27f55368616fee333",
+      "old_source_java_sha256": "72acbf6a6b23b8aaf32932be3e52ce05a36d284a368aa42e1eb5b22f61dd183a",
+      "rust_sha256": {
+        "crates/worldgen11/src/biome.rs": "8c83b468a6a56e831a1ccf49a187de07c38f8d9245f3786ceedcfd5b54e504e8",
+        "crates/worldgen11/src/decorator10.rs": "015bd08caf451c79442fbf891144c80bad616f994eec0b984666227e8b097f5e",
+        "crates/worldgen11/src/weighted.rs": "3d9ee2dd41a014aedb31e723b904e9881ba3f271f7a7ff0a3174803f68ecb7fb",
+        "crates/worldgen11/src/populate.rs": "621a941ff8cb99f72c9573c1e395ee5d095bb1810fa6203607bbeedce14871e4"
+      },
+      "evidence": [
+        {
+          "path": "work/biomes11-completion-check.log",
+          "sha256": "aa1054fd1987fe6558e0b602646336a83f86802c345ed8540247f6484ecdb1ac"
+        }
+      ],
+      "required_sections": [
+        "world3 biomes seed 0",
+        "world3 biomes seed 42",
+        "world3 biomes seed -1",
+        "world3 biomes seed 9223372036854775807",
+        "world3 biomes seed -9223372036854775808"
+      ],
+      "accounting_note": "Credit only changed hunks; inherited unchanged methods are not additional requirements. Standalone logs without == section headers require parent registration of their exact result lines; no synthetic pass is emitted here."
+    },
+    {
+      "class_name": "ChunkProviderGenerate",
+      "area": "worldgen",
+      "normalized_changed_lines": 3,
+      "entire_1_1_delta_complete": true,
+      "source_hunk_review": "constructor MapGenVillage(0); remaining changes private field visibility, no terrain behavior change",
+      "source_authority": "work/retromcp-1.1/minecraft/src/net/minecraft/src/ChunkProviderGenerate.java",
+      "source_java_sha256": "69570251eac808193c1491f6f8c56e5bad3cca92667d9b79bc079f73bbb9a273",
+      "old_source_java_sha256": "94ae461b8315237d3394d2bff1a57f63aef14e17e2d0bf134a07e4328d02f0c5",
+      "rust_sha256": {
+        "crates/worldgen11/src/overworld.rs": "c168164956549af7fc7eed64a818c1bb51dc007ae4d5e39375be3357c67c0bfc",
+        "crates/worldgen11/src/populate.rs": "621a941ff8cb99f72c9573c1e395ee5d095bb1810fa6203607bbeedce14871e4",
+        "crates/worldgen11/src/world/provider181.rs": "27fa23f1c2ef34c1a36c6776469c72d4f55213d177bce6dbb57d516587aa4e70"
+      },
+      "evidence": [
+        {
+          "path": "work/worldgen11-structures-verification.log",
+          "sha256": "d4c391a38cb80ab2a1d5b3b93958a231e99528f8a6dd48c54b195a0eb8fc7d93"
+        },
+        {
+          "path": "work/worldgen11-structures-results.json",
+          "sha256": "1074b7724c81afe765afe5494fcc0ba91f59ab163e3b796f195b67d316e8e528"
+        }
+      ],
+      "required_sections": [],
+      "accounting_note": "Credit only changed hunks; inherited unchanged methods are not additional requirements. Standalone logs without == section headers require parent registration of their exact result lines; no synthetic pass is emitted here."
+    },
+    {
+      "class_name": "ComponentVillage",
+      "area": "worldgen",
+      "normalized_changed_lines": 1,
+      "entire_1_1_delta_complete": true,
+      "source_hunk_review": "getAverageGroundLevel clamps top-solid/liquid height to provider spawn height rather than64; both normal64 and flat4 generated pieces compared",
+      "source_authority": "work/retromcp-1.1/minecraft/src/net/minecraft/src/ComponentVillage.java",
+      "source_java_sha256": "355cd6438dc1748228d5bbf8c4849df02b72e87be8ef08f7795dd51249f5b42b",
+      "old_source_java_sha256": "b6b02a150437cd424af8e358fdf334a291c4462461ce2b80374e92536b026988",
+      "rust_sha256": {
+        "crates/worldgen11/src/structures/village.rs": "943d648aa1973ea9d1d13943b72fae6f565bf610b315c0ba47b710575f0c5f6b",
+        "crates/worldgen11/src/structures/village_generated.rs": "8910006a84500e642cd5bd5c0dd87d367f57db21d467aefc53b527e3b44bf48a",
+        "crates/worldgen11/src/structures/locations.rs": "d4431e2f7c9d6b4a31c46c6ff8eb470bf7809d7d6994efef022cd720bdab32fa",
+        "crates/worldgen11/src/structures/component.rs": "1301046367f870908ec02cf185e6fe0d3ef4eddd4e3f0453327e70fe6cce8661"
+      },
+      "evidence": [
+        {
+          "path": "work/worldgen11-structures-verification.log",
+          "sha256": "d4c391a38cb80ab2a1d5b3b93958a231e99528f8a6dd48c54b195a0eb8fc7d93"
+        },
+        {
+          "path": "work/worldgen11-structures-results.json",
+          "sha256": "1074b7724c81afe765afe5494fcc0ba91f59ab163e3b796f195b67d316e8e528"
+        }
+      ],
+      "required_sections": [],
+      "accounting_note": "Credit only changed hunks; inherited unchanged methods are not additional requirements. Standalone logs without == section headers require parent registration of their exact result lines; no synthetic pass is emitted here."
+    },
+    {
+      "class_name": "ComponentVillageHouse2",
+      "area": "worldgen",
+      "normalized_changed_lines": 14,
+      "entire_1_1_delta_complete": true,
+      "source_hunk_review": "new hasMadeChest state; once-only clipped local(5,1,5) chest,3+nextInt(6), complete ordered13-entry weight/stack table; repeated clips and final chest inventory/RNG compared",
+      "source_authority": "work/retromcp-1.1/minecraft/src/net/minecraft/src/ComponentVillageHouse2.java",
+      "source_java_sha256": "de11ea402759bcf55d90ff6e17f8b035d655a6a0a7ee5f4b6412216e4c8e0c61",
+      "old_source_java_sha256": "4d5e74e864fa86f105a5de87e8e1856dec29d48304690a2979b83d8ca6742e84",
+      "rust_sha256": {
+        "crates/worldgen11/src/structures/village.rs": "943d648aa1973ea9d1d13943b72fae6f565bf610b315c0ba47b710575f0c5f6b",
+        "crates/worldgen11/src/structures/village_generated.rs": "8910006a84500e642cd5bd5c0dd87d367f57db21d467aefc53b527e3b44bf48a",
+        "crates/worldgen11/src/structures/locations.rs": "d4431e2f7c9d6b4a31c46c6ff8eb470bf7809d7d6994efef022cd720bdab32fa",
+        "crates/worldgen11/src/structures/component.rs": "1301046367f870908ec02cf185e6fe0d3ef4eddd4e3f0453327e70fe6cce8661"
+      },
+      "evidence": [
+        {
+          "path": "work/worldgen11-structures-verification.log",
+          "sha256": "d4c391a38cb80ab2a1d5b3b93958a231e99528f8a6dd48c54b195a0eb8fc7d93"
+        },
+        {
+          "path": "work/worldgen11-structures-results.json",
+          "sha256": "1074b7724c81afe765afe5494fcc0ba91f59ab163e3b796f195b67d316e8e528"
+        }
+      ],
+      "required_sections": [],
+      "accounting_note": "Credit only changed hunks; inherited unchanged methods are not additional requirements. Standalone logs without == section headers require parent registration of their exact result lines; no synthetic pass is emitted here."
+    },
+    {
+      "class_name": "EnumWorldType",
+      "area": "worldgen",
+      "normalized_changed_lines": 22,
+      "entire_1_1_delta_complete": true,
+      "source_hunk_review": "whole new enum: DEFAULT/FLAT values, exact case-sensitive saved-name parsing, nullable unknown, generator.default/generator.flat translation keys",
+      "source_authority": "work/retromcp-1.1/minecraft/src/net/minecraft/src/EnumWorldType.java",
+      "source_java_sha256": "c88dcb94da5c7b055d389b179e9d814ba46da8b925cf5d8ba0a14b17c44a4dc5",
+      "old_source_java_sha256": null,
+      "rust_sha256": {
+        "crates/worldgen11/src/storage.rs": "3c60d40d22db9b0dd5f66bb0f5b64fdccf2497faad9be833e366eccab9a24b46",
+        "crates/worldgen11/src/storage181.rs": "c53c48e218f045e183132cfac491d5f4a05f8c595085ee4e8e0b9b614c824b1d",
+        "crates/worldgen11/src/save_format_old181.rs": "f90fc8df865dc9da2aa633af593bb40a67b111e40ac9a9c3de52550cd66f42ed",
+        "crates/worldgen11/src/convert.rs": "3aa52a5916de569662a6ebe765b4e5e4a7f6ac7b7d1e62a0d58b0d0bf4a61482"
+      },
+      "evidence": [
+        {
+          "path": "work/worldtype11-verification.log",
+          "sha256": "486fe13d87b05d9a1ac0ac09d6ea2b5b770f8ae37f26b17d7006b13d43a55531"
+        }
+      ],
+      "required_sections": [],
+      "accounting_note": "Credit only changed hunks; inherited unchanged methods are not additional requirements. Standalone logs without == section headers require parent registration of their exact result lines; no synthetic pass is emitted here."
+    },
+    {
+      "class_name": "GenLayer",
+      "area": "worldgen",
+      "normalized_changed_lines": 6,
+      "entire_1_1_delta_complete": true,
+      "source_hunk_review": "func_35497_a graph adds Hills before zoom, Shore and SwampRivers at prescribed stages and exact initialization; explicit graph four-output oracle, six rectangles/six seeds",
+      "source_authority": "work/retromcp-1.1/minecraft/src/net/minecraft/src/GenLayer.java",
+      "source_java_sha256": "46cf6904443dac0ce9be02b6f36aa28f459ed9e69a0addee874a0866a82ae3e9",
+      "old_source_java_sha256": "28fa33a43b18da7bd5ed512b59bf1a95d59404491818b11fddf9bfc6b7ed69da",
+      "rust_sha256": {
+        "crates/worldgen11/src/genlayer.rs": "01f65e70c84445b405b4af359b4f7b80f3487340df683ab947430acad4404aa4",
+        "crates/worldgen11/src/intcache.rs": "25dbd85fccde32040717022cb4bedc4ab35914ab92607ec7200dcd640c4598ff"
+      },
+      "evidence": [
+        {
+          "path": "work/worldgen11-probe-results.json",
+          "sha256": "4845cdd011a05af661094aeb44e7c0f06d79610c7f20eed224d43d9cfbb4fa61"
+        }
+      ],
+      "required_sections": [],
+      "accounting_note": "Credit only changed hunks; inherited unchanged methods are not additional requirements. Standalone logs without == section headers require parent registration of their exact result lines; no synthetic pass is emitted here."
+    },
+    {
+      "class_name": "MapGenStructure",
+      "area": "worldgen",
+      "normalized_changed_lines": 1,
+      "entire_1_1_delta_complete": true,
+      "source_hunk_review": "recursiveGenerate consumes same nextInt now assigned to unused local; map scans compare scan/start order and final RNG, no runtime delta beyond local declaration",
+      "source_authority": "work/retromcp-1.1/minecraft/src/net/minecraft/src/MapGenStructure.java",
+      "source_java_sha256": "1c78a024be589a90a42fd285398224f695ff28619e635a2a1250f740b2f0d2f7",
+      "old_source_java_sha256": "c0f8030f4929cedb6b5951a7a6e4106b0799ff4dd68a326219394127487ad21d",
+      "rust_sha256": {
+        "crates/worldgen11/src/structures.rs": "c429031ac51fd761ded0f678a7f4e584946c2732d67c5f96aa1cc3726391920d",
+        "crates/worldgen11/src/structures/component.rs": "1301046367f870908ec02cf185e6fe0d3ef4eddd4e3f0453327e70fe6cce8661"
+      },
+      "evidence": [
+        {
+          "path": "work/worldgen11-structures-verification.log",
+          "sha256": "d4c391a38cb80ab2a1d5b3b93958a231e99528f8a6dd48c54b195a0eb8fc7d93"
+        },
+        {
+          "path": "work/worldgen11-structures-results.json",
+          "sha256": "1074b7724c81afe765afe5494fcc0ba91f59ab163e3b796f195b67d316e8e528"
+        }
+      ],
+      "required_sections": [],
+      "accounting_note": "Credit only changed hunks; inherited unchanged methods are not additional requirements. Standalone logs without == section headers require parent registration of their exact result lines; no synthetic pass is emitted here."
+    },
+    {
+      "class_name": "MapGenVillage",
+      "area": "worldgen",
+      "normalized_changed_lines": 5,
+      "entire_1_1_delta_complete": true,
+      "source_hunk_review": "explicit constructor size stored and propagated into StructureVillageStart; size0 normal/size1 flat exact layout/map/block/RNG fixtures",
+      "source_authority": "work/retromcp-1.1/minecraft/src/net/minecraft/src/MapGenVillage.java",
+      "source_java_sha256": "71ef0b2fc471be87933de4358486dfe21cb93b6ed1283650157de3de6bad3ae1",
+      "old_source_java_sha256": "ae1849fa51f335657d1b0888a472d5a9926c391b69a78ef5095e40b00ee2bde8",
+      "rust_sha256": {
+        "crates/worldgen11/src/structures/village.rs": "943d648aa1973ea9d1d13943b72fae6f565bf610b315c0ba47b710575f0c5f6b",
+        "crates/worldgen11/src/structures/village_generated.rs": "8910006a84500e642cd5bd5c0dd87d367f57db21d467aefc53b527e3b44bf48a",
+        "crates/worldgen11/src/structures/locations.rs": "d4431e2f7c9d6b4a31c46c6ff8eb470bf7809d7d6994efef022cd720bdab32fa",
+        "crates/worldgen11/src/structures/component.rs": "1301046367f870908ec02cf185e6fe0d3ef4eddd4e3f0453327e70fe6cce8661"
+      },
+      "evidence": [
+        {
+          "path": "work/worldgen11-structures-verification.log",
+          "sha256": "d4c391a38cb80ab2a1d5b3b93958a231e99528f8a6dd48c54b195a0eb8fc7d93"
+        },
+        {
+          "path": "work/worldgen11-structures-results.json",
+          "sha256": "1074b7724c81afe765afe5494fcc0ba91f59ab163e3b796f195b67d316e8e528"
+        }
+      ],
+      "required_sections": [],
+      "accounting_note": "Credit only changed hunks; inherited unchanged methods are not additional requirements. Standalone logs without == section headers require parent registration of their exact result lines; no synthetic pass is emitted here."
+    },
+    {
+      "class_name": "StructureBoundingBox",
+      "area": "worldgen",
+      "normalized_changed_lines": 4,
+      "entire_1_1_delta_complete": true,
+      "source_hunk_review": "four-int constructor y range1..512 rather than0..65536; original flat well clipping distinguishes y0; literal constructor bounds plus boundary unit",
+      "source_authority": "work/retromcp-1.1/minecraft/src/net/minecraft/src/StructureBoundingBox.java",
+      "source_java_sha256": "d7d8272a9302217c3ec5c55c8d207e899530396b503d2992776aec28ac82a10f",
+      "old_source_java_sha256": "f22c18c3a5f9ca03ddc7a982dcde767dd9c8faf98935c9feda00cdb09c73272c",
+      "rust_sha256": {
+        "crates/worldgen11/src/structures.rs": "c429031ac51fd761ded0f678a7f4e584946c2732d67c5f96aa1cc3726391920d",
+        "crates/worldgen11/src/structures/component.rs": "1301046367f870908ec02cf185e6fe0d3ef4eddd4e3f0453327e70fe6cce8661"
+      },
+      "evidence": [
+        {
+          "path": "work/worldgen11-structures-verification.log",
+          "sha256": "d4c391a38cb80ab2a1d5b3b93958a231e99528f8a6dd48c54b195a0eb8fc7d93"
+        },
+        {
+          "path": "work/worldgen11-structures-results.json",
+          "sha256": "1074b7724c81afe765afe5494fcc0ba91f59ab163e3b796f195b67d316e8e528"
+        },
+        {
+          "path": "work/worldgen11-structures-status.md",
+          "sha256": "a1fae88d3411f6fb1a6c2efc0aafb28ba9069a5667a13d1e90af4af998da1670"
+        }
+      ],
+      "required_sections": [],
+      "accounting_note": "Credit only changed hunks; inherited unchanged methods are not additional requirements. Standalone logs without == section headers require parent registration of their exact result lines; no synthetic pass is emitted here."
+    },
+    {
+      "class_name": "StructureStrongholdPieceWeight2",
+      "area": "worldgen",
+      "normalized_changed_lines": 1,
+      "entire_1_1_delta_complete": true,
+      "source_hunk_review": "class declaration becomes final only; Rust value type cannot be subclassed; unchanged weight predicate exercised by exact stronghold map/start graph",
+      "source_authority": "work/retromcp-1.1/minecraft/src/net/minecraft/src/StructureStrongholdPieceWeight2.java",
+      "source_java_sha256": "6e202742736a25121e2efffe58a335040c973911809bb5b414642034a60d75f5",
+      "old_source_java_sha256": "0e4aadc96720917b46f5247cc5fbb1a9ab8ce4c6960cb435d12530b7421390a1",
+      "rust_sha256": {
+        "crates/worldgen11/src/structures/stronghold.rs": "a3de5f5c18c7994a1bb8a639d2cec00e51d68ab9b2560b5097fc9b855b11ee4c",
+        "crates/worldgen11/src/structures/stronghold_generated.rs": "2bce024f47f50b67dd0c0b519e84e3acfc622ba83b6163785fd45e9bb1aa0c72",
+        "crates/worldgen11/src/structures/locations.rs": "d4431e2f7c9d6b4a31c46c6ff8eb470bf7809d7d6994efef022cd720bdab32fa",
+        "crates/worldgen11/src/structures/component.rs": "1301046367f870908ec02cf185e6fe0d3ef4eddd4e3f0453327e70fe6cce8661"
+      },
+      "evidence": [
+        {
+          "path": "work/stronghold11-scope-verification.log",
+          "sha256": "d175ff4aaf016fb9a3009b936b2d2726e19ba9a615bb286aa021fcec89991c8f"
+        }
+      ],
+      "required_sections": [],
+      "accounting_note": "Credit only changed hunks; inherited unchanged methods are not additional requirements. Standalone logs without == section headers require parent registration of their exact result lines; no synthetic pass is emitted here."
+    },
+    {
+      "class_name": "StructureStrongholdPieceWeight3",
+      "area": "worldgen",
+      "normalized_changed_lines": 1,
+      "entire_1_1_delta_complete": true,
+      "source_hunk_review": "class declaration becomes final only; Rust value type cannot be subclassed; unchanged weight predicate exercised by exact stronghold map/start graph",
+      "source_authority": "work/retromcp-1.1/minecraft/src/net/minecraft/src/StructureStrongholdPieceWeight3.java",
+      "source_java_sha256": "ac71b64a3a561a871a19224693765b70461ebb49b2ddea5446b4396a4eaf0e52",
+      "old_source_java_sha256": "1f1362b880369f6851cd54871c732f949e82e7bb1f72e99f0a54a0b1b31f77e5",
+      "rust_sha256": {
+        "crates/worldgen11/src/structures/stronghold.rs": "a3de5f5c18c7994a1bb8a639d2cec00e51d68ab9b2560b5097fc9b855b11ee4c",
+        "crates/worldgen11/src/structures/stronghold_generated.rs": "2bce024f47f50b67dd0c0b519e84e3acfc622ba83b6163785fd45e9bb1aa0c72",
+        "crates/worldgen11/src/structures/locations.rs": "d4431e2f7c9d6b4a31c46c6ff8eb470bf7809d7d6994efef022cd720bdab32fa",
+        "crates/worldgen11/src/structures/component.rs": "1301046367f870908ec02cf185e6fe0d3ef4eddd4e3f0453327e70fe6cce8661"
+      },
+      "evidence": [
+        {
+          "path": "work/stronghold11-scope-verification.log",
+          "sha256": "d175ff4aaf016fb9a3009b936b2d2726e19ba9a615bb286aa021fcec89991c8f"
+        }
+      ],
+      "required_sections": [],
+      "accounting_note": "Credit only changed hunks; inherited unchanged methods are not additional requirements. Standalone logs without == section headers require parent registration of their exact result lines; no synthetic pass is emitted here."
+    },
+    {
+      "class_name": "StructureVillageStart",
+      "area": "worldgen",
+      "normalized_changed_lines": 15,
+      "entire_1_1_delta_complete": true,
+      "source_hunk_review": "constructor accepts village size and passes through weighted pieces/start; downstream same traversal; size0/1 exact component graph/layout/map/RNG",
+      "source_authority": "work/retromcp-1.1/minecraft/src/net/minecraft/src/StructureVillageStart.java",
+      "source_java_sha256": "841fee0593b71d811514b0bfc107e254fab7668fe92445cff9392acd9e376ac6",
+      "old_source_java_sha256": "1e461c657b41333aa2dd517d3fa21bacc193cc4af4d9a63a3b143971d7f02d69",
+      "rust_sha256": {
+        "crates/worldgen11/src/structures/village.rs": "943d648aa1973ea9d1d13943b72fae6f565bf610b315c0ba47b710575f0c5f6b",
+        "crates/worldgen11/src/structures/village_generated.rs": "8910006a84500e642cd5bd5c0dd87d367f57db21d467aefc53b527e3b44bf48a",
+        "crates/worldgen11/src/structures/locations.rs": "d4431e2f7c9d6b4a31c46c6ff8eb470bf7809d7d6994efef022cd720bdab32fa",
+        "crates/worldgen11/src/structures/component.rs": "1301046367f870908ec02cf185e6fe0d3ef4eddd4e3f0453327e70fe6cce8661"
+      },
+      "evidence": [
+        {
+          "path": "work/worldgen11-structures-verification.log",
+          "sha256": "d4c391a38cb80ab2a1d5b3b93958a231e99528f8a6dd48c54b195a0eb8fc7d93"
+        },
+        {
+          "path": "work/worldgen11-structures-results.json",
+          "sha256": "1074b7724c81afe765afe5494fcc0ba91f59ab163e3b796f195b67d316e8e528"
+        }
+      ],
+      "required_sections": [],
+      "accounting_note": "Credit only changed hunks; inherited unchanged methods are not additional requirements. Standalone logs without == section headers require parent registration of their exact result lines; no synthetic pass is emitted here."
+    },
+    {
+      "class_name": "WorldChunkManager",
+      "area": "worldgen",
+      "normalized_changed_lines": 2,
+      "entire_1_1_delta_complete": true,
+      "source_hunk_review": "getBiomesToSpawnIn ordered list now Forest,Plains,Taiga,TaigaHills,ForestHills; changed list drives original six-seed normal spawn selection and complete query traces",
+      "source_authority": "work/retromcp-1.1/minecraft/src/net/minecraft/src/WorldChunkManager.java",
+      "source_java_sha256": "41a05fbca9e8ad82472c429d21671a5ae110321e5b3e2013b739418adb19da16",
+      "old_source_java_sha256": "9753f8e69f34c7a5155076eedbc54fb8a85cef7d1893e349a9bfc2abe71f297e",
+      "rust_sha256": {
+        "crates/worldgen11/src/biome.rs": "8c83b468a6a56e831a1ccf49a187de07c38f8d9245f3786ceedcfd5b54e504e8"
+      },
+      "evidence": [
+        {
+          "path": "work/spawn11-verification.log",
+          "sha256": "6a63733ddb79f0d1d57a478b81f6ea421112be80e522a93b2299f693f774b615"
+        }
+      ],
+      "required_sections": [],
+      "accounting_note": "Credit only changed hunks; inherited unchanged methods are not additional requirements. Standalone logs without == section headers require parent registration of their exact result lines; no synthetic pass is emitted here."
+    },
+    {
+      "class_name": "WorldChunkManagerHell",
+      "area": "worldgen",
+      "normalized_changed_lines": 10,
+      "entire_1_1_delta_complete": true,
+      "source_hunk_review": "new func_35557_b generation-biome array override fills fixed biome prefix and preserves oversized reused tail; original fixed manager six-seed full arrays/scalars/search/RNG",
+      "source_authority": "work/retromcp-1.1/minecraft/src/net/minecraft/src/WorldChunkManagerHell.java",
+      "source_java_sha256": "563424d715e0ace4a9efd4be25696bb0d276f07f9ad7a420a9a75ff95e6a04c2",
+      "old_source_java_sha256": "b83d1c1fef1656b4f499d44c5ec8d54fe00f763133808ac74fba0126f6b9a3e8",
+      "rust_sha256": {
+        "crates/worldgen11/src/biome.rs": "8c83b468a6a56e831a1ccf49a187de07c38f8d9245f3786ceedcfd5b54e504e8"
+      },
+      "evidence": [
+        {
+          "path": "work/worldgen11-probe-results.json",
+          "sha256": "4845cdd011a05af661094aeb44e7c0f06d79610c7f20eed224d43d9cfbb4fa61"
+        }
+      ],
+      "required_sections": [],
+      "accounting_note": "Credit only changed hunks; inherited unchanged methods are not additional requirements. Standalone logs without == section headers require parent registration of their exact result lines; no synthetic pass is emitted here."
+    },
+    {
+      "class_name": "World",
+      "area": "world",
+      "normalized_changed_lines": 15,
+      "entire_1_1_delta_complete": true,
+      "source_hunk_review": "changed getInitialSpawnLocation provider-height queries and nonrespawn spawn height; randomDisplayUpdates air/RNG/depthfog ordering; new horizon0/63 getter; all changes covered by spawn/depthfog/provider matrices",
+      "source_authority": "work/retromcp-1.1/minecraft/src/net/minecraft/src/World.java",
+      "source_java_sha256": "4f6a58db1a476646e33cac0f43e58dbe75eb2ef85e12391cec5675a36ef4c270",
+      "old_source_java_sha256": "8ba535e2cad6014b1f2168d5eeb7b566301f537056615aab3175a8b70b5e2008",
+      "rust_sha256": {
+        "crates/worldgen11/src/world/mod.rs": "bc6a6777e948aacb68e9581c38ae9b09358abe82af5aaafcb1a5afdebd44a162",
+        "crates/worldgen11/src/world/dimension.rs": "178e1786a5e89cca4abbb710a97ceb8e1d34b54f91687d1e87387643e6cdcb95",
+        "crates/worldgen11/src/scenario.rs": "f2cd72d2c00e2f314ba93bcff85d635bf88240ebc61e2bc6f22c80baafe30d8a",
+        "crates/worldgen11/src/world/spawn181.rs": "a6a6da75654fd6d99ebefc019505bc54b023289195f0dda284774cda48059e7c",
+        "crates/worldgen11/src/entity/client_tick.rs": "8a31770c6435c0bf891330c3805d45ee10b345adbee34815a3bab1da8d97f61c"
+      },
+      "evidence": [
+        {
+          "path": "work/spawn11-verification.log",
+          "sha256": "6a63733ddb79f0d1d57a478b81f6ea421112be80e522a93b2299f693f774b615"
+        },
+        {
+          "path": "work/depthfog11-verification.log",
+          "sha256": "9a4030b446ee1962f77b2f51c3c8eb99ad13648be72aff58ec70330cbe59931d"
+        },
+        {
+          "path": "work/worldtype11-verification.log",
+          "sha256": "486fe13d87b05d9a1ac0ac09d6ea2b5b770f8ae37f26b17d7006b13d43a55531"
+        }
+      ],
+      "required_sections": [],
+      "accounting_note": "Credit only changed hunks; inherited unchanged methods are not additional requirements. Standalone logs without == section headers require parent registration of their exact result lines; no synthetic pass is emitted here."
+    },
+    {
+      "class_name": "WorldProvider",
+      "area": "world",
+      "normalized_changed_lines": 16,
+      "entire_1_1_delta_complete": true,
+      "source_hunk_review": "new cached world type; flat fixedPlains manager/Flat provider vs default manager/Generate; new spawn-height/depthfog/void-factor scalars; direct fixed-manager/raw-flat/actual-flat probes and six-context scalar matrix",
+      "source_authority": "work/retromcp-1.1/minecraft/src/net/minecraft/src/WorldProvider.java",
+      "source_java_sha256": "c22e161fecedbf3b8e76776973e7606728fd3ff73c42a465b71695cbb29c9530",
+      "old_source_java_sha256": "536c4683473312bd6571fc5b57e868b46cf7ee0a2d4c8efbb09517a61de027be",
+      "rust_sha256": {
+        "crates/worldgen11/src/world/mod.rs": "bc6a6777e948aacb68e9581c38ae9b09358abe82af5aaafcb1a5afdebd44a162",
+        "crates/worldgen11/src/world/dimension.rs": "178e1786a5e89cca4abbb710a97ceb8e1d34b54f91687d1e87387643e6cdcb95",
+        "crates/worldgen11/src/scenario.rs": "f2cd72d2c00e2f314ba93bcff85d635bf88240ebc61e2bc6f22c80baafe30d8a",
+        "crates/worldgen11/src/world/spawn181.rs": "a6a6da75654fd6d99ebefc019505bc54b023289195f0dda284774cda48059e7c",
+        "crates/client11/src/render/player_view.rs": "9e688092f5b59b3955a3e8b4e1ffc4e922e89e1e9cf64270d849d22b927c64bc",
+        "crates/client11/src/render/camera.rs": "cb5c8c785b36184dbfd9e7b827adbe70d7885fae8cf91085eba5d2cb2c451387",
+        "crates/client11/src/render/gpu.rs": "a31ab1cbc9a3c6374941b8d312f25426e12cd71669d0ef275d6e429effd6eee2"
+      },
+      "evidence": [
+        {
+          "path": "work/worldgen11-probe-results.json",
+          "sha256": "4845cdd011a05af661094aeb44e7c0f06d79610c7f20eed224d43d9cfbb4fa61"
+        },
+        {
+          "path": "work/worldgen11-structures-verification.log",
+          "sha256": "d4c391a38cb80ab2a1d5b3b93958a231e99528f8a6dd48c54b195a0eb8fc7d93"
+        },
+        {
+          "path": "work/worldgen11-structures-results.json",
+          "sha256": "1074b7724c81afe765afe5494fcc0ba91f59ab163e3b796f195b67d316e8e528"
+        },
+        {
+          "path": "work/worldtype11-verification.log",
+          "sha256": "486fe13d87b05d9a1ac0ac09d6ea2b5b770f8ae37f26b17d7006b13d43a55531"
+        }
+      ],
+      "required_sections": [],
+      "accounting_note": "Credit only changed hunks; inherited unchanged methods are not additional requirements. Standalone logs without == section headers require parent registration of their exact result lines; no synthetic pass is emitted here."
+    },
+    {
+      "class_name": "WorldProviderEnd",
+      "area": "world",
+      "normalized_changed_lines": 3,
+      "entire_1_1_delta_complete": true,
+      "source_hunk_review": "new func_46066_g returns50; scalar matrix and nonrespawn initial-spawn traces; entrance getter only renamed, no new runtime behavior",
+      "source_authority": "work/retromcp-1.1/minecraft/src/net/minecraft/src/WorldProviderEnd.java",
+      "source_java_sha256": "122101ebe9ba6571a4f00038fc7d5f4b1f584e1cc0b0ef7c0d11d97cc4594d9c",
+      "old_source_java_sha256": "4239241a4b167f4edbe71a1b6d754dccefb14ec15409fb4da083de796e349a23",
+      "rust_sha256": {
+        "crates/worldgen11/src/world/mod.rs": "bc6a6777e948aacb68e9581c38ae9b09358abe82af5aaafcb1a5afdebd44a162",
+        "crates/worldgen11/src/world/dimension.rs": "178e1786a5e89cca4abbb710a97ceb8e1d34b54f91687d1e87387643e6cdcb95",
+        "crates/worldgen11/src/scenario.rs": "f2cd72d2c00e2f314ba93bcff85d635bf88240ebc61e2bc6f22c80baafe30d8a",
+        "crates/worldgen11/src/world/spawn181.rs": "a6a6da75654fd6d99ebefc019505bc54b023289195f0dda284774cda48059e7c"
+      },
+      "evidence": [
+        {
+          "path": "work/worldtype11-verification.log",
+          "sha256": "486fe13d87b05d9a1ac0ac09d6ea2b5b770f8ae37f26b17d7006b13d43a55531"
+        },
+        {
+          "path": "work/spawn11-verification.log",
+          "sha256": "6a63733ddb79f0d1d57a478b81f6ea421112be80e522a93b2299f693f774b615"
+        }
+      ],
+      "required_sections": [],
+      "accounting_note": "Credit only changed hunks; inherited unchanged methods are not additional requirements. Standalone logs without == section headers require parent registration of their exact result lines; no synthetic pass is emitted here."
+    },
+    {
+      "class_name": "WorldSettings",
+      "area": "player",
+      "normalized_changed_lines": 8,
+      "entire_1_1_delta_complete": true,
+      "source_hunk_review": "immutable fifth world type constructor argument and getter; original WorldInfo(settings) invokes getter, DEFAULT/FLAT creation/save/reopen compared",
+      "source_authority": "work/retromcp-1.1/minecraft/src/net/minecraft/src/WorldSettings.java",
+      "source_java_sha256": "92d1f67ec774d4709159975555567c40c5297e22713682606bf808c858f5210e",
+      "old_source_java_sha256": "667dcaa7a8c1f90b9cc76ff0b4b58d5d865d8e30a8d575a221767f044e523b20",
+      "rust_sha256": {
+        "crates/worldgen11/src/entity/player/food.rs": "25e49a13266974a0fba43bf02f4739310137367389d42bec0c0c91ff980b9849",
+        "crates/worldgen11/src/scenario.rs": "f2cd72d2c00e2f314ba93bcff85d635bf88240ebc61e2bc6f22c80baafe30d8a"
+      },
+      "evidence": [
+        {
+          "path": "work/worldtype11-verification.log",
+          "sha256": "486fe13d87b05d9a1ac0ac09d6ea2b5b770f8ae37f26b17d7006b13d43a55531"
+        }
+      ],
+      "required_sections": [],
+      "accounting_note": "Credit only changed hunks; inherited unchanged methods are not additional requirements. Standalone logs without == section headers require parent registration of their exact result lines; no synthetic pass is emitted here."
+    },
+    {
+      "class_name": "ChunkProviderFlat",
+      "area": "worldgen",
+      "normalized_changed_lines": 78,
+      "entire_1_1_delta_complete": false,
+      "source_hunk_review": "Terrain/population/RNG/villages/locate changes covered, but whole new class also has chunkExists/saveChunks/unload/canSave/makeString and null-manager/null-biome creature interfaces. These new facade paths are not all directly compared.",
+      "source_authority": "work/retromcp-1.1/minecraft/src/net/minecraft/src/ChunkProviderFlat.java",
+      "source_java_sha256": "7ea4e27547df9080c860d1e24d5c7aeb956a72639f50c09f85e045e789f41073",
+      "old_source_java_sha256": null,
+      "rust_sha256": {
+        "crates/worldgen11/src/flat.rs": "98e3a72fbce435cff3796408811ea4a8b30e7374f7528815f5ad0c8885b3d262",
+        "crates/worldgen11/src/world/mod.rs": "bc6a6777e948aacb68e9581c38ae9b09358abe82af5aaafcb1a5afdebd44a162",
+        "crates/worldgen11/src/world/provider181.rs": "27fa23f1c2ef34c1a36c6776469c72d4f55213d177bce6dbb57d516587aa4e70",
+        "crates/worldgen11/src/world/release10.rs": "4a93e9d0d533bcd028e7e6c0c45a4630a5f46949682f059f3be29aee6a8b6f20",
+        "crates/worldgen11/src/world/spawn181.rs": "a6a6da75654fd6d99ebefc019505bc54b023289195f0dda284774cda48059e7c"
+      },
+      "evidence": [
+        {
+          "path": "work/worldgen11-structures-verification.log",
+          "sha256": "d4c391a38cb80ab2a1d5b3b93958a231e99528f8a6dd48c54b195a0eb8fc7d93"
+        },
+        {
+          "path": "work/worldgen11-structures-results.json",
+          "sha256": "1074b7724c81afe765afe5494fcc0ba91f59ab163e3b796f195b67d316e8e528"
+        },
+        {
+          "path": "work/worldgen11-probe-results.json",
+          "sha256": "4845cdd011a05af661094aeb44e7c0f06d79610c7f20eed224d43d9cfbb4fa61"
+        }
+      ],
+      "required_sections": [],
+      "accounting_note": "Credit only changed hunks; inherited unchanged methods are not additional requirements. Standalone logs without == section headers require parent registration of their exact result lines; no synthetic pass is emitted here."
+    },
+    {
+      "class_name": "GenLayerHills",
+      "area": "worldgen",
+      "normalized_changed_lines": 46,
+      "entire_1_1_delta_complete": false,
+      "source_hunk_review": "Whole-stack normal graph EXACT does not document every new conditional conversion/cardinal disagreement branch with a controlled original parent; keep blocked for targeted vector matrix.",
+      "source_authority": "work/retromcp-1.1/minecraft/src/net/minecraft/src/GenLayerHills.java",
+      "source_java_sha256": "70150c89f924b90fc1edfd00875acaae2ce2cfa1cb686c3d7a7a05dbddbf24a8",
+      "old_source_java_sha256": null,
+      "rust_sha256": {
+        "crates/worldgen11/src/genlayer.rs": "01f65e70c84445b405b4af359b4f7b80f3487340df683ab947430acad4404aa4",
+        "crates/worldgen11/src/intcache.rs": "25dbd85fccde32040717022cb4bedc4ab35914ab92607ec7200dcd640c4598ff"
+      },
+      "evidence": [
+        {
+          "path": "work/worldgen11-probe-results.json",
+          "sha256": "4845cdd011a05af661094aeb44e7c0f06d79610c7f20eed224d43d9cfbb4fa61"
+        }
+      ],
+      "required_sections": [],
+      "accounting_note": "Credit only changed hunks; inherited unchanged methods are not additional requirements. Standalone logs without == section headers require parent registration of their exact result lines; no synthetic pass is emitted here."
+    },
+    {
+      "class_name": "GenLayerShore",
+      "area": "worldgen",
+      "normalized_changed_lines": 28,
+      "entire_1_1_delta_complete": false,
+      "source_hunk_review": "Whole-stack graph EXACT does not independently certify all changed beach/hills-edge cardinal/branch-priority cases with controlled parent; targeted vectors missing.",
+      "source_authority": "work/retromcp-1.1/minecraft/src/net/minecraft/src/GenLayerShore.java",
+      "source_java_sha256": "787da2e1dc8623de1e577c52080753897dc6532b0f4c5b0ef075461de637151b",
+      "old_source_java_sha256": "ed74e1cccda006b2d978e4174ea076ac1e5efc10b5db768a1d93af3891534072",
+      "rust_sha256": {
+        "crates/worldgen11/src/genlayer.rs": "01f65e70c84445b405b4af359b4f7b80f3487340df683ab947430acad4404aa4",
+        "crates/worldgen11/src/intcache.rs": "25dbd85fccde32040717022cb4bedc4ab35914ab92607ec7200dcd640c4598ff"
+      },
+      "evidence": [
+        {
+          "path": "work/worldgen11-probe-results.json",
+          "sha256": "4845cdd011a05af661094aeb44e7c0f06d79610c7f20eed224d43d9cfbb4fa61"
+        }
+      ],
+      "required_sections": [],
+      "accounting_note": "Credit only changed hunks; inherited unchanged methods are not additional requirements. Standalone logs without == section headers require parent registration of their exact result lines; no synthetic pass is emitted here."
+    },
+    {
+      "class_name": "GenLayerSwampRivers",
+      "area": "worldgen",
+      "normalized_changed_lines": 22,
+      "entire_1_1_delta_complete": false,
+      "source_hunk_review": "Whole-stack graph EXACT does not independently retain new swamp vs non-swamp RNG short-circuit vectors; targeted original parent/RNG matrix missing.",
+      "source_authority": "work/retromcp-1.1/minecraft/src/net/minecraft/src/GenLayerSwampRivers.java",
+      "source_java_sha256": "296dfff7bfc0d77170c79d2a1e834277e5b29ece07523db2659fbd05214e3e95",
+      "old_source_java_sha256": null,
+      "rust_sha256": {
+        "crates/worldgen11/src/genlayer.rs": "01f65e70c84445b405b4af359b4f7b80f3487340df683ab947430acad4404aa4",
+        "crates/worldgen11/src/intcache.rs": "25dbd85fccde32040717022cb4bedc4ab35914ab92607ec7200dcd640c4598ff"
+      },
+      "evidence": [
+        {
+          "path": "work/worldgen11-probe-results.json",
+          "sha256": "4845cdd011a05af661094aeb44e7c0f06d79610c7f20eed224d43d9cfbb4fa61"
+        }
+      ],
+      "required_sections": [],
+      "accounting_note": "Credit only changed hunks; inherited unchanged methods are not additional requirements. Standalone logs without == section headers require parent registration of their exact result lines; no synthetic pass is emitted here."
+    },
+    {
+      "class_name": "MapGenStronghold",
+      "area": "worldgen",
+      "normalized_changed_lines": 22,
+      "entire_1_1_delta_complete": false,
+      "source_hunk_review": "Independent candidate RNG and exact ten-biome allowlist covered by five map streams/actual stronghold grid; new successful-coordinate stdout line remains unimplemented and requires explicit scope disposition. INVALID-biome diagnostic already existed in1.0 and is not a new completion requirement.",
+      "source_authority": "work/retromcp-1.1/minecraft/src/net/minecraft/src/MapGenStronghold.java",
+      "source_java_sha256": "5a4cd926618b3caf072dd3ca35e0cafaa75b3bc9aaf0c1cc8a368ee2e6e68ac3",
+      "old_source_java_sha256": "e969572e4c4d887fa303c70f4e0fab724c18dba1beec05efd546c4521650dde2",
+      "rust_sha256": {
+        "crates/worldgen11/src/structures/stronghold.rs": "a3de5f5c18c7994a1bb8a639d2cec00e51d68ab9b2560b5097fc9b855b11ee4c",
+        "crates/worldgen11/src/structures/stronghold_generated.rs": "2bce024f47f50b67dd0c0b519e84e3acfc622ba83b6163785fd45e9bb1aa0c72",
+        "crates/worldgen11/src/structures/locations.rs": "d4431e2f7c9d6b4a31c46c6ff8eb470bf7809d7d6994efef022cd720bdab32fa",
+        "crates/worldgen11/src/structures/component.rs": "1301046367f870908ec02cf185e6fe0d3ef4eddd4e3f0453327e70fe6cce8661"
+      },
+      "evidence": [
+        {
+          "path": "work/stronghold11-scope-verification.log",
+          "sha256": "d175ff4aaf016fb9a3009b936b2d2726e19ba9a615bb286aa021fcec89991c8f"
+        },
+        {
+          "path": "work/stronghold11-scope-evidence.json",
+          "sha256": "61a99d00b37b849f8ae15486f218c6ee71fc98a8887f6acbfd2a05f1ff1dfe72"
+        }
+      ],
+      "required_sections": [],
+      "accounting_note": "Credit only changed hunks; inherited unchanged methods are not additional requirements. Standalone logs without == section headers require parent registration of their exact result lines; no synthetic pass is emitted here."
+    },
+    {
+      "class_name": "WorldInfo",
+      "area": "world",
+      "normalized_changed_lines": 14,
+      "entire_1_1_delta_complete": false,
+      "source_hunk_review": "New type NBT/settings/getter/save/reopen behavior covered; changed WorldInfo(WorldInfo) copy of type is implemented by Clone but not retained in an original copy-constructor comparison.",
+      "source_authority": "work/retromcp-1.1/minecraft/src/net/minecraft/src/WorldInfo.java",
+      "source_java_sha256": "4b6272349d56f03261855b5837f299428ac3641f6333e8bfb75ba1a681c66f87",
+      "old_source_java_sha256": "9428dfd3f85e5aeccd2a14722e576b32aea76456b933b74e8c236d0597a97cca",
+      "rust_sha256": {
+        "crates/worldgen11/src/storage.rs": "3c60d40d22db9b0dd5f66bb0f5b64fdccf2497faad9be833e366eccab9a24b46",
+        "crates/worldgen11/src/storage181.rs": "c53c48e218f045e183132cfac491d5f4a05f8c595085ee4e8e0b9b614c824b1d",
+        "crates/worldgen11/src/save_format_old181.rs": "f90fc8df865dc9da2aa633af593bb40a67b111e40ac9a9c3de52550cd66f42ed",
+        "crates/worldgen11/src/convert.rs": "3aa52a5916de569662a6ebe765b4e5e4a7f6ac7b7d1e62a0d58b0d0bf4a61482"
+      },
+      "evidence": [
+        {
+          "path": "work/worldtype11-verification.log",
+          "sha256": "486fe13d87b05d9a1ac0ac09d6ea2b5b770f8ae37f26b17d7006b13d43a55531"
+        },
+        {
+          "path": "work/spawn11-verification.log",
+          "sha256": "6a63733ddb79f0d1d57a478b81f6ea421112be80e522a93b2299f693f774b615"
+        }
+      ],
+      "required_sections": [],
+      "accounting_note": "Credit only changed hunks; inherited unchanged methods are not additional requirements. Standalone logs without == section headers require parent registration of their exact result lines; no synthetic pass is emitted here."
+    },
+    {
+      "class_name": "WorldProviderHell",
+      "area": "world",
+      "normalized_changed_lines": 2,
+      "entire_1_1_delta_complete": false,
+      "source_hunk_review": "Only changed spawn predicate is source-exact unconditional false; focused Rust side-effect unit passes but no retained original invocation comparison. Conservative oracle-only accounting holds it pending a dedicated call vector.",
+      "source_authority": "work/retromcp-1.1/minecraft/src/net/minecraft/src/WorldProviderHell.java",
+      "source_java_sha256": "cd81191027f9780267588830338373c1f839c146053a926fe74b5b714df870fa",
+      "old_source_java_sha256": "bac2d67cc33129fd1f2326b64d8ec23cd81b923a135bc98a632412c1f01d1694",
+      "rust_sha256": {
+        "crates/worldgen11/src/world/mod.rs": "bc6a6777e948aacb68e9581c38ae9b09358abe82af5aaafcb1a5afdebd44a162",
+        "crates/worldgen11/src/world/dimension.rs": "178e1786a5e89cca4abbb710a97ceb8e1d34b54f91687d1e87387643e6cdcb95",
+        "crates/worldgen11/src/scenario.rs": "f2cd72d2c00e2f314ba93bcff85d635bf88240ebc61e2bc6f22c80baafe30d8a",
+        "crates/worldgen11/src/world/spawn181.rs": "a6a6da75654fd6d99ebefc019505bc54b023289195f0dda284774cda48059e7c"
+      },
+      "evidence": [
+        {
+          "path": "work/test-nether-provider11.log",
+          "sha256": "2412e650e3be87b4e6e66f69e63787e50da0b79ec6f9a9d35812f5e3d6e602ea"
+        }
+      ],
+      "required_sections": [],
+      "accounting_note": "Credit only changed hunks; inherited unchanged methods are not additional requirements. Standalone logs without == section headers require parent registration of their exact result lines; no synthetic pass is emitted here."
+    }
+  ]
+}

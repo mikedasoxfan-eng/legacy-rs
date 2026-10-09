@@ -1,0 +1,135 @@
+{
+  "gameplay11 original delta vectors": {
+    "exact": true,
+    "command": "cargo test --release -p worldgen11 --lib original_11 -- --nocapture --test-threads=1",
+    "source_snapshot": "worldgen11",
+    "log_sha256": "5d8d6034de5f0e52a422081859cd9347f0dafe4fcac9d09dab0e6d52957b6723",
+    "observations": [
+      "29 passed; 0 failed; 0 ignored",
+      "Assertions compare original bytecode fixtures, outputs, state and RNG tails."
+    ],
+    "original_jar_sha256": "44bb6ace88fdff460d6c428c4becee8cad52f2622e1f800dab7a70f8a716f75b",
+    "report": "reports/r11-progress/progress11-gameplay-tests.log",
+    "report_sha256": "504bb60192e5a2f0c560667fa0ab8329e12660103b58995f0eed9fa28731dec1"
+  },
+  "gameplay11 fixture authority": {
+    "exact": true,
+    "command": "tools/oracle11/verify_gameplay_slice.ps1 -SkipRust",
+    "source_snapshot": "worldgen11",
+    "log_sha256": "08927ad481e10a1832e0ee41dff1007b57f5b6afd30c823b7f059639e36e86bb",
+    "observations": [
+      "30 regenerated original-bytecode files match committed fixture hashes."
+    ],
+    "original_jar_sha256": "44bb6ace88fdff460d6c428c4becee8cad52f2622e1f800dab7a70f8a716f75b",
+    "report": "reports/r11-progress/progress11-gameplay-oracle.log",
+    "report_sha256": "12fc5e4874490c908fe1e92da3bfe8cf5c51a118c069db6d9e3e7d9456f943a8"
+  },
+  "worldtype11 names settings and saves": {
+    "exact": true,
+    "command": "tools/verify_r11_worldtype.ps1",
+    "source_snapshot": "worldgen11",
+    "log_sha256": "68398ec1a7185f34091ac45d8e3e3c2a6ec8b5a7f02d0a1707805ce8b293b813",
+    "observations": [
+      "1327-byte original and Rust streams match for seeds 0,42,-1."
+    ],
+    "original_jar_sha256": "44bb6ace88fdff460d6c428c4becee8cad52f2622e1f800dab7a70f8a716f75b",
+    "report": "reports/r11-progress/progress11-worldtype.log",
+    "report_sha256": "8c9ebe9ea04b11b994add804d6be37334b1b77af27fc3b654b7f3a5c34031943"
+  },
+  "settings11 language persistence": {
+    "exact": true,
+    "command": "python tools/r11/verify_settings11.py",
+    "source_snapshot": "settings11",
+    "log_sha256": "324e29fe914faa6cfaef7de9d15731dd511cdca63d8fe881e4b652a1cdb290ec",
+    "observations": [
+      {
+        "case": "",
+        "sha256": "33e8ec8d42da40485f930ab9fdd946023fedb387724c311cb7da8f8c2c56a3dd",
+        "bytes": 532
+      },
+      {
+        "case": "lang:he_IL\nlang:\n",
+        "sha256": "9788c15bbd080f21c585a068c75838f0d2f304866894394d5b2860dd41b1e4f1",
+        "bytes": 532
+      },
+      {
+        "case": "lang:ja_JP:ignored\n",
+        "sha256": "dc6c0f438cc04b51415c479159c74ba1db657d3715ccb0340a1330e4c60f6038",
+        "bytes": 532
+      },
+      {
+        "case": "lang:\nlang\nlang:ar_SA\n",
+        "sha256": "812013b6e641b32077b8a4afd56584ab0769dfd9995c7d2a073cd11452ac07da",
+        "bytes": 532
+      },
+      {
+        "case": "lang:made_up\n",
+        "sha256": "431411f140c398c222391ffa5165cb013c1e8ed3f0f486213704d41859f7f0d2",
+        "bytes": 534
+      }
+    ],
+    "original_jar_sha256": "44bb6ace88fdff460d6c428c4becee8cad52f2622e1f800dab7a70f8a716f75b",
+    "report": "reports/r11-progress/progress11-settings-results.json",
+    "report_sha256": "324e29fe914faa6cfaef7de9d15731dd511cdca63d8fe881e4b652a1cdb290ec"
+  },
+  "biomes11 changed constants": {
+    "exact": true,
+    "command": "tools/verify11.sh world3 biomes",
+    "source_snapshot": "worldgen11",
+    "report": "reports/r11-progress/biomes11-completion-check.log",
+    "report_sha256": "aa1054fd1987fe6558e0b602646336a83f86802c345ed8540247f6484ecdb1ac",
+    "log_sha256": "aa1054fd1987fe6558e0b602646336a83f86802c345ed8540247f6484ecdb1ac",
+    "observations": [
+      "Original-bytecode comparison authority: biomes11-completion-check.log. Complete changed-hunk bounds recorded separately; no whole-class credit inferred from names."
+    ],
+    "original_jar_sha256": "44bb6ace88fdff460d6c428c4becee8cad52f2622e1f800dab7a70f8a716f75b"
+  },
+  "flat11 village layouts maps population": {
+    "exact": true,
+    "command": "tools/verify_r11_flat.ps1",
+    "source_snapshot": "worldgen11",
+    "report": "reports/r11-progress/worldgen11-structures-verification.log",
+    "report_sha256": "d4c391a38cb80ab2a1d5b3b93958a231e99528f8a6dd48c54b195a0eb8fc7d93",
+    "log_sha256": "d4c391a38cb80ab2a1d5b3b93958a231e99528f8a6dd48c54b195a0eb8fc7d93",
+    "observations": [
+      "Original-bytecode comparison authority: worldgen11-structures-verification.log. Complete changed-hunk bounds recorded separately; no whole-class credit inferred from names."
+    ],
+    "original_jar_sha256": "44bb6ace88fdff460d6c428c4becee8cad52f2622e1f800dab7a70f8a716f75b"
+  },
+  "layer11 graph and fixed manager": {
+    "exact": true,
+    "command": "Original LayerProbe11 and production genlayer11_probe: six seeds, graph/fixed manager/raw flat",
+    "source_snapshot": "worldgen11",
+    "report": "reports/r11-progress/worldgen11-probe-results.json",
+    "report_sha256": "4845cdd011a05af661094aeb44e7c0f06d79610c7f20eed224d43d9cfbb4fa61",
+    "log_sha256": "4845cdd011a05af661094aeb44e7c0f06d79610c7f20eed224d43d9cfbb4fa61",
+    "observations": [
+      "Original-bytecode comparison authority: worldgen11-probe-results.json. Complete changed-hunk bounds recorded separately; no whole-class credit inferred from names."
+    ],
+    "original_jar_sha256": "44bb6ace88fdff460d6c428c4becee8cad52f2622e1f800dab7a70f8a716f75b"
+  },
+  "spawn11 initial repair and reopen": {
+    "exact": true,
+    "command": "tools/verify_r11_spawn.ps1",
+    "source_snapshot": "worldgen11",
+    "report": "reports/r11-progress/spawn11-verification.log",
+    "report_sha256": "6a63733ddb79f0d1d57a478b81f6ea421112be80e522a93b2299f693f774b615",
+    "log_sha256": "6a63733ddb79f0d1d57a478b81f6ea421112be80e522a93b2299f693f774b615",
+    "observations": [
+      "Original-bytecode comparison authority: spawn11-verification.log. Complete changed-hunk bounds recorded separately; no whole-class credit inferred from names."
+    ],
+    "original_jar_sha256": "44bb6ace88fdff460d6c428c4becee8cad52f2622e1f800dab7a70f8a716f75b"
+  },
+  "depthfog11 events and RNG": {
+    "exact": true,
+    "command": "tools/verify_r11_depthfog.ps1",
+    "source_snapshot": "worldgen11",
+    "report": "reports/r11-progress/depthfog11-verification.log",
+    "report_sha256": "9a4030b446ee1962f77b2f51c3c8eb99ad13648be72aff58ec70330cbe59931d",
+    "log_sha256": "9a4030b446ee1962f77b2f51c3c8eb99ad13648be72aff58ec70330cbe59931d",
+    "observations": [
+      "Original-bytecode comparison authority: depthfog11-verification.log. Complete changed-hunk bounds recorded separately; no whole-class credit inferred from names."
+    ],
+    "original_jar_sha256": "44bb6ace88fdff460d6c428c4becee8cad52f2622e1f800dab7a70f8a716f75b"
+  }
+}

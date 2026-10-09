@@ -1,0 +1,10 @@
+== world3 biomes seed 0
+EXACT MATCH (68430 bytes)
+== world3 biomes seed 42
+EXACT MATCH (68426 bytes)
+== world3 biomes seed -1
+EXACT MATCH (68375 bytes)
+== world3 biomes seed 9223372036854775807
+EXACT MATCH (68375 bytes)
+== world3 biomes seed -9223372036854775808
+EXACT MATCH (68430 bytes)

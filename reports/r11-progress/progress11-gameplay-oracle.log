@@ -1,0 +1,74 @@
+<repo>\tools\oracle11\src\net\minecraft\src\GameplaySlice11.java:18: warning: Unsafe is internal proprietary API and may be removed in a future release
+    static sun.misc.Unsafe unsafe() throws Exception {
+                   ^
+<repo>\tools\oracle11\src\net\minecraft\src\GameplaySlice11.java:19: warning: Unsafe is internal proprietary API and may be removed in a future release
+        Field f = sun.misc.Unsafe.class.getDeclaredField("theUnsafe");
+                          ^
+<repo>\tools\oracle11\src\net\minecraft\src\GameplaySlice11.java:20: warning: Unsafe is internal proprietary API and may be removed in a future release
+        f.setAccessible(true); return (sun.misc.Unsafe)f.get(null);
+                                               ^
+<repo>\tools\oracle11\src\net\minecraft\src\BowSlice11.java:29: warning: Unsafe is internal proprietary API and may be removed in a future release
+    static sun.misc.Unsafe unsafe() throws Exception {
+                   ^
+<repo>\tools\oracle11\src\net\minecraft\src\BowSlice11.java:30: warning: Unsafe is internal proprietary API and may be removed in a future release
+        Field f=sun.misc.Unsafe.class.getDeclaredField("theUnsafe");f.setAccessible(true);return (sun.misc.Unsafe)f.get(null);
+                        ^
+<repo>\tools\oracle11\src\net\minecraft\src\BowSlice11.java:30: warning: Unsafe is internal proprietary API and may be removed in a future release
+        Field f=sun.misc.Unsafe.class.getDeclaredField("theUnsafe");f.setAccessible(true);return (sun.misc.Unsafe)f.get(null);
+                                                                                                          ^
+<repo>\tools\oracle11\src\net\minecraft\src\SheepSlice11.java:26: warning: Unsafe is internal proprietary API and may be removed in a future release
+ static sun.misc.Unsafe unsafe()throws Exception{Field f=sun.misc.Unsafe.class.getDeclaredField("theUnsafe");f.setAccessible(true);return(sun.misc.Unsafe)f.get(null);}
+                ^
+<repo>\tools\oracle11\src\net\minecraft\src\SheepSlice11.java:26: warning: Unsafe is internal proprietary API and may be removed in a future release
+ static sun.misc.Unsafe unsafe()throws Exception{Field f=sun.misc.Unsafe.class.getDeclaredField("theUnsafe");f.setAccessible(true);return(sun.misc.Unsafe)f.get(null);}
+                                                                 ^
+<repo>\tools\oracle11\src\net\minecraft\src\SheepSlice11.java:26: warning: Unsafe is internal proprietary API and may be removed in a future release
+ static sun.misc.Unsafe unsafe()throws Exception{Field f=sun.misc.Unsafe.class.getDeclaredField("theUnsafe");f.setAccessible(true);return(sun.misc.Unsafe)f.get(null);}
+                                                                                                                                                  ^
+<repo>\tools\oracle11\src\net\minecraft\src\DoorSlice11.java:20: warning: Unsafe is internal proprietary API and may be removed in a future release
+ static W world()throws Exception{Field f=sun.misc.Unsafe.class.getDeclaredField("theUnsafe");f.setAccessible(true);W w=(W)((sun.misc.Unsafe)f.get(null)).allocateInstance(W.class);w.blocks=new HashMap<String,int[]>();w.rand=new Random(42);w.put(0,63,0,1,0);return w;}
+                                                  ^
+<repo>\tools\oracle11\src\net\minecraft\src\DoorSlice11.java:20: warning: Unsafe is internal proprietary API and may be removed in a future release
+ static W world()throws Exception{Field f=sun.misc.Unsafe.class.getDeclaredField("theUnsafe");f.setAccessible(true);W w=(W)((sun.misc.Unsafe)f.get(null)).allocateInstance(W.class);w.blocks=new HashMap<String,int[]>();w.rand=new Random(42);w.put(0,63,0,1,0);return w;}
+                                                                                                                                     ^
+<repo>\tools\oracle11\src\net\minecraft\src\EggSlice11.java:6: warning: Unsafe is internal proprietary API and may be removed in a future release
+ static sun.misc.Unsafe unsafe()throws Exception{Field f=sun.misc.Unsafe.class.getDeclaredField("theUnsafe");f.setAccessible(true);return(sun.misc.Unsafe)f.get(null);}
+                ^
+<repo>\tools\oracle11\src\net\minecraft\src\EggSlice11.java:6: warning: Unsafe is internal proprietary API and may be removed in a future release
+ static sun.misc.Unsafe unsafe()throws Exception{Field f=sun.misc.Unsafe.class.getDeclaredField("theUnsafe");f.setAccessible(true);return(sun.misc.Unsafe)f.get(null);}
+                                                                 ^
+<repo>\tools\oracle11\src\net\minecraft\src\EggSlice11.java:6: warning: Unsafe is internal proprietary API and may be removed in a future release
+ static sun.misc.Unsafe unsafe()throws Exception{Field f=sun.misc.Unsafe.class.getDeclaredField("theUnsafe");f.setAccessible(true);return(sun.misc.Unsafe)f.get(null);}
+                                                                                                                                                  ^
+14 warnings
+ORIGINAL BYTECODE EXACT: xp11.txt
+ORIGINAL BYTECODE EXACT: offers11.txt
+ORIGINAL BYTECODE EXACT: tags11.txt
+ORIGINAL BYTECODE EXACT: remainders11.txt
+ORIGINAL BYTECODE EXACT: damage11.txt
+ORIGINAL BYTECODE EXACT: bows11.txt
+ORIGINAL BYTECODE EXACT: bowenchant11.txt
+ORIGINAL BYTECODE EXACT: arrowhits11.txt
+ORIGINAL BYTECODE EXACT: arrownbt11.txt
+ORIGINAL BYTECODE EXACT: sheep_actions11.txt
+ORIGINAL BYTECODE EXACT: sheep_heads11.txt
+ORIGINAL BYTECODE EXACT: sheep_ticks11.txt
+ORIGINAL BYTECODE EXACT: shearing11.txt
+ORIGINAL BYTECODE EXACT: magma11.txt
+ORIGINAL BYTECODE EXACT: doors11.txt
+ORIGINAL BYTECODE EXACT: blockboxes11.txt
+ORIGINAL BYTECODE EXACT: farmland11.txt
+ORIGINAL BYTECODE EXACT: farmwalking11.txt
+ORIGINAL BYTECODE EXACT: gate11.txt
+ORIGINAL BYTECODE EXACT: railadded11.txt
+ORIGINAL BYTECODE EXACT: web11.txt
+ORIGINAL BYTECODE EXACT: eggs11.txt
+ORIGINAL BYTECODE EXACT: eggnames11.txt
+ORIGINAL BYTECODE EXACT: creative11.txt
+ORIGINAL BYTECODE EXACT: creative11.bin
+ORIGINAL BYTECODE EXACT: egguse11.txt
+ORIGINAL BYTECODE EXACT: eggstats11.txt
+ORIGINAL BYTECODE EXACT: eggstackuse11.txt
+ORIGINAL BYTECODE EXACT: egginvalidside11.txt
+ORIGINAL BYTECODE EXACT: recipes11.bin
+Reference jar SHA256: 44BB6ACE88FDFF460D6C428C4BECEE8CAD52F2622E1F800DAB7A70F8A716F75B

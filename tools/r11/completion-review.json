@@ -1,0 +1,879 @@
+{
+  "MaterialWeb": {
+    "complete_delta_review": true,
+    "no_behavior_change": true,
+    "reason": "Only final is added to the class declaration. Method bodies, material initialization and runtime dispatch are unchanged.",
+    "rust_source_sha256": {
+      "crates/worldgen11/src/entity/blocks11.rs": "7b3b7d612592b367e47bc1ec3a9c20ea5769934f58a0e3d9a0efbf54606ef104",
+      "crates/worldgen11/src/entity/blocks.rs": "f37f8c39e6509678187a6cb2002b28f49f9e0673929262547a004341111cc674",
+      "crates/worldgen11/src/entity/physics.rs": "a55d97cebd8a5a3c8e565cae5ad8139b47fbedb5e0b57eaae64730afa91d27a6",
+      "crates/worldgen11/src/world/behavior.rs": "dc6d60fb0465f2d76248af964de79b1e0a7a1250116c1e0a622d3aee6ce700d0"
+    },
+    "original_source_sha256": {
+      "1.0": "ba0e5ff3f7cdda1d45017d7aa29f66cbb0a5db9f2a2c658bfee43427a6072d0d",
+      "1.1": "684c41805af4f4ed3e95b4ffef30a9d5bbe173f941f214e25a6cd4ae401d3c4c"
+    }
+  },
+  "EntityDamageSource": {
+    "complete_delta_review": true,
+    "no_behavior_change": true,
+    "reason": "Only damageSourceEntity visibility changes private to protected. Runtime field and methods are unchanged.",
+    "rust_source_sha256": {
+      "crates/worldgen11/src/entity/mod.rs": "66c8caf5b0997e0fd474e2f722beff76e7d821d49c2f82d464510dde8c8fe2d0",
+      "crates/worldgen11/src/entity/living.rs": "607b0b8ca26f3fe261198bfa1b83887bc0c77ca5e65e09092635847370a4aec2",
+      "crates/worldgen11/src/entity/creature.rs": "85521b77716dfbf983ded5971185b59bbe2cca5314c8eead0aeda4a11895e80b",
+      "crates/worldgen11/src/entity/nbt.rs": "2bf61659b89cfb6505c6cdce38a8187d3c5fd3fc119a6f9aa6217c21addf009b"
+    },
+    "original_source_sha256": {
+      "1.0": "c52631bc343caf5a5aa8829d296181b369868597e48e9396bd369b24155203a0",
+      "1.1": "7d1e1de802f6d03237cb84f27a1b124a9a5e4e2dcc0ee2c47807459e4689fd80"
+    }
+  },
+  "MapGenStructure": {
+    "complete_delta_review": true,
+    "no_behavior_change": true,
+    "reason": "The existing rand.nextInt() result is assigned to an unused local, shifting subsequent local variable names only. RNG consumption and map insertion are unchanged.",
+    "rust_source_sha256": {
+      "crates/worldgen11/src/structures.rs": "c429031ac51fd761ded0f678a7f4e584946c2732d67c5f96aa1cc3726391920d",
+      "crates/worldgen11/src/structures/component.rs": "1301046367f870908ec02cf185e6fe0d3ef4eddd4e3f0453327e70fe6cce8661"
+    },
+    "original_source_sha256": {
+      "1.0": "c0f8030f4929cedb6b5951a7a6e4106b0799ff4dd68a326219394127487ad21d",
+      "1.1": "1c78a024be589a90a42fd285398224f695ff28619e635a2a1250f740b2f0d2f7"
+    }
+  },
+  "StructureStrongholdPieceWeight2": {
+    "complete_delta_review": true,
+    "no_behavior_change": true,
+    "reason": "Only final is added to the class declaration; depth and weighting methods are unchanged.",
+    "rust_source_sha256": {
+      "crates/worldgen11/src/structures/stronghold.rs": "a3de5f5c18c7994a1bb8a639d2cec00e51d68ab9b2560b5097fc9b855b11ee4c",
+      "crates/worldgen11/src/structures/stronghold_generated.rs": "2bce024f47f50b67dd0c0b519e84e3acfc622ba83b6163785fd45e9bb1aa0c72",
+      "crates/worldgen11/src/structures/locations.rs": "d4431e2f7c9d6b4a31c46c6ff8eb470bf7809d7d6994efef022cd720bdab32fa",
+      "crates/worldgen11/src/structures/component.rs": "1301046367f870908ec02cf185e6fe0d3ef4eddd4e3f0453327e70fe6cce8661"
+    },
+    "original_source_sha256": {
+      "1.0": "0e4aadc96720917b46f5247cc5fbb1a9ab8ce4c6960cb435d12530b7421390a1",
+      "1.1": "6e202742736a25121e2efffe58a335040c973911809bb5b414642034a60d75f5"
+    }
+  },
+  "StructureStrongholdPieceWeight3": {
+    "complete_delta_review": true,
+    "no_behavior_change": true,
+    "reason": "Only final is added to the class declaration; depth and weighting methods are unchanged.",
+    "rust_source_sha256": {
+      "crates/worldgen11/src/structures/stronghold.rs": "a3de5f5c18c7994a1bb8a639d2cec00e51d68ab9b2560b5097fc9b855b11ee4c",
+      "crates/worldgen11/src/structures/stronghold_generated.rs": "2bce024f47f50b67dd0c0b519e84e3acfc622ba83b6163785fd45e9bb1aa0c72",
+      "crates/worldgen11/src/structures/locations.rs": "d4431e2f7c9d6b4a31c46c6ff8eb470bf7809d7d6994efef022cd720bdab32fa",
+      "crates/worldgen11/src/structures/component.rs": "1301046367f870908ec02cf185e6fe0d3ef4eddd4e3f0453327e70fe6cce8661"
+    },
+    "original_source_sha256": {
+      "1.0": "1f1362b880369f6851cd54871c732f949e82e7bb1f72e99f0a54a0b1b31f77e5",
+      "1.1": "ac71b64a3a561a871a19224693765b70461ebb49b2ddea5446b4396a4eaf0e52"
+    }
+  },
+  "StatTypeDistance": {
+    "complete_delta_review": true,
+    "no_behavior_change": true,
+    "reason": "Only final is added to the class declaration; formatting body is unchanged.",
+    "rust_source_sha256": {
+      "crates/client11/src/gui/stats.rs": "d7a5821cb859a0af842ea6e595d3efa52e7cc895928a4385c5e1277d30893c31"
+    },
+    "original_source_sha256": {
+      "1.0": "6635208c3aa955f34fa4e441d9868d74fdb1b90c572b137c872cde742e45f58f",
+      "1.1": "7b0f76dae7b5eb5946866da2825725f1ef91012a717a6a775c323265e881139a"
+    }
+  },
+  "StatTypeSimple": {
+    "complete_delta_review": true,
+    "no_behavior_change": true,
+    "reason": "Only final is added to the class declaration; formatting body is unchanged.",
+    "rust_source_sha256": {
+      "crates/client11/src/gui/stats.rs": "d7a5821cb859a0af842ea6e595d3efa52e7cc895928a4385c5e1277d30893c31"
+    },
+    "original_source_sha256": {
+      "1.0": "cebcfd9a604e1d319dec8be47b3b96f2babfbea9324484018809a1ddebccb839",
+      "1.1": "512a3c2f5c3bb49f9cef401d81bc45337c5ffe85186ce24de07c441ec0f2664f"
+    }
+  },
+  "StatTypeTime": {
+    "complete_delta_review": true,
+    "no_behavior_change": true,
+    "reason": "Only final is added to the class declaration; formatting body is unchanged.",
+    "rust_source_sha256": {
+      "crates/client11/src/gui/stats.rs": "d7a5821cb859a0af842ea6e595d3efa52e7cc895928a4385c5e1277d30893c31"
+    },
+    "original_source_sha256": {
+      "1.0": "d7197dcdefda84c3b0df3966c96c87cc9d5f564caf62da382dc523bf864d7184",
+      "1.1": "abfee3662f6a373fd67cfcde3b300d87f03c22e70e8cfc065532539f7d63c536"
+    }
+  },
+  "GameSettings": {
+    "complete_delta_review": true,
+    "reason": "The complete behavioral delta adds en_US language default, guarded lang: load and lang: save before key bindings. Particle and display-key identifiers are renames. Five freshly reproduced complete options.txt cases cover defaults, empty and missing values, extra colon, RTL and unknown locale.",
+    "rust_source_sha256": {
+      "crates/client11/src/gui/settings.rs": "61c01fb9f3e31ad343ce0391494c0ee14bbd0a2be2e4787392e1d0855f81da06",
+      "crates/client11/src/gui/font.rs": "a14dcd70058c704cdf8c2f52b90eddbbe5024245dd8f91482a4dd1bae6f6b55d"
+    },
+    "original_source_sha256": {
+      "1.0": "74b0c1b662728cf3dd4f289db3d6c657c454814ae5ce6566cea78d06a19d6ff3",
+      "1.1": "7846ff7172b58aa0a692c2be8d760201da1fcfe03c1166ee6f027cf1ab861ff9"
+    }
+  },
+  "ItemMonsterPlacer": {
+    "complete_delta_review": true,
+    "reason": "Every substantive1.0\u21921.1 hunk assigned below; method access/name changes alone have no existing-singleplayer behavior delta",
+    "all_delta_hunk_coverage": [
+      {
+        "delta": "constructor max-stack1/subtypes",
+        "authority_and_check": "eggs11.txt:1028 metadata/pass rows; egg_metadata test"
+      },
+      {
+        "delta": "name translation/base trim/numeric registry lookup",
+        "authority_and_check": "eggnames11.txt:257 names; egg_names test"
+      },
+      {
+        "delta": "two-pass bool/icon/color, invalid IDs and negative/zero/positive pass",
+        "authority_and_check": "eggs11.txt; egg_metadata test"
+      },
+      {
+        "delta": "onItemUse multiplayer early return, six side offsets/wrapping coords, EntityList constructor, survival/creative count, setLocationAndAngles and ignored World.join rejection",
+        "authority_and_check": "egguse11.txt:6048 cases; egg_spawns test; eggstackuse11.txt:60 actual ItemStack calls"
+      },
+      {
+        "delta": "invalid side exception before allocation/consumption",
+        "authority_and_check": "egginvalidside11.txt:24 actual ItemStack cases; egg_invalid_side test"
+      }
+    ],
+    "rust_source_sha256": {
+      "crates/worldgen11/src/entity/spawn_egg11.rs": "07430c13d6afdf82bac4ed379f11e2c1baf1a99991528fcd34605de2098fa926",
+      "crates/worldgen11/src/entity/item_stack.rs": "b6a0c19d1a6983d967af4b32f59b8dac2ec482fced04e88524cb7b5a4ee8c494",
+      "crates/worldgen11/src/entity/player/items.rs": "b409a6375494d5fbc48cff9ab79c0bf5bb46a0fe16d231b696ec093cb1a7fd31"
+    },
+    "original_source_sha256": {
+      "old": "work/retromcp-1.0/minecraft/src/net/minecraft/src/ItemMonsterPlacer.java",
+      "new": "work/retromcp-1.1/minecraft/src/net/minecraft/src/ItemMonsterPlacer.java",
+      "old_sha256": null,
+      "new_sha256": "a734d0ddcebcab44660c4c2e37d8f5d1e58f727df402ab64a01312fd8043f57b"
+    },
+    "completion_blockers": []
+  },
+  "EntityList": {
+    "complete_delta_review": true,
+    "reason": "Every substantive1.0\u21921.1 hunk assigned below; method access/name changes alone have no existing-singleplayer behavior delta",
+    "all_delta_hunk_coverage": [
+      {
+        "delta": "new20-entry egg map/ID/name/dual colors; existing mappings preserved",
+        "authority_and_check": "eggs11.txt all numericIDs; egg_metadata test; unchanged factory paths are inherited"
+      },
+      {
+        "delta": "new registration helper delegates addMapping and constructs EggInfo",
+        "authority_and_check": "eggs11.txt + creative11.bin ordered20egg tail; egg_metadata and creative_inventory tests"
+      },
+      {
+        "delta": "numericID\u2192class\u2192name helper including null for unknown",
+        "authority_and_check": "eggs11.txt/eggnames11.txt covers-1..255; egg_metadata/egg_names tests"
+      }
+    ],
+    "rust_source_sha256": {
+      "crates/worldgen11/src/entity/registry.rs": "231941624f84c061fbea756621c40c7ee7a1b0c98d2b399d0fde541f72e675aa",
+      "crates/worldgen11/src/entity/spawn_egg11.rs": "07430c13d6afdf82bac4ed379f11e2c1baf1a99991528fcd34605de2098fa926"
+    },
+    "original_source_sha256": {
+      "old": "work/retromcp-1.0/minecraft/src/net/minecraft/src/EntityList.java",
+      "new": "work/retromcp-1.1/minecraft/src/net/minecraft/src/EntityList.java",
+      "old_sha256": "b04a2096dada745ea99adfb69f6b7e2987adf9d2b9a89cf13594f859f421cbdc",
+      "new_sha256": "5f4f4fae52b419c523c4d4aaa2fefea0d61186c67f34a66f65b804879f0391f4"
+    },
+    "completion_blockers": []
+  },
+  "EntityEggInfo": {
+    "complete_delta_review": true,
+    "reason": "Every substantive1.0\u21921.1 hunk assigned below; method access/name changes alone have no existing-singleplayer behavior delta",
+    "all_delta_hunk_coverage": [
+      {
+        "delta": "new constructor three scalar fields",
+        "authority_and_check": "eggs11.txt20 valid metadata records \u00d7passes; egg_metadata test"
+      }
+    ],
+    "rust_source_sha256": {
+      "crates/worldgen11/src/entity/spawn_egg11.rs": "07430c13d6afdf82bac4ed379f11e2c1baf1a99991528fcd34605de2098fa926"
+    },
+    "original_source_sha256": {
+      "old": "work/retromcp-1.0/minecraft/src/net/minecraft/src/EntityEggInfo.java",
+      "new": "work/retromcp-1.1/minecraft/src/net/minecraft/src/EntityEggInfo.java",
+      "old_sha256": null,
+      "new_sha256": "89c122ad0c55a49fd8ecb9efb3c276e8cadbd23d65843d6501693ef75b267ea3"
+    },
+    "completion_blockers": []
+  },
+  "Enchantment": {
+    "complete_delta_review": true,
+    "reason": "Every substantive1.0\u21921.1 hunk assigned below; method access/name changes alone have no existing-singleplayer behavior delta",
+    "all_delta_hunk_coverage": [
+      {
+        "delta": "four appended registry entries48/49/50/51,weights10/2/2/1,names and Bow types",
+        "authority_and_check": "bowenchant11.txt305 actual weighted lists/RNG; source literals compare names/IDs/types in enchantment.rs; bow_enchantment_selection test"
+      }
+    ],
+    "rust_source_sha256": {
+      "crates/worldgen11/src/enchantment.rs": "962bb6e28a9952d4c6ba732f0bf7a75b7b86105b095d68eed9da28da3dc41b3e"
+    },
+    "original_source_sha256": {
+      "old": "work/retromcp-1.0/minecraft/src/net/minecraft/src/Enchantment.java",
+      "new": "work/retromcp-1.1/minecraft/src/net/minecraft/src/Enchantment.java",
+      "old_sha256": "8ac1a21573b8815b55b5351ff6804ea3c0d3eed83b91e63a55b129f4e8f6770d",
+      "new_sha256": "2e20a3c5c777017bd795b46d0fb0b81c6b430cfeea8e974710897f9ac5a77561"
+    },
+    "completion_blockers": []
+  },
+  "EnumEnchantmentType": {
+    "complete_delta_review": true,
+    "reason": "Every substantive1.0\u21921.1 hunk assigned below; method access/name changes alone have no existing-singleplayer behavior delta",
+    "all_delta_hunk_coverage": [
+      {
+        "delta": "append bow enum and canEnchantItem ItemBow branch; all enum/branch already exists in original1.0",
+        "authority_and_check": "bowenchant11.txt actual ItemBow selection/RNG; enchantment.rs typeBow compatibility; bow_enchantment_selection test"
+      }
+    ],
+    "rust_source_sha256": {
+      "crates/worldgen11/src/enchantment.rs": "962bb6e28a9952d4c6ba732f0bf7a75b7b86105b095d68eed9da28da3dc41b3e"
+    },
+    "original_source_sha256": {
+      "old": "work/retromcp-1.0/minecraft/src/net/minecraft/src/EnumEnchantmentType.java",
+      "new": "work/retromcp-1.1/minecraft/src/net/minecraft/src/EnumEnchantmentType.java",
+      "old_sha256": "a7c3e543e03d3b610fc04a45f09f6081526211be0e98c204c44d6ab42bc98ff4",
+      "new_sha256": "d4b75e742866d4aa11e9daa021b8a127bdc5af86363c879c96d0fbac70dd1485"
+    },
+    "completion_blockers": []
+  },
+  "EnchantmentHelper": {
+    "complete_delta_review": true,
+    "reason": "Every substantive1.0\u21921.1 hunk assigned below; method access/name changes alone have no existing-singleplayer behavior delta",
+    "all_delta_hunk_coverage": [
+      {
+        "delta": "calcItemStackEnchantability removes first bookshelf random draw, uses fixed-half term",
+        "authority_and_check": "offers11.txt420 rows; offers_match_original_11_bytecode_and_rng_tail"
+      },
+      {
+        "delta": "getEnchantmentLevel visibility private\u2192public",
+        "authority_and_check": "Method body unchanged; access widening alone has no existing singleplayer behavioral delta; new ItemBow calls covered by bows11.txt"
+      }
+    ],
+    "rust_source_sha256": {
+      "crates/worldgen11/src/enchantment.rs": "962bb6e28a9952d4c6ba732f0bf7a75b7b86105b095d68eed9da28da3dc41b3e"
+    },
+    "original_source_sha256": {
+      "old": "work/retromcp-1.0/minecraft/src/net/minecraft/src/EnchantmentHelper.java",
+      "new": "work/retromcp-1.1/minecraft/src/net/minecraft/src/EnchantmentHelper.java",
+      "old_sha256": "30df730732d97b39ee8f49330f757e0a5552da7db74c9f338cc607dc203df977",
+      "new_sha256": "067c64b46de183660c8001b886e820841714e188089a8d557e529796a5004c9f"
+    },
+    "completion_blockers": []
+  },
+  "ItemBow": {
+    "complete_delta_review": true,
+    "reason": "Every substantive1.0\u21921.1 hunk assigned below; method access/name changes alone have no existing-singleplayer behavior delta",
+    "all_delta_hunk_coverage": [
+      {
+        "delta": "release accepts creative or Infinity without consuming arrow; ordinary ammo branch preserved",
+        "authority_and_check": "bows11.txt512 charge/creative/ammo/enchantment masks; bow_release test"
+      },
+      {
+        "delta": "Power damage/Punch knockback/Flame100ticks, Infinity nonpickup; bow enchantability1",
+        "authority_and_check": "bows11.txt getter/field outputs + bowenchant11.txt actual list/RNG"
+      },
+      {
+        "delta": "new enchantments reached via original rightclick and release; actual initial ammo guard remains unchanged",
+        "authority_and_check": "bows11.txt begins-use flag/charge/output/ammo/durability/itemRand tail"
+      }
+    ],
+    "rust_source_sha256": {
+      "crates/worldgen11/src/entity/player/mechanics.rs": "0a721941b7c1060357ec5f2dabd1cb9f8ffce6b2646381863e12f548fcee896e",
+      "crates/worldgen11/src/entity/player/items.rs": "b409a6375494d5fbc48cff9ab79c0bf5bb46a0fe16d231b696ec093cb1a7fd31"
+    },
+    "original_source_sha256": {
+      "old": "work/retromcp-1.0/minecraft/src/net/minecraft/src/ItemBow.java",
+      "new": "work/retromcp-1.1/minecraft/src/net/minecraft/src/ItemBow.java",
+      "old_sha256": "de144d367fd6a49db7c4c01810bcf24f0c007fec936ecb9517400c27bcab7b71",
+      "new_sha256": "ca60d72caf9117ca1e6d806a206a80fe329e4641203d38dc72b98bb36e825b4e"
+    },
+    "completion_blockers": []
+  },
+  "EntityArrow": {
+    "complete_delta_review": true,
+    "reason": "Every substantive1.0\u21921.1 hunk assigned below; method access/name changes alone have no existing-singleplayer behavior delta",
+    "all_delta_hunk_coverage": [
+      {
+        "delta": "new damage2/knockback0 state + damage getters/setters + impact ceil speed*damage",
+        "authority_and_check": "bows11.txt + arrowhits11.txt actual impacts; bow_release/arrow_impact tests"
+      },
+      {
+        "delta": "burning hit setFire(5), horizontal knockback only after successful hit and horizontal speed>0",
+        "authority_and_check": "arrowhits11.txt original impact health/motion/fire/damage/RNG; arrow_impact test"
+      },
+      {
+        "delta": "Double damage saved, missing damage preserves default; knockback not persisted",
+        "authority_and_check": "arrownbt11.txt wrong/missing/Double cases; arrow_nbt test"
+      }
+    ],
+    "rust_source_sha256": {
+      "crates/worldgen11/src/entity/projectile.rs": "59d8bf7314ec9fe30d66adab3ccacaa4bf02d9f180056189a6f53d15e4105227",
+      "crates/worldgen11/src/entity/nbt.rs": "2bf61659b89cfb6505c6cdce38a8187d3c5fd3fc119a6f9aa6217c21addf009b"
+    },
+    "original_source_sha256": {
+      "old": "work/retromcp-1.0/minecraft/src/net/minecraft/src/EntityArrow.java",
+      "new": "work/retromcp-1.1/minecraft/src/net/minecraft/src/EntityArrow.java",
+      "old_sha256": "be91c017a37b7835e8b4bb05a200e6be44ed9f1cad92b987299dcfb50d15f7dc",
+      "new_sha256": "e31cba0ad3ae15c020961c44431f8a299c5dc6d3e40d371dc175f1976d863507"
+    },
+    "completion_blockers": []
+  },
+  "BlockLadder": {
+    "complete_delta_review": true,
+    "reason": "Every substantive1.0\u21921.1 hunk assigned below; method access/name changes alone have no existing-singleplayer behavior delta",
+    "all_delta_hunk_coverage": [
+      {
+        "delta": "collision box becomes null; entire delta is removed previous collision AABB branch",
+        "authority_and_check": "blockboxes11.txt ladder metadata0..15 \u00d7coordinates0/-19/16777217; collision-none plus selected bounds; block_boxes test"
+      }
+    ],
+    "rust_source_sha256": {
+      "crates/worldgen11/src/entity/blocks11.rs": "7b3b7d612592b367e47bc1ec3a9c20ea5769934f58a0e3d9a0efbf54606ef104",
+      "crates/worldgen11/src/entity/blocks.rs": "f37f8c39e6509678187a6cb2002b28f49f9e0673929262547a004341111cc674",
+      "crates/worldgen11/src/entity/physics.rs": "a55d97cebd8a5a3c8e565cae5ad8139b47fbedb5e0b57eaae64730afa91d27a6",
+      "crates/worldgen11/src/world/behavior.rs": "dc6d60fb0465f2d76248af964de79b1e0a7a1250116c1e0a622d3aee6ce700d0"
+    },
+    "original_source_sha256": {
+      "old": "work/retromcp-1.0/minecraft/src/net/minecraft/src/BlockLadder.java",
+      "new": "work/retromcp-1.1/minecraft/src/net/minecraft/src/BlockLadder.java",
+      "old_sha256": "24d51aee014c0bb110a8b344523aa10b4cbfa161629c64d39c33e1ab1665ad9f",
+      "new_sha256": "bef1193bb1556fb037df997340257b625a8497cc25580b9e6a6c08744ae91b3c"
+    },
+    "completion_blockers": []
+  },
+  "BlockFarmland": {
+    "complete_delta_review": true,
+    "reason": "Every substantive1.0\u21921.1 hunk assigned below; method access/name changes alone have no existing-singleplayer behavior delta",
+    "all_delta_hunk_coverage": [
+      {
+        "delta": "replace walking RNG trample override with inherited no-op walking",
+        "authority_and_check": "farmwalking11.txt5seeds block/RNG; farmland_walking test"
+      },
+      {
+        "delta": "new landing callback nextFloat<fallDistance-.5",
+        "authority_and_check": "farmland11.txt living/nonliving/ground/distance8boundaries/5seeds, real updateFallState; farmland_landings test"
+      }
+    ],
+    "rust_source_sha256": {
+      "crates/worldgen11/src/entity/blocks11.rs": "7b3b7d612592b367e47bc1ec3a9c20ea5769934f58a0e3d9a0efbf54606ef104",
+      "crates/worldgen11/src/entity/blocks.rs": "f37f8c39e6509678187a6cb2002b28f49f9e0673929262547a004341111cc674",
+      "crates/worldgen11/src/entity/physics.rs": "a55d97cebd8a5a3c8e565cae5ad8139b47fbedb5e0b57eaae64730afa91d27a6",
+      "crates/worldgen11/src/world/behavior.rs": "dc6d60fb0465f2d76248af964de79b1e0a7a1250116c1e0a622d3aee6ce700d0"
+    },
+    "original_source_sha256": {
+      "old": "work/retromcp-1.0/minecraft/src/net/minecraft/src/BlockFarmland.java",
+      "new": "work/retromcp-1.1/minecraft/src/net/minecraft/src/BlockFarmland.java",
+      "old_sha256": "2fd765c4608737f304571703d09d8e97835cac730f1b3efad40e4490ca409455",
+      "new_sha256": "209e775b6f1d8715c13d502da91d551ed61c269ae6e45f11818c075a38b4bb65"
+    },
+    "completion_blockers": []
+  },
+  "BlockFenceGate": {
+    "complete_delta_review": true,
+    "reason": "Every substantive1.0\u21921.1 hunk assigned below; method access/name changes alone have no existing-singleplayer behavior delta",
+    "all_delta_hunk_coverage": [
+      {
+        "delta": "narrow axis-dependent1.5-high collision with raw-facing test; selection state-bounds1high",
+        "authority_and_check": "blockboxes11.txt all16metadata/3float-sensitive coordinates; block_boxes test"
+      },
+      {
+        "delta": "new server neighbor hook checks powered/provider/changed0, updates openbit/SFX exactly on transition",
+        "authority_and_check": "gate11.txt320cases metadata0..15,changed0/1/64/69/93,power/remote; gate_notifications test"
+      }
+    ],
+    "rust_source_sha256": {
+      "crates/worldgen11/src/entity/blocks11.rs": "7b3b7d612592b367e47bc1ec3a9c20ea5769934f58a0e3d9a0efbf54606ef104",
+      "crates/worldgen11/src/entity/blocks.rs": "f37f8c39e6509678187a6cb2002b28f49f9e0673929262547a004341111cc674",
+      "crates/worldgen11/src/entity/physics.rs": "a55d97cebd8a5a3c8e565cae5ad8139b47fbedb5e0b57eaae64730afa91d27a6",
+      "crates/worldgen11/src/world/behavior.rs": "dc6d60fb0465f2d76248af964de79b1e0a7a1250116c1e0a622d3aee6ce700d0"
+    },
+    "original_source_sha256": {
+      "old": "work/retromcp-1.0/minecraft/src/net/minecraft/src/BlockFenceGate.java",
+      "new": "work/retromcp-1.1/minecraft/src/net/minecraft/src/BlockFenceGate.java",
+      "old_sha256": "4aa185c28f7b2b67b50d5e2039563efe1a362add5fd59689eb0034c514769627",
+      "new_sha256": "a62198f487dfa03191d0c03aa211af139d55ddb8d61e55aa3b955aa9970a16ff"
+    },
+    "completion_blockers": []
+  },
+  "BlockDoor": {
+    "complete_delta_review": true,
+    "reason": "Every substantive1.0\u21921.1 hunk assigned below; method access/name changes alone have no existing-singleplayer behavior delta",
+    "all_delta_hunk_coverage": [
+      {
+        "delta": "upper neighbor forwarding excludes self but forwards any positive change",
+        "authority_and_check": "doors11.txt upper/lower,changed0/1/self64/provider69/93,power0/1,alllower metadata0..7"
+      },
+      {
+        "delta": "lower power hook allows powered OR provider OR changed0, excludes self",
+        "authority_and_check": "doors11.txt final pairedmetadata/SFX/RNG; doors test;304total placement+neighbor cases"
+      },
+      {
+        "delta": "changed power conditions preserve hinge metadata through recursive placement notifications",
+        "authority_and_check": "doors11.txt original ItemDoor.placeDoorBlock144cases;22actual normal/flat village structure/provider grid cases EXACT in worldgen11-structures-verification.log"
+      }
+    ],
+    "rust_source_sha256": {
+      "crates/worldgen11/src/entity/player/block_hooks.rs": "456c50dd255a21a6651e75f2ce314bc223c55be6ac2b3b533a59df0b8d6da6e8",
+      "crates/worldgen11/src/structures/component.rs": "1301046367f870908ec02cf185e6fe0d3ef4eddd4e3f0453327e70fe6cce8661"
+    },
+    "original_source_sha256": {
+      "old": "work/retromcp-1.0/minecraft/src/net/minecraft/src/BlockDoor.java",
+      "new": "work/retromcp-1.1/minecraft/src/net/minecraft/src/BlockDoor.java",
+      "old_sha256": "5504a92b245f9115efee8830a23a3ce916c8f1d9458dcf89afac6746a182d34b",
+      "new_sha256": "2de82dbcf137f8cc7a042f0b681f398670cba82ef5f922c0268131f597d9d7b2"
+    },
+    "completion_blockers": []
+  },
+  "BlockRail": {
+    "complete_delta_review": true,
+    "reason": "Every substantive1.0\u21921.1 hunk assigned below; method access/name changes alone have no existing-singleplayer behavior delta",
+    "all_delta_hunk_coverage": [
+      {
+        "delta": "onBlockAdded after shape refresh invokes neighbor hook iff powered rail",
+        "authority_and_check": "railadded11.txt40 metadata0..9/power0/1/remote0/1 final block/meta/RNG; powered_rail_additions test; world/rails.rs call ordering inspected"
+      }
+    ],
+    "rust_source_sha256": {
+      "crates/worldgen11/src/entity/blocks11.rs": "7b3b7d612592b367e47bc1ec3a9c20ea5769934f58a0e3d9a0efbf54606ef104",
+      "crates/worldgen11/src/entity/blocks.rs": "f37f8c39e6509678187a6cb2002b28f49f9e0673929262547a004341111cc674",
+      "crates/worldgen11/src/entity/physics.rs": "a55d97cebd8a5a3c8e565cae5ad8139b47fbedb5e0b57eaae64730afa91d27a6",
+      "crates/worldgen11/src/world/behavior.rs": "dc6d60fb0465f2d76248af964de79b1e0a7a1250116c1e0a622d3aee6ce700d0",
+      "crates/worldgen11/src/world/rails.rs": "e974f99b62504b8041c27c446124842c336df3c56b380d58a487c71f514ddc43"
+    },
+    "original_source_sha256": {
+      "old": "work/retromcp-1.0/minecraft/src/net/minecraft/src/BlockRail.java",
+      "new": "work/retromcp-1.1/minecraft/src/net/minecraft/src/BlockRail.java",
+      "old_sha256": "996f8f783bd1ff7192a17188ba668d0ea8ca1a3706dcc3b9fc5ca55251b5f646",
+      "new_sha256": "fbb86c310e6ab83c1e244a6d8200b2850a92433f0dcaeded14153fdceb61fda4"
+    },
+    "completion_blockers": []
+  },
+  "BlockRedstoneRepeater": {
+    "complete_delta_review": true,
+    "reason": "Every substantive1.0\u21921.1 hunk assigned below; method access/name changes alone have no existing-singleplayer behavior delta",
+    "all_delta_hunk_coverage": [
+      {
+        "delta": "canProvidePower false\u2192true; sole method delta",
+        "authority_and_check": "gate11.txt and doors11.txt changedID93/not-powered/open closes only if original canProvidePower returns true; Rust entity/block_hooks.rs93|94 true; gate_notifications/doors tests. Same shared class method serves both repeater instances"
+      }
+    ],
+    "rust_source_sha256": {
+      "crates/worldgen11/src/entity/block_hooks.rs": "472e369fb32b36736fc3514e32c304792b6460f2e3cc6bf7a2c28001e70820cc",
+      "crates/worldgen11/src/world/redstone.rs": "f67e8bb0f9eb6f1b670047c94fb4ef6f84703d6fba4508b2ef3edf29d83cc6c6"
+    },
+    "original_source_sha256": {
+      "old": "work/retromcp-1.0/minecraft/src/net/minecraft/src/BlockRedstoneRepeater.java",
+      "new": "work/retromcp-1.1/minecraft/src/net/minecraft/src/BlockRedstoneRepeater.java",
+      "old_sha256": "1dd28e2dd5765193becd968dab7fae33ca36ddaa8d35ead032619339d914154b",
+      "new_sha256": "0f7da5b6e032e4777fc44dc46dff85a4abc19c843c7d5fb8de4ca5e5a2f66831"
+    },
+    "completion_blockers": []
+  },
+  "EntityMagmaCube": {
+    "complete_delta_review": true,
+    "reason": "Every substantive1.0\u21921.1 hunk assigned below; method access/name changes alone have no existing-singleplayer behavior delta",
+    "all_delta_hunk_coverage": [
+      {
+        "delta": "getDropItemId0\u2192magmaCream378; size>1 drop count nextInt4-2 plus positive looting draw; size1 consumes no drop RNG",
+        "authority_and_check": "magma11.txt900size/looting/seed cases; magma_drops test"
+      },
+      {
+        "delta": "armor method protected numbered\u2192public getTotalArmorValue",
+        "authority_and_check": "Body remains size*3; access/name change alone has no reachable behavioral delta"
+      }
+    ],
+    "rust_source_sha256": {
+      "crates/worldgen11/src/entity/living.rs": "607b0b8ca26f3fe261198bfa1b83887bc0c77ca5e65e09092635847370a4aec2",
+      "crates/worldgen11/src/entity/sheep11.rs": "4e306a4be8bd72a2611c5f820664719a60b91aa07660ffc3deaf182f0f782fdb"
+    },
+    "original_source_sha256": {
+      "old": "work/retromcp-1.0/minecraft/src/net/minecraft/src/EntityMagmaCube.java",
+      "new": "work/retromcp-1.1/minecraft/src/net/minecraft/src/EntityMagmaCube.java",
+      "old_sha256": "b1380deeb78c9f2eeade54f6d9effdeb3a5e785cd8b9e8f32ebe54769e2deb59",
+      "new_sha256": "e473ca5bb225857718624dde61814b3c2a1384e6b3de7f92f42721e62d7ee7ce"
+    },
+    "completion_blockers": []
+  },
+  "ContainerCreative": {
+    "complete_delta_review": true,
+    "reason": "Every substantive1.0\u21921.1 hunk assigned below; method access/name changes alone have no existing-singleplayer behavior delta",
+    "all_delta_hunk_coverage": [
+      {
+        "delta": "generic item loop additionally excludes383, then appends egg map keys in HashMap order",
+        "authority_and_check": "creative11.bin/text285actual stacks,20egg tail; creative_inventory test; potion exclusion inherited"
+      }
+    ],
+    "rust_source_sha256": {
+      "crates/worldgen11/src/block/visual181.rs": "ba911726abb798fde946c567cc0f49828e6ce83f3e7f9faacf33450a1dcaf3a8",
+      "crates/worldgen11/src/block/creative11.bin": "25327cd25069c5af9f9411f887603fcab143ebe49943eef0137a9e0999e33d21"
+    },
+    "original_source_sha256": {
+      "old": "work/retromcp-1.0/minecraft/src/net/minecraft/src/ContainerCreative.java",
+      "new": "work/retromcp-1.1/minecraft/src/net/minecraft/src/ContainerCreative.java",
+      "old_sha256": "d0b867fdda6c1059bff61dd09b89443a4c3d01d4c75162ecc9c48952e9c21ab8",
+      "new_sha256": "917efa252be6955d43bfba167f2b9d10fa4084dc85814d4483c78f158a4132b3"
+    },
+    "completion_blockers": []
+  },
+  "SlotCrafting": {
+    "complete_delta_review": true,
+    "reason": "Every substantive1.0\u21921.1 hunk assigned below; method access/name changes alone have no existing-singleplayer behavior delta",
+    "all_delta_hunk_coverage": [
+      {
+        "delta": "construct remainder; try player inventory then matrix restore iff empty else drop",
+        "authority_and_check": "remainders11.txt8real SlotCrafting callbacks full/not-full inventory\u00d7inputcount1/2\u00d7creative; crafting_remainders test"
+      },
+      {
+        "delta": "container-leave callback guards inventory route",
+        "authority_and_check": "Original Item.func_46059_i always true and full source has no overrides; only Item/SlotCrafting references. Default true is implemented; false branch is unreachable for existing item registry"
+      }
+    ],
+    "rust_source_sha256": {
+      "crates/worldgen11/src/container/mod.rs": "44962fefaa0cdaba97e752ac14bd5251055b945fda9d5da046126858376dd8f8"
+    },
+    "original_source_sha256": {
+      "old": "work/retromcp-1.0/minecraft/src/net/minecraft/src/SlotCrafting.java",
+      "new": "work/retromcp-1.1/minecraft/src/net/minecraft/src/SlotCrafting.java",
+      "old_sha256": "579172ee614506fc93f02016674aa43118d3e2085915798a7ba476b7004ec530",
+      "new_sha256": "741e9f2fee7de68052856d6174b48bf96b10184b0447a90717a99d2d12083cd0"
+    },
+    "completion_blockers": []
+  },
+  "EnchantmentArrowDamage": {
+    "complete_delta_review": true,
+    "reason": "Every substantive1.0\u21921.1 hunk assigned below; method access/name changes alone have no existing-singleplayer behavior delta",
+    "all_delta_hunk_coverage": [
+      {
+        "delta": "new constructor Bow type/name and min/max enchantability/maxlevel; Power:maxlevel5,min1+10*(level-1),max min+15",
+        "authority_and_check": "Original BowSlice11.buildEnchantmentList305cases (5seeds\u00d7power0..60) with exact weighted selected IDs/levels and RNG; every reachable bow level range represented. Source literal methods matched to Rust enchantment.rs; bow_enchantment_selection test"
+      }
+    ],
+    "rust_source_sha256": {
+      "crates/worldgen11/src/enchantment.rs": "962bb6e28a9952d4c6ba732f0bf7a75b7b86105b095d68eed9da28da3dc41b3e"
+    },
+    "original_source_sha256": {
+      "old": "work/retromcp-1.0/minecraft/src/net/minecraft/src/EnchantmentArrowDamage.java",
+      "new": "work/retromcp-1.1/minecraft/src/net/minecraft/src/EnchantmentArrowDamage.java",
+      "old_sha256": null,
+      "new_sha256": "ea6852daabe004ad6436c2603fe0f4c5dfa9d6037cc1dc464e606f3c23552f02"
+    },
+    "completion_blockers": []
+  },
+  "EnchantmentArrowKnockback": {
+    "complete_delta_review": true,
+    "reason": "Every substantive1.0\u21921.1 hunk assigned below; method access/name changes alone have no existing-singleplayer behavior delta",
+    "all_delta_hunk_coverage": [
+      {
+        "delta": "new constructor Bow type/name and min/max enchantability/maxlevel; Punch:maxlevel2,min12+20*(level-1),max min+25",
+        "authority_and_check": "Original BowSlice11.buildEnchantmentList305cases (5seeds\u00d7power0..60) with exact weighted selected IDs/levels and RNG; every reachable bow level range represented. Source literal methods matched to Rust enchantment.rs; bow_enchantment_selection test"
+      }
+    ],
+    "rust_source_sha256": {
+      "crates/worldgen11/src/enchantment.rs": "962bb6e28a9952d4c6ba732f0bf7a75b7b86105b095d68eed9da28da3dc41b3e"
+    },
+    "original_source_sha256": {
+      "old": "work/retromcp-1.0/minecraft/src/net/minecraft/src/EnchantmentArrowKnockback.java",
+      "new": "work/retromcp-1.1/minecraft/src/net/minecraft/src/EnchantmentArrowKnockback.java",
+      "old_sha256": null,
+      "new_sha256": "21fc254c8747085721ef994a5c81cabbc4fbb3fddc9656d9a63c96775f04682e"
+    },
+    "completion_blockers": []
+  },
+  "EnchantmentArrowFire": {
+    "complete_delta_review": true,
+    "reason": "Every substantive1.0\u21921.1 hunk assigned below; method access/name changes alone have no existing-singleplayer behavior delta",
+    "all_delta_hunk_coverage": [
+      {
+        "delta": "new constructor Bow type/name and min/max enchantability/maxlevel; Flame:maxlevel1,min20,max50",
+        "authority_and_check": "Original BowSlice11.buildEnchantmentList305cases (5seeds\u00d7power0..60) with exact weighted selected IDs/levels and RNG; every reachable bow level range represented. Source literal methods matched to Rust enchantment.rs; bow_enchantment_selection test"
+      }
+    ],
+    "rust_source_sha256": {
+      "crates/worldgen11/src/enchantment.rs": "962bb6e28a9952d4c6ba732f0bf7a75b7b86105b095d68eed9da28da3dc41b3e"
+    },
+    "original_source_sha256": {
+      "old": "work/retromcp-1.0/minecraft/src/net/minecraft/src/EnchantmentArrowFire.java",
+      "new": "work/retromcp-1.1/minecraft/src/net/minecraft/src/EnchantmentArrowFire.java",
+      "old_sha256": null,
+      "new_sha256": "4f060453a0bcba1313c04d29a0cea1812e6f4ec48630dc9a8905a81627f329fe"
+    },
+    "completion_blockers": []
+  },
+  "EnchantmentArrowInfinite": {
+    "complete_delta_review": true,
+    "reason": "Every substantive1.0\u21921.1 hunk assigned below; method access/name changes alone have no existing-singleplayer behavior delta",
+    "all_delta_hunk_coverage": [
+      {
+        "delta": "new constructor Bow type/name and min/max enchantability/maxlevel; Infinity:maxlevel1,min20,max50",
+        "authority_and_check": "Original BowSlice11.buildEnchantmentList305cases (5seeds\u00d7power0..60) with exact weighted selected IDs/levels and RNG; every reachable bow level range represented. Source literal methods matched to Rust enchantment.rs; bow_enchantment_selection test"
+      }
+    ],
+    "rust_source_sha256": {
+      "crates/worldgen11/src/enchantment.rs": "962bb6e28a9952d4c6ba732f0bf7a75b7b86105b095d68eed9da28da3dc41b3e"
+    },
+    "original_source_sha256": {
+      "old": "work/retromcp-1.0/minecraft/src/net/minecraft/src/EnchantmentArrowInfinite.java",
+      "new": "work/retromcp-1.1/minecraft/src/net/minecraft/src/EnchantmentArrowInfinite.java",
+      "old_sha256": null,
+      "new_sha256": "5cc49efd8a509103925e965d20fded1ebda44b187281657bf9f592663164bbd2"
+    },
+    "completion_blockers": []
+  },
+  "BiomeGenBase": {
+    "complete_delta_review": true,
+    "reason": "static singleton initializers: revised heights/climate and five new biome IDs16..20, exact names/colors/heights/climate and inherited dispatch",
+    "rust_source_sha256": {
+      "crates/worldgen11/src/biome.rs": "8c83b468a6a56e831a1ccf49a187de07c38f8d9245f3786ceedcfd5b54e504e8",
+      "crates/worldgen11/src/decorator10.rs": "015bd08caf451c79442fbf891144c80bad616f994eec0b984666227e8b097f5e",
+      "crates/worldgen11/src/weighted.rs": "3d9ee2dd41a014aedb31e723b904e9881ba3f271f7a7ff0a3174803f68ecb7fb",
+      "crates/worldgen11/src/populate.rs": "621a941ff8cb99f72c9573c1e395ee5d095bb1810fa6203607bbeedce14871e4"
+    },
+    "original_source_sha256": {
+      "1.0": "80f6c86081e95b7ef4f41445c535b166812569631de873005d88d93a9bc88250",
+      "1.1": "39bae55fd0224c744482df9402d27abde6f3794de364539a115a3d68b6cbd1f8"
+    },
+    "completion_blockers": []
+  },
+  "BiomeGenBeach": {
+    "complete_delta_review": true,
+    "reason": "whole new constructor: creature clearing, sand top/filler, trees=-999, dead bushes/reeds/cacti=0",
+    "rust_source_sha256": {
+      "crates/worldgen11/src/biome.rs": "8c83b468a6a56e831a1ccf49a187de07c38f8d9245f3786ceedcfd5b54e504e8",
+      "crates/worldgen11/src/decorator10.rs": "015bd08caf451c79442fbf891144c80bad616f994eec0b984666227e8b097f5e",
+      "crates/worldgen11/src/weighted.rs": "3d9ee2dd41a014aedb31e723b904e9881ba3f271f7a7ff0a3174803f68ecb7fb",
+      "crates/worldgen11/src/populate.rs": "621a941ff8cb99f72c9573c1e395ee5d095bb1810fa6203607bbeedce14871e4"
+    },
+    "original_source_sha256": {
+      "1.0": null,
+      "1.1": "b0c1114131844f09cd310d94baaf76d8b8d20df953ff94b6f9801891b9c66095"
+    },
+    "completion_blockers": []
+  },
+  "BiomeGenSwamp": {
+    "complete_delta_review": true,
+    "reason": "constructor waterColorMultiplier=14745518",
+    "rust_source_sha256": {
+      "crates/worldgen11/src/biome.rs": "8c83b468a6a56e831a1ccf49a187de07c38f8d9245f3786ceedcfd5b54e504e8",
+      "crates/worldgen11/src/decorator10.rs": "015bd08caf451c79442fbf891144c80bad616f994eec0b984666227e8b097f5e",
+      "crates/worldgen11/src/weighted.rs": "3d9ee2dd41a014aedb31e723b904e9881ba3f271f7a7ff0a3174803f68ecb7fb",
+      "crates/worldgen11/src/populate.rs": "621a941ff8cb99f72c9573c1e395ee5d095bb1810fa6203607bbeedce14871e4"
+    },
+    "original_source_sha256": {
+      "1.0": "72acbf6a6b23b8aaf32932be3e52ce05a36d284a368aa42e1eb5b22f61dd183a",
+      "1.1": "c112db01da1ec55a5708d02f03e2ccf17ebdc913a117f1d27f55368616fee333"
+    },
+    "completion_blockers": []
+  },
+  "ChunkProviderGenerate": {
+    "complete_delta_review": true,
+    "reason": "constructor MapGenVillage(0); remaining changes private field visibility, no terrain behavior change",
+    "rust_source_sha256": {
+      "crates/worldgen11/src/overworld.rs": "c168164956549af7fc7eed64a818c1bb51dc007ae4d5e39375be3357c67c0bfc",
+      "crates/worldgen11/src/populate.rs": "621a941ff8cb99f72c9573c1e395ee5d095bb1810fa6203607bbeedce14871e4",
+      "crates/worldgen11/src/world/provider181.rs": "27fa23f1c2ef34c1a36c6776469c72d4f55213d177bce6dbb57d516587aa4e70"
+    },
+    "original_source_sha256": {
+      "1.0": "94ae461b8315237d3394d2bff1a57f63aef14e17e2d0bf134a07e4328d02f0c5",
+      "1.1": "69570251eac808193c1491f6f8c56e5bad3cca92667d9b79bc079f73bbb9a273"
+    },
+    "completion_blockers": []
+  },
+  "ComponentVillage": {
+    "complete_delta_review": true,
+    "reason": "getAverageGroundLevel clamps top-solid/liquid height to provider spawn height rather than64; both normal64 and flat4 generated pieces compared",
+    "rust_source_sha256": {
+      "crates/worldgen11/src/structures/village.rs": "943d648aa1973ea9d1d13943b72fae6f565bf610b315c0ba47b710575f0c5f6b",
+      "crates/worldgen11/src/structures/village_generated.rs": "8910006a84500e642cd5bd5c0dd87d367f57db21d467aefc53b527e3b44bf48a",
+      "crates/worldgen11/src/structures/locations.rs": "d4431e2f7c9d6b4a31c46c6ff8eb470bf7809d7d6994efef022cd720bdab32fa",
+      "crates/worldgen11/src/structures/component.rs": "1301046367f870908ec02cf185e6fe0d3ef4eddd4e3f0453327e70fe6cce8661"
+    },
+    "original_source_sha256": {
+      "1.0": "b6b02a150437cd424af8e358fdf334a291c4462461ce2b80374e92536b026988",
+      "1.1": "355cd6438dc1748228d5bbf8c4849df02b72e87be8ef08f7795dd51249f5b42b"
+    },
+    "completion_blockers": []
+  },
+  "ComponentVillageHouse2": {
+    "complete_delta_review": true,
+    "reason": "new hasMadeChest state; once-only clipped local(5,1,5) chest,3+nextInt(6), complete ordered13-entry weight/stack table; repeated clips and final chest inventory/RNG compared",
+    "rust_source_sha256": {
+      "crates/worldgen11/src/structures/village.rs": "943d648aa1973ea9d1d13943b72fae6f565bf610b315c0ba47b710575f0c5f6b",
+      "crates/worldgen11/src/structures/village_generated.rs": "8910006a84500e642cd5bd5c0dd87d367f57db21d467aefc53b527e3b44bf48a",
+      "crates/worldgen11/src/structures/locations.rs": "d4431e2f7c9d6b4a31c46c6ff8eb470bf7809d7d6994efef022cd720bdab32fa",
+      "crates/worldgen11/src/structures/component.rs": "1301046367f870908ec02cf185e6fe0d3ef4eddd4e3f0453327e70fe6cce8661"
+    },
+    "original_source_sha256": {
+      "1.0": "4d5e74e864fa86f105a5de87e8e1856dec29d48304690a2979b83d8ca6742e84",
+      "1.1": "de11ea402759bcf55d90ff6e17f8b035d655a6a0a7ee5f4b6412216e4c8e0c61"
+    },
+    "completion_blockers": []
+  },
+  "EnumWorldType": {
+    "complete_delta_review": true,
+    "reason": "whole new enum: DEFAULT/FLAT values, exact case-sensitive saved-name parsing, nullable unknown, generator.default/generator.flat translation keys",
+    "rust_source_sha256": {
+      "crates/worldgen11/src/storage.rs": "3c60d40d22db9b0dd5f66bb0f5b64fdccf2497faad9be833e366eccab9a24b46",
+      "crates/worldgen11/src/storage181.rs": "c53c48e218f045e183132cfac491d5f4a05f8c595085ee4e8e0b9b614c824b1d",
+      "crates/worldgen11/src/save_format_old181.rs": "f90fc8df865dc9da2aa633af593bb40a67b111e40ac9a9c3de52550cd66f42ed",
+      "crates/worldgen11/src/convert.rs": "3aa52a5916de569662a6ebe765b4e5e4a7f6ac7b7d1e62a0d58b0d0bf4a61482"
+    },
+    "original_source_sha256": {
+      "1.0": null,
+      "1.1": "c88dcb94da5c7b055d389b179e9d814ba46da8b925cf5d8ba0a14b17c44a4dc5"
+    },
+    "completion_blockers": []
+  },
+  "GenLayer": {
+    "complete_delta_review": true,
+    "reason": "func_35497_a graph adds Hills before zoom, Shore and SwampRivers at prescribed stages and exact initialization; explicit graph four-output oracle, six rectangles/six seeds",
+    "rust_source_sha256": {
+      "crates/worldgen11/src/genlayer.rs": "01f65e70c84445b405b4af359b4f7b80f3487340df683ab947430acad4404aa4",
+      "crates/worldgen11/src/intcache.rs": "25dbd85fccde32040717022cb4bedc4ab35914ab92607ec7200dcd640c4598ff"
+    },
+    "original_source_sha256": {
+      "1.0": "28fa33a43b18da7bd5ed512b59bf1a95d59404491818b11fddf9bfc6b7ed69da",
+      "1.1": "46cf6904443dac0ce9be02b6f36aa28f459ed9e69a0addee874a0866a82ae3e9"
+    },
+    "completion_blockers": []
+  },
+  "MapGenVillage": {
+    "complete_delta_review": true,
+    "reason": "explicit constructor size stored and propagated into StructureVillageStart; size0 normal/size1 flat exact layout/map/block/RNG fixtures",
+    "rust_source_sha256": {
+      "crates/worldgen11/src/structures/village.rs": "943d648aa1973ea9d1d13943b72fae6f565bf610b315c0ba47b710575f0c5f6b",
+      "crates/worldgen11/src/structures/village_generated.rs": "8910006a84500e642cd5bd5c0dd87d367f57db21d467aefc53b527e3b44bf48a",
+      "crates/worldgen11/src/structures/locations.rs": "d4431e2f7c9d6b4a31c46c6ff8eb470bf7809d7d6994efef022cd720bdab32fa",
+      "crates/worldgen11/src/structures/component.rs": "1301046367f870908ec02cf185e6fe0d3ef4eddd4e3f0453327e70fe6cce8661"
+    },
+    "original_source_sha256": {
+      "1.0": "ae1849fa51f335657d1b0888a472d5a9926c391b69a78ef5095e40b00ee2bde8",
+      "1.1": "71ef0b2fc471be87933de4358486dfe21cb93b6ed1283650157de3de6bad3ae1"
+    },
+    "completion_blockers": []
+  },
+  "StructureBoundingBox": {
+    "complete_delta_review": true,
+    "reason": "four-int constructor y range1..512 rather than0..65536; original flat well clipping distinguishes y0; literal constructor bounds plus boundary unit",
+    "rust_source_sha256": {
+      "crates/worldgen11/src/structures.rs": "c429031ac51fd761ded0f678a7f4e584946c2732d67c5f96aa1cc3726391920d",
+      "crates/worldgen11/src/structures/component.rs": "1301046367f870908ec02cf185e6fe0d3ef4eddd4e3f0453327e70fe6cce8661"
+    },
+    "original_source_sha256": {
+      "1.0": "f22c18c3a5f9ca03ddc7a982dcde767dd9c8faf98935c9feda00cdb09c73272c",
+      "1.1": "d7d8272a9302217c3ec5c55c8d207e899530396b503d2992776aec28ac82a10f"
+    },
+    "completion_blockers": []
+  },
+  "StructureVillageStart": {
+    "complete_delta_review": true,
+    "reason": "constructor accepts village size and passes through weighted pieces/start; downstream same traversal; size0/1 exact component graph/layout/map/RNG",
+    "rust_source_sha256": {
+      "crates/worldgen11/src/structures/village.rs": "943d648aa1973ea9d1d13943b72fae6f565bf610b315c0ba47b710575f0c5f6b",
+      "crates/worldgen11/src/structures/village_generated.rs": "8910006a84500e642cd5bd5c0dd87d367f57db21d467aefc53b527e3b44bf48a",
+      "crates/worldgen11/src/structures/locations.rs": "d4431e2f7c9d6b4a31c46c6ff8eb470bf7809d7d6994efef022cd720bdab32fa",
+      "crates/worldgen11/src/structures/component.rs": "1301046367f870908ec02cf185e6fe0d3ef4eddd4e3f0453327e70fe6cce8661"
+    },
+    "original_source_sha256": {
+      "1.0": "1e461c657b41333aa2dd517d3fa21bacc193cc4af4d9a63a3b143971d7f02d69",
+      "1.1": "841fee0593b71d811514b0bfc107e254fab7668fe92445cff9392acd9e376ac6"
+    },
+    "completion_blockers": []
+  },
+  "WorldChunkManager": {
+    "complete_delta_review": true,
+    "reason": "getBiomesToSpawnIn ordered list now Forest,Plains,Taiga,TaigaHills,ForestHills; changed list drives original six-seed normal spawn selection and complete query traces",
+    "rust_source_sha256": {
+      "crates/worldgen11/src/biome.rs": "8c83b468a6a56e831a1ccf49a187de07c38f8d9245f3786ceedcfd5b54e504e8"
+    },
+    "original_source_sha256": {
+      "1.0": "9753f8e69f34c7a5155076eedbc54fb8a85cef7d1893e349a9bfc2abe71f297e",
+      "1.1": "41a05fbca9e8ad82472c429d21671a5ae110321e5b3e2013b739418adb19da16"
+    },
+    "completion_blockers": []
+  },
+  "WorldChunkManagerHell": {
+    "complete_delta_review": true,
+    "reason": "new func_35557_b generation-biome array override fills fixed biome prefix and preserves oversized reused tail; original fixed manager six-seed full arrays/scalars/search/RNG",
+    "rust_source_sha256": {
+      "crates/worldgen11/src/biome.rs": "8c83b468a6a56e831a1ccf49a187de07c38f8d9245f3786ceedcfd5b54e504e8"
+    },
+    "original_source_sha256": {
+      "1.0": "b83d1c1fef1656b4f499d44c5ec8d54fe00f763133808ac74fba0126f6b9a3e8",
+      "1.1": "563424d715e0ace4a9efd4be25696bb0d276f07f9ad7a420a9a75ff95e6a04c2"
+    },
+    "completion_blockers": []
+  },
+  "World": {
+    "complete_delta_review": true,
+    "reason": "changed getInitialSpawnLocation provider-height queries and nonrespawn spawn height; randomDisplayUpdates air/RNG/depthfog ordering; new horizon0/63 getter; all changes covered by spawn/depthfog/provider matrices",
+    "rust_source_sha256": {
+      "crates/worldgen11/src/world/mod.rs": "bc6a6777e948aacb68e9581c38ae9b09358abe82af5aaafcb1a5afdebd44a162",
+      "crates/worldgen11/src/world/dimension.rs": "178e1786a5e89cca4abbb710a97ceb8e1d34b54f91687d1e87387643e6cdcb95",
+      "crates/worldgen11/src/scenario.rs": "f2cd72d2c00e2f314ba93bcff85d635bf88240ebc61e2bc6f22c80baafe30d8a",
+      "crates/worldgen11/src/world/spawn181.rs": "a6a6da75654fd6d99ebefc019505bc54b023289195f0dda284774cda48059e7c",
+      "crates/worldgen11/src/entity/client_tick.rs": "8a31770c6435c0bf891330c3805d45ee10b345adbee34815a3bab1da8d97f61c"
+    },
+    "original_source_sha256": {
+      "1.0": "8ba535e2cad6014b1f2168d5eeb7b566301f537056615aab3175a8b70b5e2008",
+      "1.1": "4f6a58db1a476646e33cac0f43e58dbe75eb2ef85e12391cec5675a36ef4c270"
+    },
+    "completion_blockers": []
+  },
+  "WorldProvider": {
+    "complete_delta_review": true,
+    "reason": "new cached world type; flat fixedPlains manager/Flat provider vs default manager/Generate; new spawn-height/depthfog/void-factor scalars; direct fixed-manager/raw-flat/actual-flat probes and six-context scalar matrix",
+    "rust_source_sha256": {
+      "crates/worldgen11/src/world/mod.rs": "bc6a6777e948aacb68e9581c38ae9b09358abe82af5aaafcb1a5afdebd44a162",
+      "crates/worldgen11/src/world/dimension.rs": "178e1786a5e89cca4abbb710a97ceb8e1d34b54f91687d1e87387643e6cdcb95",
+      "crates/worldgen11/src/scenario.rs": "f2cd72d2c00e2f314ba93bcff85d635bf88240ebc61e2bc6f22c80baafe30d8a",
+      "crates/worldgen11/src/world/spawn181.rs": "a6a6da75654fd6d99ebefc019505bc54b023289195f0dda284774cda48059e7c",
+      "crates/client11/src/render/player_view.rs": "9e688092f5b59b3955a3e8b4e1ffc4e922e89e1e9cf64270d849d22b927c64bc",
+      "crates/client11/src/render/camera.rs": "cb5c8c785b36184dbfd9e7b827adbe70d7885fae8cf91085eba5d2cb2c451387",
+      "crates/client11/src/render/gpu.rs": "a31ab1cbc9a3c6374941b8d312f25426e12cd71669d0ef275d6e429effd6eee2"
+    },
+    "original_source_sha256": {
+      "1.0": "536c4683473312bd6571fc5b57e868b46cf7ee0a2d4c8efbb09517a61de027be",
+      "1.1": "c22e161fecedbf3b8e76776973e7606728fd3ff73c42a465b71695cbb29c9530"
+    },
+    "completion_blockers": []
+  },
+  "WorldProviderEnd": {
+    "complete_delta_review": true,
+    "reason": "new func_46066_g returns50; scalar matrix and nonrespawn initial-spawn traces; entrance getter only renamed, no new runtime behavior",
+    "rust_source_sha256": {
+      "crates/worldgen11/src/world/mod.rs": "bc6a6777e948aacb68e9581c38ae9b09358abe82af5aaafcb1a5afdebd44a162",
+      "crates/worldgen11/src/world/dimension.rs": "178e1786a5e89cca4abbb710a97ceb8e1d34b54f91687d1e87387643e6cdcb95",
+      "crates/worldgen11/src/scenario.rs": "f2cd72d2c00e2f314ba93bcff85d635bf88240ebc61e2bc6f22c80baafe30d8a",
+      "crates/worldgen11/src/world/spawn181.rs": "a6a6da75654fd6d99ebefc019505bc54b023289195f0dda284774cda48059e7c"
+    },
+    "original_source_sha256": {
+      "1.0": "4239241a4b167f4edbe71a1b6d754dccefb14ec15409fb4da083de796e349a23",
+      "1.1": "122101ebe9ba6571a4f00038fc7d5f4b1f584e1cc0b0ef7c0d11d97cc4594d9c"
+    },
+    "completion_blockers": []
+  },
+  "WorldSettings": {
+    "complete_delta_review": true,
+    "reason": "immutable fifth world type constructor argument and getter; original WorldInfo(settings) invokes getter, DEFAULT/FLAT creation/save/reopen compared",
+    "rust_source_sha256": {
+      "crates/worldgen11/src/entity/player/food.rs": "25e49a13266974a0fba43bf02f4739310137367389d42bec0c0c91ff980b9849",
+      "crates/worldgen11/src/scenario.rs": "f2cd72d2c00e2f314ba93bcff85d635bf88240ebc61e2bc6f22c80baafe30d8a"
+    },
+    "original_source_sha256": {
+      "1.0": "667dcaa7a8c1f90b9cc76ff0b4b58d5d865d8e30a8d575a221767f044e523b20",
+      "1.1": "92d1f67ec774d4709159975555567c40c5297e22713682606bf808c858f5210e"
+    },
+    "completion_blockers": []
+  }
+}
