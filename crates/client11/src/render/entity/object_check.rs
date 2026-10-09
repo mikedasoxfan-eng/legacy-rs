@@ -708,6 +708,12 @@ pub fn biped_release_check(path: &str) -> bool {
 }
 
 #[test]
+#[ignore = "requires original 1.1 biped workflow fixture"]
+fn biped_workflow_matches_original_11() {
+    assert!(biped_release_check(&std::env::var("BIPED_WORKFLOW11_FIXTURE").unwrap()));
+}
+
+#[test]
 #[ignore = "requires original 1.1 sheep renderer fixture"]
 fn sheep_live_bridge_models_and_renderer_match_original_11() {
     use super::models::{Model, ModelKind};

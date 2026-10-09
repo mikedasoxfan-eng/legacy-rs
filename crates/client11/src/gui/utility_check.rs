@@ -126,6 +126,14 @@ pub fn check(path: &str) -> bool {
     }
 }
 /// Exhaustive original-bytecode width comparison for BMP and isolated UTF-16 units.
+#[test]
+#[ignore = "requires original 1.1 font draw and width fixtures"]
+fn complete_font_primitives_match_original_11() {
+    let base = std::env::var("FONT_PRIMITIVES11_DIRECTORY").unwrap();
+    assert!(check_font_metrics11(&format!("{base}/fontmetrics11.bin")));
+    assert!(check_font_draw11(&format!("{base}/fontdraw11.bin")));
+}
+
 pub fn check_font_metrics11(path: &str) -> bool {
     let mut jar = crate::assets::Jar::open().unwrap();
     let image = jar.image("font/default.png").unwrap();

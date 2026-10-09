@@ -1,0 +1,459 @@
+{
+  "hash_rule": "progress.py canonical CRLF->LF text; binary exact",
+  "classes": [
+    {
+      "name": "FontRenderer",
+      "normalized_changed_lines": 251,
+      "disposition": "complete_for_installed_resource_singleplayer_runtime_delta",
+      "review": [
+        {
+          "original_11_lines": "3-23,25-137",
+          "behavior": "Replace display lists with direct glyph rendering; retain width calculation and anaglyph palette arithmetic; load 65536 glyph sizes and page cache.",
+          "rust": "gui/font.rs:FontRenderer::new_with_anaglyph",
+          "evidence": [
+            "draw",
+            "metrics",
+            "source review: unchanged width/anaglyph arithmetic"
+          ]
+        },
+        {
+          "original_11_lines": "139-171",
+          "behavior": "Default atlas triangle strip, charWidth-.01 advance and height7.99.",
+          "rust": "gui/font.rs:draw_glyph",
+          "evidence": [
+            "draw"
+          ]
+        },
+        {
+          "original_11_lines": "173-189",
+          "behavior": "Unicode page glyph_%02X.png lazy load/cache in first draw order; allocate-and-bind original seam.",
+          "rust": "gui/render.rs:GuiRenderer::render, glyph_pages",
+          "evidence": [
+            "draw",
+            "source review of actual GPU resource routing"
+          ]
+        },
+        {
+          "original_11_lines": "191-221",
+          "behavior": "Signed byte unsigned-shift Unicode drawing, zero-size skip, precise UV/advance and cached-page binding.",
+          "rust": "gui/font.rs:draw_glyph",
+          "evidence": [
+            "draw"
+          ]
+        },
+        {
+          "original_11_lines": "223-248",
+          "behavior": "Public draw and shadow bidi boundary, two ordered shadow/main passes.",
+          "rust": "gui/font.rs:draw_utf16_with_shadow,render_utf16",
+          "evidence": [
+            "public_draw",
+            "shared_sign",
+            "workflow"
+          ]
+        },
+        {
+          "original_11_lines": "250-278",
+          "behavior": "Java8 Bidi default level -2, visual runs, duplicate run first-match, odd UTF16 reverse and parentheses mirroring.",
+          "rust": "gui/bidi11.rs:reorder_utf16",
+          "evidence": [
+            "bidi",
+            "public_draw",
+            "wrap"
+          ]
+        },
+        {
+          "original_11_lines": "280-306",
+          "behavior": "Formatting colors, obfuscation same-width RNG (remove old extra random color), index>0 dispatch, space and Unicode flags.",
+          "rust": "gui/font.rs:utf16_commands",
+          "evidence": [
+            "draw",
+            "public_draw",
+            "shared_sign"
+          ]
+        },
+        {
+          "original_11_lines": "308-318",
+          "behavior": "Private direct rendering alpha mask0xfc000000, shadow RGB arithmetic, float positions, no matrix/display-list operations.",
+          "rust": "gui/font.rs:render_ordered_utf16",
+          "evidence": [
+            "draw",
+            "public_draw"
+          ]
+        },
+        {
+          "original_11_lines": "320-345",
+          "behavior": "Unicode-aware widths with signed shift and end>7 full-width special case.",
+          "rust": "gui/font.rs:get_utf16_width",
+          "evidence": [
+            "metrics",
+            "wrap"
+          ]
+        },
+        {
+          "original_11_lines": "347-413",
+          "behavior": "Wrapped public methods reorder once; newline recursion uses private ordered helper and retains original nonshadow recursive behavior.",
+          "rust": "gui/font.rs:draw_split_outcome,visit_wrapped_units",
+          "evidence": [
+            "wrap"
+          ]
+        },
+        {
+          "original_11_lines": "415-457",
+          "behavior": "FONT_HEIGHT rename only; splitStringWidth inherited algorithm uses new Unicode width.",
+          "rust": "gui/font.rs:split_height_utf16",
+          "evidence": [
+            "metrics",
+            "wrap"
+          ]
+        },
+        {
+          "original_11_lines": "459-465",
+          "behavior": "Set Unicode/Bidi flags.",
+          "rust": "gui/font.rs:unicode,bidi; gui/mod.rs:select_language",
+          "evidence": [
+            "public_draw",
+            "workflow",
+            "shared_sign"
+          ]
+        }
+      ],
+      "raw_hunk_headers": [
+        "@@ -2,7 +2,8 @@",
+        "@@ -10,195 +11,306 @@",
+        "@@ -208,12 +320,23 @@",
+        "@@ -223,14 +346,30 @@",
+        "@@ -256,7 +395,7 @@",
+        "@@ -266,7 +405,7 @@",
+        "@@ -300,20 +439,28 @@"
+      ],
+      "original_sources": [
+        {
+          "path": "retromcp-1.0\\minecraft\\src\\net\\minecraft\\src\\FontRenderer.java",
+          "sha256": "fe8c0e06e0cae78a05e7ad8ea466d256b60730a20b3b22b9e16d0f95703106ba",
+          "bytes": 8877
+        },
+        {
+          "path": "retromcp-1.1\\minecraft\\src\\net\\minecraft\\src\\FontRenderer.java",
+          "sha256": "7bcaf37b288eddfa9bc0c736542557ae62c4aabd416cd7b412a3b210503b997c",
+          "bytes": 12721
+        }
+      ],
+      "blockers_in_declared_domain": []
+    },
+    {
+      "name": "StringTranslate",
+      "normalized_changed_lines": 90,
+      "disposition": "complete_for_installed_resource_singleplayer_runtime_delta",
+      "review": [
+        {
+          "original_11_lines": "10-20",
+          "behavior": "Add languages/code/Unicode state; constructor loads languages then English.",
+          "rust": "gui/lang.rs:Lang; gui/mod.rs UI construction",
+          "evidence": [
+            "languages",
+            "workflow"
+          ]
+        },
+        {
+          "original_11_lines": "27-48",
+          "behavior": "UTF8 languages.txt literal split=, exactly2 elements, no trim/comment treatment, trailing empties removed, TreeMap UTF16 key ordering.",
+          "rust": "gui/lang.rs:load_languages,languages,pairs",
+          "evidence": [
+            "languages"
+          ]
+        },
+        {
+          "original_11_lines": "50-65",
+          "behavior": "UTF8 overlay parser Java trim<=U+0020, # comments, literal split=, duplicate replacement; replace Properties parser.",
+          "rust": "gui/lang.rs:load,pairs,load_table",
+          "evidence": [
+            "languages"
+          ]
+        },
+        {
+          "original_11_lines": "67-116",
+          "behavior": "Same-code no-op; fresh English fallback then locale overlay; reset Unicode false, scan UTF16 values>=256 only for nonEnglish; assign new code/table after successful read.",
+          "rust": "gui/lang.rs:load_language",
+          "evidence": [
+            "languages",
+            "workflow"
+          ]
+        },
+        {
+          "original_11_lines": "118-124",
+          "behavior": "Expose current code and Unicode flags.",
+          "rust": "gui/lang.rs:language,unicode",
+          "evidence": [
+            "languages",
+            "workflow"
+          ]
+        },
+        {
+          "original_11_lines": "126-138",
+          "behavior": "translateKey,translateKeyFormat,translateNamedKey unchanged methods now consume locale overlay. String-only live formatting exact success/error corpus, malformed Greek preserves exception category/message.",
+          "rust": "gui/lang.rs:translate_key,translate_named_key,translate_key_format; gui/java_format.rs",
+          "evidence": [
+            "languages",
+            "formatter"
+          ]
+        },
+        {
+          "original_11_lines": "140-142",
+          "behavior": "Bidi exact code predicate ar_SA/he_IL.",
+          "rust": "gui/lang.rs:language_is_bidi",
+          "evidence": [
+            "languages",
+            "workflow"
+          ]
+        }
+      ],
+      "raw_hunk_headers": [
+        "@@ -1,24 +1,122 @@",
+        "@@ -33,4 +131,8 @@"
+      ],
+      "original_sources": [
+        {
+          "path": "retromcp-1.0\\minecraft\\src\\net\\minecraft\\src\\StringTranslate.java",
+          "sha256": "b05bd8f8f2807bfed35407e9e074d047b043ba34a2618ab34ed9b7d48d4d21fb",
+          "bytes": 982
+        },
+        {
+          "path": "retromcp-1.1\\minecraft\\src\\net\\minecraft\\src\\StringTranslate.java",
+          "sha256": "5265213caddb20213f94a463e8ed171462ccb4130d3460ea2fa1c2c87249f913",
+          "bytes": 3345
+        }
+      ],
+      "blockers_in_declared_domain": []
+    }
+  ],
+  "evidence": {
+    "draw": {
+      "log": "fontdraw11-current-review.log",
+      "result": "EXACT:131072 UTF16 draws +224 formatting/alpha/RNG cases,21423872bytes",
+      "fixture": "legacy-rs/target/r11/fontdraw11.bin",
+      "command": "target/release/beta.exe --mc 1.1 --fontdraw11check target/r11/fontdraw11.bin",
+      "note": "Existing release executable rerun; source compatibility established by current focused client lib proofs, not claiming executable rebuilt this audit."
+    },
+    "metrics": {
+      "log": "fontmetrics11-current-review.log",
+      "result": "EXACT:131072 UTF16 widths plus formatting/surrogates",
+      "fixture": "legacy-rs/target/r11/fontmetrics11.bin"
+    },
+    "bidi": {
+      "log": "text11-sign-regression.log",
+      "result": "85569+148416=233985 exact original cases; Java8 direction data1114112codepoints",
+      "fixtures": [
+        "legacy-rs/target/r11/bidi11.bin",
+        "legacy-rs/target/r11/bidi-boundary11.bin"
+      ]
+    },
+    "public_draw": {
+      "log": "text11-sign-regression.log",
+      "result": "1792 original public draws exact geometry/UV/RGBA/texture/advance/RNG",
+      "fixture": "legacy-rs/target/r11/font-bidi-draw11.bin"
+    },
+    "wrap": {
+      "log": "text11-sign-regression.log",
+      "result": "10752 original wrapped draws/heights/errors exact",
+      "fixture": "legacy-rs/target/r11/font-wrap11.bin"
+    },
+    "shared_sign": {
+      "log": "checkpoint-verify_r11_signfont.log",
+      "result": "672 production world/GUI sequences1373120bit comparisons exact",
+      "fixture": "legacy-rs/target/r11/sign-font11.bin"
+    },
+    "languages": {
+      "original": "language11-java.bin",
+      "actual": "language11-review.bin",
+      "result": "Fresh rustc actual Lang source,56 installed language maps/names/flags plus zz_probe parser overlay then en_US; both SHA80504a9c51632180d4ea33e5663cfcc70c0cc0cddd03bd0e1c610d97d521bf2",
+      "reproducer": "language11_probe.rs"
+    },
+    "formatter": {
+      "log": "formatter11-verification.log",
+      "result": "6976 exact String-argument success/error cases; whole installed56locale format corpus plus targeted vectors"
+    },
+    "workflow": {
+      "log": "language-workflow11-verification.log",
+      "result": "126 exact frames,18 switches/save/reopens,1008 listdraws; three resolutions; callbacks168selections in language-callbacks11-verification.log"
+    }
+  },
+  "pins": [
+    {
+      "path": "legacy-rs\\crates\\client11\\src\\gui\\font.rs",
+      "sha256": "5475fb2b3af9925fef180e525dbae7ea1af8f9833fbf3b481f63d8db6e9c2ed1",
+      "bytes": 21644
+    },
+    {
+      "path": "legacy-rs\\crates\\client11\\src\\gui\\bidi11.rs",
+      "sha256": "3a110081c260df697ac59b4b3b8ca197b8f279311489754e8fc139a962a764de",
+      "bytes": 8257
+    },
+    {
+      "path": "legacy-rs\\crates\\client11\\src\\gui\\lang.rs",
+      "sha256": "c87ec914c3fcd385c21fcd08a8c02b260c10a70e39037bb5ba91aef38211368f",
+      "bytes": 7474
+    },
+    {
+      "path": "legacy-rs\\crates\\client11\\src\\gui\\java_format.rs",
+      "sha256": "3b92cd6fe3179526f5c9ddaa9ab2dbabd7c48f4fe4674d9c037bab3468fec772",
+      "bytes": 6159
+    },
+    {
+      "path": "legacy-rs\\crates\\client11\\src\\gui\\render.rs",
+      "sha256": "eaf7f5d00b643d928faea7117487c5fa565ec0e0293297c56f3822ab655c1747",
+      "bytes": 33377
+    },
+    {
+      "path": "legacy-rs\\crates\\client11\\src\\gui\\mod.rs",
+      "sha256": "86efe694608dd478edfcc3d998411bcc0c91f382525ff943cebcf4a92f30819a",
+      "bytes": 20032
+    },
+    {
+      "path": "legacy-rs\\crates\\client11\\src\\gui\\screens\\language.rs",
+      "sha256": "38c5c99206de3849a5b5c06fa1e097761c63c4c895159b8b689ad1b0a14cc04d",
+      "bytes": 11180
+    },
+    {
+      "path": "legacy-rs\\tools\\retromcp-r11\\minecraft\\jars\\deobfuscated.jar",
+      "sha256": "44bb6ace88fdff460d6c428c4becee8cad52f2622e1f800dab7a70f8a716f75b",
+      "bytes": 4208078
+    },
+    {
+      "path": "legacy-rs\\target\\release\\beta.exe",
+      "sha256": "58d3652cda0ea953d97795951bffb02b814f12776aa68d02696ca79181ccb658",
+      "bytes": 47024128
+    },
+    {
+      "path": "legacy-rs\\tools\\oracle11\\probes\\fontdraw\\BidiBoundaryProbe11.java",
+      "sha256": "6f19a42f940ce7cd1be4fd9dcaab071b665fd7f68cde8d09aa751e1c1f4d7926",
+      "bytes": 1636
+    },
+    {
+      "path": "legacy-rs\\tools\\oracle11\\probes\\fontdraw\\BidiProbe11.java",
+      "sha256": "fc667853640557d570892f196b914e0f02994a8989ef567b9609097d8701c68c",
+      "bytes": 2468
+    },
+    {
+      "path": "legacy-rs\\tools\\oracle11\\probes\\fontdraw\\FontBidiDraw11.java",
+      "sha256": "6eee104699e90096b4805d95739dcdd102dedb7b787aacd447a9c27ea578a39b",
+      "bytes": 2540
+    },
+    {
+      "path": "legacy-rs\\tools\\oracle11\\probes\\fontdraw\\FontDraw11.java",
+      "sha256": "2a0d82b30fb1a976cd21d8f2dac6949b6244530bfedf086aefb9c31455276960",
+      "bytes": 2231
+    },
+    {
+      "path": "legacy-rs\\tools\\oracle11\\probes\\fontdraw\\FontWrap11.java",
+      "sha256": "8a5e36a3de3b0e51e3d9673ca86b07f91e1fd9e024aa29b77c83a285976a7ba3",
+      "bytes": 2886
+    },
+    {
+      "path": "legacy-rs\\tools\\oracle11\\probes\\fontdraw\\LanguageScreen11.java",
+      "sha256": "f497f0cb4e7b7122250fcd74a12d5bf1affc53b68afa1bd36589fafac7757dd8",
+      "bytes": 3030
+    },
+    {
+      "path": "legacy-rs\\tools\\oracle11\\probes\\LanguageProbe11.java",
+      "sha256": "903d1c86ff69f2684412150917540bf15e6d5b2f87ae95560ef2fd0a91e0604e",
+      "bytes": 1552
+    },
+    {
+      "path": "legacy-rs\\tools\\oracle11\\probes\\LanguageFormatProbe11.java",
+      "sha256": "a398b95c0d9f8caac1c63f7858de7de213935211077dcfb1e833733dc9c92fd6",
+      "bytes": 2059
+    },
+    {
+      "path": "legacy-rs\\tools\\oracle11\\probes\\LanguageWorkflow11.java",
+      "sha256": "5df4a6527393228478301d88482a77fcc0a6ff89d84330139d0530f3fecba114",
+      "bytes": 6323
+    },
+    {
+      "path": "fontdraw11-current-review.log",
+      "sha256": "6b685b67613793d145da28eae1342b7e734a5929b8587879511270b0606110c9",
+      "bytes": 85
+    },
+    {
+      "path": "legacy-rs\\target\\r11\\fontdraw11.bin",
+      "sha256": "053edb0698545ce47d5f4a76ed8189e66e1fa577dce3ef04fb10dcfe97996b07",
+      "bytes": 21423872
+    },
+    {
+      "path": "fontmetrics11-current-review.log",
+      "sha256": "9f3f107cf5828f094694738664d5b7c9ea5624a0167f7d665483691620ba0f02",
+      "bytes": 81
+    },
+    {
+      "path": "legacy-rs\\target\\r11\\fontmetrics11.bin",
+      "sha256": "a5e4f6b532c806df3ad1e2576da526f83136cfca88bafffe30cc39320b3726d0",
+      "bytes": 524336
+    },
+    {
+      "path": "text11-sign-regression.log",
+      "sha256": "57586a06f393fc53bffeded5265554e4635c5f722d0830e2528ed9ceeb402428",
+      "bytes": 56360
+    },
+    {
+      "path": "legacy-rs\\target\\r11\\bidi11.bin",
+      "sha256": "45980c9202e767fedf30e9331301fc2eb026c5142092196c7b6645105edf4657",
+      "bytes": 11154060
+    },
+    {
+      "path": "legacy-rs\\target\\r11\\bidi-boundary11.bin",
+      "sha256": "cad8bb9a527d2b4309c98384a839b0fb37d058534917023df51874f6e7ce316c",
+      "bytes": 110406895
+    },
+    {
+      "path": "legacy-rs\\target\\r11\\font-bidi-draw11.bin",
+      "sha256": "8d02dbc592193ddc98c6ed8eee9e682d2047d37d3d30c1f48b40fcc1be16055a",
+      "bytes": 8288536
+    },
+    {
+      "path": "legacy-rs\\target\\r11\\font-wrap11.bin",
+      "sha256": "ac1f50fc6e0f123ba51a242e081df82c60ed439d812452812b1493cb68178a49",
+      "bytes": 31608656
+    },
+    {
+      "path": "checkpoint-verify_r11_signfont.log",
+      "sha256": "75708b3f7809a53b67197442fd8779dd56a4e358bdbe40f837182193356ff358",
+      "bytes": 65174
+    },
+    {
+      "path": "legacy-rs\\target\\r11\\sign-font11.bin",
+      "sha256": "3b03f5fc2ded5a9091f4b216ee27041faabaccb0f0634a951a537a1e661d00b9",
+      "bytes": 7171976
+    },
+    {
+      "path": "language11-java.bin",
+      "sha256": "80504a9c51632180d4ea33e5663cfcc70c0cc0cddcd03bd0e1c610d97d521bf2",
+      "bytes": 3019494
+    },
+    {
+      "path": "language11-review.bin",
+      "sha256": "80504a9c51632180d4ea33e5663cfcc70c0cc0cddcd03bd0e1c610d97d521bf2",
+      "bytes": 3019494
+    },
+    {
+      "path": "language11_probe.rs",
+      "sha256": "b4f189dafe737ff4b3da81b68febc0d9bbe2a90ae14afcf4683fb975df4710c7",
+      "bytes": 1286
+    },
+    {
+      "path": "formatter11-verification.log",
+      "sha256": "ac742df3489f56719a030b4eb8a15b50aa5f4db4639ba6a3e25b7dd3f7ad2eb5",
+      "bytes": 118
+    },
+    {
+      "path": "language-workflow11-verification.log",
+      "sha256": "70321b747839aa7f20de863d4c30b571d9665653c373653cab1f60bd5a6d6a4f",
+      "bytes": 13580
+    }
+  ],
+  "limitations": [
+    "Missing/corrupt classpath resources: original constructor/resource reader can throw NPE/IOException and print stack traces; Rust Jar uses Result/panic. Those failure categories and stderr are not proved or identical. Valid installed original1.1 assets are the declared runtime domain.",
+    "Malformed UTF8 resource decoding replacement granularity is not proved against Java8. Installed resources and zz_probe valid UTF8 match.",
+    "GPU pixels, device-allocation failures and texture refresh are outside immediate-draw oracle; lazy resource path/order/cache are source reviewed, not GPU original-comparison claims.",
+    "Java String.toLowerCase default-locale/contextual-expansion quirks in formatting codes are inherited unchanged authority; current char-level Rust lowercase not claimed universally identical outside ASCII format controls.",
+    "Formatter method body is unchanged1.0->1.1. Typed Object/null/date arguments, unpaired-surrogate truncation, enormous widths and all default JVM locales are not part of current String-only live runtime API or6976corpus; no invented inherited API expansion required for changed class delta."
+  ]
+}
