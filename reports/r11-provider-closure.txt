@@ -1,0 +1,5 @@
+Minecraft 1.1 provider closure
+
+Stronghold generation and nearest-structure calls now reproduce the original diagnostic stdout, including platform line endings and retained-start suppression.
+
+Validation: tools/verify_r11_strongholdstdout.ps1 and tools/verify_r11_flatcallers.ps1 compare six seeds each against the original 1.1 bytecode. Eighteen paired comparisons matched: stronghold binary state and raw stdout, and real flat World/cache/load/save/unload/spawn-selection streams. Flat streams contain 13,044 bytes per seed. Constructor-only null states outside the Rust representation are not claimed as supported APIs.

@@ -10,6 +10,13 @@ pub mod verify;
 pub mod village;
 use std::collections::HashMap;
 
+/// System.out.println uses the platform separator and swallows output errors.
+pub(crate) fn diagnostic_line(line: &str) {
+    use std::io::Write;
+    let ending=if cfg!(windows) {"\r\n"}else{"\n"};
+    let _=write!(std::io::stdout().lock(),"{line}{ending}");
+}
+
 /// `MapGenStructure`'s retained start map, in Java HashMap value iteration order.
 #[derive(Default)]
 pub struct MineshaftGenerator {

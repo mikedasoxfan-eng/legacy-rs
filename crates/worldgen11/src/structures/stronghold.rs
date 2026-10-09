@@ -475,6 +475,14 @@ pub struct StrongholdGenerator {
     pub candidates: Option<[(i32, i32); 3]>,
 }
 impl StrongholdGenerator {
+    /// Original MapGenStronghold.canSpawnStructureAtCoords, including its diagnostics.
+    pub fn can_spawn_at(&mut self,seed:i64,x:i32,z:i32,biomes:&BiomeSource,map_random:&mut JavaRandom)->bool {
+        if self.candidates.is_none() {self.candidates=Some(super::locations::strongholds(seed,biomes,map_random));}
+        if self.candidates.unwrap().contains(&(x,z)) {
+            super::diagnostic_line(&format!("{x}, {z}"));
+            true
+        } else {false}
+    }
     pub(crate) fn merge_start(&mut self, key: i64, start: StrongholdStart) {
         if let std::collections::hash_map::Entry::Vacant(e) = self.starts.entry(key) {
             e.insert(start);
@@ -495,10 +503,7 @@ impl StrongholdGenerator {
                 r.set_seed((x as i64).wrapping_mul(mx) ^ (z as i64).wrapping_mul(mz) ^ seed);
                 if !self.starts.contains_key(&key) {
                     r.next_int_unbounded();
-                    if self.candidates.is_none() {
-                        self.candidates = Some(super::locations::strongholds(seed, biomes, &mut r));
-                    }
-                    if self.candidates.unwrap().contains(&(x, z)) {
+                    if self.can_spawn_at(seed,x,z,biomes,&mut r) {
                         loop {
                             let s = StrongholdStart::new(&mut r, x, z);
                             if !s.pieces.is_empty() && s.portal_room.is_some() { self.merge_start(key, s); break; }
@@ -518,8 +523,7 @@ impl StrongholdGenerator {
         let (cx,cz)=(x>>4,z>>4);let key=super::ChunkCoordIntPair{x:cx,z:cz}.packed();
         if !self.starts.contains_key(&key) {
             r.set_seed((cx as i64).wrapping_mul(mx)^(cz as i64).wrapping_mul(mz)^seed);r.next_int_unbounded();
-            if self.candidates.is_none() {self.candidates=Some(super::locations::strongholds(seed,biomes,&mut r));}
-            if self.candidates.unwrap().contains(&(cx,cz)) {loop {
+            if self.can_spawn_at(seed,cx,cz,biomes,&mut r) {loop {
                 let s=StrongholdStart::new(&mut r,cx,cz);
                 if !s.pieces.is_empty()&&s.portal_room.is_some() {self.merge_start(key,s);break;}
             }}

@@ -41,7 +41,7 @@ pub fn strongholds(seed: i64, biomes: &BiomeSource, _map_random: &mut JavaRandom
         let radius = (1.25 + r.next_double()) * 32.0;
         let x = (crate::jmath::java_cos(angle) * radius + 0.5).floor() as i32;
         let z = (crate::jmath::java_sin(angle) * radius + 0.5).floor() as i32;
-        *p = biomes
+        let found = biomes
             .find_position(
                 (x << 4) + 8,
                 (z << 4) + 8,
@@ -59,8 +59,11 @@ pub fn strongholds(seed: i64, biomes: &BiomeSource, _map_random: &mut JavaRandom
                     Biome::ExtremeHillsEdge,
                 ],
                 r,
-            )
-            .map_or((x, z), |(x, z)| (x >> 4, z >> 4));
+            );
+        *p=if let Some((x,z))=found {(x>>4,z>>4)} else {
+            super::diagnostic_line(&format!("Placed stronghold in INVALID biome at ({x}, {z})"));
+            (x,z)
+        };
         angle += std::f64::consts::PI * 2.0 / 3.0;
     }
     out

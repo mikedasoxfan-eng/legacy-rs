@@ -2,6 +2,8 @@
 use std::io::{BufWriter, Write};
 fn main() {
     let args: Vec<String> = std::env::args().collect();
+    if args.get(3).is_some_and(|s|s=="flatcallers") { flat_callers(&args); return; }
+    if args.get(3).is_some_and(|s|s=="strongholdstdout") { stronghold_stdout(&args); return; }
     if args.get(3).is_some_and(|s|s=="dimstorage") { dimension_storage(&args); return; }
     if args.get(3).is_some_and(|s|s=="neighborhood") { neighborhood(&args); return; }
     if args.get(3).is_some_and(|s|s=="spawn") { spawn(&args); return; }
@@ -16,6 +18,42 @@ fn main() {
             for value in layer.get(x,z,w,h).into_iter().take((w*h) as usize) { out.write_all(&value.to_be_bytes()).unwrap(); }
         }
     }
+}
+fn flat_callers(args:&[String]) {
+    use worldgen::{World,storage::WorldType,weighted::SpawnListEntry};
+    fn entry(o:&mut Vec<u8>,e:SpawnListEntry){o.extend((e.entity.len() as i32).to_be_bytes());o.extend(e.entity.as_bytes());for n in [e.weight,e.min,e.max]{o.extend(n.to_be_bytes());}}
+    fn state(o:&mut Vec<u8>,w:&mut World){o.extend((w.chunk_list.len() as i32).to_be_bytes());for &(x,z) in &w.chunk_list {let c=w.chunk(x,z);o.extend(x.to_be_bytes());o.extend(z.to_be_bytes());o.push(c.populated as u8);o.push(c.modified as u8);o.extend(c.last_save_time.to_be_bytes());}o.extend(w.rand.state().to_be_bytes());o.extend(w.prand().state().to_be_bytes());}
+    let seed=args[1].parse().unwrap();let mut o=Vec::new();
+    for features in [false,true] {
+        let mut w=World::new(seed,300);w.info.map_features=features;w.set_world_type(WorldType::Flat);
+        for [x,y,z] in [[0,0,0],[-17,-1,31],[17,4,-19],[512,127,-1024],[i32::MAX,i32::MIN,i32::MIN],[i32::MIN,i32::MAX,i32::MAX]] {
+            for category in 0..3 {let entries=w.provider_spawn_list10(category,x,y,z);o.extend((entries.len() as i32).to_be_bytes());for e in entries{entry(&mut o,e);}for _ in 0..8 {let e=w.choose_spawn_entry10(category,x,y,z);o.push(e.is_some() as u8);if let Some(e)=e{entry(&mut o,e);}o.extend(w.rand.state().to_be_bytes());}}
+            o.push(w.choose_spawn_entry10(3,x,y,z).is_none() as u8);o.extend(w.rand.state().to_be_bytes());
+            for name in ["Stronghold","Village",""]{o.push(w.closest_structure10(name,x,y,z).is_some() as u8);}
+        }
+        state(&mut o,&mut w);o.push(w.save_chunks(false) as u8);o.push(w.save_chunks(true) as u8);w.unload_oldest_chunks();state(&mut o,&mut w);
+        for [x,z] in [[0,0],[0,0],[17,-19],[-21,19]]{o.push(w.chunk_exists(x,z) as u8);w.provider_load_chunk(x,z);o.push(w.chunk_exists(x,z) as u8);state(&mut o,&mut w);}
+        o.push(w.save_chunks(false) as u8);state(&mut o,&mut w);o.push(w.save_chunks(true) as u8);state(&mut o,&mut w);
+        for _ in 0..3{w.unload_oldest_chunks();state(&mut o,&mut w);}
+    }
+    std::fs::write(&args[2],o).unwrap();
+}
+fn stronghold_stdout(args:&[String]) {
+    use worldgen::{BiomeSource,JavaRandom,structures::stronghold::StrongholdGenerator};
+    let seed=args[1].parse().unwrap();let mut o=Vec::new();
+    for biomes in [BiomeSource::new(seed),BiomeSource::flat(seed)] {
+        let mut g=StrongholdGenerator::default();let mut r=JavaRandom::new(777);
+        o.push(g.can_spawn_at(seed,0,0,&biomes,&mut r) as u8);o.extend(r.state().to_be_bytes());let c=g.candidates.unwrap();
+        for (x,z) in c {o.extend(x.to_be_bytes());o.extend(z.to_be_bytes());}
+        for (x,z) in [c[0],c[0],c[1],(c[1].0+1,c[1].1),c[2],(0,0),c[2],c[1],c[0]] {
+            o.push(g.can_spawn_at(seed,x,z,&biomes,&mut r) as u8);o.extend(r.state().to_be_bytes());
+        }
+        let mut map=StrongholdGenerator::default();for i in [2,2,0,0,1] {let state=map.generate(seed,c[i].0,c[i].1,&biomes);o.extend(state.to_be_bytes());o.extend((map.starts.len() as i32).to_be_bytes());}
+        let mut locator=StrongholdGenerator::default();for [x,y,z] in [[c[0].0*16,64,c[0].1*16],[c[0].0*16,64,c[0].1*16],[0,64,0],[c[2].0*16,64,c[2].1*16]] {
+            let p=locator.nearest(seed,&biomes,x,y,z);o.push(p.is_some() as u8);if let Some(p)=p {for n in p{o.extend(n.to_be_bytes());}}o.extend((locator.starts.len() as i32).to_be_bytes());
+        }
+    }
+    std::fs::write(&args[2],o).unwrap();
 }
 fn dimension_storage(args: &[String]) {
     use worldgen::{World,world::{Dimension,chunk::Chunk},storage::{Storage,LevelInfo,WorldType},entity::player::food::WorldSettings,nbt::{Compound,Tag}};
