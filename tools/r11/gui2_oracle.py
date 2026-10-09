@@ -44,10 +44,13 @@ for name, method in {
 stub_path = build / 'generated/org/lwjgl/opengl/GL11.java'
 stub_path.parent.mkdir(parents=True, exist_ok=True)
 stub_path.write_text(stub)
-sources = sorted((root / 'tools/oracle11/gui2').glob('*.java'))  # kept out of src: they need the instrumented GL11 above
+mode, output = sys.argv[1:3]
+# Compile the requested original-bytecode probe and its common fixture plumbing.
+# Other probes have independent version-specific prerequisites.
+sources = [root / 'tools/oracle11/gui2/Gui2Fixture10.java',
+           root / 'tools/oracle11/gui2' / ('Mode_' + mode + '.java')]
 sources += [stub_path]
 subprocess.run(['javac', '-nowarn', '-cp', cp, '-d', str(build), *map(str, sources)], check=True)
-mode, output = sys.argv[1:3]
 output = str(Path(output).resolve())
 Path(output).parent.mkdir(parents=True, exist_ok=True)
 subprocess.run([java, '-Djava.awt.headless=true', '-cp', cp, 'net.minecraft.src.Mode_' + mode, output], cwd=build, check=True)
