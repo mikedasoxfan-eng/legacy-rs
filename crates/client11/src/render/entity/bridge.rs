@@ -167,7 +167,7 @@ pub fn object_state(
             hover_start,
             ..
         } => ObjectKind::Item {
-            item: item.clone(),
+            item: (*item).into(),
             age: *age,
             hover: *hover_start,
         },

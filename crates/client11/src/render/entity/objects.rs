@@ -1,6 +1,6 @@
 //! Literal RenderItem, RenderArrow, RenderFireball and RenderTNTPrimed.
 use super::{fixed::Fixed, inventory};
-use worldgen::world::tile::ItemStack;
+use worldgen::entity::player::ItemStack;
 use worldgen::{math, JavaRandom};
 #[derive(Clone, Debug)]
 pub enum ObjectKind {
@@ -42,7 +42,11 @@ pub struct ObjectState {
     pub brightness: f32,
 }
 pub fn render(s: &ObjectState, camera: [f64; 3], view: [f32; 2]) -> Fixed {
+    render_with_random(s,camera,view,true,None,&mut JavaRandom::new(187))
+}
+pub fn render_with_random(s:&ObjectState,camera:[f64;3],view:[f32;2],tint:bool,base:Option<[f32;4]>,rng:&mut JavaRandom)->Fixed {
     let mut g = Fixed::new(s.brightness);
+    if let Some(base)=base {g.material=base;}
     let [x, y, z] = std::array::from_fn(|i| (s.position[i] - camera[i]) as f32);
     let partial = s.partial;
     match s.kind {
@@ -111,7 +115,7 @@ pub fn render(s: &ObjectState, camera: [f64; 3], view: [f32; 2]) -> Fixed {
             s.brightness,
         ),
         ObjectKind::Item { item, age, hover } => {
-            let mut rng = JavaRandom::new(187);
+            rng.set_seed(187);
             g.push();
             let bob = math::sin((age as f32 + partial) / 10.0 + hover) * 0.1 + 0.1;
             let angle = ((age as f32 + partial) / 20.0 + hover) * (180.0 / math::PI_F32);
@@ -150,54 +154,12 @@ pub fn render(s: &ObjectState, camera: [f64; 3], view: [f32; 2]) -> Fixed {
                     inventory::inventory(&mut g, id, item.damage as i32, 1.0, true);
                     g.pop();
                 }
-            } else if item.id == 373 {
-                // 1.0 RenderItem: the tinted liquid (icon 141), then the bottle untinted, both
-                // through func_40267_a, which keeps drawing copies from the same Random.
-                g.scale(0.5, 0.5, 0.5);
-                g.texture = 2;
-                let (icon, color, _) = super::item_table::properties(373, item.damage);
-                for (pass, icon) in [141, icon].into_iter().enumerate() {
-                    g.material = if pass == 0 {
-                        [(color >> 16 & 255) as f32 / 255.0, (color >> 8 & 255) as f32 / 255.0, (color & 255) as f32 / 255.0, 1.0]
-                    } else {
-                        [1.0; 4]
-                    };
-                    for i in 0..copies {
-                        g.push();
-                        if i > 0 {
-                            g.translate(
-                                (rng.next_float() * 2.0 - 1.0) * 0.3,
-                                (rng.next_float() * 2.0 - 1.0) * 0.3,
-                                (rng.next_float() * 2.0 - 1.0) * 0.3,
-                            );
-                        }
-                        g.rotate(180.0 - view[0], 0.0, 1.0, 0.0);
-                        sprite_quad(&mut g, icon);
-                        g.pop();
-                    }
-                }
             } else {
-                g.scale(0.5, 0.5, 0.5);
-                g.texture = if item.id < 256 { 1 } else { 2 };
-                let (icon, color, _) = super::item_table::properties(item.id.try_into().expect("item ID"), item.damage);
-                g.material = [
-                    (color >> 16 & 255) as f32 / 255.0,
-                    (color >> 8 & 255) as f32 / 255.0,
-                    (color & 255) as f32 / 255.0,
-                    1.0,
-                ];
-                for i in 0..copies {
-                    g.push();
-                    if i > 0 {
-                        g.translate(
-                            (rng.next_float() * 2.0 - 1.0) * 0.3,
-                            (rng.next_float() * 2.0 - 1.0) * 0.3,
-                            (rng.next_float() * 2.0 - 1.0) * 0.3,
-                        );
-                    }
-                    g.rotate(180.0 - view[0], 0.0, 1.0, 0.0);
-                    sprite_quad(&mut g, icon);
-                    g.pop();
+                g.scale(0.5,0.5,0.5);g.texture=if item.id<256 {1} else {2};
+                for pass in 0..if super::item_table::multiple_passes(item.id) {2} else {1} {
+                    let (icon,color)=super::item_table::render_properties(item.id,item.damage,pass);
+                    if tint {g.material=[(color>>16&255) as f32/255.0,(color>>8&255) as f32/255.0,(color&255) as f32/255.0,1.0];}
+                    for i in 0..copies {g.push();if i>0 {g.translate((rng.next_float()*2.0-1.0)*0.3,(rng.next_float()*2.0-1.0)*0.3,(rng.next_float()*2.0-1.0)*0.3);}g.rotate(180.0-view[0],0.0,1.0,0.0);sprite_quad(&mut g,icon);g.pop();}
                 }
             }
             g.enable(2, false);

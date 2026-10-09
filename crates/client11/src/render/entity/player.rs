@@ -248,12 +248,13 @@ impl Renderer {
             }
             let holder = first_person::Holder::player(e);
             let times = first_person::current_glint_times();
-            if item.id == 373 {
-                let c = super::item_table::properties(373, item.damage as i16).1;
+            if super::item_table::multiple_passes(item.id) {
+                let c = super::item_table::render_properties(item.id,item.damage,0).1;
                 g.material = [(c >> 16 & 255) as f32 / 255.0, (c >> 8 & 255) as f32 / 255.0, (c & 255) as f32 / 255.0, 1.0];
                 first_person::item_pass(&mut g, item, holder, 0, times);
-                g.material = [1.0; 4];
-                first_person::item_pass(&mut g, item, holder, 1, times);
+                let c=super::item_table::render_properties(item.id,item.damage,1).1;
+                g.material=[(c>>16&255) as f32/255.0,(c>>8&255) as f32/255.0,(c&255) as f32/255.0,1.0];
+                first_person::item_pass(&mut g,item,holder,1,times);
             } else {
                 first_person::item_pass(&mut g, item, holder, 0, times);
             }

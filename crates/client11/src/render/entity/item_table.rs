@@ -1,6 +1,7 @@
 //! Item draw properties; release overrides use the original 1.0 item/block methods.
 pub fn properties(id:i16,damage:i16)->(i32,u32,i32) {
  let d=damage as i32;
+ if id==383 {return (worldgen::entity::spawn_egg11::icon(d,0),worldgen::entity::spawn_egg11::color(d,0),0);}
  // ItemBlock: the icon is getBlockTextureFromSide(2) at construction, independent of damage.
  if matches!(id,99|100) {return (142,0xffffff,0);}
  if matches!(id,369..=371) {return ([108,123,124][(id-369) as usize],0xffffff,0);}
@@ -234,4 +235,11 @@ pub fn properties(id:i16,damage:i16)->(i32,u32,i32) {
  2257 => { let row = [(241,0x00ffffffu32,0),(241,0x00ffffffu32,0),(241,0x00ffffffu32,0),(241,0x00ffffffu32,0),(241,0x00ffffffu32,0),(241,0x00ffffffu32,0),(241,0x00ffffffu32,0),(241,0x00ffffffu32,0),(241,0x00ffffffu32,0),(241,0x00ffffffu32,0),(241,0x00ffffffu32,0),(241,0x00ffffffu32,0),(241,0x00ffffffu32,0),(241,0x00ffffffu32,0),(241,0x00ffffffu32,0),(241,0x00ffffffu32,0),][(d&15) as usize]; row },
  _ => (0,0xffffff,0),
  }
+}
+
+pub fn multiple_passes(id:i32)->bool { matches!(id,373|383) }
+pub fn render_properties(id:i32,damage:i32,pass:i32)->(i32,u32) {
+ if id==383 {return (worldgen::entity::spawn_egg11::icon(damage,pass),worldgen::entity::spawn_egg11::color(damage,pass));}
+ let (icon,color,_)=properties(id as i16,damage as i16);
+ if id==373 {(if pass==0 {141} else {icon},if pass>0 {0xffffff} else {color})} else {(icon,color)}
 }

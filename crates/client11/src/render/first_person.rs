@@ -96,8 +96,8 @@ impl Holder {
         if item.id == 346 && self.fishing {
             return base + 16;
         }
-        if item.id == 373 {
-            return if pass == 1 { base } else { 141 };
+        if item_table::multiple_passes(item.id) {
+            return item_table::render_properties(item.id,item.damage,pass).0;
         }
         if let (Some(d), 261) = (self.bow_use, item.id) {
             if d >= 18 {
@@ -248,7 +248,7 @@ pub fn render_with_map(
         })
     });
     if let Some(held) = equip.item {
-        let color = item_table::properties(held.id as i16, held.damage as i16).1;
+        let color = item_table::render_properties(held.id, held.damage, 0).1;
         g.material = [
             brightness * ((color >> 16 & 255) as f32 / 255.0),
             brightness * ((color >> 8 & 255) as f32 / 255.0),
@@ -373,8 +373,9 @@ pub fn render_with_map(
             let holder = Holder::player(e);
             let times = current_glint_times();
             item_pass(&mut g, held, holder, 0, times);
-            if held.id == 373 {
-                g.material = [brightness, brightness, brightness, 1.0];
+            if item_table::multiple_passes(held.id) {
+                let c=item_table::render_properties(held.id,held.damage,1).1;
+                g.material=[(c>>16&255) as f32/255.0*brightness,(c>>8&255) as f32/255.0*brightness,(c&255) as f32/255.0*brightness,1.0];
                 item_pass(&mut g, held, holder, 1, times);
             }
             g.pop();

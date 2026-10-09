@@ -215,15 +215,15 @@ pub fn draw(
             block_item(ui, item, m, lights);
         } else {
             let at = item.id as usize * 6;
-            let (icon, _, _) =
-                crate::render::entity::item_table::properties(item.id as i16, item.damage as i16);
+            for pass in 0..if crate::render::entity::item_table::multiple_passes(item.id) {2} else {1} {
+            let (icon,color) = crate::render::entity::item_table::render_properties(item.id,item.damage,pass);
             let held = super::inventory_equipped::HeldSprite {
                 icon,
                 full_3d: DATA.get(at) == Some(&1),
                 terrain: item.id < 256,
                 bow: item.id == 261,
             };
-            let material = [1.0; 4];
+            let material = if crate::render::entity::item_table::multiple_passes(item.id) {[(color>>16&255) as f32/255.0,(color>>8&255) as f32/255.0,(color&255) as f32/255.0,1.0]} else {[1.0;4]};
             let (batch, matrix) = super::inventory_equipped::render_item(
                 &model,
                 parent,
@@ -235,6 +235,7 @@ pub fn draw(
             );
             ui.gl.bind_texture(ui.texture(batch.texture.unwrap()));
             ui.gl.model_triangles(&batch.vertices, matrix);
+            }
         }
     }
     // RenderLiving disables texture unit 1 for the color/hurt overlay, then

@@ -15,6 +15,9 @@ pub fn geometry_with(item: &ItemStack, x: i32, y: i32, tint: bool, base: Option<
 
 /// `RenderItem.drawItemIntoGui` (1.0); `z_level` is `field_40268_b`.
 pub fn draw_item_into_gui(item: &ItemStack, x: i32, y: i32, tint: bool, base: Option<[f32; 4]>, z_level: f32) -> Fixed {
+    draw_item_values_into_gui(item.id,item.damage as i32,x,y,tint,base,z_level)
+}
+pub fn draw_item_values_into_gui(id:i32,damage:i32,x:i32,y:i32,tint:bool,base:Option<[f32;4]>,z_level:f32)->Fixed {
     let mut g = Fixed::new(1.0);
     g.light_rotation = gui_light_rotation();
     g.light_transform = LIGHT_TRANSFORM.with(|c|c.get());
@@ -23,9 +26,9 @@ pub fn draw_item_into_gui(item: &ItemStack, x: i32, y: i32, tint: bool, base: Op
     if let Some(m) = base {
         g.material = m;
     }
-    let (icon, color, _) = item_table::properties(item.id.try_into().expect("item ID"), item.damage);
+    let (icon, color, _) = item_table::properties(id as i16, damage as i16);
     let rgb = |c: u32| [(c >> 16 & 255) as f32 / 255.0, (c >> 8 & 255) as f32 / 255.0, (c & 255) as f32 / 255.0, 1.0];
-    if inventory::in_3d(item.id.try_into().expect("item ID")) {
+    if inventory::in_3d(id.try_into().expect("item ID")) {
         g.texture = 1;
         g.push();
         g.translate((x - 2) as f32, (y + 3) as f32, -3.0 + z_level);
@@ -38,24 +41,15 @@ pub fn draw_item_into_gui(item: &ItemStack, x: i32, y: i32, tint: bool, base: Op
             g.material = rgb(color);
         }
         g.rotate(-90.0, 0.0, 1.0, 0.0);
-        inventory::inventory(&mut g, item.id as u8, item.damage as i32, 1.0, tint);
+        inventory::inventory(&mut g, id as u8, damage as i32, 1.0, tint);
         g.pop();
-    } else if item.id == 373 {
-        // 1.0: the tinted liquid (icon 141), then the bottle with the color reset.
-        g.enable(1, false);
-        g.texture = 2;
-        if tint {
-            g.material = rgb(color);
-        }
-        textured_quad(&mut g, x, y, 141, z_level);
-        if tint {
-            g.material = [1.0; 4];
-        }
-        textured_quad(&mut g, x, y, icon, z_level);
-        g.enable(1, true);
+    } else if item_table::multiple_passes(id) {
+        g.enable(1,false); g.texture=2;
+        for pass in 0..2 {let (icon,color)=item_table::render_properties(id,damage,pass); if tint {g.material=rgb(color);} textured_quad(&mut g,x,y,icon,z_level);}
+        g.enable(1,true);
     } else if icon >= 0 {
         g.enable(1, false);
-        g.texture = if item.id < 256 { 1 } else { 2 };
+        g.texture = if id < 256 { 1 } else { 2 };
         if tint {
             g.material = rgb(color);
         }

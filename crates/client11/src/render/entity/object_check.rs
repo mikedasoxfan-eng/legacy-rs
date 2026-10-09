@@ -97,7 +97,7 @@ pub fn check(path: &str) -> bool {
         let original_kind = kind;
         let kind = match kind {
             0 => ObjectKind::Item {
-                item: worldgen::world::tile::ItemStack::new(id as i32,count as i32,damage as i32),
+                item: worldgen::entity::player::ItemStack::new(id as i32,count as i32,damage as i32),
                 age,
                 hover,
             },
@@ -126,7 +126,7 @@ pub fn check(path: &str) -> bool {
                 scale: 0.5,
             },
             6 | 7 => ObjectKind::Item {
-                item: worldgen::world::tile::ItemStack::new(id as i32,count as i32,damage as i32),
+                item: worldgen::entity::player::ItemStack::new(id as i32,count as i32,damage as i32),
                 age,
                 hover,
             },
@@ -803,4 +803,35 @@ pub fn child_living_check(path: &str) -> bool {
     assert_eq!(d.at, d.data.len());
     println!("RENDER LIVING CHILD10 {}: {n} cases ({children} babies), {} values, {} differences", if d.bad == 0 { "EXACT" } else { "DIFFER" }, d.checks, d.bad);
     d.bad == 0
+}
+
+#[test]
+#[ignore = "requires original 1.1 renderer packets"]
+fn item_passes_match_original_11() {
+    let path=std::env::var("ITEMPASS11_FIXTURE").unwrap();
+    let mut d=Input{data:std::fs::read(&path).unwrap(),at:0,checks:0,bad:0};
+    assert_eq!(d.u(),u32::from_le_bytes(*b"R11P"));assert_eq!(d.u(),1);let n=d.u();
+    for case in 0..n {
+        let kind=d.u();let id=d.u() as i32;let damage=d.u() as i32;let count=d.u() as i32;let tint=d.u()!=0;let age=d.u() as i32;
+        let hover=d.f();let partial=d.f();let view=[d.f(),d.f()];let position=[d.d(),d.d(),d.d()];let base=std::array::from_fn(|_|d.f());let z=d.f();let x=d.u() as i32;let y=d.u() as i32;
+        let mut rng=worldgen::JavaRandom::new(777);
+        let g=if kind==0 {super::objects::render_with_random(&ObjectState{kind:ObjectKind::Item{item:worldgen::entity::player::ItemStack::new(id,count,damage),age,hover},position,partial,brightness:1.0},[0.0;3],view,tint,Some(base),&mut rng)} else {super::gui_item::draw_item_values_into_gui(id,damage,x,y,tint,Some(base),z)};
+        assert_eq!(d.u() as usize,g.draws.len(),"case {case} draws");for (i,draw) in g.draws.iter().enumerate(){d.draw(draw,&format!("case {case} draw {i}"));}
+        let state=u64::from_le_bytes(d.bytes());assert_eq!(state,rng.state() as u64,"case {case} RNG state");let tail=u64::from_le_bytes(d.bytes());assert_eq!(tail,rng.next_long() as u64,"case {case} RNG tail");
+    }
+    assert_eq!(d.at,d.data.len());println!("{n} cases, {} comparisons, {} differences",d.checks,d.bad);assert_eq!(d.bad,0);
+}
+
+#[test]
+#[ignore = "requires original 1.1 held primitive packet"]
+fn held_item_passes_match_original_11() {
+ let path=std::env::var("ITEMPASS11_HELD_FIXTURE").unwrap();let mut d=Input{data:std::fs::read(path).unwrap(),at:0,checks:0,bad:0};
+ assert_eq!(d.u(),u32::from_le_bytes(*b"R11H"));assert_eq!(d.u(),1);let n=d.u();
+ for case in 0..n {
+  let item=worldgen::entity::player::ItemStack::new(d.u() as i32,1,d.u() as i32);let pass=d.u() as i32;
+  d.eq(crate::render::first_person::Holder::MOB.icon(item,pass) as u32,"mob icon");d.eq(super::item_table::render_properties(item.id,item.damage,pass).1,"color");d.eq(super::item_table::multiple_passes(item.id) as u32,"multiple passes");
+  let mut g=super::fixed::Fixed::new(1.0);g.material=std::array::from_fn(|_|d.f());crate::render::first_person::item_pass(&mut g,item,crate::render::first_person::Holder::MOB,pass,[0.0;2]);
+  assert_eq!(d.u() as usize,g.draws.len(),"case {case}");for (i,draw) in g.draws.iter().enumerate(){d.draw(draw,&format!("case {case} draw {i}"));}
+ }
+ assert_eq!(d.at,d.data.len());println!("{n} held cases, {} comparisons, {} differences",d.checks,d.bad);assert_eq!(d.bad,0);
 }

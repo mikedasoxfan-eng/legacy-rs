@@ -132,9 +132,9 @@ pub fn renderer_shot(path: &std::path::Path) -> Result<(), String> {
     let camera = DVec3::new(0.0, 13.0, 34.0);
     let mut all = batches(&[], camera);
     let kinds = [
-        ObjectKind::Item { item: worldgen::world::tile::ItemStack::new(1, 21, 0), age: 77, hover: 0.4 },
-        ObjectKind::Item { item: worldgen::world::tile::ItemStack::new(18, 6, 1), age: 22, hover: 1.2 },
-        ObjectKind::Item { item: worldgen::world::tile::ItemStack::new(264, 21, 0), age: 11, hover: 2.0 },
+        ObjectKind::Item { item: worldgen::entity::player::ItemStack::new(1, 21, 0), age: 77, hover: 0.4 },
+        ObjectKind::Item { item: worldgen::entity::player::ItemStack::new(18, 6, 1), age: 22, hover: 1.2 },
+        ObjectKind::Item { item: worldgen::entity::player::ItemStack::new(264, 21, 0), age: 11, hover: 2.0 },
         ObjectKind::Falling { block: 12, light: [0.8; 7] },
         ObjectKind::Tnt { fuse: 9 },
         ObjectKind::Arrow { yaw: 35.0, pitch: -25.0, shake: 3, visible: true },

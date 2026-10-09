@@ -1,0 +1,7 @@
+Minecraft 1.1 item render passes
+
+Spawn eggs now draw the base and spot textures with their respective colors in inventory icons, dropped-item sprites, first-person, player held items, inventory player preview, and biped held items. The shared item render API retains full integer metadata. Dropped render snapshots retain integer counts instead of narrowing them to bytes. Potion pass routing retains the original behavior, including nonstandard pass values.
+
+Run tools/verify_r11_itempasses.ps1 after sourcing the toolchain environment. Direct unchanged original bytecode comparisons: 752 RenderItem cases, 130,240 comparisons; 185 held primitive cases, 383,505 comparisons. Both passed with zero differences. Includes all 20 egg variants, invalid/extreme metadata, tinted and caller-colored drawing, copy-count thresholds, matrix operations, geometry, and exact RNG state/tails.
+
+The held primitive probe covers the original ItemRenderer.renderItem operation on a mob. Routing through first-person/player/GUI preview is implemented and compiled; these complete screen/frame workflows have not yet received their own original comparison. Clock-dependent enchanted potion primitive cases are excluded from this deterministic corpus. No full frame pixel equivalence is claimed.
