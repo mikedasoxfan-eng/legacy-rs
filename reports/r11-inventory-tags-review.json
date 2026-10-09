@@ -1,0 +1,148 @@
+{
+  "schema": 1,
+  "candidate_commit": "e7827bb2eea3505bd478f1fab7da70a9553203db",
+  "classes": [
+    {
+      "class_name": "ItemStack",
+      "entire_1_1_delta_covered": true,
+      "whole_inherited_java_api_verified": false,
+      "old_source_sha256": "6be874340b47a95bd0f3f622a6a149cfff9a2d2f3d2e20835182482c06d79425",
+      "new_source_sha256": "ea21909068bfaa90a2fc4281cee9b1c541660055a5c3acb7b525cd711e3ba08f",
+      "complete_source_diff": "--- 1.0/ItemStack\n+++ 1.1/ItemStack\n@@ -9,3 +9,3 @@\n \tpublic int itemID;\n-\tpublic NBTTagCompound field_40715_d;\n+\tpublic NBTTagCompound stackTagCompound;\n \tprivate int itemDamage;\n@@ -55,4 +55,4 @@\n \t\tItemStack var2 = new ItemStack(this.itemID, var1, this.itemDamage);\n-\t\tif(this.field_40715_d != null) {\n-\t\t\tvar2.field_40715_d = (NBTTagCompound)this.field_40715_d.func_40195_b();\n+\t\tif(this.stackTagCompound != null) {\n+\t\t\tvar2.stackTagCompound = (NBTTagCompound)this.stackTagCompound.cloneTag();\n \t\t}\n@@ -96,4 +96,4 @@\n \t\tvar1.setShort(\"Damage\", (short)this.itemDamage);\n-\t\tif(this.field_40715_d != null) {\n-\t\t\tvar1.setTag(\"tag\", this.field_40715_d);\n+\t\tif(this.stackTagCompound != null) {\n+\t\t\tvar1.setTag(\"tag\", this.stackTagCompound);\n \t\t}\n@@ -108,3 +108,3 @@\n \t\tif(var1.hasKey(\"tag\")) {\n-\t\t\tthis.field_40715_d = var1.getCompoundTag(\"tag\");\n+\t\t\tthis.stackTagCompound = var1.getCompoundTag(\"tag\");\n \t\t}\n@@ -209,5 +209,5 @@\n \t\tItemStack var1 = new ItemStack(this.itemID, this.stackSize, this.itemDamage);\n-\t\tif(this.field_40715_d != null) {\n-\t\t\tvar1.field_40715_d = (NBTTagCompound)this.field_40715_d.func_40195_b();\n-\t\t\tif(!var1.field_40715_d.equals(this.field_40715_d)) {\n+\t\tif(this.stackTagCompound != null) {\n+\t\t\tvar1.stackTagCompound = (NBTTagCompound)this.stackTagCompound.cloneTag();\n+\t\t\tif(!var1.stackTagCompound.equals(this.stackTagCompound)) {\n \t\t\t\treturn var1;\n@@ -219,2 +219,6 @@\n \n+\tpublic static boolean func_46154_a(ItemStack var0, ItemStack var1) {\n+\t\treturn var0 == null && var1 == null ? true : (var0 != null && var1 != null ? (var0.stackTagCompound == null && var1.stackTagCompound != null ? false : var0.stackTagCompound == null || var0.stackTagCompound.equals(var1.stackTagCompound)) : false);\n+\t}\n+\n \tpublic static boolean areItemStacksEqual(ItemStack var0, ItemStack var1) {\n@@ -224,3 +228,3 @@\n \tprivate boolean isItemStackEqual(ItemStack var1) {\n-\t\treturn this.stackSize != var1.stackSize ? false : (this.itemID != var1.itemID ? false : (this.itemDamage != var1.itemDamage ? false : (this.field_40715_d == null && var1.field_40715_d != null ? false : this.field_40715_d == null || this.field_40715_d.equals(var1.field_40715_d))));\n+\t\treturn this.stackSize != var1.stackSize ? false : (this.itemID != var1.itemID ? false : (this.itemDamage != var1.itemDamage ? false : (this.stackTagCompound == null && var1.stackTagCompound != null ? false : this.stackTagCompound == null || this.stackTagCompound.equals(var1.stackTagCompound))));\n \t}\n@@ -268,29 +272,25 @@\n \n-\tpublic boolean func_40710_n() {\n-\t\treturn this.field_40715_d != null;\n-\t}\n-\n-\tpublic NBTTagCompound func_40709_o() {\n-\t\treturn this.field_40715_d;\n-\t}\n-\n-\tpublic NBTTagList func_40714_p() {\n-\t\treturn this.field_40715_d == null ? null : (NBTTagList)this.field_40715_d.func_40196_b(\"ench\");\n-\t}\n-\n-\tpublic void func_40706_d(NBTTagCompound var1) {\n-\t\tif(Item.itemsList[this.itemID].getItemStackLimit() != 1) {\n-\t\t\tthrow new IllegalArgumentException(\"Cannot add tag data to a stackable item\");\n-\t\t} else {\n-\t\t\tthis.field_40715_d = var1;\n-\t\t}\n-\t}\n-\n-\tpublic List func_40712_q() {\n+\tpublic boolean hasTagCompound() {\n+\t\treturn this.stackTagCompound != null;\n+\t}\n+\n+\tpublic NBTTagCompound getTagCompound() {\n+\t\treturn this.stackTagCompound;\n+\t}\n+\n+\tpublic NBTTagList getEnchantmentTagList() {\n+\t\treturn this.stackTagCompound == null ? null : (NBTTagList)this.stackTagCompound.getTag(\"ench\");\n+\t}\n+\n+\tpublic void setTagCompound(NBTTagCompound var1) {\n+\t\tthis.stackTagCompound = var1;\n+\t}\n+\n+\tpublic List getItemNameandInformation() {\n \t\tArrayList var1 = new ArrayList();\n \t\tItem var2 = Item.itemsList[this.itemID];\n-\t\tvar1.add(var2.func_40397_d(this));\n-\t\tvar2.func_40404_a(this, var1);\n-\t\tif(this.func_40710_n()) {\n-\t\t\tNBTTagList var3 = this.func_40714_p();\n+\t\tvar1.add(var2.getItemDisplayName(this));\n+\t\tvar2.addInformation(this, var1);\n+\t\tif(this.hasTagCompound()) {\n+\t\t\tNBTTagList var3 = this.getEnchantmentTagList();\n \t\t\tif(var3 != null) {\n@@ -310,3 +310,3 @@\n \tpublic boolean func_40713_r() {\n-\t\treturn this.getItem().func_40403_e(this);\n+\t\treturn this.getItem().hasEffect(this);\n \t}\n@@ -314,7 +314,7 @@\n \tpublic EnumRarity func_40707_s() {\n-\t\treturn this.getItem().func_40398_f(this);\n-\t}\n-\n-\tpublic boolean func_40708_t() {\n-\t\treturn !this.getItem().func_40401_i(this) ? false : !this.func_40711_u();\n+\t\treturn this.getItem().getRarity(this);\n+\t}\n+\n+\tpublic boolean isItemEnchantable() {\n+\t\treturn !this.getItem().isItemTool(this) ? false : !this.isItemEnchanted();\n \t}\n@@ -322,11 +322,11 @@\n \tpublic void addEnchantment(Enchantment var1, int var2) {\n-\t\tif(this.field_40715_d == null) {\n-\t\t\tthis.func_40706_d(new NBTTagCompound());\n-\t\t}\n-\n-\t\tif(!this.field_40715_d.hasKey(\"ench\")) {\n-\t\t\tthis.field_40715_d.setTag(\"ench\", new NBTTagList(\"ench\"));\n-\t\t}\n-\n-\t\tNBTTagList var3 = (NBTTagList)this.field_40715_d.func_40196_b(\"ench\");\n+\t\tif(this.stackTagCompound == null) {\n+\t\t\tthis.setTagCompound(new NBTTagCompound());\n+\t\t}\n+\n+\t\tif(!this.stackTagCompound.hasKey(\"ench\")) {\n+\t\t\tthis.stackTagCompound.setTag(\"ench\", new NBTTagList(\"ench\"));\n+\t\t}\n+\n+\t\tNBTTagList var3 = (NBTTagList)this.stackTagCompound.getTag(\"ench\");\n \t\tNBTTagCompound var4 = new NBTTagCompound();\n@@ -337,4 +337,4 @@\n \n-\tpublic boolean func_40711_u() {\n-\t\treturn this.field_40715_d != null && this.field_40715_d.hasKey(\"ench\");\n+\tpublic boolean isItemEnchanted() {\n+\t\treturn this.stackTagCompound != null && this.stackTagCompound.hasKey(\"ench\");\n \t}\n",
+      "all_delta_hunk_coverage": [
+        {
+          "delta": "new nullable tag-equality helper func_46154_a",
+          "direct_authority_and_check": "stacknulltags11.txt16 original helper/areItemStacksEqual null/tagcases vs production tags_equal_optional11/stacks_equal181; same helper used by every merge predicate"
+        },
+        {
+          "delta": "setTagCompound removes stackable restriction and preserves reference",
+          "direct_authority_and_check": "tags11.txt9 existing acceptance/mergevectors plus newcontainertags11.txt1728 actual tagged stackable callbacks; post-callback retained handle mutations prove reference identity"
+        },
+        {
+          "delta": "stackTagCompound/method/callee rename hunks; copy/split/NBT bodies unchanged",
+          "direct_authority_and_check": "Complete original source diff retained; no extra body/control/literal delta. copy/split root key20vectors and payload independence1728/48 cases verify inherited calls used by new stackable-tag support"
+        },
+        {
+          "delta": "root key is part of original compound equality and save changes shared key to tag",
+          "direct_authority_and_check": "stacknames11.txt20 direct original fresh/saved/copy/split/load/inventory/shared-reference cases. Runtime now tracks key per public shared compound handle, preserves it on clone/split/new accepted stack, names it on write/load. No StackTag client ABI change"
+        }
+      ],
+      "completion_blockers": [],
+      "limitations": [
+        "Only entire normalized1.1 delta credited; inherited unchanged Java API is not newly proved",
+        "Snapshot-value Rust NBT representation does not provide every reflective/retained-input-NBT Java API alias; existing singleplayer load input is consumed and this is not a new1.1 changed path",
+        "Tooltip/render/name callees remain their own parent classes; ItemStack call/body changes here are symbol renames"
+      ]
+    },
+    {
+      "class_name": "InventoryPlayer",
+      "entire_1_1_delta_covered": true,
+      "whole_inherited_java_api_verified": false,
+      "old_source_sha256": "ff19223d1a38dacfb85eee68a4faf472c838a442cdb76acc31b6377f0676e8fd",
+      "new_source_sha256": "656b463860f29291cc1e49eaa7b297ce512dbc27b8e990b6bdc883d82b0aac79",
+      "complete_source_diff": "--- 1.0/InventoryPlayer\n+++ 1.1/InventoryPlayer\n@@ -28,3 +28,3 @@\n \n-\tprivate int func_41021_b(int var1, int var2) {\n+\tprivate int getInventorySlotContainItemAndDamage(int var1, int var2) {\n \t\tfor(int var3 = 0; var3 < this.mainInventory.length; ++var3) {\n@@ -40,3 +40,3 @@\n \t\tfor(int var2 = 0; var2 < this.mainInventory.length; ++var2) {\n-\t\t\tif(this.mainInventory[var2] != null && this.mainInventory[var2].itemID == var1.itemID && this.mainInventory[var2].isStackable() && this.mainInventory[var2].stackSize < this.mainInventory[var2].getMaxStackSize() && this.mainInventory[var2].stackSize < this.getInventoryStackLimit() && (!this.mainInventory[var2].getHasSubtypes() || this.mainInventory[var2].getItemDamage() == var1.getItemDamage())) {\n+\t\t\tif(this.mainInventory[var2] != null && this.mainInventory[var2].itemID == var1.itemID && this.mainInventory[var2].isStackable() && this.mainInventory[var2].stackSize < this.mainInventory[var2].getMaxStackSize() && this.mainInventory[var2].stackSize < this.getInventoryStackLimit() && (!this.mainInventory[var2].getHasSubtypes() || this.mainInventory[var2].getItemDamage() == var1.getItemDamage()) && ItemStack.func_46154_a(this.mainInventory[var2], var1)) {\n \t\t\t\treturn var2;\n@@ -62,3 +62,3 @@\n \t\tif(var3) {\n-\t\t\tvar6 = this.func_41021_b(var1, var2);\n+\t\t\tvar6 = this.getInventorySlotContainItemAndDamage(var1, var2);\n \t\t} else {\n@@ -116,2 +116,5 @@\n \t\t\t\t\tthis.mainInventory[var4] = new ItemStack(var2, 0, var1.getItemDamage());\n+\t\t\t\t\tif(var1.hasTagCompound()) {\n+\t\t\t\t\t\tthis.mainInventory[var4].setTagCompound((NBTTagCompound)var1.getTagCompound().cloneTag());\n+\t\t\t\t\t}\n \t\t\t\t}\n@@ -392,3 +395,3 @@\n \n-\tpublic boolean getHasItemStack(ItemStack var1) {\n+\tpublic boolean hasItemStack(ItemStack var1) {\n \t\tint var2;\n@@ -415,3 +418,3 @@\n \n-\tpublic void func_41022_a(InventoryPlayer var1) {\n+\tpublic void copyInventory(InventoryPlayer var1) {\n \t\tint var2;\n",
+      "all_delta_hunk_coverage": [
+        {
+          "delta": "storeItemStack adds ItemStack.func_46154_a equality gate",
+          "direct_authority_and_check": "tags11.txt9 andinventoryalias11.txt48 acceptance cases empty/equal/unequal/full, sourcecount1/2/64/65; actual count/return bug and all36slots matchoriginal"
+        },
+        {
+          "delta": "storePartialItemStack clones source compound into new0-count destination",
+          "direct_authority_and_check": "inventoryalias11.txt48 before/after mutations of retained source and existing/inventory compound; direct copy independence. stacknames11.txtop3 preserves original compound key in accepted clone"
+        },
+        {
+          "delta": "getInventorySlotContainItemAndDamage/hasItemStack/copyInventory names",
+          "direct_authority_and_check": "Complete original source diff shows body unchanged; no added behavior"
+        }
+      ],
+      "completion_blockers": [],
+      "limitations": [
+        "Only entire normalized1.1 delta credited; inherited unchanged Java API is not newly proved",
+        "Snapshot-value Rust NBT representation does not provide every reflective/retained-input-NBT Java API alias; existing singleplayer load input is consumed and this is not a new1.1 changed path",
+        "Tooltip/render/name callees remain their own parent classes; ItemStack call/body changes here are symbol renames"
+      ]
+    },
+    {
+      "class_name": "Container",
+      "entire_1_1_delta_covered": true,
+      "whole_inherited_java_api_verified": false,
+      "old_source_sha256": "ca9f534b5c4396fa03f863352bd2ef4658e7a78f88347ffb58977a613204d235",
+      "new_source_sha256": "3545a0dd1a694afedfdabf968b03cc39d0cd71af3588cda6f97d6a8a999331d4",
+      "complete_source_diff": "--- 1.0/Container\n+++ 1.1/Container\n@@ -37,3 +37,3 @@\n \n-\tpublic boolean func_40233_a(EntityPlayer var1, int var2) {\n+\tpublic boolean enchantItem(EntityPlayer var1, int var2) {\n \t\treturn false;\n@@ -78,3 +78,3 @@\n \t\t\t\t\t\tif(var9 != null && var9.getStack() != null && var9.getStack().itemID == var8) {\n-\t\t\t\t\t\t\tthis.func_35373_b(var1, var2, var3, var4);\n+\t\t\t\t\t\t\tthis.retrySlotClick(var1, var2, var3, var4);\n \t\t\t\t\t\t}\n@@ -118,8 +118,3 @@\n \t\t\t\t\t\t} else if(var12.isItemValid(var14)) {\n-\t\t\t\t\t\t\tif(var13.itemID != var14.itemID || var13.getHasSubtypes() && var13.getItemDamage() != var14.getItemDamage()) {\n-\t\t\t\t\t\t\t\tif(var14.stackSize <= var12.getSlotStackLimit()) {\n-\t\t\t\t\t\t\t\t\tvar12.putStack(var14);\n-\t\t\t\t\t\t\t\t\tvar6.setItemStack(var13);\n-\t\t\t\t\t\t\t\t}\n-\t\t\t\t\t\t\t} else {\n+\t\t\t\t\t\t\tif(var13.itemID == var14.itemID && (!var13.getHasSubtypes() || var13.getItemDamage() == var14.getItemDamage()) && ItemStack.func_46154_a(var13, var14)) {\n \t\t\t\t\t\t\t\tvar10 = var2 == 0 ? var14.stackSize : 1;\n@@ -139,4 +134,7 @@\n \t\t\t\t\t\t\t\tvar13.stackSize += var10;\n-\t\t\t\t\t\t\t}\n-\t\t\t\t\t\t} else if(var13.itemID == var14.itemID && var14.getMaxStackSize() > 1 && (!var13.getHasSubtypes() || var13.getItemDamage() == var14.getItemDamage())) {\n+\t\t\t\t\t\t\t} else if(var14.stackSize <= var12.getSlotStackLimit()) {\n+\t\t\t\t\t\t\t\tvar12.putStack(var14);\n+\t\t\t\t\t\t\t\tvar6.setItemStack(var13);\n+\t\t\t\t\t\t\t}\n+\t\t\t\t\t\t} else if(var13.itemID == var14.itemID && var14.getMaxStackSize() > 1 && (!var13.getHasSubtypes() || var13.getItemDamage() == var14.getItemDamage()) && ItemStack.func_46154_a(var13, var14)) {\n \t\t\t\t\t\t\tvar10 = var13.stackSize;\n@@ -160,3 +158,3 @@\n \n-\tprotected void func_35373_b(int var1, int var2, boolean var3, EntityPlayer var4) {\n+\tprotected void retrySlotClick(int var1, int var2, boolean var3, EntityPlayer var4) {\n \t\tthis.slotClick(var1, var2, var3, var4);\n@@ -217,3 +215,3 @@\n \t\t\t\tvar8 = var7.getStack();\n-\t\t\t\tif(var8 != null && var8.itemID == var1.itemID && (!var1.getHasSubtypes() || var1.getItemDamage() == var8.getItemDamage())) {\n+\t\t\t\tif(var8 != null && var8.itemID == var1.itemID && (!var1.getHasSubtypes() || var1.getItemDamage() == var8.getItemDamage()) && ItemStack.func_46154_a(var1, var8)) {\n \t\t\t\t\tint var9 = var8.stackSize + var1.stackSize;\n",
+      "all_delta_hunk_coverage": [
+        {
+          "delta": "slotClick valid slot merges only sameID/subtypeDamage/tags; otherwise swaps only if count<=slotlimit",
+          "direct_authority_and_check": "containertags11.txt1728 actual original Chest/Furnace callbacks vs production slot_click; bothbuttons,counts0/1/63 and0/1/2/64, all9tagcombos, before/aftermutation cursor/return/allslots"
+        },
+        {
+          "delta": "slotClick invalid slot pull-to-cursor additionally requires equal tags",
+          "direct_authority_and_check": "Same fixture original actual Furnace output slot and production FurnaceOutput branch; equal/unequal/absent tags and maxstack boundaries"
+        },
+        {
+          "delta": "mergeItemStack additional tag-equality gate",
+          "direct_authority_and_check": "Samefixture real original Chest/Furnace shift transfer with target lastslot tagged equal/unequal, fixed full other slots and one empty slot; allslot positions/cursor/return copies exactlymatch"
+        },
+        {
+          "delta": "enchantItem/retrySlotClick declarations and calls renamed",
+          "direct_authority_and_check": "Complete old/new diff proves unchanged bodies/recursivecall beyond renaming; actualshiftcallbackfixture retains recursion behavior"
+        }
+      ],
+      "completion_blockers": [],
+      "limitations": [
+        "Only entire normalized1.1 delta credited; inherited unchanged Java API is not newly proved",
+        "Snapshot-value Rust NBT representation does not provide every reflective/retained-input-NBT Java API alias; existing singleplayer load input is consumed and this is not a new1.1 changed path",
+        "Tooltip/render/name callees remain their own parent classes; ItemStack call/body changes here are symbol renames"
+      ]
+    }
+  ],
+  "owned_file_sha256": {
+    "crates/worldgen11/src/stack_tags.rs": "f9b11cd3854b0f7848105aa05094689f9c29791615af545ba83fcccebd4b29ec",
+    "crates/worldgen11/src/entity/item_stack.rs": "03900a6cfc676cd375744543578310481adf1d86266d93d2a7f32bf38118fc41",
+    "crates/worldgen11/src/entity/player/inventory.rs": "cd78b3bde423a8f6b466e9e573bc2c31f0aaec9c24889d49d96f2ef7a6635b10",
+    "crates/worldgen11/src/container/mod.rs": "b51ddcf497d19220e07aec938f3119d990a65b34f4bb26e441175e03213eacd0",
+    "crates/worldgen11/src/fixtures/containertags11.txt": "12ef1f159cf7cf89102070bae169f1a969e0a621019665c8bfa1e67e9a757d4f",
+    "crates/worldgen11/src/fixtures/inventoryalias11.txt": "4525562cb3237c030b9f25534ecdc7d25c766aa41440b382f8ec119ae4002a37",
+    "crates/worldgen11/src/fixtures/stacknulltags11.txt": "fe35aaebc99d603d1d71442dc80f593309dd49fefedd6b3fa28604a5e5235551",
+    "crates/worldgen11/src/fixtures/stacknames11.txt": "5ac2a65492aaf4ada58fa80337aa4eaab8d48960b17b151c14722e35fe5499dc",
+    "tools/oracle11/src/net/minecraft/src/InventoryTags11.java": "406357c701edba56562f73c0383816acc2ac74b3ad9c4aa439582c82cdfd5668",
+    "tools/oracle11/verify_gameplay_slice.ps1": "c50342f619cb201f2eb72c5182377280b14dc8adbf98fbb05faf354b77098385"
+  },
+  "fixtures": {
+    "containertags11.txt": {
+      "rows": 864,
+      "sha256": "12ef1f159cf7cf89102070bae169f1a969e0a621019665c8bfa1e67e9a757d4f"
+    },
+    "inventoryalias11.txt": {
+      "rows": 48,
+      "sha256": "4525562cb3237c030b9f25534ecdc7d25c766aa41440b382f8ec119ae4002a37"
+    },
+    "stacknulltags11.txt": {
+      "rows": 16,
+      "sha256": "fe35aaebc99d603d1d71442dc80f593309dd49fefedd6b3fa28604a5e5235551"
+    },
+    "stacknames11.txt": {
+      "rows": 20,
+      "sha256": "5ac2a65492aaf4ada58fa80337aa4eaab8d48960b17b151c14722e35fe5499dc"
+    }
+  },
+  "original_jar_sha256": "44bb6ace88fdff460d6c428c4becee8cad52f2622e1f800dab7a70f8a716f75b",
+  "verification": {
+    "focused_tests": {
+      "path": "work/inventory-tags11-tests.log",
+      "sha256": "9f0138ac3ba2a91ec67a2f98033eac912f548e047c92b83c83d83a50c96ae9a3",
+      "result": "4passed0failed"
+    },
+    "all_original_11_tests": {
+      "path": "work/inventory-tags11-all-tests.log",
+      "sha256": "c8c199b59e73c60cfe79690ab0d6b7e20c5605d65fc174e054fab2642c4aa140",
+      "result": "47passed0failed55filtered serial"
+    },
+    "oracle": {
+      "path": "work/inventory-tags11-oracle.log",
+      "sha256": "5048429f40bbb30203024bf9cbecf50a216b043e649db5ca18fcbf8c8a951c42",
+      "result": "48original fixture/table regenerations EXACT onJava8u51"
+    }
+  },
+  "new_behavior_fix": "Preserve shared NBTTagCompound root-name identity in ItemStack equality/copy/split/inventory clone/save/load paths; name metadata keyed by weak shared-handle identity with existing StackTag type unchanged",
+  "parent_action": "Commit ten owned files and register current committed hashes; no Git/client writes by this lane."
+}

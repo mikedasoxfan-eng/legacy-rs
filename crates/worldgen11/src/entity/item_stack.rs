@@ -237,7 +237,7 @@ impl ItemStack {
     /// resets animations. Animation state is not part of any Java equality.
     pub fn copy_stack181(&self) -> Self {
         let copy=Self::new(self.id, self.count, self.damage);
-        copy.set_tag(self.tag());
+        copy.copy_tag_from11(self);
         copy
     }
     pub fn copy_nullable181(stack: Option<&Self>) -> Option<Self> {
@@ -272,6 +272,7 @@ impl ItemStack {
         if n.has("tag") {
             let Some(tag)=n.compound("tag") else{return Err(StackError::ClassCast);};
             self.set_tag(Some(tag.clone()));
+            self.set_tag_key11("tag");
         }
         Ok(())
     }
@@ -311,7 +312,7 @@ impl ItemStack {
         n.put("id", Tag::Short(self.id as i16));
         n.put("Count", Tag::Byte(self.count as i8));
         n.put("Damage", Tag::Short(self.damage as i16));
-        if let Some(tag)=self.tag(){n.put("tag",Tag::Compound(tag));}
+        if let Some(tag)=self.tag(){self.set_tag_key11("tag");n.put("tag",Tag::Compound(tag));}
         Ok(n)
     }
     pub fn get_item181<C: StackContext>(

@@ -775,3 +775,37 @@ mod release_11_tests {
         assert!(CraftingManager::instance().find_matching_recipe(&grid, 3).is_none());
     }
 }
+
+#[cfg(test)]
+mod release11_tag_tests {
+ use super::*;
+ use crate::nbt::{Compound,Tag};
+ fn values(line:&str)->Vec<i64>{line.split_whitespace().map(|s|s.parse().unwrap()).collect()}
+ fn make(count:i32,mark:i32)->Option<ItemStack>{if count==0{return None;}let s=ItemStack::new(4,count,0);if mark!=0{let mut n=Compound::new();n.put("mark",Tag::Int(mark));s.set_tag_checked(Some(n));}Some(s)}
+ fn mutate(s:Option<ItemStack>,mark:i32){if let Some(h)=s.and_then(|s|s.tag_handle()){h.lock().unwrap().put("mark",Tag::Int(mark));}}
+ fn stack(out:&mut Vec<i64>,s:Option<ItemStack>){if let Some(s)=s {out.extend([s.id as i64,s.count as i64,s.damage as i64,s.tag().map_or(0,|n|n.int("mark")) as i64]);}else{out.extend([-1,0,0,0]);}}
+ fn snapshot(out:&mut Vec<i64>,c:&Container,p:&InventoryPlayer,result:Option<ItemStack>){stack(out,p.cursor);stack(out,result);for i in 0..c.slots.len(){stack(out,c.stack(p,i));}}
+ #[test]
+ fn tagged_slot_click_and_shift_match_original_11_bytecode(){
+  for line in include_str!("../fixtures/containertags11.txt").lines(){let v=values(line);let mut p=InventoryPlayer::default();let mut c=Container::new(if v[0]==0 {ContainerKind::Chest{rows:1}}else{ContainerKind::Furnace},0);let slot=if v[0]==0{0}else{2};let left=make(v[3] as i32,v[1] as i32);let held=make(v[4] as i32,v[2] as i32);let target=make(v[4] as i32,v[2] as i32);c.tile[slot]=left;p.cursor=held;
+   if v[6]!=0{for s in &mut p.main{*s=Some(ItemStack::new(1,64,0));}p.main[7]=None;p.main[8]=target;}
+   assert_eq!(c.slots.len(),v[7] as usize);let result=c.slot_click(&mut p,slot as i32,v[5] as i32,v[6]!=0);let mut actual=Vec::new();snapshot(&mut actual,&c,&p,result);mutate(left,31);mutate(held,32);mutate(result,33);mutate(target,34);snapshot(&mut actual,&c,&p,result);assert_eq!(actual,&v[8..],"Actual production callback + retained tag mutations: {line}");
+  }
+ }
+ #[test]
+ fn tagged_inventory_copy_independence_matches_original_11_bytecode(){
+  for line in include_str!("../fixtures/inventoryalias11.txt").lines(){let v=values(line);let mut p=InventoryPlayer::default();let mut input=make(v[2] as i32,v[0] as i32).unwrap();let old=if v[1]==0 {None}else{make(63,v[1] as i32)};p.main[0]=old;if v[1]==3 {for s in &mut p.main[1..]{*s=Some(ItemStack::new(1,64,0));}}
+   assert_eq!(p.add(&mut input) as i64,v[3],"{line}");let mut actual=Vec::new();stack(&mut actual,Some(input));for s in p.main{stack(&mut actual,s);}mutate(Some(input),11);mutate(old,12);stack(&mut actual,Some(input));for s in p.main{stack(&mut actual,s);}for s in p.main{if s.is_some_and(|s|s.id==4){mutate(s,22);}}stack(&mut actual,Some(input));for s in p.main{stack(&mut actual,s);}assert_eq!(actual,&v[4..],"Original input compound and accepted inventory compound must be independent: {line}");
+  }
+ }
+ #[test]
+ fn stack_tag_root_names_match_original_11_bytecode(){
+  for line in include_str!("../fixtures/stacknames11.txt").lines(){let v=values(line);let mut a=make(2,1).unwrap();let b=make(2,1).unwrap();if v[0]&1!=0{a.to_nbt();}if v[0]&2!=0{b.to_nbt();}
+   let c=match v[1]{0=>a.copy_stack181(),1=>a.split(1),2=>ItemStack::from_nbt(&a.to_nbt()),3=>{let mut p=InventoryPlayer::default();p.add(&mut a);p.main[0].unwrap()},4=>{let c=ItemStack::new(4,2,0);c.set_tag_handle(a.tag_handle());c},_=>unreachable!()};
+   let mut actual=vec![a.tags_equal(&b) as i64,a.tags_equal(&c) as i64];for s in [a,b,c]{actual.extend([i64::from(s.tag_key11().as_deref()==Some("tag")),s.count as i64]);}a.to_nbt();actual.push(a.tags_equal(&c) as i64);for s in [a,b,c]{actual.push(i64::from(s.tag_key11().as_deref()==Some("tag")));}assert_eq!(actual,&v[2..],"NBT serialization names the shared compound and clone/split/inventory copy preserve its key: {line}");
+  }
+
+ }
+ #[test]
+ fn nullable_stack_tags_match_original_11_bytecode(){for line in include_str!("../fixtures/stacknulltags11.txt").lines(){let v=values(line);let a=if v[0]<0{None}else{make(1,v[0] as i32)};let b=if v[1]<0{None}else{make(1,v[1] as i32)};assert_eq!(ItemStack::tags_equal_optional11(a.as_ref(),b.as_ref()) as i64,v[2],"{line}");assert_eq!(ItemStack::stacks_equal181(a.as_ref(),b.as_ref()) as i64,v[3],"{line}");}}
+}

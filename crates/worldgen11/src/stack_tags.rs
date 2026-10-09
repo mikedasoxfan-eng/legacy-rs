@@ -8,7 +8,7 @@ use crate::{
 };
 use std::{
     collections::HashMap,
-    sync::{Arc, Mutex, OnceLock},
+    sync::{Arc, Mutex, OnceLock, Weak},
 };
 /// A Java NBTTagCompound reference. Snapshot reads are available through tag();
 /// callers retaining the reference can mutate it through this handle.
@@ -17,7 +17,22 @@ fn tags() -> &'static Mutex<HashMap<u64, StackTag>> {
     static TAGS: OnceLock<Mutex<HashMap<u64, StackTag>>> = OnceLock::new();
     TAGS.get_or_init(|| Mutex::new(HashMap::new()))
 }
+// Java NBTBase.key belongs to the shared compound object, not its ItemStack.
+// Keep the public compound handle intact; weak identity entries avoid retaining tags.
+fn tag_keys11()->&'static Mutex<HashMap<usize,(Weak<Mutex<Compound>>,String)>> {
+    static KEYS:OnceLock<Mutex<HashMap<usize,(Weak<Mutex<Compound>>,String)>>>=OnceLock::new();
+    KEYS.get_or_init(||Mutex::new(HashMap::new()))
+}
+fn key11(handle:&StackTag)->String {
+    let keys=tag_keys11().lock().unwrap_or_else(|e|e.into_inner());
+    keys.get(&(Arc::as_ptr(handle) as usize)).filter(|(weak,_)|weak.upgrade().is_some_and(|old|Arc::ptr_eq(&old,handle))).map_or_else(String::new,|(_,key)|key.clone())
+}
 impl ItemStack {
+    pub fn tag_key11(&self)->Option<String>{self.tag_handle().map(|h|key11(&h))}
+    pub(crate) fn set_tag_key11(&self,key:&str){if let Some(h)=self.tag_handle(){tag_keys11().lock().unwrap_or_else(|e|e.into_inner()).insert(Arc::as_ptr(&h) as usize,(Arc::downgrade(&h),key.to_owned()));}}
+    pub(crate) fn copy_tag_from11(&self,source:&Self){
+        let key=source.tag_key11();self.set_tag(source.tag());if let Some(key)=key{self.set_tag_key11(&key);}
+    }
     pub fn tag(&self) -> Option<Compound> {
         self.tag_handle().map(|tag| tag.lock().unwrap_or_else(|e| e.into_inner()).clone())
     }
@@ -42,13 +57,24 @@ impl ItemStack {
     pub fn set_tag_handle_checked(&self, tag: Option<StackTag>) {
         self.set_tag_handle(tag);
     }
+    /// Original ItemStack.func_46154_a, shared by all release1.1 merge gates.
+    pub fn tags_equal_optional11(a:Option<&Self>,b:Option<&Self>)->bool {
+        match (a,b) {
+            (None,None)=>true,
+            (Some(a),Some(b))=>a.nonnull_tags_equal11(b),
+            _=>false,
+        }
+    }
     pub fn tags_equal(&self, other: &Self) -> bool {
+        Self::tags_equal_optional11(Some(self),Some(other))
+    }
+    fn nonnull_tags_equal11(&self, other: &Self) -> bool {
         if let (Some(a), Some(b)) = (self.tag_handle(), other.tag_handle()) {
             if Arc::ptr_eq(&a, &b) { return true; }
         }
         match (self.tag(), other.tag()) {
             (None, None) => true,
-            (Some(a), Some(b)) => compound_equal(&a, &b),
+            (Some(a), Some(b)) => self.tag_key11()==other.tag_key11() && compound_equal(&a, &b),
             _ => false,
         }
     }

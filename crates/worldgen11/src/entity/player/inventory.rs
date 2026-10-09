@@ -32,7 +32,7 @@ impl ItemStack {
     }
     pub fn copy_stack(&self) -> Self {
         let copy = Self::new(self.id, self.count, self.damage);
-        copy.set_tag(self.tag());
+        copy.copy_tag_from11(self);
         copy
     }
     pub fn same_object(self, other: Self) -> bool { self.identity == other.identity }
@@ -63,7 +63,7 @@ impl ItemStack {
     pub fn split(&mut self, count: i32) -> Self {
         self.count = self.count.wrapping_sub(count);
         let split=Self::new(self.id, count, self.damage);
-        split.set_tag(self.tag());
+        split.copy_tag_from11(self);
         split
     }
     pub fn to_nbt(&self) -> Compound {
@@ -207,7 +207,7 @@ impl InventoryPlayer {
             return item.count;
         };
         if self.main[slot].is_none() {
-            let s=ItemStack::new(item.id,0,item.damage);s.set_tag(item.tag());self.main[slot]=Some(s);
+            let s=ItemStack::new(item.id,0,item.damage);s.copy_tag_from11(item);self.main[slot]=Some(s);
         }
         let s = self.main[slot].as_mut().unwrap();
         let count = item.count.min(s.max_stack() - s.count).min(64 - s.count);
