@@ -1,29 +1,23 @@
 # Minecraft 1.1 verified progress
 
-**25.89% verified complete: 567 / 2,190 normalized changed lines; 60 / 144 classes.**
+**70.04566% verified complete: 1534 / 2,190 normalized changed lines; 93 / 144 classes.**
 
-This uses the repository's r10 changed-line weighting, with the original 1.0-to-1.1 denominator unchanged. Each credited class has a review covering its complete 1.1 delta, a committed implementation, explicit original-bytecode check coverage and passing recorded results pinned to source hashes. Declaration-only changes receive r10's no-behavior-change credit. Partially verified and unreviewed classes receive zero credit, even when substantial implementation exists. This is a conservative verified-completion measure, not a code-written estimate or a release claim. The earlier 70% estimate is withdrawn.
+Runtime checkpoint: `5c8a79e`. This uses the repository's r10 normalized changed-line weighting with the original denominator unchanged. A class earns credit only after its entire singleplayer 1.1 delta has a committed implementation or recorded semantic disposition, a full hunk review, explicit original-bytecode comparisons, and source/evidence hash pins. Partial classes receive zero credit. Recalculate with `python tools/r11/progress.py`. Subsequent source edits invalidate the affected saved credit.
 
-Recalculate from the repository root:
-
-```powershell
-python tools/r11/progress.py
-```
-
-The calculator reads `changes.json`, `completion-review.json`, `coverage.json`, `ported.json`, `sections.json`, and `source-snapshots.json` under `tools/r11`. Changing covered source or evidence hashes invalidates its saved credit. Detailed hunk reviews and check transcripts are under `reports/r11-progress`. The broader raw source audit has 308 reviewed classes in the central scope ledger; normalization can conceal changes, so that review remains a release gate.
+This is verified delta completion, not release readiness or a claim that every inherited Java API has been reproduced. The earlier unsupported 70% estimate remains withdrawn; this new figure comes from the committed class ledger and direct evidence.
 
 | Area | Verified lines | Total lines | Completed classes |
 |---|---:|---:|---:|
-| GUI | 24 | 591 | 6 / 31 |
-| World generation | 202 | 302 | 19 / 21 |
-| Blocks and items | 199 | 308 | 21 / 34 |
-| World and saves | 50 | 68 | 5 / 7 |
-| Entities | 83 | 779 | 7 / 34 |
-| Player | 8 | 32 | 1 / 4 |
-| Rendering | 1 | 110 | 1 / 13 |
+| gui | 132 | 591 | 10 / 31 |
+| worldgen | 302 | 302 | 21 / 21 |
+| blocks | 217 | 308 | 23 / 34 |
+| world | 50 | 68 | 5 / 7 |
+| entities | 755 | 779 | 26 / 34 |
+| player | 12 | 32 | 2 / 4 |
+| rendering | 66 | 110 | 6 / 13 |
 
-Fresh checks for this accounting update: 36 gameplay tests passed serially; all 37 regenerated original-bytecode fixture/table files matched; three world-type/save streams matched; five complete options.txt language cases matched; five original biome comparisons matched. Population, complete layer graph/fixed-manager/raw-flat, spawn and depth-fog comparisons were rerun on the current source. Six layer-neighborhood streams additionally match 619,920 output cells; nine dimension-save sections match native and both crossload directions. Direct original packed-normal comparisons match 11,331 vectors. These finite inputs establish the documented coverage; they are not all-input formal proofs.
+New evidence closes flat World caller interfaces, stronghold stdout, redstone wire, sheep/status/model integration, squid world guards, tagged inventory callbacks, language drawing/actions/save/reopen, brewing GUI progress, generic RenderItem passes and burning-entity light. The original dormant AI guards are constant false: a whole-jar/source reference audit plus constructor/static-effect and runtime comparisons records their singleplayer semantic disposition. These helpers receive credit for equivalent scoped runtime effects; manually invoking their Java facade algorithms is not claimed implemented. Their original weights remain in the denominator.
 
-Compared with the previous measured checkpoint, the additional 125 credited lines are three layer classes (96), WorldInfo and WorldProviderHell (16), seven gameplay classes (12), and Tessellator (1). The denominator is unchanged. Source and evidence hash pins were refreshed only after the relevant current-source comparisons passed. Implementations are committed in 5c9741d, 00abcf3, 31835cf and fbe6cf4.
+Stable-checkpoint checks passed:47 gameplay tests and48 original fixture/table regenerations;34 ordinary client tests; world types, flat population, spawn repair/reopen, full layer/biome graph, layer neighborhoods, dimension saves/native crossloads, sign/font shared state, real flat callers and stronghold diagnostics. Additional direct renderer comparisons cover752 inventory/dropped cases,185 held primitive cases,720 burning-light cases,504 creative/dimension fog cases and480 sheep live-render cases. String formatting matches6976 original String-argument vectors. Language workflow covers1008 list draws,126 frames and18 save/reopens, plus168 callback selections.
 
-Font/Bidi/wrapping, shared sign font state and language callbacks have extensive passing comparisons but retain unresolved integration gates, so their incomplete classes earn no credit yet. Other remaining gates include flat-provider interface coverage, stronghold diagnostic output, sheep animation/status handling, spawn-egg rendering, world/dimension/controller workflows, final stable-candidate 1.1 verification, older-version regressions, CI, documentation and packaging. Unreachable new AI internals remain uncredited pending a recorded scope disposition. The diagnostic broad suite spanning source changes is not used for completion credit.
+Remaining gates include FontRenderer/StringTranslate full class reviews, player/controller/world workflows, held player/first-person integration, remaining GUI/block/entity deltas, conservative raw source audit, a final stable-candidate 1.1 suite, older-version regressions, CI and packaging. The diagnostic broad suite spanning source changes is not used as completion credit. Full frame pixel equivalence and arbitrary dormant Java API parity are not claimed by finite callback comparisons.

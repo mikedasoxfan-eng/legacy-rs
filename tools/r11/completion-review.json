@@ -7,13 +7,13 @@
       "crates/worldgen11/src/entity/blocks11.rs": "35f21da564c6809b0f64016a3c8bcf544dd1ab37df6976c7e128c6ccafe49299",
       "crates/worldgen11/src/entity/blocks.rs": "f37f8c39e6509678187a6cb2002b28f49f9e0673929262547a004341111cc674",
       "crates/worldgen11/src/entity/physics.rs": "a55d97cebd8a5a3c8e565cae5ad8139b47fbedb5e0b57eaae64730afa91d27a6",
-      "crates/worldgen11/src/world/behavior.rs": "b99851685982ac611006adf2b8e1466abbd72585ce6aec447197b1875ad81d0c"
+      "crates/worldgen11/src/world/behavior.rs": "030817bad8cb11c7d8a933d83b66a88de9914b9ea0cf0751e14c27d12a302e0f"
     },
     "original_source_sha256": {
       "1.0": "ba0e5ff3f7cdda1d45017d7aa29f66cbb0a5db9f2a2c658bfee43427a6072d0d",
       "1.1": "684c41805af4f4ed3e95b4ffef30a9d5bbe173f941f214e25a6cd4ae401d3c4c"
     },
-    "revalidation": "Current gameplay/settings/worldtype/biome/layer/flat/spawn/depthfog suite rerun; newly changed helpers are covered by additional direct original probes. No whole inherited class claim."
+    "revalidation": "Relevant gameplay/world/provider/save/sign-font suites rerun on current runtime; declarations retain unchanged class disposition. No whole inherited API claim."
   },
   "EntityDamageSource": {
     "complete_delta_review": true,
@@ -21,21 +21,21 @@
     "reason": "Only damageSourceEntity visibility changes private to protected. Runtime field and methods are unchanged.",
     "rust_source_sha256": {
       "crates/worldgen11/src/entity/mod.rs": "66c8caf5b0997e0fd474e2f722beff76e7d821d49c2f82d464510dde8c8fe2d0",
-      "crates/worldgen11/src/entity/living.rs": "bcc7aced336d073abf762c0ca08e17b5b12ab313dfb5229b1e635da3c34b0d0c",
-      "crates/worldgen11/src/entity/creature.rs": "85521b77716dfbf983ded5971185b59bbe2cca5314c8eead0aeda4a11895e80b",
+      "crates/worldgen11/src/entity/living.rs": "924cd1b4bd7f680f54a550013fe76a2394db6d7ee8fc5d2bfd340dbd23b8a31e",
+      "crates/worldgen11/src/entity/creature.rs": "48e28ef1881ea7cbf3d78495308bc29026a480c355e0ffdcd13ad45c4ac92df0",
       "crates/worldgen11/src/entity/nbt.rs": "2bf61659b89cfb6505c6cdce38a8187d3c5fd3fc119a6f9aa6217c21addf009b"
     },
     "original_source_sha256": {
       "1.0": "c52631bc343caf5a5aa8829d296181b369868597e48e9396bd369b24155203a0",
       "1.1": "7d1e1de802f6d03237cb84f27a1b124a9a5e4e2dcc0ee2c47807459e4689fd80"
     },
-    "revalidation": "Current gameplay/settings/worldtype/biome/layer/flat/spawn/depthfog suite rerun; newly changed helpers are covered by additional direct original probes. No whole inherited class claim."
+    "revalidation": "Relevant gameplay/world/provider/save/sign-font suites rerun on current runtime; declarations retain unchanged class disposition. No whole inherited API claim."
   },
   "MapGenStructure": {
     "complete_delta_review": true,
     "reason": "recursiveGenerate consumes same nextInt now assigned to unused local; map scans compare scan/start order and final RNG, no runtime delta beyond local declaration",
     "rust_source_sha256": {
-      "crates/worldgen11/src/structures.rs": "c429031ac51fd761ded0f678a7f4e584946c2732d67c5f96aa1cc3726391920d",
+      "crates/worldgen11/src/structures.rs": "3f2911f20d6328e2c40f9103f3f7b9d40ef5af2ecdaee5f4e19d57978b2462b3",
       "crates/worldgen11/src/structures/component.rs": "1301046367f870908ec02cf185e6fe0d3ef4eddd4e3f0453327e70fe6cce8661"
     },
     "original_source_sha256": {
@@ -43,16 +43,16 @@
       "1.1": "1c78a024be589a90a42fd285398224f695ff28619e635a2a1250f740b2f0d2f7"
     },
     "completion_blockers": [],
-    "revalidation": "Fresh complete bounded reproducers on current committed runtime source.",
+    "revalidation": "Relevant gameplay/world/provider/save/sign-font suites rerun on current runtime; declarations retain unchanged class disposition. No whole inherited API claim.",
     "no_behavior_change": true
   },
   "StructureStrongholdPieceWeight2": {
     "complete_delta_review": true,
     "reason": "class declaration becomes final only; Rust value type cannot be subclassed; unchanged weight predicate exercised by exact stronghold map/start graph",
     "rust_source_sha256": {
-      "crates/worldgen11/src/structures/stronghold.rs": "a3de5f5c18c7994a1bb8a639d2cec00e51d68ab9b2560b5097fc9b855b11ee4c",
+      "crates/worldgen11/src/structures/stronghold.rs": "e6670aafde0ea2df454a77992682acdf521561bd71e75c3ff187af2d09ff98bb",
       "crates/worldgen11/src/structures/stronghold_generated.rs": "2bce024f47f50b67dd0c0b519e84e3acfc622ba83b6163785fd45e9bb1aa0c72",
-      "crates/worldgen11/src/structures/locations.rs": "d4431e2f7c9d6b4a31c46c6ff8eb470bf7809d7d6994efef022cd720bdab32fa",
+      "crates/worldgen11/src/structures/locations.rs": "cf6e50c56822c779cb87995f1bb40e97e5bc8ab64e552c9ea1506b008a798c1e",
       "crates/worldgen11/src/structures/component.rs": "1301046367f870908ec02cf185e6fe0d3ef4eddd4e3f0453327e70fe6cce8661"
     },
     "original_source_sha256": {
@@ -60,16 +60,16 @@
       "1.1": "6e202742736a25121e2efffe58a335040c973911809bb5b414642034a60d75f5"
     },
     "completion_blockers": [],
-    "revalidation": "Fresh complete bounded reproducers on current committed runtime source.",
+    "revalidation": "Relevant gameplay/world/provider/save/sign-font suites rerun on current runtime; declarations retain unchanged class disposition. No whole inherited API claim.",
     "no_behavior_change": true
   },
   "StructureStrongholdPieceWeight3": {
     "complete_delta_review": true,
     "reason": "class declaration becomes final only; Rust value type cannot be subclassed; unchanged weight predicate exercised by exact stronghold map/start graph",
     "rust_source_sha256": {
-      "crates/worldgen11/src/structures/stronghold.rs": "a3de5f5c18c7994a1bb8a639d2cec00e51d68ab9b2560b5097fc9b855b11ee4c",
+      "crates/worldgen11/src/structures/stronghold.rs": "e6670aafde0ea2df454a77992682acdf521561bd71e75c3ff187af2d09ff98bb",
       "crates/worldgen11/src/structures/stronghold_generated.rs": "2bce024f47f50b67dd0c0b519e84e3acfc622ba83b6163785fd45e9bb1aa0c72",
-      "crates/worldgen11/src/structures/locations.rs": "d4431e2f7c9d6b4a31c46c6ff8eb470bf7809d7d6994efef022cd720bdab32fa",
+      "crates/worldgen11/src/structures/locations.rs": "cf6e50c56822c779cb87995f1bb40e97e5bc8ab64e552c9ea1506b008a798c1e",
       "crates/worldgen11/src/structures/component.rs": "1301046367f870908ec02cf185e6fe0d3ef4eddd4e3f0453327e70fe6cce8661"
     },
     "original_source_sha256": {
@@ -77,7 +77,7 @@
       "1.1": "ac71b64a3a561a871a19224693765b70461ebb49b2ddea5446b4396a4eaf0e52"
     },
     "completion_blockers": [],
-    "revalidation": "Fresh complete bounded reproducers on current committed runtime source.",
+    "revalidation": "Relevant gameplay/world/provider/save/sign-font suites rerun on current runtime; declarations retain unchanged class disposition. No whole inherited API claim.",
     "no_behavior_change": true
   },
   "StatTypeDistance": {
@@ -91,7 +91,7 @@
       "1.0": "6635208c3aa955f34fa4e441d9868d74fdb1b90c572b137c872cde742e45f58f",
       "1.1": "7b0f76dae7b5eb5946866da2825725f1ef91012a717a6a775c323265e881139a"
     },
-    "revalidation": "Current gameplay/settings/worldtype/biome/layer/flat/spawn/depthfog suite rerun; newly changed helpers are covered by additional direct original probes. No whole inherited class claim."
+    "revalidation": "Relevant gameplay/world/provider/save/sign-font suites rerun on current runtime; declarations retain unchanged class disposition. No whole inherited API claim."
   },
   "StatTypeSimple": {
     "complete_delta_review": true,
@@ -104,7 +104,7 @@
       "1.0": "cebcfd9a604e1d319dec8be47b3b96f2babfbea9324484018809a1ddebccb839",
       "1.1": "512a3c2f5c3bb49f9cef401d81bc45337c5ffe85186ce24de07c441ec0f2664f"
     },
-    "revalidation": "Current gameplay/settings/worldtype/biome/layer/flat/spawn/depthfog suite rerun; newly changed helpers are covered by additional direct original probes. No whole inherited class claim."
+    "revalidation": "Relevant gameplay/world/provider/save/sign-font suites rerun on current runtime; declarations retain unchanged class disposition. No whole inherited API claim."
   },
   "StatTypeTime": {
     "complete_delta_review": true,
@@ -117,7 +117,7 @@
       "1.0": "d7197dcdefda84c3b0df3966c96c87cc9d5f564caf62da382dc523bf864d7184",
       "1.1": "abfee3662f6a373fd67cfcde3b300d87f03c22e70e8cfc065532539f7d63c536"
     },
-    "revalidation": "Current gameplay/settings/worldtype/biome/layer/flat/spawn/depthfog suite rerun; newly changed helpers are covered by additional direct original probes. No whole inherited class claim."
+    "revalidation": "Relevant gameplay/world/provider/save/sign-font suites rerun on current runtime; declarations retain unchanged class disposition. No whole inherited API claim."
   },
   "GameSettings": {
     "complete_delta_review": true,
@@ -130,7 +130,7 @@
       "1.0": "74b0c1b662728cf3dd4f289db3d6c657c454814ae5ce6566cea78d06a19d6ff3",
       "1.1": "7846ff7172b58aa0a692c2be8d760201da1fcfe03c1166ee6f027cf1ab861ff9"
     },
-    "revalidation": "Current gameplay/settings/worldtype/biome/layer/flat/spawn/depthfog suite rerun; newly changed helpers are covered by additional direct original probes. No whole inherited class claim."
+    "revalidation": "Relevant gameplay/world/provider/save/sign-font suites rerun on current runtime; declarations retain unchanged class disposition. No whole inherited API claim."
   },
   "ItemMonsterPlacer": {
     "complete_delta_review": true,
@@ -159,7 +159,7 @@
     ],
     "rust_source_sha256": {
       "crates/worldgen11/src/entity/spawn_egg11.rs": "07430c13d6afdf82bac4ed379f11e2c1baf1a99991528fcd34605de2098fa926",
-      "crates/worldgen11/src/entity/item_stack.rs": "b6a0c19d1a6983d967af4b32f59b8dac2ec482fced04e88524cb7b5a4ee8c494",
+      "crates/worldgen11/src/entity/item_stack.rs": "03900a6cfc676cd375744543578310481adf1d86266d93d2a7f32bf38118fc41",
       "crates/worldgen11/src/entity/player/items.rs": "b409a6375494d5fbc48cff9ab79c0bf5bb46a0fe16d231b696ec093cb1a7fd31"
     },
     "original_source_sha256": {
@@ -169,7 +169,7 @@
       "new_sha256": "a734d0ddcebcab44660c4c2e37d8f5d1e58f727df402ab64a01312fd8043f57b"
     },
     "completion_blockers": [],
-    "revalidation": "Current gameplay/settings/worldtype/biome/layer/flat/spawn/depthfog suite rerun; newly changed helpers are covered by additional direct original probes. No whole inherited class claim."
+    "revalidation": "Relevant gameplay/world/provider/save/sign-font suites rerun on current runtime; declarations retain unchanged class disposition. No whole inherited API claim."
   },
   "EntityList": {
     "complete_delta_review": true,
@@ -199,7 +199,7 @@
       "new_sha256": "5f4f4fae52b419c523c4d4aaa2fefea0d61186c67f34a66f65b804879f0391f4"
     },
     "completion_blockers": [],
-    "revalidation": "Current gameplay/settings/worldtype/biome/layer/flat/spawn/depthfog suite rerun; newly changed helpers are covered by additional direct original probes. No whole inherited class claim."
+    "revalidation": "Relevant gameplay/world/provider/save/sign-font suites rerun on current runtime; declarations retain unchanged class disposition. No whole inherited API claim."
   },
   "EntityEggInfo": {
     "complete_delta_review": true,
@@ -220,7 +220,7 @@
       "new_sha256": "89c122ad0c55a49fd8ecb9efb3c276e8cadbd23d65843d6501693ef75b267ea3"
     },
     "completion_blockers": [],
-    "revalidation": "Current gameplay/settings/worldtype/biome/layer/flat/spawn/depthfog suite rerun; newly changed helpers are covered by additional direct original probes. No whole inherited class claim."
+    "revalidation": "Relevant gameplay/world/provider/save/sign-font suites rerun on current runtime; declarations retain unchanged class disposition. No whole inherited API claim."
   },
   "Enchantment": {
     "complete_delta_review": true,
@@ -241,7 +241,7 @@
       "new_sha256": "2e20a3c5c777017bd795b46d0fb0b81c6b430cfeea8e974710897f9ac5a77561"
     },
     "completion_blockers": [],
-    "revalidation": "Current gameplay/settings/worldtype/biome/layer/flat/spawn/depthfog suite rerun; newly changed helpers are covered by additional direct original probes. No whole inherited class claim."
+    "revalidation": "Relevant gameplay/world/provider/save/sign-font suites rerun on current runtime; declarations retain unchanged class disposition. No whole inherited API claim."
   },
   "EnumEnchantmentType": {
     "complete_delta_review": true,
@@ -262,7 +262,7 @@
       "new_sha256": "d4b75e742866d4aa11e9daa021b8a127bdc5af86363c879c96d0fbac70dd1485"
     },
     "completion_blockers": [],
-    "revalidation": "Current gameplay/settings/worldtype/biome/layer/flat/spawn/depthfog suite rerun; newly changed helpers are covered by additional direct original probes. No whole inherited class claim."
+    "revalidation": "Relevant gameplay/world/provider/save/sign-font suites rerun on current runtime; declarations retain unchanged class disposition. No whole inherited API claim."
   },
   "EnchantmentHelper": {
     "complete_delta_review": true,
@@ -287,7 +287,7 @@
       "new_sha256": "067c64b46de183660c8001b886e820841714e188089a8d557e529796a5004c9f"
     },
     "completion_blockers": [],
-    "revalidation": "Current gameplay/settings/worldtype/biome/layer/flat/spawn/depthfog suite rerun; newly changed helpers are covered by additional direct original probes. No whole inherited class claim."
+    "revalidation": "Relevant gameplay/world/provider/save/sign-font suites rerun on current runtime; declarations retain unchanged class disposition. No whole inherited API claim."
   },
   "ItemBow": {
     "complete_delta_review": true,
@@ -317,7 +317,7 @@
       "new_sha256": "ca60d72caf9117ca1e6d806a206a80fe329e4641203d38dc72b98bb36e825b4e"
     },
     "completion_blockers": [],
-    "revalidation": "Current gameplay/settings/worldtype/biome/layer/flat/spawn/depthfog suite rerun; newly changed helpers are covered by additional direct original probes. No whole inherited class claim."
+    "revalidation": "Relevant gameplay/world/provider/save/sign-font suites rerun on current runtime; declarations retain unchanged class disposition. No whole inherited API claim."
   },
   "EntityArrow": {
     "complete_delta_review": true,
@@ -347,7 +347,7 @@
       "new_sha256": "e31cba0ad3ae15c020961c44431f8a299c5dc6d3e40d371dc175f1976d863507"
     },
     "completion_blockers": [],
-    "revalidation": "Current gameplay/settings/worldtype/biome/layer/flat/spawn/depthfog suite rerun; newly changed helpers are covered by additional direct original probes. No whole inherited class claim."
+    "revalidation": "Relevant gameplay/world/provider/save/sign-font suites rerun on current runtime; declarations retain unchanged class disposition. No whole inherited API claim."
   },
   "BlockLadder": {
     "complete_delta_review": true,
@@ -362,7 +362,7 @@
       "crates/worldgen11/src/entity/blocks11.rs": "35f21da564c6809b0f64016a3c8bcf544dd1ab37df6976c7e128c6ccafe49299",
       "crates/worldgen11/src/entity/blocks.rs": "f37f8c39e6509678187a6cb2002b28f49f9e0673929262547a004341111cc674",
       "crates/worldgen11/src/entity/physics.rs": "a55d97cebd8a5a3c8e565cae5ad8139b47fbedb5e0b57eaae64730afa91d27a6",
-      "crates/worldgen11/src/world/behavior.rs": "b99851685982ac611006adf2b8e1466abbd72585ce6aec447197b1875ad81d0c"
+      "crates/worldgen11/src/world/behavior.rs": "030817bad8cb11c7d8a933d83b66a88de9914b9ea0cf0751e14c27d12a302e0f"
     },
     "original_source_sha256": {
       "old": "work/retromcp-1.0/minecraft/src/net/minecraft/src/BlockLadder.java",
@@ -371,7 +371,7 @@
       "new_sha256": "bef1193bb1556fb037df997340257b625a8497cc25580b9e6a6c08744ae91b3c"
     },
     "completion_blockers": [],
-    "revalidation": "Current gameplay/settings/worldtype/biome/layer/flat/spawn/depthfog suite rerun; newly changed helpers are covered by additional direct original probes. No whole inherited class claim."
+    "revalidation": "Relevant gameplay/world/provider/save/sign-font suites rerun on current runtime; declarations retain unchanged class disposition. No whole inherited API claim."
   },
   "BlockFarmland": {
     "complete_delta_review": true,
@@ -390,7 +390,7 @@
       "crates/worldgen11/src/entity/blocks11.rs": "35f21da564c6809b0f64016a3c8bcf544dd1ab37df6976c7e128c6ccafe49299",
       "crates/worldgen11/src/entity/blocks.rs": "f37f8c39e6509678187a6cb2002b28f49f9e0673929262547a004341111cc674",
       "crates/worldgen11/src/entity/physics.rs": "a55d97cebd8a5a3c8e565cae5ad8139b47fbedb5e0b57eaae64730afa91d27a6",
-      "crates/worldgen11/src/world/behavior.rs": "b99851685982ac611006adf2b8e1466abbd72585ce6aec447197b1875ad81d0c"
+      "crates/worldgen11/src/world/behavior.rs": "030817bad8cb11c7d8a933d83b66a88de9914b9ea0cf0751e14c27d12a302e0f"
     },
     "original_source_sha256": {
       "old": "work/retromcp-1.0/minecraft/src/net/minecraft/src/BlockFarmland.java",
@@ -399,7 +399,7 @@
       "new_sha256": "209e775b6f1d8715c13d502da91d551ed61c269ae6e45f11818c075a38b4bb65"
     },
     "completion_blockers": [],
-    "revalidation": "Current gameplay/settings/worldtype/biome/layer/flat/spawn/depthfog suite rerun; newly changed helpers are covered by additional direct original probes. No whole inherited class claim."
+    "revalidation": "Relevant gameplay/world/provider/save/sign-font suites rerun on current runtime; declarations retain unchanged class disposition. No whole inherited API claim."
   },
   "BlockFenceGate": {
     "complete_delta_review": true,
@@ -418,7 +418,7 @@
       "crates/worldgen11/src/entity/blocks11.rs": "35f21da564c6809b0f64016a3c8bcf544dd1ab37df6976c7e128c6ccafe49299",
       "crates/worldgen11/src/entity/blocks.rs": "f37f8c39e6509678187a6cb2002b28f49f9e0673929262547a004341111cc674",
       "crates/worldgen11/src/entity/physics.rs": "a55d97cebd8a5a3c8e565cae5ad8139b47fbedb5e0b57eaae64730afa91d27a6",
-      "crates/worldgen11/src/world/behavior.rs": "b99851685982ac611006adf2b8e1466abbd72585ce6aec447197b1875ad81d0c"
+      "crates/worldgen11/src/world/behavior.rs": "030817bad8cb11c7d8a933d83b66a88de9914b9ea0cf0751e14c27d12a302e0f"
     },
     "original_source_sha256": {
       "old": "work/retromcp-1.0/minecraft/src/net/minecraft/src/BlockFenceGate.java",
@@ -427,7 +427,7 @@
       "new_sha256": "a62198f487dfa03191d0c03aa211af139d55ddb8d61e55aa3b955aa9970a16ff"
     },
     "completion_blockers": [],
-    "revalidation": "Current gameplay/settings/worldtype/biome/layer/flat/spawn/depthfog suite rerun; newly changed helpers are covered by additional direct original probes. No whole inherited class claim."
+    "revalidation": "Relevant gameplay/world/provider/save/sign-font suites rerun on current runtime; declarations retain unchanged class disposition. No whole inherited API claim."
   },
   "BlockDoor": {
     "complete_delta_review": true,
@@ -457,7 +457,7 @@
       "new_sha256": "2de82dbcf137f8cc7a042f0b681f398670cba82ef5f922c0268131f597d9d7b2"
     },
     "completion_blockers": [],
-    "revalidation": "Current gameplay/settings/worldtype/biome/layer/flat/spawn/depthfog suite rerun; newly changed helpers are covered by additional direct original probes. No whole inherited class claim."
+    "revalidation": "Relevant gameplay/world/provider/save/sign-font suites rerun on current runtime; declarations retain unchanged class disposition. No whole inherited API claim."
   },
   "BlockRail": {
     "complete_delta_review": true,
@@ -472,7 +472,7 @@
       "crates/worldgen11/src/entity/blocks11.rs": "35f21da564c6809b0f64016a3c8bcf544dd1ab37df6976c7e128c6ccafe49299",
       "crates/worldgen11/src/entity/blocks.rs": "f37f8c39e6509678187a6cb2002b28f49f9e0673929262547a004341111cc674",
       "crates/worldgen11/src/entity/physics.rs": "a55d97cebd8a5a3c8e565cae5ad8139b47fbedb5e0b57eaae64730afa91d27a6",
-      "crates/worldgen11/src/world/behavior.rs": "b99851685982ac611006adf2b8e1466abbd72585ce6aec447197b1875ad81d0c",
+      "crates/worldgen11/src/world/behavior.rs": "030817bad8cb11c7d8a933d83b66a88de9914b9ea0cf0751e14c27d12a302e0f",
       "crates/worldgen11/src/world/rails.rs": "21b62be9220db10409e519fc55fb112127d19eb49f6358bac2357f6bcf706c87"
     },
     "original_source_sha256": {
@@ -482,7 +482,7 @@
       "new_sha256": "fbb86c310e6ab83c1e244a6d8200b2850a92433f0dcaeded14153fdceb61fda4"
     },
     "completion_blockers": [],
-    "revalidation": "Current gameplay/settings/worldtype/biome/layer/flat/spawn/depthfog suite rerun; newly changed helpers are covered by additional direct original probes. No whole inherited class claim."
+    "revalidation": "Relevant gameplay/world/provider/save/sign-font suites rerun on current runtime; declarations retain unchanged class disposition. No whole inherited API claim."
   },
   "BlockRedstoneRepeater": {
     "complete_delta_review": true,
@@ -494,8 +494,8 @@
       }
     ],
     "rust_source_sha256": {
-      "crates/worldgen11/src/entity/block_hooks.rs": "472e369fb32b36736fc3514e32c304792b6460f2e3cc6bf7a2c28001e70820cc",
-      "crates/worldgen11/src/world/redstone.rs": "f67e8bb0f9eb6f1b670047c94fb4ef6f84703d6fba4508b2ef3edf29d83cc6c6"
+      "crates/worldgen11/src/entity/block_hooks.rs": "8ff7de09d1073953462dd0370fc3916d79d5c4666fa98a9dca49a6f6381c67e5",
+      "crates/worldgen11/src/world/redstone.rs": "39f84038989abf6b8d18a1454adad3ed939e15e49e229f29dca6b6cee9287de5"
     },
     "original_source_sha256": {
       "old": "work/retromcp-1.0/minecraft/src/net/minecraft/src/BlockRedstoneRepeater.java",
@@ -504,7 +504,7 @@
       "new_sha256": "0f7da5b6e032e4777fc44dc46dff85a4abc19c843c7d5fb8de4ca5e5a2f66831"
     },
     "completion_blockers": [],
-    "revalidation": "Current gameplay/settings/worldtype/biome/layer/flat/spawn/depthfog suite rerun; newly changed helpers are covered by additional direct original probes. No whole inherited class claim."
+    "revalidation": "Relevant gameplay/world/provider/save/sign-font suites rerun on current runtime; declarations retain unchanged class disposition. No whole inherited API claim."
   },
   "EntityMagmaCube": {
     "complete_delta_review": true,
@@ -520,8 +520,8 @@
       }
     ],
     "rust_source_sha256": {
-      "crates/worldgen11/src/entity/living.rs": "bcc7aced336d073abf762c0ca08e17b5b12ab313dfb5229b1e635da3c34b0d0c",
-      "crates/worldgen11/src/entity/sheep11.rs": "4e306a4be8bd72a2611c5f820664719a60b91aa07660ffc3deaf182f0f782fdb"
+      "crates/worldgen11/src/entity/living.rs": "924cd1b4bd7f680f54a550013fe76a2394db6d7ee8fc5d2bfd340dbd23b8a31e",
+      "crates/worldgen11/src/entity/sheep11.rs": "436e7a546f9e3277bd3f58c97365d5d2b29782fdc4266ceea18c3ca2fc72a866"
     },
     "original_source_sha256": {
       "old": "work/retromcp-1.0/minecraft/src/net/minecraft/src/EntityMagmaCube.java",
@@ -530,7 +530,7 @@
       "new_sha256": "e473ca5bb225857718624dde61814b3c2a1384e6b3de7f92f42721e62d7ee7ce"
     },
     "completion_blockers": [],
-    "revalidation": "Current gameplay/settings/worldtype/biome/layer/flat/spawn/depthfog suite rerun; newly changed helpers are covered by additional direct original probes. No whole inherited class claim."
+    "revalidation": "Relevant gameplay/world/provider/save/sign-font suites rerun on current runtime; declarations retain unchanged class disposition. No whole inherited API claim."
   },
   "ContainerCreative": {
     "complete_delta_review": true,
@@ -552,7 +552,7 @@
       "new_sha256": "917efa252be6955d43bfba167f2b9d10fa4084dc85814d4483c78f158a4132b3"
     },
     "completion_blockers": [],
-    "revalidation": "Current gameplay/settings/worldtype/biome/layer/flat/spawn/depthfog suite rerun; newly changed helpers are covered by additional direct original probes. No whole inherited class claim."
+    "revalidation": "Relevant gameplay/world/provider/save/sign-font suites rerun on current runtime; declarations retain unchanged class disposition. No whole inherited API claim."
   },
   "SlotCrafting": {
     "complete_delta_review": true,
@@ -568,7 +568,7 @@
       }
     ],
     "rust_source_sha256": {
-      "crates/worldgen11/src/container/mod.rs": "44962fefaa0cdaba97e752ac14bd5251055b945fda9d5da046126858376dd8f8"
+      "crates/worldgen11/src/container/mod.rs": "b51ddcf497d19220e07aec938f3119d990a65b34f4bb26e441175e03213eacd0"
     },
     "original_source_sha256": {
       "old": "work/retromcp-1.0/minecraft/src/net/minecraft/src/SlotCrafting.java",
@@ -577,7 +577,7 @@
       "new_sha256": "741e9f2fee7de68052856d6174b48bf96b10184b0447a90717a99d2d12083cd0"
     },
     "completion_blockers": [],
-    "revalidation": "Current gameplay/settings/worldtype/biome/layer/flat/spawn/depthfog suite rerun; newly changed helpers are covered by additional direct original probes. No whole inherited class claim."
+    "revalidation": "Relevant gameplay/world/provider/save/sign-font suites rerun on current runtime; declarations retain unchanged class disposition. No whole inherited API claim."
   },
   "EnchantmentArrowDamage": {
     "complete_delta_review": true,
@@ -598,7 +598,7 @@
       "new_sha256": "ea6852daabe004ad6436c2603fe0f4c5dfa9d6037cc1dc464e606f3c23552f02"
     },
     "completion_blockers": [],
-    "revalidation": "Current gameplay/settings/worldtype/biome/layer/flat/spawn/depthfog suite rerun; newly changed helpers are covered by additional direct original probes. No whole inherited class claim."
+    "revalidation": "Relevant gameplay/world/provider/save/sign-font suites rerun on current runtime; declarations retain unchanged class disposition. No whole inherited API claim."
   },
   "EnchantmentArrowKnockback": {
     "complete_delta_review": true,
@@ -619,7 +619,7 @@
       "new_sha256": "21fc254c8747085721ef994a5c81cabbc4fbb3fddc9656d9a63c96775f04682e"
     },
     "completion_blockers": [],
-    "revalidation": "Current gameplay/settings/worldtype/biome/layer/flat/spawn/depthfog suite rerun; newly changed helpers are covered by additional direct original probes. No whole inherited class claim."
+    "revalidation": "Relevant gameplay/world/provider/save/sign-font suites rerun on current runtime; declarations retain unchanged class disposition. No whole inherited API claim."
   },
   "EnchantmentArrowFire": {
     "complete_delta_review": true,
@@ -640,7 +640,7 @@
       "new_sha256": "4f060453a0bcba1313c04d29a0cea1812e6f4ec48630dc9a8905a81627f329fe"
     },
     "completion_blockers": [],
-    "revalidation": "Current gameplay/settings/worldtype/biome/layer/flat/spawn/depthfog suite rerun; newly changed helpers are covered by additional direct original probes. No whole inherited class claim."
+    "revalidation": "Relevant gameplay/world/provider/save/sign-font suites rerun on current runtime; declarations retain unchanged class disposition. No whole inherited API claim."
   },
   "EnchantmentArrowInfinite": {
     "complete_delta_review": true,
@@ -661,7 +661,7 @@
       "new_sha256": "5cc49efd8a509103925e965d20fded1ebda44b187281657bf9f592663164bbd2"
     },
     "completion_blockers": [],
-    "revalidation": "Current gameplay/settings/worldtype/biome/layer/flat/spawn/depthfog suite rerun; newly changed helpers are covered by additional direct original probes. No whole inherited class claim."
+    "revalidation": "Relevant gameplay/world/provider/save/sign-font suites rerun on current runtime; declarations retain unchanged class disposition. No whole inherited API claim."
   },
   "BiomeGenBase": {
     "complete_delta_review": true,
@@ -677,7 +677,7 @@
       "1.1": "39bae55fd0224c744482df9402d27abde6f3794de364539a115a3d68b6cbd1f8"
     },
     "completion_blockers": [],
-    "revalidation": "Fresh complete bounded reproducers on current committed runtime source."
+    "revalidation": "Relevant gameplay/world/provider/save/sign-font suites rerun on current runtime; declarations retain unchanged class disposition. No whole inherited API claim."
   },
   "BiomeGenBeach": {
     "complete_delta_review": true,
@@ -693,7 +693,7 @@
       "1.1": "b0c1114131844f09cd310d94baaf76d8b8d20df953ff94b6f9801891b9c66095"
     },
     "completion_blockers": [],
-    "revalidation": "Fresh complete bounded reproducers on current committed runtime source."
+    "revalidation": "Relevant gameplay/world/provider/save/sign-font suites rerun on current runtime; declarations retain unchanged class disposition. No whole inherited API claim."
   },
   "BiomeGenSwamp": {
     "complete_delta_review": true,
@@ -709,7 +709,7 @@
       "1.1": "c112db01da1ec55a5708d02f03e2ccf17ebdc913a117f1d27f55368616fee333"
     },
     "completion_blockers": [],
-    "revalidation": "Fresh complete bounded reproducers on current committed runtime source."
+    "revalidation": "Relevant gameplay/world/provider/save/sign-font suites rerun on current runtime; declarations retain unchanged class disposition. No whole inherited API claim."
   },
   "ChunkProviderGenerate": {
     "complete_delta_review": true,
@@ -724,7 +724,7 @@
       "1.1": "69570251eac808193c1491f6f8c56e5bad3cca92667d9b79bc079f73bbb9a273"
     },
     "completion_blockers": [],
-    "revalidation": "Fresh complete bounded reproducers on current committed runtime source."
+    "revalidation": "Relevant gameplay/world/provider/save/sign-font suites rerun on current runtime; declarations retain unchanged class disposition. No whole inherited API claim."
   },
   "ComponentVillage": {
     "complete_delta_review": true,
@@ -732,7 +732,7 @@
     "rust_source_sha256": {
       "crates/worldgen11/src/structures/village.rs": "943d648aa1973ea9d1d13943b72fae6f565bf610b315c0ba47b710575f0c5f6b",
       "crates/worldgen11/src/structures/village_generated.rs": "8910006a84500e642cd5bd5c0dd87d367f57db21d467aefc53b527e3b44bf48a",
-      "crates/worldgen11/src/structures/locations.rs": "d4431e2f7c9d6b4a31c46c6ff8eb470bf7809d7d6994efef022cd720bdab32fa",
+      "crates/worldgen11/src/structures/locations.rs": "cf6e50c56822c779cb87995f1bb40e97e5bc8ab64e552c9ea1506b008a798c1e",
       "crates/worldgen11/src/structures/component.rs": "1301046367f870908ec02cf185e6fe0d3ef4eddd4e3f0453327e70fe6cce8661"
     },
     "original_source_sha256": {
@@ -740,7 +740,7 @@
       "1.1": "355cd6438dc1748228d5bbf8c4849df02b72e87be8ef08f7795dd51249f5b42b"
     },
     "completion_blockers": [],
-    "revalidation": "Fresh complete bounded reproducers on current committed runtime source."
+    "revalidation": "Relevant gameplay/world/provider/save/sign-font suites rerun on current runtime; declarations retain unchanged class disposition. No whole inherited API claim."
   },
   "ComponentVillageHouse2": {
     "complete_delta_review": true,
@@ -748,7 +748,7 @@
     "rust_source_sha256": {
       "crates/worldgen11/src/structures/village.rs": "943d648aa1973ea9d1d13943b72fae6f565bf610b315c0ba47b710575f0c5f6b",
       "crates/worldgen11/src/structures/village_generated.rs": "8910006a84500e642cd5bd5c0dd87d367f57db21d467aefc53b527e3b44bf48a",
-      "crates/worldgen11/src/structures/locations.rs": "d4431e2f7c9d6b4a31c46c6ff8eb470bf7809d7d6994efef022cd720bdab32fa",
+      "crates/worldgen11/src/structures/locations.rs": "cf6e50c56822c779cb87995f1bb40e97e5bc8ab64e552c9ea1506b008a798c1e",
       "crates/worldgen11/src/structures/component.rs": "1301046367f870908ec02cf185e6fe0d3ef4eddd4e3f0453327e70fe6cce8661"
     },
     "original_source_sha256": {
@@ -756,7 +756,7 @@
       "1.1": "de11ea402759bcf55d90ff6e17f8b035d655a6a0a7ee5f4b6412216e4c8e0c61"
     },
     "completion_blockers": [],
-    "revalidation": "Fresh complete bounded reproducers on current committed runtime source."
+    "revalidation": "Relevant gameplay/world/provider/save/sign-font suites rerun on current runtime; declarations retain unchanged class disposition. No whole inherited API claim."
   },
   "EnumWorldType": {
     "complete_delta_review": true,
@@ -772,7 +772,7 @@
       "1.1": "c88dcb94da5c7b055d389b179e9d814ba46da8b925cf5d8ba0a14b17c44a4dc5"
     },
     "completion_blockers": [],
-    "revalidation": "Fresh complete bounded reproducers on current committed runtime source."
+    "revalidation": "Relevant gameplay/world/provider/save/sign-font suites rerun on current runtime; declarations retain unchanged class disposition. No whole inherited API claim."
   },
   "GenLayer": {
     "complete_delta_review": true,
@@ -786,7 +786,7 @@
       "1.1": "46cf6904443dac0ce9be02b6f36aa28f459ed9e69a0addee874a0866a82ae3e9"
     },
     "completion_blockers": [],
-    "revalidation": "Fresh complete bounded reproducers on current committed runtime source."
+    "revalidation": "Relevant gameplay/world/provider/save/sign-font suites rerun on current runtime; declarations retain unchanged class disposition. No whole inherited API claim."
   },
   "MapGenVillage": {
     "complete_delta_review": true,
@@ -794,7 +794,7 @@
     "rust_source_sha256": {
       "crates/worldgen11/src/structures/village.rs": "943d648aa1973ea9d1d13943b72fae6f565bf610b315c0ba47b710575f0c5f6b",
       "crates/worldgen11/src/structures/village_generated.rs": "8910006a84500e642cd5bd5c0dd87d367f57db21d467aefc53b527e3b44bf48a",
-      "crates/worldgen11/src/structures/locations.rs": "d4431e2f7c9d6b4a31c46c6ff8eb470bf7809d7d6994efef022cd720bdab32fa",
+      "crates/worldgen11/src/structures/locations.rs": "cf6e50c56822c779cb87995f1bb40e97e5bc8ab64e552c9ea1506b008a798c1e",
       "crates/worldgen11/src/structures/component.rs": "1301046367f870908ec02cf185e6fe0d3ef4eddd4e3f0453327e70fe6cce8661"
     },
     "original_source_sha256": {
@@ -802,13 +802,13 @@
       "1.1": "71ef0b2fc471be87933de4358486dfe21cb93b6ed1283650157de3de6bad3ae1"
     },
     "completion_blockers": [],
-    "revalidation": "Fresh complete bounded reproducers on current committed runtime source."
+    "revalidation": "Relevant gameplay/world/provider/save/sign-font suites rerun on current runtime; declarations retain unchanged class disposition. No whole inherited API claim."
   },
   "StructureBoundingBox": {
     "complete_delta_review": true,
     "reason": "four-int constructor y range1..512 rather than0..65536; original flat well clipping distinguishes y0; literal constructor bounds plus boundary unit",
     "rust_source_sha256": {
-      "crates/worldgen11/src/structures.rs": "c429031ac51fd761ded0f678a7f4e584946c2732d67c5f96aa1cc3726391920d",
+      "crates/worldgen11/src/structures.rs": "3f2911f20d6328e2c40f9103f3f7b9d40ef5af2ecdaee5f4e19d57978b2462b3",
       "crates/worldgen11/src/structures/component.rs": "1301046367f870908ec02cf185e6fe0d3ef4eddd4e3f0453327e70fe6cce8661"
     },
     "original_source_sha256": {
@@ -816,7 +816,7 @@
       "1.1": "d7d8272a9302217c3ec5c55c8d207e899530396b503d2992776aec28ac82a10f"
     },
     "completion_blockers": [],
-    "revalidation": "Fresh complete bounded reproducers on current committed runtime source."
+    "revalidation": "Relevant gameplay/world/provider/save/sign-font suites rerun on current runtime; declarations retain unchanged class disposition. No whole inherited API claim."
   },
   "StructureVillageStart": {
     "complete_delta_review": true,
@@ -824,7 +824,7 @@
     "rust_source_sha256": {
       "crates/worldgen11/src/structures/village.rs": "943d648aa1973ea9d1d13943b72fae6f565bf610b315c0ba47b710575f0c5f6b",
       "crates/worldgen11/src/structures/village_generated.rs": "8910006a84500e642cd5bd5c0dd87d367f57db21d467aefc53b527e3b44bf48a",
-      "crates/worldgen11/src/structures/locations.rs": "d4431e2f7c9d6b4a31c46c6ff8eb470bf7809d7d6994efef022cd720bdab32fa",
+      "crates/worldgen11/src/structures/locations.rs": "cf6e50c56822c779cb87995f1bb40e97e5bc8ab64e552c9ea1506b008a798c1e",
       "crates/worldgen11/src/structures/component.rs": "1301046367f870908ec02cf185e6fe0d3ef4eddd4e3f0453327e70fe6cce8661"
     },
     "original_source_sha256": {
@@ -832,7 +832,7 @@
       "1.1": "841fee0593b71d811514b0bfc107e254fab7668fe92445cff9392acd9e376ac6"
     },
     "completion_blockers": [],
-    "revalidation": "Fresh complete bounded reproducers on current committed runtime source."
+    "revalidation": "Relevant gameplay/world/provider/save/sign-font suites rerun on current runtime; declarations retain unchanged class disposition. No whole inherited API claim."
   },
   "WorldChunkManager": {
     "complete_delta_review": true,
@@ -845,7 +845,7 @@
       "1.1": "41a05fbca9e8ad82472c429d21671a5ae110321e5b3e2013b739418adb19da16"
     },
     "completion_blockers": [],
-    "revalidation": "Fresh complete bounded reproducers on current committed runtime source."
+    "revalidation": "Relevant gameplay/world/provider/save/sign-font suites rerun on current runtime; declarations retain unchanged class disposition. No whole inherited API claim."
   },
   "WorldChunkManagerHell": {
     "complete_delta_review": true,
@@ -858,7 +858,7 @@
       "1.1": "563424d715e0ace4a9efd4be25696bb0d276f07f9ad7a420a9a75ff95e6a04c2"
     },
     "completion_blockers": [],
-    "revalidation": "Fresh complete bounded reproducers on current committed runtime source."
+    "revalidation": "Relevant gameplay/world/provider/save/sign-font suites rerun on current runtime; declarations retain unchanged class disposition. No whole inherited API claim."
   },
   "World": {
     "complete_delta_review": true,
@@ -875,7 +875,7 @@
       "1.1": "4f6a58db1a476646e33cac0f43e58dbe75eb2ef85e12391cec5675a36ef4c270"
     },
     "completion_blockers": [],
-    "revalidation": "Fresh complete bounded reproducers on current committed runtime source."
+    "revalidation": "Relevant gameplay/world/provider/save/sign-font suites rerun on current runtime; declarations retain unchanged class disposition. No whole inherited API claim."
   },
   "WorldProvider": {
     "complete_delta_review": true,
@@ -885,16 +885,16 @@
       "crates/worldgen11/src/world/dimension.rs": "178e1786a5e89cca4abbb710a97ceb8e1d34b54f91687d1e87387643e6cdcb95",
       "crates/worldgen11/src/scenario.rs": "dd9dc0d569926752e679ef743db0b671d65941029a9e7e51062dc0d1d287cc95",
       "crates/worldgen11/src/world/spawn181.rs": "a6a6da75654fd6d99ebefc019505bc54b023289195f0dda284774cda48059e7c",
-      "crates/client11/src/render/player_view.rs": "9e688092f5b59b3955a3e8b4e1ffc4e922e89e1e9cf64270d849d22b927c64bc",
-      "crates/client11/src/render/camera.rs": "cb5c8c785b36184dbfd9e7b827adbe70d7885fae8cf91085eba5d2cb2c451387",
-      "crates/client11/src/render/gpu.rs": "a31ab1cbc9a3c6374941b8d312f25426e12cd71669d0ef275d6e429effd6eee2"
+      "crates/client11/src/render/player_view.rs": "07f0172c9dd7e98446726b9602f6303a67933a9067a7b5033d9bca7bd003447b",
+      "crates/client11/src/render/camera.rs": "9155f8d1ba6998a54d37b1e05805874d912b3d950c276bc95581b4a370297f1f",
+      "crates/client11/src/render/gpu.rs": "dc98441efebfdd1a8b12c58d79575b8ea775905b7b067de41d08806eff030174"
     },
     "original_source_sha256": {
       "1.0": "536c4683473312bd6571fc5b57e868b46cf7ee0a2d4c8efbb09517a61de027be",
       "1.1": "c22e161fecedbf3b8e76776973e7606728fd3ff73c42a465b71695cbb29c9530"
     },
     "completion_blockers": [],
-    "revalidation": "Fresh complete bounded reproducers on current committed runtime source."
+    "revalidation": "Relevant gameplay/world/provider/save/sign-font suites rerun on current runtime; declarations retain unchanged class disposition. No whole inherited API claim."
   },
   "WorldProviderEnd": {
     "complete_delta_review": true,
@@ -910,7 +910,7 @@
       "1.1": "122101ebe9ba6571a4f00038fc7d5f4b1f584e1cc0b0ef7c0d11d97cc4594d9c"
     },
     "completion_blockers": [],
-    "revalidation": "Fresh complete bounded reproducers on current committed runtime source."
+    "revalidation": "Relevant gameplay/world/provider/save/sign-font suites rerun on current runtime; declarations retain unchanged class disposition. No whole inherited API claim."
   },
   "WorldSettings": {
     "complete_delta_review": true,
@@ -924,7 +924,7 @@
       "1.1": "92d1f67ec774d4709159975555567c40c5297e22713682606bf808c858f5210e"
     },
     "completion_blockers": [],
-    "revalidation": "Fresh complete bounded reproducers on current committed runtime source."
+    "revalidation": "Relevant gameplay/world/provider/save/sign-font suites rerun on current runtime; declarations retain unchanged class disposition. No whole inherited API claim."
   },
   "GenLayerHills": {
     "complete_delta_review": true,
@@ -938,7 +938,7 @@
       "1.1": "70150c89f924b90fc1edfd00875acaae2ce2cfa1cb686c3d7a7a05dbddbf24a8"
     },
     "completion_blockers": [],
-    "revalidation": "Fresh complete bounded reproducers on current committed runtime source."
+    "revalidation": "Relevant gameplay/world/provider/save/sign-font suites rerun on current runtime; declarations retain unchanged class disposition. No whole inherited API claim."
   },
   "GenLayerShore": {
     "complete_delta_review": true,
@@ -952,7 +952,7 @@
       "1.1": "787da2e1dc8623de1e577c52080753897dc6532b0f4c5b0ef075461de637151b"
     },
     "completion_blockers": [],
-    "revalidation": "Fresh complete bounded reproducers on current committed runtime source."
+    "revalidation": "Relevant gameplay/world/provider/save/sign-font suites rerun on current runtime; declarations retain unchanged class disposition. No whole inherited API claim."
   },
   "GenLayerSwampRivers": {
     "complete_delta_review": true,
@@ -966,7 +966,7 @@
       "1.1": "296dfff7bfc0d77170c79d2a1e834277e5b29ece07523db2659fbd05214e3e95"
     },
     "completion_blockers": [],
-    "revalidation": "Fresh complete bounded reproducers on current committed runtime source."
+    "revalidation": "Relevant gameplay/world/provider/save/sign-font suites rerun on current runtime; declarations retain unchanged class disposition. No whole inherited API claim."
   },
   "WorldInfo": {
     "complete_delta_review": true,
@@ -982,7 +982,7 @@
       "1.1": "4b6272349d56f03261855b5837f299428ac3641f6333e8bfb75ba1a681c66f87"
     },
     "completion_blockers": [],
-    "revalidation": "Fresh complete bounded reproducers on current committed runtime source."
+    "revalidation": "Relevant gameplay/world/provider/save/sign-font suites rerun on current runtime; declarations retain unchanged class disposition. No whole inherited API claim."
   },
   "WorldProviderHell": {
     "complete_delta_review": true,
@@ -998,7 +998,7 @@
       "1.1": "cd81191027f9780267588830338373c1f839c146053a926fe74b5b714df870fa"
     },
     "completion_blockers": [],
-    "revalidation": "Fresh complete bounded reproducers on current committed runtime source."
+    "revalidation": "Relevant gameplay/world/provider/save/sign-font suites rerun on current runtime; declarations retain unchanged class disposition. No whole inherited API claim."
   },
   "TileEntityBrewingStand": {
     "complete_delta_review": true,
@@ -1011,20 +1011,22 @@
       "1.1": "ccdbe8a28dd2500af6f237cf3bfa67f6d9160b18f4e69a065460378266bf8908"
     },
     "completion_blockers": [],
-    "direct_original_evidence": "Real original updateEntity timeline through402ticks: normal completion, ingredient swap, removal, NBT save/reload; compares stacks, brewTime, ingredientID, filledSlots, dirty callbacks, metadata notifications and World RNG."
+    "direct_original_evidence": "Real original updateEntity timeline through402ticks: normal completion, ingredient swap, removal, NBT save/reload; compares stacks, brewTime, ingredientID, filledSlots, dirty callbacks, metadata notifications and World RNG.",
+    "revalidation": "Relevant gameplay/world/provider/save/sign-font suites rerun on current runtime; declarations retain unchanged class disposition. No whole inherited API claim."
   },
   "EntityCreeper": {
     "complete_delta_review": true,
     "reason": "Sole hunk: onDeath skeleton record nextInt(2) becomes nextInt(10).",
     "rust_source_sha256": {
-      "crates/worldgen11/src/entity/living.rs": "bcc7aced336d073abf762c0ca08e17b5b12ab313dfb5229b1e635da3c34b0d0c"
+      "crates/worldgen11/src/entity/living.rs": "924cd1b4bd7f680f54a550013fe76a2394db6d7ee8fc5d2bfd340dbd23b8a31e"
     },
     "original_source_sha256": {
       "1.0": "2fd0efe4d10ed0372c916a4f8f14400356db1f17bb85ad148321bb2c00c317a7",
       "1.1": "e3a39ef187ff1f3e764b5aaed75c3e85dcc24370a279273d1d6a94db01edb77a"
     },
     "completion_blockers": [],
-    "direct_original_evidence": "Real onDeath with skeleton/zombie/generic sources, both world modes and200 seeds; ordered actual item drops plus Creeper and World RNG tails; all10 records observed."
+    "direct_original_evidence": "Real onDeath with skeleton/zombie/generic sources, both world modes and200 seeds; ordered actual item drops plus Creeper and World RNG tails; all10 records observed.",
+    "revalidation": "Relevant gameplay/world/provider/save/sign-font suites rerun on current runtime; declarations retain unchanged class disposition. No whole inherited API claim."
   },
   "BlockDetectorRail": {
     "complete_delta_review": true,
@@ -1038,13 +1040,14 @@
       "1.1": "e8754b44d966e34b114216a7a46b87254eb29a810dcabc5f43f2b8e093a61d31"
     },
     "completion_blockers": [],
-    "direct_original_evidence": "Original private setStateIfMinecartInteractsWithRail vs actual Rust update_detector_rail: eight height boundaries, on/off metadata, three float-sensitive coordinates; six exact AABB bits, metadata, pending ticks, RNG."
+    "direct_original_evidence": "Original private setStateIfMinecartInteractsWithRail vs actual Rust update_detector_rail: eight height boundaries, on/off metadata, three float-sensitive coordinates; six exact AABB bits, metadata, pending ticks, RNG.",
+    "revalidation": "Relevant gameplay/world/provider/save/sign-font suites rerun on current runtime; declarations retain unchanged class disposition. No whole inherited API claim."
   },
   "BlockSnow": {
     "complete_delta_review": true,
     "reason": "canPlaceBlockAt accepts leaves regardless of opacity. Other hunk is World.entityJoinedWorld\u2192spawnEntityInWorld rename; inherited drop behavior unchanged.",
     "rust_source_sha256": {
-      "crates/worldgen11/src/world/behavior.rs": "b99851685982ac611006adf2b8e1466abbd72585ce6aec447197b1875ad81d0c",
+      "crates/worldgen11/src/world/behavior.rs": "030817bad8cb11c7d8a933d83b66a88de9914b9ea0cf0751e14c27d12a302e0f",
       "crates/worldgen11/src/entity/blocks11.rs": "35f21da564c6809b0f64016a3c8bcf544dd1ab37df6976c7e128c6ccafe49299"
     },
     "original_source_sha256": {
@@ -1052,7 +1055,8 @@
       "1.1": "3c5a0ed8d18380953ac625baffa83c487d60bd0f63ad0f1e180e5967f15c04db"
     },
     "completion_blockers": [],
-    "direct_original_evidence": "Real original support query and neighbor callback for10 support blocks and both leaves rendering opacity modes; placement boolean, removal block and RNG."
+    "direct_original_evidence": "Real original support query and neighbor callback for10 support blocks and both leaves rendering opacity modes; placement boolean, removal block and RNG.",
+    "revalidation": "Relevant gameplay/world/provider/save/sign-font suites rerun on current runtime; declarations retain unchanged class disposition. No whole inherited API claim."
   },
   "BlockStem": {
     "complete_delta_review": true,
@@ -1066,7 +1070,8 @@
       "1.1": "eec153d16d410916ddcea99e120362a3e7674e26eac8bd5a3d6f410fa3b79c39"
     },
     "completion_blockers": [],
-    "direct_original_evidence": "Real original updateTick for pumpkin/melon, five soils, existing adjacent fruit/no fruit,100 seeds; actual four neighboring resulting block IDs and World/passed RNG tails. Soil-before-air query order matched by source audit."
+    "direct_original_evidence": "Real original updateTick for pumpkin/melon, five soils, existing adjacent fruit/no fruit,100 seeds; actual four neighboring resulting block IDs and World/passed RNG tails. Soil-before-air query order matched by source audit.",
+    "revalidation": "Relevant gameplay/world/provider/save/sign-font suites rerun on current runtime; declarations retain unchanged class disposition. No whole inherited API claim."
   },
   "BlockTrapDoor": {
     "complete_delta_review": true,
@@ -1080,7 +1085,8 @@
       "1.1": "e07ced2dfe9ba3c5bdd9114163ad82515afcbb38c1e5f9cb28cb6a1416d53c81"
     },
     "completion_blockers": [],
-    "direct_original_evidence": "Real original neighbor callback for16 metadata, changed0/1/69/93/96, powered/unpowered and server/remote; final metadata, actual auxiliary event count and RNG."
+    "direct_original_evidence": "Real original neighbor callback for16 metadata, changed0/1/69/93/96, powered/unpowered and server/remote; final metadata, actual auxiliary event count and RNG.",
+    "revalidation": "Relevant gameplay/world/provider/save/sign-font suites rerun on current runtime; declarations retain unchanged class disposition. No whole inherited API claim."
   },
   "EntityWolf": {
     "complete_delta_review": true,
@@ -1093,19 +1099,1414 @@
       "1.1": "d730fe75db36307479d1656da1f7aee52c7f0f3606e1f8485c087c9bf5fc9623"
     },
     "completion_blockers": [],
-    "direct_original_evidence": "Real original Wolf onLivingUpdate own body with inherited movement isolated: every boolean combination of world mode, shaking, active shake, path, onGround and legacy entity flag; shake state, raw float times, Entity/World RNG. Separate EntityLiving changed guards are not credited."
+    "direct_original_evidence": "Real original Wolf onLivingUpdate own body with inherited movement isolated: every boolean combination of world mode, shaking, active shake, path, onGround and legacy entity flag; shake state, raw float times, Entity/World RNG. Separate EntityLiving changed guards are not credited.",
+    "revalidation": "Relevant gameplay/world/provider/save/sign-font suites rerun on current runtime; declarations retain unchanged class disposition. No whole inherited API claim."
   },
   "Tessellator": {
     "complete_delta_review": true,
     "reason": "Sole source hunk masks each signed normal byte before packing; actual original setNormal, production pack_normal and Fixed.set_normal match 11,331 IEEE754 vectors.",
     "rust_source_sha256": {
-      "crates/client11/src/render/entity/living.rs": "88668be065e5d147b7a1cc15bc0b6aff346306d5bfb6a9d191e0a63eea65eb13",
+      "crates/client11/src/render/entity/living.rs": "a0a99b1f56cea8b9dca99b685990745df50c6f1a9b9a4ce0a809e1f83b063b1e",
       "crates/client11/src/render/entity/fixed.rs": "bfcea290482baf5c0487758170a2f5a21cbc96c6527b8cd78127df387adf578c",
-      "crates/client11/src/render/entity/object_check.rs": "26777f9937fe8f84e2aa3701eeb6b2432332e9741ff48b280d46b1329ae5f49a"
+      "crates/client11/src/render/entity/object_check.rs": "e791092e07e09dd820ae107754f3b316b9f4a3a16bfff11e3c5e348c50fcee83"
     },
     "original_source_sha256": {
       "1.0": "220a7d516f3a99d01277e1bb202b63f3d8f96ba31229cb86b463fa0ac678cb97",
       "1.1": "3c9e24468a73eae6c262a26075490c1e93b4ae19181016e13997a6b4e98a61fa"
-    }
+    },
+    "revalidation": "Relevant gameplay/world/provider/save/sign-font suites rerun on current runtime; declarations retain unchanged class disposition. No whole inherited API claim."
+  },
+  "ChunkProviderFlat": {
+    "complete_delta_review": true,
+    "reason": "Entire new flat backend runtime delta: ctor/four-layer fill/skylight/size1 village/features flags/population RNG previously compared; spawn-list/weighted selection/null locator delegation and actual cache/save/unload callers now directly compared. Unused raw leaf facade returns reviewed, original vectors recorded; nonnullable fixed-Plains registration excludes null manager/biome invalid seams.",
+    "rust_source_sha256": {
+      "crates/worldgen11/src/flat.rs": "98e3a72fbce435cff3796408811ea4a8b30e7374f7528815f5ad0c8885b3d262",
+      "crates/worldgen11/src/world/mod.rs": "bc6a6777e948aacb68e9581c38ae9b09358abe82af5aaafcb1a5afdebd44a162",
+      "crates/worldgen11/src/world/provider181.rs": "27fa23f1c2ef34c1a36c6776469c72d4f55213d177bce6dbb57d516587aa4e70",
+      "crates/worldgen11/src/world/release10.rs": "4a93e9d0d533bcd028e7e6c0c45a4630a5f46949682f059f3be29aee6a8b6f20",
+      "crates/worldgen11/src/world/spawn181.rs": "a6a6da75654fd6d99ebefc019505bc54b023289195f0dda284774cda48059e7c"
+    },
+    "original_source_sha256": {
+      "1.0": null,
+      "1.1": "7ea4e27547df9080c860d1e24d5c7aeb956a72639f50c09f85e045e789f41073"
+    },
+    "completion_blockers": [],
+    "limitations": [
+      "Only singleplayer caller interfaces exist in Rust: original wrapper bypasses leaf chunkExists/saveChunks/canSave/makeString/loadChunk, so those source members have direct original vectors and caller disposition rather than invented unused Rust APIs.",
+      "Null manager/biome states cannot be constructed through Rust fixed-Plains registration; their guards are recorded directly from original and enforced by nonnullable runtime types, not tested via a fabricated invalid Rust world."
+    ],
+    "criterion": "Complete normalized delta in authorized singleplayer runtime; explicit original finite evidence, not whole inherited Java API parity."
+  },
+  "MapGenStronghold": {
+    "complete_delta_review": true,
+    "reason": "Independent candidate RNG and exact ten-biome allowlist covered by prior direct map streams/grid; successful-coordinate stdout now implemented in shared actual predicate and verified byte-for-byte alongside repeated generate/nearest retained-state/RNG snapshots. INVALID fallback diagnostic restored and compared, though inherited from1.0.",
+    "rust_source_sha256": {
+      "crates/worldgen11/src/structures/stronghold.rs": "e6670aafde0ea2df454a77992682acdf521561bd71e75c3ff187af2d09ff98bb",
+      "crates/worldgen11/src/structures/stronghold_generated.rs": "2bce024f47f50b67dd0c0b519e84e3acfc622ba83b6163785fd45e9bb1aa0c72",
+      "crates/worldgen11/src/structures/locations.rs": "cf6e50c56822c779cb87995f1bb40e97e5bc8ab64e552c9ea1506b008a798c1e",
+      "crates/worldgen11/src/structures/component.rs": "1301046367f870908ec02cf185e6fe0d3ef4eddd4e3f0453327e70fe6cce8661",
+      "crates/worldgen11/src/structures.rs": "3f2911f20d6328e2c40f9103f3f7b9d40ef5af2ecdaee5f4e19d57978b2462b3"
+    },
+    "original_source_sha256": {
+      "1.0": "e969572e4c4d887fa303c70f4e0fab724c18dba1beec05efd546c4521650dde2",
+      "1.1": "5a4cd926618b3caf072dd3ca35e0cafaa75b3bc9aaf0c1cc8a368ee2e6e68ac3"
+    },
+    "completion_blockers": [],
+    "limitations": [
+      "Finite seeded direct streams, not universal-input formal proof."
+    ],
+    "criterion": "Complete normalized delta in authorized singleplayer runtime; explicit original finite evidence, not whole inherited Java API parity."
+  },
+  "EntitySheep": {
+    "complete_delta_review": true,
+    "reason": [
+      {
+        "delta": "new field_44004_b defaults0; onLivingUpdate decrements positive timer after inherited base work",
+        "check": "sheep_ticks11.txt168 original callbacks: age/timer/food boundaries and entity RNG; no timer NBT persistence is added in Java or Rust"
+      },
+      {
+        "delta": "jump override suppresses inherited jump iff timer>0; isMovementCeased returns timer>0",
+        "check": "sheep_status11.txt36 direct original jump/movement cases covering timers-1/0/1/4/36/40, sprint state, exact motion bits/velocity flag/RNG; production living_update invokes jump11 and creature_action_state invokes movement_ceased11"
+      },
+      {
+        "delta": "updateEntityActionState calls inherited action then starts grazing40 using child nextInt50 short circuit / nextInt1000; status10 notification",
+        "check": "sheep_actions11.txt12864 original callbacks; actual Rust creature_action_state followed by own action; timer/age/sheared/food/SFX/RNG. World.setEntityState is an empty original singleplayer body, so local producer directly sets timer with no duplicate callback"
+      },
+      {
+        "delta": "timer4 consumes tallgrass (any metadata) or grass, resets sheared, child growth+1200 clamped0",
+        "check": "sheep_actions11.txt plus sheep_ticks11.txt verifies exact food precedence, callback/timer ordering, growth boundaries and RNG"
+      },
+      {
+        "delta": "handleHealthUpdate10 sets40; other statuses inherited",
+        "check": "sheep_status11.txt statuses0/1/10 across initial timer values; actual production handler. Unchanged superclass handling of statuses2/3 is inherited, not recredited"
+      },
+      {
+        "delta": "new func_44003_c and func_44002_d head animation helper formulas",
+        "check": "sheep_heads11.txt60 raw float outputs over12 timer boundaries and5 partial ticks; public production getters unchanged in this slice; parent client model integration remains separate gate"
+      },
+      {
+        "delta": "interact requires nonchild; wool drop2+nextInt3 becomes1+nextInt3",
+        "check": "shearing11.txt800 original interactions across100seeds/age/world/sheared; actual Rust player use_on_entity checks result/sheared/dropcount/shearsdamage/RNG"
+      },
+      {
+        "delta": "spawnBabyAnimal declaration renamed from func_40145_a",
+        "check": "Inherited body unchanged; no new behavior delta"
+      }
+    ],
+    "rust_source_sha256": {
+      "crates/worldgen11/src/entity/sheep11.rs": "436e7a546f9e3277bd3f58c97365d5d2b29782fdc4266ceea18c3ca2fc72a866",
+      "crates/worldgen11/src/entity/living.rs": "924cd1b4bd7f680f54a550013fe76a2394db6d7ee8fc5d2bfd340dbd23b8a31e",
+      "crates/worldgen11/src/entity/creature.rs": "48e28ef1881ea7cbf3d78495308bc29026a480c355e0ffdcd13ad45c4ac92df0"
+    },
+    "original_source_sha256": {
+      "old_sha256": "a30ecc933f3810162553d1be51b264151323e30e906370a8f68aa87989d59525",
+      "new_sha256": "5ee1080c15cc36b4755e759777dba016f885780605163d5661f1480ab5976b4c"
+    },
+    "completion_blockers": [],
+    "limitations": [],
+    "criterion": "Complete normalized delta in authorized singleplayer runtime; explicit original finite evidence, not whole inherited Java API parity."
+  },
+  "EntitySquid": {
+    "complete_delta_review": true,
+    "reason": [
+      {
+        "delta": "two motion-update predicates in water/dry use !world.multiplayerWorld instead of !isMultiplayerEntity",
+        "check": "squid_guard11.txt400 original own callbacks: bothworld modes/legacyflag/water,5rotation boundaries,10seeds; all14 animation float fields,3motion doubles,renderYawOffset/rotationYaw and RNG exact. Production squid_living_update used directly; inherited base environmental movement deliberately isolated in Java"
+      },
+      {
+        "delta": "field_21083_i/field_21082_j renamed tentacleAngle/lastTentacleAngle; seaLevel and speed/sound names renamed",
+        "check": "All remaining original hunks are exact symbol renames with unchanged expressions; corresponding Rust fields already retained. New own-update probe includes renamed animation fields"
+      }
+    ],
+    "rust_source_sha256": {
+      "crates/worldgen11/src/entity/aquatic.rs": "d9ad609c9228275183bac56497af1a54e466555c716b92b530d12cfff7cbad93"
+    },
+    "original_source_sha256": {
+      "old_sha256": "ca7d47e9caaa008a711c90f61b18ea406fbe6e43b262bb28092217415aa1151b",
+      "new_sha256": "2259798f19b254cc828f222de24007ea6ca14bf3b9f54d25244cb94fec230693"
+    },
+    "completion_blockers": [],
+    "limitations": [],
+    "criterion": "Complete normalized delta in authorized singleplayer runtime; explicit original finite evidence, not whole inherited Java API parity."
+  },
+  "ItemStack": {
+    "complete_delta_review": true,
+    "reason": [
+      {
+        "delta": "new nullable tag-equality helper func_46154_a",
+        "direct_authority_and_check": "stacknulltags11.txt16 original helper/areItemStacksEqual null/tagcases vs production tags_equal_optional11/stacks_equal181; same helper used by every merge predicate"
+      },
+      {
+        "delta": "setTagCompound removes stackable restriction and preserves reference",
+        "direct_authority_and_check": "tags11.txt9 existing acceptance/mergevectors plus newcontainertags11.txt1728 actual tagged stackable callbacks; post-callback retained handle mutations prove reference identity"
+      },
+      {
+        "delta": "stackTagCompound/method/callee rename hunks; copy/split/NBT bodies unchanged",
+        "direct_authority_and_check": "Complete original source diff retained; no extra body/control/literal delta. copy/split root key20vectors and payload independence1728/48 cases verify inherited calls used by new stackable-tag support"
+      },
+      {
+        "delta": "root key is part of original compound equality and save changes shared key to tag",
+        "direct_authority_and_check": "stacknames11.txt20 direct original fresh/saved/copy/split/load/inventory/shared-reference cases. Runtime now tracks key per public shared compound handle, preserves it on clone/split/new accepted stack, names it on write/load. No StackTag client ABI change"
+      }
+    ],
+    "rust_source_sha256": {
+      "crates/worldgen11/src/stack_tags.rs": "f9b11cd3854b0f7848105aa05094689f9c29791615af545ba83fcccebd4b29ec",
+      "crates/worldgen11/src/entity/item_stack.rs": "03900a6cfc676cd375744543578310481adf1d86266d93d2a7f32bf38118fc41",
+      "crates/worldgen11/src/entity/player/inventory.rs": "cd78b3bde423a8f6b466e9e573bc2c31f0aaec9c24889d49d96f2ef7a6635b10",
+      "crates/worldgen11/src/container/mod.rs": "b51ddcf497d19220e07aec938f3119d990a65b34f4bb26e441175e03213eacd0",
+      "crates/worldgen11/src/fixtures/containertags11.txt": "12ef1f159cf7cf89102070bae169f1a969e0a621019665c8bfa1e67e9a757d4f",
+      "crates/worldgen11/src/fixtures/inventoryalias11.txt": "4525562cb3237c030b9f25534ecdc7d25c766aa41440b382f8ec119ae4002a37",
+      "crates/worldgen11/src/fixtures/stacknulltags11.txt": "fe35aaebc99d603d1d71442dc80f593309dd49fefedd6b3fa28604a5e5235551",
+      "crates/worldgen11/src/fixtures/stacknames11.txt": "5ac2a65492aaf4ada58fa80337aa4eaab8d48960b17b151c14722e35fe5499dc",
+      "tools/oracle11/src/net/minecraft/src/InventoryTags11.java": "406357c701edba56562f73c0383816acc2ac74b3ad9c4aa439582c82cdfd5668",
+      "tools/oracle11/verify_gameplay_slice.ps1": "c50342f619cb201f2eb72c5182377280b14dc8adbf98fbb05faf354b77098385"
+    },
+    "original_source_sha256": {
+      "1.0": "6be874340b47a95bd0f3f622a6a149cfff9a2d2f3d2e20835182482c06d79425",
+      "1.1": "ea21909068bfaa90a2fc4281cee9b1c541660055a5c3acb7b525cd711e3ba08f"
+    },
+    "completion_blockers": [],
+    "limitations": [
+      "Only entire normalized1.1 delta credited; inherited unchanged Java API is not newly proved",
+      "Snapshot-value Rust NBT representation does not provide every reflective/retained-input-NBT Java API alias; existing singleplayer load input is consumed and this is not a new1.1 changed path",
+      "Tooltip/render/name callees remain their own parent classes; ItemStack call/body changes here are symbol renames"
+    ],
+    "criterion": "Complete normalized delta in authorized singleplayer runtime; explicit original finite evidence, not whole inherited Java API parity."
+  },
+  "InventoryPlayer": {
+    "complete_delta_review": true,
+    "reason": [
+      {
+        "delta": "storeItemStack adds ItemStack.func_46154_a equality gate",
+        "direct_authority_and_check": "tags11.txt9 andinventoryalias11.txt48 acceptance cases empty/equal/unequal/full, sourcecount1/2/64/65; actual count/return bug and all36slots matchoriginal"
+      },
+      {
+        "delta": "storePartialItemStack clones source compound into new0-count destination",
+        "direct_authority_and_check": "inventoryalias11.txt48 before/after mutations of retained source and existing/inventory compound; direct copy independence. stacknames11.txtop3 preserves original compound key in accepted clone"
+      },
+      {
+        "delta": "getInventorySlotContainItemAndDamage/hasItemStack/copyInventory names",
+        "direct_authority_and_check": "Complete original source diff shows body unchanged; no added behavior"
+      }
+    ],
+    "rust_source_sha256": {
+      "crates/worldgen11/src/stack_tags.rs": "f9b11cd3854b0f7848105aa05094689f9c29791615af545ba83fcccebd4b29ec",
+      "crates/worldgen11/src/entity/item_stack.rs": "03900a6cfc676cd375744543578310481adf1d86266d93d2a7f32bf38118fc41",
+      "crates/worldgen11/src/entity/player/inventory.rs": "cd78b3bde423a8f6b466e9e573bc2c31f0aaec9c24889d49d96f2ef7a6635b10",
+      "crates/worldgen11/src/container/mod.rs": "b51ddcf497d19220e07aec938f3119d990a65b34f4bb26e441175e03213eacd0",
+      "crates/worldgen11/src/fixtures/containertags11.txt": "12ef1f159cf7cf89102070bae169f1a969e0a621019665c8bfa1e67e9a757d4f",
+      "crates/worldgen11/src/fixtures/inventoryalias11.txt": "4525562cb3237c030b9f25534ecdc7d25c766aa41440b382f8ec119ae4002a37",
+      "crates/worldgen11/src/fixtures/stacknulltags11.txt": "fe35aaebc99d603d1d71442dc80f593309dd49fefedd6b3fa28604a5e5235551",
+      "crates/worldgen11/src/fixtures/stacknames11.txt": "5ac2a65492aaf4ada58fa80337aa4eaab8d48960b17b151c14722e35fe5499dc",
+      "tools/oracle11/src/net/minecraft/src/InventoryTags11.java": "406357c701edba56562f73c0383816acc2ac74b3ad9c4aa439582c82cdfd5668",
+      "tools/oracle11/verify_gameplay_slice.ps1": "c50342f619cb201f2eb72c5182377280b14dc8adbf98fbb05faf354b77098385"
+    },
+    "original_source_sha256": {
+      "1.0": "ff19223d1a38dacfb85eee68a4faf472c838a442cdb76acc31b6377f0676e8fd",
+      "1.1": "656b463860f29291cc1e49eaa7b297ce512dbc27b8e990b6bdc883d82b0aac79"
+    },
+    "completion_blockers": [],
+    "limitations": [
+      "Only entire normalized1.1 delta credited; inherited unchanged Java API is not newly proved",
+      "Snapshot-value Rust NBT representation does not provide every reflective/retained-input-NBT Java API alias; existing singleplayer load input is consumed and this is not a new1.1 changed path",
+      "Tooltip/render/name callees remain their own parent classes; ItemStack call/body changes here are symbol renames"
+    ],
+    "criterion": "Complete normalized delta in authorized singleplayer runtime; explicit original finite evidence, not whole inherited Java API parity."
+  },
+  "Container": {
+    "complete_delta_review": true,
+    "reason": [
+      {
+        "delta": "slotClick valid slot merges only sameID/subtypeDamage/tags; otherwise swaps only if count<=slotlimit",
+        "direct_authority_and_check": "containertags11.txt1728 actual original Chest/Furnace callbacks vs production slot_click; bothbuttons,counts0/1/63 and0/1/2/64, all9tagcombos, before/aftermutation cursor/return/allslots"
+      },
+      {
+        "delta": "slotClick invalid slot pull-to-cursor additionally requires equal tags",
+        "direct_authority_and_check": "Same fixture original actual Furnace output slot and production FurnaceOutput branch; equal/unequal/absent tags and maxstack boundaries"
+      },
+      {
+        "delta": "mergeItemStack additional tag-equality gate",
+        "direct_authority_and_check": "Samefixture real original Chest/Furnace shift transfer with target lastslot tagged equal/unequal, fixed full other slots and one empty slot; allslot positions/cursor/return copies exactlymatch"
+      },
+      {
+        "delta": "enchantItem/retrySlotClick declarations and calls renamed",
+        "direct_authority_and_check": "Complete old/new diff proves unchanged bodies/recursivecall beyond renaming; actualshiftcallbackfixture retains recursion behavior"
+      }
+    ],
+    "rust_source_sha256": {
+      "crates/worldgen11/src/stack_tags.rs": "f9b11cd3854b0f7848105aa05094689f9c29791615af545ba83fcccebd4b29ec",
+      "crates/worldgen11/src/entity/item_stack.rs": "03900a6cfc676cd375744543578310481adf1d86266d93d2a7f32bf38118fc41",
+      "crates/worldgen11/src/entity/player/inventory.rs": "cd78b3bde423a8f6b466e9e573bc2c31f0aaec9c24889d49d96f2ef7a6635b10",
+      "crates/worldgen11/src/container/mod.rs": "b51ddcf497d19220e07aec938f3119d990a65b34f4bb26e441175e03213eacd0",
+      "crates/worldgen11/src/fixtures/containertags11.txt": "12ef1f159cf7cf89102070bae169f1a969e0a621019665c8bfa1e67e9a757d4f",
+      "crates/worldgen11/src/fixtures/inventoryalias11.txt": "4525562cb3237c030b9f25534ecdc7d25c766aa41440b382f8ec119ae4002a37",
+      "crates/worldgen11/src/fixtures/stacknulltags11.txt": "fe35aaebc99d603d1d71442dc80f593309dd49fefedd6b3fa28604a5e5235551",
+      "crates/worldgen11/src/fixtures/stacknames11.txt": "5ac2a65492aaf4ada58fa80337aa4eaab8d48960b17b151c14722e35fe5499dc",
+      "tools/oracle11/src/net/minecraft/src/InventoryTags11.java": "406357c701edba56562f73c0383816acc2ac74b3ad9c4aa439582c82cdfd5668",
+      "tools/oracle11/verify_gameplay_slice.ps1": "c50342f619cb201f2eb72c5182377280b14dc8adbf98fbb05faf354b77098385"
+    },
+    "original_source_sha256": {
+      "1.0": "ca9f534b5c4396fa03f863352bd2ef4658e7a78f88347ffb58977a613204d235",
+      "1.1": "3545a0dd1a694afedfdabf968b03cc39d0cd71af3588cda6f97d6a8a999331d4"
+    },
+    "completion_blockers": [],
+    "limitations": [
+      "Only entire normalized1.1 delta credited; inherited unchanged Java API is not newly proved",
+      "Snapshot-value Rust NBT representation does not provide every reflective/retained-input-NBT Java API alias; existing singleplayer load input is consumed and this is not a new1.1 changed path",
+      "Tooltip/render/name callees remain their own parent classes; ItemStack call/body changes here are symbol renames"
+    ],
+    "criterion": "Complete normalized delta in authorized singleplayer runtime; explicit original finite evidence, not whole inherited Java API parity."
+  },
+  "BlockRedstoneWire": {
+    "complete_delta_review": true,
+    "reason": [
+      {
+        "delta": "old<current or current0 enqueues7 HashSet ordered notifications, including rising nonzero strengths",
+        "evidence": "wirerise11.txt32 original private calculateCurrentChanges calls vs production wire_calculate; final strength, exact Java HashSet order, RNG; controlled raw snapshot avoids invoking placement callbacks during input initialization"
+      },
+      {
+        "delta": "four horizontal onBlockRemoval notifications added before propagation",
+        "evidence": "wireremove11.txt4 original whole callbacks records all6 ordered coordinates/blockID; same ordered production helper; actual production wire_removed matches pending torch callback count for a torch2blocks away, remote modes and RNG"
+      },
+      {
+        "delta": "repeater directional branch before generic provider branch",
+        "evidence": "wireconnect11.txt1152 original isPowerProviderOrWire queries vs production wire_neighbor;8IDs,16metadata and sides-2..6"
+      }
+    ],
+    "rust_source_sha256": {
+      "crates/worldgen11/src/world/redstone.rs": "39f84038989abf6b8d18a1454adad3ed939e15e49e229f29dca6b6cee9287de5",
+      "crates/worldgen11/src/world/behavior.rs": "030817bad8cb11c7d8a933d83b66a88de9914b9ea0cf0751e14c27d12a302e0f",
+      "crates/worldgen11/src/world/ticks_blocks.rs": "a998f63fce4b7b588a702842a42cf79531177d9cba71b2991640a8eef99e0c1f",
+      "crates/worldgen11/src/entity/block_hooks.rs": "8ff7de09d1073953462dd0370fc3916d79d5c4666fa98a9dca49a6f6381c67e5",
+      "crates/worldgen11/src/fixtures/leavesdrops11.txt": "f2394599ba309faa3de4712537f74745aaa81d939335524fb867f21680631217",
+      "crates/worldgen11/src/fixtures/wireconnect11.txt": "1a441101fbb2bc281e9f49f31e09552a8b4f87fccce777bfcc49f949a2773dc7",
+      "crates/worldgen11/src/fixtures/wirerise11.txt": "3aaf29a4e492b9da44a3685725ed4d60f2732f193c7a201368db0b379258ac03",
+      "crates/worldgen11/src/fixtures/wireremove11.txt": "108b96540f792b6aa63aade9d54479aef9cc746615bbf14365b9cce694c085e7",
+      "tools/oracle11/src/net/minecraft/src/LeavesWire11.java": "9df349d9802ab7eb90b726dc8617189e220cf47928eefc56adfe5a36a2ca7621",
+      "tools/oracle11/verify_gameplay_slice.ps1": "c50342f619cb201f2eb72c5182377280b14dc8adbf98fbb05faf354b77098385"
+    },
+    "original_source_sha256": {
+      "1.0": "a1524a0bda00f28c5d699206eba34a430b0702cad97fc38d3d3c2fd4d03af640",
+      "1.1": "a67a71bbf18f3cec713bea23591687180e16da5f7802bac9a45638626d841382"
+    },
+    "completion_blockers": [],
+    "limitations": [],
+    "criterion": "Complete normalized delta in authorized singleplayer runtime; explicit original finite evidence, not whole inherited Java API parity."
+  },
+  "GuiLanguage": {
+    "complete_delta_review": true,
+    "reason": [
+      "Constructor retains same parent/settings; Done returns same parent after actual settings save, proven saved file before original transition and Rust queued transition",
+      "initGui Done6 button geometry/translated text, slot top32/bottom height-61/height18, registered scroll7/8; three resolutions and actual draw geometry",
+      "actionPerformed enabled guard covers disabledDone and disabledscroll; id5 ignored; id6 save+parent; other ids delegate scroll, compared by view geometry for8/8/7",
+      "drawScreen actual list -> pack refresh -> translated title/warning -> buttons, compared original font-strip texture/position/UV/RGBA vertices over126fullframes",
+      "Refresh constructor-1/update decrement/draw+20 schedule with0/1/20updates; original pack-call counter plus actual Rust filesystem-added/removed ZIP observations",
+      "mouseClicked and mouseMovedOrUp delegate unchanged superclass behavior; update super has no added behavior. Literal source review, no inherited reproof requirement"
+    ],
+    "rust_source_sha256": {
+      "crates/client11/src/gui/screens/language.rs": "38c5c99206de3849a5b5c06fa1e097761c63c4c895159b8b689ad1b0a14cc04d",
+      "crates/client11/src/gui/lang.rs": "8fd2a59286ae6f0c6cd3a5cfcba878ad14fc38b2ea2c90a2c2d84f76dcc50cea",
+      "crates/client11/src/gui/font.rs": "3c12f5fe744ad3a79a05c8279d0813a635b7abc01214b3511de781065354f949",
+      "crates/client11/src/gui/settings.rs": "61c01fb9f3e31ad343ce0391494c0ee14bbd0a2be2e4787392e1d0855f81da06",
+      "crates/client11/src/gui/mod.rs": "86efe694608dd478edfcc3d998411bcc0c91f382525ff943cebcf4a92f30819a",
+      "crates/client11/src/gui/slot.rs": "2b1465f5605c13a63e6512061dfa6e9ee4bd4b96fd62508d1399e04379e15d16",
+      "crates/client11/src/texture_packs.rs": "571bbffe6199c815601a216ae8d01a33d2e832feddb23f0628f552cf8c761bf6",
+      "tools/oracle11/probes/LanguageWorkflow11.java": "5df4a6527393228478301d88482a77fcc0a6ff89d84330139d0530f3fecba114",
+      "tools/oracle11/probes/fontdraw/LanguageScreen11.java": "f497f0cb4e7b7122250fcd74a12d5bf1affc53b68afa1bd36589fafac7757dd8",
+      "tools/oracle11/language_workflow11.ps1": "6245354143b6c186e7e75ebaf60775e841fa272db4f2477a8efb10fb7bec44f3"
+    },
+    "original_source_sha256": "1b28a50b7a58d21226899652347dcf1a067ab17e92cb595454e7f39c6ba81406",
+    "completion_blockers": [],
+    "limitations": [
+      "No support claim for externally mutating the singleton language map while the screen is open or malformed/missing jar language resources; installed56locale domain is compared.",
+      "Settings restart uses fresh settings/font initialization from saved options rather than launching a visible Minecraft process. Original UI-return spy reads saved file at actual displayGuiScreen entry; Rust verifies file before consuming queued Display action.",
+      "Original TexturePackList update is a counting fixture seam; Rust verifies actual update filesystem effect. Original FontRenderer and GuiLanguage/GuiSlotLanguage algorithms are unchanged jar bytecode.",
+      "Generic GUI mouse/scroll/render implementations unchanged from inherited versions are not re-proved as additional1.1 delta. Dedicated scroll callback output is covered.",
+      "GuiOptions language-entry102 save/transition branch not added to this workflow; initial options button layout is in callback fixture but no full GuiOptions class completion credit from this handoff."
+    ],
+    "criterion": "Complete normalized delta in authorized singleplayer runtime; explicit original finite evidence, not whole inherited Java API parity."
+  },
+  "GuiSlotLanguage": {
+    "complete_delta_review": true,
+    "reason": [
+      "Constructor exact sorted56language-code/native-name list and fixed slot dimensions; all168selectioncallbacks over3resolutions",
+      "getSize/getContentHeight56/1008, selected currentcode checked for every candidate after every selection",
+      "elementClicked updates original translation singleton, fontUnicode, settingscode, fontBidi and translated Done label for all56installed locales; double-click booleans covered",
+      "drawSlot sets Bidi true for native-name draw, centers at width/2,y+1,white, restores based settingslanguage; actual glyph vertices compare1008list draws acrossLTR/RTL/Unicode active modes",
+      "drawBackground calls original/default background path; fullframe outputs run inherited slot framing under3resolutions. Background generic implementation inherited, new callback delegation literal source reviewed"
+    ],
+    "rust_source_sha256": {
+      "crates/client11/src/gui/screens/language.rs": "38c5c99206de3849a5b5c06fa1e097761c63c4c895159b8b689ad1b0a14cc04d",
+      "crates/client11/src/gui/lang.rs": "8fd2a59286ae6f0c6cd3a5cfcba878ad14fc38b2ea2c90a2c2d84f76dcc50cea",
+      "crates/client11/src/gui/font.rs": "3c12f5fe744ad3a79a05c8279d0813a635b7abc01214b3511de781065354f949",
+      "crates/client11/src/gui/settings.rs": "61c01fb9f3e31ad343ce0391494c0ee14bbd0a2be2e4787392e1d0855f81da06",
+      "crates/client11/src/gui/mod.rs": "86efe694608dd478edfcc3d998411bcc0c91f382525ff943cebcf4a92f30819a",
+      "crates/client11/src/gui/slot.rs": "2b1465f5605c13a63e6512061dfa6e9ee4bd4b96fd62508d1399e04379e15d16",
+      "crates/client11/src/texture_packs.rs": "571bbffe6199c815601a216ae8d01a33d2e832feddb23f0628f552cf8c761bf6",
+      "tools/oracle11/probes/LanguageWorkflow11.java": "5df4a6527393228478301d88482a77fcc0a6ff89d84330139d0530f3fecba114",
+      "tools/oracle11/probes/fontdraw/LanguageScreen11.java": "f497f0cb4e7b7122250fcd74a12d5bf1affc53b68afa1bd36589fafac7757dd8",
+      "tools/oracle11/language_workflow11.ps1": "6245354143b6c186e7e75ebaf60775e841fa272db4f2477a8efb10fb7bec44f3"
+    },
+    "original_source_sha256": "59c5b1d9961de4f3d2ce938b0f7909e9f3474ad22ef7210439c30011bc0fec0d",
+    "completion_blockers": [],
+    "limitations": [
+      "No support claim for externally mutating the singleton language map while the screen is open or malformed/missing jar language resources; installed56locale domain is compared.",
+      "Settings restart uses fresh settings/font initialization from saved options rather than launching a visible Minecraft process. Original UI-return spy reads saved file at actual displayGuiScreen entry; Rust verifies file before consuming queued Display action.",
+      "Original TexturePackList update is a counting fixture seam; Rust verifies actual update filesystem effect. Original FontRenderer and GuiLanguage/GuiSlotLanguage algorithms are unchanged jar bytecode.",
+      "Generic GUI mouse/scroll/render implementations unchanged from inherited versions are not re-proved as additional1.1 delta. Dedicated scroll callback output is covered.",
+      "GuiOptions language-entry102 save/transition branch not added to this workflow; initial options button layout is in callback fixture but no full GuiOptions class completion credit from this handoff."
+    ],
+    "criterion": "Complete normalized delta in authorized singleplayer runtime; explicit original finite evidence, not whole inherited Java API parity."
+  },
+  "EntityAIAttackOnCollide": {
+    "complete_delta_review": true,
+    "reason": {
+      "class_name": "EntityAIAttackOnCollide",
+      "entire_singleplayer_delta_effects_covered": true,
+      "disposition": "Unreachable runtime helper APIs; observable constructor/static effects equivalent in scoped Rust runtime",
+      "rust_java_facade_api_implemented": false,
+      "runtime_api_scope": "Excluded: original constant-false guards prevent pipeline invocation; no other callers anywhere in original jar/source. Public Java helper API parity is outside authorized singleplayer scope.",
+      "constructor_authority": {
+        "class_name": "EntityAIAttackOnCollide",
+        "source_sha256": "b57e58cc7b8468871c9099b25522c82034a979726b8165cb26cd8ef38c16bff7",
+        "static_initializer": false,
+        "constructor_bytecode": "0: aload_0\n       1: invokespecial #23                 // Method net/minecraft/src/EntityAIBase.\"<init>\":()V\n       4: aload_0\n       5: iconst_0\n       6: putfield      #25                 // Field field_46091_d:I\n       9: aload_0\n      10: aload_1\n      11: putfield      #27                 // Field field_46093_b:Lnet/minecraft/src/EntityMob;\n      14: aload_0\n      15: aload_2\n      16: putfield      #29                 // Field field_46095_a:Lnet/minecraft/src/World;\n      19: aload_0\n      20: fload_3\n      21: putfield      #31                 // Field field_46092_e:F\n      24: aload_0\n      25: iconst_3\n      26: invokevirtual #35                 // Method func_46079_a:(I)V\n      29: return",
+        "constructor_calls": [
+          "net/minecraft/src/EntityAIBase.\"<init>\":()V",
+          "func_46079_a:(I)V"
+        ],
+        "effect_disposition": "Only own fields, referenced position/speed reads, superclass Object/AIBase constructor, local ArrayList allocation and own mutex setter; no entity allocation/RNG/World call/static write"
+      },
+      "bytecode_graph": "work/ai-dormant11-static-review.json: original_method_references + all_jar_guard_declarations + external_callers[]",
+      "direct_original_runtime": "tools/r11/data/ai_dormant11.txt240 graph cases; existing eggstate11.bin960 state/save/tick cases and production focused test",
+      "observable_effects": [
+        "No static initializers",
+        "No EntityID allocation or global/static writes",
+        "No entity/World RNG draws",
+        "No World method calls",
+        "Local owner/World references and scalar reads/default fields only",
+        "Zombie ordered local registration priorities1,2,3,4,4; active selector list remains empty and helper/task state unchanged through actual ticks"
+      ],
+      "limitations": [
+        "No dormant task/controller algorithms are claimed implemented or compared if manually invoked",
+        "Allocation failure/OOM or reflective Java API observability is outside existing singleplayer scope"
+      ],
+      "completion_blockers": []
+    },
+    "rust_source_sha256": {
+      "crates/worldgen11/src/entity/living.rs": "924cd1b4bd7f680f54a550013fe76a2394db6d7ee8fc5d2bfd340dbd23b8a31e",
+      "crates/worldgen11/src/entity/aquatic.rs": "d9ad609c9228275183bac56497af1a54e466555c716b92b530d12cfff7cbad93",
+      "tools/oracle11/src/net/minecraft/src/DormantAi11.java": "06a0d577e385dc4e9fa423e55e6a1b2467e3414dcab9cc7282745f1482deb110",
+      "tools/oracle11/verify_dormant_ai11.ps1": "c127af77cf77f3685f1cb17c342b62655a0697a9467af76238c32fb92e4f27d2",
+      "tools/oracle11/audit_dormant_ai11.py": "6cc90adbc40fd14fe99b65cf27246eaaee4d652373052eb8fbd01c22e1c8fe26"
+    },
+    "original_source_sha256": {
+      "class_name": "EntityAIAttackOnCollide",
+      "source_sha256": "b57e58cc7b8468871c9099b25522c82034a979726b8165cb26cd8ef38c16bff7",
+      "static_initializer": false,
+      "constructor_bytecode": "0: aload_0\n       1: invokespecial #23                 // Method net/minecraft/src/EntityAIBase.\"<init>\":()V\n       4: aload_0\n       5: iconst_0\n       6: putfield      #25                 // Field field_46091_d:I\n       9: aload_0\n      10: aload_1\n      11: putfield      #27                 // Field field_46093_b:Lnet/minecraft/src/EntityMob;\n      14: aload_0\n      15: aload_2\n      16: putfield      #29                 // Field field_46095_a:Lnet/minecraft/src/World;\n      19: aload_0\n      20: fload_3\n      21: putfield      #31                 // Field field_46092_e:F\n      24: aload_0\n      25: iconst_3\n      26: invokevirtual #35                 // Method func_46079_a:(I)V\n      29: return",
+      "constructor_calls": [
+        "net/minecraft/src/EntityAIBase.\"<init>\":()V",
+        "func_46079_a:(I)V"
+      ],
+      "effect_disposition": "Only own fields, referenced position/speed reads, superclass Object/AIBase constructor, local ArrayList allocation and own mutex setter; no entity allocation/RNG/World call/static write"
+    },
+    "completion_blockers": [],
+    "limitations": [
+      "No dormant task/controller algorithms are claimed implemented or compared if manually invoked",
+      "Allocation failure/OOM or reflective Java API observability is outside existing singleplayer scope"
+    ],
+    "criterion": "Complete normalized delta in authorized singleplayer runtime; explicit original finite evidence, not whole inherited Java API parity."
+  },
+  "EntityAIBase": {
+    "complete_delta_review": true,
+    "reason": {
+      "class_name": "EntityAIBase",
+      "entire_singleplayer_delta_effects_covered": true,
+      "disposition": "Unreachable runtime helper APIs; observable constructor/static effects equivalent in scoped Rust runtime",
+      "rust_java_facade_api_implemented": false,
+      "runtime_api_scope": "Excluded: original constant-false guards prevent pipeline invocation; no other callers anywhere in original jar/source. Public Java helper API parity is outside authorized singleplayer scope.",
+      "constructor_authority": {
+        "class_name": "EntityAIBase",
+        "source_sha256": "4a51e74796f30a38e0a60e8cdacc853ae36c6063f35ed6ddefb952a864058e76",
+        "static_initializer": false,
+        "constructor_bytecode": "",
+        "constructor_calls": [],
+        "effect_disposition": "Only own fields, referenced position/speed reads, superclass Object/AIBase constructor, local ArrayList allocation and own mutex setter; no entity allocation/RNG/World call/static write"
+      },
+      "bytecode_graph": "work/ai-dormant11-static-review.json: original_method_references + all_jar_guard_declarations + external_callers[]",
+      "direct_original_runtime": "tools/r11/data/ai_dormant11.txt240 graph cases; existing eggstate11.bin960 state/save/tick cases and production focused test",
+      "observable_effects": [
+        "No static initializers",
+        "No EntityID allocation or global/static writes",
+        "No entity/World RNG draws",
+        "No World method calls",
+        "Local owner/World references and scalar reads/default fields only",
+        "Zombie ordered local registration priorities1,2,3,4,4; active selector list remains empty and helper/task state unchanged through actual ticks"
+      ],
+      "limitations": [
+        "No dormant task/controller algorithms are claimed implemented or compared if manually invoked",
+        "Allocation failure/OOM or reflective Java API observability is outside existing singleplayer scope"
+      ],
+      "completion_blockers": []
+    },
+    "rust_source_sha256": {
+      "crates/worldgen11/src/entity/living.rs": "924cd1b4bd7f680f54a550013fe76a2394db6d7ee8fc5d2bfd340dbd23b8a31e",
+      "crates/worldgen11/src/entity/aquatic.rs": "d9ad609c9228275183bac56497af1a54e466555c716b92b530d12cfff7cbad93",
+      "tools/oracle11/src/net/minecraft/src/DormantAi11.java": "06a0d577e385dc4e9fa423e55e6a1b2467e3414dcab9cc7282745f1482deb110",
+      "tools/oracle11/verify_dormant_ai11.ps1": "c127af77cf77f3685f1cb17c342b62655a0697a9467af76238c32fb92e4f27d2",
+      "tools/oracle11/audit_dormant_ai11.py": "6cc90adbc40fd14fe99b65cf27246eaaee4d652373052eb8fbd01c22e1c8fe26"
+    },
+    "original_source_sha256": {
+      "class_name": "EntityAIBase",
+      "source_sha256": "4a51e74796f30a38e0a60e8cdacc853ae36c6063f35ed6ddefb952a864058e76",
+      "static_initializer": false,
+      "constructor_bytecode": "",
+      "constructor_calls": [],
+      "effect_disposition": "Only own fields, referenced position/speed reads, superclass Object/AIBase constructor, local ArrayList allocation and own mutex setter; no entity allocation/RNG/World call/static write"
+    },
+    "completion_blockers": [],
+    "limitations": [
+      "No dormant task/controller algorithms are claimed implemented or compared if manually invoked",
+      "Allocation failure/OOM or reflective Java API observability is outside existing singleplayer scope"
+    ],
+    "criterion": "Complete normalized delta in authorized singleplayer runtime; explicit original finite evidence, not whole inherited Java API parity."
+  },
+  "EntityAILookIdle": {
+    "complete_delta_review": true,
+    "reason": {
+      "class_name": "EntityAILookIdle",
+      "entire_singleplayer_delta_effects_covered": true,
+      "disposition": "Unreachable runtime helper APIs; observable constructor/static effects equivalent in scoped Rust runtime",
+      "rust_java_facade_api_implemented": false,
+      "runtime_api_scope": "Excluded: original constant-false guards prevent pipeline invocation; no other callers anywhere in original jar/source. Public Java helper API parity is outside authorized singleplayer scope.",
+      "constructor_authority": {
+        "class_name": "EntityAILookIdle",
+        "source_sha256": "c895913292ae613aef02ee702be1e8f21d78062a4ef599df3907c2cd77ce6c5a",
+        "static_initializer": false,
+        "constructor_bytecode": "0: aload_0\n       1: invokespecial #18                 // Method net/minecraft/src/EntityAIBase.\"<init>\":()V\n       4: aload_0\n       5: iconst_0\n       6: putfield      #20                 // Field field_46086_d:I\n       9: aload_0\n      10: aload_1\n      11: putfield      #22                 // Field field_46089_a:Lnet/minecraft/src/EntityLiving;\n      14: aload_0\n      15: iconst_3\n      16: invokevirtual #26                 // Method func_46079_a:(I)V\n      19: return",
+        "constructor_calls": [
+          "net/minecraft/src/EntityAIBase.\"<init>\":()V",
+          "func_46079_a:(I)V"
+        ],
+        "effect_disposition": "Only own fields, referenced position/speed reads, superclass Object/AIBase constructor, local ArrayList allocation and own mutex setter; no entity allocation/RNG/World call/static write"
+      },
+      "bytecode_graph": "work/ai-dormant11-static-review.json: original_method_references + all_jar_guard_declarations + external_callers[]",
+      "direct_original_runtime": "tools/r11/data/ai_dormant11.txt240 graph cases; existing eggstate11.bin960 state/save/tick cases and production focused test",
+      "observable_effects": [
+        "No static initializers",
+        "No EntityID allocation or global/static writes",
+        "No entity/World RNG draws",
+        "No World method calls",
+        "Local owner/World references and scalar reads/default fields only",
+        "Zombie ordered local registration priorities1,2,3,4,4; active selector list remains empty and helper/task state unchanged through actual ticks"
+      ],
+      "limitations": [
+        "No dormant task/controller algorithms are claimed implemented or compared if manually invoked",
+        "Allocation failure/OOM or reflective Java API observability is outside existing singleplayer scope"
+      ],
+      "completion_blockers": []
+    },
+    "rust_source_sha256": {
+      "crates/worldgen11/src/entity/living.rs": "924cd1b4bd7f680f54a550013fe76a2394db6d7ee8fc5d2bfd340dbd23b8a31e",
+      "crates/worldgen11/src/entity/aquatic.rs": "d9ad609c9228275183bac56497af1a54e466555c716b92b530d12cfff7cbad93",
+      "tools/oracle11/src/net/minecraft/src/DormantAi11.java": "06a0d577e385dc4e9fa423e55e6a1b2467e3414dcab9cc7282745f1482deb110",
+      "tools/oracle11/verify_dormant_ai11.ps1": "c127af77cf77f3685f1cb17c342b62655a0697a9467af76238c32fb92e4f27d2",
+      "tools/oracle11/audit_dormant_ai11.py": "6cc90adbc40fd14fe99b65cf27246eaaee4d652373052eb8fbd01c22e1c8fe26"
+    },
+    "original_source_sha256": {
+      "class_name": "EntityAILookIdle",
+      "source_sha256": "c895913292ae613aef02ee702be1e8f21d78062a4ef599df3907c2cd77ce6c5a",
+      "static_initializer": false,
+      "constructor_bytecode": "0: aload_0\n       1: invokespecial #18                 // Method net/minecraft/src/EntityAIBase.\"<init>\":()V\n       4: aload_0\n       5: iconst_0\n       6: putfield      #20                 // Field field_46086_d:I\n       9: aload_0\n      10: aload_1\n      11: putfield      #22                 // Field field_46089_a:Lnet/minecraft/src/EntityLiving;\n      14: aload_0\n      15: iconst_3\n      16: invokevirtual #26                 // Method func_46079_a:(I)V\n      19: return",
+      "constructor_calls": [
+        "net/minecraft/src/EntityAIBase.\"<init>\":()V",
+        "func_46079_a:(I)V"
+      ],
+      "effect_disposition": "Only own fields, referenced position/speed reads, superclass Object/AIBase constructor, local ArrayList allocation and own mutex setter; no entity allocation/RNG/World call/static write"
+    },
+    "completion_blockers": [],
+    "limitations": [
+      "No dormant task/controller algorithms are claimed implemented or compared if manually invoked",
+      "Allocation failure/OOM or reflective Java API observability is outside existing singleplayer scope"
+    ],
+    "criterion": "Complete normalized delta in authorized singleplayer runtime; explicit original finite evidence, not whole inherited Java API parity."
+  },
+  "EntityAISwimming": {
+    "complete_delta_review": true,
+    "reason": {
+      "class_name": "EntityAISwimming",
+      "entire_singleplayer_delta_effects_covered": true,
+      "disposition": "Unreachable runtime helper APIs; observable constructor/static effects equivalent in scoped Rust runtime",
+      "rust_java_facade_api_implemented": false,
+      "runtime_api_scope": "Excluded: original constant-false guards prevent pipeline invocation; no other callers anywhere in original jar/source. Public Java helper API parity is outside authorized singleplayer scope.",
+      "constructor_authority": {
+        "class_name": "EntityAISwimming",
+        "source_sha256": "6148ebd0dda93001d206cc4d63a07ab449acf8368e2055a0f9beb1ab5827e8e3",
+        "static_initializer": false,
+        "constructor_bytecode": "0: aload_0\n       1: invokespecial #13                 // Method net/minecraft/src/EntityAIBase.\"<init>\":()V\n       4: aload_0\n       5: aload_1\n       6: putfield      #15                 // Field field_46106_a:Lnet/minecraft/src/EntityLiving;\n       9: aload_0\n      10: iconst_4\n      11: invokevirtual #19                 // Method func_46079_a:(I)V\n      14: return",
+        "constructor_calls": [
+          "net/minecraft/src/EntityAIBase.\"<init>\":()V",
+          "func_46079_a:(I)V"
+        ],
+        "effect_disposition": "Only own fields, referenced position/speed reads, superclass Object/AIBase constructor, local ArrayList allocation and own mutex setter; no entity allocation/RNG/World call/static write"
+      },
+      "bytecode_graph": "work/ai-dormant11-static-review.json: original_method_references + all_jar_guard_declarations + external_callers[]",
+      "direct_original_runtime": "tools/r11/data/ai_dormant11.txt240 graph cases; existing eggstate11.bin960 state/save/tick cases and production focused test",
+      "observable_effects": [
+        "No static initializers",
+        "No EntityID allocation or global/static writes",
+        "No entity/World RNG draws",
+        "No World method calls",
+        "Local owner/World references and scalar reads/default fields only",
+        "Zombie ordered local registration priorities1,2,3,4,4; active selector list remains empty and helper/task state unchanged through actual ticks"
+      ],
+      "limitations": [
+        "No dormant task/controller algorithms are claimed implemented or compared if manually invoked",
+        "Allocation failure/OOM or reflective Java API observability is outside existing singleplayer scope"
+      ],
+      "completion_blockers": []
+    },
+    "rust_source_sha256": {
+      "crates/worldgen11/src/entity/living.rs": "924cd1b4bd7f680f54a550013fe76a2394db6d7ee8fc5d2bfd340dbd23b8a31e",
+      "crates/worldgen11/src/entity/aquatic.rs": "d9ad609c9228275183bac56497af1a54e466555c716b92b530d12cfff7cbad93",
+      "tools/oracle11/src/net/minecraft/src/DormantAi11.java": "06a0d577e385dc4e9fa423e55e6a1b2467e3414dcab9cc7282745f1482deb110",
+      "tools/oracle11/verify_dormant_ai11.ps1": "c127af77cf77f3685f1cb17c342b62655a0697a9467af76238c32fb92e4f27d2",
+      "tools/oracle11/audit_dormant_ai11.py": "6cc90adbc40fd14fe99b65cf27246eaaee4d652373052eb8fbd01c22e1c8fe26"
+    },
+    "original_source_sha256": {
+      "class_name": "EntityAISwimming",
+      "source_sha256": "6148ebd0dda93001d206cc4d63a07ab449acf8368e2055a0f9beb1ab5827e8e3",
+      "static_initializer": false,
+      "constructor_bytecode": "0: aload_0\n       1: invokespecial #13                 // Method net/minecraft/src/EntityAIBase.\"<init>\":()V\n       4: aload_0\n       5: aload_1\n       6: putfield      #15                 // Field field_46106_a:Lnet/minecraft/src/EntityLiving;\n       9: aload_0\n      10: iconst_4\n      11: invokevirtual #19                 // Method func_46079_a:(I)V\n      14: return",
+      "constructor_calls": [
+        "net/minecraft/src/EntityAIBase.\"<init>\":()V",
+        "func_46079_a:(I)V"
+      ],
+      "effect_disposition": "Only own fields, referenced position/speed reads, superclass Object/AIBase constructor, local ArrayList allocation and own mutex setter; no entity allocation/RNG/World call/static write"
+    },
+    "completion_blockers": [],
+    "limitations": [
+      "No dormant task/controller algorithms are claimed implemented or compared if manually invoked",
+      "Allocation failure/OOM or reflective Java API observability is outside existing singleplayer scope"
+    ],
+    "criterion": "Complete normalized delta in authorized singleplayer runtime; explicit original finite evidence, not whole inherited Java API parity."
+  },
+  "EntityAITaskEntry": {
+    "complete_delta_review": true,
+    "reason": {
+      "class_name": "EntityAITaskEntry",
+      "entire_singleplayer_delta_effects_covered": true,
+      "disposition": "Unreachable runtime helper APIs; observable constructor/static effects equivalent in scoped Rust runtime",
+      "rust_java_facade_api_implemented": false,
+      "runtime_api_scope": "Excluded: original constant-false guards prevent pipeline invocation; no other callers anywhere in original jar/source. Public Java helper API parity is outside authorized singleplayer scope.",
+      "constructor_authority": {
+        "class_name": "EntityAITaskEntry",
+        "source_sha256": "4cd0e32a0e15c7ae9d2228d2ecc8ac05aff3a573f77c9e9bb4a3120677e1e0f6",
+        "static_initializer": false,
+        "constructor_bytecode": "0: aload_0\n       1: aload_1\n       2: putfield      #18                 // Field field_46113_c:Lnet/minecraft/src/EntityAITasks;\n       5: aload_0\n       6: invokespecial #21                 // Method java/lang/Object.\"<init>\":()V\n       9: aload_0\n      10: iload_2\n      11: putfield      #23                 // Field field_46112_b:I\n      14: aload_0\n      15: aload_3\n      16: putfield      #25                 // Field field_46114_a:Lnet/minecraft/src/EntityAIBase;\n      19: return",
+        "constructor_calls": [
+          "java/lang/Object.\"<init>\":()V"
+        ],
+        "effect_disposition": "Only own fields, referenced position/speed reads, superclass Object/AIBase constructor, local ArrayList allocation and own mutex setter; no entity allocation/RNG/World call/static write"
+      },
+      "bytecode_graph": "work/ai-dormant11-static-review.json: original_method_references + all_jar_guard_declarations + external_callers[]",
+      "direct_original_runtime": "tools/r11/data/ai_dormant11.txt240 graph cases; existing eggstate11.bin960 state/save/tick cases and production focused test",
+      "observable_effects": [
+        "No static initializers",
+        "No EntityID allocation or global/static writes",
+        "No entity/World RNG draws",
+        "No World method calls",
+        "Local owner/World references and scalar reads/default fields only",
+        "Zombie ordered local registration priorities1,2,3,4,4; active selector list remains empty and helper/task state unchanged through actual ticks"
+      ],
+      "limitations": [
+        "No dormant task/controller algorithms are claimed implemented or compared if manually invoked",
+        "Allocation failure/OOM or reflective Java API observability is outside existing singleplayer scope"
+      ],
+      "completion_blockers": []
+    },
+    "rust_source_sha256": {
+      "crates/worldgen11/src/entity/living.rs": "924cd1b4bd7f680f54a550013fe76a2394db6d7ee8fc5d2bfd340dbd23b8a31e",
+      "crates/worldgen11/src/entity/aquatic.rs": "d9ad609c9228275183bac56497af1a54e466555c716b92b530d12cfff7cbad93",
+      "tools/oracle11/src/net/minecraft/src/DormantAi11.java": "06a0d577e385dc4e9fa423e55e6a1b2467e3414dcab9cc7282745f1482deb110",
+      "tools/oracle11/verify_dormant_ai11.ps1": "c127af77cf77f3685f1cb17c342b62655a0697a9467af76238c32fb92e4f27d2",
+      "tools/oracle11/audit_dormant_ai11.py": "6cc90adbc40fd14fe99b65cf27246eaaee4d652373052eb8fbd01c22e1c8fe26"
+    },
+    "original_source_sha256": {
+      "class_name": "EntityAITaskEntry",
+      "source_sha256": "4cd0e32a0e15c7ae9d2228d2ecc8ac05aff3a573f77c9e9bb4a3120677e1e0f6",
+      "static_initializer": false,
+      "constructor_bytecode": "0: aload_0\n       1: aload_1\n       2: putfield      #18                 // Field field_46113_c:Lnet/minecraft/src/EntityAITasks;\n       5: aload_0\n       6: invokespecial #21                 // Method java/lang/Object.\"<init>\":()V\n       9: aload_0\n      10: iload_2\n      11: putfield      #23                 // Field field_46112_b:I\n      14: aload_0\n      15: aload_3\n      16: putfield      #25                 // Field field_46114_a:Lnet/minecraft/src/EntityAIBase;\n      19: return",
+      "constructor_calls": [
+        "java/lang/Object.\"<init>\":()V"
+      ],
+      "effect_disposition": "Only own fields, referenced position/speed reads, superclass Object/AIBase constructor, local ArrayList allocation and own mutex setter; no entity allocation/RNG/World call/static write"
+    },
+    "completion_blockers": [],
+    "limitations": [
+      "No dormant task/controller algorithms are claimed implemented or compared if manually invoked",
+      "Allocation failure/OOM or reflective Java API observability is outside existing singleplayer scope"
+    ],
+    "criterion": "Complete normalized delta in authorized singleplayer runtime; explicit original finite evidence, not whole inherited Java API parity."
+  },
+  "EntityAITasks": {
+    "complete_delta_review": true,
+    "reason": {
+      "class_name": "EntityAITasks",
+      "entire_singleplayer_delta_effects_covered": true,
+      "disposition": "Unreachable runtime helper APIs; observable constructor/static effects equivalent in scoped Rust runtime",
+      "rust_java_facade_api_implemented": false,
+      "runtime_api_scope": "Excluded: original constant-false guards prevent pipeline invocation; no other callers anywhere in original jar/source. Public Java helper API parity is outside authorized singleplayer scope.",
+      "constructor_authority": {
+        "class_name": "EntityAITasks",
+        "source_sha256": "ee5314343906e26b1c2648fc3fc8eaf12391e55408e2252381515bd97b6c7b1f",
+        "static_initializer": false,
+        "constructor_bytecode": "0: aload_0\n       1: invokespecial #12                 // Method java/lang/Object.\"<init>\":()V\n       4: aload_0\n       5: new           #14                 // class java/util/ArrayList\n       8: dup\n       9: invokespecial #15                 // Method java/util/ArrayList.\"<init>\":()V\n      12: putfield      #17                 // Field field_46120_a:Ljava/util/ArrayList;\n      15: aload_0\n      16: new           #14                 // class java/util/ArrayList\n      19: dup\n      20: invokespecial #15                 // Method java/util/ArrayList.\"<init>\":()V\n      23: putfield      #19                 // Field field_46119_b:Ljava/util/ArrayList;\n      26: return",
+        "constructor_calls": [
+          "java/lang/Object.\"<init>\":()V",
+          "java/util/ArrayList.\"<init>\":()V",
+          "java/util/ArrayList.\"<init>\":()V"
+        ],
+        "effect_disposition": "Only own fields, referenced position/speed reads, superclass Object/AIBase constructor, local ArrayList allocation and own mutex setter; no entity allocation/RNG/World call/static write"
+      },
+      "bytecode_graph": "work/ai-dormant11-static-review.json: original_method_references + all_jar_guard_declarations + external_callers[]",
+      "direct_original_runtime": "tools/r11/data/ai_dormant11.txt240 graph cases; existing eggstate11.bin960 state/save/tick cases and production focused test",
+      "observable_effects": [
+        "No static initializers",
+        "No EntityID allocation or global/static writes",
+        "No entity/World RNG draws",
+        "No World method calls",
+        "Local owner/World references and scalar reads/default fields only",
+        "Zombie ordered local registration priorities1,2,3,4,4; active selector list remains empty and helper/task state unchanged through actual ticks"
+      ],
+      "limitations": [
+        "No dormant task/controller algorithms are claimed implemented or compared if manually invoked",
+        "Allocation failure/OOM or reflective Java API observability is outside existing singleplayer scope"
+      ],
+      "completion_blockers": []
+    },
+    "rust_source_sha256": {
+      "crates/worldgen11/src/entity/living.rs": "924cd1b4bd7f680f54a550013fe76a2394db6d7ee8fc5d2bfd340dbd23b8a31e",
+      "crates/worldgen11/src/entity/aquatic.rs": "d9ad609c9228275183bac56497af1a54e466555c716b92b530d12cfff7cbad93",
+      "tools/oracle11/src/net/minecraft/src/DormantAi11.java": "06a0d577e385dc4e9fa423e55e6a1b2467e3414dcab9cc7282745f1482deb110",
+      "tools/oracle11/verify_dormant_ai11.ps1": "c127af77cf77f3685f1cb17c342b62655a0697a9467af76238c32fb92e4f27d2",
+      "tools/oracle11/audit_dormant_ai11.py": "6cc90adbc40fd14fe99b65cf27246eaaee4d652373052eb8fbd01c22e1c8fe26"
+    },
+    "original_source_sha256": {
+      "class_name": "EntityAITasks",
+      "source_sha256": "ee5314343906e26b1c2648fc3fc8eaf12391e55408e2252381515bd97b6c7b1f",
+      "static_initializer": false,
+      "constructor_bytecode": "0: aload_0\n       1: invokespecial #12                 // Method java/lang/Object.\"<init>\":()V\n       4: aload_0\n       5: new           #14                 // class java/util/ArrayList\n       8: dup\n       9: invokespecial #15                 // Method java/util/ArrayList.\"<init>\":()V\n      12: putfield      #17                 // Field field_46120_a:Ljava/util/ArrayList;\n      15: aload_0\n      16: new           #14                 // class java/util/ArrayList\n      19: dup\n      20: invokespecial #15                 // Method java/util/ArrayList.\"<init>\":()V\n      23: putfield      #19                 // Field field_46119_b:Ljava/util/ArrayList;\n      26: return",
+      "constructor_calls": [
+        "java/lang/Object.\"<init>\":()V",
+        "java/util/ArrayList.\"<init>\":()V",
+        "java/util/ArrayList.\"<init>\":()V"
+      ],
+      "effect_disposition": "Only own fields, referenced position/speed reads, superclass Object/AIBase constructor, local ArrayList allocation and own mutex setter; no entity allocation/RNG/World call/static write"
+    },
+    "completion_blockers": [],
+    "limitations": [
+      "No dormant task/controller algorithms are claimed implemented or compared if manually invoked",
+      "Allocation failure/OOM or reflective Java API observability is outside existing singleplayer scope"
+    ],
+    "criterion": "Complete normalized delta in authorized singleplayer runtime; explicit original finite evidence, not whole inherited Java API parity."
+  },
+  "EntityAIWander": {
+    "complete_delta_review": true,
+    "reason": {
+      "class_name": "EntityAIWander",
+      "entire_singleplayer_delta_effects_covered": true,
+      "disposition": "Unreachable runtime helper APIs; observable constructor/static effects equivalent in scoped Rust runtime",
+      "rust_java_facade_api_implemented": false,
+      "runtime_api_scope": "Excluded: original constant-false guards prevent pipeline invocation; no other callers anywhere in original jar/source. Public Java helper API parity is outside authorized singleplayer scope.",
+      "constructor_authority": {
+        "class_name": "EntityAIWander",
+        "source_sha256": "92d88158a70e786613ab00ffb334b9ce46bf2abd2a1a37e619d63ff0d2c0ed34",
+        "static_initializer": false,
+        "constructor_bytecode": "0: aload_0\n       1: invokespecial #17                 // Method net/minecraft/src/EntityAIBase.\"<init>\":()V\n       4: aload_0\n       5: aload_1\n       6: putfield      #19                 // Field field_46100_a:Lnet/minecraft/src/EntityCreature;\n       9: aload_0\n      10: iconst_3\n      11: invokevirtual #23                 // Method func_46079_a:(I)V\n      14: return",
+        "constructor_calls": [
+          "net/minecraft/src/EntityAIBase.\"<init>\":()V",
+          "func_46079_a:(I)V"
+        ],
+        "effect_disposition": "Only own fields, referenced position/speed reads, superclass Object/AIBase constructor, local ArrayList allocation and own mutex setter; no entity allocation/RNG/World call/static write"
+      },
+      "bytecode_graph": "work/ai-dormant11-static-review.json: original_method_references + all_jar_guard_declarations + external_callers[]",
+      "direct_original_runtime": "tools/r11/data/ai_dormant11.txt240 graph cases; existing eggstate11.bin960 state/save/tick cases and production focused test",
+      "observable_effects": [
+        "No static initializers",
+        "No EntityID allocation or global/static writes",
+        "No entity/World RNG draws",
+        "No World method calls",
+        "Local owner/World references and scalar reads/default fields only",
+        "Zombie ordered local registration priorities1,2,3,4,4; active selector list remains empty and helper/task state unchanged through actual ticks"
+      ],
+      "limitations": [
+        "No dormant task/controller algorithms are claimed implemented or compared if manually invoked",
+        "Allocation failure/OOM or reflective Java API observability is outside existing singleplayer scope"
+      ],
+      "completion_blockers": []
+    },
+    "rust_source_sha256": {
+      "crates/worldgen11/src/entity/living.rs": "924cd1b4bd7f680f54a550013fe76a2394db6d7ee8fc5d2bfd340dbd23b8a31e",
+      "crates/worldgen11/src/entity/aquatic.rs": "d9ad609c9228275183bac56497af1a54e466555c716b92b530d12cfff7cbad93",
+      "tools/oracle11/src/net/minecraft/src/DormantAi11.java": "06a0d577e385dc4e9fa423e55e6a1b2467e3414dcab9cc7282745f1482deb110",
+      "tools/oracle11/verify_dormant_ai11.ps1": "c127af77cf77f3685f1cb17c342b62655a0697a9467af76238c32fb92e4f27d2",
+      "tools/oracle11/audit_dormant_ai11.py": "6cc90adbc40fd14fe99b65cf27246eaaee4d652373052eb8fbd01c22e1c8fe26"
+    },
+    "original_source_sha256": {
+      "class_name": "EntityAIWander",
+      "source_sha256": "92d88158a70e786613ab00ffb334b9ce46bf2abd2a1a37e619d63ff0d2c0ed34",
+      "static_initializer": false,
+      "constructor_bytecode": "0: aload_0\n       1: invokespecial #17                 // Method net/minecraft/src/EntityAIBase.\"<init>\":()V\n       4: aload_0\n       5: aload_1\n       6: putfield      #19                 // Field field_46100_a:Lnet/minecraft/src/EntityCreature;\n       9: aload_0\n      10: iconst_3\n      11: invokevirtual #23                 // Method func_46079_a:(I)V\n      14: return",
+      "constructor_calls": [
+        "net/minecraft/src/EntityAIBase.\"<init>\":()V",
+        "func_46079_a:(I)V"
+      ],
+      "effect_disposition": "Only own fields, referenced position/speed reads, superclass Object/AIBase constructor, local ArrayList allocation and own mutex setter; no entity allocation/RNG/World call/static write"
+    },
+    "completion_blockers": [],
+    "limitations": [
+      "No dormant task/controller algorithms are claimed implemented or compared if manually invoked",
+      "Allocation failure/OOM or reflective Java API observability is outside existing singleplayer scope"
+    ],
+    "criterion": "Complete normalized delta in authorized singleplayer runtime; explicit original finite evidence, not whole inherited Java API parity."
+  },
+  "EntityAIWatchClosest": {
+    "complete_delta_review": true,
+    "reason": {
+      "class_name": "EntityAIWatchClosest",
+      "entire_singleplayer_delta_effects_covered": true,
+      "disposition": "Unreachable runtime helper APIs; observable constructor/static effects equivalent in scoped Rust runtime",
+      "rust_java_facade_api_implemented": false,
+      "runtime_api_scope": "Excluded: original constant-false guards prevent pipeline invocation; no other callers anywhere in original jar/source. Public Java helper API parity is outside authorized singleplayer scope.",
+      "constructor_authority": {
+        "class_name": "EntityAIWatchClosest",
+        "source_sha256": "7aeb36a05feb39046370f1e6a3ff9c5d7d4a0e37e85cb57fb3834c8c0ba6f2b2",
+        "static_initializer": false,
+        "constructor_bytecode": "0: aload_0\n       1: invokespecial #22                 // Method net/minecraft/src/EntityAIBase.\"<init>\":()V\n       4: aload_0\n       5: aload_1\n       6: putfield      #24                 // Field field_46105_a:Lnet/minecraft/src/EntityLiving;\n       9: aload_0\n      10: aload_2\n      11: putfield      #26                 // Field field_46104_c:Lnet/minecraft/src/World;\n      14: aload_0\n      15: fload_3\n      16: putfield      #28                 // Field field_46101_d:F\n      19: aload_0\n      20: iconst_3\n      21: invokevirtual #32                 // Method func_46079_a:(I)V\n      24: return",
+        "constructor_calls": [
+          "net/minecraft/src/EntityAIBase.\"<init>\":()V",
+          "func_46079_a:(I)V"
+        ],
+        "effect_disposition": "Only own fields, referenced position/speed reads, superclass Object/AIBase constructor, local ArrayList allocation and own mutex setter; no entity allocation/RNG/World call/static write"
+      },
+      "bytecode_graph": "work/ai-dormant11-static-review.json: original_method_references + all_jar_guard_declarations + external_callers[]",
+      "direct_original_runtime": "tools/r11/data/ai_dormant11.txt240 graph cases; existing eggstate11.bin960 state/save/tick cases and production focused test",
+      "observable_effects": [
+        "No static initializers",
+        "No EntityID allocation or global/static writes",
+        "No entity/World RNG draws",
+        "No World method calls",
+        "Local owner/World references and scalar reads/default fields only",
+        "Zombie ordered local registration priorities1,2,3,4,4; active selector list remains empty and helper/task state unchanged through actual ticks"
+      ],
+      "limitations": [
+        "No dormant task/controller algorithms are claimed implemented or compared if manually invoked",
+        "Allocation failure/OOM or reflective Java API observability is outside existing singleplayer scope"
+      ],
+      "completion_blockers": []
+    },
+    "rust_source_sha256": {
+      "crates/worldgen11/src/entity/living.rs": "924cd1b4bd7f680f54a550013fe76a2394db6d7ee8fc5d2bfd340dbd23b8a31e",
+      "crates/worldgen11/src/entity/aquatic.rs": "d9ad609c9228275183bac56497af1a54e466555c716b92b530d12cfff7cbad93",
+      "tools/oracle11/src/net/minecraft/src/DormantAi11.java": "06a0d577e385dc4e9fa423e55e6a1b2467e3414dcab9cc7282745f1482deb110",
+      "tools/oracle11/verify_dormant_ai11.ps1": "c127af77cf77f3685f1cb17c342b62655a0697a9467af76238c32fb92e4f27d2",
+      "tools/oracle11/audit_dormant_ai11.py": "6cc90adbc40fd14fe99b65cf27246eaaee4d652373052eb8fbd01c22e1c8fe26"
+    },
+    "original_source_sha256": {
+      "class_name": "EntityAIWatchClosest",
+      "source_sha256": "7aeb36a05feb39046370f1e6a3ff9c5d7d4a0e37e85cb57fb3834c8c0ba6f2b2",
+      "static_initializer": false,
+      "constructor_bytecode": "0: aload_0\n       1: invokespecial #22                 // Method net/minecraft/src/EntityAIBase.\"<init>\":()V\n       4: aload_0\n       5: aload_1\n       6: putfield      #24                 // Field field_46105_a:Lnet/minecraft/src/EntityLiving;\n       9: aload_0\n      10: aload_2\n      11: putfield      #26                 // Field field_46104_c:Lnet/minecraft/src/World;\n      14: aload_0\n      15: fload_3\n      16: putfield      #28                 // Field field_46101_d:F\n      19: aload_0\n      20: iconst_3\n      21: invokevirtual #32                 // Method func_46079_a:(I)V\n      24: return",
+      "constructor_calls": [
+        "net/minecraft/src/EntityAIBase.\"<init>\":()V",
+        "func_46079_a:(I)V"
+      ],
+      "effect_disposition": "Only own fields, referenced position/speed reads, superclass Object/AIBase constructor, local ArrayList allocation and own mutex setter; no entity allocation/RNG/World call/static write"
+    },
+    "completion_blockers": [],
+    "limitations": [
+      "No dormant task/controller algorithms are claimed implemented or compared if manually invoked",
+      "Allocation failure/OOM or reflective Java API observability is outside existing singleplayer scope"
+    ],
+    "criterion": "Complete normalized delta in authorized singleplayer runtime; explicit original finite evidence, not whole inherited Java API parity."
+  },
+  "EntityJumpHelper": {
+    "complete_delta_review": true,
+    "reason": {
+      "class_name": "EntityJumpHelper",
+      "entire_singleplayer_delta_effects_covered": true,
+      "disposition": "Unreachable runtime helper APIs; observable constructor/static effects equivalent in scoped Rust runtime",
+      "rust_java_facade_api_implemented": false,
+      "runtime_api_scope": "Excluded: original constant-false guards prevent pipeline invocation; no other callers anywhere in original jar/source. Public Java helper API parity is outside authorized singleplayer scope.",
+      "constructor_authority": {
+        "class_name": "EntityJumpHelper",
+        "source_sha256": "8f024ddbb4673a45050db90a7ea005a3cc724b6f82b1fe169afd884d778e1372",
+        "static_initializer": false,
+        "constructor_bytecode": "0: aload_0\n       1: invokespecial #15                 // Method java/lang/Object.\"<init>\":()V\n       4: aload_0\n       5: iconst_0\n       6: putfield      #17                 // Field field_46131_b:Z\n       9: aload_0\n      10: aload_1\n      11: putfield      #19                 // Field field_46132_a:Lnet/minecraft/src/EntityLiving;\n      14: return",
+        "constructor_calls": [
+          "java/lang/Object.\"<init>\":()V"
+        ],
+        "effect_disposition": "Only own fields, referenced position/speed reads, superclass Object/AIBase constructor, local ArrayList allocation and own mutex setter; no entity allocation/RNG/World call/static write"
+      },
+      "bytecode_graph": "work/ai-dormant11-static-review.json: original_method_references + all_jar_guard_declarations + external_callers[]",
+      "direct_original_runtime": "tools/r11/data/ai_dormant11.txt240 graph cases; existing eggstate11.bin960 state/save/tick cases and production focused test",
+      "observable_effects": [
+        "No static initializers",
+        "No EntityID allocation or global/static writes",
+        "No entity/World RNG draws",
+        "No World method calls",
+        "Local owner/World references and scalar reads/default fields only",
+        "Zombie ordered local registration priorities1,2,3,4,4; active selector list remains empty and helper/task state unchanged through actual ticks"
+      ],
+      "limitations": [
+        "No dormant task/controller algorithms are claimed implemented or compared if manually invoked",
+        "Allocation failure/OOM or reflective Java API observability is outside existing singleplayer scope"
+      ],
+      "completion_blockers": []
+    },
+    "rust_source_sha256": {
+      "crates/worldgen11/src/entity/living.rs": "924cd1b4bd7f680f54a550013fe76a2394db6d7ee8fc5d2bfd340dbd23b8a31e",
+      "crates/worldgen11/src/entity/aquatic.rs": "d9ad609c9228275183bac56497af1a54e466555c716b92b530d12cfff7cbad93",
+      "tools/oracle11/src/net/minecraft/src/DormantAi11.java": "06a0d577e385dc4e9fa423e55e6a1b2467e3414dcab9cc7282745f1482deb110",
+      "tools/oracle11/verify_dormant_ai11.ps1": "c127af77cf77f3685f1cb17c342b62655a0697a9467af76238c32fb92e4f27d2",
+      "tools/oracle11/audit_dormant_ai11.py": "6cc90adbc40fd14fe99b65cf27246eaaee4d652373052eb8fbd01c22e1c8fe26"
+    },
+    "original_source_sha256": {
+      "class_name": "EntityJumpHelper",
+      "source_sha256": "8f024ddbb4673a45050db90a7ea005a3cc724b6f82b1fe169afd884d778e1372",
+      "static_initializer": false,
+      "constructor_bytecode": "0: aload_0\n       1: invokespecial #15                 // Method java/lang/Object.\"<init>\":()V\n       4: aload_0\n       5: iconst_0\n       6: putfield      #17                 // Field field_46131_b:Z\n       9: aload_0\n      10: aload_1\n      11: putfield      #19                 // Field field_46132_a:Lnet/minecraft/src/EntityLiving;\n      14: return",
+      "constructor_calls": [
+        "java/lang/Object.\"<init>\":()V"
+      ],
+      "effect_disposition": "Only own fields, referenced position/speed reads, superclass Object/AIBase constructor, local ArrayList allocation and own mutex setter; no entity allocation/RNG/World call/static write"
+    },
+    "completion_blockers": [],
+    "limitations": [
+      "No dormant task/controller algorithms are claimed implemented or compared if manually invoked",
+      "Allocation failure/OOM or reflective Java API observability is outside existing singleplayer scope"
+    ],
+    "criterion": "Complete normalized delta in authorized singleplayer runtime; explicit original finite evidence, not whole inherited Java API parity."
+  },
+  "EntityLookHelper": {
+    "complete_delta_review": true,
+    "reason": {
+      "class_name": "EntityLookHelper",
+      "entire_singleplayer_delta_effects_covered": true,
+      "disposition": "Unreachable runtime helper APIs; observable constructor/static effects equivalent in scoped Rust runtime",
+      "rust_java_facade_api_implemented": false,
+      "runtime_api_scope": "Excluded: original constant-false guards prevent pipeline invocation; no other callers anywhere in original jar/source. Public Java helper API parity is outside authorized singleplayer scope.",
+      "constructor_authority": {
+        "class_name": "EntityLookHelper",
+        "source_sha256": "8fff09bf17c1d9a52762f0ecf8238713130b6cac0d0b7fc2a41cd90615aa31fd",
+        "static_initializer": false,
+        "constructor_bytecode": "0: aload_0\n       1: invokespecial #22                 // Method java/lang/Object.\"<init>\":()V\n       4: aload_0\n       5: iconst_0\n       6: putfield      #24                 // Field field_46147_d:Z\n       9: aload_0\n      10: aload_1\n      11: putfield      #26                 // Field field_46151_a:Lnet/minecraft/src/EntityLiving;\n      14: return",
+        "constructor_calls": [
+          "java/lang/Object.\"<init>\":()V"
+        ],
+        "effect_disposition": "Only own fields, referenced position/speed reads, superclass Object/AIBase constructor, local ArrayList allocation and own mutex setter; no entity allocation/RNG/World call/static write"
+      },
+      "bytecode_graph": "work/ai-dormant11-static-review.json: original_method_references + all_jar_guard_declarations + external_callers[]",
+      "direct_original_runtime": "tools/r11/data/ai_dormant11.txt240 graph cases; existing eggstate11.bin960 state/save/tick cases and production focused test",
+      "observable_effects": [
+        "No static initializers",
+        "No EntityID allocation or global/static writes",
+        "No entity/World RNG draws",
+        "No World method calls",
+        "Local owner/World references and scalar reads/default fields only",
+        "Zombie ordered local registration priorities1,2,3,4,4; active selector list remains empty and helper/task state unchanged through actual ticks"
+      ],
+      "limitations": [
+        "No dormant task/controller algorithms are claimed implemented or compared if manually invoked",
+        "Allocation failure/OOM or reflective Java API observability is outside existing singleplayer scope"
+      ],
+      "completion_blockers": []
+    },
+    "rust_source_sha256": {
+      "crates/worldgen11/src/entity/living.rs": "924cd1b4bd7f680f54a550013fe76a2394db6d7ee8fc5d2bfd340dbd23b8a31e",
+      "crates/worldgen11/src/entity/aquatic.rs": "d9ad609c9228275183bac56497af1a54e466555c716b92b530d12cfff7cbad93",
+      "tools/oracle11/src/net/minecraft/src/DormantAi11.java": "06a0d577e385dc4e9fa423e55e6a1b2467e3414dcab9cc7282745f1482deb110",
+      "tools/oracle11/verify_dormant_ai11.ps1": "c127af77cf77f3685f1cb17c342b62655a0697a9467af76238c32fb92e4f27d2",
+      "tools/oracle11/audit_dormant_ai11.py": "6cc90adbc40fd14fe99b65cf27246eaaee4d652373052eb8fbd01c22e1c8fe26"
+    },
+    "original_source_sha256": {
+      "class_name": "EntityLookHelper",
+      "source_sha256": "8fff09bf17c1d9a52762f0ecf8238713130b6cac0d0b7fc2a41cd90615aa31fd",
+      "static_initializer": false,
+      "constructor_bytecode": "0: aload_0\n       1: invokespecial #22                 // Method java/lang/Object.\"<init>\":()V\n       4: aload_0\n       5: iconst_0\n       6: putfield      #24                 // Field field_46147_d:Z\n       9: aload_0\n      10: aload_1\n      11: putfield      #26                 // Field field_46151_a:Lnet/minecraft/src/EntityLiving;\n      14: return",
+      "constructor_calls": [
+        "java/lang/Object.\"<init>\":()V"
+      ],
+      "effect_disposition": "Only own fields, referenced position/speed reads, superclass Object/AIBase constructor, local ArrayList allocation and own mutex setter; no entity allocation/RNG/World call/static write"
+    },
+    "completion_blockers": [],
+    "limitations": [
+      "No dormant task/controller algorithms are claimed implemented or compared if manually invoked",
+      "Allocation failure/OOM or reflective Java API observability is outside existing singleplayer scope"
+    ],
+    "criterion": "Complete normalized delta in authorized singleplayer runtime; explicit original finite evidence, not whole inherited Java API parity."
+  },
+  "EntityMoveHelper": {
+    "complete_delta_review": true,
+    "reason": {
+      "class_name": "EntityMoveHelper",
+      "entire_singleplayer_delta_effects_covered": true,
+      "disposition": "Unreachable runtime helper APIs; observable constructor/static effects equivalent in scoped Rust runtime",
+      "rust_java_facade_api_implemented": false,
+      "runtime_api_scope": "Excluded: original constant-false guards prevent pipeline invocation; no other callers anywhere in original jar/source. Public Java helper API parity is outside authorized singleplayer scope.",
+      "constructor_authority": {
+        "class_name": "EntityMoveHelper",
+        "source_sha256": "140f9673e0699ea21aafc6b203f881c30492666f1c852bc7b5e03f9ffe85cc24",
+        "static_initializer": false,
+        "constructor_bytecode": "0: aload_0\n       1: invokespecial #22                 // Method java/lang/Object.\"<init>\":()V\n       4: aload_0\n       5: iconst_0\n       6: putfield      #24                 // Field field_46036_f:Z\n       9: aload_0\n      10: aload_1\n      11: putfield      #26                 // Field field_46041_a:Lnet/minecraft/src/EntityLiving;\n      14: aload_0\n      15: aload_1\n      16: getfield      #31                 // Field net/minecraft/src/EntityLiving.posX:D\n      19: putfield      #33                 // Field field_46039_b:D\n      22: aload_0\n      23: aload_1\n      24: getfield      #36                 // Field net/minecraft/src/EntityLiving.posY:D\n      27: putfield      #38                 // Field field_46040_c:D\n      30: aload_0\n      31: aload_1\n      32: getfield      #41                 // Field net/minecraft/src/EntityLiving.posZ:D\n      35: putfield      #43                 // Field field_46037_d:D\n      38: aload_0\n      39: fload_2\n      40: putfield      #45                 // Field field_46038_e:F\n      43: return",
+        "constructor_calls": [
+          "java/lang/Object.\"<init>\":()V"
+        ],
+        "effect_disposition": "Only own fields, referenced position/speed reads, superclass Object/AIBase constructor, local ArrayList allocation and own mutex setter; no entity allocation/RNG/World call/static write"
+      },
+      "bytecode_graph": "work/ai-dormant11-static-review.json: original_method_references + all_jar_guard_declarations + external_callers[]",
+      "direct_original_runtime": "tools/r11/data/ai_dormant11.txt240 graph cases; existing eggstate11.bin960 state/save/tick cases and production focused test",
+      "observable_effects": [
+        "No static initializers",
+        "No EntityID allocation or global/static writes",
+        "No entity/World RNG draws",
+        "No World method calls",
+        "Local owner/World references and scalar reads/default fields only",
+        "Zombie ordered local registration priorities1,2,3,4,4; active selector list remains empty and helper/task state unchanged through actual ticks"
+      ],
+      "limitations": [
+        "No dormant task/controller algorithms are claimed implemented or compared if manually invoked",
+        "Allocation failure/OOM or reflective Java API observability is outside existing singleplayer scope"
+      ],
+      "completion_blockers": []
+    },
+    "rust_source_sha256": {
+      "crates/worldgen11/src/entity/living.rs": "924cd1b4bd7f680f54a550013fe76a2394db6d7ee8fc5d2bfd340dbd23b8a31e",
+      "crates/worldgen11/src/entity/aquatic.rs": "d9ad609c9228275183bac56497af1a54e466555c716b92b530d12cfff7cbad93",
+      "tools/oracle11/src/net/minecraft/src/DormantAi11.java": "06a0d577e385dc4e9fa423e55e6a1b2467e3414dcab9cc7282745f1482deb110",
+      "tools/oracle11/verify_dormant_ai11.ps1": "c127af77cf77f3685f1cb17c342b62655a0697a9467af76238c32fb92e4f27d2",
+      "tools/oracle11/audit_dormant_ai11.py": "6cc90adbc40fd14fe99b65cf27246eaaee4d652373052eb8fbd01c22e1c8fe26"
+    },
+    "original_source_sha256": {
+      "class_name": "EntityMoveHelper",
+      "source_sha256": "140f9673e0699ea21aafc6b203f881c30492666f1c852bc7b5e03f9ffe85cc24",
+      "static_initializer": false,
+      "constructor_bytecode": "0: aload_0\n       1: invokespecial #22                 // Method java/lang/Object.\"<init>\":()V\n       4: aload_0\n       5: iconst_0\n       6: putfield      #24                 // Field field_46036_f:Z\n       9: aload_0\n      10: aload_1\n      11: putfield      #26                 // Field field_46041_a:Lnet/minecraft/src/EntityLiving;\n      14: aload_0\n      15: aload_1\n      16: getfield      #31                 // Field net/minecraft/src/EntityLiving.posX:D\n      19: putfield      #33                 // Field field_46039_b:D\n      22: aload_0\n      23: aload_1\n      24: getfield      #36                 // Field net/minecraft/src/EntityLiving.posY:D\n      27: putfield      #38                 // Field field_46040_c:D\n      30: aload_0\n      31: aload_1\n      32: getfield      #41                 // Field net/minecraft/src/EntityLiving.posZ:D\n      35: putfield      #43                 // Field field_46037_d:D\n      38: aload_0\n      39: fload_2\n      40: putfield      #45                 // Field field_46038_e:F\n      43: return",
+      "constructor_calls": [
+        "java/lang/Object.\"<init>\":()V"
+      ],
+      "effect_disposition": "Only own fields, referenced position/speed reads, superclass Object/AIBase constructor, local ArrayList allocation and own mutex setter; no entity allocation/RNG/World call/static write"
+    },
+    "completion_blockers": [],
+    "limitations": [
+      "No dormant task/controller algorithms are claimed implemented or compared if manually invoked",
+      "Allocation failure/OOM or reflective Java API observability is outside existing singleplayer scope"
+    ],
+    "criterion": "Complete normalized delta in authorized singleplayer runtime; explicit original finite evidence, not whole inherited Java API parity."
+  },
+  "INavigate": {
+    "complete_delta_review": true,
+    "reason": {
+      "class_name": "INavigate",
+      "entire_singleplayer_delta_effects_covered": true,
+      "disposition": "Unreachable runtime helper APIs; observable constructor/static effects equivalent in scoped Rust runtime",
+      "rust_java_facade_api_implemented": false,
+      "runtime_api_scope": "Excluded: original constant-false guards prevent pipeline invocation; no other callers anywhere in original jar/source. Public Java helper API parity is outside authorized singleplayer scope.",
+      "constructor_authority": {
+        "class_name": "INavigate",
+        "source_sha256": "1d57d1f299527bd99820b3ba0070a42499429745779b235ff514c6e5c7c61f5e",
+        "static_initializer": false,
+        "constructor_bytecode": "",
+        "constructor_calls": [],
+        "effect_disposition": "Interface has no constructor"
+      },
+      "bytecode_graph": "work/ai-dormant11-static-review.json: original_method_references + all_jar_guard_declarations + external_callers[]",
+      "direct_original_runtime": "tools/r11/data/ai_dormant11.txt240 graph cases; existing eggstate11.bin960 state/save/tick cases and production focused test",
+      "observable_effects": [
+        "No static initializers",
+        "No EntityID allocation or global/static writes",
+        "No entity/World RNG draws",
+        "No World method calls",
+        "Local owner/World references and scalar reads/default fields only",
+        "Zombie ordered local registration priorities1,2,3,4,4; active selector list remains empty and helper/task state unchanged through actual ticks"
+      ],
+      "limitations": [
+        "No dormant task/controller algorithms are claimed implemented or compared if manually invoked",
+        "Allocation failure/OOM or reflective Java API observability is outside existing singleplayer scope"
+      ],
+      "completion_blockers": []
+    },
+    "rust_source_sha256": {
+      "crates/worldgen11/src/entity/living.rs": "924cd1b4bd7f680f54a550013fe76a2394db6d7ee8fc5d2bfd340dbd23b8a31e",
+      "crates/worldgen11/src/entity/aquatic.rs": "d9ad609c9228275183bac56497af1a54e466555c716b92b530d12cfff7cbad93",
+      "tools/oracle11/src/net/minecraft/src/DormantAi11.java": "06a0d577e385dc4e9fa423e55e6a1b2467e3414dcab9cc7282745f1482deb110",
+      "tools/oracle11/verify_dormant_ai11.ps1": "c127af77cf77f3685f1cb17c342b62655a0697a9467af76238c32fb92e4f27d2",
+      "tools/oracle11/audit_dormant_ai11.py": "6cc90adbc40fd14fe99b65cf27246eaaee4d652373052eb8fbd01c22e1c8fe26"
+    },
+    "original_source_sha256": {
+      "class_name": "INavigate",
+      "source_sha256": "1d57d1f299527bd99820b3ba0070a42499429745779b235ff514c6e5c7c61f5e",
+      "static_initializer": false,
+      "constructor_bytecode": "",
+      "constructor_calls": [],
+      "effect_disposition": "Interface has no constructor"
+    },
+    "completion_blockers": [],
+    "limitations": [
+      "No dormant task/controller algorithms are claimed implemented or compared if manually invoked",
+      "Allocation failure/OOM or reflective Java API observability is outside existing singleplayer scope"
+    ],
+    "criterion": "Complete normalized delta in authorized singleplayer runtime; explicit original finite evidence, not whole inherited Java API parity."
+  },
+  "PathNavigate": {
+    "complete_delta_review": true,
+    "reason": {
+      "class_name": "PathNavigate",
+      "entire_singleplayer_delta_effects_covered": true,
+      "disposition": "Unreachable runtime helper APIs; observable constructor/static effects equivalent in scoped Rust runtime",
+      "rust_java_facade_api_implemented": false,
+      "runtime_api_scope": "Excluded: original constant-false guards prevent pipeline invocation; no other callers anywhere in original jar/source. Public Java helper API parity is outside authorized singleplayer scope.",
+      "constructor_authority": {
+        "class_name": "PathNavigate",
+        "source_sha256": "531bc6b8b431dea97c7a0f1e86841c34b51b5c7c1555c4c380076292b9055848",
+        "static_initializer": false,
+        "constructor_bytecode": "0: aload_0\n       1: invokespecial #22                 // Method java/lang/Object.\"<init>\":()V\n       4: aload_0\n       5: aload_1\n       6: putfield      #24                 // Field field_46076_a:Lnet/minecraft/src/EntityLiving;\n       9: aload_0\n      10: aload_2\n      11: putfield      #26                 // Field field_46074_b:Lnet/minecraft/src/World;\n      14: return",
+        "constructor_calls": [
+          "java/lang/Object.\"<init>\":()V"
+        ],
+        "effect_disposition": "Only own fields, referenced position/speed reads, superclass Object/AIBase constructor, local ArrayList allocation and own mutex setter; no entity allocation/RNG/World call/static write"
+      },
+      "bytecode_graph": "work/ai-dormant11-static-review.json: original_method_references + all_jar_guard_declarations + external_callers[]",
+      "direct_original_runtime": "tools/r11/data/ai_dormant11.txt240 graph cases; existing eggstate11.bin960 state/save/tick cases and production focused test",
+      "observable_effects": [
+        "No static initializers",
+        "No EntityID allocation or global/static writes",
+        "No entity/World RNG draws",
+        "No World method calls",
+        "Local owner/World references and scalar reads/default fields only",
+        "Zombie ordered local registration priorities1,2,3,4,4; active selector list remains empty and helper/task state unchanged through actual ticks"
+      ],
+      "limitations": [
+        "No dormant task/controller algorithms are claimed implemented or compared if manually invoked",
+        "Allocation failure/OOM or reflective Java API observability is outside existing singleplayer scope"
+      ],
+      "completion_blockers": []
+    },
+    "rust_source_sha256": {
+      "crates/worldgen11/src/entity/living.rs": "924cd1b4bd7f680f54a550013fe76a2394db6d7ee8fc5d2bfd340dbd23b8a31e",
+      "crates/worldgen11/src/entity/aquatic.rs": "d9ad609c9228275183bac56497af1a54e466555c716b92b530d12cfff7cbad93",
+      "tools/oracle11/src/net/minecraft/src/DormantAi11.java": "06a0d577e385dc4e9fa423e55e6a1b2467e3414dcab9cc7282745f1482deb110",
+      "tools/oracle11/verify_dormant_ai11.ps1": "c127af77cf77f3685f1cb17c342b62655a0697a9467af76238c32fb92e4f27d2",
+      "tools/oracle11/audit_dormant_ai11.py": "6cc90adbc40fd14fe99b65cf27246eaaee4d652373052eb8fbd01c22e1c8fe26"
+    },
+    "original_source_sha256": {
+      "class_name": "PathNavigate",
+      "source_sha256": "531bc6b8b431dea97c7a0f1e86841c34b51b5c7c1555c4c380076292b9055848",
+      "static_initializer": false,
+      "constructor_bytecode": "0: aload_0\n       1: invokespecial #22                 // Method java/lang/Object.\"<init>\":()V\n       4: aload_0\n       5: aload_1\n       6: putfield      #24                 // Field field_46076_a:Lnet/minecraft/src/EntityLiving;\n       9: aload_0\n      10: aload_2\n      11: putfield      #26                 // Field field_46074_b:Lnet/minecraft/src/World;\n      14: return",
+      "constructor_calls": [
+        "java/lang/Object.\"<init>\":()V"
+      ],
+      "effect_disposition": "Only own fields, referenced position/speed reads, superclass Object/AIBase constructor, local ArrayList allocation and own mutex setter; no entity allocation/RNG/World call/static write"
+    },
+    "completion_blockers": [],
+    "limitations": [
+      "No dormant task/controller algorithms are claimed implemented or compared if manually invoked",
+      "Allocation failure/OOM or reflective Java API observability is outside existing singleplayer scope"
+    ],
+    "criterion": "Complete normalized delta in authorized singleplayer runtime; explicit original finite evidence, not whole inherited Java API parity."
+  },
+  "EntityLiving": {
+    "complete_delta_review": true,
+    "reason": {
+      "class_name": "EntityLiving",
+      "entire_singleplayer_delta_effects_covered": true,
+      "disposition": "All changed observable singleplayer behavior covered; no-reader storage and unreachable helper APIs explicitly excluded",
+      "rust_java_facade_api_implemented": false,
+      "old_source_sha256": "8cce2bcfcbbb9dae215a5caa6f57ffcd51047b9dae74e1e189ec457ac9b2958e",
+      "new_source_sha256": "2bab565edf3e65bfd3dbeb87e95bef2c915140f0088d6b0909038b2417739030",
+      "all_delta_hunk_coverage": [
+        {
+          "delta": "constructor new helper and task-manager allocations",
+          "authority": "13 constructor bytecode reviews and240 detached-constructor no-effect assertions; seeded960 original production constructor/save/tick parity; inherited Math.random calls unchanged"
+        },
+        {
+          "delta": "new guards/AI dispatch func_46006_aR,func_46014_aS; old flagremoved",
+          "authority": "Alljar method declarations exactly3 guards iconst_0 ireturn. Sole new-pipeline caller guarded. Actual Rust world-mode guard fixed; living_guard11.txt directbase/PlayerSP and production callback checks; no public dormant-helper API emulation claimed"
+        },
+        {
+          "delta": "new field_46015_bf/field_46016_bg plus constructor/onEntityUpdate/onLivingUpdate writes",
+          "authority": "Full original source scan: references confined EntityLiving; previous field only written, current field only read to copy into previous. No client, renderer, NBT or gameplay consumer; new assignments do not consume RNG. Omitted dead storage semantically equivalent for authorized scope"
+        },
+        {
+          "delta": "new field_46020_bQ and helper getter",
+          "authority": "Only EntityMob assigns, getter read by dormant EntityAIAttackOnCollide and guarded newpipeline clear. Entire original source reference set attached; no reachable observable consumer"
+        },
+        {
+          "delta": "new helper getters/rand/age/movement setter/speed APIs",
+          "authority": "Original wholejar CP references show all callers confined dormant graph; return/store field-only bodies. Missing Rust facade APIs excluded, not claimed implemented"
+        },
+        {
+          "delta": "knockBack motionY += (double)0.4F becomes += (double)var8",
+          "authority": "Same method initializes var8=0.4F before arithmetic and never changes it; exact constant substitution with identical double promotion, no runtime delta"
+        },
+        {
+          "delta": "all other changed field/method/callee names and access modifiers",
+          "authority": "Old/new full source diff attached. CarryoverDamage/experience/air/fire/potion/child/armor/sound/attack names preserve bodies; getVerticalFaceSpeed protected\u2192public body40 unchanged. No additional instruction/control/literal delta."
+        }
+      ],
+      "complete_source_diff": "--- 1.0/EntityLiving\n+++ 1.1/EntityLiving\n@@ -5,4 +5,5 @@\n import java.util.Iterator;\n import java.util.List;\n+import java.util.Random;\n \n public abstract class EntityLiving extends Entity {\n@@ -12,4 +13,6 @@\n \tpublic float renderYawOffset = 0.0F;\n \tpublic float prevRenderYawOffset = 0.0F;\n+\tpublic float field_46015_bf = 0.0F;\n+\tpublic float field_46016_bg = 0.0F;\n \tprotected float field_9362_u;\n \tprotected float field_9361_v;\n@@ -24,5 +27,4 @@\n \tprotected int scoreValue = 0;\n \tprotected float field_9345_F = 0.0F;\n-\tpublic boolean isMultiplayerEntity = false;\n \tpublic float landMovementFactor = 0.1F;\n \tpublic float jumpMovementFactor = 0.02F;\n@@ -31,5 +33,5 @@\n \tprotected int health = this.getMaxHealth();\n \tpublic int prevHealth;\n-\tprotected int field_40129_bA;\n+\tprotected int carryoverDamage;\n \tprivate int livingSoundTime;\n \tpublic int hurtTime;\n@@ -41,5 +43,5 @@\n \tpublic float cameraPitch;\n \tprotected boolean unused_flag = false;\n-\tprotected int field_35171_bJ;\n+\tprotected int experienceValue;\n \tpublic int field_9326_T = -1;\n \tpublic float field_9325_U = (float)(Math.random() * (double)0.9F + (double)0.1F);\n@@ -47,11 +49,17 @@\n \tpublic float field_704_R;\n \tpublic float field_703_S;\n-\tprotected EntityPlayer field_34904_b = null;\n-\tprotected int field_34905_c = 0;\n-\tpublic int field_35172_bP = 0;\n-\tpublic int field_35173_bQ = 0;\n+\tprotected EntityPlayer attackingPlayer = null;\n+\tprotected int recentlyHit = 0;\n+\tprotected EntityLiving field_46020_bQ = null;\n+\tpublic int arrowHitTempCounter = 0;\n+\tpublic int arrowHitTimer = 0;\n \tprotected HashMap activePotionsMap = new HashMap();\n \tprivate boolean field_39001_b = true;\n \tprivate int field_39002_c;\n+\tprivate EntityLookHelper field_46017_d;\n+\tprivate EntityMoveHelper field_46018_e;\n+\tprivate EntityJumpHelper field_46021_am;\n+\tprivate INavigate field_46022_an;\n+\tprotected EntityAITasks field_46019_bU = new EntityAITasks();\n \tprotected int newPosRotationIncrements;\n \tprotected double newPosX;\n@@ -76,9 +84,42 @@\n \t\tsuper(var1);\n \t\tthis.preventEntitySpawning = true;\n+\t\tthis.field_46017_d = new EntityLookHelper(this);\n+\t\tthis.field_46018_e = new EntityMoveHelper(this, this.moveSpeed);\n+\t\tthis.field_46021_am = new EntityJumpHelper(this);\n+\t\tthis.field_46022_an = new PathNavigate(this, var1);\n \t\tthis.field_9363_r = (float)(Math.random() + 1.0D) * 0.01F;\n \t\tthis.setPosition(this.posX, this.posY, this.posZ);\n \t\tthis.field_9365_p = (float)Math.random() * 12398.0F;\n \t\tthis.rotationYaw = (float)(Math.random() * (double)((float)Math.PI) * 2.0D);\n+\t\tthis.field_46015_bf = this.rotationYaw;\n \t\tthis.stepHeight = 0.5F;\n+\t}\n+\n+\tpublic EntityLookHelper func_46008_aG() {\n+\t\treturn this.field_46017_d;\n+\t}\n+\n+\tpublic EntityMoveHelper func_46009_aH() {\n+\t\treturn this.field_46018_e;\n+\t}\n+\n+\tpublic EntityJumpHelper func_46005_aI() {\n+\t\treturn this.field_46021_am;\n+\t}\n+\n+\tpublic INavigate func_46012_aJ() {\n+\t\treturn this.field_46022_an;\n+\t}\n+\n+\tpublic Random func_46004_aK() {\n+\t\treturn this.rand;\n+\t}\n+\n+\tpublic EntityLiving func_46007_aL() {\n+\t\treturn this.field_46020_bQ;\n+\t}\n+\n+\tpublic int func_46011_aM() {\n+\t\treturn this.entityAge;\n \t}\n \n@@ -114,5 +155,5 @@\n \t\tString var1 = this.getLivingSound();\n \t\tif(var1 != null) {\n-\t\t\tthis.worldObj.playSoundAtEntity(this, var1, this.getSoundVolume(), this.func_40123_ac());\n+\t\t\tthis.worldObj.playSoundAtEntity(this, var1, this.getSoundVolume(), this.getSoundPitch());\n \t\t}\n \n@@ -131,12 +172,12 @@\n \t\t}\n \n-\t\tif(this.func_40047_D() || this.worldObj.multiplayerWorld) {\n-\t\t\tthis.func_40045_B();\n-\t\t}\n-\n-\t\tif(this.isEntityAlive() && this.isInsideOfMaterial(Material.water) && !this.canBreatheUnderwater() && !this.activePotionsMap.containsKey(Integer.valueOf(Potion.potionWaterBreathing.id))) {\n-\t\t\tthis.func_41003_g(this.func_40116_f(this.func_41001_Z()));\n-\t\t\tif(this.func_41001_Z() == -20) {\n-\t\t\t\tthis.func_41003_g(0);\n+\t\tif(this.isImmuneToFire() || this.worldObj.multiplayerWorld) {\n+\t\t\tthis.extinguish();\n+\t\t}\n+\n+\t\tif(this.isEntityAlive() && this.isInsideOfMaterial(Material.water) && !this.canBreatheUnderwater() && !this.activePotionsMap.containsKey(Integer.valueOf(Potion.waterBreathing.id))) {\n+\t\t\tthis.setAir(this.decreaseAirSupply(this.getAir()));\n+\t\t\tif(this.getAir() == -20) {\n+\t\t\t\tthis.setAir(0);\n \n \t\t\t\tfor(int var1 = 0; var1 < 8; ++var1) {\n@@ -150,7 +191,7 @@\n \t\t\t}\n \n-\t\t\tthis.func_40045_B();\n+\t\t\tthis.extinguish();\n \t\t} else {\n-\t\t\tthis.func_41003_g(300);\n+\t\t\tthis.setAir(300);\n \t\t}\n \n@@ -169,11 +210,11 @@\n \n \t\tif(this.health <= 0) {\n-\t\t\tthis.func_40120_m_();\n-\t\t}\n-\n-\t\tif(this.field_34905_c > 0) {\n-\t\t\t--this.field_34905_c;\n+\t\t\tthis.onDeathUpdate();\n+\t\t}\n+\n+\t\tif(this.recentlyHit > 0) {\n+\t\t\t--this.recentlyHit;\n \t\t} else {\n-\t\t\tthis.field_34904_b = null;\n+\t\t\tthis.attackingPlayer = null;\n \t\t}\n \n@@ -181,4 +222,5 @@\n \t\tthis.field_9359_x = this.field_9360_w;\n \t\tthis.prevRenderYawOffset = this.renderYawOffset;\n+\t\tthis.field_46016_bg = this.field_46015_bf;\n \t\tthis.prevRotationYaw = this.rotationYaw;\n \t\tthis.prevRotationPitch = this.rotationPitch;\n@@ -186,15 +228,15 @@\n \t}\n \n-\tprotected void func_40120_m_() {\n+\tprotected void onDeathUpdate() {\n \t\t++this.deathTime;\n \t\tif(this.deathTime == 20) {\n \t\t\tint var1;\n-\t\t\tif(!this.worldObj.multiplayerWorld && (this.field_34905_c > 0 || this.func_35163_av()) && !this.func_40127_l()) {\n-\t\t\t\tvar1 = this.func_36001_a(this.field_34904_b);\n+\t\t\tif(!this.worldObj.multiplayerWorld && (this.recentlyHit > 0 || this.isPlayer()) && !this.isChild()) {\n+\t\t\t\tvar1 = this.getExperiencePoints(this.attackingPlayer);\n \n \t\t\t\twhile(var1 > 0) {\n \t\t\t\t\tint var2 = EntityXPOrb.getXPSplit(var1);\n \t\t\t\t\tvar1 -= var2;\n-\t\t\t\t\tthis.worldObj.entityJoinedWorld(new EntityXPOrb(this.worldObj, this.posX, this.posY, this.posZ, var2));\n+\t\t\t\t\tthis.worldObj.spawnEntityInWorld(new EntityXPOrb(this.worldObj, this.posX, this.posY, this.posZ, var2));\n \t\t\t\t}\n \t\t\t}\n@@ -213,13 +255,13 @@\n \t}\n \n-\tprotected int func_40116_f(int var1) {\n+\tprotected int decreaseAirSupply(int var1) {\n \t\treturn var1 - 1;\n \t}\n \n-\tprotected int func_36001_a(EntityPlayer var1) {\n-\t\treturn this.field_35171_bJ;\n-\t}\n-\n-\tprotected boolean func_35163_av() {\n+\tprotected int getExperiencePoints(EntityPlayer var1) {\n+\t\treturn this.experienceValue;\n+\t}\n+\n+\tprotected boolean isPlayer() {\n \t\treturn false;\n \t}\n@@ -255,12 +297,12 @@\n \tpublic void onUpdate() {\n \t\tsuper.onUpdate();\n-\t\tif(this.field_35172_bP > 0) {\n-\t\t\tif(this.field_35173_bQ <= 0) {\n-\t\t\t\tthis.field_35173_bQ = 60;\n-\t\t\t}\n-\n-\t\t\t--this.field_35173_bQ;\n-\t\t\tif(this.field_35173_bQ <= 0) {\n-\t\t\t\t--this.field_35172_bP;\n+\t\tif(this.arrowHitTempCounter > 0) {\n+\t\t\tif(this.arrowHitTimer <= 0) {\n+\t\t\t\tthis.arrowHitTimer = 60;\n+\t\t\t}\n+\n+\t\t\t--this.arrowHitTimer;\n+\t\t\tif(this.arrowHitTimer <= 0) {\n+\t\t\t\t--this.arrowHitTempCounter;\n \t\t\t}\n \t\t}\n@@ -389,5 +431,5 @@\n \t\t\tif(this.health <= 0) {\n \t\t\t\treturn false;\n-\t\t\t} else if(var1.func_40543_k() && this.isPotionActive(Potion.potionFireReistance)) {\n+\t\t\t} else if(var1.fireDamage() && this.isPotionActive(Potion.fireResistance)) {\n \t\t\t\treturn false;\n \t\t\t} else {\n@@ -414,11 +456,11 @@\n \t\t\t\tif(var4 != null) {\n \t\t\t\t\tif(var4 instanceof EntityPlayer) {\n-\t\t\t\t\t\tthis.field_34905_c = 60;\n-\t\t\t\t\t\tthis.field_34904_b = (EntityPlayer)var4;\n+\t\t\t\t\t\tthis.recentlyHit = 60;\n+\t\t\t\t\t\tthis.attackingPlayer = (EntityPlayer)var4;\n \t\t\t\t\t} else if(var4 instanceof EntityWolf) {\n \t\t\t\t\t\tEntityWolf var5 = (EntityWolf)var4;\n-\t\t\t\t\t\tif(var5.isWolfTamed()) {\n-\t\t\t\t\t\t\tthis.field_34905_c = 60;\n-\t\t\t\t\t\t\tthis.field_34904_b = null;\n+\t\t\t\t\t\tif(var5.isTamed()) {\n+\t\t\t\t\t\t\tthis.recentlyHit = 60;\n+\t\t\t\t\t\t\tthis.attackingPlayer = null;\n \t\t\t\t\t\t}\n \t\t\t\t\t}\n@@ -445,10 +487,10 @@\n \t\t\t\tif(this.health <= 0) {\n \t\t\t\t\tif(var3) {\n-\t\t\t\t\t\tthis.worldObj.playSoundAtEntity(this, this.getDeathSound(), this.getSoundVolume(), this.func_40123_ac());\n+\t\t\t\t\t\tthis.worldObj.playSoundAtEntity(this, this.getDeathSound(), this.getSoundVolume(), this.getSoundPitch());\n \t\t\t\t\t}\n \n \t\t\t\t\tthis.onDeath(var1);\n \t\t\t\t} else if(var3) {\n-\t\t\t\t\tthis.worldObj.playSoundAtEntity(this, this.getHurtSound(), this.getSoundVolume(), this.func_40123_ac());\n+\t\t\t\t\tthis.worldObj.playSoundAtEntity(this, this.getHurtSound(), this.getSoundVolume(), this.getSoundPitch());\n \t\t\t\t}\n \n@@ -458,6 +500,6 @@\n \t}\n \n-\tprivate float func_40123_ac() {\n-\t\treturn this.func_40127_l() ? (this.rand.nextFloat() - this.rand.nextFloat()) * 0.2F + 1.5F : (this.rand.nextFloat() - this.rand.nextFloat()) * 0.2F + 1.0F;\n+\tprivate float getSoundPitch() {\n+\t\treturn this.isChild() ? (this.rand.nextFloat() - this.rand.nextFloat()) * 0.2F + 1.5F : (this.rand.nextFloat() - this.rand.nextFloat()) * 0.2F + 1.0F;\n \t}\n \n@@ -467,5 +509,5 @@\n \t}\n \n-\tprotected int func_40119_ar() {\n+\tpublic int getTotalArmorValue() {\n \t\treturn 0;\n \t}\n@@ -474,11 +516,11 @@\n \t}\n \n-\tprotected int func_40115_d(DamageSource var1, int var2) {\n-\t\tif(!var1.unblockable()) {\n-\t\t\tint var3 = 25 - this.func_40119_ar();\n-\t\t\tint var4 = var2 * var3 + this.field_40129_bA;\n+\tprotected int applyArmorCalculations(DamageSource var1, int var2) {\n+\t\tif(!var1.isUnblockable()) {\n+\t\t\tint var3 = 25 - this.getTotalArmorValue();\n+\t\t\tint var4 = var2 * var3 + this.carryoverDamage;\n \t\t\tthis.func_40125_g(var2);\n \t\t\tvar2 = var4 / 25;\n-\t\t\tthis.field_40129_bA = var4 % 25;\n+\t\t\tthis.carryoverDamage = var4 % 25;\n \t\t}\n \n@@ -486,11 +528,11 @@\n \t}\n \n-\tprotected int func_40128_b(DamageSource var1, int var2) {\n-\t\tif(this.isPotionActive(Potion.potionResistance)) {\n-\t\t\tint var3 = (this.getActivePotionEffect(Potion.potionResistance).getAmplifier() + 1) * 5;\n+\tprotected int applyPotionDamageCalculations(DamageSource var1, int var2) {\n+\t\tif(this.isPotionActive(Potion.resistance)) {\n+\t\t\tint var3 = (this.getActivePotionEffect(Potion.resistance).getAmplifier() + 1) * 5;\n \t\t\tint var4 = 25 - var3;\n-\t\t\tint var5 = var2 * var4 + this.field_40129_bA;\n+\t\t\tint var5 = var2 * var4 + this.carryoverDamage;\n \t\t\tvar2 = var5 / 25;\n-\t\t\tthis.field_40129_bA = var5 % 25;\n+\t\t\tthis.carryoverDamage = var5 % 25;\n \t\t}\n \n@@ -499,6 +541,6 @@\n \n \tprotected void damageEntity(DamageSource var1, int var2) {\n-\t\tvar2 = this.func_40115_d(var1, var2);\n-\t\tvar2 = this.func_40128_b(var1, var2);\n+\t\tvar2 = this.applyArmorCalculations(var1, var2);\n+\t\tvar2 = this.applyPotionDamageCalculations(var1, var2);\n \t\tthis.health -= var2;\n \t}\n@@ -528,5 +570,5 @@\n \t\tthis.motionZ /= 2.0D;\n \t\tthis.motionX -= var3 / (double)var7 * (double)var8;\n-\t\tthis.motionY += (double)0.4F;\n+\t\tthis.motionY += (double)var8;\n \t\tthis.motionZ -= var5 / (double)var7 * (double)var8;\n \t\tif(this.motionY > (double)0.4F) {\n@@ -553,6 +595,6 @@\n \t\t\t}\n \n-\t\t\tif(!this.func_40127_l()) {\n-\t\t\t\tthis.dropFewItems(this.field_34905_c > 0, var3);\n+\t\t\tif(!this.isChild()) {\n+\t\t\t\tthis.dropFewItems(this.recentlyHit > 0, var3);\n \t\t\t}\n \t\t}\n@@ -758,4 +800,16 @@\n \t}\n \n+\tpublic void func_46010_f(float var1) {\n+\t\tthis.moveForward = var1;\n+\t}\n+\n+\tpublic void func_46003_g(boolean var1) {\n+\t\tthis.isJumping = var1;\n+\t}\n+\n+\tpublic float func_46013_aQ() {\n+\t\treturn this.moveSpeed;\n+\t}\n+\n \tpublic void onLivingUpdate() {\n \t\tif(this.field_39003_d > 0) {\n@@ -803,6 +857,11 @@\n \t\t\tthis.moveForward = 0.0F;\n \t\t\tthis.randomYawVelocity = 0.0F;\n-\t\t} else if(!this.isMultiplayerEntity) {\n-\t\t\tthis.updateEntityActionState();\n+\t\t} else if(this.func_44001_ad()) {\n+\t\t\tif(this.func_46006_aR()) {\n+\t\t\t\tthis.func_46014_aS();\n+\t\t\t} else {\n+\t\t\t\tthis.updateEntityActionState();\n+\t\t\t\tthis.field_46015_bf = this.rotationYaw;\n+\t\t\t}\n \t\t}\n \n@@ -827,5 +886,5 @@\n \t\tthis.randomYawVelocity *= 0.9F;\n \t\tfloat var15 = this.landMovementFactor;\n-\t\tthis.landMovementFactor *= this.func_35166_t_();\n+\t\tthis.landMovementFactor *= this.getSpeedModifier();\n \t\tthis.moveEntityWithHeading(this.moveStrafing, this.moveForward);\n \t\tthis.landMovementFactor = var15;\n@@ -844,9 +903,17 @@\n \t}\n \n+\tprotected boolean func_46006_aR() {\n+\t\treturn false;\n+\t}\n+\n+\tprotected boolean func_44001_ad() {\n+\t\treturn !this.worldObj.multiplayerWorld;\n+\t}\n+\n \tprotected boolean isMovementBlocked() {\n \t\treturn this.health <= 0;\n \t}\n \n-\tpublic boolean func_35162_ad() {\n+\tpublic boolean isBlocking() {\n \t\treturn false;\n \t}\n@@ -854,6 +921,6 @@\n \tprotected void jump() {\n \t\tthis.motionY = (double)0.42F;\n-\t\tif(this.isPotionActive(Potion.potionJump)) {\n-\t\t\tthis.motionY += (double)((float)(this.getActivePotionEffect(Potion.potionJump).getAmplifier() + 1) * 0.1F);\n+\t\tif(this.isPotionActive(Potion.jump)) {\n+\t\t\tthis.motionY += (double)((float)(this.getActivePotionEffect(Potion.jump).getAmplifier() + 1) * 0.1F);\n \t\t}\n \n@@ -889,4 +956,18 @@\n \t\t}\n \n+\t}\n+\n+\tprotected void func_46014_aS() {\n+\t\t++this.entityAge;\n+\t\tthis.despawnEntity();\n+\t\tif(this.field_46020_bQ != null && !this.field_46020_bQ.isEntityAlive()) {\n+\t\t\tthis.field_46020_bQ = null;\n+\t\t}\n+\n+\t\tthis.field_46019_bU.func_46115_a();\n+\t\tthis.field_46022_an.func_46069_a();\n+\t\tthis.field_46018_e.func_46034_a();\n+\t\tthis.field_46017_d.func_46142_a();\n+\t\tthis.field_46021_am.func_46130_b();\n \t}\n \n@@ -930,5 +1011,5 @@\n \t}\n \n-\tprotected int getVerticalFaceSpeed() {\n+\tpublic int getVerticalFaceSpeed() {\n \t\treturn 40;\n \t}\n@@ -1160,7 +1241,7 @@\n \n \tpublic boolean func_40126_a(PotionEffect var1) {\n-\t\tif(this.func_40124_t() == EnumCreatureAttribute.UNDEAD) {\n+\t\tif(this.getCreatureAttribute() == EnumCreatureAttribute.UNDEAD) {\n \t\t\tint var2 = var1.getPotionID();\n-\t\t\tif(var2 == Potion.potionRegeneration.id || var2 == Potion.potionPoison.id) {\n+\t\t\tif(var2 == Potion.regeneration.id || var2 == Potion.poison.id) {\n \t\t\t\treturn false;\n \t\t\t}\n@@ -1170,6 +1251,6 @@\n \t}\n \n-\tpublic boolean func_40122_aP() {\n-\t\treturn this.func_40124_t() == EnumCreatureAttribute.UNDEAD;\n+\tpublic boolean isEntityUndead() {\n+\t\treturn this.getCreatureAttribute() == EnumCreatureAttribute.UNDEAD;\n \t}\n \n@@ -1190,12 +1271,12 @@\n \t}\n \n-\tprotected float func_35166_t_() {\n+\tprotected float getSpeedModifier() {\n \t\tfloat var1 = 1.0F;\n-\t\tif(this.isPotionActive(Potion.potionSpeed)) {\n-\t\t\tvar1 *= 1.0F + 0.2F * (float)(this.getActivePotionEffect(Potion.potionSpeed).getAmplifier() + 1);\n-\t\t}\n-\n-\t\tif(this.isPotionActive(Potion.potionSlowdown)) {\n-\t\t\tvar1 *= 1.0F - 0.15F * (float)(this.getActivePotionEffect(Potion.potionSlowdown).getAmplifier() + 1);\n+\t\tif(this.isPotionActive(Potion.moveSpeed)) {\n+\t\t\tvar1 *= 1.0F + 0.2F * (float)(this.getActivePotionEffect(Potion.moveSpeed).getAmplifier() + 1);\n+\t\t}\n+\n+\t\tif(this.isPotionActive(Potion.moveSlowdown)) {\n+\t\t\tvar1 *= 1.0F - 0.15F * (float)(this.getActivePotionEffect(Potion.moveSlowdown).getAmplifier() + 1);\n \t\t}\n \n@@ -1203,13 +1284,13 @@\n \t}\n \n-\tpublic void func_40113_j(double var1, double var3, double var5) {\n+\tpublic void teleportToLocation(double var1, double var3, double var5) {\n \t\tthis.setLocationAndAngles(var1, var3, var5, this.rotationYaw, this.rotationPitch);\n \t}\n \n-\tpublic boolean func_40127_l() {\n+\tpublic boolean isChild() {\n \t\treturn false;\n \t}\n \n-\tpublic EnumCreatureAttribute func_40124_t() {\n+\tpublic EnumCreatureAttribute getCreatureAttribute() {\n \t\treturn EnumCreatureAttribute.UNDEFINED;\n \t}\n",
+      "completion_blockers": [],
+      "limitations": [
+        "No inherited unchanged Java API reproof; no manually invoked dormant helper API parity",
+        "EntityLiving rendering/client integration does not read newly introduced dead yaw fields in original release"
+      ]
+    },
+    "rust_source_sha256": {
+      "crates/worldgen11/src/entity/living.rs": "924cd1b4bd7f680f54a550013fe76a2394db6d7ee8fc5d2bfd340dbd23b8a31e",
+      "crates/worldgen11/src/entity/aquatic.rs": "d9ad609c9228275183bac56497af1a54e466555c716b92b530d12cfff7cbad93",
+      "tools/oracle11/src/net/minecraft/src/DormantAi11.java": "06a0d577e385dc4e9fa423e55e6a1b2467e3414dcab9cc7282745f1482deb110",
+      "tools/oracle11/verify_dormant_ai11.ps1": "c127af77cf77f3685f1cb17c342b62655a0697a9467af76238c32fb92e4f27d2",
+      "tools/oracle11/audit_dormant_ai11.py": "6cc90adbc40fd14fe99b65cf27246eaaee4d652373052eb8fbd01c22e1c8fe26"
+    },
+    "original_source_sha256": {
+      "1.0": "8cce2bcfcbbb9dae215a5caa6f57ffcd51047b9dae74e1e189ec457ac9b2958e",
+      "1.1": "2bab565edf3e65bfd3dbeb87e95bef2c915140f0088d6b0909038b2417739030"
+    },
+    "completion_blockers": [],
+    "limitations": [
+      "No inherited unchanged Java API reproof; no manually invoked dormant helper API parity",
+      "EntityLiving rendering/client integration does not read newly introduced dead yaw fields in original release"
+    ],
+    "criterion": "Complete normalized delta in authorized singleplayer runtime; explicit original finite evidence, not whole inherited Java API parity."
+  },
+  "EntityZombie": {
+    "complete_delta_review": true,
+    "reason": {
+      "class_name": "EntityZombie",
+      "entire_singleplayer_delta_effects_covered": true,
+      "disposition": "All changed observable singleplayer behavior covered; no-reader storage and unreachable helper APIs explicitly excluded",
+      "rust_java_facade_api_implemented": false,
+      "old_source_sha256": "b54d87bc48a9554cd8ee2bebccb18fd248a26c048d309d732d0fe4336d1d3eda",
+      "new_source_sha256": "73917163284545c337d2d65e589c00b07d69ca15161bfe5a12c7a7bd6830cdc6",
+      "all_delta_hunk_coverage": [
+        {
+          "delta": "constructor five task allocations/registration",
+          "authority": "Original graph serializes exact task types, priorities1,2,3,4,4 and mutex/default fields; no World/RNG/EntityID/NBT effect; selectors remain inactive"
+        },
+        {
+          "delta": "func_46006_aR returnsfalse",
+          "authority": "Original bytecode iconst_0/ireturn and all20mob virtual resolution probes; inherited oldAI retained"
+        },
+        {
+          "delta": "getTotalArmorValue protectednumbered\u2192publicnamed, fire and creatureattribute names",
+          "authority": "Bodies/literals unchanged2/8/UNDEAD. No additional behavior delta"
+        }
+      ],
+      "complete_source_diff": "--- 1.0/EntityZombie\n+++ 1.1/EntityZombie\n@@ -7,4 +7,9 @@\n \t\tthis.moveSpeed = 0.5F;\n \t\tthis.attackStrength = 4;\n+\t\tthis.field_46019_bU.func_46118_a(1, new EntityAISwimming(this));\n+\t\tthis.field_46019_bU.func_46118_a(2, new EntityAIAttackOnCollide(this, var1, 16.0F));\n+\t\tthis.field_46019_bU.func_46118_a(3, new EntityAIWander(this));\n+\t\tthis.field_46019_bU.func_46118_a(4, new EntityAIWatchClosest(this, var1, 8.0F));\n+\t\tthis.field_46019_bU.func_46118_a(4, new EntityAILookIdle(this));\n \t}\n \n@@ -13,6 +18,10 @@\n \t}\n \n-\tprotected int func_40119_ar() {\n+\tpublic int getTotalArmorValue() {\n \t\treturn 2;\n+\t}\n+\n+\tprotected boolean func_46006_aR() {\n+\t\treturn false;\n \t}\n \n@@ -21,5 +30,5 @@\n \t\t\tfloat var1 = this.getEntityBrightness(1.0F);\n \t\t\tif(var1 > 0.5F && this.worldObj.canBlockSeeTheSky(MathHelper.floor_double(this.posX), MathHelper.floor_double(this.posY), MathHelper.floor_double(this.posZ)) && this.rand.nextFloat() * 30.0F < (var1 - 0.4F) * 2.0F) {\n-\t\t\t\tthis.func_40046_d(8);\n+\t\t\t\tthis.setFire(8);\n \t\t\t}\n \t\t}\n@@ -44,5 +53,5 @@\n \t}\n \n-\tpublic EnumCreatureAttribute func_40124_t() {\n+\tpublic EnumCreatureAttribute getCreatureAttribute() {\n \t\treturn EnumCreatureAttribute.UNDEAD;\n \t}\n",
+      "completion_blockers": [],
+      "limitations": [
+        "No inherited unchanged Java API reproof; no manually invoked dormant helper API parity",
+        "EntityLiving rendering/client integration does not read newly introduced dead yaw fields in original release"
+      ]
+    },
+    "rust_source_sha256": {
+      "crates/worldgen11/src/entity/living.rs": "924cd1b4bd7f680f54a550013fe76a2394db6d7ee8fc5d2bfd340dbd23b8a31e",
+      "crates/worldgen11/src/entity/aquatic.rs": "d9ad609c9228275183bac56497af1a54e466555c716b92b530d12cfff7cbad93",
+      "tools/oracle11/src/net/minecraft/src/DormantAi11.java": "06a0d577e385dc4e9fa423e55e6a1b2467e3414dcab9cc7282745f1482deb110",
+      "tools/oracle11/verify_dormant_ai11.ps1": "c127af77cf77f3685f1cb17c342b62655a0697a9467af76238c32fb92e4f27d2",
+      "tools/oracle11/audit_dormant_ai11.py": "6cc90adbc40fd14fe99b65cf27246eaaee4d652373052eb8fbd01c22e1c8fe26"
+    },
+    "original_source_sha256": {
+      "1.0": "b54d87bc48a9554cd8ee2bebccb18fd248a26c048d309d732d0fe4336d1d3eda",
+      "1.1": "73917163284545c337d2d65e589c00b07d69ca15161bfe5a12c7a7bd6830cdc6"
+    },
+    "completion_blockers": [],
+    "limitations": [
+      "No inherited unchanged Java API reproof; no manually invoked dormant helper API parity",
+      "EntityLiving rendering/client integration does not read newly introduced dead yaw fields in original release"
+    ],
+    "criterion": "Complete normalized delta in authorized singleplayer runtime; explicit original finite evidence, not whole inherited Java API parity."
+  },
+  "EntityPigZombie": {
+    "complete_delta_review": true,
+    "reason": {
+      "class_name": "EntityPigZombie",
+      "entire_singleplayer_delta_effects_covered": true,
+      "disposition": "All changed observable singleplayer behavior covered; no-reader storage and unreachable helper APIs explicitly excluded",
+      "rust_java_facade_api_implemented": false,
+      "old_source_sha256": "6373bd60a780a9f951e4a3ea874e7551e9f981cec9e09477beb44ca7a3bb7286",
+      "new_source_sha256": "5c42ee6c73b33f9225b06c244da481906611ff621a2e881579b0c72637041c5c",
+      "all_delta_hunk_coverage": [
+        {
+          "delta": "onlynew override func_46006_aR returnsfalse",
+          "authority": "Original class sole addedhunk; original bytecode guard false and inherited Zombie graph effects covered in both original and production constructor/save/tick traces"
+        }
+      ],
+      "complete_source_diff": "--- 1.0/EntityPigZombie\n+++ 1.1/EntityPigZombie\n@@ -14,4 +14,8 @@\n \t\tthis.attackStrength = 5;\n \t\tthis.isImmuneToFire = true;\n+\t}\n+\n+\tprotected boolean func_46006_aR() {\n+\t\treturn false;\n \t}\n \n",
+      "completion_blockers": [],
+      "limitations": [
+        "No inherited unchanged Java API reproof; no manually invoked dormant helper API parity",
+        "EntityLiving rendering/client integration does not read newly introduced dead yaw fields in original release"
+      ]
+    },
+    "rust_source_sha256": {
+      "crates/worldgen11/src/entity/living.rs": "924cd1b4bd7f680f54a550013fe76a2394db6d7ee8fc5d2bfd340dbd23b8a31e",
+      "crates/worldgen11/src/entity/aquatic.rs": "d9ad609c9228275183bac56497af1a54e466555c716b92b530d12cfff7cbad93",
+      "tools/oracle11/src/net/minecraft/src/DormantAi11.java": "06a0d577e385dc4e9fa423e55e6a1b2467e3414dcab9cc7282745f1482deb110",
+      "tools/oracle11/verify_dormant_ai11.ps1": "c127af77cf77f3685f1cb17c342b62655a0697a9467af76238c32fb92e4f27d2",
+      "tools/oracle11/audit_dormant_ai11.py": "6cc90adbc40fd14fe99b65cf27246eaaee4d652373052eb8fbd01c22e1c8fe26"
+    },
+    "original_source_sha256": {
+      "1.0": "6373bd60a780a9f951e4a3ea874e7551e9f981cec9e09477beb44ca7a3bb7286",
+      "1.1": "5c42ee6c73b33f9225b06c244da481906611ff621a2e881579b0c72637041c5c"
+    },
+    "completion_blockers": [],
+    "limitations": [
+      "No inherited unchanged Java API reproof; no manually invoked dormant helper API parity",
+      "EntityLiving rendering/client integration does not read newly introduced dead yaw fields in original release"
+    ],
+    "criterion": "Complete normalized delta in authorized singleplayer runtime; explicit original finite evidence, not whole inherited Java API parity."
+  },
+  "EntityMob": {
+    "complete_delta_review": true,
+    "reason": {
+      "class_name": "EntityMob",
+      "entire_singleplayer_delta_effects_covered": true,
+      "disposition": "All changed observable singleplayer behavior covered; no-reader storage and unreachable helper APIs explicitly excluded",
+      "rust_java_facade_api_implemented": false,
+      "old_source_sha256": "c92a8bce87c87002a412aedbf08bbc3d2e767e75bc20f2b3da468a4d8e8d5dbf",
+      "new_source_sha256": "f028cb13108937352d25da9ca6a20ea066acba4932e40f7845867e05d4cc763a",
+      "all_delta_hunk_coverage": [
+        {
+          "delta": "new attack target store field_46020_bQ",
+          "authority": "Pure reference assignment ornull; only getter+dormantAI read it, no reachable caller observes; no world/RNG/state effect in authorized scope"
+        },
+        {
+          "delta": "experience and potion renames; two method access widenings",
+          "authority": "Inherited bodies unchanged, no gameplay control/literal delta"
+        }
+      ],
+      "complete_source_diff": "--- 1.0/EntityMob\n+++ 1.1/EntityMob\n@@ -6,5 +6,5 @@\n \tpublic EntityMob(World var1) {\n \t\tsuper(var1);\n-\t\tthis.field_35171_bJ = 5;\n+\t\tthis.experienceValue = 5;\n \t}\n \n@@ -37,4 +37,5 @@\n \t\t\t\tif(var3 != this) {\n \t\t\t\t\tthis.entityToAttack = var3;\n+\t\t\t\t\tthis.field_46020_bQ = var3 instanceof EntityLiving ? (EntityLiving)var3 : null;\n \t\t\t\t}\n \n@@ -48,12 +49,12 @@\n \t}\n \n-\tprotected boolean attackEntityAsMob(Entity var1) {\n+\tpublic boolean attackEntityAsMob(Entity var1) {\n \t\tint var2 = this.attackStrength;\n-\t\tif(this.isPotionActive(Potion.potionDamageBoost)) {\n-\t\t\tvar2 += 3 << this.getActivePotionEffect(Potion.potionDamageBoost).getAmplifier();\n+\t\tif(this.isPotionActive(Potion.damageBoost)) {\n+\t\t\tvar2 += 3 << this.getActivePotionEffect(Potion.damageBoost).getAmplifier();\n \t\t}\n \n-\t\tif(this.isPotionActive(Potion.potionWeakness)) {\n-\t\t\tvar2 -= 2 << this.getActivePotionEffect(Potion.potionWeakness).getAmplifier();\n+\t\tif(this.isPotionActive(Potion.weakness)) {\n+\t\t\tvar2 -= 2 << this.getActivePotionEffect(Potion.weakness).getAmplifier();\n \t\t}\n \n@@ -69,5 +70,5 @@\n \t}\n \n-\tprotected float getBlockPathWeight(int var1, int var2, int var3) {\n+\tpublic float getBlockPathWeight(int var1, int var2, int var3) {\n \t\treturn 0.5F - this.worldObj.getLightBrightness(var1, var2, var3);\n \t}\n",
+      "completion_blockers": [],
+      "limitations": [
+        "No inherited unchanged Java API reproof; no manually invoked dormant helper API parity",
+        "EntityLiving rendering/client integration does not read newly introduced dead yaw fields in original release"
+      ]
+    },
+    "rust_source_sha256": {
+      "crates/worldgen11/src/entity/living.rs": "924cd1b4bd7f680f54a550013fe76a2394db6d7ee8fc5d2bfd340dbd23b8a31e",
+      "crates/worldgen11/src/entity/aquatic.rs": "d9ad609c9228275183bac56497af1a54e466555c716b92b530d12cfff7cbad93",
+      "tools/oracle11/src/net/minecraft/src/DormantAi11.java": "06a0d577e385dc4e9fa423e55e6a1b2467e3414dcab9cc7282745f1482deb110",
+      "tools/oracle11/verify_dormant_ai11.ps1": "c127af77cf77f3685f1cb17c342b62655a0697a9467af76238c32fb92e4f27d2",
+      "tools/oracle11/audit_dormant_ai11.py": "6cc90adbc40fd14fe99b65cf27246eaaee4d652373052eb8fbd01c22e1c8fe26"
+    },
+    "original_source_sha256": {
+      "1.0": "c92a8bce87c87002a412aedbf08bbc3d2e767e75bc20f2b3da468a4d8e8d5dbf",
+      "1.1": "f028cb13108937352d25da9ca6a20ea066acba4932e40f7845867e05d4cc763a"
+    },
+    "completion_blockers": [],
+    "limitations": [
+      "No inherited unchanged Java API reproof; no manually invoked dormant helper API parity",
+      "EntityLiving rendering/client integration does not read newly introduced dead yaw fields in original release"
+    ],
+    "criterion": "Complete normalized delta in authorized singleplayer runtime; explicit original finite evidence, not whole inherited Java API parity."
+  },
+  "GuiBrewingStand": {
+    "complete_delta_review": true,
+    "reason": "Only behavioral hunk changes progress denominator600 to400; all1211 original ticks compared.",
+    "rust_source_sha256": {
+      "crates/client11/src/gui/screens/brewing.rs": "5ffd2ca524a82746296385882a4f6f7c3bfb9c862604128134d31159cbf1ba90"
+    },
+    "original_source_sha256": null,
+    "completion_blockers": [],
+    "limitations": [],
+    "criterion": "Complete normalized delta in authorized singleplayer runtime; explicit original finite evidence, not whole inherited Java API parity."
+  },
+  "RenderManager": {
+    "complete_delta_review": true,
+    "reason": "Entire3line delta: query original brightness then override burning entity light with15728880.720direct dispatch cases; live frame shares actual entity state.",
+    "rust_source_sha256": {
+      "crates/client11/src/render/entity/manager.rs": "c36c7e06d5eae9dd77793e94361c89157128dca59bbbc126eca7c0d92f58f27e",
+      "crates/client11/src/render/entity/pipeline.rs": "b62a0ae8f7a2354f2147042fe77f4529adf4018c8d0cb1cdf1f3201cec70c1d4",
+      "crates/worldgen11/src/entity/living10.rs": "df0304fad5485ba221faa9209783635f7c727e5fac6e6f372f283f8aa4659e94"
+    },
+    "original_source_sha256": null,
+    "completion_blockers": [],
+    "limitations": [],
+    "criterion": "Complete normalized delta in authorized singleplayer runtime; explicit original finite evidence, not whole inherited Java API parity."
+  },
+  "RenderItem": {
+    "complete_delta_review": true,
+    "reason": "Entire41line delta replaces potion-only paths with generic multiple-pass GUI/dropped paths, per-pass icon/color.752cases compare actual production draws, RNG and caller tint; held primitive separately185cases.",
+    "rust_source_sha256": {
+      "crates/client11/src/render/entity/item_table.rs": "8c1bba50eb354cc78fb455a18e32a21fb24295ae5bbf976f7522332cdb2f507c",
+      "crates/client11/src/render/entity/gui_item.rs": "5be53898fb7e3d8c10e4aa64f4179328f0f46656a1dc9abc96fb60caaa00fda1",
+      "crates/client11/src/render/entity/objects.rs": "49b531d5caad18527e565a22c8977129c533cf16fb4d9a5fc7caa4e6cb9efdd9",
+      "crates/client11/src/render/entity/bridge.rs": "910ae7101e4496f31f163348d0f73f42d7cf41ed6c03bb4c147a8e8125b7620f"
+    },
+    "original_source_sha256": null,
+    "completion_blockers": [],
+    "limitations": [],
+    "criterion": "Complete normalized delta in authorized singleplayer runtime; explicit original finite evidence, not whole inherited Java API parity."
+  },
+  "ModelSheep1": {
+    "complete_delta_review": true,
+    "reason": "Entire new sheep head living-animation formula/cached angle and RenderLiving render-pass animation callback covered through original live entity bridge, both models and actual body/wool/hurt draws:480cases,2974920 comparisons0differences.",
+    "rust_source_sha256": {
+      "crates/client11/src/render/entity/models.rs": "cdf34dca08a0d041cebaa8e8dd12693569bba8418313cf4acb14a578ad9a1703",
+      "crates/client11/src/render/entity/living.rs": "a0a99b1f56cea8b9dca99b685990745df50c6f1a9b9a4ce0a809e1f83b063b1e",
+      "crates/client11/src/render/entity/raw_living181.rs": "78aabe4a8bcea1d6cd202c0d9a41bdcc97b50f407bdea0f25658cf72471d46cf",
+      "crates/client11/src/render/entity/bridge.rs": "910ae7101e4496f31f163348d0f73f42d7cf41ed6c03bb4c147a8e8125b7620f",
+      "crates/worldgen11/src/entity/sheep11.rs": "436e7a546f9e3277bd3f58c97365d5d2b29782fdc4266ceea18c3ca2fc72a866"
+    },
+    "completion_blockers": [],
+    "original_source_sha256": {
+      "1.0": "58b111e9fbfb7ddd41aa3d5c24ac66ff84c446d0fca68ba852ab496665f2b7bb",
+      "1.1": "f278e32145209f172c2f41524ecad906037c314a7309abd88142429b12c9506c"
+    },
+    "limitations": [
+      "Finite direct GL-input comparison; no full frame pixel claim."
+    ]
+  },
+  "ModelSheep2": {
+    "complete_delta_review": true,
+    "reason": "Entire new sheep head living-animation formula/cached angle and RenderLiving render-pass animation callback covered through original live entity bridge, both models and actual body/wool/hurt draws:480cases,2974920 comparisons0differences.",
+    "rust_source_sha256": {
+      "crates/client11/src/render/entity/models.rs": "cdf34dca08a0d041cebaa8e8dd12693569bba8418313cf4acb14a578ad9a1703",
+      "crates/client11/src/render/entity/living.rs": "a0a99b1f56cea8b9dca99b685990745df50c6f1a9b9a4ce0a809e1f83b063b1e",
+      "crates/client11/src/render/entity/raw_living181.rs": "78aabe4a8bcea1d6cd202c0d9a41bdcc97b50f407bdea0f25658cf72471d46cf",
+      "crates/client11/src/render/entity/bridge.rs": "910ae7101e4496f31f163348d0f73f42d7cf41ed6c03bb4c147a8e8125b7620f",
+      "crates/worldgen11/src/entity/sheep11.rs": "436e7a546f9e3277bd3f58c97365d5d2b29782fdc4266ceea18c3ca2fc72a866"
+    },
+    "completion_blockers": [],
+    "original_source_sha256": {
+      "1.0": "b1ba77207007bf71aed3cc39a43e098d6fa2ae0d6ef412b28faf0049827b82b6",
+      "1.1": "31f03a5fe346c14ae38f058f887521e7a8594e4ddc770a3cd7dc216fc4d94b99"
+    },
+    "limitations": [
+      "Finite direct GL-input comparison; no full frame pixel claim."
+    ]
+  },
+  "RenderLiving": {
+    "complete_delta_review": true,
+    "reason": "Entire new sheep head living-animation formula/cached angle and RenderLiving render-pass animation callback covered through original live entity bridge, both models and actual body/wool/hurt draws:480cases,2974920 comparisons0differences.",
+    "rust_source_sha256": {
+      "crates/client11/src/render/entity/models.rs": "cdf34dca08a0d041cebaa8e8dd12693569bba8418313cf4acb14a578ad9a1703",
+      "crates/client11/src/render/entity/living.rs": "a0a99b1f56cea8b9dca99b685990745df50c6f1a9b9a4ce0a809e1f83b063b1e",
+      "crates/client11/src/render/entity/raw_living181.rs": "78aabe4a8bcea1d6cd202c0d9a41bdcc97b50f407bdea0f25658cf72471d46cf",
+      "crates/client11/src/render/entity/bridge.rs": "910ae7101e4496f31f163348d0f73f42d7cf41ed6c03bb4c147a8e8125b7620f",
+      "crates/worldgen11/src/entity/sheep11.rs": "436e7a546f9e3277bd3f58c97365d5d2b29782fdc4266ceea18c3ca2fc72a866"
+    },
+    "completion_blockers": [],
+    "original_source_sha256": {
+      "1.0": "b5851813da61875dd23128d6191362e0d357d4463790d8d32f4d3a31cc069064",
+      "1.1": "3068e7b0d4a7d3a9b163d524cf4920aaa696f312e83924211e8b832054f8074c"
+    },
+    "limitations": [
+      "Finite direct GL-input comparison; no full frame pixel claim."
+    ]
   }
 }

@@ -2,9 +2,9 @@
   "schema": 1,
   "criterion": "Entire normalized 1.0\u21921.1 class delta implemented and covered by direct relevant original-bytecode finite comparisons, plus literal authority for nonbehavior declaration/visibility changes; not inherited reproof and not all-input formal proof.",
   "checkpoint": "235b5ebd70b9326dc92857f21e9049815bfa9f21",
-  "completed_classes": 25,
-  "blocked_classes": 2,
-  "completed_changed_lines": 260,
+  "completed_classes": 27,
+  "blocked_classes": 0,
+  "completed_changed_lines": 360,
   "reviewed_changed_lines": 360,
   "source_hash_note": "Hashes refreshed after parent whitespace normalization. Original probe evidence predates whitespace-only checkpoint; current biome comparison binary rerun retained now. Do not infer arbitrary later semantic mutations covered.",
   "original_jar_sha256": "44bb6ace88fdff460d6c428c4becee8cad52f2622e1f800dab7a70f8a716f75b",
@@ -556,8 +556,8 @@
       "class_name": "ChunkProviderFlat",
       "area": "worldgen",
       "normalized_changed_lines": 78,
-      "entire_1_1_delta_complete": false,
-      "source_hunk_review": "Terrain/population/RNG/villages/locate changes covered, but whole new class also has chunkExists/saveChunks/unload/canSave/makeString and null-manager/null-biome creature interfaces. These new facade paths are not all directly compared.",
+      "entire_1_1_delta_complete": true,
+      "source_hunk_review": "Entire new flat backend runtime delta: ctor/four-layer fill/skylight/size1 village/features flags/population RNG previously compared; spawn-list/weighted selection/null locator delegation and actual cache/save/unload callers now directly compared. Unused raw leaf facade returns reviewed, original vectors recorded; nonnullable fixed-Plains registration excludes null manager/biome invalid seams.",
       "source_authority": "work/retromcp-1.1/minecraft/src/net/minecraft/src/ChunkProviderFlat.java",
       "source_java_sha256": "7ea4e27547df9080c860d1e24d5c7aeb956a72639f50c09f85e045e789f41073",
       "old_source_java_sha256": null,
@@ -580,10 +580,29 @@
         {
           "path": "work/worldgen11-probe-results.json",
           "sha256": "4845cdd011a05af661094aeb44e7c0f06d79610c7f20eed224d43d9cfbb4fa61"
+        },
+        {
+          "path": "work/flatcallers11-verification.log",
+          "sha256": "c83f8e52c0311f1893bdd47e6174f85744433bb7fdf0e483711d59aa1acb3fdb"
+        },
+        {
+          "path": "work/provider-closure11-results.json",
+          "sha256": "8f21383bd63a3f9111e1b87e93e46699287350f61757287be7e33e464b22b8d1"
         }
       ],
-      "required_sections": [],
-      "accounting_note": "Credit only changed hunks; inherited unchanged methods are not additional requirements. Standalone logs without == section headers require parent registration of their exact result lines; no synthetic pass is emitted here."
+      "required_sections": [
+        "flatcallers 0",
+        "flatcallers 42",
+        "flatcallers -1",
+        "flatcallers 123456789",
+        "flatcallers 9223372036854775807",
+        "flatcallers -9223372036854775808"
+      ],
+      "accounting_note": "Credit only changed hunks; inherited unchanged methods are not additional requirements. Standalone logs without == section headers require parent registration of their exact result lines; no synthetic pass is emitted here.",
+      "verification_boundary": [
+        "Only singleplayer caller interfaces exist in Rust: original wrapper bypasses leaf chunkExists/saveChunks/canSave/makeString/loadChunk, so those source members have direct original vectors and caller disposition rather than invented unused Rust APIs.",
+        "Null manager/biome states cannot be constructed through Rust fixed-Plains registration; their guards are recorded directly from original and enforced by nonnullable runtime types, not tested via a fabricated invalid Rust world."
+      ]
     },
     {
       "class_name": "GenLayerHills",
@@ -688,16 +707,17 @@
       "class_name": "MapGenStronghold",
       "area": "worldgen",
       "normalized_changed_lines": 22,
-      "entire_1_1_delta_complete": false,
-      "source_hunk_review": "Independent candidate RNG and exact ten-biome allowlist covered by five map streams/actual stronghold grid; new successful-coordinate stdout line remains unimplemented and requires explicit scope disposition. INVALID-biome diagnostic already existed in1.0 and is not a new completion requirement.",
+      "entire_1_1_delta_complete": true,
+      "source_hunk_review": "Independent candidate RNG and exact ten-biome allowlist covered by prior direct map streams/grid; successful-coordinate stdout now implemented in shared actual predicate and verified byte-for-byte alongside repeated generate/nearest retained-state/RNG snapshots. INVALID fallback diagnostic restored and compared, though inherited from1.0.",
       "source_authority": "work/retromcp-1.1/minecraft/src/net/minecraft/src/MapGenStronghold.java",
       "source_java_sha256": "5a4cd926618b3caf072dd3ca35e0cafaa75b3bc9aaf0c1cc8a368ee2e6e68ac3",
       "old_source_java_sha256": "e969572e4c4d887fa303c70f4e0fab724c18dba1beec05efd546c4521650dde2",
       "rust_sha256": {
-        "crates/worldgen11/src/structures/stronghold.rs": "a3de5f5c18c7994a1bb8a639d2cec00e51d68ab9b2560b5097fc9b855b11ee4c",
+        "crates/worldgen11/src/structures/stronghold.rs": "e6670aafde0ea2df454a77992682acdf521561bd71e75c3ff187af2d09ff98bb",
         "crates/worldgen11/src/structures/stronghold_generated.rs": "2bce024f47f50b67dd0c0b519e84e3acfc622ba83b6163785fd45e9bb1aa0c72",
-        "crates/worldgen11/src/structures/locations.rs": "d4431e2f7c9d6b4a31c46c6ff8eb470bf7809d7d6994efef022cd720bdab32fa",
-        "crates/worldgen11/src/structures/component.rs": "1301046367f870908ec02cf185e6fe0d3ef4eddd4e3f0453327e70fe6cce8661"
+        "crates/worldgen11/src/structures/locations.rs": "cf6e50c56822c779cb87995f1bb40e97e5bc8ab64e552c9ea1506b008a798c1e",
+        "crates/worldgen11/src/structures/component.rs": "1301046367f870908ec02cf185e6fe0d3ef4eddd4e3f0453327e70fe6cce8661",
+        "crates/worldgen11/src/structures.rs": "3f2911f20d6328e2c40f9103f3f7b9d40ef5af2ecdaee5f4e19d57978b2462b3"
       },
       "evidence": [
         {
@@ -707,10 +727,34 @@
         {
           "path": "work/stronghold11-scope-evidence.json",
           "sha256": "61a99d00b37b849f8ae15486f218c6ee71fc98a8887f6acbfd2a05f1ff1dfe72"
+        },
+        {
+          "path": "work/strongholdstdout11-verification.log",
+          "sha256": "b6574910036c2821f626b441366afd3d82c37bdbd33eb51ecb24d40825ce8f5b"
+        },
+        {
+          "path": "work/provider-closure11-results.json",
+          "sha256": "8f21383bd63a3f9111e1b87e93e46699287350f61757287be7e33e464b22b8d1"
         }
       ],
-      "required_sections": [],
-      "accounting_note": "Credit only changed hunks; inherited unchanged methods are not additional requirements. Standalone logs without == section headers require parent registration of their exact result lines; no synthetic pass is emitted here."
+      "required_sections": [
+        "strongholdstdout 0 bin",
+        "strongholdstdout 0 txt",
+        "strongholdstdout 42 bin",
+        "strongholdstdout 42 txt",
+        "strongholdstdout -1 bin",
+        "strongholdstdout -1 txt",
+        "strongholdstdout 123456789 bin",
+        "strongholdstdout 123456789 txt",
+        "strongholdstdout 9223372036854775807 bin",
+        "strongholdstdout 9223372036854775807 txt",
+        "strongholdstdout -9223372036854775808 bin",
+        "strongholdstdout -9223372036854775808 txt"
+      ],
+      "accounting_note": "Credit only changed hunks; inherited unchanged methods are not additional requirements. Standalone logs without == section headers require parent registration of their exact result lines; no synthetic pass is emitted here.",
+      "verification_boundary": [
+        "Finite seeded direct streams, not universal-input formal proof."
+      ]
     },
     {
       "class_name": "WorldInfo",
@@ -796,5 +840,6 @@
       ],
       "accounting_note": "Credit only changed hunks; inherited unchanged methods are not additional requirements. Standalone logs without == section headers require parent registration of their exact result lines; no synthetic pass is emitted here."
     }
-  ]
+  ],
+  "pending_checkpoint_note": "Stronghold/provider closure based on fc83047 plus current owned stronghold implementation/probe files; parent must commit/pin these before using stable-checkpoint percentage."
 }

@@ -192,5 +192,129 @@
   ],
   "Tessellator": [
     "tessellator11 packed normal bytes"
+  ],
+  "ChunkProviderFlat": [
+    "flat11 real world caller interfaces"
+  ],
+  "MapGenStronghold": [
+    "stronghold11 diagnostic stdout callers"
+  ],
+  "EntitySheep": [
+    "gameplay11 original delta vectors",
+    "gameplay11 fixture authority"
+  ],
+  "EntitySquid": [
+    "gameplay11 original delta vectors",
+    "gameplay11 fixture authority"
+  ],
+  "ItemStack": [
+    "inventory11 alias and merge callbacks",
+    "gameplay11 fixture authority"
+  ],
+  "InventoryPlayer": [
+    "inventory11 alias and merge callbacks",
+    "gameplay11 fixture authority"
+  ],
+  "Container": [
+    "inventory11 alias and merge callbacks",
+    "gameplay11 fixture authority"
+  ],
+  "BlockRedstoneWire": [
+    "gameplay11 original delta vectors",
+    "gameplay11 fixture authority"
+  ],
+  "GuiLanguage": [
+    "language11 full drawing actions restart",
+    "language11 all locale callbacks"
+  ],
+  "GuiSlotLanguage": [
+    "language11 full drawing actions restart",
+    "language11 all locale callbacks"
+  ],
+  "EntityAIAttackOnCollide": [
+    "dormant11 original scoped reachability",
+    "gameplay11 original delta vectors"
+  ],
+  "EntityAIBase": [
+    "dormant11 original scoped reachability",
+    "gameplay11 original delta vectors"
+  ],
+  "EntityAILookIdle": [
+    "dormant11 original scoped reachability",
+    "gameplay11 original delta vectors"
+  ],
+  "EntityAISwimming": [
+    "dormant11 original scoped reachability",
+    "gameplay11 original delta vectors"
+  ],
+  "EntityAITaskEntry": [
+    "dormant11 original scoped reachability",
+    "gameplay11 original delta vectors"
+  ],
+  "EntityAITasks": [
+    "dormant11 original scoped reachability",
+    "gameplay11 original delta vectors"
+  ],
+  "EntityAIWander": [
+    "dormant11 original scoped reachability",
+    "gameplay11 original delta vectors"
+  ],
+  "EntityAIWatchClosest": [
+    "dormant11 original scoped reachability",
+    "gameplay11 original delta vectors"
+  ],
+  "EntityJumpHelper": [
+    "dormant11 original scoped reachability",
+    "gameplay11 original delta vectors"
+  ],
+  "EntityLookHelper": [
+    "dormant11 original scoped reachability",
+    "gameplay11 original delta vectors"
+  ],
+  "EntityMoveHelper": [
+    "dormant11 original scoped reachability",
+    "gameplay11 original delta vectors"
+  ],
+  "INavigate": [
+    "dormant11 original scoped reachability",
+    "gameplay11 original delta vectors"
+  ],
+  "PathNavigate": [
+    "dormant11 original scoped reachability",
+    "gameplay11 original delta vectors"
+  ],
+  "EntityLiving": [
+    "dormant11 original scoped reachability",
+    "gameplay11 original delta vectors"
+  ],
+  "EntityZombie": [
+    "dormant11 original scoped reachability",
+    "gameplay11 original delta vectors"
+  ],
+  "EntityPigZombie": [
+    "dormant11 original scoped reachability",
+    "gameplay11 original delta vectors"
+  ],
+  "EntityMob": [
+    "dormant11 original scoped reachability",
+    "gameplay11 original delta vectors"
+  ],
+  "GuiBrewingStand": [
+    "brewing11 GUI progress"
+  ],
+  "RenderManager": [
+    "render11 burning light"
+  ],
+  "RenderItem": [
+    "render11 item passes"
+  ],
+  "ModelSheep1": [
+    "sheep11 live models and render pass"
+  ],
+  "ModelSheep2": [
+    "sheep11 live models and render pass"
+  ],
+  "RenderLiving": [
+    "sheep11 live models and render pass"
   ]
 }

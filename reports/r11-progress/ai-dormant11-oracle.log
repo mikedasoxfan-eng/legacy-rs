@@ -1,0 +1,10 @@
+Entity hook: all original methods and offsets preserved; RNG initializer only
+27 achievements
+174 recipes
+ORIGINAL BYTECODE EXACT: 960 constructor/tick/save/reload cases with post-load ticks
+Note: tools\oracle11\src\net\minecraft\src\DormantAi11.java uses unchecked or unsafe operations.
+Note: Recompile with -Xlint:unchecked for details.
+27 achievements
+174 recipes
+ORIGINAL AI GRAPH EXACT: 240 constructor/20tick/save/reload5tick cases across20mob types; virtual guards allfalse
+ORIGINAL AI GRAPH SNAPSHOT EXACT: 240 cases
