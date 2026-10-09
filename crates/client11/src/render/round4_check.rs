@@ -170,7 +170,7 @@ fn active_info(d: &mut Reader) {
     }
 }
 
-fn fog(d: &mut Reader) {
+fn fog(d: &mut Reader, release11: bool) {
     for case in 0..d.u() {
         d.label = format!("fog {case}");
         let mut w = super::first_person_check::world();
@@ -197,6 +197,8 @@ fn fog(d: &mut Reader) {
         let clouds: [f32; 3] = std::array::from_fn(|_| d.f());
         let (rain, thunder, angle) = (d.f(), d.f(), d.f());
         let light = d.i() as u32;
+        let flat = release11 && d.i() != 0;
+        let creative = release11 && d.i() != 0;
         super::first_person_check::raw(&mut w, 0, 65, -3, id as u8, meta);
         super::first_person_check::raw(&mut w, 0, 66, -3, above as u8, meta);
         e.set_position(pos[0], pos[1], pos[2]);
@@ -210,8 +212,8 @@ fn fog(d: &mut Reader) {
             water_breathing,
             has_no_sky,
             nether,
-            flat: false,
-            creative: false,
+            flat,
+            creative,
         };
         let look = super::sky::look(yaw, pitch, prev_yaw, prev_pitch, t);
         let base = camera::fog_base(sky, super::sky::sunrise_fog(fog, angle, distance, look), distance, rain, thunder);
@@ -445,7 +447,8 @@ pub fn check(kind: &str, path: &str) -> bool {
     match kind {
         "gui" => gui(&mut d),
         "activeinfo" => active_info(&mut d),
-        "fog" => fog(&mut d),
+        "fog" => fog(&mut d, false),
+        "fog11" => fog(&mut d, true),
         "lightmap" => lightmap(&mut d),
         "glhelper" => gl_helper(&mut d),
         "renderhelper" => render_helper(&mut d),
@@ -458,4 +461,10 @@ pub fn check(kind: &str, path: &str) -> bool {
     assert_eq!(d.at, d.data.len(), "unread round 4 bytes");
     println!("R10 RENDER4 {kind} {}: {} raw-bit comparisons, {} mismatches", if d.bad == 0 { "EXACT" } else { "DIFFER" }, d.checks, d.bad);
     d.bad == 0
+}
+
+#[test]
+#[ignore = "requires original 1.1 full fog color and setup fixture"]
+fn fog_workflow_matches_original_11() {
+    assert!(check("fog11", &std::env::var("FOG_WORKFLOW11_FIXTURE").unwrap()));
 }

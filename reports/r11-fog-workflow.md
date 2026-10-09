@@ -1,0 +1,5 @@
+# Original 1.1 fog color and setup
+
+`tools/verify_r11_fog_workflow.ps1`: 1,536 complete original updateFogColor/setupFog calls, 75,676 raw-bit comparisons, zero mismatches. The corpus covers default/flat provider scale and void guards, creative/survival, air/water/lava/clouds, blindness duration boundaries, water breathing, no-sky/alternate provider flags, rain/thunder, render distances, anaglyph, modes, viewpoint offsets and negative heights.
+
+The unchanged original EntityRenderer bytecode supplies the entire GL call stream. Rust uses the production camera fog functions and actual medium/viewpoint calculation. Captured original world colors/weather/light are inputs, so this checks changed fog logic rather than independently certifying inherited world color calculations. The separate 504-case original probe covers actual providers across all three dimensions. Together these cover both substantive EntityRenderer deltas: provider depth scale and creative/provider void-distance guard. Other raw hunks rename fields/methods and local variables. Final GPU pixels are outside this proof.
