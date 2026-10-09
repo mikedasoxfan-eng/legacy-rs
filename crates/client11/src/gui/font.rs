@@ -163,13 +163,17 @@ impl FontRenderer {
     }
 
     pub fn render_utf16(&self, gl: &mut Gl, s: &[u16], x: i32, y: i32, mut color: i32, shadow: bool) -> f32 {
+        let ordered=if self.bidi {super::bidi11::reorder_utf16(s)}else{s.to_vec()};
+        self.render_ordered_utf16(gl,&ordered,x,y,color,shadow)
+    }
+
+    fn render_ordered_utf16(&self,gl:&mut Gl,s:&[u16],x:i32,y:i32,mut color:i32,shadow:bool)->f32 {
         if color & -67108864 == 0 { color |= -16777216; }
         if shadow { color = (color & 16579836) >> 2 | color & -16777216; }
         gl.color4f((color>>16&255) as f32/255.0,(color>>8&255) as f32/255.0,
             (color&255) as f32/255.0,(color>>24&255) as f32/255.0);
         let mut pos = x as f32;
-        let ordered=if self.bidi {super::bidi11::reorder_utf16(s)}else{s.to_vec()};
-        for command in self.utf16_commands(&ordered,shadow) {
+        for command in self.utf16_commands(s,shadow) {
             if command >= 256 {
                 let [r,g,b] = self.colors[(command-256) as usize];
                 gl.color3f(r,g,b);
@@ -242,103 +246,48 @@ impl FontRenderer {
         w
     }
 
-    /// `drawSplitString` / `func_40609_a`. A newline recursion deliberately clears shadow.
-    pub fn draw_split_string(&self, gl: &mut Gl, s: &str, x: i32, y: i32, width: i32, color: i32) {
-        self.draw_split_shadow(gl, s, x, y, width, color, false);
+    /// Original public split methods reorder once before wrapping; private line draws do not reorder.
+    pub fn draw_split_string(&self,gl:&mut Gl,s:&str,x:i32,y:i32,width:i32,color:i32){self.draw_split_shadow(gl,s,x,y,width,color,false);}
+    pub fn draw_split_shadow(&self,gl:&mut Gl,s:&str,x:i32,y:i32,width:i32,color:i32,shadow:bool){
+        self.draw_split_utf16(gl,&s.encode_utf16().collect::<Vec<_>>(),x,y,width,color,shadow).expect("original FontRenderer split exception");
     }
-    pub fn draw_split_shadow(&self, gl: &mut Gl, s: &str, x: i32, y: i32, width: i32, color: i32, shadow: bool) {
-        for (line, y, shadow) in self.split_draw_lines(s, y, width, shadow) {
-            self.render_string(gl, &line, x, y, color, shadow);
-        }
+    pub fn draw_split_utf16(&self,gl:&mut Gl,s:&[u16],x:i32,y:i32,width:i32,color:i32,shadow:bool)->Result<f32,WrapError>{
+        let (result,end)=self.draw_split_outcome(gl,s,x,y,width,color,shadow);result.map(|()|end)
     }
-    pub fn split_draw_lines(&self, s: &str, mut y: i32, width: i32, shadow: bool) -> Vec<(String, i32, bool)> {
-        let mut out = Vec::new();
-        let lines = java_split(s, '\n');
-        if lines.len() > 1 {
-            for line in lines {
-                out.extend(self.split_draw_lines(line, y, width, false));
-                y += self.split_string_height(line, width);
-            }
-            return out;
-        }
-        for line in self.wrapped_draw_lines(s, width) {
-            out.push((line, y, shadow));
-            y += self.line_height;
-        }
-        out
+    fn draw_split_outcome(&self,gl:&mut Gl,s:&[u16],x:i32,y:i32,width:i32,color:i32,shadow:bool)->(Result<(),WrapError>,f32){
+        let ordered=if self.bidi{super::bidi11::reorder_utf16(s)}else{s.to_vec()};let mut end=0.0;
+        let result=self.visit_split_units(&ordered,y,width,shadow,&mut |line,y,shadow|{end=self.render_ordered_utf16(gl,line,x,y,color,shadow);});(result,end)
     }
-    pub fn wrapped_draw_lines(&self, s: &str, width: i32) -> Vec<String> {
-        let words = java_split(s, ' ');
-        let mut out = Vec::new();
-        let mut i = 0;
-        let mut format = String::new();
-        while i < words.len() {
-            let mut line = format!("{format}{} ", words[i]); i += 1;
-            while i < words.len() && self.get_string_width(&format!("{line}{}", words[i])) < width {
-                line.push_str(words[i]); line.push(' '); i += 1;
+    fn visit_split_units(&self,s:&[u16],mut y:i32,width:i32,shadow:bool,visit:&mut impl FnMut(&[u16],i32,bool))->Result<(),WrapError>{
+        let lines=split_units(s,10);
+        if lines.len()>1{for line in lines{self.visit_split_units(line,y,width,false,visit)?;y=y.wrapping_add(self.split_height_utf16(line,width)?);}return Ok(());}
+        self.visit_wrapped_units(s,width,true,&mut |line|{visit(line,y,shadow);y=y.wrapping_add(self.line_height);})
+    }
+    pub fn split_draw_lines(&self,s:&str,y:i32,width:i32,shadow:bool)->Vec<(String,i32,bool)>{
+        let units=s.encode_utf16().collect::<Vec<_>>();let ordered=if self.bidi{super::bidi11::reorder_utf16(&units)}else{units};let mut out=Vec::new();
+        self.visit_split_units(&ordered,y,width,shadow,&mut |line,y,shadow|out.push((String::from_utf16_lossy(line),y,shadow))).unwrap();out
+    }
+    pub fn wrapped_draw_lines(&self,s:&str,width:i32)->Vec<String>{let mut out=Vec::new();self.visit_wrapped_units(&s.encode_utf16().collect::<Vec<_>>(),width,true,&mut |line|out.push(String::from_utf16_lossy(line))).unwrap();out}
+    pub fn split_string_height(&self,s:&str,width:i32)->i32{self.split_height_utf16(&s.encode_utf16().collect::<Vec<_>>(),width).unwrap()}
+    pub fn split_height_utf16(&self,s:&[u16],width:i32)->Result<i32,WrapError>{
+        let lines=split_units(s,10);if lines.len()>1{let mut height=0i32;for line in lines{height=height.wrapping_add(self.split_height_utf16(line,width)?);}return Ok(height);}
+        let mut height=0i32;self.visit_wrapped_units(s,width,false,&mut |_|height=height.wrapping_add(self.line_height))?;
+        if height<self.line_height{height=height.wrapping_add(self.line_height);}Ok(height)
+    }
+    fn visit_wrapped_units(&self,s:&[u16],width:i32,draw:bool,visit:&mut impl FnMut(&[u16]))->Result<(),WrapError>{
+        let words=split_units(s,32);let mut index=0;let mut format=Vec::new();
+        while index<words.len(){let mut line=format.clone();line.extend(words[index]);line.push(32);index+=1;
+            while index<words.len(){let mut candidate=line.clone();candidate.extend(words[index]);if self.get_utf16_width(&candidate)>=width{break;}line.extend(words[index]);line.push(32);index+=1;}
+            while self.get_utf16_width(&line)>width{
+                let mut count=0;loop{if count>=line.len(){return Err(WrapError::StringIndexOutOfBounds);}if self.get_utf16_width(&line[..count+1])>width{break;}count+=1;}
+                if count==0{return Err(WrapError::NonProgress);}
+                let head=&line[..count];if !trim_units(head).is_empty(){if draw{retain_units(head,&mut format)?;}visit(head);}
+                let mut tail=format.clone();tail.extend(&line[count..]);line=tail;
             }
-            while self.get_string_width(&line) > width {
-                let chars: Vec<_> = line.chars().collect();
-                let mut n = 0;
-                while n < chars.len() && self.get_string_width(&chars[..n+1].iter().collect::<String>()) <= width { n += 1; }
-                assert!(n > 0, "FontRenderer wrapping width cannot fit a glyph");
-                let head: String = chars[..n].iter().collect();
-                if !head.trim_matches(|c: char| c <= ' ').is_empty() {
-                    retain_format(&head, &mut format);
-                    out.push(head);
-                }
-                line = format!("{format}{}", chars[n..].iter().collect::<String>());
-            }
-            if self.get_string_width(line.trim_matches(|c: char| c <= ' ')) > 0 {
-                retain_format(&line, &mut format);
-                out.push(line);
-            }
-        }
-        out
+            let trimmed=trim_units(&line);if if draw{self.get_utf16_width(trimmed)>0}else{!trimmed.is_empty()}{if draw{retain_units(&line,&mut format)?;}visit(&line);}
+        }Ok(())
     }
 
-    /// `func_27277_a`: height of the wrapped text.
-    pub fn split_string_height(&self, s: &str, width: i32) -> i32 {
-        let lines: Vec<&str> = java_split(s, '\n');
-        if lines.len() > 1 {
-            return lines.iter().map(|l| self.split_string_height(l, width)).sum();
-        }
-        let mut h = self.wrap(s, width).len() as i32 * self.line_height;
-        if h < self.line_height {
-            h += self.line_height;
-        }
-        h
-    }
-
-    fn wrap(&self, s: &str, width: i32) -> Vec<String> {
-        let words: Vec<&str> = java_split(s, ' ');
-        let mut out = Vec::new();
-        let mut i = 0;
-        while i < words.len() {
-            let mut line = format!("{} ", words[i]);
-            i += 1;
-            while i < words.len() && self.get_string_width(&format!("{line}{}", words[i])) < width {
-                line = format!("{line}{} ", words[i]);
-                i += 1;
-            }
-            while self.get_string_width(&line) > width {
-                let cs: Vec<char> = line.chars().collect();
-                let mut n = 0;
-                while self.get_string_width(&cs[..n + 1].iter().collect::<String>()) <= width {
-                    n += 1;
-                }
-                let head: String = cs[..n].iter().collect();
-                if !head.trim_matches(|c: char| c <= ' ').is_empty() {
-                    out.push(head);
-                }
-                line = cs[n..].iter().collect();
-            }
-            if !line.trim_matches(|c: char| c <= ' ').is_empty() {
-                out.push(line);
-            }
-        }
-        out
-    }
 }
 
 /// `String.split(regex)` for a single literal character: trailing empty strings removed.
@@ -353,12 +302,12 @@ pub fn java_split(s: &str, c: char) -> Vec<&str> {
     v
 }
 
-fn retain_format(line: &str, format: &mut String) {
-    if let Some(i) = line.rfind('\u{a7}') {
-        let code = line[i..].chars().nth(1).expect("truncated FontRenderer format");
-        *format = format!("\u{a7}{code}");
-    }
-}
+#[derive(Debug,PartialEq,Eq)]
+pub enum WrapError{StringIndexOutOfBounds,NonProgress}
+fn split_units(s:&[u16],separator:u16)->Vec<&[u16]>{if s.is_empty(){return vec![s];}let mut parts:Vec<_>=s.split(|u|*u==separator).collect();while parts.last().is_some_and(|part|part.is_empty()){parts.pop();}parts}
+fn trim_units(s:&[u16])->&[u16]{let start=s.iter().position(|u|*u>32).unwrap_or(s.len());let end=s.iter().rposition(|u|*u>32).map_or(start,|i|i+1);&s[start..end]}
+fn retain_units(line:&[u16],format:&mut Vec<u16>)->Result<(),WrapError>{if let Some(index)=line.iter().rposition(|u|*u==167){let next=*line.get(index+1).ok_or(WrapError::StringIndexOutOfBounds)?;*format=vec![167,next];}Ok(())}
+
 #[cfg(test)]
 mod bidi_draw_tests {
  use super::*;
@@ -383,5 +332,22 @@ mod bidi_draw_tests {
    if let Ok(valid)=String::from_utf16(&text){*font.random.lock().unwrap()=worldgen::JavaRandom::new(seed);let mut public=Gl::new();if shadow{font.draw_string_with_shadow(&mut public,&valid,x,y,color);}else{font.draw_string(&mut public,&valid,x,y,color);}assert_eq!(public.draws.len(),gl.draws.len());assert_eq!(public.verts.len(),gl.verts.len());for (a,b) in public.verts.iter().zip(&gl.verts){assert_eq!(a.pos,b.pos);assert_eq!(a.uv,b.uv);assert_eq!(a.color,b.color);}}
   }
   assert_eq!(input.at,input.bytes.len());println!("FONT BIDI DRAW EXACT: {count} original public draw cases");
+ }
+ #[test]
+ #[ignore="requires original1.1 FONT_WRAP11_FIXTURE and installed assets"]
+ fn original_wrapped_draw_methods(){
+  let mut input=Input{bytes:std::fs::read(std::env::var("FONT_WRAP11_FIXTURE").unwrap()).unwrap(),at:0};assert_eq!(input.word(),0x46575031);let count=input.word();
+  let mut jar=crate::assets::Jar::open().unwrap();let image=jar.image("font/default.png").unwrap();let allowed=jar.text("font.txt").unwrap();let mut font=FontRenderer::new(&image,0,&allowed);
+  for case in 0..count{
+   font.unicode=input.byte()!=0;font.bidi=input.byte()!=0;let shadow=input.byte()!=0;let text=input.text();let (x,y,color)=(input.word() as i32,input.word() as i32,input.word() as i32);let seed=input.long();*font.random.lock().unwrap()=worldgen::JavaRandom::new(seed);
+   let width=input.word() as i32;assert_eq!(input.byte(),1);let original_height=input.word() as i32;assert_eq!(font.split_height_utf16(&text,width),Ok(original_height),"case{case} height");
+   let expected_error=String::from_utf16(&input.text()).unwrap();let mut gl=Gl::new();let (result,end)=font.draw_split_outcome(&mut gl,&text,x,y,width,color,shadow);
+   assert_eq!(result.as_ref().err().map_or("",|e|match e{WrapError::StringIndexOutOfBounds=>"StringIndexOutOfBoundsException",WrapError::NonProgress=>"NonProgress"}),expected_error,"case{case} error");
+   let vertices=input.word() as usize;assert_eq!(gl.draws.len()*4,vertices,"case{case} vertex count");
+   for draw in &gl.draws{for i in [0,1,2,5]{let expected_texture=input.word();let actual_texture=match draw.state.texture.unwrap(){0=>256,n=>n&255};assert_eq!(actual_texture,expected_texture,"case{case} texture");let v=&gl.verts[draw.first as usize+i];for value in v.pos.into_iter().chain(v.uv).chain(v.color){assert_eq!(value.to_bits(),input.word(),"case{case} geometry/color");}}}
+   for value in gl.color{assert_eq!(value.to_bits(),input.word(),"case{case} final color");}assert_eq!(end.to_bits(),input.word(),"case{case} end position");assert_eq!(font.random.lock().unwrap().next_long(),input.long(),"case{case} RNG tail");
+   if result.is_ok(){if let Ok(valid)=String::from_utf16(&text){*font.random.lock().unwrap()=worldgen::JavaRandom::new(seed);let mut public=Gl::new();font.draw_split_shadow(&mut public,&valid,x,y,width,color,shadow);assert_eq!(public.draws.len(),gl.draws.len());assert_eq!(public.verts.len(),gl.verts.len());for (a,b) in public.verts.iter().zip(&gl.verts){assert_eq!(a.pos,b.pos);assert_eq!(a.uv,b.uv);assert_eq!(a.color,b.color);}}}
+  }
+  assert_eq!(input.at,input.bytes.len());println!("FONT UTF16 WRAP EXACT: {count} original public draw cases");
  }
 }
