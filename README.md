@@ -2,7 +2,7 @@
 
 Minecraft **Beta 1.7.3, Beta 1.8.1, 1.0 and 1.1**, ported to Rust in one singleplayer client. Each version has its own simulation and renderer, with behavior checked against the original game bytecode. Formerly beta-rs.
 
-**[Download v3.1.0](https://github.com/mikedasoxfan-eng/legacy-rs/releases/tag/v3.1.0)** · **[Documentation](docs/README.md)** · **[Verification reports](reports/README.md)** · **[Changelog](CHANGELOG.md)**
+**[Download v3.1.0](https://github.com/mikedasoxfan-eng/legacy-rs/releases/tag/v3.1.0)** Â· **[Documentation](docs/README.md)** Â· **[Verification reports](reports/README.md)** Â· **[Changelog](CHANGELOG.md)**
 
 ## Download and play
 
@@ -25,14 +25,14 @@ To select a version directly:
 
 | Minecraft version | Highlights | Default data directory |
 |---|---|---|
-| Beta 1.7.3 | Classic Beta terrain, survival, redstone and pistons | Current working directory |
+| Beta 1.7.3 | Classic Beta terrain, survival, redstone and pistons | Executable folder |
 | Beta 1.8.1 | Adventure Update terrain and structures, hunger, sprinting, creative mode | `b1.8.1\` |
 | 1.0 | The End and dragon, enchanting, brewing, hardcore mode | `1.0\` |
 | 1.1 | Superflat worlds, spawn eggs, language selection, Unicode and bidirectional text | `1.1\` |
 
-Each directory contains its own `saves\`, options, statistics and screenshots. Run from the game's folder to keep these files together. Worlds use the original version's save format. Back up a world before moving it between clients, and open it with the matching Minecraft version. [Playing guide](docs/playing.md) · [Minecraft 1.0](docs/minecraft-1.0.md) · [Minecraft 1.1](docs/minecraft-1.1.md)
+Each directory contains its own `saves\`, options, statistics and screenshots. A plain launch or `--mc <version>` launch uses the executable folder; commands with additional options use the caller's working directory. Worlds use the original version's save format. Back up a world before moving it between clients, and open it with the matching Minecraft version. [Playing guide](docs/playing.md) Â· [Minecraft 1.0](docs/minecraft-1.0.md) Â· [Minecraft 1.1](docs/minecraft-1.1.md)
 
-Controls follow the selected version and can be changed in Options: WASD to move, Space to jump, Shift to sneak, mouse buttons to break/use blocks, E for inventory, Q to drop, and 1–9 for the hotbar. F2 saves a screenshot; Esc opens the game menu.
+Controls follow the selected version and can be changed in Options: WASD to move, Space to jump, Shift to sneak, mouse buttons to break/use blocks, E for inventory, Q to drop, and 1â€“9 for the hotbar. F2 saves a screenshot; Esc opens the game menu.
 
 ## Verification
 

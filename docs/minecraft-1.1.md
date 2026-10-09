@@ -1,6 +1,6 @@
 # Minecraft 1.1
 
-legacy-rs 3.1.0 adds Minecraft 1.1 alongside the three existing versions. Start with `beta.exe --mc 1.1`, or choose Minecraft 1.1 in the version picker. The client reads `versions\1.1\1.1.jar` from your Minecraft installation and stores saves, options, statistics and screenshots under `1.1\` in the working directory.
+legacy-rs 3.1.0 adds Minecraft 1.1 alongside the three existing versions. Start with `beta.exe --mc 1.1`, or choose Minecraft 1.1 in the version picker. The client reads `versions\1.1\1.1.jar` from your Minecraft installation and stores saves, options, statistics and screenshots under `1.1\`. Plain launches use the executable folder; commands with additional options use the caller's working directory.
 
 ## Changes from 1.0
 

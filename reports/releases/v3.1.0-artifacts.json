@@ -1,0 +1,32 @@
+{
+  "release": "v3.1.0",
+  "version_output": "legacy-rs 3.1.0 (Minecraft Beta 1.7.3, Beta 1.8.1, 1.0 and 1.1)",
+  "implementation_commit": "f94511b3314290765336c3a37fd501538de71310",
+  "validated_runtime_candidate": "b4eef854dd54f72ab75af309113ca5e7054635f7",
+  "runtime_sources_and_registered_evidence_unchanged": true,
+  "gates": {
+    "release_workspace_build": "PASS",
+    "four_headless_version_dispatches": "PASS",
+    "copied_standalone_version_and_dispatch": "PASS",
+    "zip_crc_and_extracted_binary_sha256": "PASS",
+    "source_and_evidence_pins": {
+      "status": "PASS",
+      "count": 509
+    }
+  },
+  "artifacts": {
+    "legacy-rs-3.1.0-windows-x64.exe": {
+      "sha256": "918d7f1a0343f433ce0057259c01d3278ae768b8c7ec747c22d529e9dd781d95",
+      "bytes": 47203840
+    },
+    "give.exe": {
+      "sha256": "471e6cb36bed990f6ecee962ccaada9a7f5c887792dbf2544ffc31857efdb4c2",
+      "bytes": 351232
+    },
+    "legacy-rs-3.1.0-windows-x64.zip": {
+      "sha256": "6d0272aea2a41570960b8e729466963970be82c148b586698eeeec25516e42e5",
+      "bytes": 12254094
+    }
+  },
+  "remote_ci": "Recorded implementation validation blocked by GitHub account payment/spending limit; no remote CI success claimed."
+}

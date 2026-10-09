@@ -24,7 +24,7 @@ If resources are missing, check these paths first. Changing the graphics backend
 
 ## Saves and options
 
-Default paths are relative to the process's working directory. Run from the extracted folder. Beta 1.7.3 writes `saves\`, `options.txt`, `stats\`, `screenshots\` and `texturepacks\` there. The later versions place their data under `b1.8.1\`, `1.0\` and `1.1\` respectively.
+A plain launch or a launch with only `--mc <version>` switches to the executable folder. Commands with additional options keep the caller's working directory; default data paths are relative to that directory. Run from the extracted folder for consistent paths. Beta 1.7.3 writes `saves\`, `options.txt`, `stats\`, `screenshots\` and `texturepacks\` there. The later versions place their data under `b1.8.1\`, `1.0\` and `1.1\` respectively.
 
 Back up worlds before importing them. Use the matching version when exchanging worlds with the original game. An explicit save directory can be opened with:
 
