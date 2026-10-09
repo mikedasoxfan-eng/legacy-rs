@@ -73,8 +73,8 @@ impl Entity {
         if self.living.flee_ticks > 0 {
             return None;
         }
-        // Java uses addCoord, expanding toward positive axes only.
-        for id in w.entities_within_aabb(None, self.bounding_box.add_coord(8.0, 8.0, 8.0)) {
+        // Release 1.1 searches symmetrically on all three axes.
+        for id in w.entities_within_aabb(None, self.bounding_box.expand(8.0, 8.0, 8.0)) {
             let e = &w.entities[&id];
             if self.living.in_love > 0 {
                 if id != self.entity_id && self.animal_class_accepts(&e.kind) && e.living.in_love > 0
@@ -182,8 +182,26 @@ impl Entity {
                 }
             } else {
                 self.living.breeding_ticks = 0;
+                self.living.target = None;
             }
         }
         w.entities.insert(id, other);
     }
+}
+
+#[cfg(test)]
+mod release11_delta_tests {
+ use super::*;
+ fn values(line:&str)->Vec<i64>{line.split_whitespace().map(|v|v.parse().unwrap()).collect()}
+ #[test]
+ fn animal_search_matches_original_11_bytecode(){
+  for line in include_str!("../fixtures/animalfind11.txt").lines(){let v=values(line);let mut w=super::super::verify181::world();let mut a=Entity::living(&mut w,"Cow").unwrap();a.set_position(0.0,64.0,0.0);a.set_growing_age(if v[0]==2{1}else{0});a.living.in_love=if v[0]==0{600}else{0};a.living.flee_ticks=v[3] as i32;
+   let mut b=if v[0]==1{let mut p=Entity::player(&mut w,"probe");p.y_offset=0.0;p.player_state_mut().unwrap().inventory.main[0]=Some(super::super::player::ItemStack::new(296,1,0));p}else{let mut b=Entity::living(&mut w,"Cow").unwrap();b.set_growing_age(-1);b.living.in_love=600;b};let offset=f64::from_bits(v[2] as u64);b.set_position(if v[1]==0{offset}else{0.0},64.0+if v[1]==1{offset}else{0.0},if v[1]==2{offset}else{0.0});let id=b.entity_id;assert!(w.entity_joined_world(b));a.rand.set_seed(42);assert_eq!(a.animal_find_target(&w)==Some(Target::Entity(id)),v[4]!=0,"{line}");assert_eq!(a.rand.next_long(),v[5],"{line}");
+  }
+ }
+ #[test]
+ fn animal_target_clear_matches_original_11_bytecode(){
+  for line in include_str!("../fixtures/animalattack11.txt").lines(){let v=values(line);let mut w=super::super::verify181::world();let mut a=Entity::living(&mut w,"Cow").unwrap();let mut b=Entity::living(&mut w,"Cow").unwrap();a.set_growing_age(v[0] as i32);b.set_growing_age(if v[0]>0{-1}else{0});a.living.in_love=v[1] as i32;b.living.in_love=v[2] as i32;a.living.breeding_ticks=7;let id=b.entity_id;a.living.target=Some(Target::Entity(id));assert!(w.entity_joined_world(b));a.rand.set_seed(42);a.animal_attack_target(&mut w,Target::Entity(id),f32::from_bits(v[3] as u32));assert_eq!(a.living.target==Some(Target::Entity(id)),v[4]!=0,"{line}");assert_eq!(a.living.breeding_ticks,v[5] as i32,"{line}");assert_eq!(a.living.in_love,v[6] as i32,"{line}");assert_eq!(w.entities[&id].living.in_love,v[7] as i32,"{line}");assert_eq!(a.living.has_attacked,v[8]!=0,"{line}");assert_eq!(a.rand.next_long(),v[9],"{line}");
+  }
+ }
 }

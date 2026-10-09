@@ -1039,6 +1039,7 @@ pub mod stat {
     pub const MINE_WOOD: i32 = 5242881;
     pub const ON_A_RAIL: i32 = 5242891;
     pub const KILL_ENEMY: i32 = 5242893;
+    pub const SNIPE_SKELETON: i32 = 5242896;
     pub const KILL_COW: i32 = 5242894;
     pub const FLY_PIG: i32 = 5242895;
     /// `mineBlockStatArray[id]` (-1 where the original's entry is null).

@@ -233,10 +233,9 @@ impl<'a, 'b> RenderBlocks<'a, 'b> {
 
     /// `colorMultiplier`
     fn color_multiplier(&self, id: u8, x: i32, y: i32, z: i32) -> u32 {
-        // Release 1.0 Block.colorMultiplier: the block-owned dispatch (worldgen, checked against
-        // the original bytecode by blocks4:colors) over the biome's per-block climate colour
-        // (BiomeGenBase.func_40254_a/func_40255_b, swamp tint) and water colour.
-        worldgen::block::visual181::color_multiplier10(
+        // Release 1.1 averages the surrounding nine biome colors for grass,
+        // oak leaves and water; pine and birch retain their fixed colors.
+        worldgen::block::visual181::color_multiplier11(
             id,
             self.w.meta(x, y, z),
             x,

@@ -1038,9 +1038,21 @@ impl Entity {
                 let item = 2256 + self.rand.next_int(10);
                 self.drop_item(w, item, 1, 0, 0.0);
             }
-            // Vanilla's Skeleton sniper achievement is unreachable in this build:
-            // DamageSource.func_35526_e delegates to func_35532_a, so both
-            // accessors return the owner. One entity cannot be Arrow and Player.
+            if matches!(self.kind, EntityKind::Skeleton) && source.indirect
+                && source.kind == super::damage::DamageKind::Arrow && source.source_of_damage().is_some()
+            {
+                // The arrow is temporarily removed from World while its impact callback runs.
+                // DamageKind::Arrow is produced by the actual arrow collision path.
+                if let Some(player) = attacker.and_then(|id| w.entities.get_mut(&id)) {
+                    if player.player_state().is_some() {
+                        let dx = player.pos.x - self.pos.x;
+                        let dz = player.pos.z - self.pos.z;
+                        if dx * dx + dz * dz >= 2500.0 {
+                            player.add_stat(crate::entity::player::stat::SNIPE_SKELETON, 1);
+                        }
+                    }
+                }
+            }
     }
     pub fn perform_hurt_animation(&mut self) {
         if matches!(self.kind, EntityKind::Boat(..) | EntityKind::Minecart(..)) {

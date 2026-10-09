@@ -307,3 +307,26 @@ pub fn color_multiplier10(id:u8,metadata:i32,x:i32,y:i32,z:i32,
         8|9=>water_color(x,z),104|105=>(metadata*32)<<16 | (255-metadata*8)<<8 | metadata*4,
         _=>16777215}
 }
+
+/// Release 1.1 block tint dispatch, averaging each color channel over the
+/// original z-major 3x3 biome neighborhood for grass, oak leaves and water.
+pub fn color_multiplier11(id:u8,metadata:i32,x:i32,y:i32,z:i32,
+    mut biome_color:impl FnMut(i32,i32,i32,bool)->i32,mut water_color:impl FnMut(i32,i32)->i32)->i32 {
+    let averaged = matches!(id,2|8|9) || id==18 && metadata&3==0;
+    if !averaged {return color_multiplier10(id,metadata,x,y,z,biome_color,water_color);}
+    let mut channels=[0i32;3];
+    for dz in -1i32..=1 {for dx in -1i32..=1 {
+        let bx=x.wrapping_add(dx);let bz=z.wrapping_add(dz);
+        let color=if matches!(id,8|9){water_color(bx,bz)}else{biome_color(bx,y,bz,id==18)};
+        channels[0]+=(color>>16)&255;channels[1]+=(color>>8)&255;channels[2]+=color&255;
+    }}
+    ((channels[0]/9)&255)<<16 | ((channels[1]/9)&255)<<8 | ((channels[2]/9)&255)
+}
+
+#[cfg(test)]
+mod release11_tint_tests {
+ use super::*;use std::cell::RefCell;
+ fn color(x:i32,y:i32,z:i32,seed:i32,foliage:bool)->i32{x.wrapping_mul(733).wrapping_add(z.wrapping_mul(1237)).wrapping_add(y.wrapping_mul(19)).wrapping_add(seed.wrapping_mul(73471)).wrapping_add(if foliage{0x619fe2}else{0x325711})&0xffffff}
+ #[test]
+ fn block_neighborhood_tints_match_original_11_bytecode(){for line in include_str!("../fixtures/blocktint11.txt").lines(){let v:Vec<i32>=line.split_whitespace().map(|s|s.parse().unwrap()).collect();let queries=RefCell::new(Vec::new());let actual=color_multiplier11(v[0] as u8,v[1],v[3],64,v[4],|x,y,z,foliage|{queries.borrow_mut().extend([x,z]);color(x,y,z,v[2],foliage)},|x,z|{queries.borrow_mut().extend([x,z]);color(x,0,z,v[2],false)});assert_eq!(actual,v[5],"{line}");assert_eq!(queries.into_inner(),&v[6..],"query order {line}");}}
+}

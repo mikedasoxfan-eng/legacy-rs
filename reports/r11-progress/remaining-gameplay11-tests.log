@@ -1,0 +1,82 @@
+   Compiling worldgen11 v3.0.2 (C:\Users\Robbie\Documents\Codex\2026-10-09\https-github-com-mikedasoxfan-eng-legacy\work\legacy-rs\crates\worldgen11)
+warning: use of deprecated method `std::sync::atomic::Atomic::<u32>::fetch_update`: renamed to `try_update` for consistency
+  --> crates\worldgen11\src\decorator10.rs:53:20
+   |
+53 |     assert!(ACTIVE.fetch_update(Ordering::SeqCst, Ordering::SeqCst,
+   |                    ^^^^^^^^^^^^
+   |
+   = note: `#[warn(deprecated)]` on by default
+help: replace the use of the deprecated method
+   |
+53 -     assert!(ACTIVE.fetch_update(Ordering::SeqCst, Ordering::SeqCst,
+53 +     assert!(ACTIVE.try_update(Ordering::SeqCst, Ordering::SeqCst,
+   |
+
+warning: function `use_neighbor_brightness` is never used
+ --> crates\worldgen11\src\world\release10.rs:5:15
+  |
+5 | pub(crate) fn use_neighbor_brightness(id: u8) -> bool {
+  |               ^^^^^^^^^^^^^^^^^^^^^^^
+  |
+  = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: `worldgen11` (lib test) generated 2 warnings (run `cargo fix --lib -p worldgen11 --tests` to apply 1 suggestion)
+    Finished `release` profile [optimized + debuginfo] target(s) in 12.04s
+     Running unittests src\lib.rs (target\release\deps\worldgen-7d9f96b56fb1ddc2.exe)
+
+running 52 tests
+test block::visual181::release11_tint_tests::block_neighborhood_tints_match_original_11_bytecode ... ok
+test container::brewing::tests::brewing_timeline_matches_original_11_bytecode ... ok
+test container::release11_tag_tests::nullable_stack_tags_match_original_11_bytecode ... ok
+test container::release11_tag_tests::stack_tag_root_names_match_original_11_bytecode ... ok
+test container::release11_tag_tests::tagged_inventory_copy_independence_matches_original_11_bytecode ... ok
+test container::release11_tag_tests::tagged_slot_click_and_shift_match_original_11_bytecode ... ok
+test container::release_11_tests::crafting_remainders_match_original_11_bytecode ... ok
+test container::release_11_tests::golden_apple_uses_original_11_recipe_table ... ok
+test enchantment::tests::bow_enchantment_selection_matches_original_11_bytecode ... ok
+test enchantment::tests::offers_match_original_11_bytecode_and_rng_tail ... ok
+test entity::animal::release11_delta_tests::animal_search_matches_original_11_bytecode ... ok
+test entity::animal::release11_delta_tests::animal_target_clear_matches_original_11_bytecode ... ok
+test entity::aquatic::release11_guard_tests::living_action_guards_match_original_11_bytecode ... ok
+test entity::aquatic::release11_guard_tests::squid_motion_guards_match_original_11_bytecode ... ok
+test entity::blocks11::tests::block_boxes_match_original_11_bytecode ... ok
+test entity::blocks11::tests::detector_height_matches_original_11_bytecode ... ok
+test entity::blocks11::tests::farmland_landings_match_original_11_bytecode ... ok
+test entity::blocks11::tests::farmland_walking_matches_original_11_bytecode ... ok
+test entity::blocks11::tests::gate_notifications_match_original_11_bytecode ... ok
+test entity::blocks11::tests::powered_rail_additions_match_original_11_bytecode ... ok
+test entity::blocks11::tests::snow_support_matches_original_11_bytecode ... ok
+test entity::blocks11::tests::stem_soils_match_original_11_bytecode ... ok
+test entity::blocks11::tests::trapdoor_neighbors_match_original_11_bytecode ... ok
+test entity::blocks11::tests::web_distance_matches_original_11_bytecode ... ok
+test entity::damage::release11_tests::indirect_source_and_skeleton_death_match_original_11_bytecode ... ok
+test entity::damage::release11_tests::lethal_arrow_impact_delivers_original_11_sniper_callback ... ok
+test entity::living::creeper_release11_tests::creeper_records_match_original_11_bytecode ... ok
+test entity::nbt::arrow_release_11_nbt_tests::arrow_nbt_matches_original_11_bytecode ... ok
+test entity::player::block_hooks::release11_door_tests::doors_match_original_11_bytecode ... ok
+test entity::player::damage_release_11_tests::damage_matches_original_11_bytecode_single_armor_pass ... ok
+test entity::player::food::release_tests::experience_matches_original_11_bytecode_vectors ... ok
+test entity::player::mechanics::bow_release_11_tests::bow_release_matches_original_11_bytecode ... ok
+test entity::projectile::release_11_impact_tests::arrow_impact_matches_original_11_bytecode ... ok
+test entity::sheep11::tests::magma_drops_match_original_11_bytecode ... ok
+test entity::sheep11::tests::shearing_matches_original_11_bytecode ... ok
+test entity::sheep11::tests::sheep_actions_match_original_11_bytecode ... ok
+test entity::sheep11::tests::sheep_head_boundaries_match_original_11_bytecode ... ok
+test entity::sheep11::tests::sheep_status_jump_and_movement_match_original_11_bytecode ... ok
+test entity::sheep11::tests::sheep_tick_growth_order_matches_original_11_bytecode ... ok
+test entity::spawn_egg11::tests::creative_inventory_matches_original_11_bytecode ... ok
+test entity::spawn_egg11::tests::egg_constructor_save_tick_matches_original_11_bytecode ... ok
+test entity::spawn_egg11::tests::egg_invalid_side_matches_original_11_bytecode ... ok
+test entity::spawn_egg11::tests::egg_metadata_matches_original_11_bytecode ... ok
+test entity::spawn_egg11::tests::egg_names_match_original_11_bytecode ... ok
+test entity::spawn_egg11::tests::egg_spawns_match_original_11_bytecode ... ok
+test entity::spawn_egg11::tests::egg_stack_use_and_statistics_match_original_11_bytecode ... ok
+test entity::special::wolf_release11_guard_tests::wolf_world_guard_matches_original_11_bytecode ... ok
+test stack_tags::tests::stackable_tags_and_inventory_match_original_11_bytecode ... ok
+test world::behavior::leaves_release11_tests::leaves_drops_and_decay_match_original_11_bytecode ... ok
+test world::redstone::release11_tests::wire_connections_match_original_11_bytecode ... ok
+test world::redstone::release11_tests::wire_removal_notifications_match_original_11_bytecode ... ok
+test world::redstone::release11_tests::wire_rising_updates_match_original_11_bytecode ... ok
+
+test result: ok. 52 passed; 0 failed; 0 ignored; 0 measured; 55 filtered out; finished in 4.25s
+
