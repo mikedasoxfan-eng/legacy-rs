@@ -1,0 +1,11 @@
+package net.minecraft.src;
+import java.io.*;import java.util.*;import java.lang.reflect.*;
+public final class Landing11 {
+ static class W extends World {int scene,changed;List<Integer> hook;W(){super((ISaveHandler)null,"",new WorldSettings(0L,0,false,false,EnumWorldType.DEFAULT));}public int getBlockId(int x,int y,int z){return y==63?(scene==0?60:scene==1?85:scene==2?1:0):0;}public boolean setBlockWithNotify(int x,int y,int z,int id){changed=id;return true;} }
+ static class B extends Block {Block real;int source;B(int id,Block real,int source){super(id,Material.rock);this.real=real;this.source=source;}public void func_43001_a(World w,int x,int y,int z,Entity e,float d){((W)w).hook=Arrays.asList(source,x,y,z);real.func_43001_a(w,x,y,z,e,d);}}
+ public static void main(String[]args)throws Exception{int boot=Block.stone.blockID;Block farm=Block.blocksList[60],fence=Block.blocksList[85],stone=Block.blocksList[1];B f=new B(254,farm,60),n=new B(253,fence,85),s=new B(252,stone,1);Block.blocksList[60]=f;Block.blocksList[85]=n;Block.blocksList[1]=s;Method land=Entity.class.getDeclaredMethod("updateFallState",double.class,boolean.class);land.setAccessible(true);PrintWriter o=new PrintWriter(new File(args[0],"landing11.txt"));
+  for(int living=0;living<2;living++)for(int scene=0;scene<4;scene++)for(double x:new double[]{-1.00000001,-1,-.00000001,0,.99999999,1})for(double y:new double[]{63.2,63.200000002980232,63.20000001,64,64.2,64.20000000298023,64.20000001,65})for(float offset:new float[]{0,.5F,1.62F})for(float distance:new float[]{0,.5F,.75F,1.5F})for(int ground=0;ground<2;ground++){
+   W w=(W)SheepSlice11.unsafe().allocateInstance(W.class);w.scene=scene;w.rand=new Random(42);w.hook=Arrays.asList(0,0,0,0);Entity e=living!=0?new EntityChicken(w):new EntityItem(w);e.yOffset=offset;e.setPosition(x,y,-x);e.fallDistance=distance;land.invoke(e,-.25,ground!=0);o.print(living+" "+scene+" "+Double.doubleToRawLongBits(x)+" "+Double.doubleToRawLongBits(y)+" "+Float.floatToRawIntBits(offset)+" "+Float.floatToRawIntBits(distance)+" "+ground);for(int v:w.hook)o.print(" "+v);o.println(" "+w.changed+" "+Float.floatToRawIntBits(e.fallDistance)+" "+w.rand.nextLong());
+  }o.close();Block.blocksList[60]=farm;Block.blocksList[85]=fence;Block.blocksList[1]=stone;
+ }
+}

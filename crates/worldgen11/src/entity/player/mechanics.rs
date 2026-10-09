@@ -354,3 +354,10 @@ pub fn food_value(id: i32) -> Option<(i32, f32)> {
         375 => (2,0.8), 366 => (6, 0.6), 367 => (4, 0.1), _ => return None,
     })
 }
+
+#[cfg(test)]
+mod release11_golden_food_tests {
+ use super::*;
+ #[test]
+ fn golden_apple_finish_matches_original_11_bytecode(){for line in include_str!("../../fixtures/goldfood11.txt").lines(){let v:Vec<i64>=line.split_whitespace().map(|s|s.parse().unwrap()).collect();let mut w=crate::entity::verify181::world();w.multiplayer_world=v[2]!=0;let mut p=Entity::player(&mut w,"probe");let state=p.player_state_mut().unwrap();state.food.write().level=v[0] as i32;state.food.write().saturation=f32::from_bits(v[1] as u32);state.capabilities.disable_damage=v[3]!=0;state.inventory.main[0]=Some(ItemStack::new(322,v[4] as i32,0));p.rand.set_seed(v[5]);w.rand.set_seed(v[5]);p.use_item(&mut w);assert_eq!(p.player_state().unwrap().item_in_use.is_some(),v[6]!=0,"{line}");p.finish_item_use(&mut w);let state=p.player_state().unwrap();assert_eq!(state.inventory.main[0].map_or(0,|s|s.count),v[7] as i32,"{line}");assert_eq!(state.food.read().level,v[8] as i32,"{line}");assert_eq!(state.food.read().saturation.to_bits(),v[9] as u32,"{line}");let effect=p.potion_effect(super::super::super::potion::REGENERATION);assert_eq!(effect.map_or(0,|e|e.duration),v[10] as i32,"{line}");assert_eq!(effect.map_or(-1,|e|e.amplifier),v[11] as i32,"{line}");assert_eq!(p.rand.next_long(),v[12],"{line}");assert_eq!(w.rand.next_long(),v[13],"{line}");}}
+}

@@ -441,15 +441,20 @@ impl Entity {
         if on_ground {
             if self.fall_distance>0.0 {
                 let distance=self.fall_distance;
-                if self.kind.is_living() {
-                    let x=floor(self.pos.x);let y=floor(self.pos.y-0.2f32 as f64-self.y_offset as f64);let z=floor(self.pos.z);
-                    let mut id=w.get_block_id(x,y,z);
-                    if id==0 && w.get_block_id(x,y-1,z)==FENCE {id=FENCE;}
+                if let Some((id,x,y,z)) = self.landing_target11(w) {
                     self.on_entity_fallen11(w,id,x,y,z,distance);
                 }
                 self.fall(w,distance);self.fall_distance=0.0;
             }
         } else if dy<0.0 {self.fall_distance=(self.fall_distance as f64-dy) as f32;}
+    }
+    fn landing_target11(&self,w:&mut World)->Option<(u8,i32,i32,i32)> {
+        if !self.kind.is_living(){return None;}
+        let x=floor(self.pos.x);let y=floor(self.pos.y-0.2f32 as f64-self.y_offset as f64);let z=floor(self.pos.z);
+        let mut id=w.get_block_id(x,y,z);
+        // Fence lookup deliberately does not decrement the callback's y coordinate.
+        if id==0 && w.get_block_id(x,y-1,z)==FENCE {id=FENCE;}
+        (id>0).then_some((id,x,y,z))
     }
     pub(crate) fn on_entity_fallen11(&mut self,w:&mut World,id:u8,x:i32,y:i32,z:i32,distance:f32) {
         if id==TILLED_FIELD && w.rand.next_float() < distance-0.5 {
@@ -603,4 +608,18 @@ impl Entity {
             }
         }
     }
+}
+
+#[cfg(test)]
+mod release11_landing_tests {
+ use super::*;use crate::world::chunk::idx;
+ #[test]
+ fn landing_boundaries_match_original_11_bytecode(){let mut w=crate::entity::verify181::world();
+  for line in include_str!("../fixtures/landing11.txt").lines(){let v:Vec<i64>=line.split_whitespace().map(|s|s.parse().unwrap()).collect();let support=match v[1]{0=>60,1=>85,2=>1,_=>0};for x in -3i32..=3{for z in -3i32..=3{w.chunks.get_mut(&(x>>4,z>>4)).unwrap().blocks[idx(x&15,63,z&15)]=support;}}
+   let mut e=if v[0]!=0{Entity::living(&mut w,"Chicken").unwrap()}else{Entity::item(&mut w,0.0,64.0,0.0,crate::world::tile::ItemStack::new(1,1,0))};e.y_offset=f32::from_bits(v[4] as u32);let x=f64::from_bits(v[2] as u64);e.set_position(x,f64::from_bits(v[3] as u64),-x);e.fall_distance=f32::from_bits(v[5] as u32);w.rand.set_seed(42);
+   let target=if v[6]!=0 && e.fall_distance>0.0{e.landing_target11(&mut w)}else{None};let actual=target.map_or([0,0,0,0],|(id,x,y,z)|[id as i64,x as i64,y as i64,z as i64]);assert_eq!(actual,&v[7..11],"callback selection {line}");e.update_fall_state11(&mut w,-0.25,v[6]!=0);let changed=target.map_or(0,|(id,x,y,z)|if id==60&&w.get_block_id(x,y,z)==3{3}else{0});assert_eq!(changed,v[11],"actual block callback {line}");assert_eq!(e.fall_distance.to_bits(),v[12] as u32,"{line}");assert_eq!(w.rand.next_long(),v[13],"{line}");
+  }
+ }
+ #[test]
+ fn movement_landing_uses_original_11_block_callback(){let mut w=crate::entity::verify181::world();w.editing_blocks=true;w.set_block_and_metadata(0,63,0,60,7);w.editing_blocks=false;let mut e=Entity::living(&mut w,"Chicken").unwrap();e.set_position(0.5,64.5,0.5);e.fall_distance=2.0;w.rand.set_seed(42);e.move_entity(&mut w,0.0,-1.0,0.0);assert!(e.on_ground);assert_eq!(w.get_block_id(0,63,0),3);assert_eq!(e.fall_distance.to_bits(),0);}
 }
