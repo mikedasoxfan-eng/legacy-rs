@@ -1,5 +1,7 @@
 //! Release 1.1 StringTranslate: UTF-8 line parsing, English fallback and locale flags.
 use std::collections::{BTreeMap, HashMap};
+#[path="java_format.rs"] mod java_format;
+pub use java_format::FormatError;
 
 pub struct Lang {
     table: HashMap<String, String>,
@@ -49,46 +51,13 @@ impl Lang {
         self.table.get(key).cloned().unwrap_or_else(|| key.to_string())
     }
 
-    /// `translateKeyFormat` for `%s`/`%d`-style arguments already rendered as strings.
+    /// StringTranslate propagates Formatter's unchecked exception on malformed input.
+    /// Callers that need to expose the original exception can use the checked entrypoint.
     pub fn translate_key_format(&self, key: &str, args: &[String]) -> String {
-        let mut out = String::new();
-        let fmt = self.translate_key(key);
-        let mut it = fmt.chars().peekable();
-        let mut n = 0;
-        while let Some(c) = it.next() {
-            if c == '%' {
-                // Positional `%N$s` / `%N$d`.
-                let rest: String = it.clone().take(4).collect();
-                let digits: String = rest.chars().take_while(|c| c.is_ascii_digit()).collect();
-                if !digits.is_empty() && rest[digits.len()..].starts_with('$') {
-                    let after = rest[digits.len() + 1..].chars().next();
-                    if matches!(after, Some('s') | Some('d')) {
-                        for _ in 0..digits.len() + 2 {
-                            it.next();
-                        }
-                        let k: usize = digits.parse().unwrap_or(1);
-                        out.push_str(args.get(k.saturating_sub(1)).map(String::as_str).unwrap_or(""));
-                        continue;
-                    }
-                }
-                match it.peek() {
-                    Some('s') | Some('d') => {
-                        it.next();
-                        out.push_str(args.get(n).map(String::as_str).unwrap_or(""));
-                        n += 1;
-                        continue;
-                    }
-                    Some('%') => {
-                        it.next();
-                        out.push('%');
-                        continue;
-                    }
-                    _ => {}
-                }
-            }
-            out.push(c);
-        }
-        out
+        self.try_translate_key_format(key,args).unwrap_or_else(|e|panic!("{}: {}",e.class,e.message))
+    }
+    pub fn try_translate_key_format(&self,key:&str,args:&[String])->Result<String,FormatError> {
+        java_format::format_strings(&self.translate_key(key),args)
     }
 
     /// `translateNamedKey`: `key.name` or "".
@@ -113,6 +82,25 @@ fn load_table(table: &mut HashMap<String, String>, bytes: &[u8]) { table.extend(
 mod tests {
     use super::*;
     #[test]
+    fn installed_greek_overlay_preserves_original_formatter_exception() {
+        let mut lang=Lang::default();lang.load(b"achievement.requires=Requires '%1$s'\n");
+        assert_eq!(lang.translate_key_format("achievement.requires",&["Taking Inventory".into()]),"Requires 'Taking Inventory'");
+        lang.load("achievement.requires=Απαιτείται '%1$ s'\n".as_bytes());
+        let error=lang.try_translate_key_format("achievement.requires",&["Taking Inventory".into()]).unwrap_err();
+        assert_eq!(error.class,"java.util.FormatFlagsConversionMismatchException");
+        assert_eq!(error.message,"Conversion = s, Flags =  ");
+        assert!(std::panic::catch_unwind(||lang.translate_key_format("achievement.requires",&["Taking Inventory".into()])).is_err());
+    }
+    #[test]
+    fn formatter_indexes_and_errors_use_java_string_argument_rules() {
+        let lang=Lang::default();let args=vec!["Aé".into(),"Bß".into()];
+        assert_eq!(lang.translate_key_format("%2$s/%s/%<s/%1$s",&args),"Bß/Aé/Aé/Aé");
+        assert_eq!(lang.translate_key_format("[%1$5s][%1$-5s][%1$.2s]%%",&args[..1]),"[   Aé][Aé   ][Aé]%");
+        assert_eq!(lang.try_translate_key_format("%d",&args).unwrap_err().class,"java.util.IllegalFormatConversionException");
+        let error=lang.try_translate_key_format("%2$s",&args[..1]).unwrap_err();
+        assert_eq!(error.class,"java.util.MissingFormatArgumentException");assert_eq!(error.message,"Format specifier '%2$s'");
+    }
+    #[test]
     fn utf8_parser_keeps_java_split_and_trim_semantics() {
         let mut lang=Lang::default();
         lang.load(" #skip=x\na=\nb=value=\nc=one=two\n spaced = interior \n!literal=x\nslash=\\u0041\\n\n\u{a0}key\u{a0}=\u{a0}value\u{a0}\n".as_bytes());
@@ -127,11 +115,11 @@ mod tests {
     #[test]
     fn overlay_fallback_and_flags_follow_language_switches() {
         let mut lang=Lang::default();lang.load(b"fallback=english\nname=english\n");
-        let reader=|path:&str|Ok(if path=="lang/en_US.lang" {b"fallback=english\nname=english\n".to_vec()} else {"name=עברית\n".as_bytes().to_vec()});
+        let reader=|path:&str|Ok(if path=="lang/en_US.lang" {b"fallback=english\nname=english\n".to_vec()} else {"name=×¢×‘×¨×™×ª\n".as_bytes().to_vec()});
         assert!(!lang.load_language("en_US",reader).unwrap());
         assert!(lang.load_language("he_IL",reader).unwrap());
         assert_eq!(lang.translate_key("fallback"),"english");
-        assert_eq!(lang.translate_key("name"),"עברית");assert!(lang.unicode());assert!(lang.bidi());
+        assert_eq!(lang.translate_key("name"),"×¢×‘×¨×™×ª");assert!(lang.unicode());assert!(lang.bidi());
         assert!(lang.load_language("en_US",reader).unwrap());assert!(!lang.unicode());assert!(!lang.bidi());
         assert_eq!(lang.translate_key("name"),"english");
     }
