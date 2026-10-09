@@ -1,0 +1,207 @@
+{
+  "schema": 1,
+  "scope": "Additional entire normalized changed-class deltas; unchanged inherited API and unrelated class deltas receive no new credit.",
+  "base_commit": "00abcf3ba1b889a00a588e6a2d5b6ce66283ba7c",
+  "source_mutations_paused": true,
+  "commit_registration_required": true,
+  "original_jar_sha256": "44bb6ace88fdff460d6c428c4becee8cad52f2622e1f800dab7a70f8a716f75b",
+  "original_runtime": "Mojang Java8u51",
+  "accepted_count": 7,
+  "accepted_classes": [
+    {
+      "class_name": "TileEntityBrewingStand",
+      "entire_1_1_delta_covered": true,
+      "whole_inherited_java_api_verified": false,
+      "all_delta_hunk_coverage": "updateEntity starts new brew at400 rather than600 ticks; all other hunks are field/method/callee renames with unchanged instructions after symbol normalization.",
+      "authority": {
+        "old_path": "work/retromcp-1.0/minecraft/src/net/minecraft/src/TileEntityBrewingStand.java",
+        "old_sha256": "38c7dca42c49c9ac421312e32cbc174e86e5fcce854442b3c00c0f41b23e4918",
+        "new_path": "work/retromcp-1.1/minecraft/src/net/minecraft/src/TileEntityBrewingStand.java",
+        "new_sha256": "ccdbe8a28dd2500af6f237cf3bfa67f6d9160b18f4e69a065460378266bf8908",
+        "raw_diff_sha256": "9eb84f8e7ed6699dfaeedd7f62d9870f6123c2f1560f77500b15a7f73a46f163"
+      },
+      "rust_source_sha256": {
+        "crates/worldgen11/src/container/brewing.rs": "849c3a11c924f4ef529519f60e0a9d72a9d93daaaece1ebb4a837fd76ed06ee5"
+      },
+      "fixture": {
+        "path": "crates/worldgen11/src/fixtures/brewing11.txt",
+        "rows": 9648,
+        "sha256": "e1a8509a37e020c27d666eb720eabe07d053aefadca58c0b858d658d160fdbe7"
+      },
+      "test": "brewing_timeline_matches_original_11_bytecode",
+      "direct_original_evidence": "Real original updateEntity timeline through402ticks: normal completion, ingredient swap, removal, NBT save/reload; compares stacks, brewTime, ingredientID, filledSlots, dirty callbacks, metadata notifications and World RNG.",
+      "completion_blockers": []
+    },
+    {
+      "class_name": "EntityCreeper",
+      "entire_1_1_delta_covered": true,
+      "whole_inherited_java_api_verified": false,
+      "all_delta_hunk_coverage": "Sole hunk: onDeath skeleton record nextInt(2) becomes nextInt(10).",
+      "authority": {
+        "old_path": "work/retromcp-1.0/minecraft/src/net/minecraft/src/EntityCreeper.java",
+        "old_sha256": "2fd0efe4d10ed0372c916a4f8f14400356db1f17bb85ad148321bb2c00c317a7",
+        "new_path": "work/retromcp-1.1/minecraft/src/net/minecraft/src/EntityCreeper.java",
+        "new_sha256": "e3a39ef187ff1f3e764b5aaed75c3e85dcc24370a279273d1d6a94db01edb77a",
+        "raw_diff_sha256": "7d7f3855f36a44f30c56f77c2ded7c6950e34406f7024b429c431f21fbb9639c"
+      },
+      "rust_source_sha256": {
+        "crates/worldgen11/src/entity/living.rs": "bcc7aced336d073abf762c0ca08e17b5b12ab313dfb5229b1e635da3c34b0d0c"
+      },
+      "fixture": {
+        "path": "crates/worldgen11/src/fixtures/creeperrecords11.txt",
+        "rows": 1200,
+        "sha256": "2c7d2bd5f37e28d2a177f3c06c6567dee41239ef00df4473e2b5911ff24f4c03"
+      },
+      "test": "creeper_records_match_original_11_bytecode",
+      "direct_original_evidence": "Real onDeath with skeleton/zombie/generic sources, both world modes and200 seeds; ordered actual item drops plus Creeper and World RNG tails; all10 records observed.",
+      "completion_blockers": []
+    },
+    {
+      "class_name": "BlockDetectorRail",
+      "entire_1_1_delta_covered": true,
+      "whole_inherited_java_api_verified": false,
+      "all_delta_hunk_coverage": "Sole hunk: query box maxY becomes double(float(y+1)-.125), replacing double(y)+.25.",
+      "authority": {
+        "old_path": "work/retromcp-1.0/minecraft/src/net/minecraft/src/BlockDetectorRail.java",
+        "old_sha256": "55e03948cc82de02b30519469d21bd52892e3023db34c47ea2a3c11bf370139d",
+        "new_path": "work/retromcp-1.1/minecraft/src/net/minecraft/src/BlockDetectorRail.java",
+        "new_sha256": "e8754b44d966e34b114216a7a46b87254eb29a810dcabc5f43f2b8e093a61d31",
+        "raw_diff_sha256": "56a01216e0f99c5bb7354d32cf83c92b68830b322d47e9f70f9c60c4546e2824"
+      },
+      "rust_source_sha256": {
+        "crates/worldgen11/src/world/rails.rs": "21b62be9220db10409e519fc55fb112127d19eb49f6358bac2357f6bcf706c87",
+        "crates/worldgen11/src/entity/blocks11.rs": "35f21da564c6809b0f64016a3c8bcf544dd1ab37df6976c7e128c6ccafe49299"
+      },
+      "fixture": {
+        "path": "crates/worldgen11/src/fixtures/detector11.txt",
+        "rows": 48,
+        "sha256": "2bc6a128029fc314a4b71154539dae811bf16a0972a013fc88dcb33793aebc73"
+      },
+      "test": "detector_height_matches_original_11_bytecode",
+      "direct_original_evidence": "Original private setStateIfMinecartInteractsWithRail vs actual Rust update_detector_rail: eight height boundaries, on/off metadata, three float-sensitive coordinates; six exact AABB bits, metadata, pending ticks, RNG.",
+      "completion_blockers": []
+    },
+    {
+      "class_name": "BlockSnow",
+      "entire_1_1_delta_covered": true,
+      "whole_inherited_java_api_verified": false,
+      "all_delta_hunk_coverage": "canPlaceBlockAt accepts leaves regardless of opacity. Other hunk is World.entityJoinedWorld\u2192spawnEntityInWorld rename; inherited drop behavior unchanged.",
+      "authority": {
+        "old_path": "work/retromcp-1.0/minecraft/src/net/minecraft/src/BlockSnow.java",
+        "old_sha256": "51e10dadb831f6d153921228cbdfd76ed4fb6e8ae7c873f6bf85c7ac5f6c63b0",
+        "new_path": "work/retromcp-1.1/minecraft/src/net/minecraft/src/BlockSnow.java",
+        "new_sha256": "3c5a0ed8d18380953ac625baffa83c487d60bd0f63ad0f1e180e5967f15c04db",
+        "raw_diff_sha256": "e0a671916d1d89d976185a865d84acdb182ea6a7462dd49870ccb20304f30eca"
+      },
+      "rust_source_sha256": {
+        "crates/worldgen11/src/world/behavior.rs": "b99851685982ac611006adf2b8e1466abbd72585ce6aec447197b1875ad81d0c",
+        "crates/worldgen11/src/entity/blocks11.rs": "35f21da564c6809b0f64016a3c8bcf544dd1ab37df6976c7e128c6ccafe49299"
+      },
+      "fixture": {
+        "path": "crates/worldgen11/src/fixtures/snow11.txt",
+        "rows": 20,
+        "sha256": "04d6fba1db446b3117b0d5673a45092da2fa9d41b62f480002620a94f2579024"
+      },
+      "test": "snow_support_matches_original_11_bytecode",
+      "direct_original_evidence": "Real original support query and neighbor callback for10 support blocks and both leaves rendering opacity modes; placement boolean, removal block and RNG.",
+      "completion_blockers": []
+    },
+    {
+      "class_name": "BlockStem",
+      "entire_1_1_delta_covered": true,
+      "whole_inherited_java_api_verified": false,
+      "all_delta_hunk_coverage": "Mature fruit chooses dirt/grass/farmland and reads selected soil before target air. Remaining hunks rename fruitType, fertilizeStem and World spawn method with unchanged bodies.",
+      "authority": {
+        "old_path": "work/retromcp-1.0/minecraft/src/net/minecraft/src/BlockStem.java",
+        "old_sha256": "6c96c9fca91dbedca4e567cc30e120e4e70036821065b0fa5f5e31c27455d51c",
+        "new_path": "work/retromcp-1.1/minecraft/src/net/minecraft/src/BlockStem.java",
+        "new_sha256": "eec153d16d410916ddcea99e120362a3e7674e26eac8bd5a3d6f410fa3b79c39",
+        "raw_diff_sha256": "ebb4e1710dab31c4cf00dd06a39506d90e50e33bd8c7230a8484fd4bab88019f"
+      },
+      "rust_source_sha256": {
+        "crates/worldgen11/src/world/plants181.rs": "db2888448818848a96c135474d1e8b535f1cd04b1d960690f828921010d1850b",
+        "crates/worldgen11/src/entity/blocks11.rs": "35f21da564c6809b0f64016a3c8bcf544dd1ab37df6976c7e128c6ccafe49299"
+      },
+      "fixture": {
+        "path": "crates/worldgen11/src/fixtures/stem11.txt",
+        "rows": 2000,
+        "sha256": "2605bedfaa0a0e319e7e3eed240d6624b8858fe8206938443d75e3e48af02b3e"
+      },
+      "test": "stem_soils_match_original_11_bytecode",
+      "direct_original_evidence": "Real original updateTick for pumpkin/melon, five soils, existing adjacent fruit/no fruit,100 seeds; actual four neighboring resulting block IDs and World/passed RNG tails. Soil-before-air query order matched by source audit.",
+      "completion_blockers": []
+    },
+    {
+      "class_name": "BlockTrapDoor",
+      "entire_1_1_delta_covered": true,
+      "whole_inherited_java_api_verified": false,
+      "all_delta_hunk_coverage": "Sole hunk: neighbor power queried unconditionally after support logic; powered OR positive power provider OR changed0 invokes onPoweredBlockChange.",
+      "authority": {
+        "old_path": "work/retromcp-1.0/minecraft/src/net/minecraft/src/BlockTrapDoor.java",
+        "old_sha256": "fcea1947140d3a0caf862dc89c52d2d27bca43a1ada76b53b59422464e34f5bb",
+        "new_path": "work/retromcp-1.1/minecraft/src/net/minecraft/src/BlockTrapDoor.java",
+        "new_sha256": "e07ced2dfe9ba3c5bdd9114163ad82515afcbb38c1e5f9cb28cb6a1416d53c81",
+        "raw_diff_sha256": "da5809062cb6bdda4f35a3d90b560569dafe976653f309d8c3f91a0e891a006e"
+      },
+      "rust_source_sha256": {
+        "crates/worldgen11/src/world/blocks181.rs": "fdc5c44f8526f42b3a3430265719bc6fba31d0c0db1ef076b6e0543a8ab573b7",
+        "crates/worldgen11/src/entity/blocks11.rs": "35f21da564c6809b0f64016a3c8bcf544dd1ab37df6976c7e128c6ccafe49299"
+      },
+      "fixture": {
+        "path": "crates/worldgen11/src/fixtures/trapdoor11.txt",
+        "rows": 320,
+        "sha256": "5d859f4418a896fdb88792e08f7881ae3815c050bf261eba76fbe38ba4ee4114"
+      },
+      "test": "trapdoor_neighbors_match_original_11_bytecode",
+      "direct_original_evidence": "Real original neighbor callback for16 metadata, changed0/1/69/93/96, powered/unpowered and server/remote; final metadata, actual auxiliary event count and RNG.",
+      "completion_blockers": []
+    },
+    {
+      "class_name": "EntityWolf",
+      "entire_1_1_delta_covered": true,
+      "whole_inherited_java_api_verified": false,
+      "all_delta_hunk_coverage": "Only substantive hunk: onLivingUpdate shake initiation uses !world.multiplayerWorld instead of !isMultiplayerEntity. All remaining hunks rename state/accessors/callees; getVerticalFaceSpeed widens protected\u2192public without body change.",
+      "authority": {
+        "old_path": "work/retromcp-1.0/minecraft/src/net/minecraft/src/EntityWolf.java",
+        "old_sha256": "fc69c7a7f4a904b0353a63939505a3d82466c2334f6b0c15acaf93a77a2b7131",
+        "new_path": "work/retromcp-1.1/minecraft/src/net/minecraft/src/EntityWolf.java",
+        "new_sha256": "d730fe75db36307479d1656da1f7aee52c7f0f3606e1f8485c087c9bf5fc9623",
+        "raw_diff_sha256": "9b5aaf13f633ffe967726cc3599cd12c64339c9456cf6f1a01ab32ed27d868f7"
+      },
+      "rust_source_sha256": {
+        "crates/worldgen11/src/entity/special.rs": "ac052da28275f1757c5cb18baedf86f8ab6f39fe1c58527a0af4c1f2b6c231ea"
+      },
+      "fixture": {
+        "path": "crates/worldgen11/src/fixtures/wolfguard11.txt",
+        "rows": 64,
+        "sha256": "e18b764a7e9bfb485612706a02821812c41c321a3ae93bacd62e7ebb64a6e901"
+      },
+      "test": "wolf_world_guard_matches_original_11_bytecode",
+      "direct_original_evidence": "Real original Wolf onLivingUpdate own body with inherited movement isolated: every boolean combination of world mode, shaking, active shake, path, onGround and legacy entity flag; shake state, raw float times, Entity/World RNG. Separate EntityLiving changed guards are not credited.",
+      "completion_blockers": []
+    }
+  ],
+  "verification": {
+    "serial_tests": {
+      "path": "work/small-blocks-wolf11-tests.log",
+      "sha256": "3e9fc62027a3c4d77613a23d6a0778eaa696fb9781a46474b3b104e6327a0765",
+      "result": "36 passed, 0 failed, 55 filtered; final stem query order included"
+    },
+    "fixture_regeneration": {
+      "path": "work/small-blocks-wolf11-oracle.log",
+      "sha256": "ca7bce9b6e39423a331020fef3a16ef67cdb06886c112b3860cbd0a946e60326",
+      "result": "All37 fixture/table regenerations EXACT"
+    },
+    "probes_sha256": {
+      "tools/oracle11/src/net/minecraft/src/SmallGameplay11.java": "03ef568de07b8b2ccd4068441eb38f55a314c4f7e4f291b2fe408e6183f02032",
+      "tools/oracle11/src/net/minecraft/src/SmallBlocks11.java": "f537be70fe11ace040b51cd5f3f8168d05ddc60bb321678d97e201fb1857cde6",
+      "tools/oracle11/verify_gameplay_slice.ps1": "11759dd61bd34af94f40653de497dfe0d9f78c6bea78af4c6b3df8ee44a43f82"
+    }
+  },
+  "remaining_external_gates": [
+    "Parent stable checkpoint rerun and committed hash registration.",
+    "Full release/client integration and inherited regressions remain separate gates.",
+    "EntityLiving and EntitySquid world-vs-entity guard deltas remain open; Wolf fixture isolates Wolf-own delta only."
+  ],
+  "activity": "No active Cargo or further runtime edits. External review only; awaiting parent checkpoint."
+}

@@ -45,5 +45,18 @@
   "World": "235b5ebd70b9326dc92857f21e9049815bfa9f21",
   "WorldProvider": "235b5ebd70b9326dc92857f21e9049815bfa9f21",
   "WorldProviderEnd": "235b5ebd70b9326dc92857f21e9049815bfa9f21",
-  "WorldSettings": "235b5ebd70b9326dc92857f21e9049815bfa9f21"
+  "WorldSettings": "235b5ebd70b9326dc92857f21e9049815bfa9f21",
+  "GenLayerHills": "00abcf3",
+  "GenLayerShore": "00abcf3",
+  "GenLayerSwampRivers": "00abcf3",
+  "WorldInfo": "00abcf3",
+  "WorldProviderHell": "00abcf3",
+  "TileEntityBrewingStand": "5c9741d",
+  "EntityCreeper": "5c9741d",
+  "BlockDetectorRail": "fbe6cf4",
+  "BlockSnow": "fbe6cf4",
+  "BlockStem": "fbe6cf4",
+  "BlockTrapDoor": "fbe6cf4",
+  "EntityWolf": "fbe6cf4",
+  "Tessellator": "31835cf"
 }

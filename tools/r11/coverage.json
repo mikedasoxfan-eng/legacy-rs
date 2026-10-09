@@ -141,5 +141,56 @@
   ],
   "WorldSettings": [
     "worldtype11 names settings and saves"
+  ],
+  "GenLayerHills": [
+    "layer11 neighborhood boundaries",
+    "layer11 graph and fixed manager"
+  ],
+  "GenLayerShore": [
+    "layer11 neighborhood boundaries",
+    "layer11 graph and fixed manager"
+  ],
+  "GenLayerSwampRivers": [
+    "layer11 neighborhood boundaries",
+    "layer11 graph and fixed manager"
+  ],
+  "WorldInfo": [
+    "dimension11 native and crossloaded saves",
+    "worldtype11 names settings and saves"
+  ],
+  "WorldProviderHell": [
+    "dimension11 native and crossloaded saves",
+    "worldtype11 names settings and saves"
+  ],
+  "TileEntityBrewingStand": [
+    "gameplay11 original delta vectors",
+    "gameplay11 fixture authority"
+  ],
+  "EntityCreeper": [
+    "gameplay11 original delta vectors",
+    "gameplay11 fixture authority"
+  ],
+  "BlockDetectorRail": [
+    "gameplay11 original delta vectors",
+    "gameplay11 fixture authority"
+  ],
+  "BlockSnow": [
+    "gameplay11 original delta vectors",
+    "gameplay11 fixture authority"
+  ],
+  "BlockStem": [
+    "gameplay11 original delta vectors",
+    "gameplay11 fixture authority"
+  ],
+  "BlockTrapDoor": [
+    "gameplay11 original delta vectors",
+    "gameplay11 fixture authority"
+  ],
+  "EntityWolf": [
+    "gameplay11 original delta vectors",
+    "gameplay11 fixture authority"
+  ],
+  "Tessellator": [
+    "tessellator11 packed normal bytes"
   ]
 }

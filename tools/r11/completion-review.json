@@ -4,15 +4,16 @@
     "no_behavior_change": true,
     "reason": "Only final is added to the class declaration. Method bodies, material initialization and runtime dispatch are unchanged.",
     "rust_source_sha256": {
-      "crates/worldgen11/src/entity/blocks11.rs": "7b3b7d612592b367e47bc1ec3a9c20ea5769934f58a0e3d9a0efbf54606ef104",
+      "crates/worldgen11/src/entity/blocks11.rs": "35f21da564c6809b0f64016a3c8bcf544dd1ab37df6976c7e128c6ccafe49299",
       "crates/worldgen11/src/entity/blocks.rs": "f37f8c39e6509678187a6cb2002b28f49f9e0673929262547a004341111cc674",
       "crates/worldgen11/src/entity/physics.rs": "a55d97cebd8a5a3c8e565cae5ad8139b47fbedb5e0b57eaae64730afa91d27a6",
-      "crates/worldgen11/src/world/behavior.rs": "dc6d60fb0465f2d76248af964de79b1e0a7a1250116c1e0a622d3aee6ce700d0"
+      "crates/worldgen11/src/world/behavior.rs": "b99851685982ac611006adf2b8e1466abbd72585ce6aec447197b1875ad81d0c"
     },
     "original_source_sha256": {
       "1.0": "ba0e5ff3f7cdda1d45017d7aa29f66cbb0a5db9f2a2c658bfee43427a6072d0d",
       "1.1": "684c41805af4f4ed3e95b4ffef30a9d5bbe173f941f214e25a6cd4ae401d3c4c"
-    }
+    },
+    "revalidation": "Current gameplay/settings/worldtype/biome/layer/flat/spawn/depthfog suite rerun; newly changed helpers are covered by additional direct original probes. No whole inherited class claim."
   },
   "EntityDamageSource": {
     "complete_delta_review": true,
@@ -20,19 +21,19 @@
     "reason": "Only damageSourceEntity visibility changes private to protected. Runtime field and methods are unchanged.",
     "rust_source_sha256": {
       "crates/worldgen11/src/entity/mod.rs": "66c8caf5b0997e0fd474e2f722beff76e7d821d49c2f82d464510dde8c8fe2d0",
-      "crates/worldgen11/src/entity/living.rs": "607b0b8ca26f3fe261198bfa1b83887bc0c77ca5e65e09092635847370a4aec2",
+      "crates/worldgen11/src/entity/living.rs": "bcc7aced336d073abf762c0ca08e17b5b12ab313dfb5229b1e635da3c34b0d0c",
       "crates/worldgen11/src/entity/creature.rs": "85521b77716dfbf983ded5971185b59bbe2cca5314c8eead0aeda4a11895e80b",
       "crates/worldgen11/src/entity/nbt.rs": "2bf61659b89cfb6505c6cdce38a8187d3c5fd3fc119a6f9aa6217c21addf009b"
     },
     "original_source_sha256": {
       "1.0": "c52631bc343caf5a5aa8829d296181b369868597e48e9396bd369b24155203a0",
       "1.1": "7d1e1de802f6d03237cb84f27a1b124a9a5e4e2dcc0ee2c47807459e4689fd80"
-    }
+    },
+    "revalidation": "Current gameplay/settings/worldtype/biome/layer/flat/spawn/depthfog suite rerun; newly changed helpers are covered by additional direct original probes. No whole inherited class claim."
   },
   "MapGenStructure": {
     "complete_delta_review": true,
-    "no_behavior_change": true,
-    "reason": "The existing rand.nextInt() result is assigned to an unused local, shifting subsequent local variable names only. RNG consumption and map insertion are unchanged.",
+    "reason": "recursiveGenerate consumes same nextInt now assigned to unused local; map scans compare scan/start order and final RNG, no runtime delta beyond local declaration",
     "rust_source_sha256": {
       "crates/worldgen11/src/structures.rs": "c429031ac51fd761ded0f678a7f4e584946c2732d67c5f96aa1cc3726391920d",
       "crates/worldgen11/src/structures/component.rs": "1301046367f870908ec02cf185e6fe0d3ef4eddd4e3f0453327e70fe6cce8661"
@@ -40,12 +41,14 @@
     "original_source_sha256": {
       "1.0": "c0f8030f4929cedb6b5951a7a6e4106b0799ff4dd68a326219394127487ad21d",
       "1.1": "1c78a024be589a90a42fd285398224f695ff28619e635a2a1250f740b2f0d2f7"
-    }
+    },
+    "completion_blockers": [],
+    "revalidation": "Fresh complete bounded reproducers on current committed runtime source.",
+    "no_behavior_change": true
   },
   "StructureStrongholdPieceWeight2": {
     "complete_delta_review": true,
-    "no_behavior_change": true,
-    "reason": "Only final is added to the class declaration; depth and weighting methods are unchanged.",
+    "reason": "class declaration becomes final only; Rust value type cannot be subclassed; unchanged weight predicate exercised by exact stronghold map/start graph",
     "rust_source_sha256": {
       "crates/worldgen11/src/structures/stronghold.rs": "a3de5f5c18c7994a1bb8a639d2cec00e51d68ab9b2560b5097fc9b855b11ee4c",
       "crates/worldgen11/src/structures/stronghold_generated.rs": "2bce024f47f50b67dd0c0b519e84e3acfc622ba83b6163785fd45e9bb1aa0c72",
@@ -55,12 +58,14 @@
     "original_source_sha256": {
       "1.0": "0e4aadc96720917b46f5247cc5fbb1a9ab8ce4c6960cb435d12530b7421390a1",
       "1.1": "6e202742736a25121e2efffe58a335040c973911809bb5b414642034a60d75f5"
-    }
+    },
+    "completion_blockers": [],
+    "revalidation": "Fresh complete bounded reproducers on current committed runtime source.",
+    "no_behavior_change": true
   },
   "StructureStrongholdPieceWeight3": {
     "complete_delta_review": true,
-    "no_behavior_change": true,
-    "reason": "Only final is added to the class declaration; depth and weighting methods are unchanged.",
+    "reason": "class declaration becomes final only; Rust value type cannot be subclassed; unchanged weight predicate exercised by exact stronghold map/start graph",
     "rust_source_sha256": {
       "crates/worldgen11/src/structures/stronghold.rs": "a3de5f5c18c7994a1bb8a639d2cec00e51d68ab9b2560b5097fc9b855b11ee4c",
       "crates/worldgen11/src/structures/stronghold_generated.rs": "2bce024f47f50b67dd0c0b519e84e3acfc622ba83b6163785fd45e9bb1aa0c72",
@@ -70,7 +75,10 @@
     "original_source_sha256": {
       "1.0": "1f1362b880369f6851cd54871c732f949e82e7bb1f72e99f0a54a0b1b31f77e5",
       "1.1": "ac71b64a3a561a871a19224693765b70461ebb49b2ddea5446b4396a4eaf0e52"
-    }
+    },
+    "completion_blockers": [],
+    "revalidation": "Fresh complete bounded reproducers on current committed runtime source.",
+    "no_behavior_change": true
   },
   "StatTypeDistance": {
     "complete_delta_review": true,
@@ -82,7 +90,8 @@
     "original_source_sha256": {
       "1.0": "6635208c3aa955f34fa4e441d9868d74fdb1b90c572b137c872cde742e45f58f",
       "1.1": "7b0f76dae7b5eb5946866da2825725f1ef91012a717a6a775c323265e881139a"
-    }
+    },
+    "revalidation": "Current gameplay/settings/worldtype/biome/layer/flat/spawn/depthfog suite rerun; newly changed helpers are covered by additional direct original probes. No whole inherited class claim."
   },
   "StatTypeSimple": {
     "complete_delta_review": true,
@@ -94,7 +103,8 @@
     "original_source_sha256": {
       "1.0": "cebcfd9a604e1d319dec8be47b3b96f2babfbea9324484018809a1ddebccb839",
       "1.1": "512a3c2f5c3bb49f9cef401d81bc45337c5ffe85186ce24de07c441ec0f2664f"
-    }
+    },
+    "revalidation": "Current gameplay/settings/worldtype/biome/layer/flat/spawn/depthfog suite rerun; newly changed helpers are covered by additional direct original probes. No whole inherited class claim."
   },
   "StatTypeTime": {
     "complete_delta_review": true,
@@ -106,19 +116,21 @@
     "original_source_sha256": {
       "1.0": "d7197dcdefda84c3b0df3966c96c87cc9d5f564caf62da382dc523bf864d7184",
       "1.1": "abfee3662f6a373fd67cfcde3b300d87f03c22e70e8cfc065532539f7d63c536"
-    }
+    },
+    "revalidation": "Current gameplay/settings/worldtype/biome/layer/flat/spawn/depthfog suite rerun; newly changed helpers are covered by additional direct original probes. No whole inherited class claim."
   },
   "GameSettings": {
     "complete_delta_review": true,
     "reason": "The complete behavioral delta adds en_US language default, guarded lang: load and lang: save before key bindings. Particle and display-key identifiers are renames. Five freshly reproduced complete options.txt cases cover defaults, empty and missing values, extra colon, RTL and unknown locale.",
     "rust_source_sha256": {
       "crates/client11/src/gui/settings.rs": "61c01fb9f3e31ad343ce0391494c0ee14bbd0a2be2e4787392e1d0855f81da06",
-      "crates/client11/src/gui/font.rs": "a14dcd70058c704cdf8c2f52b90eddbbe5024245dd8f91482a4dd1bae6f6b55d"
+      "crates/client11/src/gui/font.rs": "3c12f5fe744ad3a79a05c8279d0813a635b7abc01214b3511de781065354f949"
     },
     "original_source_sha256": {
       "1.0": "74b0c1b662728cf3dd4f289db3d6c657c454814ae5ce6566cea78d06a19d6ff3",
       "1.1": "7846ff7172b58aa0a692c2be8d760201da1fcfe03c1166ee6f027cf1ab861ff9"
-    }
+    },
+    "revalidation": "Current gameplay/settings/worldtype/biome/layer/flat/spawn/depthfog suite rerun; newly changed helpers are covered by additional direct original probes. No whole inherited class claim."
   },
   "ItemMonsterPlacer": {
     "complete_delta_review": true,
@@ -156,7 +168,8 @@
       "old_sha256": null,
       "new_sha256": "a734d0ddcebcab44660c4c2e37d8f5d1e58f727df402ab64a01312fd8043f57b"
     },
-    "completion_blockers": []
+    "completion_blockers": [],
+    "revalidation": "Current gameplay/settings/worldtype/biome/layer/flat/spawn/depthfog suite rerun; newly changed helpers are covered by additional direct original probes. No whole inherited class claim."
   },
   "EntityList": {
     "complete_delta_review": true,
@@ -185,7 +198,8 @@
       "old_sha256": "b04a2096dada745ea99adfb69f6b7e2987adf9d2b9a89cf13594f859f421cbdc",
       "new_sha256": "5f4f4fae52b419c523c4d4aaa2fefea0d61186c67f34a66f65b804879f0391f4"
     },
-    "completion_blockers": []
+    "completion_blockers": [],
+    "revalidation": "Current gameplay/settings/worldtype/biome/layer/flat/spawn/depthfog suite rerun; newly changed helpers are covered by additional direct original probes. No whole inherited class claim."
   },
   "EntityEggInfo": {
     "complete_delta_review": true,
@@ -205,7 +219,8 @@
       "old_sha256": null,
       "new_sha256": "89c122ad0c55a49fd8ecb9efb3c276e8cadbd23d65843d6501693ef75b267ea3"
     },
-    "completion_blockers": []
+    "completion_blockers": [],
+    "revalidation": "Current gameplay/settings/worldtype/biome/layer/flat/spawn/depthfog suite rerun; newly changed helpers are covered by additional direct original probes. No whole inherited class claim."
   },
   "Enchantment": {
     "complete_delta_review": true,
@@ -225,7 +240,8 @@
       "old_sha256": "8ac1a21573b8815b55b5351ff6804ea3c0d3eed83b91e63a55b129f4e8f6770d",
       "new_sha256": "2e20a3c5c777017bd795b46d0fb0b81c6b430cfeea8e974710897f9ac5a77561"
     },
-    "completion_blockers": []
+    "completion_blockers": [],
+    "revalidation": "Current gameplay/settings/worldtype/biome/layer/flat/spawn/depthfog suite rerun; newly changed helpers are covered by additional direct original probes. No whole inherited class claim."
   },
   "EnumEnchantmentType": {
     "complete_delta_review": true,
@@ -245,7 +261,8 @@
       "old_sha256": "a7c3e543e03d3b610fc04a45f09f6081526211be0e98c204c44d6ab42bc98ff4",
       "new_sha256": "d4b75e742866d4aa11e9daa021b8a127bdc5af86363c879c96d0fbac70dd1485"
     },
-    "completion_blockers": []
+    "completion_blockers": [],
+    "revalidation": "Current gameplay/settings/worldtype/biome/layer/flat/spawn/depthfog suite rerun; newly changed helpers are covered by additional direct original probes. No whole inherited class claim."
   },
   "EnchantmentHelper": {
     "complete_delta_review": true,
@@ -269,7 +286,8 @@
       "old_sha256": "30df730732d97b39ee8f49330f757e0a5552da7db74c9f338cc607dc203df977",
       "new_sha256": "067c64b46de183660c8001b886e820841714e188089a8d557e529796a5004c9f"
     },
-    "completion_blockers": []
+    "completion_blockers": [],
+    "revalidation": "Current gameplay/settings/worldtype/biome/layer/flat/spawn/depthfog suite rerun; newly changed helpers are covered by additional direct original probes. No whole inherited class claim."
   },
   "ItemBow": {
     "complete_delta_review": true,
@@ -298,7 +316,8 @@
       "old_sha256": "de144d367fd6a49db7c4c01810bcf24f0c007fec936ecb9517400c27bcab7b71",
       "new_sha256": "ca60d72caf9117ca1e6d806a206a80fe329e4641203d38dc72b98bb36e825b4e"
     },
-    "completion_blockers": []
+    "completion_blockers": [],
+    "revalidation": "Current gameplay/settings/worldtype/biome/layer/flat/spawn/depthfog suite rerun; newly changed helpers are covered by additional direct original probes. No whole inherited class claim."
   },
   "EntityArrow": {
     "complete_delta_review": true,
@@ -327,7 +346,8 @@
       "old_sha256": "be91c017a37b7835e8b4bb05a200e6be44ed9f1cad92b987299dcfb50d15f7dc",
       "new_sha256": "e31cba0ad3ae15c020961c44431f8a299c5dc6d3e40d371dc175f1976d863507"
     },
-    "completion_blockers": []
+    "completion_blockers": [],
+    "revalidation": "Current gameplay/settings/worldtype/biome/layer/flat/spawn/depthfog suite rerun; newly changed helpers are covered by additional direct original probes. No whole inherited class claim."
   },
   "BlockLadder": {
     "complete_delta_review": true,
@@ -339,10 +359,10 @@
       }
     ],
     "rust_source_sha256": {
-      "crates/worldgen11/src/entity/blocks11.rs": "7b3b7d612592b367e47bc1ec3a9c20ea5769934f58a0e3d9a0efbf54606ef104",
+      "crates/worldgen11/src/entity/blocks11.rs": "35f21da564c6809b0f64016a3c8bcf544dd1ab37df6976c7e128c6ccafe49299",
       "crates/worldgen11/src/entity/blocks.rs": "f37f8c39e6509678187a6cb2002b28f49f9e0673929262547a004341111cc674",
       "crates/worldgen11/src/entity/physics.rs": "a55d97cebd8a5a3c8e565cae5ad8139b47fbedb5e0b57eaae64730afa91d27a6",
-      "crates/worldgen11/src/world/behavior.rs": "dc6d60fb0465f2d76248af964de79b1e0a7a1250116c1e0a622d3aee6ce700d0"
+      "crates/worldgen11/src/world/behavior.rs": "b99851685982ac611006adf2b8e1466abbd72585ce6aec447197b1875ad81d0c"
     },
     "original_source_sha256": {
       "old": "work/retromcp-1.0/minecraft/src/net/minecraft/src/BlockLadder.java",
@@ -350,7 +370,8 @@
       "old_sha256": "24d51aee014c0bb110a8b344523aa10b4cbfa161629c64d39c33e1ab1665ad9f",
       "new_sha256": "bef1193bb1556fb037df997340257b625a8497cc25580b9e6a6c08744ae91b3c"
     },
-    "completion_blockers": []
+    "completion_blockers": [],
+    "revalidation": "Current gameplay/settings/worldtype/biome/layer/flat/spawn/depthfog suite rerun; newly changed helpers are covered by additional direct original probes. No whole inherited class claim."
   },
   "BlockFarmland": {
     "complete_delta_review": true,
@@ -366,10 +387,10 @@
       }
     ],
     "rust_source_sha256": {
-      "crates/worldgen11/src/entity/blocks11.rs": "7b3b7d612592b367e47bc1ec3a9c20ea5769934f58a0e3d9a0efbf54606ef104",
+      "crates/worldgen11/src/entity/blocks11.rs": "35f21da564c6809b0f64016a3c8bcf544dd1ab37df6976c7e128c6ccafe49299",
       "crates/worldgen11/src/entity/blocks.rs": "f37f8c39e6509678187a6cb2002b28f49f9e0673929262547a004341111cc674",
       "crates/worldgen11/src/entity/physics.rs": "a55d97cebd8a5a3c8e565cae5ad8139b47fbedb5e0b57eaae64730afa91d27a6",
-      "crates/worldgen11/src/world/behavior.rs": "dc6d60fb0465f2d76248af964de79b1e0a7a1250116c1e0a622d3aee6ce700d0"
+      "crates/worldgen11/src/world/behavior.rs": "b99851685982ac611006adf2b8e1466abbd72585ce6aec447197b1875ad81d0c"
     },
     "original_source_sha256": {
       "old": "work/retromcp-1.0/minecraft/src/net/minecraft/src/BlockFarmland.java",
@@ -377,7 +398,8 @@
       "old_sha256": "2fd765c4608737f304571703d09d8e97835cac730f1b3efad40e4490ca409455",
       "new_sha256": "209e775b6f1d8715c13d502da91d551ed61c269ae6e45f11818c075a38b4bb65"
     },
-    "completion_blockers": []
+    "completion_blockers": [],
+    "revalidation": "Current gameplay/settings/worldtype/biome/layer/flat/spawn/depthfog suite rerun; newly changed helpers are covered by additional direct original probes. No whole inherited class claim."
   },
   "BlockFenceGate": {
     "complete_delta_review": true,
@@ -393,10 +415,10 @@
       }
     ],
     "rust_source_sha256": {
-      "crates/worldgen11/src/entity/blocks11.rs": "7b3b7d612592b367e47bc1ec3a9c20ea5769934f58a0e3d9a0efbf54606ef104",
+      "crates/worldgen11/src/entity/blocks11.rs": "35f21da564c6809b0f64016a3c8bcf544dd1ab37df6976c7e128c6ccafe49299",
       "crates/worldgen11/src/entity/blocks.rs": "f37f8c39e6509678187a6cb2002b28f49f9e0673929262547a004341111cc674",
       "crates/worldgen11/src/entity/physics.rs": "a55d97cebd8a5a3c8e565cae5ad8139b47fbedb5e0b57eaae64730afa91d27a6",
-      "crates/worldgen11/src/world/behavior.rs": "dc6d60fb0465f2d76248af964de79b1e0a7a1250116c1e0a622d3aee6ce700d0"
+      "crates/worldgen11/src/world/behavior.rs": "b99851685982ac611006adf2b8e1466abbd72585ce6aec447197b1875ad81d0c"
     },
     "original_source_sha256": {
       "old": "work/retromcp-1.0/minecraft/src/net/minecraft/src/BlockFenceGate.java",
@@ -404,7 +426,8 @@
       "old_sha256": "4aa185c28f7b2b67b50d5e2039563efe1a362add5fd59689eb0034c514769627",
       "new_sha256": "a62198f487dfa03191d0c03aa211af139d55ddb8d61e55aa3b955aa9970a16ff"
     },
-    "completion_blockers": []
+    "completion_blockers": [],
+    "revalidation": "Current gameplay/settings/worldtype/biome/layer/flat/spawn/depthfog suite rerun; newly changed helpers are covered by additional direct original probes. No whole inherited class claim."
   },
   "BlockDoor": {
     "complete_delta_review": true,
@@ -433,7 +456,8 @@
       "old_sha256": "5504a92b245f9115efee8830a23a3ce916c8f1d9458dcf89afac6746a182d34b",
       "new_sha256": "2de82dbcf137f8cc7a042f0b681f398670cba82ef5f922c0268131f597d9d7b2"
     },
-    "completion_blockers": []
+    "completion_blockers": [],
+    "revalidation": "Current gameplay/settings/worldtype/biome/layer/flat/spawn/depthfog suite rerun; newly changed helpers are covered by additional direct original probes. No whole inherited class claim."
   },
   "BlockRail": {
     "complete_delta_review": true,
@@ -445,11 +469,11 @@
       }
     ],
     "rust_source_sha256": {
-      "crates/worldgen11/src/entity/blocks11.rs": "7b3b7d612592b367e47bc1ec3a9c20ea5769934f58a0e3d9a0efbf54606ef104",
+      "crates/worldgen11/src/entity/blocks11.rs": "35f21da564c6809b0f64016a3c8bcf544dd1ab37df6976c7e128c6ccafe49299",
       "crates/worldgen11/src/entity/blocks.rs": "f37f8c39e6509678187a6cb2002b28f49f9e0673929262547a004341111cc674",
       "crates/worldgen11/src/entity/physics.rs": "a55d97cebd8a5a3c8e565cae5ad8139b47fbedb5e0b57eaae64730afa91d27a6",
-      "crates/worldgen11/src/world/behavior.rs": "dc6d60fb0465f2d76248af964de79b1e0a7a1250116c1e0a622d3aee6ce700d0",
-      "crates/worldgen11/src/world/rails.rs": "e974f99b62504b8041c27c446124842c336df3c56b380d58a487c71f514ddc43"
+      "crates/worldgen11/src/world/behavior.rs": "b99851685982ac611006adf2b8e1466abbd72585ce6aec447197b1875ad81d0c",
+      "crates/worldgen11/src/world/rails.rs": "21b62be9220db10409e519fc55fb112127d19eb49f6358bac2357f6bcf706c87"
     },
     "original_source_sha256": {
       "old": "work/retromcp-1.0/minecraft/src/net/minecraft/src/BlockRail.java",
@@ -457,7 +481,8 @@
       "old_sha256": "996f8f783bd1ff7192a17188ba668d0ea8ca1a3706dcc3b9fc5ca55251b5f646",
       "new_sha256": "fbb86c310e6ab83c1e244a6d8200b2850a92433f0dcaeded14153fdceb61fda4"
     },
-    "completion_blockers": []
+    "completion_blockers": [],
+    "revalidation": "Current gameplay/settings/worldtype/biome/layer/flat/spawn/depthfog suite rerun; newly changed helpers are covered by additional direct original probes. No whole inherited class claim."
   },
   "BlockRedstoneRepeater": {
     "complete_delta_review": true,
@@ -478,7 +503,8 @@
       "old_sha256": "1dd28e2dd5765193becd968dab7fae33ca36ddaa8d35ead032619339d914154b",
       "new_sha256": "0f7da5b6e032e4777fc44dc46dff85a4abc19c843c7d5fb8de4ca5e5a2f66831"
     },
-    "completion_blockers": []
+    "completion_blockers": [],
+    "revalidation": "Current gameplay/settings/worldtype/biome/layer/flat/spawn/depthfog suite rerun; newly changed helpers are covered by additional direct original probes. No whole inherited class claim."
   },
   "EntityMagmaCube": {
     "complete_delta_review": true,
@@ -494,7 +520,7 @@
       }
     ],
     "rust_source_sha256": {
-      "crates/worldgen11/src/entity/living.rs": "607b0b8ca26f3fe261198bfa1b83887bc0c77ca5e65e09092635847370a4aec2",
+      "crates/worldgen11/src/entity/living.rs": "bcc7aced336d073abf762c0ca08e17b5b12ab313dfb5229b1e635da3c34b0d0c",
       "crates/worldgen11/src/entity/sheep11.rs": "4e306a4be8bd72a2611c5f820664719a60b91aa07660ffc3deaf182f0f782fdb"
     },
     "original_source_sha256": {
@@ -503,7 +529,8 @@
       "old_sha256": "b1380deeb78c9f2eeade54f6d9effdeb3a5e785cd8b9e8f32ebe54769e2deb59",
       "new_sha256": "e473ca5bb225857718624dde61814b3c2a1384e6b3de7f92f42721e62d7ee7ce"
     },
-    "completion_blockers": []
+    "completion_blockers": [],
+    "revalidation": "Current gameplay/settings/worldtype/biome/layer/flat/spawn/depthfog suite rerun; newly changed helpers are covered by additional direct original probes. No whole inherited class claim."
   },
   "ContainerCreative": {
     "complete_delta_review": true,
@@ -524,7 +551,8 @@
       "old_sha256": "d0b867fdda6c1059bff61dd09b89443a4c3d01d4c75162ecc9c48952e9c21ab8",
       "new_sha256": "917efa252be6955d43bfba167f2b9d10fa4084dc85814d4483c78f158a4132b3"
     },
-    "completion_blockers": []
+    "completion_blockers": [],
+    "revalidation": "Current gameplay/settings/worldtype/biome/layer/flat/spawn/depthfog suite rerun; newly changed helpers are covered by additional direct original probes. No whole inherited class claim."
   },
   "SlotCrafting": {
     "complete_delta_review": true,
@@ -548,7 +576,8 @@
       "old_sha256": "579172ee614506fc93f02016674aa43118d3e2085915798a7ba476b7004ec530",
       "new_sha256": "741e9f2fee7de68052856d6174b48bf96b10184b0447a90717a99d2d12083cd0"
     },
-    "completion_blockers": []
+    "completion_blockers": [],
+    "revalidation": "Current gameplay/settings/worldtype/biome/layer/flat/spawn/depthfog suite rerun; newly changed helpers are covered by additional direct original probes. No whole inherited class claim."
   },
   "EnchantmentArrowDamage": {
     "complete_delta_review": true,
@@ -568,7 +597,8 @@
       "old_sha256": null,
       "new_sha256": "ea6852daabe004ad6436c2603fe0f4c5dfa9d6037cc1dc464e606f3c23552f02"
     },
-    "completion_blockers": []
+    "completion_blockers": [],
+    "revalidation": "Current gameplay/settings/worldtype/biome/layer/flat/spawn/depthfog suite rerun; newly changed helpers are covered by additional direct original probes. No whole inherited class claim."
   },
   "EnchantmentArrowKnockback": {
     "complete_delta_review": true,
@@ -588,7 +618,8 @@
       "old_sha256": null,
       "new_sha256": "21fc254c8747085721ef994a5c81cabbc4fbb3fddc9656d9a63c96775f04682e"
     },
-    "completion_blockers": []
+    "completion_blockers": [],
+    "revalidation": "Current gameplay/settings/worldtype/biome/layer/flat/spawn/depthfog suite rerun; newly changed helpers are covered by additional direct original probes. No whole inherited class claim."
   },
   "EnchantmentArrowFire": {
     "complete_delta_review": true,
@@ -608,7 +639,8 @@
       "old_sha256": null,
       "new_sha256": "4f060453a0bcba1313c04d29a0cea1812e6f4ec48630dc9a8905a81627f329fe"
     },
-    "completion_blockers": []
+    "completion_blockers": [],
+    "revalidation": "Current gameplay/settings/worldtype/biome/layer/flat/spawn/depthfog suite rerun; newly changed helpers are covered by additional direct original probes. No whole inherited class claim."
   },
   "EnchantmentArrowInfinite": {
     "complete_delta_review": true,
@@ -628,7 +660,8 @@
       "old_sha256": null,
       "new_sha256": "5cc49efd8a509103925e965d20fded1ebda44b187281657bf9f592663164bbd2"
     },
-    "completion_blockers": []
+    "completion_blockers": [],
+    "revalidation": "Current gameplay/settings/worldtype/biome/layer/flat/spawn/depthfog suite rerun; newly changed helpers are covered by additional direct original probes. No whole inherited class claim."
   },
   "BiomeGenBase": {
     "complete_delta_review": true,
@@ -643,7 +676,8 @@
       "1.0": "80f6c86081e95b7ef4f41445c535b166812569631de873005d88d93a9bc88250",
       "1.1": "39bae55fd0224c744482df9402d27abde6f3794de364539a115a3d68b6cbd1f8"
     },
-    "completion_blockers": []
+    "completion_blockers": [],
+    "revalidation": "Fresh complete bounded reproducers on current committed runtime source."
   },
   "BiomeGenBeach": {
     "complete_delta_review": true,
@@ -658,7 +692,8 @@
       "1.0": null,
       "1.1": "b0c1114131844f09cd310d94baaf76d8b8d20df953ff94b6f9801891b9c66095"
     },
-    "completion_blockers": []
+    "completion_blockers": [],
+    "revalidation": "Fresh complete bounded reproducers on current committed runtime source."
   },
   "BiomeGenSwamp": {
     "complete_delta_review": true,
@@ -673,7 +708,8 @@
       "1.0": "72acbf6a6b23b8aaf32932be3e52ce05a36d284a368aa42e1eb5b22f61dd183a",
       "1.1": "c112db01da1ec55a5708d02f03e2ccf17ebdc913a117f1d27f55368616fee333"
     },
-    "completion_blockers": []
+    "completion_blockers": [],
+    "revalidation": "Fresh complete bounded reproducers on current committed runtime source."
   },
   "ChunkProviderGenerate": {
     "complete_delta_review": true,
@@ -687,7 +723,8 @@
       "1.0": "94ae461b8315237d3394d2bff1a57f63aef14e17e2d0bf134a07e4328d02f0c5",
       "1.1": "69570251eac808193c1491f6f8c56e5bad3cca92667d9b79bc079f73bbb9a273"
     },
-    "completion_blockers": []
+    "completion_blockers": [],
+    "revalidation": "Fresh complete bounded reproducers on current committed runtime source."
   },
   "ComponentVillage": {
     "complete_delta_review": true,
@@ -702,7 +739,8 @@
       "1.0": "b6b02a150437cd424af8e358fdf334a291c4462461ce2b80374e92536b026988",
       "1.1": "355cd6438dc1748228d5bbf8c4849df02b72e87be8ef08f7795dd51249f5b42b"
     },
-    "completion_blockers": []
+    "completion_blockers": [],
+    "revalidation": "Fresh complete bounded reproducers on current committed runtime source."
   },
   "ComponentVillageHouse2": {
     "complete_delta_review": true,
@@ -717,7 +755,8 @@
       "1.0": "4d5e74e864fa86f105a5de87e8e1856dec29d48304690a2979b83d8ca6742e84",
       "1.1": "de11ea402759bcf55d90ff6e17f8b035d655a6a0a7ee5f4b6412216e4c8e0c61"
     },
-    "completion_blockers": []
+    "completion_blockers": [],
+    "revalidation": "Fresh complete bounded reproducers on current committed runtime source."
   },
   "EnumWorldType": {
     "complete_delta_review": true,
@@ -732,20 +771,22 @@
       "1.0": null,
       "1.1": "c88dcb94da5c7b055d389b179e9d814ba46da8b925cf5d8ba0a14b17c44a4dc5"
     },
-    "completion_blockers": []
+    "completion_blockers": [],
+    "revalidation": "Fresh complete bounded reproducers on current committed runtime source."
   },
   "GenLayer": {
     "complete_delta_review": true,
     "reason": "func_35497_a graph adds Hills before zoom, Shore and SwampRivers at prescribed stages and exact initialization; explicit graph four-output oracle, six rectangles/six seeds",
     "rust_source_sha256": {
-      "crates/worldgen11/src/genlayer.rs": "01f65e70c84445b405b4af359b4f7b80f3487340df683ab947430acad4404aa4",
+      "crates/worldgen11/src/genlayer.rs": "0afb744f6913b45d5f09755227960358244f22a7032fae0e938a4605d6afd03e",
       "crates/worldgen11/src/intcache.rs": "25dbd85fccde32040717022cb4bedc4ab35914ab92607ec7200dcd640c4598ff"
     },
     "original_source_sha256": {
       "1.0": "28fa33a43b18da7bd5ed512b59bf1a95d59404491818b11fddf9bfc6b7ed69da",
       "1.1": "46cf6904443dac0ce9be02b6f36aa28f459ed9e69a0addee874a0866a82ae3e9"
     },
-    "completion_blockers": []
+    "completion_blockers": [],
+    "revalidation": "Fresh complete bounded reproducers on current committed runtime source."
   },
   "MapGenVillage": {
     "complete_delta_review": true,
@@ -760,7 +801,8 @@
       "1.0": "ae1849fa51f335657d1b0888a472d5a9926c391b69a78ef5095e40b00ee2bde8",
       "1.1": "71ef0b2fc471be87933de4358486dfe21cb93b6ed1283650157de3de6bad3ae1"
     },
-    "completion_blockers": []
+    "completion_blockers": [],
+    "revalidation": "Fresh complete bounded reproducers on current committed runtime source."
   },
   "StructureBoundingBox": {
     "complete_delta_review": true,
@@ -773,7 +815,8 @@
       "1.0": "f22c18c3a5f9ca03ddc7a982dcde767dd9c8faf98935c9feda00cdb09c73272c",
       "1.1": "d7d8272a9302217c3ec5c55c8d207e899530396b503d2992776aec28ac82a10f"
     },
-    "completion_blockers": []
+    "completion_blockers": [],
+    "revalidation": "Fresh complete bounded reproducers on current committed runtime source."
   },
   "StructureVillageStart": {
     "complete_delta_review": true,
@@ -788,7 +831,8 @@
       "1.0": "1e461c657b41333aa2dd517d3fa21bacc193cc4af4d9a63a3b143971d7f02d69",
       "1.1": "841fee0593b71d811514b0bfc107e254fab7668fe92445cff9392acd9e376ac6"
     },
-    "completion_blockers": []
+    "completion_blockers": [],
+    "revalidation": "Fresh complete bounded reproducers on current committed runtime source."
   },
   "WorldChunkManager": {
     "complete_delta_review": true,
@@ -800,7 +844,8 @@
       "1.0": "9753f8e69f34c7a5155076eedbc54fb8a85cef7d1893e349a9bfc2abe71f297e",
       "1.1": "41a05fbca9e8ad82472c429d21671a5ae110321e5b3e2013b739418adb19da16"
     },
-    "completion_blockers": []
+    "completion_blockers": [],
+    "revalidation": "Fresh complete bounded reproducers on current committed runtime source."
   },
   "WorldChunkManagerHell": {
     "complete_delta_review": true,
@@ -812,7 +857,8 @@
       "1.0": "b83d1c1fef1656b4f499d44c5ec8d54fe00f763133808ac74fba0126f6b9a3e8",
       "1.1": "563424d715e0ace4a9efd4be25696bb0d276f07f9ad7a420a9a75ff95e6a04c2"
     },
-    "completion_blockers": []
+    "completion_blockers": [],
+    "revalidation": "Fresh complete bounded reproducers on current committed runtime source."
   },
   "World": {
     "complete_delta_review": true,
@@ -820,7 +866,7 @@
     "rust_source_sha256": {
       "crates/worldgen11/src/world/mod.rs": "bc6a6777e948aacb68e9581c38ae9b09358abe82af5aaafcb1a5afdebd44a162",
       "crates/worldgen11/src/world/dimension.rs": "178e1786a5e89cca4abbb710a97ceb8e1d34b54f91687d1e87387643e6cdcb95",
-      "crates/worldgen11/src/scenario.rs": "f2cd72d2c00e2f314ba93bcff85d635bf88240ebc61e2bc6f22c80baafe30d8a",
+      "crates/worldgen11/src/scenario.rs": "dd9dc0d569926752e679ef743db0b671d65941029a9e7e51062dc0d1d287cc95",
       "crates/worldgen11/src/world/spawn181.rs": "a6a6da75654fd6d99ebefc019505bc54b023289195f0dda284774cda48059e7c",
       "crates/worldgen11/src/entity/client_tick.rs": "8a31770c6435c0bf891330c3805d45ee10b345adbee34815a3bab1da8d97f61c"
     },
@@ -828,7 +874,8 @@
       "1.0": "8ba535e2cad6014b1f2168d5eeb7b566301f537056615aab3175a8b70b5e2008",
       "1.1": "4f6a58db1a476646e33cac0f43e58dbe75eb2ef85e12391cec5675a36ef4c270"
     },
-    "completion_blockers": []
+    "completion_blockers": [],
+    "revalidation": "Fresh complete bounded reproducers on current committed runtime source."
   },
   "WorldProvider": {
     "complete_delta_review": true,
@@ -836,7 +883,7 @@
     "rust_source_sha256": {
       "crates/worldgen11/src/world/mod.rs": "bc6a6777e948aacb68e9581c38ae9b09358abe82af5aaafcb1a5afdebd44a162",
       "crates/worldgen11/src/world/dimension.rs": "178e1786a5e89cca4abbb710a97ceb8e1d34b54f91687d1e87387643e6cdcb95",
-      "crates/worldgen11/src/scenario.rs": "f2cd72d2c00e2f314ba93bcff85d635bf88240ebc61e2bc6f22c80baafe30d8a",
+      "crates/worldgen11/src/scenario.rs": "dd9dc0d569926752e679ef743db0b671d65941029a9e7e51062dc0d1d287cc95",
       "crates/worldgen11/src/world/spawn181.rs": "a6a6da75654fd6d99ebefc019505bc54b023289195f0dda284774cda48059e7c",
       "crates/client11/src/render/player_view.rs": "9e688092f5b59b3955a3e8b4e1ffc4e922e89e1e9cf64270d849d22b927c64bc",
       "crates/client11/src/render/camera.rs": "cb5c8c785b36184dbfd9e7b827adbe70d7885fae8cf91085eba5d2cb2c451387",
@@ -846,7 +893,8 @@
       "1.0": "536c4683473312bd6571fc5b57e868b46cf7ee0a2d4c8efbb09517a61de027be",
       "1.1": "c22e161fecedbf3b8e76776973e7606728fd3ff73c42a465b71695cbb29c9530"
     },
-    "completion_blockers": []
+    "completion_blockers": [],
+    "revalidation": "Fresh complete bounded reproducers on current committed runtime source."
   },
   "WorldProviderEnd": {
     "complete_delta_review": true,
@@ -854,26 +902,210 @@
     "rust_source_sha256": {
       "crates/worldgen11/src/world/mod.rs": "bc6a6777e948aacb68e9581c38ae9b09358abe82af5aaafcb1a5afdebd44a162",
       "crates/worldgen11/src/world/dimension.rs": "178e1786a5e89cca4abbb710a97ceb8e1d34b54f91687d1e87387643e6cdcb95",
-      "crates/worldgen11/src/scenario.rs": "f2cd72d2c00e2f314ba93bcff85d635bf88240ebc61e2bc6f22c80baafe30d8a",
+      "crates/worldgen11/src/scenario.rs": "dd9dc0d569926752e679ef743db0b671d65941029a9e7e51062dc0d1d287cc95",
       "crates/worldgen11/src/world/spawn181.rs": "a6a6da75654fd6d99ebefc019505bc54b023289195f0dda284774cda48059e7c"
     },
     "original_source_sha256": {
       "1.0": "4239241a4b167f4edbe71a1b6d754dccefb14ec15409fb4da083de796e349a23",
       "1.1": "122101ebe9ba6571a4f00038fc7d5f4b1f584e1cc0b0ef7c0d11d97cc4594d9c"
     },
-    "completion_blockers": []
+    "completion_blockers": [],
+    "revalidation": "Fresh complete bounded reproducers on current committed runtime source."
   },
   "WorldSettings": {
     "complete_delta_review": true,
     "reason": "immutable fifth world type constructor argument and getter; original WorldInfo(settings) invokes getter, DEFAULT/FLAT creation/save/reopen compared",
     "rust_source_sha256": {
       "crates/worldgen11/src/entity/player/food.rs": "25e49a13266974a0fba43bf02f4739310137367389d42bec0c0c91ff980b9849",
-      "crates/worldgen11/src/scenario.rs": "f2cd72d2c00e2f314ba93bcff85d635bf88240ebc61e2bc6f22c80baafe30d8a"
+      "crates/worldgen11/src/scenario.rs": "dd9dc0d569926752e679ef743db0b671d65941029a9e7e51062dc0d1d287cc95"
     },
     "original_source_sha256": {
       "1.0": "667dcaa7a8c1f90b9cc76ff0b4b58d5d865d8e30a8d575a221767f044e523b20",
       "1.1": "92d1f67ec774d4709159975555567c40c5297e22713682606bf808c858f5210e"
     },
-    "completion_blockers": []
+    "completion_blockers": [],
+    "revalidation": "Fresh complete bounded reproducers on current committed runtime source."
+  },
+  "GenLayerHills": {
+    "complete_delta_review": true,
+    "reason": "Entire new/changed layer getInts constructor, parent offset, center/cardinal dispatch, wrapping coordinates and seed/RNG behavior covered by controlled original-parent vectors; private original RNG states compared.",
+    "rust_source_sha256": {
+      "crates/worldgen11/src/genlayer.rs": "0afb744f6913b45d5f09755227960358244f22a7032fae0e938a4605d6afd03e",
+      "crates/worldgen11/src/intcache.rs": "25dbd85fccde32040717022cb4bedc4ab35914ab92607ec7200dcd640c4598ff"
+    },
+    "original_source_sha256": {
+      "1.0": null,
+      "1.1": "70150c89f924b90fc1edfd00875acaae2ce2cfa1cb686c3d7a7a05dbddbf24a8"
+    },
+    "completion_blockers": [],
+    "revalidation": "Fresh complete bounded reproducers on current committed runtime source."
+  },
+  "GenLayerShore": {
+    "complete_delta_review": true,
+    "reason": "Entire new/changed layer getInts constructor, parent offset, center/cardinal dispatch, wrapping coordinates and seed/RNG behavior covered by controlled original-parent vectors; private original RNG states compared.",
+    "rust_source_sha256": {
+      "crates/worldgen11/src/genlayer.rs": "0afb744f6913b45d5f09755227960358244f22a7032fae0e938a4605d6afd03e",
+      "crates/worldgen11/src/intcache.rs": "25dbd85fccde32040717022cb4bedc4ab35914ab92607ec7200dcd640c4598ff"
+    },
+    "original_source_sha256": {
+      "1.0": "ed74e1cccda006b2d978e4174ea076ac1e5efc10b5db768a1d93af3891534072",
+      "1.1": "787da2e1dc8623de1e577c52080753897dc6532b0f4c5b0ef075461de637151b"
+    },
+    "completion_blockers": [],
+    "revalidation": "Fresh complete bounded reproducers on current committed runtime source."
+  },
+  "GenLayerSwampRivers": {
+    "complete_delta_review": true,
+    "reason": "Entire new/changed layer getInts constructor, parent offset, center/cardinal dispatch, wrapping coordinates and seed/RNG behavior covered by controlled original-parent vectors; private original RNG states compared.",
+    "rust_source_sha256": {
+      "crates/worldgen11/src/genlayer.rs": "0afb744f6913b45d5f09755227960358244f22a7032fae0e938a4605d6afd03e",
+      "crates/worldgen11/src/intcache.rs": "25dbd85fccde32040717022cb4bedc4ab35914ab92607ec7200dcd640c4598ff"
+    },
+    "original_source_sha256": {
+      "1.0": null,
+      "1.1": "296dfff7bfc0d77170c79d2a1e834277e5b29ece07523db2659fbd05214e3e95"
+    },
+    "completion_blockers": [],
+    "revalidation": "Fresh complete bounded reproducers on current committed runtime source."
+  },
+  "WorldInfo": {
+    "complete_delta_review": true,
+    "reason": "All generatorName read/default/fallback/settings/getter/save hunks previously checked in worldtype; new type field copy now compared through original WorldInfo copy constructor versus actual Rust dimension copy.",
+    "rust_source_sha256": {
+      "crates/worldgen11/src/storage.rs": "3c60d40d22db9b0dd5f66bb0f5b64fdccf2497faad9be833e366eccab9a24b46",
+      "crates/worldgen11/src/storage181.rs": "c53c48e218f045e183132cfac491d5f4a05f8c595085ee4e8e0b9b614c824b1d",
+      "crates/worldgen11/src/save_format_old181.rs": "f90fc8df865dc9da2aa633af593bb40a67b111e40ac9a9c3de52550cd66f42ed",
+      "crates/worldgen11/src/convert.rs": "3aa52a5916de569662a6ebe765b4e5e4a7f6ac7b7d1e62a0d58b0d0bf4a61482"
+    },
+    "original_source_sha256": {
+      "1.0": "9428dfd3f85e5aeccd2a14722e576b32aea76456b933b74e8c236d0597a97cca",
+      "1.1": "4b6272349d56f03261855b5837f299428ac3641f6333e8bfb75ba1a681c66f87"
+    },
+    "completion_blockers": [],
+    "revalidation": "Fresh complete bounded reproducers on current committed runtime source."
+  },
+  "WorldProviderHell": {
+    "complete_delta_review": true,
+    "reason": "Changed canCoordinateBeSpawn unconditional false now directly compared with original bytecode at five positive/negative/extreme coordinate pairs, unchanged raw RNG and zero loaded chunks across both world types and three seeds.",
+    "rust_source_sha256": {
+      "crates/worldgen11/src/world/mod.rs": "bc6a6777e948aacb68e9581c38ae9b09358abe82af5aaafcb1a5afdebd44a162",
+      "crates/worldgen11/src/world/dimension.rs": "178e1786a5e89cca4abbb710a97ceb8e1d34b54f91687d1e87387643e6cdcb95",
+      "crates/worldgen11/src/scenario.rs": "dd9dc0d569926752e679ef743db0b671d65941029a9e7e51062dc0d1d287cc95",
+      "crates/worldgen11/src/world/spawn181.rs": "a6a6da75654fd6d99ebefc019505bc54b023289195f0dda284774cda48059e7c"
+    },
+    "original_source_sha256": {
+      "1.0": "bac2d67cc33129fd1f2326b64d8ec23cd81b923a135bc98a632412c1f01d1694",
+      "1.1": "cd81191027f9780267588830338373c1f839c146053a926fe74b5b714df870fa"
+    },
+    "completion_blockers": [],
+    "revalidation": "Fresh complete bounded reproducers on current committed runtime source."
+  },
+  "TileEntityBrewingStand": {
+    "complete_delta_review": true,
+    "reason": "updateEntity starts new brew at400 rather than600 ticks; all other hunks are field/method/callee renames with unchanged instructions after symbol normalization.",
+    "rust_source_sha256": {
+      "crates/worldgen11/src/container/brewing.rs": "849c3a11c924f4ef529519f60e0a9d72a9d93daaaece1ebb4a837fd76ed06ee5"
+    },
+    "original_source_sha256": {
+      "1.0": "38c7dca42c49c9ac421312e32cbc174e86e5fcce854442b3c00c0f41b23e4918",
+      "1.1": "ccdbe8a28dd2500af6f237cf3bfa67f6d9160b18f4e69a065460378266bf8908"
+    },
+    "completion_blockers": [],
+    "direct_original_evidence": "Real original updateEntity timeline through402ticks: normal completion, ingredient swap, removal, NBT save/reload; compares stacks, brewTime, ingredientID, filledSlots, dirty callbacks, metadata notifications and World RNG."
+  },
+  "EntityCreeper": {
+    "complete_delta_review": true,
+    "reason": "Sole hunk: onDeath skeleton record nextInt(2) becomes nextInt(10).",
+    "rust_source_sha256": {
+      "crates/worldgen11/src/entity/living.rs": "bcc7aced336d073abf762c0ca08e17b5b12ab313dfb5229b1e635da3c34b0d0c"
+    },
+    "original_source_sha256": {
+      "1.0": "2fd0efe4d10ed0372c916a4f8f14400356db1f17bb85ad148321bb2c00c317a7",
+      "1.1": "e3a39ef187ff1f3e764b5aaed75c3e85dcc24370a279273d1d6a94db01edb77a"
+    },
+    "completion_blockers": [],
+    "direct_original_evidence": "Real onDeath with skeleton/zombie/generic sources, both world modes and200 seeds; ordered actual item drops plus Creeper and World RNG tails; all10 records observed."
+  },
+  "BlockDetectorRail": {
+    "complete_delta_review": true,
+    "reason": "Sole hunk: query box maxY becomes double(float(y+1)-.125), replacing double(y)+.25.",
+    "rust_source_sha256": {
+      "crates/worldgen11/src/world/rails.rs": "21b62be9220db10409e519fc55fb112127d19eb49f6358bac2357f6bcf706c87",
+      "crates/worldgen11/src/entity/blocks11.rs": "35f21da564c6809b0f64016a3c8bcf544dd1ab37df6976c7e128c6ccafe49299"
+    },
+    "original_source_sha256": {
+      "1.0": "55e03948cc82de02b30519469d21bd52892e3023db34c47ea2a3c11bf370139d",
+      "1.1": "e8754b44d966e34b114216a7a46b87254eb29a810dcabc5f43f2b8e093a61d31"
+    },
+    "completion_blockers": [],
+    "direct_original_evidence": "Original private setStateIfMinecartInteractsWithRail vs actual Rust update_detector_rail: eight height boundaries, on/off metadata, three float-sensitive coordinates; six exact AABB bits, metadata, pending ticks, RNG."
+  },
+  "BlockSnow": {
+    "complete_delta_review": true,
+    "reason": "canPlaceBlockAt accepts leaves regardless of opacity. Other hunk is World.entityJoinedWorld\u2192spawnEntityInWorld rename; inherited drop behavior unchanged.",
+    "rust_source_sha256": {
+      "crates/worldgen11/src/world/behavior.rs": "b99851685982ac611006adf2b8e1466abbd72585ce6aec447197b1875ad81d0c",
+      "crates/worldgen11/src/entity/blocks11.rs": "35f21da564c6809b0f64016a3c8bcf544dd1ab37df6976c7e128c6ccafe49299"
+    },
+    "original_source_sha256": {
+      "1.0": "51e10dadb831f6d153921228cbdfd76ed4fb6e8ae7c873f6bf85c7ac5f6c63b0",
+      "1.1": "3c5a0ed8d18380953ac625baffa83c487d60bd0f63ad0f1e180e5967f15c04db"
+    },
+    "completion_blockers": [],
+    "direct_original_evidence": "Real original support query and neighbor callback for10 support blocks and both leaves rendering opacity modes; placement boolean, removal block and RNG."
+  },
+  "BlockStem": {
+    "complete_delta_review": true,
+    "reason": "Mature fruit chooses dirt/grass/farmland and reads selected soil before target air. Remaining hunks rename fruitType, fertilizeStem and World spawn method with unchanged bodies.",
+    "rust_source_sha256": {
+      "crates/worldgen11/src/world/plants181.rs": "db2888448818848a96c135474d1e8b535f1cd04b1d960690f828921010d1850b",
+      "crates/worldgen11/src/entity/blocks11.rs": "35f21da564c6809b0f64016a3c8bcf544dd1ab37df6976c7e128c6ccafe49299"
+    },
+    "original_source_sha256": {
+      "1.0": "6c96c9fca91dbedca4e567cc30e120e4e70036821065b0fa5f5e31c27455d51c",
+      "1.1": "eec153d16d410916ddcea99e120362a3e7674e26eac8bd5a3d6f410fa3b79c39"
+    },
+    "completion_blockers": [],
+    "direct_original_evidence": "Real original updateTick for pumpkin/melon, five soils, existing adjacent fruit/no fruit,100 seeds; actual four neighboring resulting block IDs and World/passed RNG tails. Soil-before-air query order matched by source audit."
+  },
+  "BlockTrapDoor": {
+    "complete_delta_review": true,
+    "reason": "Sole hunk: neighbor power queried unconditionally after support logic; powered OR positive power provider OR changed0 invokes onPoweredBlockChange.",
+    "rust_source_sha256": {
+      "crates/worldgen11/src/world/blocks181.rs": "fdc5c44f8526f42b3a3430265719bc6fba31d0c0db1ef076b6e0543a8ab573b7",
+      "crates/worldgen11/src/entity/blocks11.rs": "35f21da564c6809b0f64016a3c8bcf544dd1ab37df6976c7e128c6ccafe49299"
+    },
+    "original_source_sha256": {
+      "1.0": "fcea1947140d3a0caf862dc89c52d2d27bca43a1ada76b53b59422464e34f5bb",
+      "1.1": "e07ced2dfe9ba3c5bdd9114163ad82515afcbb38c1e5f9cb28cb6a1416d53c81"
+    },
+    "completion_blockers": [],
+    "direct_original_evidence": "Real original neighbor callback for16 metadata, changed0/1/69/93/96, powered/unpowered and server/remote; final metadata, actual auxiliary event count and RNG."
+  },
+  "EntityWolf": {
+    "complete_delta_review": true,
+    "reason": "Only substantive hunk: onLivingUpdate shake initiation uses !world.multiplayerWorld instead of !isMultiplayerEntity. All remaining hunks rename state/accessors/callees; getVerticalFaceSpeed widens protected\u2192public without body change.",
+    "rust_source_sha256": {
+      "crates/worldgen11/src/entity/special.rs": "ac052da28275f1757c5cb18baedf86f8ab6f39fe1c58527a0af4c1f2b6c231ea"
+    },
+    "original_source_sha256": {
+      "1.0": "fc69c7a7f4a904b0353a63939505a3d82466c2334f6b0c15acaf93a77a2b7131",
+      "1.1": "d730fe75db36307479d1656da1f7aee52c7f0f3606e1f8485c087c9bf5fc9623"
+    },
+    "completion_blockers": [],
+    "direct_original_evidence": "Real original Wolf onLivingUpdate own body with inherited movement isolated: every boolean combination of world mode, shaking, active shake, path, onGround and legacy entity flag; shake state, raw float times, Entity/World RNG. Separate EntityLiving changed guards are not credited."
+  },
+  "Tessellator": {
+    "complete_delta_review": true,
+    "reason": "Sole source hunk masks each signed normal byte before packing; actual original setNormal, production pack_normal and Fixed.set_normal match 11,331 IEEE754 vectors.",
+    "rust_source_sha256": {
+      "crates/client11/src/render/entity/living.rs": "88668be065e5d147b7a1cc15bc0b6aff346306d5bfb6a9d191e0a63eea65eb13",
+      "crates/client11/src/render/entity/fixed.rs": "bfcea290482baf5c0487758170a2f5a21cbc96c6527b8cd78127df387adf578c",
+      "crates/client11/src/render/entity/object_check.rs": "26777f9937fe8f84e2aa3701eeb6b2432332e9741ff48b280d46b1329ae5f49a"
+    },
+    "original_source_sha256": {
+      "1.0": "220a7d516f3a99d01277e1bb202b63f3d8f96ba31229cb86b463fa0ac678cb97",
+      "1.1": "3c9e24468a73eae6c262a26075490c1e93b4ae19181016e13997a6b4e98a61fa"
+    }
   }
 }

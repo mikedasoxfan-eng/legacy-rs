@@ -299,7 +299,11 @@
       "notes": "Entire 1.1 changed delta credited; inherited unchanged behavior and final release gates remain separate.",
       "whole_class_verified": false,
       "completion_evidence": "tools/r11/completion-review.json",
-      "entire_1_1_delta_verified": true
+      "entire_1_1_delta_verified": true,
+      "completion_reason": "static singleton initializers: revised heights/climate and five new biome IDs16..20, exact names/colors/heights/climate and inherited dispatch",
+      "completion_evidence_sections": [
+        "biomes11 changed constants"
+      ]
     },
     {
       "class_name": "BiomeGenBeach",
@@ -343,7 +347,11 @@
       "notes": "Entire 1.1 changed delta credited; inherited unchanged behavior and final release gates remain separate.",
       "whole_class_verified": false,
       "completion_evidence": "tools/r11/completion-review.json",
-      "entire_1_1_delta_verified": true
+      "entire_1_1_delta_verified": true,
+      "completion_reason": "whole new constructor: creature clearing, sand top/filler, trees=-999, dead bushes/reeds/cacti=0",
+      "completion_evidence_sections": [
+        "biomes11 changed constants"
+      ]
     },
     {
       "class_name": "BiomeGenDesert",
@@ -659,7 +667,11 @@
       "notes": "Entire 1.1 changed delta credited; inherited unchanged behavior and final release gates remain separate.",
       "whole_class_verified": false,
       "completion_evidence": "tools/r11/completion-review.json",
-      "entire_1_1_delta_verified": true
+      "entire_1_1_delta_verified": true,
+      "completion_reason": "constructor waterColorMultiplier=14745518",
+      "completion_evidence_sections": [
+        "biomes11 changed constants"
+      ]
     },
     {
       "class_name": "BiomeGenTaiga",
@@ -1191,7 +1203,13 @@
         }
       ],
       "notes": "Bounded behavior audit imported; completion credit requires separate complete-delta review and source-pinned checks.",
-      "whole_class_verified": false
+      "whole_class_verified": false,
+      "entire_1_1_delta_verified": true,
+      "completion_reason": "Sole hunk: query box maxY becomes double(float(y+1)-.125), replacing double(y)+.25.",
+      "completion_evidence_sections": [
+        "gameplay11 original delta vectors",
+        "gameplay11 fixture authority"
+      ]
     },
     {
       "class_name": "BlockDirt",
@@ -1313,7 +1331,12 @@
       "notes": "Entire 1.1 changed delta credited; inherited unchanged behavior and final release gates remain separate.",
       "whole_class_verified": false,
       "completion_evidence": "tools/r11/completion-review.json",
-      "entire_1_1_delta_verified": true
+      "entire_1_1_delta_verified": true,
+      "completion_reason": "Every substantive1.0\u21921.1 hunk assigned below; method access/name changes alone have no existing-singleplayer behavior delta",
+      "completion_evidence_sections": [
+        "gameplay11 original delta vectors",
+        "gameplay11 fixture authority"
+      ]
     },
     {
       "class_name": "BlockDragonEgg",
@@ -1557,7 +1580,12 @@
       "notes": "Entire 1.1 changed delta credited; inherited unchanged behavior and final release gates remain separate.",
       "whole_class_verified": false,
       "completion_evidence": "tools/r11/completion-review.json",
-      "entire_1_1_delta_verified": true
+      "entire_1_1_delta_verified": true,
+      "completion_reason": "Every substantive1.0\u21921.1 hunk assigned below; method access/name changes alone have no existing-singleplayer behavior delta",
+      "completion_evidence_sections": [
+        "gameplay11 original delta vectors",
+        "gameplay11 fixture authority"
+      ]
     },
     {
       "class_name": "BlockFence",
@@ -1637,7 +1665,12 @@
       "notes": "Entire 1.1 changed delta credited; inherited unchanged behavior and final release gates remain separate.",
       "whole_class_verified": false,
       "completion_evidence": "tools/r11/completion-review.json",
-      "entire_1_1_delta_verified": true
+      "entire_1_1_delta_verified": true,
+      "completion_reason": "Every substantive1.0\u21921.1 hunk assigned below; method access/name changes alone have no existing-singleplayer behavior delta",
+      "completion_evidence_sections": [
+        "gameplay11 original delta vectors",
+        "gameplay11 fixture authority"
+      ]
     },
     {
       "class_name": "BlockFire",
@@ -2096,7 +2129,12 @@
       "notes": "Entire 1.1 changed delta credited; inherited unchanged behavior and final release gates remain separate.",
       "whole_class_verified": false,
       "completion_evidence": "tools/r11/completion-review.json",
-      "entire_1_1_delta_verified": true
+      "entire_1_1_delta_verified": true,
+      "completion_reason": "Every substantive1.0\u21921.1 hunk assigned below; method access/name changes alone have no existing-singleplayer behavior delta",
+      "completion_evidence_sections": [
+        "gameplay11 original delta vectors",
+        "gameplay11 fixture authority"
+      ]
     },
     {
       "class_name": "BlockLeaves",
@@ -2843,7 +2881,12 @@
       "notes": "Entire 1.1 changed delta credited; inherited unchanged behavior and final release gates remain separate.",
       "whole_class_verified": false,
       "completion_evidence": "tools/r11/completion-review.json",
-      "entire_1_1_delta_verified": true
+      "entire_1_1_delta_verified": true,
+      "completion_reason": "Every substantive1.0\u21921.1 hunk assigned below; method access/name changes alone have no existing-singleplayer behavior delta",
+      "completion_evidence_sections": [
+        "gameplay11 original delta vectors",
+        "gameplay11 fixture authority"
+      ]
     },
     {
       "class_name": "BlockRedstoneOre",
@@ -2945,7 +2988,12 @@
       "notes": "Entire 1.1 changed delta credited; inherited unchanged behavior and final release gates remain separate.",
       "whole_class_verified": false,
       "completion_evidence": "tools/r11/completion-review.json",
-      "entire_1_1_delta_verified": true
+      "entire_1_1_delta_verified": true,
+      "completion_reason": "Every substantive1.0\u21921.1 hunk assigned below; method access/name changes alone have no existing-singleplayer behavior delta",
+      "completion_evidence_sections": [
+        "gameplay11 original delta vectors",
+        "gameplay11 fixture authority"
+      ]
     },
     {
       "class_name": "BlockRedstoneTorch",
@@ -3213,7 +3261,13 @@
         }
       ],
       "notes": "Bounded behavior audit imported; completion credit requires separate complete-delta review and source-pinned checks.",
-      "whole_class_verified": false
+      "whole_class_verified": false,
+      "entire_1_1_delta_verified": true,
+      "completion_reason": "canPlaceBlockAt accepts leaves regardless of opacity. Other hunk is World.entityJoinedWorld\u2192spawnEntityInWorld rename; inherited drop behavior unchanged.",
+      "completion_evidence_sections": [
+        "gameplay11 original delta vectors",
+        "gameplay11 fixture authority"
+      ]
     },
     {
       "class_name": "BlockSnowBlock",
@@ -3367,7 +3421,13 @@
         }
       ],
       "notes": "Bounded behavior audit imported; completion credit requires separate complete-delta review and source-pinned checks.",
-      "whole_class_verified": false
+      "whole_class_verified": false,
+      "entire_1_1_delta_verified": true,
+      "completion_reason": "Mature fruit chooses dirt/grass/farmland and reads selected soil before target air. Remaining hunks rename fruitType, fertilizeStem and World spawn method with unchanged bodies.",
+      "completion_evidence_sections": [
+        "gameplay11 original delta vectors",
+        "gameplay11 fixture authority"
+      ]
     },
     {
       "class_name": "BlockStep",
@@ -3624,7 +3684,13 @@
         }
       ],
       "notes": "Bounded behavior audit imported; completion credit requires separate complete-delta review and source-pinned checks.",
-      "whole_class_verified": false
+      "whole_class_verified": false,
+      "entire_1_1_delta_verified": true,
+      "completion_reason": "Sole hunk: neighbor power queried unconditionally after support logic; powered OR positive power provider OR changed0 invokes onPoweredBlockChange.",
+      "completion_evidence_sections": [
+        "gameplay11 original delta vectors",
+        "gameplay11 fixture authority"
+      ]
     },
     {
       "class_name": "BlockVine",
@@ -4287,7 +4353,11 @@
       "notes": "Entire 1.1 changed delta credited; inherited unchanged behavior and final release gates remain separate.",
       "whole_class_verified": false,
       "completion_evidence": "tools/r11/completion-review.json",
-      "entire_1_1_delta_verified": true
+      "entire_1_1_delta_verified": true,
+      "completion_reason": "constructor MapGenVillage(0); remaining changes private field visibility, no terrain behavior change",
+      "completion_evidence_sections": [
+        "flat11 village layouts maps population"
+      ]
     },
     {
       "class_name": "ChunkProviderHell",
@@ -5321,7 +5391,11 @@
       "notes": "Entire 1.1 changed delta credited; inherited unchanged behavior and final release gates remain separate.",
       "whole_class_verified": false,
       "completion_evidence": "tools/r11/completion-review.json",
-      "entire_1_1_delta_verified": true
+      "entire_1_1_delta_verified": true,
+      "completion_reason": "getAverageGroundLevel clamps top-solid/liquid height to provider spawn height rather than64; both normal64 and flat4 generated pieces compared",
+      "completion_evidence_sections": [
+        "flat11 village layouts maps population"
+      ]
     },
     {
       "class_name": "ComponentVillageChurch",
@@ -5583,7 +5657,11 @@
       "notes": "Entire 1.1 changed delta credited; inherited unchanged behavior and final release gates remain separate.",
       "whole_class_verified": false,
       "completion_evidence": "tools/r11/completion-review.json",
-      "entire_1_1_delta_verified": true
+      "entire_1_1_delta_verified": true,
+      "completion_reason": "new hasMadeChest state; once-only clipped local(5,1,5) chest,3+nextInt(6), complete ordered13-entry weight/stack table; repeated clips and final chest inventory/RNG compared",
+      "completion_evidence_sections": [
+        "flat11 village layouts maps population"
+      ]
     },
     {
       "class_name": "ComponentVillageHouse3",
@@ -6071,7 +6149,12 @@
       "notes": "Entire 1.1 changed delta credited; inherited unchanged behavior and final release gates remain separate.",
       "whole_class_verified": false,
       "completion_evidence": "tools/r11/completion-review.json",
-      "entire_1_1_delta_verified": true
+      "entire_1_1_delta_verified": true,
+      "completion_reason": "Every substantive1.0\u21921.1 hunk assigned below; method access/name changes alone have no existing-singleplayer behavior delta",
+      "completion_evidence_sections": [
+        "gameplay11 original delta vectors",
+        "gameplay11 fixture authority"
+      ]
     },
     {
       "class_name": "ContainerDispenser",
@@ -6490,7 +6573,12 @@
       "notes": "Entire 1.1 changed delta credited; inherited unchanged behavior and final release gates remain separate.",
       "whole_class_verified": false,
       "completion_evidence": "tools/r11/completion-review.json",
-      "entire_1_1_delta_verified": true
+      "entire_1_1_delta_verified": true,
+      "completion_reason": "Every substantive1.0\u21921.1 hunk assigned below; method access/name changes alone have no existing-singleplayer behavior delta",
+      "completion_evidence_sections": [
+        "gameplay11 original delta vectors",
+        "gameplay11 fixture authority"
+      ]
     },
     {
       "class_name": "EnchantmentArrowDamage",
@@ -6536,7 +6624,12 @@
       "notes": "Entire 1.1 changed delta credited; inherited unchanged behavior and final release gates remain separate.",
       "whole_class_verified": false,
       "completion_evidence": "tools/r11/completion-review.json",
-      "entire_1_1_delta_verified": true
+      "entire_1_1_delta_verified": true,
+      "completion_reason": "Every substantive1.0\u21921.1 hunk assigned below; method access/name changes alone have no existing-singleplayer behavior delta",
+      "completion_evidence_sections": [
+        "gameplay11 original delta vectors",
+        "gameplay11 fixture authority"
+      ]
     },
     {
       "class_name": "EnchantmentArrowFire",
@@ -6582,7 +6675,12 @@
       "notes": "Entire 1.1 changed delta credited; inherited unchanged behavior and final release gates remain separate.",
       "whole_class_verified": false,
       "completion_evidence": "tools/r11/completion-review.json",
-      "entire_1_1_delta_verified": true
+      "entire_1_1_delta_verified": true,
+      "completion_reason": "Every substantive1.0\u21921.1 hunk assigned below; method access/name changes alone have no existing-singleplayer behavior delta",
+      "completion_evidence_sections": [
+        "gameplay11 original delta vectors",
+        "gameplay11 fixture authority"
+      ]
     },
     {
       "class_name": "EnchantmentArrowInfinite",
@@ -6628,7 +6726,12 @@
       "notes": "Entire 1.1 changed delta credited; inherited unchanged behavior and final release gates remain separate.",
       "whole_class_verified": false,
       "completion_evidence": "tools/r11/completion-review.json",
-      "entire_1_1_delta_verified": true
+      "entire_1_1_delta_verified": true,
+      "completion_reason": "Every substantive1.0\u21921.1 hunk assigned below; method access/name changes alone have no existing-singleplayer behavior delta",
+      "completion_evidence_sections": [
+        "gameplay11 original delta vectors",
+        "gameplay11 fixture authority"
+      ]
     },
     {
       "class_name": "EnchantmentArrowKnockback",
@@ -6674,7 +6777,12 @@
       "notes": "Entire 1.1 changed delta credited; inherited unchanged behavior and final release gates remain separate.",
       "whole_class_verified": false,
       "completion_evidence": "tools/r11/completion-review.json",
-      "entire_1_1_delta_verified": true
+      "entire_1_1_delta_verified": true,
+      "completion_reason": "Every substantive1.0\u21921.1 hunk assigned below; method access/name changes alone have no existing-singleplayer behavior delta",
+      "completion_evidence_sections": [
+        "gameplay11 original delta vectors",
+        "gameplay11 fixture authority"
+      ]
     },
     {
       "class_name": "EnchantmentDamage",
@@ -6867,7 +6975,12 @@
       "notes": "Entire 1.1 changed delta credited; inherited unchanged behavior and final release gates remain separate.",
       "whole_class_verified": false,
       "completion_evidence": "tools/r11/completion-review.json",
-      "entire_1_1_delta_verified": true
+      "entire_1_1_delta_verified": true,
+      "completion_reason": "Every substantive1.0\u21921.1 hunk assigned below; method access/name changes alone have no existing-singleplayer behavior delta",
+      "completion_evidence_sections": [
+        "gameplay11 original delta vectors",
+        "gameplay11 fixture authority"
+      ]
     },
     {
       "class_name": "EnchantmentKnockback",
@@ -7565,7 +7678,12 @@
       "notes": "Entire 1.1 changed delta credited; inherited unchanged behavior and final release gates remain separate.",
       "whole_class_verified": false,
       "completion_evidence": "tools/r11/completion-review.json",
-      "entire_1_1_delta_verified": true
+      "entire_1_1_delta_verified": true,
+      "completion_reason": "Every substantive1.0\u21921.1 hunk assigned below; method access/name changes alone have no existing-singleplayer behavior delta",
+      "completion_evidence_sections": [
+        "gameplay11 original delta vectors",
+        "gameplay11 fixture authority"
+      ]
     },
     {
       "class_name": "EntityAuraFX",
@@ -7994,7 +8112,13 @@
         }
       ],
       "notes": "Bounded behavior audit imported; completion credit requires separate complete-delta review and source-pinned checks.",
-      "whole_class_verified": false
+      "whole_class_verified": false,
+      "entire_1_1_delta_verified": true,
+      "completion_reason": "Sole hunk: onDeath skeleton record nextInt(2) becomes nextInt(10).",
+      "completion_evidence_sections": [
+        "gameplay11 original delta vectors",
+        "gameplay11 fixture authority"
+      ]
     },
     {
       "class_name": "EntityCrit2FX",
@@ -8073,7 +8197,9 @@
       "notes": "Entire 1.1 changed delta credited; inherited unchanged behavior and final release gates remain separate.",
       "whole_class_verified": false,
       "completion_evidence": "tools/r11/completion-review.json",
-      "entire_1_1_delta_verified": true
+      "entire_1_1_delta_verified": true,
+      "completion_reason": "Only damageSourceEntity visibility changes private to protected. Runtime field and methods are unchanged.",
+      "completion_evidence_sections": []
     },
     {
       "class_name": "EntityDamageSourceIndirect",
@@ -8329,7 +8455,12 @@
       "notes": "Entire 1.1 changed delta credited; inherited unchanged behavior and final release gates remain separate.",
       "whole_class_verified": false,
       "completion_evidence": "tools/r11/completion-review.json",
-      "entire_1_1_delta_verified": true
+      "entire_1_1_delta_verified": true,
+      "completion_reason": "Every substantive1.0\u21921.1 hunk assigned below; method access/name changes alone have no existing-singleplayer behavior delta",
+      "completion_evidence_sections": [
+        "gameplay11 original delta vectors",
+        "gameplay11 fixture authority"
+      ]
     },
     {
       "class_name": "EntityEnchantmentTableParticleFX",
@@ -8945,7 +9076,12 @@
       "notes": "Entire 1.1 changed delta credited; inherited unchanged behavior and final release gates remain separate.",
       "whole_class_verified": false,
       "completion_evidence": "tools/r11/completion-review.json",
-      "entire_1_1_delta_verified": true
+      "entire_1_1_delta_verified": true,
+      "completion_reason": "Every substantive1.0\u21921.1 hunk assigned below; method access/name changes alone have no existing-singleplayer behavior delta",
+      "completion_evidence_sections": [
+        "gameplay11 original delta vectors",
+        "gameplay11 fixture authority"
+      ]
     },
     {
       "class_name": "EntityLiving",
@@ -9106,7 +9242,12 @@
       "notes": "Entire 1.1 changed delta credited; inherited unchanged behavior and final release gates remain separate.",
       "whole_class_verified": false,
       "completion_evidence": "tools/r11/completion-review.json",
-      "entire_1_1_delta_verified": true
+      "entire_1_1_delta_verified": true,
+      "completion_reason": "Every substantive1.0\u21921.1 hunk assigned below; method access/name changes alone have no existing-singleplayer behavior delta",
+      "completion_evidence_sections": [
+        "gameplay11 original delta vectors",
+        "gameplay11 fixture authority"
+      ]
     },
     {
       "class_name": "EntityMinecart",
@@ -10460,7 +10601,13 @@
         }
       ],
       "notes": "Bounded behavior audit imported; completion credit requires separate complete-delta review and source-pinned checks.",
-      "whole_class_verified": false
+      "whole_class_verified": false,
+      "entire_1_1_delta_verified": true,
+      "completion_reason": "Only substantive hunk: onLivingUpdate shake initiation uses !world.multiplayerWorld instead of !isMultiplayerEntity. All remaining hunks rename state/accessors/callees; getVerticalFaceSpeed widens protected\u2192public without body change.",
+      "completion_evidence_sections": [
+        "gameplay11 original delta vectors",
+        "gameplay11 fixture authority"
+      ]
     },
     {
       "class_name": "EntityXPOrb",
@@ -10716,7 +10863,12 @@
       "notes": "Entire 1.1 changed delta credited; inherited unchanged behavior and final release gates remain separate.",
       "whole_class_verified": false,
       "completion_evidence": "tools/r11/completion-review.json",
-      "entire_1_1_delta_verified": true
+      "entire_1_1_delta_verified": true,
+      "completion_reason": "Every substantive1.0\u21921.1 hunk assigned below; method access/name changes alone have no existing-singleplayer behavior delta",
+      "completion_evidence_sections": [
+        "gameplay11 original delta vectors",
+        "gameplay11 fixture authority"
+      ]
     },
     {
       "class_name": "EnumJsonNodeType",
@@ -10969,7 +11121,11 @@
       "notes": "Entire 1.1 changed delta credited; inherited unchanged behavior and final release gates remain separate.",
       "whole_class_verified": false,
       "completion_evidence": "tools/r11/completion-review.json",
-      "entire_1_1_delta_verified": true
+      "entire_1_1_delta_verified": true,
+      "completion_reason": "whole new enum: DEFAULT/FLAT values, exact case-sensitive saved-name parsing, nullable unknown, generator.default/generator.flat translation keys",
+      "completion_evidence_sections": [
+        "worldtype11 names settings and saves"
+      ]
     },
     {
       "class_name": "Explosion",
@@ -11154,7 +11310,11 @@
       "notes": "Entire 1.1 changed delta credited; inherited unchanged behavior and final release gates remain separate.",
       "whole_class_verified": false,
       "completion_evidence": "tools/r11/completion-review.json",
-      "entire_1_1_delta_verified": true
+      "entire_1_1_delta_verified": true,
+      "completion_reason": "The complete behavioral delta adds en_US language default, guarded lang: load and lang: save before key bindings. Particle and display-key identifiers are renames. Five freshly reproduced complete options.txt cases cover defaults, empty and missing values, extra colon, RTL and unknown locale.",
+      "completion_evidence_sections": [
+        "settings11 language persistence"
+      ]
     },
     {
       "class_name": "GameWindowListener",
@@ -11212,7 +11372,11 @@
       "notes": "Entire 1.1 changed delta credited; inherited unchanged behavior and final release gates remain separate.",
       "whole_class_verified": false,
       "completion_evidence": "tools/r11/completion-review.json",
-      "entire_1_1_delta_verified": true
+      "entire_1_1_delta_verified": true,
+      "completion_reason": "func_35497_a graph adds Hills before zoom, Shore and SwampRivers at prescribed stages and exact initialization; explicit graph four-output oracle, six rectangles/six seeds",
+      "completion_evidence_sections": [
+        "layer11 graph and fixed manager"
+      ]
     },
     {
       "class_name": "GenLayerDownfall",
@@ -11334,7 +11498,13 @@
         }
       ],
       "notes": "Bounded behavior audit imported; completion credit requires separate complete-delta review and source-pinned checks.",
-      "whole_class_verified": false
+      "whole_class_verified": false,
+      "entire_1_1_delta_verified": true,
+      "completion_reason": "Entire new/changed layer getInts constructor, parent offset, center/cardinal dispatch, wrapping coordinates and seed/RNG behavior covered by controlled original-parent vectors; private original RNG states compared.",
+      "completion_evidence_sections": [
+        "layer11 neighborhood boundaries",
+        "layer11 graph and fixed manager"
+      ]
     },
     {
       "class_name": "GenLayerIsland",
@@ -11579,7 +11749,13 @@
         }
       ],
       "notes": "Bounded behavior audit imported; completion credit requires separate complete-delta review and source-pinned checks.",
-      "whole_class_verified": false
+      "whole_class_verified": false,
+      "entire_1_1_delta_verified": true,
+      "completion_reason": "Entire new/changed layer getInts constructor, parent offset, center/cardinal dispatch, wrapping coordinates and seed/RNG behavior covered by controlled original-parent vectors; private original RNG states compared.",
+      "completion_evidence_sections": [
+        "layer11 neighborhood boundaries",
+        "layer11 graph and fixed manager"
+      ]
     },
     {
       "class_name": "GenLayerSmooth",
@@ -11742,7 +11918,13 @@
         }
       ],
       "notes": "Bounded behavior audit imported; completion credit requires separate complete-delta review and source-pinned checks.",
-      "whole_class_verified": false
+      "whole_class_verified": false,
+      "entire_1_1_delta_verified": true,
+      "completion_reason": "Entire new/changed layer getInts constructor, parent offset, center/cardinal dispatch, wrapping coordinates and seed/RNG behavior covered by controlled original-parent vectors; private original RNG states compared.",
+      "completion_evidence_sections": [
+        "layer11 neighborhood boundaries",
+        "layer11 graph and fixed manager"
+      ]
     },
     {
       "class_name": "GenLayerTemperature",
@@ -13928,7 +14110,12 @@
       "notes": "Entire 1.1 changed delta credited; inherited unchanged behavior and final release gates remain separate.",
       "whole_class_verified": false,
       "completion_evidence": "tools/r11/completion-review.json",
-      "entire_1_1_delta_verified": true
+      "entire_1_1_delta_verified": true,
+      "completion_reason": "Every substantive1.0\u21921.1 hunk assigned below; method access/name changes alone have no existing-singleplayer behavior delta",
+      "completion_evidence_sections": [
+        "gameplay11 original delta vectors",
+        "gameplay11 fixture authority"
+      ]
     },
     {
       "class_name": "ItemBucket",
@@ -14810,7 +14997,12 @@
       "notes": "Entire 1.1 changed delta credited; inherited unchanged behavior and final release gates remain separate.",
       "whole_class_verified": false,
       "completion_evidence": "tools/r11/completion-review.json",
-      "entire_1_1_delta_verified": true
+      "entire_1_1_delta_verified": true,
+      "completion_reason": "Every substantive1.0\u21921.1 hunk assigned below; method access/name changes alone have no existing-singleplayer behavior delta",
+      "completion_evidence_sections": [
+        "gameplay11 original delta vectors",
+        "gameplay11 fixture authority"
+      ]
     },
     {
       "class_name": "ItemPainting",
@@ -16754,7 +16946,9 @@
       "notes": "Entire 1.1 changed delta credited; inherited unchanged behavior and final release gates remain separate.",
       "whole_class_verified": false,
       "completion_evidence": "tools/r11/completion-review.json",
-      "entire_1_1_delta_verified": true
+      "entire_1_1_delta_verified": true,
+      "completion_reason": "recursiveGenerate consumes same nextInt now assigned to unused local; map scans compare scan/start order and final RNG, no runtime delta beyond local declaration",
+      "completion_evidence_sections": []
     },
     {
       "class_name": "MapGenVillage",
@@ -16796,7 +16990,11 @@
       "notes": "Entire 1.1 changed delta credited; inherited unchanged behavior and final release gates remain separate.",
       "whole_class_verified": false,
       "completion_evidence": "tools/r11/completion-review.json",
-      "entire_1_1_delta_verified": true
+      "entire_1_1_delta_verified": true,
+      "completion_reason": "explicit constructor size stored and propagated into StructureVillageStart; size0 normal/size1 flat exact layout/map/block/RNG fixtures",
+      "completion_evidence_sections": [
+        "flat11 village layouts maps population"
+      ]
     },
     {
       "class_name": "MapGenWaterlily",
@@ -17015,7 +17213,9 @@
       "notes": "Entire 1.1 changed delta credited; inherited unchanged behavior and final release gates remain separate.",
       "whole_class_verified": false,
       "completion_evidence": "tools/r11/completion-review.json",
-      "entire_1_1_delta_verified": true
+      "entire_1_1_delta_verified": true,
+      "completion_reason": "Only final is added to the class declaration. Method bodies, material initialization and runtime dispatch are unchanged.",
+      "completion_evidence_sections": []
     },
     {
       "class_name": "MathHelper",
@@ -21434,7 +21634,12 @@
       "notes": "Entire 1.1 changed delta credited; inherited unchanged behavior and final release gates remain separate.",
       "whole_class_verified": false,
       "completion_evidence": "tools/r11/completion-review.json",
-      "entire_1_1_delta_verified": true
+      "entire_1_1_delta_verified": true,
+      "completion_reason": "Every substantive1.0\u21921.1 hunk assigned below; method access/name changes alone have no existing-singleplayer behavior delta",
+      "completion_evidence_sections": [
+        "gameplay11 original delta vectors",
+        "gameplay11 fixture authority"
+      ]
     },
     {
       "class_name": "SlotEnchantment",
@@ -21794,7 +21999,9 @@
       "notes": "Entire 1.1 changed delta credited; inherited unchanged behavior and final release gates remain separate.",
       "whole_class_verified": false,
       "completion_evidence": "tools/r11/completion-review.json",
-      "entire_1_1_delta_verified": true
+      "entire_1_1_delta_verified": true,
+      "completion_reason": "Only final is added to the class declaration; formatting body is unchanged.",
+      "completion_evidence_sections": []
     },
     {
       "class_name": "StatTypeSimple",
@@ -21813,7 +22020,9 @@
       "notes": "Entire 1.1 changed delta credited; inherited unchanged behavior and final release gates remain separate.",
       "whole_class_verified": false,
       "completion_evidence": "tools/r11/completion-review.json",
-      "entire_1_1_delta_verified": true
+      "entire_1_1_delta_verified": true,
+      "completion_reason": "Only final is added to the class declaration; formatting body is unchanged.",
+      "completion_evidence_sections": []
     },
     {
       "class_name": "StatTypeTime",
@@ -21832,7 +22041,9 @@
       "notes": "Entire 1.1 changed delta credited; inherited unchanged behavior and final release gates remain separate.",
       "whole_class_verified": false,
       "completion_evidence": "tools/r11/completion-review.json",
-      "entire_1_1_delta_verified": true
+      "entire_1_1_delta_verified": true,
+      "completion_reason": "Only final is added to the class declaration; formatting body is unchanged.",
+      "completion_evidence_sections": []
     },
     {
       "class_name": "StatsSyncher",
@@ -22005,7 +22216,11 @@
       "notes": "Entire 1.1 changed delta credited; inherited unchanged behavior and final release gates remain separate.",
       "whole_class_verified": false,
       "completion_evidence": "tools/r11/completion-review.json",
-      "entire_1_1_delta_verified": true
+      "entire_1_1_delta_verified": true,
+      "completion_reason": "four-int constructor y range1..512 rather than0..65536; original flat well clipping distinguishes y0; literal constructor bounds plus boundary unit",
+      "completion_evidence_sections": [
+        "flat11 village layouts maps population"
+      ]
     },
     {
       "class_name": "StructureComponent",
@@ -22299,7 +22514,9 @@
       "notes": "Entire 1.1 changed delta credited; inherited unchanged behavior and final release gates remain separate.",
       "whole_class_verified": false,
       "completion_evidence": "tools/r11/completion-review.json",
-      "entire_1_1_delta_verified": true
+      "entire_1_1_delta_verified": true,
+      "completion_reason": "class declaration becomes final only; Rust value type cannot be subclassed; unchanged weight predicate exercised by exact stronghold map/start graph",
+      "completion_evidence_sections": []
     },
     {
       "class_name": "StructureStrongholdPieceWeight3",
@@ -22341,7 +22558,9 @@
       "notes": "Entire 1.1 changed delta credited; inherited unchanged behavior and final release gates remain separate.",
       "whole_class_verified": false,
       "completion_evidence": "tools/r11/completion-review.json",
-      "entire_1_1_delta_verified": true
+      "entire_1_1_delta_verified": true,
+      "completion_reason": "class declaration becomes final only; Rust value type cannot be subclassed; unchanged weight predicate exercised by exact stronghold map/start graph",
+      "completion_evidence_sections": []
     },
     {
       "class_name": "StructureStrongholdPieces",
@@ -22491,7 +22710,11 @@
       "notes": "Entire 1.1 changed delta credited; inherited unchanged behavior and final release gates remain separate.",
       "whole_class_verified": false,
       "completion_evidence": "tools/r11/completion-review.json",
-      "entire_1_1_delta_verified": true
+      "entire_1_1_delta_verified": true,
+      "completion_reason": "constructor accepts village size and passes through weighted pieces/start; downstream same traversal; size0/1 exact component graph/layout/map/RNG",
+      "completion_evidence_sections": [
+        "flat11 village layouts maps population"
+      ]
     },
     {
       "class_name": "Teleporter",
@@ -22539,7 +22762,13 @@
       "reason": "",
       "rust_files": [],
       "behaviors": [],
-      "notes": ""
+      "notes": "",
+      "entire_1_1_delta_verified": true,
+      "whole_class_verified": false,
+      "completion_reason": "Sole source hunk masks each signed normal byte before packing; actual original setNormal, production pack_normal and Fixed.set_normal match 11,331 IEEE754 vectors.",
+      "completion_evidence_sections": [
+        "tessellator11 packed normal bytes"
+      ]
     },
     {
       "class_name": "TextureCompassFX",
@@ -23087,7 +23316,13 @@
         }
       ],
       "notes": "Bounded behavior audit imported; completion credit requires separate complete-delta review and source-pinned checks.",
-      "whole_class_verified": false
+      "whole_class_verified": false,
+      "entire_1_1_delta_verified": true,
+      "completion_reason": "updateEntity starts new brew at400 rather than600 ticks; all other hunks are field/method/callee renames with unchanged instructions after symbol normalization.",
+      "completion_evidence_sections": [
+        "gameplay11 original delta vectors",
+        "gameplay11 fixture authority"
+      ]
     },
     {
       "class_name": "TileEntityChest",
@@ -23604,7 +23839,13 @@
       "notes": "Entire 1.1 changed delta credited; inherited unchanged behavior and final release gates remain separate.",
       "whole_class_verified": false,
       "completion_evidence": "tools/r11/completion-review.json",
-      "entire_1_1_delta_verified": true
+      "entire_1_1_delta_verified": true,
+      "completion_reason": "changed getInitialSpawnLocation provider-height queries and nonrespawn spawn height; randomDisplayUpdates air/RNG/depthfog ordering; new horizon0/63 getter; all changes covered by spawn/depthfog/provider matrices",
+      "completion_evidence_sections": [
+        "spawn11 initial repair and reopen",
+        "depthfog11 events and RNG",
+        "worldtype11 names settings and saves"
+      ]
     },
     {
       "class_name": "WorldBlockPositionType",
@@ -23659,7 +23900,11 @@
       "notes": "Entire 1.1 changed delta credited; inherited unchanged behavior and final release gates remain separate.",
       "whole_class_verified": false,
       "completion_evidence": "tools/r11/completion-review.json",
-      "entire_1_1_delta_verified": true
+      "entire_1_1_delta_verified": true,
+      "completion_reason": "getBiomesToSpawnIn ordered list now Forest,Plains,Taiga,TaigaHills,ForestHills; changed list drives original six-seed normal spawn selection and complete query traces",
+      "completion_evidence_sections": [
+        "spawn11 initial repair and reopen"
+      ]
     },
     {
       "class_name": "WorldChunkManagerHell",
@@ -23712,7 +23957,11 @@
       "notes": "Entire 1.1 changed delta credited; inherited unchanged behavior and final release gates remain separate.",
       "whole_class_verified": false,
       "completion_evidence": "tools/r11/completion-review.json",
-      "entire_1_1_delta_verified": true
+      "entire_1_1_delta_verified": true,
+      "completion_reason": "new func_35557_b generation-biome array override fills fixed biome prefix and preserves oversized reused tail; original fixed manager six-seed full arrays/scalars/search/RNG",
+      "completion_evidence_sections": [
+        "layer11 graph and fixed manager"
+      ]
     },
     {
       "class_name": "WorldClient",
@@ -24353,7 +24602,13 @@
         }
       ],
       "notes": "Bounded behavior audit imported; completion credit requires separate complete-delta review and source-pinned checks.",
-      "whole_class_verified": false
+      "whole_class_verified": false,
+      "entire_1_1_delta_verified": true,
+      "completion_reason": "All generatorName read/default/fallback/settings/getter/save hunks previously checked in worldtype; new type field copy now compared through original WorldInfo copy constructor versus actual Rust dimension copy.",
+      "completion_evidence_sections": [
+        "dimension11 native and crossloaded saves",
+        "worldtype11 names settings and saves"
+      ]
     },
     {
       "class_name": "WorldProvider",
@@ -24430,7 +24685,13 @@
       "notes": "Entire 1.1 changed delta credited; inherited unchanged behavior and final release gates remain separate.",
       "whole_class_verified": false,
       "completion_evidence": "tools/r11/completion-review.json",
-      "entire_1_1_delta_verified": true
+      "entire_1_1_delta_verified": true,
+      "completion_reason": "new cached world type; flat fixedPlains manager/Flat provider vs default manager/Generate; new spawn-height/depthfog/void-factor scalars; direct fixed-manager/raw-flat/actual-flat probes and six-context scalar matrix",
+      "completion_evidence_sections": [
+        "layer11 graph and fixed manager",
+        "flat11 village layouts maps population",
+        "worldtype11 names settings and saves"
+      ]
     },
     {
       "class_name": "WorldProviderEnd",
@@ -24475,7 +24736,12 @@
       "notes": "Entire 1.1 changed delta credited; inherited unchanged behavior and final release gates remain separate.",
       "whole_class_verified": false,
       "completion_evidence": "tools/r11/completion-review.json",
-      "entire_1_1_delta_verified": true
+      "entire_1_1_delta_verified": true,
+      "completion_reason": "new func_46066_g returns50; scalar matrix and nonrespawn initial-spawn traces; entrance getter only renamed, no new runtime behavior",
+      "completion_evidence_sections": [
+        "worldtype11 names settings and saves",
+        "spawn11 initial repair and reopen"
+      ]
     },
     {
       "class_name": "WorldProviderHell",
@@ -24516,7 +24782,13 @@
         }
       ],
       "notes": "Bounded behavior audit imported; completion credit requires separate complete-delta review and source-pinned checks.",
-      "whole_class_verified": false
+      "whole_class_verified": false,
+      "entire_1_1_delta_verified": true,
+      "completion_reason": "Changed canCoordinateBeSpawn unconditional false now directly compared with original bytecode at five positive/negative/extreme coordinate pairs, unchanged raw RNG and zero loaded chunks across both world types and three seeds.",
+      "completion_evidence_sections": [
+        "dimension11 native and crossloaded saves",
+        "worldtype11 names settings and saves"
+      ]
     },
     {
       "class_name": "WorldProviderSurface",
@@ -24636,7 +24908,11 @@
       "notes": "Entire 1.1 changed delta credited; inherited unchanged behavior and final release gates remain separate.",
       "whole_class_verified": false,
       "completion_evidence": "tools/r11/completion-review.json",
-      "entire_1_1_delta_verified": true
+      "entire_1_1_delta_verified": true,
+      "completion_reason": "immutable fifth world type constructor argument and getter; original WorldInfo(settings) invokes getter, DEFAULT/FLAT creation/save/reopen compared",
+      "completion_evidence_sections": [
+        "worldtype11 names settings and saves"
+      ]
     },
     {
       "class_name": "Packet27Position",

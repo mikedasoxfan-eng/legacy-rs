@@ -1,27 +1,27 @@
 [
   {
     "case": "",
-    "sha256": "33e8ec8d42da40485f930ab9fdd946023fedb387724c311cb7da8f8c2c56a3dd",
-    "bytes": 532
+    "bytes": 532,
+    "sha256": "33e8ec8d42da40485f930ab9fdd946023fedb387724c311cb7da8f8c2c56a3dd"
   },
   {
     "case": "lang:he_IL\nlang:\n",
-    "sha256": "9788c15bbd080f21c585a068c75838f0d2f304866894394d5b2860dd41b1e4f1",
-    "bytes": 532
+    "bytes": 532,
+    "sha256": "9788c15bbd080f21c585a068c75838f0d2f304866894394d5b2860dd41b1e4f1"
   },
   {
     "case": "lang:ja_JP:ignored\n",
-    "sha256": "dc6c0f438cc04b51415c479159c74ba1db657d3715ccb0340a1330e4c60f6038",
-    "bytes": 532
+    "bytes": 532,
+    "sha256": "dc6c0f438cc04b51415c479159c74ba1db657d3715ccb0340a1330e4c60f6038"
   },
   {
     "case": "lang:\nlang\nlang:ar_SA\n",
-    "sha256": "812013b6e641b32077b8a4afd56584ab0769dfd9995c7d2a073cd11452ac07da",
-    "bytes": 532
+    "bytes": 532,
+    "sha256": "812013b6e641b32077b8a4afd56584ab0769dfd9995c7d2a073cd11452ac07da"
   },
   {
     "case": "lang:made_up\n",
-    "sha256": "431411f140c398c222391ffa5165cb013c1e8ed3f0f486213704d41859f7f0d2",
-    "bytes": 534
+    "bytes": 534,
+    "sha256": "431411f140c398c222391ffa5165cb013c1e8ed3f0f486213704d41859f7f0d2"
   }
 ]

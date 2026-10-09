@@ -1,10 +1,10 @@
 {
   "schema": 1,
-  "criterion": "Entire normalized 1.0→1.1 class delta implemented and covered by direct relevant original-bytecode finite comparisons, plus literal authority for nonbehavior declaration/visibility changes; not inherited reproof and not all-input formal proof.",
+  "criterion": "Entire normalized 1.0\u21921.1 class delta implemented and covered by direct relevant original-bytecode finite comparisons, plus literal authority for nonbehavior declaration/visibility changes; not inherited reproof and not all-input formal proof.",
   "checkpoint": "235b5ebd70b9326dc92857f21e9049815bfa9f21",
-  "completed_classes": 20,
-  "blocked_classes": 7,
-  "completed_changed_lines": 148,
+  "completed_classes": 25,
+  "blocked_classes": 2,
+  "completed_changed_lines": 260,
   "reviewed_changed_lines": 360,
   "source_hash_note": "Hashes refreshed after parent whitespace normalization. Original probe evidence predates whitespace-only checkpoint; current biome comparison binary rerun retained now. Do not infer arbitrary later semantic mutations covered.",
   "original_jar_sha256": "44bb6ace88fdff460d6c428c4becee8cad52f2622e1f800dab7a70f8a716f75b",
@@ -216,7 +216,7 @@
       "source_java_sha256": "46cf6904443dac0ce9be02b6f36aa28f459ed9e69a0addee874a0866a82ae3e9",
       "old_source_java_sha256": "28fa33a43b18da7bd5ed512b59bf1a95d59404491818b11fddf9bfc6b7ed69da",
       "rust_sha256": {
-        "crates/worldgen11/src/genlayer.rs": "01f65e70c84445b405b4af359b4f7b80f3487340df683ab947430acad4404aa4",
+        "crates/worldgen11/src/genlayer.rs": "0afb744f6913b45d5f09755227960358244f22a7032fae0e938a4605d6afd03e",
         "crates/worldgen11/src/intcache.rs": "25dbd85fccde32040717022cb4bedc4ab35914ab92607ec7200dcd640c4598ff"
       },
       "evidence": [
@@ -442,7 +442,7 @@
       "rust_sha256": {
         "crates/worldgen11/src/world/mod.rs": "bc6a6777e948aacb68e9581c38ae9b09358abe82af5aaafcb1a5afdebd44a162",
         "crates/worldgen11/src/world/dimension.rs": "178e1786a5e89cca4abbb710a97ceb8e1d34b54f91687d1e87387643e6cdcb95",
-        "crates/worldgen11/src/scenario.rs": "f2cd72d2c00e2f314ba93bcff85d635bf88240ebc61e2bc6f22c80baafe30d8a",
+        "crates/worldgen11/src/scenario.rs": "dd9dc0d569926752e679ef743db0b671d65941029a9e7e51062dc0d1d287cc95",
         "crates/worldgen11/src/world/spawn181.rs": "a6a6da75654fd6d99ebefc019505bc54b023289195f0dda284774cda48059e7c",
         "crates/worldgen11/src/entity/client_tick.rs": "8a31770c6435c0bf891330c3805d45ee10b345adbee34815a3bab1da8d97f61c"
       },
@@ -475,7 +475,7 @@
       "rust_sha256": {
         "crates/worldgen11/src/world/mod.rs": "bc6a6777e948aacb68e9581c38ae9b09358abe82af5aaafcb1a5afdebd44a162",
         "crates/worldgen11/src/world/dimension.rs": "178e1786a5e89cca4abbb710a97ceb8e1d34b54f91687d1e87387643e6cdcb95",
-        "crates/worldgen11/src/scenario.rs": "f2cd72d2c00e2f314ba93bcff85d635bf88240ebc61e2bc6f22c80baafe30d8a",
+        "crates/worldgen11/src/scenario.rs": "dd9dc0d569926752e679ef743db0b671d65941029a9e7e51062dc0d1d287cc95",
         "crates/worldgen11/src/world/spawn181.rs": "a6a6da75654fd6d99ebefc019505bc54b023289195f0dda284774cda48059e7c",
         "crates/client11/src/render/player_view.rs": "9e688092f5b59b3955a3e8b4e1ffc4e922e89e1e9cf64270d849d22b927c64bc",
         "crates/client11/src/render/camera.rs": "cb5c8c785b36184dbfd9e7b827adbe70d7885fae8cf91085eba5d2cb2c451387",
@@ -514,7 +514,7 @@
       "rust_sha256": {
         "crates/worldgen11/src/world/mod.rs": "bc6a6777e948aacb68e9581c38ae9b09358abe82af5aaafcb1a5afdebd44a162",
         "crates/worldgen11/src/world/dimension.rs": "178e1786a5e89cca4abbb710a97ceb8e1d34b54f91687d1e87387643e6cdcb95",
-        "crates/worldgen11/src/scenario.rs": "f2cd72d2c00e2f314ba93bcff85d635bf88240ebc61e2bc6f22c80baafe30d8a",
+        "crates/worldgen11/src/scenario.rs": "dd9dc0d569926752e679ef743db0b671d65941029a9e7e51062dc0d1d287cc95",
         "crates/worldgen11/src/world/spawn181.rs": "a6a6da75654fd6d99ebefc019505bc54b023289195f0dda284774cda48059e7c"
       },
       "evidence": [
@@ -541,7 +541,7 @@
       "old_source_java_sha256": "667dcaa7a8c1f90b9cc76ff0b4b58d5d865d8e30a8d575a221767f044e523b20",
       "rust_sha256": {
         "crates/worldgen11/src/entity/player/food.rs": "25e49a13266974a0fba43bf02f4739310137367389d42bec0c0c91ff980b9849",
-        "crates/worldgen11/src/scenario.rs": "f2cd72d2c00e2f314ba93bcff85d635bf88240ebc61e2bc6f22c80baafe30d8a"
+        "crates/worldgen11/src/scenario.rs": "dd9dc0d569926752e679ef743db0b671d65941029a9e7e51062dc0d1d287cc95"
       },
       "evidence": [
         {
@@ -589,66 +589,99 @@
       "class_name": "GenLayerHills",
       "area": "worldgen",
       "normalized_changed_lines": 46,
-      "entire_1_1_delta_complete": false,
-      "source_hunk_review": "Whole-stack normal graph EXACT does not document every new conditional conversion/cardinal disagreement branch with a controlled original parent; keep blocked for targeted vector matrix.",
+      "entire_1_1_delta_complete": true,
+      "source_hunk_review": "Entire new/changed layer getInts constructor, parent offset, center/cardinal dispatch, wrapping coordinates and seed/RNG behavior covered by controlled original-parent vectors; private original RNG states compared.",
       "source_authority": "work/retromcp-1.1/minecraft/src/net/minecraft/src/GenLayerHills.java",
       "source_java_sha256": "70150c89f924b90fc1edfd00875acaae2ce2cfa1cb686c3d7a7a05dbddbf24a8",
       "old_source_java_sha256": null,
       "rust_sha256": {
-        "crates/worldgen11/src/genlayer.rs": "01f65e70c84445b405b4af359b4f7b80f3487340df683ab947430acad4404aa4",
+        "crates/worldgen11/src/genlayer.rs": "0afb744f6913b45d5f09755227960358244f22a7032fae0e938a4605d6afd03e",
         "crates/worldgen11/src/intcache.rs": "25dbd85fccde32040717022cb4bedc4ab35914ab92607ec7200dcd640c4598ff"
       },
       "evidence": [
         {
-          "path": "work/worldgen11-probe-results.json",
-          "sha256": "4845cdd011a05af661094aeb44e7c0f06d79610c7f20eed224d43d9cfbb4fa61"
+          "path": "work/neighborhood11-verification.log",
+          "sha256": "265259ac28ea3c9f1122a92bd903a31bbb5f8bda6e2498613b274b9287e999fc"
+        },
+        {
+          "path": "work/neighborhood11-results.json",
+          "sha256": "f39fd47939d2490e204507a9f62f19b2b89d823c838938d46ae7158ebf21eba0"
         }
       ],
-      "required_sections": [],
+      "required_sections": [
+        "neighborhood seed 0",
+        "neighborhood seed 42",
+        "neighborhood seed -1",
+        "neighborhood seed 123456789",
+        "neighborhood seed 9223372036854775807",
+        "neighborhood seed -9223372036854775808"
+      ],
       "accounting_note": "Credit only changed hunks; inherited unchanged methods are not additional requirements. Standalone logs without == section headers require parent registration of their exact result lines; no synthetic pass is emitted here."
     },
     {
       "class_name": "GenLayerShore",
       "area": "worldgen",
       "normalized_changed_lines": 28,
-      "entire_1_1_delta_complete": false,
-      "source_hunk_review": "Whole-stack graph EXACT does not independently certify all changed beach/hills-edge cardinal/branch-priority cases with controlled parent; targeted vectors missing.",
+      "entire_1_1_delta_complete": true,
+      "source_hunk_review": "Entire new/changed layer getInts constructor, parent offset, center/cardinal dispatch, wrapping coordinates and seed/RNG behavior covered by controlled original-parent vectors; private original RNG states compared.",
       "source_authority": "work/retromcp-1.1/minecraft/src/net/minecraft/src/GenLayerShore.java",
       "source_java_sha256": "787da2e1dc8623de1e577c52080753897dc6532b0f4c5b0ef075461de637151b",
       "old_source_java_sha256": "ed74e1cccda006b2d978e4174ea076ac1e5efc10b5db768a1d93af3891534072",
       "rust_sha256": {
-        "crates/worldgen11/src/genlayer.rs": "01f65e70c84445b405b4af359b4f7b80f3487340df683ab947430acad4404aa4",
+        "crates/worldgen11/src/genlayer.rs": "0afb744f6913b45d5f09755227960358244f22a7032fae0e938a4605d6afd03e",
         "crates/worldgen11/src/intcache.rs": "25dbd85fccde32040717022cb4bedc4ab35914ab92607ec7200dcd640c4598ff"
       },
       "evidence": [
         {
-          "path": "work/worldgen11-probe-results.json",
-          "sha256": "4845cdd011a05af661094aeb44e7c0f06d79610c7f20eed224d43d9cfbb4fa61"
+          "path": "work/neighborhood11-verification.log",
+          "sha256": "265259ac28ea3c9f1122a92bd903a31bbb5f8bda6e2498613b274b9287e999fc"
+        },
+        {
+          "path": "work/neighborhood11-results.json",
+          "sha256": "f39fd47939d2490e204507a9f62f19b2b89d823c838938d46ae7158ebf21eba0"
         }
       ],
-      "required_sections": [],
+      "required_sections": [
+        "neighborhood seed 0",
+        "neighborhood seed 42",
+        "neighborhood seed -1",
+        "neighborhood seed 123456789",
+        "neighborhood seed 9223372036854775807",
+        "neighborhood seed -9223372036854775808"
+      ],
       "accounting_note": "Credit only changed hunks; inherited unchanged methods are not additional requirements. Standalone logs without == section headers require parent registration of their exact result lines; no synthetic pass is emitted here."
     },
     {
       "class_name": "GenLayerSwampRivers",
       "area": "worldgen",
       "normalized_changed_lines": 22,
-      "entire_1_1_delta_complete": false,
-      "source_hunk_review": "Whole-stack graph EXACT does not independently retain new swamp vs non-swamp RNG short-circuit vectors; targeted original parent/RNG matrix missing.",
+      "entire_1_1_delta_complete": true,
+      "source_hunk_review": "Entire new/changed layer getInts constructor, parent offset, center/cardinal dispatch, wrapping coordinates and seed/RNG behavior covered by controlled original-parent vectors; private original RNG states compared.",
       "source_authority": "work/retromcp-1.1/minecraft/src/net/minecraft/src/GenLayerSwampRivers.java",
       "source_java_sha256": "296dfff7bfc0d77170c79d2a1e834277e5b29ece07523db2659fbd05214e3e95",
       "old_source_java_sha256": null,
       "rust_sha256": {
-        "crates/worldgen11/src/genlayer.rs": "01f65e70c84445b405b4af359b4f7b80f3487340df683ab947430acad4404aa4",
+        "crates/worldgen11/src/genlayer.rs": "0afb744f6913b45d5f09755227960358244f22a7032fae0e938a4605d6afd03e",
         "crates/worldgen11/src/intcache.rs": "25dbd85fccde32040717022cb4bedc4ab35914ab92607ec7200dcd640c4598ff"
       },
       "evidence": [
         {
-          "path": "work/worldgen11-probe-results.json",
-          "sha256": "4845cdd011a05af661094aeb44e7c0f06d79610c7f20eed224d43d9cfbb4fa61"
+          "path": "work/neighborhood11-verification.log",
+          "sha256": "265259ac28ea3c9f1122a92bd903a31bbb5f8bda6e2498613b274b9287e999fc"
+        },
+        {
+          "path": "work/neighborhood11-results.json",
+          "sha256": "f39fd47939d2490e204507a9f62f19b2b89d823c838938d46ae7158ebf21eba0"
         }
       ],
-      "required_sections": [],
+      "required_sections": [
+        "neighborhood seed 0",
+        "neighborhood seed 42",
+        "neighborhood seed -1",
+        "neighborhood seed 123456789",
+        "neighborhood seed 9223372036854775807",
+        "neighborhood seed -9223372036854775808"
+      ],
       "accounting_note": "Credit only changed hunks; inherited unchanged methods are not additional requirements. Standalone logs without == section headers require parent registration of their exact result lines; no synthetic pass is emitted here."
     },
     {
@@ -683,8 +716,8 @@
       "class_name": "WorldInfo",
       "area": "world",
       "normalized_changed_lines": 14,
-      "entire_1_1_delta_complete": false,
-      "source_hunk_review": "New type NBT/settings/getter/save/reopen behavior covered; changed WorldInfo(WorldInfo) copy of type is implemented by Clone but not retained in an original copy-constructor comparison.",
+      "entire_1_1_delta_complete": true,
+      "source_hunk_review": "All generatorName read/default/fallback/settings/getter/save hunks previously checked in worldtype; new type field copy now compared through original WorldInfo copy constructor versus actual Rust dimension copy.",
       "source_authority": "work/retromcp-1.1/minecraft/src/net/minecraft/src/WorldInfo.java",
       "source_java_sha256": "4b6272349d56f03261855b5837f299428ac3641f6333e8bfb75ba1a681c66f87",
       "old_source_java_sha256": "9428dfd3f85e5aeccd2a14722e576b32aea76456b933b74e8c236d0597a97cca",
@@ -696,39 +729,71 @@
       },
       "evidence": [
         {
-          "path": "work/worldtype11-verification.log",
-          "sha256": "486fe13d87b05d9a1ac0ac09d6ea2b5b770f8ae37f26b17d7006b13d43a55531"
+          "path": "work/dimstorage11-verification.log",
+          "sha256": "afcda07468d9797fec95700cf20f97ae553358b2c8c0baad00ecb5ebd3685773"
         },
         {
-          "path": "work/spawn11-verification.log",
-          "sha256": "6a63733ddb79f0d1d57a478b81f6ea421112be80e522a93b2299f693f774b615"
+          "path": "work/dimstorage11-results.json",
+          "sha256": "f5281668d9f5f003301573275858cddf2d0228a7447aea0d702124aff7bca325"
+        },
+        {
+          "path": "work/worldtype11-verification.log",
+          "sha256": "486fe13d87b05d9a1ac0ac09d6ea2b5b770f8ae37f26b17d7006b13d43a55531"
         }
       ],
-      "required_sections": [],
+      "required_sections": [
+        "dimstorage rust seed 0",
+        "dimstorage java-read-rust seed 0",
+        "dimstorage rust-read-java seed 0",
+        "dimstorage rust seed 42",
+        "dimstorage java-read-rust seed 42",
+        "dimstorage rust-read-java seed 42",
+        "dimstorage rust seed -1",
+        "dimstorage java-read-rust seed -1",
+        "dimstorage rust-read-java seed -1"
+      ],
       "accounting_note": "Credit only changed hunks; inherited unchanged methods are not additional requirements. Standalone logs without == section headers require parent registration of their exact result lines; no synthetic pass is emitted here."
     },
     {
       "class_name": "WorldProviderHell",
       "area": "world",
       "normalized_changed_lines": 2,
-      "entire_1_1_delta_complete": false,
-      "source_hunk_review": "Only changed spawn predicate is source-exact unconditional false; focused Rust side-effect unit passes but no retained original invocation comparison. Conservative oracle-only accounting holds it pending a dedicated call vector.",
+      "entire_1_1_delta_complete": true,
+      "source_hunk_review": "Changed canCoordinateBeSpawn unconditional false now directly compared with original bytecode at five positive/negative/extreme coordinate pairs, unchanged raw RNG and zero loaded chunks across both world types and three seeds.",
       "source_authority": "work/retromcp-1.1/minecraft/src/net/minecraft/src/WorldProviderHell.java",
       "source_java_sha256": "cd81191027f9780267588830338373c1f839c146053a926fe74b5b714df870fa",
       "old_source_java_sha256": "bac2d67cc33129fd1f2326b64d8ec23cd81b923a135bc98a632412c1f01d1694",
       "rust_sha256": {
         "crates/worldgen11/src/world/mod.rs": "bc6a6777e948aacb68e9581c38ae9b09358abe82af5aaafcb1a5afdebd44a162",
         "crates/worldgen11/src/world/dimension.rs": "178e1786a5e89cca4abbb710a97ceb8e1d34b54f91687d1e87387643e6cdcb95",
-        "crates/worldgen11/src/scenario.rs": "f2cd72d2c00e2f314ba93bcff85d635bf88240ebc61e2bc6f22c80baafe30d8a",
+        "crates/worldgen11/src/scenario.rs": "dd9dc0d569926752e679ef743db0b671d65941029a9e7e51062dc0d1d287cc95",
         "crates/worldgen11/src/world/spawn181.rs": "a6a6da75654fd6d99ebefc019505bc54b023289195f0dda284774cda48059e7c"
       },
       "evidence": [
         {
-          "path": "work/test-nether-provider11.log",
-          "sha256": "2412e650e3be87b4e6e66f69e63787e50da0b79ec6f9a9d35812f5e3d6e602ea"
+          "path": "work/dimstorage11-verification.log",
+          "sha256": "afcda07468d9797fec95700cf20f97ae553358b2c8c0baad00ecb5ebd3685773"
+        },
+        {
+          "path": "work/dimstorage11-results.json",
+          "sha256": "f5281668d9f5f003301573275858cddf2d0228a7447aea0d702124aff7bca325"
+        },
+        {
+          "path": "work/worldtype11-verification.log",
+          "sha256": "486fe13d87b05d9a1ac0ac09d6ea2b5b770f8ae37f26b17d7006b13d43a55531"
         }
       ],
-      "required_sections": [],
+      "required_sections": [
+        "dimstorage rust seed 0",
+        "dimstorage java-read-rust seed 0",
+        "dimstorage rust-read-java seed 0",
+        "dimstorage rust seed 42",
+        "dimstorage java-read-rust seed 42",
+        "dimstorage rust-read-java seed 42",
+        "dimstorage rust seed -1",
+        "dimstorage java-read-rust seed -1",
+        "dimstorage rust-read-java seed -1"
+      ],
       "accounting_note": "Credit only changed hunks; inherited unchanged methods are not additional requirements. Standalone logs without == section headers require parent registration of their exact result lines; no synthetic pass is emitted here."
     }
   ]

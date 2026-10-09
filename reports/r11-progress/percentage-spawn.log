@@ -1,0 +1,45 @@
+warning: use of deprecated method `std::sync::atomic::Atomic::<u32>::fetch_update`: renamed to `try_update` for consistency
+  --> crates\worldgen11\src\decorator10.rs:53:20
+   |
+53 |     assert!(ACTIVE.fetch_update(Ordering::SeqCst, Ordering::SeqCst,
+   |                    ^^^^^^^^^^^^
+   |
+   = note: `#[warn(deprecated)]` on by default
+help: replace the use of the deprecated method
+   |
+53 -     assert!(ACTIVE.fetch_update(Ordering::SeqCst, Ordering::SeqCst,
+53 +     assert!(ACTIVE.try_update(Ordering::SeqCst, Ordering::SeqCst,
+   |
+
+warning: function `use_neighbor_brightness` is never used
+ --> crates\worldgen11\src\world\release10.rs:5:15
+  |
+5 | pub(crate) fn use_neighbor_brightness(id: u8) -> bool {
+  |               ^^^^^^^^^^^^^^^^^^^^^^^
+  |
+  = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: `worldgen11` (lib) generated 2 warnings (run `cargo fix --lib -p worldgen11` to apply 1 suggestion)
+    Finished `release` profile [optimized + debuginfo] target(s) in 0.06s
+27 achievements
+174 recipes
+EXACT MATCH: spawn 0 6DA94168E5DB584C2E914C9AAC0A58DBAD79630460F066C0A010D703F0AEE7C9 (5134800 bytes) target/r11/spawn/b7ab63cab2f143978922afa99b6cf55e/0
+27 achievements
+174 recipes
+EXACT MATCH: spawn 42 7C00627B28DBFD9691246C023BC7CB8441907B6D5BEA043550F076FB1DFFE552 (5134800 bytes) target/r11/spawn/b7ab63cab2f143978922afa99b6cf55e/42
+27 achievements
+174 recipes
+EXACT MATCH: spawn -1 EE29012CCFCF7CBA4781B2E3095B5FE08D6B36DBF107D7C5C79EE928A14880EC (5134800 bytes) target/r11/spawn/b7ab63cab2f143978922afa99b6cf55e/-1
+27 achievements
+174 recipes
+EXACT MATCH: spawn 123456789 C4865BBEC52783171397574DC02D2ABE953DD53F703E3583FAEE4C5151CE56E2 (5134800 bytes) target/r11/spawn/b7ab63cab2f143978922afa99b6cf55e/123456789
+27 achievements
+174 recipes
+EXACT MATCH: spawn 9223372036854775807 33C40E1AA2DAC92705B538AA8F91CA3EC9BD774D4B245B06AB8B8E20876DF5AD (5134800 bytes) target/r11/spawn/b7ab63cab2f143978922afa99b6cf55e/9223372036854775807
+27 achievements
+174 recipes
+Unable to find spawn biome
+Unable to find spawn biome
+Unable to find spawn biome
+Unable to find spawn biome
+EXACT MATCH: spawn -9223372036854775808 6D24BE86497DE79CF611E959B5FC240523737CFAA180E60A3AE4BD5AF26F8790 (5134800 bytes) target/r11/spawn/b7ab63cab2f143978922afa99b6cf55e/-9223372036854775808

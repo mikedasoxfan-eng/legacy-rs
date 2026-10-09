@@ -1,0 +1,123 @@
+{
+  "method": "r10 normalized changed-line weighting; complete 1.1 delta review, committed implementation, explicit oracle coverage and source-pinned EXACT results",
+  "candidate_commit": "fbe6cf417a4d9ceb98e9f19ccc5945c12780805a",
+  "done_lines": 567,
+  "total_lines": 2190,
+  "percentage": 25.89041095890411,
+  "done_classes": 60,
+  "total_classes": 144,
+  "credited_classes": [
+    "BiomeGenBase",
+    "BiomeGenBeach",
+    "BiomeGenSwamp",
+    "BlockDetectorRail",
+    "BlockDoor",
+    "BlockFarmland",
+    "BlockFenceGate",
+    "BlockLadder",
+    "BlockRail",
+    "BlockRedstoneRepeater",
+    "BlockSnow",
+    "BlockStem",
+    "BlockTrapDoor",
+    "ChunkProviderGenerate",
+    "ComponentVillage",
+    "ComponentVillageHouse2",
+    "ContainerCreative",
+    "Enchantment",
+    "EnchantmentArrowDamage",
+    "EnchantmentArrowFire",
+    "EnchantmentArrowInfinite",
+    "EnchantmentArrowKnockback",
+    "EnchantmentHelper",
+    "EntityArrow",
+    "EntityCreeper",
+    "EntityDamageSource",
+    "EntityEggInfo",
+    "EntityList",
+    "EntityMagmaCube",
+    "EntityWolf",
+    "EnumEnchantmentType",
+    "EnumWorldType",
+    "GameSettings",
+    "GenLayer",
+    "GenLayerHills",
+    "GenLayerShore",
+    "GenLayerSwampRivers",
+    "ItemBow",
+    "ItemMonsterPlacer",
+    "MapGenStructure",
+    "MapGenVillage",
+    "MaterialWeb",
+    "SlotCrafting",
+    "StatTypeDistance",
+    "StatTypeSimple",
+    "StatTypeTime",
+    "StructureBoundingBox",
+    "StructureStrongholdPieceWeight2",
+    "StructureStrongholdPieceWeight3",
+    "StructureVillageStart",
+    "Tessellator",
+    "TileEntityBrewingStand",
+    "World",
+    "WorldChunkManager",
+    "WorldChunkManagerHell",
+    "WorldInfo",
+    "WorldProvider",
+    "WorldProviderEnd",
+    "WorldProviderHell",
+    "WorldSettings"
+  ],
+  "areas": {
+    "gui": {
+      "done_lines": 24,
+      "total_lines": 591,
+      "done_classes": 6,
+      "total_classes": 31
+    },
+    "worldgen": {
+      "done_lines": 202,
+      "total_lines": 302,
+      "done_classes": 19,
+      "total_classes": 21
+    },
+    "blocks": {
+      "done_lines": 199,
+      "total_lines": 308,
+      "done_classes": 21,
+      "total_classes": 34
+    },
+    "world": {
+      "done_lines": 50,
+      "total_lines": 68,
+      "done_classes": 5,
+      "total_classes": 7
+    },
+    "entities": {
+      "done_lines": 83,
+      "total_lines": 779,
+      "done_classes": 7,
+      "total_classes": 34
+    },
+    "player": {
+      "done_lines": 8,
+      "total_lines": 32,
+      "done_classes": 1,
+      "total_classes": 4
+    },
+    "rendering": {
+      "done_lines": 1,
+      "total_lines": 110,
+      "done_classes": 1,
+      "total_classes": 13
+    }
+  },
+  "exact_sections": 12,
+  "observed_sections": 12,
+  "limitations": [
+    "Normalized inventory may hide changes; conservative raw behavior audit remains required.",
+    "This is verified completion credit, not percentage of code written; unreviewed or partially verified classes receive zero credit.",
+    "A checkpoint commit alone gives no completion credit.",
+    "Unfinished client integration, final suite, older-version regressions and packaging remain completion gates."
+  ]
+}
