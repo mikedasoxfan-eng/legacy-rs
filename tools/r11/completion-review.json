@@ -13,7 +13,7 @@
       "1.0": "ba0e5ff3f7cdda1d45017d7aa29f66cbb0a5db9f2a2c658bfee43427a6072d0d",
       "1.1": "684c41805af4f4ed3e95b4ffef30a9d5bbe173f941f214e25a6cd4ae401d3c4c"
     },
-    "revalidation": "Current gameplay fixture/test suite, world/provider/save suites, client lib, main binary build and focused render/GUI proofs passed. Runtime changes reviewed against existing credited deltas; inherited APIs remain outside delta credit."
+    "revalidation": "Stable final candidate: all client tests including original corpora/GPU upload, all simulation tests, all older-version libraries, release workspace/dispatch and targeted Unicode/name/save proof pass."
   },
   "EntityDamageSource": {
     "complete_delta_review": true,
@@ -63,7 +63,8 @@
     "completion_blockers": [],
     "limitations": [],
     "criterion": "Complete normalized delta in installed-resource singleplayer runtime; direct finite original authority and full hunk review. No whole inherited API claim.",
-    "no_behavior_change": true
+    "no_behavior_change": true,
+    "revalidation": "Stable final candidate: all client tests including original corpora/GPU upload, all simulation tests, all older-version libraries, release workspace/dispatch and targeted Unicode/name/save proof pass."
   },
   "MapGenStructure": {
     "complete_delta_review": true,
@@ -77,7 +78,7 @@
       "1.1": "1c78a024be589a90a42fd285398224f695ff28619e635a2a1250f740b2f0d2f7"
     },
     "completion_blockers": [],
-    "revalidation": "Current gameplay fixture/test suite, world/provider/save suites, client lib, main binary build and focused render/GUI proofs passed. Runtime changes reviewed against existing credited deltas; inherited APIs remain outside delta credit.",
+    "revalidation": "Stable final candidate: all client tests including original corpora/GPU upload, all simulation tests, all older-version libraries, release workspace/dispatch and targeted Unicode/name/save proof pass.",
     "no_behavior_change": true
   },
   "StructureStrongholdPieceWeight2": {
@@ -94,7 +95,7 @@
       "1.1": "6e202742736a25121e2efffe58a335040c973911809bb5b414642034a60d75f5"
     },
     "completion_blockers": [],
-    "revalidation": "Current gameplay fixture/test suite, world/provider/save suites, client lib, main binary build and focused render/GUI proofs passed. Runtime changes reviewed against existing credited deltas; inherited APIs remain outside delta credit.",
+    "revalidation": "Stable final candidate: all client tests including original corpora/GPU upload, all simulation tests, all older-version libraries, release workspace/dispatch and targeted Unicode/name/save proof pass.",
     "no_behavior_change": true
   },
   "StructureStrongholdPieceWeight3": {
@@ -111,7 +112,7 @@
       "1.1": "ac71b64a3a561a871a19224693765b70461ebb49b2ddea5446b4396a4eaf0e52"
     },
     "completion_blockers": [],
-    "revalidation": "Current gameplay fixture/test suite, world/provider/save suites, client lib, main binary build and focused render/GUI proofs passed. Runtime changes reviewed against existing credited deltas; inherited APIs remain outside delta credit.",
+    "revalidation": "Stable final candidate: all client tests including original corpora/GPU upload, all simulation tests, all older-version libraries, release workspace/dispatch and targeted Unicode/name/save proof pass.",
     "no_behavior_change": true
   },
   "StatTypeDistance": {
@@ -125,7 +126,7 @@
       "1.0": "6635208c3aa955f34fa4e441d9868d74fdb1b90c572b137c872cde742e45f58f",
       "1.1": "7b0f76dae7b5eb5946866da2825725f1ef91012a717a6a775c323265e881139a"
     },
-    "revalidation": "Current gameplay fixture/test suite, world/provider/save suites, client lib, main binary build and focused render/GUI proofs passed. Runtime changes reviewed against existing credited deltas; inherited APIs remain outside delta credit."
+    "revalidation": "Stable final candidate: all client tests including original corpora/GPU upload, all simulation tests, all older-version libraries, release workspace/dispatch and targeted Unicode/name/save proof pass."
   },
   "StatTypeSimple": {
     "complete_delta_review": true,
@@ -138,7 +139,7 @@
       "1.0": "cebcfd9a604e1d319dec8be47b3b96f2babfbea9324484018809a1ddebccb839",
       "1.1": "512a3c2f5c3bb49f9cef401d81bc45337c5ffe85186ce24de07c441ec0f2664f"
     },
-    "revalidation": "Current gameplay fixture/test suite, world/provider/save suites, client lib, main binary build and focused render/GUI proofs passed. Runtime changes reviewed against existing credited deltas; inherited APIs remain outside delta credit."
+    "revalidation": "Stable final candidate: all client tests including original corpora/GPU upload, all simulation tests, all older-version libraries, release workspace/dispatch and targeted Unicode/name/save proof pass."
   },
   "StatTypeTime": {
     "complete_delta_review": true,
@@ -151,7 +152,7 @@
       "1.0": "d7197dcdefda84c3b0df3966c96c87cc9d5f564caf62da382dc523bf864d7184",
       "1.1": "abfee3662f6a373fd67cfcde3b300d87f03c22e70e8cfc065532539f7d63c536"
     },
-    "revalidation": "Current gameplay fixture/test suite, world/provider/save suites, client lib, main binary build and focused render/GUI proofs passed. Runtime changes reviewed against existing credited deltas; inherited APIs remain outside delta credit."
+    "revalidation": "Stable final candidate: all client tests including original corpora/GPU upload, all simulation tests, all older-version libraries, release workspace/dispatch and targeted Unicode/name/save proof pass."
   },
   "GameSettings": {
     "complete_delta_review": true,
@@ -164,7 +165,7 @@
       "1.0": "74b0c1b662728cf3dd4f289db3d6c657c454814ae5ce6566cea78d06a19d6ff3",
       "1.1": "7846ff7172b58aa0a692c2be8d760201da1fcfe03c1166ee6f027cf1ab861ff9"
     },
-    "revalidation": "Current gameplay fixture/test suite, world/provider/save suites, client lib, main binary build and focused render/GUI proofs passed. Runtime changes reviewed against existing credited deltas; inherited APIs remain outside delta credit."
+    "revalidation": "Stable final candidate: all client tests including original corpora/GPU upload, all simulation tests, all older-version libraries, release workspace/dispatch and targeted Unicode/name/save proof pass."
   },
   "ItemMonsterPlacer": {
     "complete_delta_review": true,
@@ -203,7 +204,7 @@
       "new_sha256": "a734d0ddcebcab44660c4c2e37d8f5d1e58f727df402ab64a01312fd8043f57b"
     },
     "completion_blockers": [],
-    "revalidation": "Current gameplay fixture/test suite, world/provider/save suites, client lib, main binary build and focused render/GUI proofs passed. Runtime changes reviewed against existing credited deltas; inherited APIs remain outside delta credit."
+    "revalidation": "Stable final candidate: all client tests including original corpora/GPU upload, all simulation tests, all older-version libraries, release workspace/dispatch and targeted Unicode/name/save proof pass."
   },
   "EntityList": {
     "complete_delta_review": true,
@@ -233,7 +234,7 @@
       "new_sha256": "5f4f4fae52b419c523c4d4aaa2fefea0d61186c67f34a66f65b804879f0391f4"
     },
     "completion_blockers": [],
-    "revalidation": "Current gameplay fixture/test suite, world/provider/save suites, client lib, main binary build and focused render/GUI proofs passed. Runtime changes reviewed against existing credited deltas; inherited APIs remain outside delta credit."
+    "revalidation": "Stable final candidate: all client tests including original corpora/GPU upload, all simulation tests, all older-version libraries, release workspace/dispatch and targeted Unicode/name/save proof pass."
   },
   "EntityEggInfo": {
     "complete_delta_review": true,
@@ -254,7 +255,7 @@
       "new_sha256": "89c122ad0c55a49fd8ecb9efb3c276e8cadbd23d65843d6501693ef75b267ea3"
     },
     "completion_blockers": [],
-    "revalidation": "Current gameplay fixture/test suite, world/provider/save suites, client lib, main binary build and focused render/GUI proofs passed. Runtime changes reviewed against existing credited deltas; inherited APIs remain outside delta credit."
+    "revalidation": "Stable final candidate: all client tests including original corpora/GPU upload, all simulation tests, all older-version libraries, release workspace/dispatch and targeted Unicode/name/save proof pass."
   },
   "Enchantment": {
     "complete_delta_review": true,
@@ -275,7 +276,7 @@
       "new_sha256": "2e20a3c5c777017bd795b46d0fb0b81c6b430cfeea8e974710897f9ac5a77561"
     },
     "completion_blockers": [],
-    "revalidation": "Current gameplay fixture/test suite, world/provider/save suites, client lib, main binary build and focused render/GUI proofs passed. Runtime changes reviewed against existing credited deltas; inherited APIs remain outside delta credit."
+    "revalidation": "Stable final candidate: all client tests including original corpora/GPU upload, all simulation tests, all older-version libraries, release workspace/dispatch and targeted Unicode/name/save proof pass."
   },
   "EnumEnchantmentType": {
     "complete_delta_review": true,
@@ -296,7 +297,7 @@
       "new_sha256": "d4b75e742866d4aa11e9daa021b8a127bdc5af86363c879c96d0fbac70dd1485"
     },
     "completion_blockers": [],
-    "revalidation": "Current gameplay fixture/test suite, world/provider/save suites, client lib, main binary build and focused render/GUI proofs passed. Runtime changes reviewed against existing credited deltas; inherited APIs remain outside delta credit."
+    "revalidation": "Stable final candidate: all client tests including original corpora/GPU upload, all simulation tests, all older-version libraries, release workspace/dispatch and targeted Unicode/name/save proof pass."
   },
   "EnchantmentHelper": {
     "complete_delta_review": true,
@@ -321,7 +322,7 @@
       "new_sha256": "067c64b46de183660c8001b886e820841714e188089a8d557e529796a5004c9f"
     },
     "completion_blockers": [],
-    "revalidation": "Current gameplay fixture/test suite, world/provider/save suites, client lib, main binary build and focused render/GUI proofs passed. Runtime changes reviewed against existing credited deltas; inherited APIs remain outside delta credit."
+    "revalidation": "Stable final candidate: all client tests including original corpora/GPU upload, all simulation tests, all older-version libraries, release workspace/dispatch and targeted Unicode/name/save proof pass."
   },
   "ItemBow": {
     "complete_delta_review": true,
@@ -351,7 +352,7 @@
       "new_sha256": "ca60d72caf9117ca1e6d806a206a80fe329e4641203d38dc72b98bb36e825b4e"
     },
     "completion_blockers": [],
-    "revalidation": "Current gameplay fixture/test suite, world/provider/save suites, client lib, main binary build and focused render/GUI proofs passed. Runtime changes reviewed against existing credited deltas; inherited APIs remain outside delta credit."
+    "revalidation": "Stable final candidate: all client tests including original corpora/GPU upload, all simulation tests, all older-version libraries, release workspace/dispatch and targeted Unicode/name/save proof pass."
   },
   "EntityArrow": {
     "complete_delta_review": true,
@@ -381,7 +382,7 @@
       "new_sha256": "e31cba0ad3ae15c020961c44431f8a299c5dc6d3e40d371dc175f1976d863507"
     },
     "completion_blockers": [],
-    "revalidation": "Current gameplay fixture/test suite, world/provider/save suites, client lib, main binary build and focused render/GUI proofs passed. Runtime changes reviewed against existing credited deltas; inherited APIs remain outside delta credit."
+    "revalidation": "Stable final candidate: all client tests including original corpora/GPU upload, all simulation tests, all older-version libraries, release workspace/dispatch and targeted Unicode/name/save proof pass."
   },
   "BlockLadder": {
     "complete_delta_review": true,
@@ -405,7 +406,7 @@
       "new_sha256": "bef1193bb1556fb037df997340257b625a8497cc25580b9e6a6c08744ae91b3c"
     },
     "completion_blockers": [],
-    "revalidation": "Current gameplay fixture/test suite, world/provider/save suites, client lib, main binary build and focused render/GUI proofs passed. Runtime changes reviewed against existing credited deltas; inherited APIs remain outside delta credit."
+    "revalidation": "Stable final candidate: all client tests including original corpora/GPU upload, all simulation tests, all older-version libraries, release workspace/dispatch and targeted Unicode/name/save proof pass."
   },
   "BlockFarmland": {
     "complete_delta_review": true,
@@ -433,7 +434,7 @@
       "new_sha256": "209e775b6f1d8715c13d502da91d551ed61c269ae6e45f11818c075a38b4bb65"
     },
     "completion_blockers": [],
-    "revalidation": "Current gameplay fixture/test suite, world/provider/save suites, client lib, main binary build and focused render/GUI proofs passed. Runtime changes reviewed against existing credited deltas; inherited APIs remain outside delta credit."
+    "revalidation": "Stable final candidate: all client tests including original corpora/GPU upload, all simulation tests, all older-version libraries, release workspace/dispatch and targeted Unicode/name/save proof pass."
   },
   "BlockFenceGate": {
     "complete_delta_review": true,
@@ -461,7 +462,7 @@
       "new_sha256": "a62198f487dfa03191d0c03aa211af139d55ddb8d61e55aa3b955aa9970a16ff"
     },
     "completion_blockers": [],
-    "revalidation": "Current gameplay fixture/test suite, world/provider/save suites, client lib, main binary build and focused render/GUI proofs passed. Runtime changes reviewed against existing credited deltas; inherited APIs remain outside delta credit."
+    "revalidation": "Stable final candidate: all client tests including original corpora/GPU upload, all simulation tests, all older-version libraries, release workspace/dispatch and targeted Unicode/name/save proof pass."
   },
   "BlockDoor": {
     "complete_delta_review": true,
@@ -491,7 +492,7 @@
       "new_sha256": "2de82dbcf137f8cc7a042f0b681f398670cba82ef5f922c0268131f597d9d7b2"
     },
     "completion_blockers": [],
-    "revalidation": "Current gameplay fixture/test suite, world/provider/save suites, client lib, main binary build and focused render/GUI proofs passed. Runtime changes reviewed against existing credited deltas; inherited APIs remain outside delta credit."
+    "revalidation": "Stable final candidate: all client tests including original corpora/GPU upload, all simulation tests, all older-version libraries, release workspace/dispatch and targeted Unicode/name/save proof pass."
   },
   "BlockRail": {
     "complete_delta_review": true,
@@ -516,7 +517,7 @@
       "new_sha256": "fbb86c310e6ab83c1e244a6d8200b2850a92433f0dcaeded14153fdceb61fda4"
     },
     "completion_blockers": [],
-    "revalidation": "Current gameplay fixture/test suite, world/provider/save suites, client lib, main binary build and focused render/GUI proofs passed. Runtime changes reviewed against existing credited deltas; inherited APIs remain outside delta credit."
+    "revalidation": "Stable final candidate: all client tests including original corpora/GPU upload, all simulation tests, all older-version libraries, release workspace/dispatch and targeted Unicode/name/save proof pass."
   },
   "BlockRedstoneRepeater": {
     "complete_delta_review": true,
@@ -538,7 +539,7 @@
       "new_sha256": "0f7da5b6e032e4777fc44dc46dff85a4abc19c843c7d5fb8de4ca5e5a2f66831"
     },
     "completion_blockers": [],
-    "revalidation": "Current gameplay fixture/test suite, world/provider/save suites, client lib, main binary build and focused render/GUI proofs passed. Runtime changes reviewed against existing credited deltas; inherited APIs remain outside delta credit."
+    "revalidation": "Stable final candidate: all client tests including original corpora/GPU upload, all simulation tests, all older-version libraries, release workspace/dispatch and targeted Unicode/name/save proof pass."
   },
   "EntityMagmaCube": {
     "complete_delta_review": true,
@@ -564,7 +565,7 @@
       "new_sha256": "e473ca5bb225857718624dde61814b3c2a1384e6b3de7f92f42721e62d7ee7ce"
     },
     "completion_blockers": [],
-    "revalidation": "Current gameplay fixture/test suite, world/provider/save suites, client lib, main binary build and focused render/GUI proofs passed. Runtime changes reviewed against existing credited deltas; inherited APIs remain outside delta credit."
+    "revalidation": "Stable final candidate: all client tests including original corpora/GPU upload, all simulation tests, all older-version libraries, release workspace/dispatch and targeted Unicode/name/save proof pass."
   },
   "ContainerCreative": {
     "complete_delta_review": true,
@@ -586,7 +587,7 @@
       "new_sha256": "917efa252be6955d43bfba167f2b9d10fa4084dc85814d4483c78f158a4132b3"
     },
     "completion_blockers": [],
-    "revalidation": "Current gameplay fixture/test suite, world/provider/save suites, client lib, main binary build and focused render/GUI proofs passed. Runtime changes reviewed against existing credited deltas; inherited APIs remain outside delta credit."
+    "revalidation": "Stable final candidate: all client tests including original corpora/GPU upload, all simulation tests, all older-version libraries, release workspace/dispatch and targeted Unicode/name/save proof pass."
   },
   "SlotCrafting": {
     "complete_delta_review": true,
@@ -611,7 +612,7 @@
       "new_sha256": "741e9f2fee7de68052856d6174b48bf96b10184b0447a90717a99d2d12083cd0"
     },
     "completion_blockers": [],
-    "revalidation": "Current gameplay fixture/test suite, world/provider/save suites, client lib, main binary build and focused render/GUI proofs passed. Runtime changes reviewed against existing credited deltas; inherited APIs remain outside delta credit."
+    "revalidation": "Stable final candidate: all client tests including original corpora/GPU upload, all simulation tests, all older-version libraries, release workspace/dispatch and targeted Unicode/name/save proof pass."
   },
   "EnchantmentArrowDamage": {
     "complete_delta_review": true,
@@ -632,7 +633,7 @@
       "new_sha256": "ea6852daabe004ad6436c2603fe0f4c5dfa9d6037cc1dc464e606f3c23552f02"
     },
     "completion_blockers": [],
-    "revalidation": "Current gameplay fixture/test suite, world/provider/save suites, client lib, main binary build and focused render/GUI proofs passed. Runtime changes reviewed against existing credited deltas; inherited APIs remain outside delta credit."
+    "revalidation": "Stable final candidate: all client tests including original corpora/GPU upload, all simulation tests, all older-version libraries, release workspace/dispatch and targeted Unicode/name/save proof pass."
   },
   "EnchantmentArrowKnockback": {
     "complete_delta_review": true,
@@ -653,7 +654,7 @@
       "new_sha256": "21fc254c8747085721ef994a5c81cabbc4fbb3fddc9656d9a63c96775f04682e"
     },
     "completion_blockers": [],
-    "revalidation": "Current gameplay fixture/test suite, world/provider/save suites, client lib, main binary build and focused render/GUI proofs passed. Runtime changes reviewed against existing credited deltas; inherited APIs remain outside delta credit."
+    "revalidation": "Stable final candidate: all client tests including original corpora/GPU upload, all simulation tests, all older-version libraries, release workspace/dispatch and targeted Unicode/name/save proof pass."
   },
   "EnchantmentArrowFire": {
     "complete_delta_review": true,
@@ -674,7 +675,7 @@
       "new_sha256": "4f060453a0bcba1313c04d29a0cea1812e6f4ec48630dc9a8905a81627f329fe"
     },
     "completion_blockers": [],
-    "revalidation": "Current gameplay fixture/test suite, world/provider/save suites, client lib, main binary build and focused render/GUI proofs passed. Runtime changes reviewed against existing credited deltas; inherited APIs remain outside delta credit."
+    "revalidation": "Stable final candidate: all client tests including original corpora/GPU upload, all simulation tests, all older-version libraries, release workspace/dispatch and targeted Unicode/name/save proof pass."
   },
   "EnchantmentArrowInfinite": {
     "complete_delta_review": true,
@@ -695,7 +696,7 @@
       "new_sha256": "5cc49efd8a509103925e965d20fded1ebda44b187281657bf9f592663164bbd2"
     },
     "completion_blockers": [],
-    "revalidation": "Current gameplay fixture/test suite, world/provider/save suites, client lib, main binary build and focused render/GUI proofs passed. Runtime changes reviewed against existing credited deltas; inherited APIs remain outside delta credit."
+    "revalidation": "Stable final candidate: all client tests including original corpora/GPU upload, all simulation tests, all older-version libraries, release workspace/dispatch and targeted Unicode/name/save proof pass."
   },
   "BiomeGenBase": {
     "complete_delta_review": true,
@@ -711,7 +712,7 @@
       "1.1": "39bae55fd0224c744482df9402d27abde6f3794de364539a115a3d68b6cbd1f8"
     },
     "completion_blockers": [],
-    "revalidation": "Current gameplay fixture/test suite, world/provider/save suites, client lib, main binary build and focused render/GUI proofs passed. Runtime changes reviewed against existing credited deltas; inherited APIs remain outside delta credit."
+    "revalidation": "Stable final candidate: all client tests including original corpora/GPU upload, all simulation tests, all older-version libraries, release workspace/dispatch and targeted Unicode/name/save proof pass."
   },
   "BiomeGenBeach": {
     "complete_delta_review": true,
@@ -727,7 +728,7 @@
       "1.1": "b0c1114131844f09cd310d94baaf76d8b8d20df953ff94b6f9801891b9c66095"
     },
     "completion_blockers": [],
-    "revalidation": "Current gameplay fixture/test suite, world/provider/save suites, client lib, main binary build and focused render/GUI proofs passed. Runtime changes reviewed against existing credited deltas; inherited APIs remain outside delta credit."
+    "revalidation": "Stable final candidate: all client tests including original corpora/GPU upload, all simulation tests, all older-version libraries, release workspace/dispatch and targeted Unicode/name/save proof pass."
   },
   "BiomeGenSwamp": {
     "complete_delta_review": true,
@@ -743,7 +744,7 @@
       "1.1": "c112db01da1ec55a5708d02f03e2ccf17ebdc913a117f1d27f55368616fee333"
     },
     "completion_blockers": [],
-    "revalidation": "Current gameplay fixture/test suite, world/provider/save suites, client lib, main binary build and focused render/GUI proofs passed. Runtime changes reviewed against existing credited deltas; inherited APIs remain outside delta credit."
+    "revalidation": "Stable final candidate: all client tests including original corpora/GPU upload, all simulation tests, all older-version libraries, release workspace/dispatch and targeted Unicode/name/save proof pass."
   },
   "ChunkProviderGenerate": {
     "complete_delta_review": true,
@@ -758,7 +759,7 @@
       "1.1": "69570251eac808193c1491f6f8c56e5bad3cca92667d9b79bc079f73bbb9a273"
     },
     "completion_blockers": [],
-    "revalidation": "Current gameplay fixture/test suite, world/provider/save suites, client lib, main binary build and focused render/GUI proofs passed. Runtime changes reviewed against existing credited deltas; inherited APIs remain outside delta credit."
+    "revalidation": "Stable final candidate: all client tests including original corpora/GPU upload, all simulation tests, all older-version libraries, release workspace/dispatch and targeted Unicode/name/save proof pass."
   },
   "ComponentVillage": {
     "complete_delta_review": true,
@@ -774,7 +775,7 @@
       "1.1": "355cd6438dc1748228d5bbf8c4849df02b72e87be8ef08f7795dd51249f5b42b"
     },
     "completion_blockers": [],
-    "revalidation": "Current gameplay fixture/test suite, world/provider/save suites, client lib, main binary build and focused render/GUI proofs passed. Runtime changes reviewed against existing credited deltas; inherited APIs remain outside delta credit."
+    "revalidation": "Stable final candidate: all client tests including original corpora/GPU upload, all simulation tests, all older-version libraries, release workspace/dispatch and targeted Unicode/name/save proof pass."
   },
   "ComponentVillageHouse2": {
     "complete_delta_review": true,
@@ -790,13 +791,13 @@
       "1.1": "de11ea402759bcf55d90ff6e17f8b035d655a6a0a7ee5f4b6412216e4c8e0c61"
     },
     "completion_blockers": [],
-    "revalidation": "Current gameplay fixture/test suite, world/provider/save suites, client lib, main binary build and focused render/GUI proofs passed. Runtime changes reviewed against existing credited deltas; inherited APIs remain outside delta credit."
+    "revalidation": "Stable final candidate: all client tests including original corpora/GPU upload, all simulation tests, all older-version libraries, release workspace/dispatch and targeted Unicode/name/save proof pass."
   },
   "EnumWorldType": {
     "complete_delta_review": true,
     "reason": "whole new enum: DEFAULT/FLAT values, exact case-sensitive saved-name parsing, nullable unknown, generator.default/generator.flat translation keys",
     "rust_source_sha256": {
-      "crates/worldgen11/src/storage.rs": "3c60d40d22db9b0dd5f66bb0f5b64fdccf2497faad9be833e366eccab9a24b46",
+      "crates/worldgen11/src/storage.rs": "848615ecd9f008bb0148a490991872cf6c9aa11ce0bef254978ec325e4e64b30",
       "crates/worldgen11/src/storage181.rs": "c53c48e218f045e183132cfac491d5f4a05f8c595085ee4e8e0b9b614c824b1d",
       "crates/worldgen11/src/save_format_old181.rs": "f90fc8df865dc9da2aa633af593bb40a67b111e40ac9a9c3de52550cd66f42ed",
       "crates/worldgen11/src/convert.rs": "3aa52a5916de569662a6ebe765b4e5e4a7f6ac7b7d1e62a0d58b0d0bf4a61482"
@@ -806,7 +807,7 @@
       "1.1": "c88dcb94da5c7b055d389b179e9d814ba46da8b925cf5d8ba0a14b17c44a4dc5"
     },
     "completion_blockers": [],
-    "revalidation": "Current gameplay fixture/test suite, world/provider/save suites, client lib, main binary build and focused render/GUI proofs passed. Runtime changes reviewed against existing credited deltas; inherited APIs remain outside delta credit."
+    "revalidation": "Stable final candidate: all client tests including original corpora/GPU upload, all simulation tests, all older-version libraries, release workspace/dispatch and targeted Unicode/name/save proof pass."
   },
   "GenLayer": {
     "complete_delta_review": true,
@@ -820,7 +821,7 @@
       "1.1": "46cf6904443dac0ce9be02b6f36aa28f459ed9e69a0addee874a0866a82ae3e9"
     },
     "completion_blockers": [],
-    "revalidation": "Current gameplay fixture/test suite, world/provider/save suites, client lib, main binary build and focused render/GUI proofs passed. Runtime changes reviewed against existing credited deltas; inherited APIs remain outside delta credit."
+    "revalidation": "Stable final candidate: all client tests including original corpora/GPU upload, all simulation tests, all older-version libraries, release workspace/dispatch and targeted Unicode/name/save proof pass."
   },
   "MapGenVillage": {
     "complete_delta_review": true,
@@ -836,7 +837,7 @@
       "1.1": "71ef0b2fc471be87933de4358486dfe21cb93b6ed1283650157de3de6bad3ae1"
     },
     "completion_blockers": [],
-    "revalidation": "Current gameplay fixture/test suite, world/provider/save suites, client lib, main binary build and focused render/GUI proofs passed. Runtime changes reviewed against existing credited deltas; inherited APIs remain outside delta credit."
+    "revalidation": "Stable final candidate: all client tests including original corpora/GPU upload, all simulation tests, all older-version libraries, release workspace/dispatch and targeted Unicode/name/save proof pass."
   },
   "StructureBoundingBox": {
     "complete_delta_review": true,
@@ -850,7 +851,7 @@
       "1.1": "d7d8272a9302217c3ec5c55c8d207e899530396b503d2992776aec28ac82a10f"
     },
     "completion_blockers": [],
-    "revalidation": "Current gameplay fixture/test suite, world/provider/save suites, client lib, main binary build and focused render/GUI proofs passed. Runtime changes reviewed against existing credited deltas; inherited APIs remain outside delta credit."
+    "revalidation": "Stable final candidate: all client tests including original corpora/GPU upload, all simulation tests, all older-version libraries, release workspace/dispatch and targeted Unicode/name/save proof pass."
   },
   "StructureVillageStart": {
     "complete_delta_review": true,
@@ -866,7 +867,7 @@
       "1.1": "841fee0593b71d811514b0bfc107e254fab7668fe92445cff9392acd9e376ac6"
     },
     "completion_blockers": [],
-    "revalidation": "Current gameplay fixture/test suite, world/provider/save suites, client lib, main binary build and focused render/GUI proofs passed. Runtime changes reviewed against existing credited deltas; inherited APIs remain outside delta credit."
+    "revalidation": "Stable final candidate: all client tests including original corpora/GPU upload, all simulation tests, all older-version libraries, release workspace/dispatch and targeted Unicode/name/save proof pass."
   },
   "WorldChunkManager": {
     "complete_delta_review": true,
@@ -879,7 +880,7 @@
       "1.1": "41a05fbca9e8ad82472c429d21671a5ae110321e5b3e2013b739418adb19da16"
     },
     "completion_blockers": [],
-    "revalidation": "Current gameplay fixture/test suite, world/provider/save suites, client lib, main binary build and focused render/GUI proofs passed. Runtime changes reviewed against existing credited deltas; inherited APIs remain outside delta credit."
+    "revalidation": "Stable final candidate: all client tests including original corpora/GPU upload, all simulation tests, all older-version libraries, release workspace/dispatch and targeted Unicode/name/save proof pass."
   },
   "WorldChunkManagerHell": {
     "complete_delta_review": true,
@@ -892,7 +893,7 @@
       "1.1": "563424d715e0ace4a9efd4be25696bb0d276f07f9ad7a420a9a75ff95e6a04c2"
     },
     "completion_blockers": [],
-    "revalidation": "Current gameplay fixture/test suite, world/provider/save suites, client lib, main binary build and focused render/GUI proofs passed. Runtime changes reviewed against existing credited deltas; inherited APIs remain outside delta credit."
+    "revalidation": "Stable final candidate: all client tests including original corpora/GPU upload, all simulation tests, all older-version libraries, release workspace/dispatch and targeted Unicode/name/save proof pass."
   },
   "World": {
     "complete_delta_review": true,
@@ -900,7 +901,7 @@
     "rust_source_sha256": {
       "crates/worldgen11/src/world/mod.rs": "e290afaf1716b935a66ebf7674b0970a05d01ebb7b64fcc5d434831a763c5678",
       "crates/worldgen11/src/world/dimension.rs": "178e1786a5e89cca4abbb710a97ceb8e1d34b54f91687d1e87387643e6cdcb95",
-      "crates/worldgen11/src/scenario.rs": "dd9dc0d569926752e679ef743db0b671d65941029a9e7e51062dc0d1d287cc95",
+      "crates/worldgen11/src/scenario.rs": "e5b96eb0a5cf00fac6d56bb2f841ad62a54ce570c6d168a77025a2ea1201df0d",
       "crates/worldgen11/src/world/spawn181.rs": "a6a6da75654fd6d99ebefc019505bc54b023289195f0dda284774cda48059e7c",
       "crates/worldgen11/src/entity/client_tick.rs": "8a31770c6435c0bf891330c3805d45ee10b345adbee34815a3bab1da8d97f61c"
     },
@@ -909,7 +910,7 @@
       "1.1": "4f6a58db1a476646e33cac0f43e58dbe75eb2ef85e12391cec5675a36ef4c270"
     },
     "completion_blockers": [],
-    "revalidation": "Current gameplay fixture/test suite, world/provider/save suites, client lib, main binary build and focused render/GUI proofs passed. Runtime changes reviewed against existing credited deltas; inherited APIs remain outside delta credit."
+    "revalidation": "Stable final candidate: all client tests including original corpora/GPU upload, all simulation tests, all older-version libraries, release workspace/dispatch and targeted Unicode/name/save proof pass."
   },
   "WorldProvider": {
     "complete_delta_review": true,
@@ -917,7 +918,7 @@
     "rust_source_sha256": {
       "crates/worldgen11/src/world/mod.rs": "e290afaf1716b935a66ebf7674b0970a05d01ebb7b64fcc5d434831a763c5678",
       "crates/worldgen11/src/world/dimension.rs": "178e1786a5e89cca4abbb710a97ceb8e1d34b54f91687d1e87387643e6cdcb95",
-      "crates/worldgen11/src/scenario.rs": "dd9dc0d569926752e679ef743db0b671d65941029a9e7e51062dc0d1d287cc95",
+      "crates/worldgen11/src/scenario.rs": "e5b96eb0a5cf00fac6d56bb2f841ad62a54ce570c6d168a77025a2ea1201df0d",
       "crates/worldgen11/src/world/spawn181.rs": "a6a6da75654fd6d99ebefc019505bc54b023289195f0dda284774cda48059e7c",
       "crates/client11/src/render/player_view.rs": "578453ace6f163dc21166e934b656295a71cc29cb46bd6c3057d3470fc7abc6b",
       "crates/client11/src/render/camera.rs": "e3f68a80f1ff913fd85ace1a11fe06949ad1c0117736101a3545208b70ec30ca",
@@ -928,7 +929,7 @@
       "1.1": "c22e161fecedbf3b8e76776973e7606728fd3ff73c42a465b71695cbb29c9530"
     },
     "completion_blockers": [],
-    "revalidation": "Current gameplay fixture/test suite, world/provider/save suites, client lib, main binary build and focused render/GUI proofs passed. Runtime changes reviewed against existing credited deltas; inherited APIs remain outside delta credit."
+    "revalidation": "Stable final candidate: all client tests including original corpora/GPU upload, all simulation tests, all older-version libraries, release workspace/dispatch and targeted Unicode/name/save proof pass."
   },
   "WorldProviderEnd": {
     "complete_delta_review": true,
@@ -936,7 +937,7 @@
     "rust_source_sha256": {
       "crates/worldgen11/src/world/mod.rs": "e290afaf1716b935a66ebf7674b0970a05d01ebb7b64fcc5d434831a763c5678",
       "crates/worldgen11/src/world/dimension.rs": "178e1786a5e89cca4abbb710a97ceb8e1d34b54f91687d1e87387643e6cdcb95",
-      "crates/worldgen11/src/scenario.rs": "dd9dc0d569926752e679ef743db0b671d65941029a9e7e51062dc0d1d287cc95",
+      "crates/worldgen11/src/scenario.rs": "e5b96eb0a5cf00fac6d56bb2f841ad62a54ce570c6d168a77025a2ea1201df0d",
       "crates/worldgen11/src/world/spawn181.rs": "a6a6da75654fd6d99ebefc019505bc54b023289195f0dda284774cda48059e7c"
     },
     "original_source_sha256": {
@@ -944,21 +945,21 @@
       "1.1": "122101ebe9ba6571a4f00038fc7d5f4b1f584e1cc0b0ef7c0d11d97cc4594d9c"
     },
     "completion_blockers": [],
-    "revalidation": "Current gameplay fixture/test suite, world/provider/save suites, client lib, main binary build and focused render/GUI proofs passed. Runtime changes reviewed against existing credited deltas; inherited APIs remain outside delta credit."
+    "revalidation": "Stable final candidate: all client tests including original corpora/GPU upload, all simulation tests, all older-version libraries, release workspace/dispatch and targeted Unicode/name/save proof pass."
   },
   "WorldSettings": {
     "complete_delta_review": true,
     "reason": "immutable fifth world type constructor argument and getter; original WorldInfo(settings) invokes getter, DEFAULT/FLAT creation/save/reopen compared",
     "rust_source_sha256": {
       "crates/worldgen11/src/entity/player/food.rs": "25e49a13266974a0fba43bf02f4739310137367389d42bec0c0c91ff980b9849",
-      "crates/worldgen11/src/scenario.rs": "dd9dc0d569926752e679ef743db0b671d65941029a9e7e51062dc0d1d287cc95"
+      "crates/worldgen11/src/scenario.rs": "e5b96eb0a5cf00fac6d56bb2f841ad62a54ce570c6d168a77025a2ea1201df0d"
     },
     "original_source_sha256": {
       "1.0": "667dcaa7a8c1f90b9cc76ff0b4b58d5d865d8e30a8d575a221767f044e523b20",
       "1.1": "92d1f67ec774d4709159975555567c40c5297e22713682606bf808c858f5210e"
     },
     "completion_blockers": [],
-    "revalidation": "Current gameplay fixture/test suite, world/provider/save suites, client lib, main binary build and focused render/GUI proofs passed. Runtime changes reviewed against existing credited deltas; inherited APIs remain outside delta credit."
+    "revalidation": "Stable final candidate: all client tests including original corpora/GPU upload, all simulation tests, all older-version libraries, release workspace/dispatch and targeted Unicode/name/save proof pass."
   },
   "GenLayerHills": {
     "complete_delta_review": true,
@@ -972,7 +973,7 @@
       "1.1": "70150c89f924b90fc1edfd00875acaae2ce2cfa1cb686c3d7a7a05dbddbf24a8"
     },
     "completion_blockers": [],
-    "revalidation": "Current gameplay fixture/test suite, world/provider/save suites, client lib, main binary build and focused render/GUI proofs passed. Runtime changes reviewed against existing credited deltas; inherited APIs remain outside delta credit."
+    "revalidation": "Stable final candidate: all client tests including original corpora/GPU upload, all simulation tests, all older-version libraries, release workspace/dispatch and targeted Unicode/name/save proof pass."
   },
   "GenLayerShore": {
     "complete_delta_review": true,
@@ -986,7 +987,7 @@
       "1.1": "787da2e1dc8623de1e577c52080753897dc6532b0f4c5b0ef075461de637151b"
     },
     "completion_blockers": [],
-    "revalidation": "Current gameplay fixture/test suite, world/provider/save suites, client lib, main binary build and focused render/GUI proofs passed. Runtime changes reviewed against existing credited deltas; inherited APIs remain outside delta credit."
+    "revalidation": "Stable final candidate: all client tests including original corpora/GPU upload, all simulation tests, all older-version libraries, release workspace/dispatch and targeted Unicode/name/save proof pass."
   },
   "GenLayerSwampRivers": {
     "complete_delta_review": true,
@@ -1000,23 +1001,29 @@
       "1.1": "296dfff7bfc0d77170c79d2a1e834277e5b29ece07523db2659fbd05214e3e95"
     },
     "completion_blockers": [],
-    "revalidation": "Current gameplay fixture/test suite, world/provider/save suites, client lib, main binary build and focused render/GUI proofs passed. Runtime changes reviewed against existing credited deltas; inherited APIs remain outside delta credit."
+    "revalidation": "Stable final candidate: all client tests including original corpora/GPU upload, all simulation tests, all older-version libraries, release workspace/dispatch and targeted Unicode/name/save proof pass."
   },
   "WorldInfo": {
     "complete_delta_review": true,
     "reason": "All generatorName read/default/fallback/settings/getter/save hunks previously checked in worldtype; new type field copy now compared through original WorldInfo copy constructor versus actual Rust dimension copy.",
     "rust_source_sha256": {
-      "crates/worldgen11/src/storage.rs": "3c60d40d22db9b0dd5f66bb0f5b64fdccf2497faad9be833e366eccab9a24b46",
-      "crates/worldgen11/src/storage181.rs": "c53c48e218f045e183132cfac491d5f4a05f8c595085ee4e8e0b9b614c824b1d",
+      "crates/client11/src/app.rs": "3c3d8323e34d31035afea71889887b20481dbf255c86da6e34373123abba5540",
+      "crates/client11/src/gui/saves.rs": "1618c8485982077cc5bb42aee472b283b1461f8d14075950bd791d2abaf108ef",
+      "crates/client11/src/worker.rs": "94c93d8b161447a516d740627d214a88d2a1d99d501a6ad07132756c942e4e0c",
+      "crates/worldgen11/src/convert.rs": "3aa52a5916de569662a6ebe765b4e5e4a7f6ac7b7d1e62a0d58b0d0bf4a61482",
+      "crates/worldgen11/src/nbt.rs": "3905052d9ba04b2b7c2df68f6235e78e76f93e19ef70882b7bb0f48b4b83b068",
       "crates/worldgen11/src/save_format_old181.rs": "f90fc8df865dc9da2aa633af593bb40a67b111e40ac9a9c3de52550cd66f42ed",
-      "crates/worldgen11/src/convert.rs": "3aa52a5916de569662a6ebe765b4e5e4a7f6ac7b7d1e62a0d58b0d0bf4a61482"
+      "crates/worldgen11/src/scenario.rs": "e5b96eb0a5cf00fac6d56bb2f841ad62a54ce570c6d168a77025a2ea1201df0d",
+      "crates/worldgen11/src/storage.rs": "848615ecd9f008bb0148a490991872cf6c9aa11ce0bef254978ec325e4e64b30",
+      "crates/worldgen11/src/storage181.rs": "c53c48e218f045e183132cfac491d5f4a05f8c595085ee4e8e0b9b614c824b1d"
     },
     "original_source_sha256": {
       "1.0": "9428dfd3f85e5aeccd2a14722e576b32aea76456b933b74e8c236d0597a97cca",
       "1.1": "4b6272349d56f03261855b5837f299428ac3641f6333e8bfb75ba1a681c66f87"
     },
     "completion_blockers": [],
-    "revalidation": "Current gameplay fixture/test suite, world/provider/save suites, client lib, main binary build and focused render/GUI proofs passed. Runtime changes reviewed against existing credited deltas; inherited APIs remain outside delta credit."
+    "revalidation": "Stable final candidate: all client tests including original corpora/GPU upload, all simulation tests, all older-version libraries, release workspace/dispatch and targeted Unicode/name/save proof pass.",
+    "unicode_workflow": "Lossless rawUTF16 name/seed/folder through originalGUI callbacks, nativeWindows filenames, initial save, reopen/list, rename and delete; full65550original NBT corpus +96originalGUI creation callbacks and native production lifecycle proof."
   },
   "WorldProviderHell": {
     "complete_delta_review": true,
@@ -1024,7 +1031,7 @@
     "rust_source_sha256": {
       "crates/worldgen11/src/world/mod.rs": "e290afaf1716b935a66ebf7674b0970a05d01ebb7b64fcc5d434831a763c5678",
       "crates/worldgen11/src/world/dimension.rs": "178e1786a5e89cca4abbb710a97ceb8e1d34b54f91687d1e87387643e6cdcb95",
-      "crates/worldgen11/src/scenario.rs": "dd9dc0d569926752e679ef743db0b671d65941029a9e7e51062dc0d1d287cc95",
+      "crates/worldgen11/src/scenario.rs": "e5b96eb0a5cf00fac6d56bb2f841ad62a54ce570c6d168a77025a2ea1201df0d",
       "crates/worldgen11/src/world/spawn181.rs": "a6a6da75654fd6d99ebefc019505bc54b023289195f0dda284774cda48059e7c"
     },
     "original_source_sha256": {
@@ -1032,7 +1039,7 @@
       "1.1": "cd81191027f9780267588830338373c1f839c146053a926fe74b5b714df870fa"
     },
     "completion_blockers": [],
-    "revalidation": "Current gameplay fixture/test suite, world/provider/save suites, client lib, main binary build and focused render/GUI proofs passed. Runtime changes reviewed against existing credited deltas; inherited APIs remain outside delta credit."
+    "revalidation": "Stable final candidate: all client tests including original corpora/GPU upload, all simulation tests, all older-version libraries, release workspace/dispatch and targeted Unicode/name/save proof pass."
   },
   "TileEntityBrewingStand": {
     "complete_delta_review": true,
@@ -1046,7 +1053,7 @@
     },
     "completion_blockers": [],
     "direct_original_evidence": "Real original updateEntity timeline through402ticks: normal completion, ingredient swap, removal, NBT save/reload; compares stacks, brewTime, ingredientID, filledSlots, dirty callbacks, metadata notifications and World RNG.",
-    "revalidation": "Current gameplay fixture/test suite, world/provider/save suites, client lib, main binary build and focused render/GUI proofs passed. Runtime changes reviewed against existing credited deltas; inherited APIs remain outside delta credit."
+    "revalidation": "Stable final candidate: all client tests including original corpora/GPU upload, all simulation tests, all older-version libraries, release workspace/dispatch and targeted Unicode/name/save proof pass."
   },
   "EntityCreeper": {
     "complete_delta_review": true,
@@ -1060,7 +1067,7 @@
     },
     "completion_blockers": [],
     "direct_original_evidence": "Real onDeath with skeleton/zombie/generic sources, both world modes and200 seeds; ordered actual item drops plus Creeper and World RNG tails; all10 records observed.",
-    "revalidation": "Current gameplay fixture/test suite, world/provider/save suites, client lib, main binary build and focused render/GUI proofs passed. Runtime changes reviewed against existing credited deltas; inherited APIs remain outside delta credit."
+    "revalidation": "Stable final candidate: all client tests including original corpora/GPU upload, all simulation tests, all older-version libraries, release workspace/dispatch and targeted Unicode/name/save proof pass."
   },
   "BlockDetectorRail": {
     "complete_delta_review": true,
@@ -1075,7 +1082,7 @@
     },
     "completion_blockers": [],
     "direct_original_evidence": "Original private setStateIfMinecartInteractsWithRail vs actual Rust update_detector_rail: eight height boundaries, on/off metadata, three float-sensitive coordinates; six exact AABB bits, metadata, pending ticks, RNG.",
-    "revalidation": "Current gameplay fixture/test suite, world/provider/save suites, client lib, main binary build and focused render/GUI proofs passed. Runtime changes reviewed against existing credited deltas; inherited APIs remain outside delta credit."
+    "revalidation": "Stable final candidate: all client tests including original corpora/GPU upload, all simulation tests, all older-version libraries, release workspace/dispatch and targeted Unicode/name/save proof pass."
   },
   "BlockSnow": {
     "complete_delta_review": true,
@@ -1090,7 +1097,7 @@
     },
     "completion_blockers": [],
     "direct_original_evidence": "Real original support query and neighbor callback for10 support blocks and both leaves rendering opacity modes; placement boolean, removal block and RNG.",
-    "revalidation": "Current gameplay fixture/test suite, world/provider/save suites, client lib, main binary build and focused render/GUI proofs passed. Runtime changes reviewed against existing credited deltas; inherited APIs remain outside delta credit."
+    "revalidation": "Stable final candidate: all client tests including original corpora/GPU upload, all simulation tests, all older-version libraries, release workspace/dispatch and targeted Unicode/name/save proof pass."
   },
   "BlockStem": {
     "complete_delta_review": true,
@@ -1105,7 +1112,7 @@
     },
     "completion_blockers": [],
     "direct_original_evidence": "Real original updateTick for pumpkin/melon, five soils, existing adjacent fruit/no fruit,100 seeds; actual four neighboring resulting block IDs and World/passed RNG tails. Soil-before-air query order matched by source audit.",
-    "revalidation": "Current gameplay fixture/test suite, world/provider/save suites, client lib, main binary build and focused render/GUI proofs passed. Runtime changes reviewed against existing credited deltas; inherited APIs remain outside delta credit."
+    "revalidation": "Stable final candidate: all client tests including original corpora/GPU upload, all simulation tests, all older-version libraries, release workspace/dispatch and targeted Unicode/name/save proof pass."
   },
   "BlockTrapDoor": {
     "complete_delta_review": true,
@@ -1120,7 +1127,7 @@
     },
     "completion_blockers": [],
     "direct_original_evidence": "Real original neighbor callback for16 metadata, changed0/1/69/93/96, powered/unpowered and server/remote; final metadata, actual auxiliary event count and RNG.",
-    "revalidation": "Current gameplay fixture/test suite, world/provider/save suites, client lib, main binary build and focused render/GUI proofs passed. Runtime changes reviewed against existing credited deltas; inherited APIs remain outside delta credit."
+    "revalidation": "Stable final candidate: all client tests including original corpora/GPU upload, all simulation tests, all older-version libraries, release workspace/dispatch and targeted Unicode/name/save proof pass."
   },
   "EntityWolf": {
     "complete_delta_review": true,
@@ -1134,7 +1141,7 @@
     },
     "completion_blockers": [],
     "direct_original_evidence": "Real original Wolf onLivingUpdate own body with inherited movement isolated: every boolean combination of world mode, shaking, active shake, path, onGround and legacy entity flag; shake state, raw float times, Entity/World RNG. Separate EntityLiving changed guards are not credited.",
-    "revalidation": "Current gameplay fixture/test suite, world/provider/save suites, client lib, main binary build and focused render/GUI proofs passed. Runtime changes reviewed against existing credited deltas; inherited APIs remain outside delta credit."
+    "revalidation": "Stable final candidate: all client tests including original corpora/GPU upload, all simulation tests, all older-version libraries, release workspace/dispatch and targeted Unicode/name/save proof pass."
   },
   "Tessellator": {
     "complete_delta_review": true,
@@ -1148,7 +1155,7 @@
       "1.0": "220a7d516f3a99d01277e1bb202b63f3d8f96ba31229cb86b463fa0ac678cb97",
       "1.1": "3c9e24468a73eae6c262a26075490c1e93b4ae19181016e13997a6b4e98a61fa"
     },
-    "revalidation": "Current gameplay fixture/test suite, world/provider/save suites, client lib, main binary build and focused render/GUI proofs passed. Runtime changes reviewed against existing credited deltas; inherited APIs remain outside delta credit."
+    "revalidation": "Stable final candidate: all client tests including original corpora/GPU upload, all simulation tests, all older-version libraries, release workspace/dispatch and targeted Unicode/name/save proof pass."
   },
   "ChunkProviderFlat": {
     "complete_delta_review": true,
@@ -1170,7 +1177,7 @@
       "Null manager/biome states cannot be constructed through Rust fixed-Plains registration; their guards are recorded directly from original and enforced by nonnullable runtime types, not tested via a fabricated invalid Rust world."
     ],
     "criterion": "Complete normalized delta in authorized singleplayer runtime; explicit original finite evidence, not whole inherited Java API parity.",
-    "revalidation": "Current gameplay fixture/test suite, world/provider/save suites, client lib, main binary build and focused render/GUI proofs passed. Runtime changes reviewed against existing credited deltas; inherited APIs remain outside delta credit."
+    "revalidation": "Stable final candidate: all client tests including original corpora/GPU upload, all simulation tests, all older-version libraries, release workspace/dispatch and targeted Unicode/name/save proof pass."
   },
   "MapGenStronghold": {
     "complete_delta_review": true,
@@ -1191,7 +1198,7 @@
       "Finite seeded direct streams, not universal-input formal proof."
     ],
     "criterion": "Complete normalized delta in authorized singleplayer runtime; explicit original finite evidence, not whole inherited Java API parity.",
-    "revalidation": "Current gameplay fixture/test suite, world/provider/save suites, client lib, main binary build and focused render/GUI proofs passed. Runtime changes reviewed against existing credited deltas; inherited APIs remain outside delta credit."
+    "revalidation": "Stable final candidate: all client tests including original corpora/GPU upload, all simulation tests, all older-version libraries, release workspace/dispatch and targeted Unicode/name/save proof pass."
   },
   "EntitySheep": {
     "complete_delta_review": true,
@@ -1241,7 +1248,7 @@
     "completion_blockers": [],
     "limitations": [],
     "criterion": "Complete normalized delta in authorized singleplayer runtime; explicit original finite evidence, not whole inherited Java API parity.",
-    "revalidation": "Current gameplay fixture/test suite, world/provider/save suites, client lib, main binary build and focused render/GUI proofs passed. Runtime changes reviewed against existing credited deltas; inherited APIs remain outside delta credit."
+    "revalidation": "Stable final candidate: all client tests including original corpora/GPU upload, all simulation tests, all older-version libraries, release workspace/dispatch and targeted Unicode/name/save proof pass."
   },
   "EntitySquid": {
     "complete_delta_review": true,
@@ -1265,7 +1272,7 @@
     "completion_blockers": [],
     "limitations": [],
     "criterion": "Complete normalized delta in authorized singleplayer runtime; explicit original finite evidence, not whole inherited Java API parity.",
-    "revalidation": "Current gameplay fixture/test suite, world/provider/save suites, client lib, main binary build and focused render/GUI proofs passed. Runtime changes reviewed against existing credited deltas; inherited APIs remain outside delta credit."
+    "revalidation": "Stable final candidate: all client tests including original corpora/GPU upload, all simulation tests, all older-version libraries, release workspace/dispatch and targeted Unicode/name/save proof pass."
   },
   "ItemStack": {
     "complete_delta_review": true,
@@ -1310,7 +1317,7 @@
       "Tooltip/render/name callees remain their own parent classes; ItemStack call/body changes here are symbol renames"
     ],
     "criterion": "Complete normalized delta in authorized singleplayer runtime; explicit original finite evidence, not whole inherited Java API parity.",
-    "revalidation": "Current gameplay fixture/test suite, world/provider/save suites, client lib, main binary build and focused render/GUI proofs passed. Runtime changes reviewed against existing credited deltas; inherited APIs remain outside delta credit."
+    "revalidation": "Stable final candidate: all client tests including original corpora/GPU upload, all simulation tests, all older-version libraries, release workspace/dispatch and targeted Unicode/name/save proof pass."
   },
   "InventoryPlayer": {
     "complete_delta_review": true,
@@ -1351,7 +1358,7 @@
       "Tooltip/render/name callees remain their own parent classes; ItemStack call/body changes here are symbol renames"
     ],
     "criterion": "Complete normalized delta in authorized singleplayer runtime; explicit original finite evidence, not whole inherited Java API parity.",
-    "revalidation": "Current gameplay fixture/test suite, world/provider/save suites, client lib, main binary build and focused render/GUI proofs passed. Runtime changes reviewed against existing credited deltas; inherited APIs remain outside delta credit."
+    "revalidation": "Stable final candidate: all client tests including original corpora/GPU upload, all simulation tests, all older-version libraries, release workspace/dispatch and targeted Unicode/name/save proof pass."
   },
   "Container": {
     "complete_delta_review": true,
@@ -1396,7 +1403,7 @@
       "Tooltip/render/name callees remain their own parent classes; ItemStack call/body changes here are symbol renames"
     ],
     "criterion": "Complete normalized delta in authorized singleplayer runtime; explicit original finite evidence, not whole inherited Java API parity.",
-    "revalidation": "Current gameplay fixture/test suite, world/provider/save suites, client lib, main binary build and focused render/GUI proofs passed. Runtime changes reviewed against existing credited deltas; inherited APIs remain outside delta credit."
+    "revalidation": "Stable final candidate: all client tests including original corpora/GPU upload, all simulation tests, all older-version libraries, release workspace/dispatch and targeted Unicode/name/save proof pass."
   },
   "BlockRedstoneWire": {
     "complete_delta_review": true,
@@ -1433,7 +1440,7 @@
     "completion_blockers": [],
     "limitations": [],
     "criterion": "Complete normalized delta in authorized singleplayer runtime; explicit original finite evidence, not whole inherited Java API parity.",
-    "revalidation": "Current gameplay fixture/test suite, world/provider/save suites, client lib, main binary build and focused render/GUI proofs passed. Runtime changes reviewed against existing credited deltas; inherited APIs remain outside delta credit."
+    "revalidation": "Stable final candidate: all client tests including original corpora/GPU upload, all simulation tests, all older-version libraries, release workspace/dispatch and targeted Unicode/name/save proof pass."
   },
   "GuiLanguage": {
     "complete_delta_review": true,
@@ -1450,7 +1457,7 @@
       "crates/client11/src/gui/lang.rs": "c87ec914c3fcd385c21fcd08a8c02b260c10a70e39037bb5ba91aef38211368f",
       "crates/client11/src/gui/font.rs": "5475fb2b3af9925fef180e525dbae7ea1af8f9833fbf3b481f63d8db6e9c2ed1",
       "crates/client11/src/gui/settings.rs": "61c01fb9f3e31ad343ce0391494c0ee14bbd0a2be2e4787392e1d0855f81da06",
-      "crates/client11/src/gui/mod.rs": "86efe694608dd478edfcc3d998411bcc0c91f382525ff943cebcf4a92f30819a",
+      "crates/client11/src/gui/mod.rs": "dc3c9bd40d1ea669cce7720abfcf258fd15fc66e6de9724e5c9a8a659a7d3c25",
       "crates/client11/src/gui/slot.rs": "2b1465f5605c13a63e6512061dfa6e9ee4bd4b96fd62508d1399e04379e15d16",
       "crates/client11/src/texture_packs.rs": "571bbffe6199c815601a216ae8d01a33d2e832feddb23f0628f552cf8c761bf6",
       "tools/oracle11/probes/LanguageWorkflow11.java": "5df4a6527393228478301d88482a77fcc0a6ff89d84330139d0530f3fecba114",
@@ -1467,7 +1474,7 @@
       "GuiOptions language-entry102 save/transition branch not added to this workflow; initial options button layout is in callback fixture but no full GuiOptions class completion credit from this handoff."
     ],
     "criterion": "Complete normalized delta in authorized singleplayer runtime; explicit original finite evidence, not whole inherited Java API parity.",
-    "revalidation": "Current gameplay fixture/test suite, world/provider/save suites, client lib, main binary build and focused render/GUI proofs passed. Runtime changes reviewed against existing credited deltas; inherited APIs remain outside delta credit."
+    "revalidation": "Stable final candidate: all client tests including original corpora/GPU upload, all simulation tests, all older-version libraries, release workspace/dispatch and targeted Unicode/name/save proof pass."
   },
   "GuiSlotLanguage": {
     "complete_delta_review": true,
@@ -1483,7 +1490,7 @@
       "crates/client11/src/gui/lang.rs": "c87ec914c3fcd385c21fcd08a8c02b260c10a70e39037bb5ba91aef38211368f",
       "crates/client11/src/gui/font.rs": "5475fb2b3af9925fef180e525dbae7ea1af8f9833fbf3b481f63d8db6e9c2ed1",
       "crates/client11/src/gui/settings.rs": "61c01fb9f3e31ad343ce0391494c0ee14bbd0a2be2e4787392e1d0855f81da06",
-      "crates/client11/src/gui/mod.rs": "86efe694608dd478edfcc3d998411bcc0c91f382525ff943cebcf4a92f30819a",
+      "crates/client11/src/gui/mod.rs": "dc3c9bd40d1ea669cce7720abfcf258fd15fc66e6de9724e5c9a8a659a7d3c25",
       "crates/client11/src/gui/slot.rs": "2b1465f5605c13a63e6512061dfa6e9ee4bd4b96fd62508d1399e04379e15d16",
       "crates/client11/src/texture_packs.rs": "571bbffe6199c815601a216ae8d01a33d2e832feddb23f0628f552cf8c761bf6",
       "tools/oracle11/probes/LanguageWorkflow11.java": "5df4a6527393228478301d88482a77fcc0a6ff89d84330139d0530f3fecba114",
@@ -1500,7 +1507,7 @@
       "GuiOptions language-entry102 save/transition branch not added to this workflow; initial options button layout is in callback fixture but no full GuiOptions class completion credit from this handoff."
     ],
     "criterion": "Complete normalized delta in authorized singleplayer runtime; explicit original finite evidence, not whole inherited Java API parity.",
-    "revalidation": "Current gameplay fixture/test suite, world/provider/save suites, client lib, main binary build and focused render/GUI proofs passed. Runtime changes reviewed against existing credited deltas; inherited APIs remain outside delta credit."
+    "revalidation": "Stable final candidate: all client tests including original corpora/GPU upload, all simulation tests, all older-version libraries, release workspace/dispatch and targeted Unicode/name/save proof pass."
   },
   "EntityAIAttackOnCollide": {
     "complete_delta_review": true,
@@ -1561,7 +1568,7 @@
       "Allocation failure/OOM or reflective Java API observability is outside existing singleplayer scope"
     ],
     "criterion": "Complete normalized delta in authorized singleplayer runtime; explicit original finite evidence, not whole inherited Java API parity.",
-    "revalidation": "Current gameplay fixture/test suite, world/provider/save suites, client lib, main binary build and focused render/GUI proofs passed. Runtime changes reviewed against existing credited deltas; inherited APIs remain outside delta credit."
+    "revalidation": "Stable final candidate: all client tests including original corpora/GPU upload, all simulation tests, all older-version libraries, release workspace/dispatch and targeted Unicode/name/save proof pass."
   },
   "EntityAIBase": {
     "complete_delta_review": true,
@@ -1616,7 +1623,7 @@
       "Allocation failure/OOM or reflective Java API observability is outside existing singleplayer scope"
     ],
     "criterion": "Complete normalized delta in authorized singleplayer runtime; explicit original finite evidence, not whole inherited Java API parity.",
-    "revalidation": "Current gameplay fixture/test suite, world/provider/save suites, client lib, main binary build and focused render/GUI proofs passed. Runtime changes reviewed against existing credited deltas; inherited APIs remain outside delta credit."
+    "revalidation": "Stable final candidate: all client tests including original corpora/GPU upload, all simulation tests, all older-version libraries, release workspace/dispatch and targeted Unicode/name/save proof pass."
   },
   "EntityAILookIdle": {
     "complete_delta_review": true,
@@ -1677,7 +1684,7 @@
       "Allocation failure/OOM or reflective Java API observability is outside existing singleplayer scope"
     ],
     "criterion": "Complete normalized delta in authorized singleplayer runtime; explicit original finite evidence, not whole inherited Java API parity.",
-    "revalidation": "Current gameplay fixture/test suite, world/provider/save suites, client lib, main binary build and focused render/GUI proofs passed. Runtime changes reviewed against existing credited deltas; inherited APIs remain outside delta credit."
+    "revalidation": "Stable final candidate: all client tests including original corpora/GPU upload, all simulation tests, all older-version libraries, release workspace/dispatch and targeted Unicode/name/save proof pass."
   },
   "EntityAISwimming": {
     "complete_delta_review": true,
@@ -1738,7 +1745,7 @@
       "Allocation failure/OOM or reflective Java API observability is outside existing singleplayer scope"
     ],
     "criterion": "Complete normalized delta in authorized singleplayer runtime; explicit original finite evidence, not whole inherited Java API parity.",
-    "revalidation": "Current gameplay fixture/test suite, world/provider/save suites, client lib, main binary build and focused render/GUI proofs passed. Runtime changes reviewed against existing credited deltas; inherited APIs remain outside delta credit."
+    "revalidation": "Stable final candidate: all client tests including original corpora/GPU upload, all simulation tests, all older-version libraries, release workspace/dispatch and targeted Unicode/name/save proof pass."
   },
   "EntityAITaskEntry": {
     "complete_delta_review": true,
@@ -1797,7 +1804,7 @@
       "Allocation failure/OOM or reflective Java API observability is outside existing singleplayer scope"
     ],
     "criterion": "Complete normalized delta in authorized singleplayer runtime; explicit original finite evidence, not whole inherited Java API parity.",
-    "revalidation": "Current gameplay fixture/test suite, world/provider/save suites, client lib, main binary build and focused render/GUI proofs passed. Runtime changes reviewed against existing credited deltas; inherited APIs remain outside delta credit."
+    "revalidation": "Stable final candidate: all client tests including original corpora/GPU upload, all simulation tests, all older-version libraries, release workspace/dispatch and targeted Unicode/name/save proof pass."
   },
   "EntityAITasks": {
     "complete_delta_review": true,
@@ -1860,7 +1867,7 @@
       "Allocation failure/OOM or reflective Java API observability is outside existing singleplayer scope"
     ],
     "criterion": "Complete normalized delta in authorized singleplayer runtime; explicit original finite evidence, not whole inherited Java API parity.",
-    "revalidation": "Current gameplay fixture/test suite, world/provider/save suites, client lib, main binary build and focused render/GUI proofs passed. Runtime changes reviewed against existing credited deltas; inherited APIs remain outside delta credit."
+    "revalidation": "Stable final candidate: all client tests including original corpora/GPU upload, all simulation tests, all older-version libraries, release workspace/dispatch and targeted Unicode/name/save proof pass."
   },
   "EntityAIWander": {
     "complete_delta_review": true,
@@ -1921,7 +1928,7 @@
       "Allocation failure/OOM or reflective Java API observability is outside existing singleplayer scope"
     ],
     "criterion": "Complete normalized delta in authorized singleplayer runtime; explicit original finite evidence, not whole inherited Java API parity.",
-    "revalidation": "Current gameplay fixture/test suite, world/provider/save suites, client lib, main binary build and focused render/GUI proofs passed. Runtime changes reviewed against existing credited deltas; inherited APIs remain outside delta credit."
+    "revalidation": "Stable final candidate: all client tests including original corpora/GPU upload, all simulation tests, all older-version libraries, release workspace/dispatch and targeted Unicode/name/save proof pass."
   },
   "EntityAIWatchClosest": {
     "complete_delta_review": true,
@@ -1982,7 +1989,7 @@
       "Allocation failure/OOM or reflective Java API observability is outside existing singleplayer scope"
     ],
     "criterion": "Complete normalized delta in authorized singleplayer runtime; explicit original finite evidence, not whole inherited Java API parity.",
-    "revalidation": "Current gameplay fixture/test suite, world/provider/save suites, client lib, main binary build and focused render/GUI proofs passed. Runtime changes reviewed against existing credited deltas; inherited APIs remain outside delta credit."
+    "revalidation": "Stable final candidate: all client tests including original corpora/GPU upload, all simulation tests, all older-version libraries, release workspace/dispatch and targeted Unicode/name/save proof pass."
   },
   "EntityJumpHelper": {
     "complete_delta_review": true,
@@ -2041,7 +2048,7 @@
       "Allocation failure/OOM or reflective Java API observability is outside existing singleplayer scope"
     ],
     "criterion": "Complete normalized delta in authorized singleplayer runtime; explicit original finite evidence, not whole inherited Java API parity.",
-    "revalidation": "Current gameplay fixture/test suite, world/provider/save suites, client lib, main binary build and focused render/GUI proofs passed. Runtime changes reviewed against existing credited deltas; inherited APIs remain outside delta credit."
+    "revalidation": "Stable final candidate: all client tests including original corpora/GPU upload, all simulation tests, all older-version libraries, release workspace/dispatch and targeted Unicode/name/save proof pass."
   },
   "EntityLookHelper": {
     "complete_delta_review": true,
@@ -2100,7 +2107,7 @@
       "Allocation failure/OOM or reflective Java API observability is outside existing singleplayer scope"
     ],
     "criterion": "Complete normalized delta in authorized singleplayer runtime; explicit original finite evidence, not whole inherited Java API parity.",
-    "revalidation": "Current gameplay fixture/test suite, world/provider/save suites, client lib, main binary build and focused render/GUI proofs passed. Runtime changes reviewed against existing credited deltas; inherited APIs remain outside delta credit."
+    "revalidation": "Stable final candidate: all client tests including original corpora/GPU upload, all simulation tests, all older-version libraries, release workspace/dispatch and targeted Unicode/name/save proof pass."
   },
   "EntityMoveHelper": {
     "complete_delta_review": true,
@@ -2159,7 +2166,7 @@
       "Allocation failure/OOM or reflective Java API observability is outside existing singleplayer scope"
     ],
     "criterion": "Complete normalized delta in authorized singleplayer runtime; explicit original finite evidence, not whole inherited Java API parity.",
-    "revalidation": "Current gameplay fixture/test suite, world/provider/save suites, client lib, main binary build and focused render/GUI proofs passed. Runtime changes reviewed against existing credited deltas; inherited APIs remain outside delta credit."
+    "revalidation": "Stable final candidate: all client tests including original corpora/GPU upload, all simulation tests, all older-version libraries, release workspace/dispatch and targeted Unicode/name/save proof pass."
   },
   "INavigate": {
     "complete_delta_review": true,
@@ -2214,7 +2221,7 @@
       "Allocation failure/OOM or reflective Java API observability is outside existing singleplayer scope"
     ],
     "criterion": "Complete normalized delta in authorized singleplayer runtime; explicit original finite evidence, not whole inherited Java API parity.",
-    "revalidation": "Current gameplay fixture/test suite, world/provider/save suites, client lib, main binary build and focused render/GUI proofs passed. Runtime changes reviewed against existing credited deltas; inherited APIs remain outside delta credit."
+    "revalidation": "Stable final candidate: all client tests including original corpora/GPU upload, all simulation tests, all older-version libraries, release workspace/dispatch and targeted Unicode/name/save proof pass."
   },
   "PathNavigate": {
     "complete_delta_review": true,
@@ -2273,7 +2280,7 @@
       "Allocation failure/OOM or reflective Java API observability is outside existing singleplayer scope"
     ],
     "criterion": "Complete normalized delta in authorized singleplayer runtime; explicit original finite evidence, not whole inherited Java API parity.",
-    "revalidation": "Current gameplay fixture/test suite, world/provider/save suites, client lib, main binary build and focused render/GUI proofs passed. Runtime changes reviewed against existing credited deltas; inherited APIs remain outside delta credit."
+    "revalidation": "Stable final candidate: all client tests including original corpora/GPU upload, all simulation tests, all older-version libraries, release workspace/dispatch and targeted Unicode/name/save proof pass."
   },
   "EntityLiving": {
     "complete_delta_review": true,
@@ -2338,7 +2345,7 @@
       "EntityLiving rendering/client integration does not read newly introduced dead yaw fields in original release"
     ],
     "criterion": "Complete normalized delta in authorized singleplayer runtime; explicit original finite evidence, not whole inherited Java API parity.",
-    "revalidation": "Current gameplay fixture/test suite, world/provider/save suites, client lib, main binary build and focused render/GUI proofs passed. Runtime changes reviewed against existing credited deltas; inherited APIs remain outside delta credit."
+    "revalidation": "Stable final candidate: all client tests including original corpora/GPU upload, all simulation tests, all older-version libraries, release workspace/dispatch and targeted Unicode/name/save proof pass."
   },
   "EntityZombie": {
     "complete_delta_review": true,
@@ -2387,7 +2394,7 @@
       "EntityLiving rendering/client integration does not read newly introduced dead yaw fields in original release"
     ],
     "criterion": "Complete normalized delta in authorized singleplayer runtime; explicit original finite evidence, not whole inherited Java API parity.",
-    "revalidation": "Current gameplay fixture/test suite, world/provider/save suites, client lib, main binary build and focused render/GUI proofs passed. Runtime changes reviewed against existing credited deltas; inherited APIs remain outside delta credit."
+    "revalidation": "Stable final candidate: all client tests including original corpora/GPU upload, all simulation tests, all older-version libraries, release workspace/dispatch and targeted Unicode/name/save proof pass."
   },
   "EntityPigZombie": {
     "complete_delta_review": true,
@@ -2428,7 +2435,7 @@
       "EntityLiving rendering/client integration does not read newly introduced dead yaw fields in original release"
     ],
     "criterion": "Complete normalized delta in authorized singleplayer runtime; explicit original finite evidence, not whole inherited Java API parity.",
-    "revalidation": "Current gameplay fixture/test suite, world/provider/save suites, client lib, main binary build and focused render/GUI proofs passed. Runtime changes reviewed against existing credited deltas; inherited APIs remain outside delta credit."
+    "revalidation": "Stable final candidate: all client tests including original corpora/GPU upload, all simulation tests, all older-version libraries, release workspace/dispatch and targeted Unicode/name/save proof pass."
   },
   "EntityMob": {
     "complete_delta_review": true,
@@ -2473,7 +2480,7 @@
       "EntityLiving rendering/client integration does not read newly introduced dead yaw fields in original release"
     ],
     "criterion": "Complete normalized delta in authorized singleplayer runtime; explicit original finite evidence, not whole inherited Java API parity.",
-    "revalidation": "Current gameplay fixture/test suite, world/provider/save suites, client lib, main binary build and focused render/GUI proofs passed. Runtime changes reviewed against existing credited deltas; inherited APIs remain outside delta credit."
+    "revalidation": "Stable final candidate: all client tests including original corpora/GPU upload, all simulation tests, all older-version libraries, release workspace/dispatch and targeted Unicode/name/save proof pass."
   },
   "GuiBrewingStand": {
     "complete_delta_review": true,
@@ -2485,7 +2492,7 @@
     "completion_blockers": [],
     "limitations": [],
     "criterion": "Complete normalized delta in authorized singleplayer runtime; explicit original finite evidence, not whole inherited Java API parity.",
-    "revalidation": "Current gameplay fixture/test suite, world/provider/save suites, client lib, main binary build and focused render/GUI proofs passed. Runtime changes reviewed against existing credited deltas; inherited APIs remain outside delta credit."
+    "revalidation": "Stable final candidate: all client tests including original corpora/GPU upload, all simulation tests, all older-version libraries, release workspace/dispatch and targeted Unicode/name/save proof pass."
   },
   "RenderManager": {
     "complete_delta_review": true,
@@ -2499,7 +2506,7 @@
     "completion_blockers": [],
     "limitations": [],
     "criterion": "Complete normalized delta in authorized singleplayer runtime; explicit original finite evidence, not whole inherited Java API parity.",
-    "revalidation": "Current gameplay fixture/test suite, world/provider/save suites, client lib, main binary build and focused render/GUI proofs passed. Runtime changes reviewed against existing credited deltas; inherited APIs remain outside delta credit."
+    "revalidation": "Stable final candidate: all client tests including original corpora/GPU upload, all simulation tests, all older-version libraries, release workspace/dispatch and targeted Unicode/name/save proof pass."
   },
   "RenderItem": {
     "complete_delta_review": true,
@@ -2514,7 +2521,7 @@
     "completion_blockers": [],
     "limitations": [],
     "criterion": "Complete normalized delta in authorized singleplayer runtime; explicit original finite evidence, not whole inherited Java API parity.",
-    "revalidation": "Current gameplay fixture/test suite, world/provider/save suites, client lib, main binary build and focused render/GUI proofs passed. Runtime changes reviewed against existing credited deltas; inherited APIs remain outside delta credit."
+    "revalidation": "Stable final candidate: all client tests including original corpora/GPU upload, all simulation tests, all older-version libraries, release workspace/dispatch and targeted Unicode/name/save proof pass."
   },
   "ModelSheep1": {
     "complete_delta_review": true,
@@ -2534,7 +2541,7 @@
     "limitations": [
       "Finite direct GL-input comparison; no full frame pixel claim."
     ],
-    "revalidation": "Current gameplay fixture/test suite, world/provider/save suites, client lib, main binary build and focused render/GUI proofs passed. Runtime changes reviewed against existing credited deltas; inherited APIs remain outside delta credit."
+    "revalidation": "Stable final candidate: all client tests including original corpora/GPU upload, all simulation tests, all older-version libraries, release workspace/dispatch and targeted Unicode/name/save proof pass."
   },
   "ModelSheep2": {
     "complete_delta_review": true,
@@ -2554,7 +2561,7 @@
     "limitations": [
       "Finite direct GL-input comparison; no full frame pixel claim."
     ],
-    "revalidation": "Current gameplay fixture/test suite, world/provider/save suites, client lib, main binary build and focused render/GUI proofs passed. Runtime changes reviewed against existing credited deltas; inherited APIs remain outside delta credit."
+    "revalidation": "Stable final candidate: all client tests including original corpora/GPU upload, all simulation tests, all older-version libraries, release workspace/dispatch and targeted Unicode/name/save proof pass."
   },
   "RenderLiving": {
     "complete_delta_review": true,
@@ -2574,7 +2581,7 @@
     "limitations": [
       "Finite direct GL-input comparison; no full frame pixel claim."
     ],
-    "revalidation": "Current gameplay fixture/test suite, world/provider/save suites, client lib, main binary build and focused render/GUI proofs passed. Runtime changes reviewed against existing credited deltas; inherited APIs remain outside delta credit."
+    "revalidation": "Stable final candidate: all client tests including original corpora/GPU upload, all simulation tests, all older-version libraries, release workspace/dispatch and targeted Unicode/name/save proof pass."
   },
   "EntityCaveSpider": {
     "complete_delta_review": true,
@@ -2635,7 +2642,8 @@
     "completion_blockers": [],
     "limitations": [],
     "criterion": "Complete normalized delta in installed-resource singleplayer runtime; direct finite original authority and full hunk review. No whole inherited API claim.",
-    "no_behavior_change": true
+    "no_behavior_change": true,
+    "revalidation": "Stable final candidate: all client tests including original corpora/GPU upload, all simulation tests, all older-version libraries, release workspace/dispatch and targeted Unicode/name/save proof pass."
   },
   "EntityCreature": {
     "complete_delta_review": true,
@@ -2698,7 +2706,8 @@
     "completion_blockers": [],
     "limitations": [],
     "criterion": "Complete normalized delta in installed-resource singleplayer runtime; direct finite original authority and full hunk review. No whole inherited API claim.",
-    "no_behavior_change": true
+    "no_behavior_change": true,
+    "revalidation": "Stable final candidate: all client tests including original corpora/GPU upload, all simulation tests, all older-version libraries, release workspace/dispatch and targeted Unicode/name/save proof pass."
   },
   "EntityGiantZombie": {
     "complete_delta_review": true,
@@ -2748,7 +2757,8 @@
     "completion_blockers": [],
     "limitations": [],
     "criterion": "Complete normalized delta in installed-resource singleplayer runtime; direct finite original authority and full hunk review. No whole inherited API claim.",
-    "no_behavior_change": true
+    "no_behavior_change": true,
+    "revalidation": "Stable final candidate: all client tests including original corpora/GPU upload, all simulation tests, all older-version libraries, release workspace/dispatch and targeted Unicode/name/save proof pass."
   },
   "EntitySilverfish": {
     "complete_delta_review": true,
@@ -2809,7 +2819,8 @@
     "completion_blockers": [],
     "limitations": [],
     "criterion": "Complete normalized delta in installed-resource singleplayer runtime; direct finite original authority and full hunk review. No whole inherited API claim.",
-    "no_behavior_change": true
+    "no_behavior_change": true,
+    "revalidation": "Stable final candidate: all client tests including original corpora/GPU upload, all simulation tests, all older-version libraries, release workspace/dispatch and targeted Unicode/name/save proof pass."
   },
   "EntitySlime": {
     "complete_delta_review": true,
@@ -2880,7 +2891,8 @@
     "completion_blockers": [],
     "limitations": [],
     "criterion": "Complete normalized delta in installed-resource singleplayer runtime; direct finite original authority and full hunk review. No whole inherited API claim.",
-    "no_behavior_change": true
+    "no_behavior_change": true,
+    "revalidation": "Stable final candidate: all client tests including original corpora/GPU upload, all simulation tests, all older-version libraries, release workspace/dispatch and targeted Unicode/name/save proof pass."
   },
   "StepSoundSand": {
     "complete_delta_review": true,
@@ -2929,7 +2941,8 @@
     "completion_blockers": [],
     "limitations": [],
     "criterion": "Complete normalized delta in installed-resource singleplayer runtime; direct finite original authority and full hunk review. No whole inherited API claim.",
-    "no_behavior_change": true
+    "no_behavior_change": true,
+    "revalidation": "Stable final candidate: all client tests including original corpora/GPU upload, all simulation tests, all older-version libraries, release workspace/dispatch and targeted Unicode/name/save proof pass."
   },
   "StepSoundStone": {
     "complete_delta_review": true,
@@ -2978,7 +2991,8 @@
     "completion_blockers": [],
     "limitations": [],
     "criterion": "Complete normalized delta in installed-resource singleplayer runtime; direct finite original authority and full hunk review. No whole inherited API claim.",
-    "no_behavior_change": true
+    "no_behavior_change": true,
+    "revalidation": "Stable final candidate: all client tests including original corpora/GPU upload, all simulation tests, all older-version libraries, release workspace/dispatch and targeted Unicode/name/save proof pass."
   },
   "EntitySkeleton": {
     "complete_delta_review": true,
@@ -3048,7 +3062,8 @@
     "completion_blockers": [],
     "limitations": [],
     "criterion": "Complete normalized delta in installed-resource singleplayer runtime; direct finite original authority and full hunk review. No whole inherited API claim.",
-    "no_behavior_change": true
+    "no_behavior_change": true,
+    "revalidation": "Stable final candidate: all client tests including original corpora/GPU upload, all simulation tests, all older-version libraries, release workspace/dispatch and targeted Unicode/name/save proof pass."
   },
   "ItemColored": {
     "complete_delta_review": true,
@@ -3143,7 +3158,8 @@
     "completion_blockers": [],
     "limitations": [],
     "criterion": "Complete normalized delta in installed-resource singleplayer runtime; direct finite original authority and full hunk review. No whole inherited API claim.",
-    "no_behavior_change": true
+    "no_behavior_change": true,
+    "revalidation": "Stable final candidate: all client tests including original corpora/GPU upload, all simulation tests, all older-version libraries, release workspace/dispatch and targeted Unicode/name/save proof pass."
   },
   "ItemLeaves": {
     "complete_delta_review": true,
@@ -3204,7 +3220,8 @@
     "completion_blockers": [],
     "limitations": [],
     "criterion": "Complete normalized delta in installed-resource singleplayer runtime; direct finite original authority and full hunk review. No whole inherited API claim.",
-    "no_behavior_change": true
+    "no_behavior_change": true,
+    "revalidation": "Stable final candidate: all client tests including original corpora/GPU upload, all simulation tests, all older-version libraries, release workspace/dispatch and targeted Unicode/name/save proof pass."
   },
   "ItemLilyPad": {
     "complete_delta_review": true,
@@ -3265,7 +3282,8 @@
     "completion_blockers": [],
     "limitations": [],
     "criterion": "Complete normalized delta in installed-resource singleplayer runtime; direct finite original authority and full hunk review. No whole inherited API claim.",
-    "no_behavior_change": true
+    "no_behavior_change": true,
+    "revalidation": "Stable final candidate: all client tests including original corpora/GPU upload, all simulation tests, all older-version libraries, release workspace/dispatch and targeted Unicode/name/save proof pass."
   },
   "EntityAnimal": {
     "complete_delta_review": true,
@@ -3574,7 +3592,8 @@
     },
     "completion_blockers": [],
     "limitations": [],
-    "criterion": "Complete normalized delta in installed-resource singleplayer runtime; direct finite original authority and full hunk review. No whole inherited API claim."
+    "criterion": "Complete normalized delta in installed-resource singleplayer runtime; direct finite original authority and full hunk review. No whole inherited API claim.",
+    "revalidation": "Stable final candidate: all client tests including original corpora/GPU upload, all simulation tests, all older-version libraries, release workspace/dispatch and targeted Unicode/name/save proof pass."
   },
   "EntityDamageSourceIndirect": {
     "complete_delta_review": true,
@@ -3627,7 +3646,8 @@
     },
     "completion_blockers": [],
     "limitations": [],
-    "criterion": "Complete normalized delta in installed-resource singleplayer runtime; direct finite original authority and full hunk review. No whole inherited API claim."
+    "criterion": "Complete normalized delta in installed-resource singleplayer runtime; direct finite original authority and full hunk review. No whole inherited API claim.",
+    "revalidation": "Stable final candidate: all client tests including original corpora/GPU upload, all simulation tests, all older-version libraries, release workspace/dispatch and targeted Unicode/name/save proof pass."
   },
   "BlockFluid": {
     "complete_delta_review": true,
@@ -3696,7 +3716,8 @@
     },
     "completion_blockers": [],
     "limitations": [],
-    "criterion": "Complete normalized delta in installed-resource singleplayer runtime; direct finite original authority and full hunk review. No whole inherited API claim."
+    "criterion": "Complete normalized delta in installed-resource singleplayer runtime; direct finite original authority and full hunk review. No whole inherited API claim.",
+    "revalidation": "Stable final candidate: all client tests including original corpora/GPU upload, all simulation tests, all older-version libraries, release workspace/dispatch and targeted Unicode/name/save proof pass."
   },
   "BlockGrass": {
     "complete_delta_review": true,
@@ -3759,7 +3780,8 @@
     },
     "completion_blockers": [],
     "limitations": [],
-    "criterion": "Complete normalized delta in installed-resource singleplayer runtime; direct finite original authority and full hunk review. No whole inherited API claim."
+    "criterion": "Complete normalized delta in installed-resource singleplayer runtime; direct finite original authority and full hunk review. No whole inherited API claim.",
+    "revalidation": "Stable final candidate: all client tests including original corpora/GPU upload, all simulation tests, all older-version libraries, release workspace/dispatch and targeted Unicode/name/save proof pass."
   },
   "BlockLeaves": {
     "complete_delta_review": true,
@@ -3845,7 +3867,8 @@
     },
     "completion_blockers": [],
     "limitations": [],
-    "criterion": "Complete normalized delta in installed-resource singleplayer runtime; direct finite original authority and full hunk review. No whole inherited API claim."
+    "criterion": "Complete normalized delta in installed-resource singleplayer runtime; direct finite original authority and full hunk review. No whole inherited API claim.",
+    "revalidation": "Stable final candidate: all client tests including original corpora/GPU upload, all simulation tests, all older-version libraries, release workspace/dispatch and targeted Unicode/name/save proof pass."
   },
   "Entity": {
     "complete_delta_review": true,
@@ -4122,7 +4145,8 @@
     },
     "completion_blockers": [],
     "limitations": [],
-    "criterion": "Complete normalized delta in installed-resource singleplayer runtime; direct finite original authority and full hunk review. No whole inherited API claim."
+    "criterion": "Complete normalized delta in installed-resource singleplayer runtime; direct finite original authority and full hunk review. No whole inherited API claim.",
+    "revalidation": "Stable final candidate: all client tests including original corpora/GPU upload, all simulation tests, all older-version libraries, release workspace/dispatch and targeted Unicode/name/save proof pass."
   },
   "EntityPlayer": {
     "complete_delta_review": true,
@@ -4508,7 +4532,8 @@
     },
     "completion_blockers": [],
     "limitations": [],
-    "criterion": "Complete normalized delta in installed-resource singleplayer runtime; direct finite original authority and full hunk review. No whole inherited API claim."
+    "criterion": "Complete normalized delta in installed-resource singleplayer runtime; direct finite original authority and full hunk review. No whole inherited API claim.",
+    "revalidation": "Stable final candidate: all client tests including original corpora/GPU upload, all simulation tests, all older-version libraries, release workspace/dispatch and targeted Unicode/name/save proof pass."
   },
   "EntityPlayerSP": {
     "complete_delta_review": true,
@@ -4621,7 +4646,8 @@
     },
     "completion_blockers": [],
     "limitations": [],
-    "criterion": "Complete normalized delta in installed-resource singleplayer runtime; direct finite original authority and full hunk review. No whole inherited API claim."
+    "criterion": "Complete normalized delta in installed-resource singleplayer runtime; direct finite original authority and full hunk review. No whole inherited API claim.",
+    "revalidation": "Stable final candidate: all client tests including original corpora/GPU upload, all simulation tests, all older-version libraries, release workspace/dispatch and targeted Unicode/name/save proof pass."
   },
   "Item": {
     "complete_delta_review": true,
@@ -4916,7 +4942,8 @@
     },
     "completion_blockers": [],
     "limitations": [],
-    "criterion": "Complete normalized delta in installed-resource singleplayer runtime; direct finite original authority and full hunk review. No whole inherited API claim."
+    "criterion": "Complete normalized delta in installed-resource singleplayer runtime; direct finite original authority and full hunk review. No whole inherited API claim.",
+    "revalidation": "Stable final candidate: all client tests including original corpora/GPU upload, all simulation tests, all older-version libraries, release workspace/dispatch and targeted Unicode/name/save proof pass."
   },
   "FontRenderer": {
     "complete_delta_review": true,
@@ -5065,7 +5092,7 @@
       "crates/client11/src/gui/lang.rs": "c87ec914c3fcd385c21fcd08a8c02b260c10a70e39037bb5ba91aef38211368f",
       "crates/client11/src/gui/java_format.rs": "3b92cd6fe3179526f5c9ddaa9ab2dbabd7c48f4fe4674d9c037bab3468fec772",
       "crates/client11/src/gui/render.rs": "eaf7f5d00b643d928faea7117487c5fa565ec0e0293297c56f3822ab655c1747",
-      "crates/client11/src/gui/mod.rs": "86efe694608dd478edfcc3d998411bcc0c91f382525ff943cebcf4a92f30819a",
+      "crates/client11/src/gui/mod.rs": "dc3c9bd40d1ea669cce7720abfcf258fd15fc66e6de9724e5c9a8a659a7d3c25",
       "crates/client11/src/gui/screens/language.rs": "38c5c99206de3849a5b5c06fa1e097761c63c4c895159b8b689ad1b0a14cc04d"
     },
     "original_source_sha256": [
@@ -5088,7 +5115,8 @@
       "Java String.toLowerCase default-locale/contextual-expansion quirks in formatting codes are inherited unchanged authority; current char-level Rust lowercase not claimed universally identical outside ASCII format controls.",
       "Formatter method body is unchanged1.0->1.1. Typed Object/null/date arguments, unpaired-surrogate truncation, enormous widths and all default JVM locales are not part of current String-only live runtime API or6976corpus; no invented inherited API expansion required for changed class delta."
     ],
-    "criterion": "Complete normalized delta in installed-resource singleplayer runtime; direct finite original authority and full hunk review. No whole inherited API claim."
+    "criterion": "Complete normalized delta in installed-resource singleplayer runtime; direct finite original authority and full hunk review. No whole inherited API claim.",
+    "revalidation": "Stable final candidate: all client tests including original corpora/GPU upload, all simulation tests, all older-version libraries, release workspace/dispatch and targeted Unicode/name/save proof pass."
   },
   "StringTranslate": {
     "complete_delta_review": true,
@@ -5183,7 +5211,7 @@
       "crates/client11/src/gui/lang.rs": "c87ec914c3fcd385c21fcd08a8c02b260c10a70e39037bb5ba91aef38211368f",
       "crates/client11/src/gui/java_format.rs": "3b92cd6fe3179526f5c9ddaa9ab2dbabd7c48f4fe4674d9c037bab3468fec772",
       "crates/client11/src/gui/render.rs": "eaf7f5d00b643d928faea7117487c5fa565ec0e0293297c56f3822ab655c1747",
-      "crates/client11/src/gui/mod.rs": "86efe694608dd478edfcc3d998411bcc0c91f382525ff943cebcf4a92f30819a",
+      "crates/client11/src/gui/mod.rs": "dc3c9bd40d1ea669cce7720abfcf258fd15fc66e6de9724e5c9a8a659a7d3c25",
       "crates/client11/src/gui/screens/language.rs": "38c5c99206de3849a5b5c06fa1e097761c63c4c895159b8b689ad1b0a14cc04d"
     },
     "original_source_sha256": [
@@ -5206,7 +5234,8 @@
       "Java String.toLowerCase default-locale/contextual-expansion quirks in formatting codes are inherited unchanged authority; current char-level Rust lowercase not claimed universally identical outside ASCII format controls.",
       "Formatter method body is unchanged1.0->1.1. Typed Object/null/date arguments, unpaired-surrogate truncation, enormous widths and all default JVM locales are not part of current String-only live runtime API or6976corpus; no invented inherited API expansion required for changed class delta."
     ],
-    "criterion": "Complete normalized delta in installed-resource singleplayer runtime; direct finite original authority and full hunk review. No whole inherited API claim."
+    "criterion": "Complete normalized delta in installed-resource singleplayer runtime; direct finite original authority and full hunk review. No whole inherited API claim.",
+    "revalidation": "Stable final candidate: all client tests including original corpora/GPU upload, all simulation tests, all older-version libraries, release workspace/dispatch and targeted Unicode/name/save proof pass."
   },
   "StatBase": {
     "complete_delta_review": true,
@@ -5263,7 +5292,8 @@
       "Inherited registration/stat-format/terrain algorithms are not re-proved universally.",
       "Configured key>=256 returns original ArrayIndexOutOfBoundsException message under1.1 formatter catch; other nonString arbitrary Formatter arguments remain outside live String API."
     ],
-    "criterion": "Complete normalized delta in installed-resource singleplayer runtime; direct finite original authority and full hunk review. No whole inherited API claim."
+    "criterion": "Complete normalized delta in installed-resource singleplayer runtime; direct finite original authority and full hunk review. No whole inherited API claim.",
+    "revalidation": "Stable final candidate: all client tests including original corpora/GPU upload, all simulation tests, all older-version libraries, release workspace/dispatch and targeted Unicode/name/save proof pass."
   },
   "StatList": {
     "complete_delta_review": true,
@@ -5320,7 +5350,8 @@
       "Inherited registration/stat-format/terrain algorithms are not re-proved universally.",
       "Configured key>=256 returns original ArrayIndexOutOfBoundsException message under1.1 formatter catch; other nonString arbitrary Formatter arguments remain outside live String API."
     ],
-    "criterion": "Complete normalized delta in installed-resource singleplayer runtime; direct finite original authority and full hunk review. No whole inherited API claim."
+    "criterion": "Complete normalized delta in installed-resource singleplayer runtime; direct finite original authority and full hunk review. No whole inherited API claim.",
+    "revalidation": "Stable final candidate: all client tests including original corpora/GPU upload, all simulation tests, all older-version libraries, release workspace/dispatch and targeted Unicode/name/save proof pass."
   },
   "Achievement": {
     "complete_delta_review": true,
@@ -5360,7 +5391,7 @@
     },
     "rust_source_sha256": {
       "crates/client11/src/gui/stats.rs": "80fe0c65bbfa6cddb324bfc4a274c96ca2bd4f1cbedee976869e6b6b423697d8",
-      "crates/client11/src/gui/screens/achievements.rs": "d84df7e37cad1e9b78945622873d00724f659dfde8c3aaf4052c91ccadcebe62"
+      "crates/client11/src/gui/screens/achievements.rs": "94b3f99ab30347d14c97a4c80147a8b41c81c8d3e18b9392861191738609be8f"
     },
     "original_source_sha256": [
       {
@@ -5380,7 +5411,8 @@
       "Inherited registration/stat-format/terrain algorithms are not re-proved universally.",
       "Configured key>=256 returns original ArrayIndexOutOfBoundsException message under1.1 formatter catch; other nonString arbitrary Formatter arguments remain outside live String API."
     ],
-    "criterion": "Complete normalized delta in installed-resource singleplayer runtime; direct finite original authority and full hunk review. No whole inherited API claim."
+    "criterion": "Complete normalized delta in installed-resource singleplayer runtime; direct finite original authority and full hunk review. No whole inherited API claim.",
+    "revalidation": "Stable final candidate: all client tests including original corpora/GPU upload, all simulation tests, all older-version libraries, release workspace/dispatch and targeted Unicode/name/save proof pass."
   },
   "StatStringFormatKeyInv": {
     "complete_delta_review": true,
@@ -5416,7 +5448,7 @@
       ]
     },
     "rust_source_sha256": {
-      "crates/client11/src/gui/screens/achievements.rs": "d84df7e37cad1e9b78945622873d00724f659dfde8c3aaf4052c91ccadcebe62",
+      "crates/client11/src/gui/screens/achievements.rs": "94b3f99ab30347d14c97a4c80147a8b41c81c8d3e18b9392861191738609be8f",
       "crates/client11/src/gui/screens/options.rs": "b0f4a44741002940db8652b973ad100765c9ebcd5eb253665f6995022bfaf2be"
     },
     "original_source_sha256": [
@@ -5437,7 +5469,8 @@
       "Inherited registration/stat-format/terrain algorithms are not re-proved universally.",
       "Configured key>=256 returns original ArrayIndexOutOfBoundsException message under1.1 formatter catch; other nonString arbitrary Formatter arguments remain outside live String API."
     ],
-    "criterion": "Complete normalized delta in installed-resource singleplayer runtime; direct finite original authority and full hunk review. No whole inherited API claim."
+    "criterion": "Complete normalized delta in installed-resource singleplayer runtime; direct finite original authority and full hunk review. No whole inherited API claim.",
+    "revalidation": "Stable final candidate: all client tests including original corpora/GPU upload, all simulation tests, all older-version libraries, release workspace/dispatch and targeted Unicode/name/save proof pass."
   },
   "GuiAchievement": {
     "complete_delta_review": true,
@@ -5491,7 +5524,8 @@
       "Inherited registration/stat-format/terrain algorithms are not re-proved universally.",
       "Configured key>=256 returns original ArrayIndexOutOfBoundsException message under1.1 formatter catch; other nonString arbitrary Formatter arguments remain outside live String API."
     ],
-    "criterion": "Complete normalized delta in installed-resource singleplayer runtime; direct finite original authority and full hunk review. No whole inherited API claim."
+    "criterion": "Complete normalized delta in installed-resource singleplayer runtime; direct finite original authority and full hunk review. No whole inherited API claim.",
+    "revalidation": "Stable final candidate: all client tests including original corpora/GPU upload, all simulation tests, all older-version libraries, release workspace/dispatch and targeted Unicode/name/save proof pass."
   },
   "GuiInventory": {
     "complete_delta_review": true,
@@ -5530,7 +5564,7 @@
     },
     "rust_source_sha256": {
       "crates/client11/src/gui/screens/potion_effects.rs": "746d8619b2875951f67f16b492c63be1ea6a59c7d63084988fb8af3ce298edc6",
-      "crates/client11/src/gui/screens/container.rs": "3242c59c57010e2ba88f22a16f8ae512bf9dc92cb4e19265e6923d9ba4a1cc76"
+      "crates/client11/src/gui/screens/container.rs": "302dc17ba5310c2a960334e94b7aa0ba50340931faae15e850bfa6b573d1efd4"
     },
     "original_source_sha256": [
       {
@@ -5550,7 +5584,8 @@
       "Inherited registration/stat-format/terrain algorithms are not re-proved universally.",
       "Configured key>=256 returns original ArrayIndexOutOfBoundsException message under1.1 formatter catch; other nonString arbitrary Formatter arguments remain outside live String API."
     ],
-    "criterion": "Complete normalized delta in installed-resource singleplayer runtime; direct finite original authority and full hunk review. No whole inherited API claim."
+    "criterion": "Complete normalized delta in installed-resource singleplayer runtime; direct finite original authority and full hunk review. No whole inherited API claim.",
+    "revalidation": "Stable final candidate: all client tests including original corpora/GPU upload, all simulation tests, all older-version libraries, release workspace/dispatch and targeted Unicode/name/save proof pass."
   },
   "GuiOptions": {
     "complete_delta_review": true,
@@ -5605,7 +5640,8 @@
       "Inherited registration/stat-format/terrain algorithms are not re-proved universally.",
       "Configured key>=256 returns original ArrayIndexOutOfBoundsException message under1.1 formatter catch; other nonString arbitrary Formatter arguments remain outside live String API."
     ],
-    "criterion": "Complete normalized delta in installed-resource singleplayer runtime; direct finite original authority and full hunk review. No whole inherited API claim."
+    "criterion": "Complete normalized delta in installed-resource singleplayer runtime; direct finite original authority and full hunk review. No whole inherited API claim.",
+    "revalidation": "Stable final candidate: all client tests including original corpora/GPU upload, all simulation tests, all older-version libraries, release workspace/dispatch and targeted Unicode/name/save proof pass."
   },
   "GuiButtonLanguage": {
     "complete_delta_review": true,
@@ -5634,7 +5670,7 @@
       ]
     },
     "rust_source_sha256": {
-      "crates/client11/src/gui/widgets.rs": "8370e7bf294bf4db283bfaaec48968a9c7eab1e9c6596c523862bf7f656d7556"
+      "crates/client11/src/gui/widgets.rs": "4e3ff000a5e942f45c684d66d20c744c5c8b6975edcbd31f6329fc144256e52d"
     },
     "original_source_sha256": [
       {
@@ -5649,7 +5685,8 @@
       "Inherited registration/stat-format/terrain algorithms are not re-proved universally.",
       "Configured key>=256 returns original ArrayIndexOutOfBoundsException message under1.1 formatter catch; other nonString arbitrary Formatter arguments remain outside live String API."
     ],
-    "criterion": "Complete normalized delta in installed-resource singleplayer runtime; direct finite original authority and full hunk review. No whole inherited API claim."
+    "criterion": "Complete normalized delta in installed-resource singleplayer runtime; direct finite original authority and full hunk review. No whole inherited API claim.",
+    "revalidation": "Stable final candidate: all client tests including original corpora/GPU upload, all simulation tests, all older-version libraries, release workspace/dispatch and targeted Unicode/name/save proof pass."
   },
   "GuiMainMenu": {
     "complete_delta_review": true,
@@ -5688,7 +5725,7 @@
     },
     "rust_source_sha256": {
       "crates/client11/src/gui/screens/main_menu.rs": "6ea3f592626e2a913b6cf3ec4c264991b33b61beacfc572633877290bcb00384",
-      "crates/client11/src/gui/widgets.rs": "8370e7bf294bf4db283bfaaec48968a9c7eab1e9c6596c523862bf7f656d7556"
+      "crates/client11/src/gui/widgets.rs": "4e3ff000a5e942f45c684d66d20c744c5c8b6975edcbd31f6329fc144256e52d"
     },
     "original_source_sha256": [
       {
@@ -5708,7 +5745,8 @@
       "Inherited registration/stat-format/terrain algorithms are not re-proved universally.",
       "Configured key>=256 returns original ArrayIndexOutOfBoundsException message under1.1 formatter catch; other nonString arbitrary Formatter arguments remain outside live String API."
     ],
-    "criterion": "Complete normalized delta in installed-resource singleplayer runtime; direct finite original authority and full hunk review. No whole inherited API claim."
+    "criterion": "Complete normalized delta in installed-resource singleplayer runtime; direct finite original authority and full hunk review. No whole inherited API claim.",
+    "revalidation": "Stable final candidate: all client tests including original corpora/GPU upload, all simulation tests, all older-version libraries, release workspace/dispatch and targeted Unicode/name/save proof pass."
   },
   "GuiIngameMenu": {
     "complete_delta_review": true,
@@ -5763,15 +5801,17 @@
       "Inherited registration/stat-format/terrain algorithms are not re-proved universally.",
       "Configured key>=256 returns original ArrayIndexOutOfBoundsException message under1.1 formatter catch; other nonString arbitrary Formatter arguments remain outside live String API."
     ],
-    "criterion": "Complete normalized delta in installed-resource singleplayer runtime; direct finite original authority and full hunk review. No whole inherited API claim."
+    "criterion": "Complete normalized delta in installed-resource singleplayer runtime; direct finite original authority and full hunk review. No whole inherited API claim.",
+    "revalidation": "Stable final candidate: all client tests including original corpora/GPU upload, all simulation tests, all older-version libraries, release workspace/dispatch and targeted Unicode/name/save proof pass."
   },
   "GuiCreateWorld": {
     "complete_delta_review": true,
     "reason": {
       "class_name": "GuiCreateWorld",
       "complete_changed_runtime_delta": true,
-      "domain": "Installed original1.1 resources; existing repository singleplayer scope; UI seams stated in evidence",
-      "hunks": [
+      "domain": "Existing repository singleplayer scope; installed original 1.1 resources",
+      "no_behavior_change": false,
+      "raw_hunks": [
         "@@ -8,24 +8,25 @@",
         "@@ -39,17 +40,16 @@",
         "@@ -73,17 +73,17 @@",
@@ -5781,49 +5821,54 @@
         "@@ -202,12 +209,12 @@"
       ],
       "behaviors": [
-        "Worldtype selector initially enabled although hidden; label uses EnumWorldType translation key; id5 cycles Default/Flat/wraps; selectedtype survives resolution reinit and is passed in actual StartWorld WorldSettings. Existing gamemode/features behavior observed alongside changed selection. Raw variable renames do not add new behavior."
-      ],
-      "rust_files": [
-        "gui/screens/select_world.rs"
+        "Full prior checkpoint hunk review retained: selected world-type state, hardcoded mode labels become localizations, more-world-options type button/control visibility and action cycle, WorldSettings worldType propagation and retained selection through resize.324 original init/action/worldsettings frames across6locales,3sizes,3modes,2features,3typecycles passed production callers.",
+        "Newly reachable malformedUTF16 names/seeds preserve Java char units through initialization/resize/folder rules/startWorld arguments.96 original callback cases include32-unit truncation and seed lengths0/127/128/129; payload bytes exactly match original DataOutputStream.writeUTF; parent initial-save native lifecycle verifies final storage path/metadata."
       ],
       "evidence": [
-        "create"
+        "create",
+        "unicode_world"
       ],
-      "authority": [
-        {
-          "path": "retromcp-1.0\\minecraft\\src\\net\\minecraft\\src\\GuiCreateWorld.java",
-          "sha256": "16c872c53b1e6d67b98e9c7fd6522ebb4ae2a64da76c0d097b32a8c4a39f5583",
-          "bytes": 8812
-        },
-        {
-          "path": "retromcp-1.1\\minecraft\\src\\net\\minecraft\\src\\GuiCreateWorld.java",
-          "sha256": "2c138030548ae6fcb7e4d7d5638dfc777450e9438f5a08ea4b89fe55434a9fde",
-          "bytes": 9172
-        }
-      ]
+      "limitations": [
+        "See small-gui-stats-completion-review11.json for each original raw hunk and recorded prior evidence."
+      ],
+      "authority": {
+        "retromcp-1.0\\minecraft\\src\\net\\minecraft\\src\\GuiCreateWorld.java": "16c872c53b1e6d67b98e9c7fd6522ebb4ae2a64da76c0d097b32a8c4a39f5583",
+        "retromcp-1.1\\minecraft\\src\\net\\minecraft\\src\\GuiCreateWorld.java": "2c138030548ae6fcb7e4d7d5638dfc777450e9438f5a08ea4b89fe55434a9fde"
+      },
+      "rust_source_sha256": {
+        "crates/client11/src/gui/screens/select_world.rs": "bcc57132a6dda275c4d055f650ee9bde1088538bd9ef07a3d87ca745ea6b58df",
+        "crates/client11/src/gui/settings.rs": "61c01fb9f3e31ad343ce0391494c0ee14bbd0a2be2e4787392e1d0855f81da06",
+        "crates/client11/src/gui/widgets.rs": "4e3ff000a5e942f45c684d66d20c744c5c8b6975edcbd31f6329fc144256e52d",
+        "crates/client11/src/gui/mod.rs": "dc3c9bd40d1ea669cce7720abfcf258fd15fc66e6de9724e5c9a8a659a7d3c25",
+        "crates/client11/src/gui/system.rs": "9c20fc5ec282feee588633317a371f2a3bb1d2998dcb20ba9f87903e42d09eb3",
+        "crates/client11/src/gui/saves.rs": "1618c8485982077cc5bb42aee472b283b1461f8d14075950bd791d2abaf108ef",
+        "crates/client11/src/app.rs": "3c3d8323e34d31035afea71889887b20481dbf255c86da6e34373123abba5540",
+        "crates/client11/src/worker.rs": "94c93d8b161447a516d740627d214a88d2a1d99d501a6ad07132756c942e4e0c"
+      }
     },
     "rust_source_sha256": {
-      "crates/client11/src/gui/screens/select_world.rs": "2f80eb0fd9acce883bee40982cc5bc3c12913111b57fe8b1c43f8e352e0a85be"
+      "crates/client11/src/app.rs": "3c3d8323e34d31035afea71889887b20481dbf255c86da6e34373123abba5540",
+      "crates/client11/src/gui/mod.rs": "dc3c9bd40d1ea669cce7720abfcf258fd15fc66e6de9724e5c9a8a659a7d3c25",
+      "crates/client11/src/gui/saves.rs": "1618c8485982077cc5bb42aee472b283b1461f8d14075950bd791d2abaf108ef",
+      "crates/client11/src/gui/screens/select_world.rs": "bcc57132a6dda275c4d055f650ee9bde1088538bd9ef07a3d87ca745ea6b58df",
+      "crates/client11/src/gui/settings.rs": "61c01fb9f3e31ad343ce0391494c0ee14bbd0a2be2e4787392e1d0855f81da06",
+      "crates/client11/src/gui/system.rs": "9c20fc5ec282feee588633317a371f2a3bb1d2998dcb20ba9f87903e42d09eb3",
+      "crates/client11/src/gui/widgets.rs": "4e3ff000a5e942f45c684d66d20c744c5c8b6975edcbd31f6329fc144256e52d",
+      "crates/client11/src/worker.rs": "94c93d8b161447a516d740627d214a88d2a1d99d501a6ad07132756c942e4e0c",
+      "crates/worldgen11/src/nbt.rs": "3905052d9ba04b2b7c2df68f6235e78e76f93e19ef70882b7bb0f48b4b83b068",
+      "crates/worldgen11/src/scenario.rs": "e5b96eb0a5cf00fac6d56bb2f841ad62a54ce570c6d168a77025a2ea1201df0d",
+      "crates/worldgen11/src/storage.rs": "848615ecd9f008bb0148a490991872cf6c9aa11ce0bef254978ec325e4e64b30"
     },
-    "original_source_sha256": [
-      {
-        "path": "retromcp-1.0\\minecraft\\src\\net\\minecraft\\src\\GuiCreateWorld.java",
-        "sha256": "16c872c53b1e6d67b98e9c7fd6522ebb4ae2a64da76c0d097b32a8c4a39f5583",
-        "bytes": 8812
-      },
-      {
-        "path": "retromcp-1.1\\minecraft\\src\\net\\minecraft\\src\\GuiCreateWorld.java",
-        "sha256": "2c138030548ae6fcb7e4d7d5638dfc777450e9438f5a08ea4b89fe55434a9fde",
-        "bytes": 9172
-      }
-    ],
+    "original_source_sha256": {
+      "retromcp-1.0\\minecraft\\src\\net\\minecraft\\src\\GuiCreateWorld.java": "16c872c53b1e6d67b98e9c7fd6522ebb4ae2a64da76c0d097b32a8c4a39f5583",
+      "retromcp-1.1\\minecraft\\src\\net\\minecraft\\src\\GuiCreateWorld.java": "2c138030548ae6fcb7e4d7d5638dfc777450e9438f5a08ea4b89fe55434a9fde"
+    },
     "completion_blockers": [],
     "limitations": [
-      "GPU pixels and device errors are outside draw-call evidence.",
-      "Inherited registration/stat-format/terrain algorithms are not re-proved universally.",
-      "Configured key>=256 returns original ArrayIndexOutOfBoundsException message under1.1 formatter catch; other nonString arbitrary Formatter arguments remain outside live String API."
+      "See small-gui-stats-completion-review11.json for each original raw hunk and recorded prior evidence."
     ],
-    "criterion": "Complete normalized delta in installed-resource singleplayer runtime; direct finite original authority and full hunk review. No whole inherited API claim."
+    "criterion": "Entire1.0-to1.1 changed delta in repository installed-resource singleplayer scope; reviewed all raw hunks and direct original proof. No claim of whole inheritedJava API.",
+    "unicode_workflow": "Lossless rawUTF16 name/seed/folder through originalGUI callbacks, nativeWindows filenames, initial save, reopen/list, rename and delete; full65550original NBT corpus +96originalGUI creation callbacks and native production lifecycle proof."
   },
   "Block": {
     "complete_delta_review": true,
@@ -5988,7 +6033,8 @@
     "original_source_sha256": null,
     "completion_blockers": [],
     "limitations": [],
-    "criterion": "Complete normalized delta in installed-resource singleplayer runtime; direct finite original authority and full hunk review. No whole inherited API claim."
+    "criterion": "Complete normalized delta in installed-resource singleplayer runtime; direct finite original authority and full hunk review. No whole inherited API claim.",
+    "revalidation": "Stable final candidate: all client tests including original corpora/GPU upload, all simulation tests, all older-version libraries, release workspace/dispatch and targeted Unicode/name/save proof pass."
   },
   "Chunk": {
     "complete_delta_review": true,
@@ -6545,7 +6591,8 @@
     "original_source_sha256": null,
     "completion_blockers": [],
     "limitations": [],
-    "criterion": "Complete normalized delta in installed-resource singleplayer runtime; direct finite original authority and full hunk review. No whole inherited API claim."
+    "criterion": "Complete normalized delta in installed-resource singleplayer runtime; direct finite original authority and full hunk review. No whole inherited API claim.",
+    "revalidation": "Stable final candidate: all client tests including original corpora/GPU upload, all simulation tests, all older-version libraries, release workspace/dispatch and targeted Unicode/name/save proof pass."
   },
   "ItemRenderer": {
     "complete_delta_review": true,
@@ -6557,7 +6604,8 @@
     "original_source_sha256": null,
     "completion_blockers": [],
     "limitations": [],
-    "criterion": "Complete normalized delta in installed-resource singleplayer runtime; direct finite original authority and full hunk review. No whole inherited API claim."
+    "criterion": "Complete normalized delta in installed-resource singleplayer runtime; direct finite original authority and full hunk review. No whole inherited API claim.",
+    "revalidation": "Stable final candidate: all client tests including original corpora/GPU upload, all simulation tests, all older-version libraries, release workspace/dispatch and targeted Unicode/name/save proof pass."
   },
   "RenderPlayer": {
     "complete_delta_review": true,
@@ -6569,7 +6617,8 @@
     "original_source_sha256": null,
     "completion_blockers": [],
     "limitations": [],
-    "criterion": "Complete normalized delta in installed-resource singleplayer runtime; direct finite original authority and full hunk review. No whole inherited API claim."
+    "criterion": "Complete normalized delta in installed-resource singleplayer runtime; direct finite original authority and full hunk review. No whole inherited API claim.",
+    "revalidation": "Stable final candidate: all client tests including original corpora/GPU upload, all simulation tests, all older-version libraries, release workspace/dispatch and targeted Unicode/name/save proof pass."
   },
   "RenderBiped": {
     "complete_delta_review": true,
@@ -6581,7 +6630,8 @@
     "original_source_sha256": null,
     "completion_blockers": [],
     "limitations": [],
-    "criterion": "Complete normalized delta in installed-resource singleplayer runtime; direct finite original authority and full hunk review. No whole inherited API claim."
+    "criterion": "Complete normalized delta in installed-resource singleplayer runtime; direct finite original authority and full hunk review. No whole inherited API claim.",
+    "revalidation": "Stable final candidate: all client tests including original corpora/GPU upload, all simulation tests, all older-version libraries, release workspace/dispatch and targeted Unicode/name/save proof pass."
   },
   "ModelSilverfish": {
     "complete_delta_review": true,
@@ -6592,7 +6642,8 @@
     "original_source_sha256": null,
     "completion_blockers": [],
     "limitations": [],
-    "criterion": "Complete normalized delta in installed-resource singleplayer runtime; direct finite original authority and full hunk review. No whole inherited API claim."
+    "criterion": "Complete normalized delta in installed-resource singleplayer runtime; direct finite original authority and full hunk review. No whole inherited API claim.",
+    "revalidation": "Stable final candidate: all client tests including original corpora/GPU upload, all simulation tests, all older-version libraries, release workspace/dispatch and targeted Unicode/name/save proof pass."
   },
   "RenderSilverfish": {
     "complete_delta_review": true,
@@ -6604,7 +6655,8 @@
     "original_source_sha256": null,
     "completion_blockers": [],
     "limitations": [],
-    "criterion": "Complete normalized delta in installed-resource singleplayer runtime; direct finite original authority and full hunk review. No whole inherited API claim."
+    "criterion": "Complete normalized delta in installed-resource singleplayer runtime; direct finite original authority and full hunk review. No whole inherited API claim.",
+    "revalidation": "Stable final candidate: all client tests including original corpora/GPU upload, all simulation tests, all older-version libraries, release workspace/dispatch and targeted Unicode/name/save proof pass."
   },
   "RenderGlobal": {
     "complete_delta_review": true,
@@ -6617,7 +6669,8 @@
     "original_source_sha256": null,
     "completion_blockers": [],
     "limitations": [],
-    "criterion": "Complete normalized delta in installed-resource singleplayer runtime; direct finite original authority and full hunk review. No whole inherited API claim."
+    "criterion": "Complete normalized delta in installed-resource singleplayer runtime; direct finite original authority and full hunk review. No whole inherited API claim.",
+    "revalidation": "Stable final candidate: all client tests including original corpora/GPU upload, all simulation tests, all older-version libraries, release workspace/dispatch and targeted Unicode/name/save proof pass."
   },
   "EntityRenderer": {
     "complete_delta_review": true,
@@ -6629,6 +6682,1262 @@
     "original_source_sha256": null,
     "completion_blockers": [],
     "limitations": [],
-    "criterion": "Complete normalized delta in installed-resource singleplayer runtime; direct finite original authority and full hunk review. No whole inherited API claim."
+    "criterion": "Complete normalized delta in installed-resource singleplayer runtime; direct finite original authority and full hunk review. No whole inherited API claim.",
+    "revalidation": "Stable final candidate: all client tests including original corpora/GPU upload, all simulation tests, all older-version libraries, release workspace/dispatch and targeted Unicode/name/save proof pass."
+  },
+  "ItemPotion": {
+    "complete_delta_review": true,
+    "reason": {
+      "class_name": "ItemPotion",
+      "complete_delta_review": true,
+      "domain": "installed-resource singleplayer1.0-to1.1 delta",
+      "original_source_sha256": {
+        "1.0": "eb2f89de4b6f989be6f2a023ca9eb825814d3916a986441bb759313cfb6cbd16",
+        "1.1": "597a7d767d3605382c2a307dc3dbfd77af5c69dd54cdbaf2e65801315d26c0a0"
+      },
+      "all_raw_hunks": [
+        {
+          "old_start": 8,
+          "new_start": 8,
+          "old": [
+            "\tprivate HashMap field_40435_a = new HashMap();"
+          ],
+          "new": [
+            "\tprivate HashMap idEffectNameMap = new HashMap();"
+          ]
+        },
+        {
+          "old_start": 17,
+          "new_start": 17,
+          "old": [
+            "\tpublic List func_40434_a_(ItemStack var1) {",
+            "\t\treturn this.func_40431_c_(var1.getItemDamage());"
+          ],
+          "new": [
+            "\tpublic List getEffectNames(ItemStack var1) {",
+            "\t\treturn this.getEffectNamesFromDamage(var1.getItemDamage());"
+          ]
+        },
+        {
+          "old_start": 21,
+          "new_start": 21,
+          "old": [
+            "\tpublic List func_40431_c_(int var1) {",
+            "\t\tList var2 = (List)this.field_40435_a.get(Integer.valueOf(var1));"
+          ],
+          "new": [
+            "\tpublic List getEffectNamesFromDamage(int var1) {",
+            "\t\tList var2 = (List)this.idEffectNameMap.get(Integer.valueOf(var1));"
+          ]
+        },
+        {
+          "old_start": 24,
+          "new_start": 24,
+          "old": [
+            "\t\t\tvar2 = PotionHelper.func_40360_b(var1, false);",
+            "\t\t\tthis.field_40435_a.put(Integer.valueOf(var1), var2);"
+          ],
+          "new": [
+            "\t\t\tvar2 = PotionHelper.getPotionEffects(var1, false);",
+            "\t\t\tthis.idEffectNameMap.put(Integer.valueOf(var1), var2);"
+          ]
+        },
+        {
+          "old_start": 34,
+          "new_start": 34,
+          "old": [
+            "\t\t\tList var4 = this.func_40434_a_(var1);"
+          ],
+          "new": [
+            "\t\t\tList var4 = this.getEffectNames(var1);"
+          ]
+        },
+        {
+          "old_start": 62,
+          "new_start": 62,
+          "old": [
+            "\t\tif(func_40433_c(var1.getItemDamage())) {"
+          ],
+          "new": [
+            "\t\tif(isSplash(var1.getItemDamage())) {"
+          ]
+        },
+        {
+          "old_start": 66,
+          "new_start": 66,
+          "old": [
+            "\t\t\t\tvar2.entityJoinedWorld(new EntityPotion(var2, var3, var1.getItemDamage()));"
+          ],
+          "new": [
+            "\t\t\t\tvar2.spawnEntityInWorld(new EntityPotion(var2, var3, var1.getItemDamage()));"
+          ]
+        },
+        {
+          "old_start": 81,
+          "new_start": 81,
+          "old": [
+            "\t\treturn func_40433_c(var1) ? 154 : 140;"
+          ],
+          "new": [
+            "\t\treturn isSplash(var1) ? 154 : 140;"
+          ]
+        },
+        {
+          "old_start": 84,
+          "new_start": 84,
+          "old": [
+            "\tpublic static boolean func_40433_c(int var0) {"
+          ],
+          "new": [
+            "\tpublic int func_46057_a(int var1, int var2) {",
+            "\t\treturn var2 == 0 ? 141 : super.func_46057_a(var1, var2);",
+            "\t}",
+            "",
+            "\tpublic static boolean isSplash(int var0) {"
+          ]
+        },
+        {
+          "old_start": 88,
+          "new_start": 92,
+          "old": [
+            "\tpublic int getColorFromDamage(int var1) {",
+            "\t\treturn PotionHelper.func_40358_a(var1, false);"
+          ],
+          "new": [
+            "\tpublic int getColorFromDamage(int var1, int var2) {",
+            "\t\treturn var2 > 0 ? 16777215 : PotionHelper.func_40358_a(var1, false);"
+          ]
+        },
+        {
+          "old_start": 92,
+          "new_start": 96,
+          "old": [
+            "\tpublic boolean func_40432_e(int var1) {",
+            "\t\tList var2 = this.func_40431_c_(var1);"
+          ],
+          "new": [
+            "\tpublic boolean func_46058_c() {",
+            "\t\treturn true;",
+            "\t}",
+            "",
+            "\tpublic boolean isEffectInstant(int var1) {",
+            "\t\tList var2 = this.getEffectNamesFromDamage(var1);"
+          ]
+        },
+        {
+          "old_start": 104,
+          "new_start": 112,
+          "old": [
+            "\t\t\t} while(!Potion.potionTypes[var4.getPotionID()].func_40622_b());"
+          ],
+          "new": [
+            "\t\t\t} while(!Potion.potionTypes[var4.getPotionID()].isInstant());"
+          ]
+        },
+        {
+          "old_start": 112,
+          "new_start": 120,
+          "old": [
+            "\tpublic String func_40397_d(ItemStack var1) {"
+          ],
+          "new": [
+            "\tpublic String getItemDisplayName(ItemStack var1) {"
+          ]
+        },
+        {
+          "old_start": 116,
+          "new_start": 124,
+          "old": [
+            "\t\t\tString var2 = super.func_40397_d(var1);",
+            "\t\t\tif(func_40433_c(var1.getItemDamage())) {",
+            "\t\t\t\tvar2 = StatCollector.translateToLocal(\"potion.prefix.grenade\").trim() + \" \" + var2;"
+          ],
+          "new": [
+            "\t\t\tString var2 = \"\";",
+            "\t\t\tif(isSplash(var1.getItemDamage())) {",
+            "\t\t\t\tvar2 = StatCollector.translateToLocal(\"potion.prefix.grenade\").trim() + \" \";"
+          ]
+        },
+        {
+          "old_start": 121,
+          "new_start": 129,
+          "old": [
+            "\t\t\tList var3 = Item.potion.func_40434_a_(var1);"
+          ],
+          "new": [
+            "\t\t\tList var3 = Item.potion.getEffectNames(var1);"
+          ]
+        },
+        {
+          "old_start": 124,
+          "new_start": 132,
+          "old": [
+            "\t\t\t\tvar4 = ((PotionEffect)var3.get(0)).func_40468_d();"
+          ],
+          "new": [
+            "\t\t\t\tvar4 = ((PotionEffect)var3.get(0)).getEffectName();"
+          ]
+        },
+        {
+          "old_start": 126,
+          "new_start": 134,
+          "old": [
+            "\t\t\t\treturn var2 + \" \" + StatCollector.translateToLocal(var4).trim();"
+          ],
+          "new": [
+            "\t\t\t\treturn var2 + StatCollector.translateToLocal(var4).trim();"
+          ]
+        },
+        {
+          "old_start": 129,
+          "new_start": 137,
+          "old": [
+            "\t\t\t\treturn StatCollector.translateToLocal(var4).trim() + \" \" + var2;"
+          ],
+          "new": [
+            "\t\t\t\treturn StatCollector.translateToLocal(var4).trim() + \" \" + super.getItemDisplayName(var1);"
+          ]
+        },
+        {
+          "old_start": 134,
+          "new_start": 142,
+          "old": [
+            "\tpublic void func_40404_a(ItemStack var1, List var2) {"
+          ],
+          "new": [
+            "\tpublic void addInformation(ItemStack var1, List var2) {"
+          ]
+        },
+        {
+          "old_start": 136,
+          "new_start": 144,
+          "old": [
+            "\t\t\tList var3 = Item.potion.func_40434_a_(var1);"
+          ],
+          "new": [
+            "\t\t\tList var3 = Item.potion.getEffectNames(var1);"
+          ]
+        },
+        {
+          "old_start": 142,
+          "new_start": 150,
+          "old": [
+            "\t\t\t\t\tString var6 = StatCollector.translateToLocal(var5.func_40468_d()).trim();"
+          ],
+          "new": [
+            "\t\t\t\t\tString var6 = StatCollector.translateToLocal(var5.getEffectName()).trim();"
+          ]
+        },
+        {
+          "old_start": 151,
+          "new_start": 159,
+          "old": [
+            "\t\t\t\t\tif(Potion.potionTypes[var5.getPotionID()].func_40615_f()) {"
+          ],
+          "new": [
+            "\t\t\t\t\tif(Potion.potionTypes[var5.getPotionID()].getIsBadEffect()) {"
+          ]
+        },
+        {
+          "old_start": 165,
+          "new_start": 173,
+          "old": [
+            "\tpublic boolean func_40403_e(ItemStack var1) {",
+            "\t\tList var2 = this.func_40434_a_(var1);"
+          ],
+          "new": [
+            "\tpublic boolean hasEffect(ItemStack var1) {",
+            "\t\tList var2 = this.getEffectNames(var1);"
+          ]
+        }
+      ],
+      "reviewed_delta_groups": [
+        {
+          "delta": "idEffectNameMap/effect helpers/isSplash/isEffectInstant/addInformation/hasEffect, World spawn and Potion method renames",
+          "disposition": "Symbol-only hunks; unchanged cached effects, gameplay consumption, splash throw and tooltip behavior. Existing original gameplay vectors retained."
+        },
+        {
+          "delta": "generic multiple-pass icon, pass-dependent color and boolean multiple-pass predicate",
+          "disposition": "Actual production item_table and held/dropped/player renderers;185primitive+752drop/inventory+352held/player+164biped original render cases."
+        },
+        {
+          "delta": "effect display names omit base item name; no-effect splash names omit grenade prefix; superclass label is Java-trimmed",
+          "disposition": "item10::PotionItem::display_name corrected; actual GUI tooltip calls it.159452 original display-name AND information-list comparisons across65536metadata values and all installed locale switches."
+        }
+      ],
+      "rust_source_sha256": {
+        "crates/worldgen11/src/item10.rs": "470b417757cffc8e6c84594ad621c544d35d93b8174df6a63b7d23138374139c",
+        "crates/worldgen11/src/potion_helper.rs": "1b0aa22f1942c7fbabe6015d4c30b28619e0fd97f1bc27418f0bf245513780cc",
+        "crates/client11/src/gui/screens/tooltip.rs": "ae63efdc432083fe86e963a192dbf9e565dee42c5428953a2f389019d145062b",
+        "crates/client11/src/render/entity/item_table.rs": "76479a508637f233a103f793630825c118bd5fc1302b656b122718c0f47460ac"
+      }
+    },
+    "rust_source_sha256": {
+      "crates/worldgen11/src/item10.rs": "470b417757cffc8e6c84594ad621c544d35d93b8174df6a63b7d23138374139c",
+      "crates/worldgen11/src/potion_helper.rs": "1b0aa22f1942c7fbabe6015d4c30b28619e0fd97f1bc27418f0bf245513780cc",
+      "crates/client11/src/gui/screens/tooltip.rs": "ae63efdc432083fe86e963a192dbf9e565dee42c5428953a2f389019d145062b",
+      "crates/client11/src/render/entity/item_table.rs": "76479a508637f233a103f793630825c118bd5fc1302b656b122718c0f47460ac"
+    },
+    "original_source_sha256": {
+      "1.0": "eb2f89de4b6f989be6f2a023ca9eb825814d3916a986441bb759313cfb6cbd16",
+      "1.1": "597a7d767d3605382c2a307dc3dbfd77af5c69dd54cdbaf2e65801315d26c0a0"
+    },
+    "completion_blockers": [],
+    "limitations": [
+      "Inherited Java APIs are not reimplemented solely to earn delta credit. Multiplayer networking is excluded by repository scope.",
+      "Original private conversion callback uses external boundary intercepts; it does not generate/open a full world during this focused probe.",
+      "Finite original drawing corpora do not prove every possible GPU frame."
+    ],
+    "criterion": "Entire1.0-to1.1 changed delta in repository installed-resource singleplayer scope; reviewed all raw hunks and direct original proof. No claim of whole inheritedJava API."
+  },
+  "Minecraft": {
+    "complete_delta_review": true,
+    "reason": {
+      "class_name": "Minecraft",
+      "complete_delta_review": true,
+      "domain": "installed-resource singleplayer1.0-to1.1 delta",
+      "original_source_sha256": {
+        "1.0": "98c00201f3a14954f8e8bf0c2dbc07745ce69e1de5f30153e2756df19689610c",
+        "1.1": "c0c18f7ccc1fcbe74c2695263400afa78a70faf6d88712110c41ee7bd5c5be9c"
+      },
+      "all_raw_hunks": [
+        {
+          "old_start": 31,
+          "new_start": 31,
+          "old": [],
+          "new": [
+            "import net.minecraft.src.EnumWorldType;"
+          ]
+        },
+        {
+          "old_start": 80,
+          "new_start": 81,
+          "old": [],
+          "new": [
+            "import net.minecraft.src.StatCollector;"
+          ]
+        },
+        {
+          "old_start": 83,
+          "new_start": 85,
+          "old": [],
+          "new": [
+            "import net.minecraft.src.StringTranslate;"
+          ]
+        },
+        {
+          "old_start": 170,
+          "new_start": 173,
+          "old": [
+            "\tlong field_40004_N = System.currentTimeMillis();"
+          ],
+          "new": [
+            "\tlong debugUpdateTime = System.currentTimeMillis();"
+          ]
+        },
+        {
+          "old_start": 174,
+          "new_start": 177,
+          "old": [
+            "\tprivate String field_40006_ak = \"root\";"
+          ],
+          "new": [
+            "\tprivate String debugProfilerName = \"root\";"
+          ]
+        },
+        {
+          "old_start": 234,
+          "new_start": 237,
+          "old": [
+            "\t\tDisplay.setTitle(\"Minecraft Minecraft 1.0.0\");"
+          ],
+          "new": [
+            "\t\tDisplay.setTitle(\"Minecraft Minecraft 1.1\");"
+          ]
+        },
+        {
+          "old_start": 258,
+          "new_start": 261,
+          "old": [
+            "\t\tthis.fontRenderer = new FontRenderer(this.gameSettings, \"/font/default.png\", this.renderEngine);",
+            "\t\tthis.standardGalacticFontRenderer = new FontRenderer(this.gameSettings, \"/font/alternate.png\", this.renderEngine);",
+            "\t\tColorizerWater.getWaterBiomeColorizer(this.renderEngine.getTextureContents(\"/misc/watercolor.png\"));"
+          ],
+          "new": [
+            "\t\tthis.fontRenderer = new FontRenderer(this.gameSettings, \"/font/default.png\", this.renderEngine, false);",
+            "\t\tthis.standardGalacticFontRenderer = new FontRenderer(this.gameSettings, \"/font/alternate.png\", this.renderEngine, false);",
+            "\t\tif(this.gameSettings.field_44018_Q != null) {",
+            "\t\t\tStringTranslate.getInstance().func_44023_a(this.gameSettings.field_44018_Q);",
+            "\t\t\tthis.fontRenderer.func_44032_a(StringTranslate.getInstance().func_46110_d());",
+            "\t\t\tthis.fontRenderer.func_46123_b(StringTranslate.func_46109_d(this.gameSettings.field_44018_Q));",
+            "\t\t}",
+            "",
+            "\t\tColorizerWater.setWaterBiomeColorizer(this.renderEngine.getTextureContents(\"/misc/watercolor.png\"));"
+          ]
+        },
+        {
+          "old_start": 520,
+          "new_start": 529,
+          "old": [
+            "\t\t\t\t\tthis.func_40001_x();"
+          ],
+          "new": [
+            "\t\t\t\t\tthis.runGameLoop();"
+          ]
+        },
+        {
+          "old_start": 542,
+          "new_start": 551,
+          "old": [
+            "\tprivate void func_40001_x() {"
+          ],
+          "new": [
+            "\tprivate void runGameLoop() {"
+          ]
+        },
+        {
+          "old_start": 655,
+          "new_start": 664,
+          "old": [
+            "\t\t\tfor(this.isGamePaused = !this.isMultiplayerWorld() && this.currentScreen != null && this.currentScreen.doesGuiPauseGame(); System.currentTimeMillis() >= this.field_40004_N + 1000L; this.fpsCounter = 0) {"
+          ],
+          "new": [
+            "\t\t\tfor(this.isGamePaused = !this.isMultiplayerWorld() && this.currentScreen != null && this.currentScreen.doesGuiPauseGame(); System.currentTimeMillis() >= this.debugUpdateTime + 1000L; this.fpsCounter = 0) {"
+          ]
+        },
+        {
+          "old_start": 658,
+          "new_start": 667,
+          "old": [
+            "\t\t\t\tthis.field_40004_N += 1000L;"
+          ],
+          "new": [
+            "\t\t\t\tthis.debugUpdateTime += 1000L;"
+          ]
+        },
+        {
+          "old_start": 700,
+          "new_start": 709,
+          "old": [
+            "\tprivate void func_40003_b(int var1) {",
+            "\t\tList var2 = Profiler.getProfilingData(this.field_40006_ak);"
+          ],
+          "new": [
+            "\tprivate void updateDebugProfilerName(int var1) {",
+            "\t\tList var2 = Profiler.getProfilingData(this.debugProfilerName);"
+          ]
+        },
+        {
+          "old_start": 705,
+          "new_start": 714,
+          "old": [
+            "\t\t\t\tif(var3.field_40703_c.length() > 0) {",
+            "\t\t\t\t\tint var4 = this.field_40006_ak.lastIndexOf(\".\");"
+          ],
+          "new": [
+            "\t\t\t\tif(var3.name.length() > 0) {",
+            "\t\t\t\t\tint var4 = this.debugProfilerName.lastIndexOf(\".\");"
+          ]
+        },
+        {
+          "old_start": 708,
+          "new_start": 717,
+          "old": [
+            "\t\t\t\t\t\tthis.field_40006_ak = this.field_40006_ak.substring(0, var4);"
+          ],
+          "new": [
+            "\t\t\t\t\t\tthis.debugProfilerName = this.debugProfilerName.substring(0, var4);"
+          ]
+        },
+        {
+          "old_start": 713,
+          "new_start": 722,
+          "old": [
+            "\t\t\t\tif(var1 < var2.size() && !((ProfilerResult)var2.get(var1)).field_40703_c.equals(\"unspecified\")) {",
+            "\t\t\t\t\tif(this.field_40006_ak.length() > 0) {",
+            "\t\t\t\t\t\tthis.field_40006_ak = this.field_40006_ak + \".\";"
+          ],
+          "new": [
+            "\t\t\t\tif(var1 < var2.size() && !((ProfilerResult)var2.get(var1)).name.equals(\"unspecified\")) {",
+            "\t\t\t\t\tif(this.debugProfilerName.length() > 0) {",
+            "\t\t\t\t\t\tthis.debugProfilerName = this.debugProfilerName + \".\";"
+          ]
+        },
+        {
+          "old_start": 718,
+          "new_start": 727,
+          "old": [
+            "\t\t\t\t\tthis.field_40006_ak = this.field_40006_ak + ((ProfilerResult)var2.get(var1)).field_40703_c;"
+          ],
+          "new": [
+            "\t\t\t\t\tthis.debugProfilerName = this.debugProfilerName + ((ProfilerResult)var2.get(var1)).name;"
+          ]
+        },
+        {
+          "old_start": 726,
+          "new_start": 735,
+          "old": [
+            "\t\tList var3 = Profiler.getProfilingData(this.field_40006_ak);"
+          ],
+          "new": [
+            "\t\tList var3 = Profiler.getProfilingData(this.debugProfilerName);"
+          ]
+        },
+        {
+          "old_start": 819,
+          "new_start": 828,
+          "old": [
+            "\t\t\tvar21 = MathHelper.floor_double(var29.field_40704_a / 4.0D) + 1;"
+          ],
+          "new": [
+            "\t\t\tvar21 = MathHelper.floor_double(var29.sectionPercentage / 4.0D) + 1;"
+          ]
+        },
+        {
+          "old_start": 821,
+          "new_start": 830,
+          "old": [
+            "\t\t\tvar9.setColorOpaque_I(var29.func_40700_a());"
+          ],
+          "new": [
+            "\t\t\tvar9.setColorOpaque_I(var29.getDisplayColor());"
+          ]
+        },
+        {
+          "old_start": 829,
+          "new_start": 838,
+          "old": [
+            "\t\t\t\tvar23 = (float)((var27 + var29.field_40704_a * (double)var22 / (double)var21) * (double)((float)Math.PI) * 2.0D / 100.0D);"
+          ],
+          "new": [
+            "\t\t\t\tvar23 = (float)((var27 + var29.sectionPercentage * (double)var22 / (double)var21) * (double)((float)Math.PI) * 2.0D / 100.0D);"
+          ]
+        },
+        {
+          "old_start": 837,
+          "new_start": 846,
+          "old": [
+            "\t\t\tvar9.setColorOpaque_I((var29.func_40700_a() & 16711422) >> 1);"
+          ],
+          "new": [
+            "\t\t\tvar9.setColorOpaque_I((var29.getDisplayColor() & 16711422) >> 1);"
+          ]
+        },
+        {
+          "old_start": 840,
+          "new_start": 849,
+          "old": [
+            "\t\t\t\tvar23 = (float)((var27 + var29.field_40704_a * (double)var22 / (double)var21) * (double)((float)Math.PI) * 2.0D / 100.0D);"
+          ],
+          "new": [
+            "\t\t\t\tvar23 = (float)((var27 + var29.sectionPercentage * (double)var22 / (double)var21) * (double)((float)Math.PI) * 2.0D / 100.0D);"
+          ]
+        },
+        {
+          "old_start": 848,
+          "new_start": 857,
+          "old": [
+            "\t\t\tvar27 += var29.field_40704_a;"
+          ],
+          "new": [
+            "\t\t\tvar27 += var29.sectionPercentage;"
+          ]
+        },
+        {
+          "old_start": 854,
+          "new_start": 863,
+          "old": [
+            "\t\tif(!var4.field_40703_c.equals(\"unspecified\")) {"
+          ],
+          "new": [
+            "\t\tif(!var4.name.equals(\"unspecified\")) {"
+          ]
+        },
+        {
+          "old_start": 858,
+          "new_start": 867,
+          "old": [
+            "\t\tif(var4.field_40703_c.length() == 0) {"
+          ],
+          "new": [
+            "\t\tif(var4.name.length() == 0) {"
+          ]
+        },
+        {
+          "old_start": 861,
+          "new_start": 870,
+          "old": [
+            "\t\t\tvar30 = var30 + var4.field_40703_c + \" \";"
+          ],
+          "new": [
+            "\t\t\tvar30 = var30 + var4.name + \" \";"
+          ]
+        },
+        {
+          "old_start": 867,
+          "new_start": 876,
+          "old": [
+            "\t\tvar30 = var28.format(var4.field_40702_b) + \"%\";"
+          ],
+          "new": [
+            "\t\tvar30 = var28.format(var4.globalPercentage) + \"%\";"
+          ]
+        },
+        {
+          "old_start": 873,
+          "new_start": 882,
+          "old": [
+            "\t\t\tif(!var31.field_40703_c.equals(\"unspecified\")) {"
+          ],
+          "new": [
+            "\t\t\tif(!var31.name.equals(\"unspecified\")) {"
+          ]
+        },
+        {
+          "old_start": 879,
+          "new_start": 888,
+          "old": [
+            "\t\t\tvar33 = var33 + var31.field_40703_c;",
+            "\t\t\tthis.fontRenderer.drawStringWithShadow(var33, var15 - var26, var16 + var26 / 2 + var32 * 8 + 20, var31.func_40700_a());"
+          ],
+          "new": [
+            "\t\t\tvar33 = var33 + var31.name;",
+            "\t\t\tthis.fontRenderer.drawStringWithShadow(var33, var15 - var26, var16 + var26 / 2 + var32 * 8 + 20, var31.getDisplayColor());"
+          ]
+        },
+        {
+          "old_start": 882,
+          "new_start": 891,
+          "old": [
+            "\t\t\tvar33 = var28.format(var31.field_40704_a) + \"%\";",
+            "\t\t\tvar10000.drawStringWithShadow(var33, var15 + var26 - 50 - this.fontRenderer.getStringWidth(var33), var16 + var26 / 2 + var32 * 8 + 20, var31.func_40700_a());"
+          ],
+          "new": [
+            "\t\t\tvar33 = var28.format(var31.sectionPercentage) + \"%\";",
+            "\t\t\tvar10000.drawStringWithShadow(var33, var15 + var26 - 50 - this.fontRenderer.getStringWidth(var33), var16 + var26 / 2 + var32 * 8 + 20, var31.getDisplayColor());"
+          ]
+        },
+        {
+          "old_start": 885,
+          "new_start": 894,
+          "old": [
+            "\t\t\tvar33 = var28.format(var31.field_40702_b) + \"%\";",
+            "\t\t\tvar10000.drawStringWithShadow(var33, var15 + var26 - this.fontRenderer.getStringWidth(var33), var16 + var26 / 2 + var32 * 8 + 20, var31.func_40700_a());"
+          ],
+          "new": [
+            "\t\t\tvar33 = var28.format(var31.globalPercentage) + \"%\";",
+            "\t\t\tvar10000.drawStringWithShadow(var33, var15 + var26 - this.fontRenderer.getStringWidth(var33), var16 + var26 / 2 + var32 * 8 + 20, var31.getDisplayColor());"
+          ]
+        },
+        {
+          "old_start": 930,
+          "new_start": 939,
+          "old": [
+            "\t\t\t\tthis.playerController.sendBlockRemoving(var3, var4, var5, this.objectMouseOver.sideHit);",
+            "\t\t\t\tif(this.thePlayer.func_35190_e(var3, var4, var5)) {"
+          ],
+          "new": [
+            "\t\t\t\tthis.playerController.onPlayerDamageBlock(var3, var4, var5, this.objectMouseOver.sideHit);",
+            "\t\t\t\tif(this.thePlayer.canPlayerEdit(var3, var4, var5)) {"
+          ]
+        },
+        {
+          "old_start": 975,
+          "new_start": 984,
+          "old": [
+            "\t\t\t\t\tif(this.playerController.sendPlaceBlock(this.thePlayer, this.theWorld, var3, var4, var5, var6, var7)) {"
+          ],
+          "new": [
+            "\t\t\t\t\tif(this.playerController.onPlayerRightClick(this.thePlayer, this.theWorld, var3, var4, var5, var6, var7)) {"
+          ]
+        },
+        {
+          "old_start": 1292,
+          "new_start": 1301,
+          "old": [
+            "\t\t\t\t\t\t\t\tthis.func_40003_b(0);"
+          ],
+          "new": [
+            "\t\t\t\t\t\t\t\tthis.updateDebugProfilerName(0);"
+          ]
+        },
+        {
+          "old_start": 1297,
+          "new_start": 1306,
+          "old": [
+            "\t\t\t\t\t\t\t\t\tthis.func_40003_b(var7 + 1);"
+          ],
+          "new": [
+            "\t\t\t\t\t\t\t\t\tthis.updateDebugProfilerName(var7 + 1);"
+          ]
+        },
+        {
+          "old_start": 1382,
+          "new_start": 1391,
+          "old": [
+            "\t\t\t\tthis.loadingScreen.printText(\"Switching level\");"
+          ],
+          "new": [
+            "\t\t\t\tthis.loadingScreen.printText(StatCollector.translateToLocal(\"menu.switchingLevel\"));"
+          ]
+        },
+        {
+          "old_start": 1392,
+          "new_start": 1401,
+          "old": [
+            "\t\t\t\tthis.changeWorld2(var5, \"Generating level\");"
+          ],
+          "new": [
+            "\t\t\t\tthis.changeWorld2(var5, StatCollector.translateToLocal(\"menu.generatingLevel\"));"
+          ]
+        },
+        {
+          "old_start": 1396,
+          "new_start": 1405,
+          "old": [
+            "\t\t\t\tthis.changeWorld2(var5, \"Loading level\");"
+          ],
+          "new": [
+            "\t\t\t\tthis.changeWorld2(var5, StatCollector.translateToLocal(\"menu.loadingLevel\"));"
+          ]
+        },
+        {
+          "old_start": 1444,
+          "new_start": 1453,
+          "old": [
+            "\t\t\tChunkCoordinates var10 = var9.func_40472_j();"
+          ],
+          "new": [
+            "\t\t\tChunkCoordinates var10 = var9.getEntrancePortalLocation();"
+          ]
+        },
+        {
+          "old_start": 1466,
+          "new_start": 1475,
+          "old": [
+            "\tpublic void func_40002_b(String var1) {"
+          ],
+          "new": [
+            "\tpublic void exitToMainMenu(String var1) {"
+          ]
+        },
+        {
+          "old_start": 1506,
+          "new_start": 1515,
+          "old": [
+            "\t\t\t\t\tvar1.entityJoinedWorld(this.thePlayer);"
+          ],
+          "new": [
+            "\t\t\t\t\tvar1.spawnEntityInWorld(this.thePlayer);"
+          ]
+        },
+        {
+          "old_start": 1558,
+          "new_start": 1567,
+          "old": [
+            "\t\tthis.loadingScreen.printText(\"Converting World to \" + this.saveLoader.func_22178_a());"
+          ],
+          "new": [
+            "\t\tthis.loadingScreen.printText(\"Converting World to \" + this.saveLoader.getFormatName());"
+          ]
+        },
+        {
+          "old_start": 1561,
+          "new_start": 1570,
+          "old": [
+            "\t\tthis.startWorld(var1, var2, new WorldSettings(0L, 0, true, false));"
+          ],
+          "new": [
+            "\t\tthis.startWorld(var1, var2, new WorldSettings(0L, 0, true, false, EnumWorldType.DEFAULT));"
+          ]
+        },
+        {
+          "old_start": 1567,
+          "new_start": 1576,
+          "old": [
+            "\t\t\tthis.loadingScreen.displayLoadingString(\"Building terrain\");"
+          ],
+          "new": [
+            "\t\t\tthis.loadingScreen.displayLoadingString(StatCollector.translateToLocal(\"menu.generatingTerrain\"));"
+          ]
+        },
+        {
+          "old_start": 1606,
+          "new_start": 1615,
+          "old": [
+            "\t\t\t\tthis.loadingScreen.displayLoadingString(\"Simulating world for a bit\");"
+          ],
+          "new": [
+            "\t\t\t\tthis.loadingScreen.displayLoadingString(StatCollector.translateToLocal(\"menu.simulating\"));"
+          ]
+        },
+        {
+          "old_start": 1690,
+          "new_start": 1699,
+          "old": [
+            "\t\t\tthis.thePlayer.func_41014_d(var9);"
+          ],
+          "new": [
+            "\t\t\tthis.thePlayer.copyPlayer(var9);"
+          ]
+        },
+        {
+          "old_start": 1707,
+          "new_start": 1716,
+          "old": [
+            "\t\tthis.preloadWorld(\"Respawning\");"
+          ],
+          "new": [
+            "\t\tthis.preloadWorld(StatCollector.translateToLocal(\"menu.respawning\"));"
+          ]
+        },
+        {
+          "old_start": 1807,
+          "new_start": 1816,
+          "old": [
+            "\t\t\tif(Item.itemsList[var1].getHasSubtypes()) {"
+          ],
+          "new": [
+            "\t\t\tif(Item.itemsList[var1] != null && Item.itemsList[var1].getHasSubtypes()) {"
+          ]
+        }
+      ],
+      "reviewed_delta_groups": [
+        {
+          "delta": "imports; profiler method/field renames; controller edit/right-click methods; colorizer setter, portal/player/spawn/save-format methods",
+          "disposition": "Reviewed all full source hunks. Signatures, operands, control flow and target semantics remain equivalent; raw binding authority independently retains owner/name/descriptors."
+        },
+        {
+          "delta": "Display title release1.1",
+          "disposition": "All three actual app window creation sites use Minecraft1.1; original changed operand Minecraft Minecraft1.1 retains inherited duplicate prefix outside this delta scope."
+        },
+        {
+          "delta": "primary and galactic FontRenderer false constructor flag; saved-language load, primary unicode/bidi flags",
+          "disposition": "FontRenderer default constructor flags false; actual GuiSystem::new loads installed language and sets primary unicode/bidi. Enchantment galactic constructor leaves false flags. Existing131072width/131072draw font corpus,56asset language maps,126frames and18save/reopen workflows; startup source bridge reviewed."
+        },
+        {
+          "delta": "six localized lifecycle labels",
+          "disposition": "Actual app worker-message handler calls localized_message;342original label translations across57locale switches pass."
+        },
+        {
+          "delta": "convertMapFormat adds explicit EnumWorldType.DEFAULT",
+          "disposition": "Original private callback invoked through virtual save/world-open boundaries; captured0,0,true,false,DEFAULT. Worker actual conversion branch uses converted_world_settings; focused original-derived fixture test passes."
+        },
+        {
+          "delta": "middle click guards null Item entry before subtype lookup",
+          "disposition": "Actual Minecraft input callback inventory binding;30720original callback cases for all256blockIDs,metadata/entity/air,creative/survival/hotbar."
+        }
+      ],
+      "rust_source_sha256": {
+        "crates/client11/src/app.rs": "3c3d8323e34d31035afea71889887b20481dbf255c86da6e34373123abba5540",
+        "crates/client11/src/gui/system.rs": "9c20fc5ec282feee588633317a371f2a3bb1d2998dcb20ba9f87903e42d09eb3",
+        "crates/client11/src/gui/screens/container.rs": "302dc17ba5310c2a960334e94b7aa0ba50340931faae15e850bfa6b573d1efd4",
+        "crates/client11/src/gui/lang.rs": "c87ec914c3fcd385c21fcd08a8c02b260c10a70e39037bb5ba91aef38211368f",
+        "crates/client11/src/gui/loading.rs": "7ef5ec2e430850dd44eee95492bb63bbaaded7b9e7a83d0b81acdb0c9faa4478",
+        "crates/client11/src/minecraft_input.rs": "2a85d1c4d6a1b1d34991ff69a1f94ae288ba813d4eda722670bf018e9ea157b1",
+        "crates/client11/src/worker.rs": "94c93d8b161447a516d740627d214a88d2a1d99d501a6ad07132756c942e4e0c"
+      }
+    },
+    "rust_source_sha256": {
+      "crates/client11/src/app.rs": "3c3d8323e34d31035afea71889887b20481dbf255c86da6e34373123abba5540",
+      "crates/client11/src/gui/lang.rs": "c87ec914c3fcd385c21fcd08a8c02b260c10a70e39037bb5ba91aef38211368f",
+      "crates/client11/src/gui/loading.rs": "7ef5ec2e430850dd44eee95492bb63bbaaded7b9e7a83d0b81acdb0c9faa4478",
+      "crates/client11/src/gui/saves.rs": "1618c8485982077cc5bb42aee472b283b1461f8d14075950bd791d2abaf108ef",
+      "crates/client11/src/gui/screens/container.rs": "302dc17ba5310c2a960334e94b7aa0ba50340931faae15e850bfa6b573d1efd4",
+      "crates/client11/src/gui/system.rs": "9c20fc5ec282feee588633317a371f2a3bb1d2998dcb20ba9f87903e42d09eb3",
+      "crates/client11/src/minecraft_input.rs": "2a85d1c4d6a1b1d34991ff69a1f94ae288ba813d4eda722670bf018e9ea157b1",
+      "crates/client11/src/worker.rs": "94c93d8b161447a516d740627d214a88d2a1d99d501a6ad07132756c942e4e0c",
+      "crates/worldgen11/src/nbt.rs": "3905052d9ba04b2b7c2df68f6235e78e76f93e19ef70882b7bb0f48b4b83b068",
+      "crates/worldgen11/src/scenario.rs": "e5b96eb0a5cf00fac6d56bb2f841ad62a54ce570c6d168a77025a2ea1201df0d",
+      "crates/worldgen11/src/storage.rs": "848615ecd9f008bb0148a490991872cf6c9aa11ce0bef254978ec325e4e64b30"
+    },
+    "original_source_sha256": {
+      "1.0": "98c00201f3a14954f8e8bf0c2dbc07745ce69e1de5f30153e2756df19689610c",
+      "1.1": "c0c18f7ccc1fcbe74c2695263400afa78a70faf6d88712110c41ee7bd5c5be9c"
+    },
+    "completion_blockers": [],
+    "limitations": [
+      "Inherited Java APIs are not reimplemented solely to earn delta credit. Multiplayer networking is excluded by repository scope.",
+      "Original private conversion callback uses external boundary intercepts; it does not generate/open a full world during this focused probe.",
+      "Finite original drawing corpora do not prove every possible GPU frame."
+    ],
+    "criterion": "Entire1.0-to1.1 changed delta in repository installed-resource singleplayer scope; reviewed all raw hunks and direct original proof. No claim of whole inheritedJava API.",
+    "unicode_workflow": "Lossless rawUTF16 name/seed/folder through originalGUI callbacks, nativeWindows filenames, initial save, reopen/list, rename and delete; full65550original NBT corpus +96originalGUI creation callbacks and native production lifecycle proof."
+  },
+  "GuiChat": {
+    "complete_delta_review": true,
+    "reason": {
+      "class_name": "GuiChat",
+      "complete_changed_runtime_delta": true,
+      "domain": "Existing repository singleplayer scope; installed original 1.1 resources",
+      "no_behavior_change": false,
+      "raw_hunks": [
+        "@@ -37,7 +37,7 @@"
+      ],
+      "behaviors": [
+        "Only raw changed hunk keyTyped: allowedCharacters.indexOf(char)>=0 OR char>32, then message.length()<100. Actual key_unit implements exact UTF16 predicate/order, scalar Screen.key_typed expands supplementary characters to Java units. Message and draw path retain lone surrogates; backspace removes one UTF16 unit.",
+        "All 65536 original Java char inputs compared through original keyTyped; boundary/pair sequences exercise limits, section sign, DEL, isolated surrogates and backspace. Escape/Enter and clipboard are inherited, not new delta requirements."
+      ],
+      "evidence": [
+        "unicode"
+      ],
+      "limitations": [],
+      "authority": {
+        "retromcp-1.0\\minecraft\\src\\net\\minecraft\\src\\GuiChat.java": "e45b559d633a1b697b8b67a804f80bd8f8c6646571f4f910dcda3e6713572bf7",
+        "retromcp-1.1\\minecraft\\src\\net\\minecraft\\src\\GuiChat.java": "58332e3d0c346688ff9069c4b5b932b870708719afda642b8a10fc9a18e0b8bf"
+      },
+      "rust_source_sha256": {
+        "crates/client11/src/gui/screens/chat.rs": "c4c977071245c7e3d70f5bc9e7f27003ee9204df82f64796beb55de37db84172",
+        "crates/client11/src/gui/font.rs": "5475fb2b3af9925fef180e525dbae7ea1af8f9833fbf3b481f63d8db6e9c2ed1",
+        "crates/client11/src/gui/mod.rs": "dc3c9bd40d1ea669cce7720abfcf258fd15fc66e6de9724e5c9a8a659a7d3c25"
+      }
+    },
+    "rust_source_sha256": {
+      "crates/client11/src/gui/screens/chat.rs": "c4c977071245c7e3d70f5bc9e7f27003ee9204df82f64796beb55de37db84172",
+      "crates/client11/src/gui/font.rs": "5475fb2b3af9925fef180e525dbae7ea1af8f9833fbf3b481f63d8db6e9c2ed1",
+      "crates/client11/src/gui/mod.rs": "dc3c9bd40d1ea669cce7720abfcf258fd15fc66e6de9724e5c9a8a659a7d3c25"
+    },
+    "original_source_sha256": {
+      "retromcp-1.0\\minecraft\\src\\net\\minecraft\\src\\GuiChat.java": "e45b559d633a1b697b8b67a804f80bd8f8c6646571f4f910dcda3e6713572bf7",
+      "retromcp-1.1\\minecraft\\src\\net\\minecraft\\src\\GuiChat.java": "58332e3d0c346688ff9069c4b5b932b870708719afda642b8a10fc9a18e0b8bf"
+    },
+    "completion_blockers": [],
+    "limitations": [],
+    "criterion": "Entire1.0-to1.1 changed delta in repository installed-resource singleplayer scope; reviewed all raw hunks and direct original proof. No claim of whole inheritedJava API."
+  },
+  "GuiTextField": {
+    "complete_delta_review": true,
+    "reason": {
+      "class_name": "GuiTextField",
+      "complete_changed_runtime_delta": true,
+      "domain": "Existing repository singleplayer scope; installed original 1.1 resources",
+      "no_behavior_change": false,
+      "raw_hunks": [
+        "@@ -61,7 +61,7 @@"
+      ],
+      "behaviors": [
+        "Only raw changed hunk textboxKeyTyped: allowedCharacters.indexOf(char)>=0 OR char>32, then text.length()<maxStringLength OR maxStringLength==0. Exact UTF16 sidecar preserves new accepted units, one-unit backspace, supplementary length limits and drawing; public String assignment resynchronizes before subsequent input.",
+        "Original getText outputs compared as UTF16 for all 65536 units (unit22 clipboard shortcut intentionally skipped), 96 length/backspace boundaries and 18 sequential edits. Production scalar adapter checked at lengths0/99/100; existing default unlimited length remains supported.",
+        "Reachable singleplayer consumers now use raw field units for seed hashing, world name metadata, folder sanitization/collision, creation, rename, native save selection/reopen/delete and all displayed name/folder labels including confirmation. Windows original UTF16 paths are carried through optional sidecars to worker native paths; parent first-save/storage/list/rename/delete tests cover lone high and low units.96 original GUI creation callbacks compare raw names/folders, resize preservation, seed lengths through129 and exact modifiedUTF8 payloads."
+      ],
+      "evidence": [
+        "unicode",
+        "unicode_world"
+      ],
+      "limitations": [
+        "Clipboard integration/device behavior is inherited and not exercised. Malformed native path preservation is verified on Windows, the user device platform."
+      ],
+      "authority": {
+        "retromcp-1.0\\minecraft\\src\\net\\minecraft\\src\\GuiTextField.java": "82fed9a0b29ee4d268bc566d1400c412141260fd3019b0f9e1957f3c2eaf336e",
+        "retromcp-1.1\\minecraft\\src\\net\\minecraft\\src\\GuiTextField.java": "375f9090527865e6122cb8e9a86c808084cdeeb5b8a20199e67893a666d9b014"
+      },
+      "rust_source_sha256": {
+        "crates/client11/src/gui/widgets.rs": "4e3ff000a5e942f45c684d66d20c744c5c8b6975edcbd31f6329fc144256e52d",
+        "crates/client11/src/gui/font.rs": "5475fb2b3af9925fef180e525dbae7ea1af8f9833fbf3b481f63d8db6e9c2ed1",
+        "crates/client11/src/gui/mod.rs": "dc3c9bd40d1ea669cce7720abfcf258fd15fc66e6de9724e5c9a8a659a7d3c25",
+        "crates/client11/src/gui/system.rs": "9c20fc5ec282feee588633317a371f2a3bb1d2998dcb20ba9f87903e42d09eb3",
+        "crates/client11/src/gui/screens/select_world.rs": "bcc57132a6dda275c4d055f650ee9bde1088538bd9ef07a3d87ca745ea6b58df",
+        "crates/client11/src/gui/saves.rs": "1618c8485982077cc5bb42aee472b283b1461f8d14075950bd791d2abaf108ef",
+        "crates/client11/src/app.rs": "3c3d8323e34d31035afea71889887b20481dbf255c86da6e34373123abba5540",
+        "crates/client11/src/worker.rs": "94c93d8b161447a516d740627d214a88d2a1d99d501a6ad07132756c942e4e0c"
+      }
+    },
+    "rust_source_sha256": {
+      "crates/client11/src/app.rs": "3c3d8323e34d31035afea71889887b20481dbf255c86da6e34373123abba5540",
+      "crates/client11/src/gui/font.rs": "5475fb2b3af9925fef180e525dbae7ea1af8f9833fbf3b481f63d8db6e9c2ed1",
+      "crates/client11/src/gui/mod.rs": "dc3c9bd40d1ea669cce7720abfcf258fd15fc66e6de9724e5c9a8a659a7d3c25",
+      "crates/client11/src/gui/saves.rs": "1618c8485982077cc5bb42aee472b283b1461f8d14075950bd791d2abaf108ef",
+      "crates/client11/src/gui/screens/select_world.rs": "bcc57132a6dda275c4d055f650ee9bde1088538bd9ef07a3d87ca745ea6b58df",
+      "crates/client11/src/gui/system.rs": "9c20fc5ec282feee588633317a371f2a3bb1d2998dcb20ba9f87903e42d09eb3",
+      "crates/client11/src/gui/widgets.rs": "4e3ff000a5e942f45c684d66d20c744c5c8b6975edcbd31f6329fc144256e52d",
+      "crates/client11/src/worker.rs": "94c93d8b161447a516d740627d214a88d2a1d99d501a6ad07132756c942e4e0c",
+      "crates/worldgen11/src/nbt.rs": "3905052d9ba04b2b7c2df68f6235e78e76f93e19ef70882b7bb0f48b4b83b068",
+      "crates/worldgen11/src/scenario.rs": "e5b96eb0a5cf00fac6d56bb2f841ad62a54ce570c6d168a77025a2ea1201df0d",
+      "crates/worldgen11/src/storage.rs": "848615ecd9f008bb0148a490991872cf6c9aa11ce0bef254978ec325e4e64b30"
+    },
+    "original_source_sha256": {
+      "retromcp-1.0\\minecraft\\src\\net\\minecraft\\src\\GuiTextField.java": "82fed9a0b29ee4d268bc566d1400c412141260fd3019b0f9e1957f3c2eaf336e",
+      "retromcp-1.1\\minecraft\\src\\net\\minecraft\\src\\GuiTextField.java": "375f9090527865e6122cb8e9a86c808084cdeeb5b8a20199e67893a666d9b014"
+    },
+    "completion_blockers": [],
+    "limitations": [
+      "Clipboard integration/device behavior is inherited and not exercised. Malformed native path preservation is verified on Windows, the user device platform."
+    ],
+    "criterion": "Entire1.0-to1.1 changed delta in repository installed-resource singleplayer scope; reviewed all raw hunks and direct original proof. No claim of whole inheritedJava API.",
+    "unicode_workflow": "Lossless rawUTF16 name/seed/folder through originalGUI callbacks, nativeWindows filenames, initial save, reopen/list, rename and delete; full65550original NBT corpus +96originalGUI creation callbacks and native production lifecycle proof."
+  },
+  "GuiContainer": {
+    "complete_delta_review": true,
+    "reason": {
+      "class_name": "GuiContainer",
+      "complete_changed_runtime_delta": true,
+      "domain": "Existing repository singleplayer scope; installed original 1.1 resources",
+      "no_behavior_change": false,
+      "raw_hunks": [
+        "@@ -10,8 +10,8 @@",
+        "@@ -20,14 +20,14 @@",
+        "@@ -60,11 +60,11 @@",
+        "@@ -74,7 +74,7 @@",
+        "@@ -95,7 +95,7 @@",
+        "@@ -126,7 +126,7 @@",
+        "@@ -147,7 +147,7 @@",
+        "@@ -164,11 +164,11 @@",
+        "@@ -185,7 +185,7 @@",
+        "@@ -206,8 +206,8 @@",
+        "@@ -220,32 +220,26 @@"
+      ],
+      "behaviors": [
+        "All guiLeft/guiTop, RenderItem.zLevel, getItemNameandInformation, handleMouseClick raw hunks are spelling/visibility aliases of the inherited operations; draw/click/hover coordinates and method bodies otherwise unchanged.",
+        "Deleted empty mouseMovedOrUp override now inherits GuiScreen: only button0 releases selectedButton and clears selection. Actual Rust GuiContainer dispatch already inherited Screen implementation; 16 original release cases compare selected/dragging state before and after a second button0 release."
+      ],
+      "evidence": [
+        "container"
+      ],
+      "limitations": [],
+      "authority": {
+        "retromcp-1.0\\minecraft\\src\\net\\minecraft\\src\\GuiContainer.java": "f8852d794650e5a7f31766bfe667bffb6843f050282717bb51ffddf58f4b6dce",
+        "retromcp-1.1\\minecraft\\src\\net\\minecraft\\src\\GuiContainer.java": "a802adc0c303bc6e350472f82b3142a6ebc45298a8c6ccb7b2f1d87b552ba3bc"
+      },
+      "rust_source_sha256": {
+        "crates/client11/src/gui/screens/container.rs": "302dc17ba5310c2a960334e94b7aa0ba50340931faae15e850bfa6b573d1efd4",
+        "crates/client11/src/gui/mod.rs": "dc3c9bd40d1ea669cce7720abfcf258fd15fc66e6de9724e5c9a8a659a7d3c25",
+        "crates/client11/src/gui/widgets.rs": "4e3ff000a5e942f45c684d66d20c744c5c8b6975edcbd31f6329fc144256e52d"
+      }
+    },
+    "rust_source_sha256": {
+      "crates/client11/src/gui/screens/container.rs": "302dc17ba5310c2a960334e94b7aa0ba50340931faae15e850bfa6b573d1efd4",
+      "crates/client11/src/gui/mod.rs": "dc3c9bd40d1ea669cce7720abfcf258fd15fc66e6de9724e5c9a8a659a7d3c25",
+      "crates/client11/src/gui/widgets.rs": "4e3ff000a5e942f45c684d66d20c744c5c8b6975edcbd31f6329fc144256e52d"
+    },
+    "original_source_sha256": {
+      "retromcp-1.0\\minecraft\\src\\net\\minecraft\\src\\GuiContainer.java": "f8852d794650e5a7f31766bfe667bffb6843f050282717bb51ffddf58f4b6dce",
+      "retromcp-1.1\\minecraft\\src\\net\\minecraft\\src\\GuiContainer.java": "a802adc0c303bc6e350472f82b3142a6ebc45298a8c6ccb7b2f1d87b552ba3bc"
+    },
+    "completion_blockers": [],
+    "limitations": [],
+    "criterion": "Entire1.0-to1.1 changed delta in repository installed-resource singleplayer scope; reviewed all raw hunks and direct original proof. No claim of whole inheritedJava API."
+  },
+  "GuiIngame": {
+    "complete_delta_review": true,
+    "reason": {
+      "class_name": "GuiIngame",
+      "complete_changed_runtime_delta": true,
+      "domain": "Existing repository singleplayer scope; installed original 1.1 resources",
+      "no_behavior_change": false,
+      "raw_hunks": [
+        "@@ -44,7 +44,7 @@",
+        "@@ -84,7 +84,7 @@",
+        "@@ -103,9 +103,9 @@",
+        "@@ -129,7 +129,7 @@",
+        "@@ -178,7 +178,7 @@",
+        "@@ -213,8 +213,8 @@",
+        "@@ -277,7 +277,7 @@",
+        "@@ -368,8 +368,8 @@",
+        "@@ -393,22 +393,22 @@",
+        "@@ -426,10 +426,10 @@"
+      ],
+      "behaviors": [
+        "Version literal changes Minecraft1.0.0 to Minecraft1.1. Actual HUD render calls debug_version_line with matching coordinates2,2 and color16777215; five unchanged-original renderGameOverlay calls capture actual first debug FontRenderer call.",
+        "Other raw hunks are potion IDs/names, air getter, boss renderer field/method and multiplayer player-list field aliases. Original1.0 EntityPlayerSP.getPlayerArmorValue and1.1 inherited EntityPlayer.getTotalArmorValue both return inventory.getTotalArmorValue: the changed HUD call keeps player armor semantics. No renamed helper is independently credited as new functionality."
+      ],
+      "evidence": [
+        "hud"
+      ],
+      "limitations": [],
+      "authority": {
+        "retromcp-1.0\\minecraft\\src\\net\\minecraft\\src\\GuiIngame.java": "d9266dbc1473544727a3b33b5abfa039f7985d50001cd9816e2607ea2c7646ad",
+        "retromcp-1.1\\minecraft\\src\\net\\minecraft\\src\\GuiIngame.java": "cda8092f620674caf20872209796aa2271fab7f24ded7a2301767c124a7b1ae7"
+      },
+      "rust_source_sha256": {
+        "crates/client11/src/gui/ingame.rs": "aef26ce6c7664722882bed77ba24d7f07961cd1069a73d6cfcc71fa9f995877d"
+      }
+    },
+    "rust_source_sha256": {
+      "crates/client11/src/gui/ingame.rs": "aef26ce6c7664722882bed77ba24d7f07961cd1069a73d6cfcc71fa9f995877d"
+    },
+    "original_source_sha256": {
+      "retromcp-1.0\\minecraft\\src\\net\\minecraft\\src\\GuiIngame.java": "d9266dbc1473544727a3b33b5abfa039f7985d50001cd9816e2607ea2c7646ad",
+      "retromcp-1.1\\minecraft\\src\\net\\minecraft\\src\\GuiIngame.java": "cda8092f620674caf20872209796aa2271fab7f24ded7a2301767c124a7b1ae7"
+    },
+    "completion_blockers": [],
+    "limitations": [],
+    "criterion": "Entire1.0-to1.1 changed delta in repository installed-resource singleplayer scope; reviewed all raw hunks and direct original proof. No claim of whole inheritedJava API."
+  },
+  "GuiSlotStatsGeneral": {
+    "complete_delta_review": true,
+    "reason": {
+      "class_name": "GuiSlotStatsGeneral",
+      "complete_changed_runtime_delta": true,
+      "domain": "Existing repository singleplayer scope; installed original 1.1 resources",
+      "no_behavior_change": false,
+      "raw_hunks": [
+        "@@ -30,7 +30,7 @@"
+      ],
+      "behaviors": [
+        "Single raw changed drawSlot hunk translates raw StatBase key at draw time. Production general_cells calls Ui.translate for every general row, consumed by draw_slot. Existing original statistics corpus covers all23 row keys in57 locale/fallback cases and formatting/positions in actual row helper."
+      ],
+      "evidence": [
+        "stats"
+      ],
+      "limitations": [],
+      "authority": {
+        "retromcp-1.0\\minecraft\\src\\net\\minecraft\\src\\GuiSlotStatsGeneral.java": "366c51ecda3ebaf64177cb0a0a4c1b73648cd4530a331b406e962c10f1d9c3ce",
+        "retromcp-1.1\\minecraft\\src\\net\\minecraft\\src\\GuiSlotStatsGeneral.java": "b078be9df5cd4080e53b8dcc82aed201a02cecfb783ff77c8ff6f2123e6a4902"
+      },
+      "rust_source_sha256": {
+        "crates/client11/src/gui/screens/stats.rs": "5ceb69e5691c1bc7c9cab45162458a066ce958ec4e675d4d4e4daf705e522727",
+        "crates/client11/src/gui/stats.rs": "80fe0c65bbfa6cddb324bfc4a274c96ca2bd4f1cbedee976869e6b6b423697d8",
+        "crates/client11/src/gui/lang.rs": "c87ec914c3fcd385c21fcd08a8c02b260c10a70e39037bb5ba91aef38211368f"
+      }
+    },
+    "rust_source_sha256": {
+      "crates/client11/src/gui/screens/stats.rs": "5ceb69e5691c1bc7c9cab45162458a066ce958ec4e675d4d4e4daf705e522727",
+      "crates/client11/src/gui/stats.rs": "80fe0c65bbfa6cddb324bfc4a274c96ca2bd4f1cbedee976869e6b6b423697d8",
+      "crates/client11/src/gui/lang.rs": "c87ec914c3fcd385c21fcd08a8c02b260c10a70e39037bb5ba91aef38211368f"
+    },
+    "original_source_sha256": {
+      "retromcp-1.0\\minecraft\\src\\net\\minecraft\\src\\GuiSlotStatsGeneral.java": "366c51ecda3ebaf64177cb0a0a4c1b73648cd4530a331b406e962c10f1d9c3ce",
+      "retromcp-1.1\\minecraft\\src\\net\\minecraft\\src\\GuiSlotStatsGeneral.java": "b078be9df5cd4080e53b8dcc82aed201a02cecfb783ff77c8ff6f2123e6a4902"
+    },
+    "completion_blockers": [],
+    "limitations": [],
+    "criterion": "Entire1.0-to1.1 changed delta in repository installed-resource singleplayer scope; reviewed all raw hunks and direct original proof. No claim of whole inheritedJava API."
+  },
+  "GuiAchievements": {
+    "complete_delta_review": true,
+    "reason": {
+      "class_name": "GuiAchievements",
+      "complete_changed_runtime_delta": true,
+      "domain": "Existing repository singleplayer scope; installed original 1.1 resources",
+      "no_behavior_change": false,
+      "raw_hunks": [
+        "@@ -224,8 +224,8 @@",
+        "@@ -296,7 +296,7 @@",
+        "@@ -314,7 +314,7 @@"
+      ],
+      "behaviors": [
+        "Full raw review: horizontal/vertical line methods are names only; inherited bodies match. Two actual changed tooltip hunks translate hovered raw achievement key and translate parent raw key before achievement.requires formatting.",
+        "Actual Rust draw calls shared tooltip_name and tooltip_requirement.3021 unchanged original genAchievementBackground calls across57locale switches and all27hovered achievements exercise unlocked/root and26locked-parent branches. Original font spy observes translated name in width and shadow draw, required description split draw, and26Greek FormatFlagsConversionMismatchException outcomes. Rust compares every production-helper name, required description and exception class/message; no generic toast class credit substituted."
+      ],
+      "evidence": [
+        "tooltip"
+      ],
+      "limitations": [],
+      "authority": {
+        "retromcp-1.0\\minecraft\\src\\net\\minecraft\\src\\GuiAchievements.java": "aeb592cf1be6ca07df861176ca92efe62d33203fdf8bbf833a45f24ff8a48395",
+        "retromcp-1.1\\minecraft\\src\\net\\minecraft\\src\\GuiAchievements.java": "8cf0021d68a04ab3a202ed316c6309ce8e171eca7feb45257299f4fa209aea6b"
+      },
+      "rust_source_sha256": {
+        "crates/client11/src/gui/screens/achievements.rs": "94b3f99ab30347d14c97a4c80147a8b41c81c8d3e18b9392861191738609be8f",
+        "crates/client11/src/gui/stats.rs": "80fe0c65bbfa6cddb324bfc4a274c96ca2bd4f1cbedee976869e6b6b423697d8",
+        "crates/client11/src/gui/lang.rs": "c87ec914c3fcd385c21fcd08a8c02b260c10a70e39037bb5ba91aef38211368f",
+        "crates/client11/src/gui/java_format.rs": "3b92cd6fe3179526f5c9ddaa9ab2dbabd7c48f4fe4674d9c037bab3468fec772"
+      }
+    },
+    "rust_source_sha256": {
+      "crates/client11/src/gui/screens/achievements.rs": "94b3f99ab30347d14c97a4c80147a8b41c81c8d3e18b9392861191738609be8f",
+      "crates/client11/src/gui/stats.rs": "80fe0c65bbfa6cddb324bfc4a274c96ca2bd4f1cbedee976869e6b6b423697d8",
+      "crates/client11/src/gui/lang.rs": "c87ec914c3fcd385c21fcd08a8c02b260c10a70e39037bb5ba91aef38211368f",
+      "crates/client11/src/gui/java_format.rs": "3b92cd6fe3179526f5c9ddaa9ab2dbabd7c48f4fe4674d9c037bab3468fec772"
+    },
+    "original_source_sha256": {
+      "retromcp-1.0\\minecraft\\src\\net\\minecraft\\src\\GuiAchievements.java": "aeb592cf1be6ca07df861176ca92efe62d33203fdf8bbf833a45f24ff8a48395",
+      "retromcp-1.1\\minecraft\\src\\net\\minecraft\\src\\GuiAchievements.java": "8cf0021d68a04ab3a202ed316c6309ce8e171eca7feb45257299f4fa209aea6b"
+    },
+    "completion_blockers": [],
+    "limitations": [],
+    "criterion": "Entire1.0-to1.1 changed delta in repository installed-resource singleplayer scope; reviewed all raw hunks and direct original proof. No claim of whole inheritedJava API."
+  },
+  "GuiGameOver": {
+    "complete_delta_review": true,
+    "reason": {
+      "class_name": "GuiGameOver",
+      "complete_changed_runtime_delta": true,
+      "domain": "Existing repository singleplayer scope; installed original 1.1 resources",
+      "no_behavior_change": true,
+      "raw_hunks": [
+        "@@ -27,10 +27,10 @@",
+        "@@ -39,6 +39,10 @@"
+      ],
+      "behaviors": [
+        "Raw exitToMainMenu/save-handler/getSaveDirectoryName hunks are aliases. Only actual new runtime behavior is sendQuittingDisconnectingPacket when Minecraft.isMultiplayerWorld before changeWorld1(null). Predicate always false in this repository singleplayer scope: no new reachable behavior.",
+        "All death-screen localized title, score, hardcoreInfo and buttons are literally unchanged1.0\u21921.1; there is no new localization hunk to invent. Actual Rust QuitWorld and hardcore/respawn branches preserve the existing singleplayer path."
+      ],
+      "evidence": [
+        "source"
+      ],
+      "limitations": [
+        "Multiplayer disconnect packet behavior is outside repository singleplayer scope."
+      ],
+      "authority": {
+        "retromcp-1.0\\minecraft\\src\\net\\minecraft\\src\\GuiGameOver.java": "d39f6bc99ffd272ecee347994e0c1cde77dc770df0e9e9e61dcb7837019bb995",
+        "retromcp-1.1\\minecraft\\src\\net\\minecraft\\src\\GuiGameOver.java": "6796c554f7d0cf4bc72495ae568e8a04c22690873bd6a839980bbaf81933e56c"
+      },
+      "rust_source_sha256": {
+        "crates/client11/src/gui/screens/game_over.rs": "72585c75484360a838e5961d7d4e56ebe1ac15da9559e0de25bad618b0b19a75"
+      }
+    },
+    "rust_source_sha256": {
+      "crates/client11/src/gui/screens/game_over.rs": "72585c75484360a838e5961d7d4e56ebe1ac15da9559e0de25bad618b0b19a75"
+    },
+    "original_source_sha256": {
+      "retromcp-1.0\\minecraft\\src\\net\\minecraft\\src\\GuiGameOver.java": "d39f6bc99ffd272ecee347994e0c1cde77dc770df0e9e9e61dcb7837019bb995",
+      "retromcp-1.1\\minecraft\\src\\net\\minecraft\\src\\GuiGameOver.java": "6796c554f7d0cf4bc72495ae568e8a04c22690873bd6a839980bbaf81933e56c"
+    },
+    "completion_blockers": [],
+    "limitations": [
+      "Multiplayer disconnect packet behavior is outside repository singleplayer scope."
+    ],
+    "criterion": "Entire1.0-to1.1 changed delta in repository installed-resource singleplayer scope; reviewed all raw hunks and direct original proof. No claim of whole inheritedJava API.",
+    "no_behavior_change": true
+  },
+  "GuiWinGame": {
+    "complete_delta_review": true,
+    "reason": {
+      "class_name": "GuiWinGame",
+      "complete_changed_runtime_delta": true,
+      "domain": "Existing repository singleplayer scope; installed original 1.1 resources",
+      "no_behavior_change": true,
+      "raw_hunks": [
+        "@@ -9,16 +9,16 @@",
+        "@@ -35,7 +35,7 @@",
+        "@@ -72,13 +72,13 @@",
+        "@@ -121,12 +121,12 @@",
+        "@@ -151,7 +151,7 @@",
+        "@@ -159,7 +159,7 @@",
+        "@@ -178,9 +178,9 @@",
+        "@@ -188,7 +188,7 @@"
+      ],
+      "behaviors": [
+        "Counter/updateCounter and FontRenderer.FONT_HEIGHT raw hunks are names only, same field initialization and use. There is no removed field in these original sources.",
+        "Only actual changed runtime hunk is multiplayer Packet9Respawn constructor adding WorldInfo.worldType and renamed worldHeight. Singleplayer else branch displayGuiScreen(null), respawn(false,0,true) is unchanged; actual Rust finish emits Display(None) then EndReturn."
+      ],
+      "evidence": [
+        "source"
+      ],
+      "limitations": [
+        "Multiplayer respawn protocol is outside repository singleplayer scope."
+      ],
+      "authority": {
+        "retromcp-1.0\\minecraft\\src\\net\\minecraft\\src\\GuiWinGame.java": "ec981af264ebab76fef9fb30fb3010b60c9eed745cf8f9b971b396b03e0ae09a",
+        "retromcp-1.1\\minecraft\\src\\net\\minecraft\\src\\GuiWinGame.java": "95bb3427ca9b59621fc3b3a25605440f316207d5f01cea9e516801820b3a5f6f"
+      },
+      "rust_source_sha256": {
+        "crates/client11/src/gui/screens/win_game.rs": "b17c012aedf00834cb91935733a648687a75e153e53dd08d2529c7a1581154c4"
+      }
+    },
+    "rust_source_sha256": {
+      "crates/client11/src/gui/screens/win_game.rs": "b17c012aedf00834cb91935733a648687a75e153e53dd08d2529c7a1581154c4"
+    },
+    "original_source_sha256": {
+      "retromcp-1.0\\minecraft\\src\\net\\minecraft\\src\\GuiWinGame.java": "ec981af264ebab76fef9fb30fb3010b60c9eed745cf8f9b971b396b03e0ae09a",
+      "retromcp-1.1\\minecraft\\src\\net\\minecraft\\src\\GuiWinGame.java": "95bb3427ca9b59621fc3b3a25605440f316207d5f01cea9e516801820b3a5f6f"
+    },
+    "completion_blockers": [],
+    "limitations": [
+      "Multiplayer respawn protocol is outside repository singleplayer scope."
+    ],
+    "criterion": "Entire1.0-to1.1 changed delta in repository installed-resource singleplayer scope; reviewed all raw hunks and direct original proof. No claim of whole inheritedJava API.",
+    "no_behavior_change": true
   }
 }

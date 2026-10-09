@@ -124,7 +124,7 @@
   "GuiButtonLanguage": "3c62d56",
   "GuiMainMenu": "3c62d56",
   "GuiIngameMenu": "3c62d56",
-  "GuiCreateWorld": "3c62d56",
+  "GuiCreateWorld": "b4eef854dd54f72ab75af309113ca5e7054635f7",
   "Block": "98f226a",
   "Chunk": "98f226a",
   "ItemRenderer": "b426a4a",
@@ -133,5 +133,15 @@
   "ModelSilverfish": "98f226a",
   "RenderSilverfish": "aa3dc33",
   "RenderGlobal": "ab5cd9e",
-  "EntityRenderer": "1435224"
+  "EntityRenderer": "1435224",
+  "ItemPotion": "b4eef854dd54f72ab75af309113ca5e7054635f7",
+  "Minecraft": "b4eef854dd54f72ab75af309113ca5e7054635f7",
+  "GuiChat": "b4eef854dd54f72ab75af309113ca5e7054635f7",
+  "GuiTextField": "b4eef854dd54f72ab75af309113ca5e7054635f7",
+  "GuiContainer": "b4eef854dd54f72ab75af309113ca5e7054635f7",
+  "GuiIngame": "b4eef854dd54f72ab75af309113ca5e7054635f7",
+  "GuiSlotStatsGeneral": "b4eef854dd54f72ab75af309113ca5e7054635f7",
+  "GuiAchievements": "b4eef854dd54f72ab75af309113ca5e7054635f7",
+  "GuiGameOver": "b4eef854dd54f72ab75af309113ca5e7054635f7",
+  "GuiWinGame": "b4eef854dd54f72ab75af309113ca5e7054635f7"
 }

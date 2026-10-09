@@ -156,6 +156,8 @@
   ],
   "WorldInfo": [
     "dimension11 native and crossloaded saves",
+    "gui11 final input hover and save workflows",
+    "worldname11 modified UTF16 persistence",
     "worldtype11 names settings and saves"
   ],
   "WorldProviderHell": [
@@ -449,7 +451,10 @@
     "gui11 small full deltas"
   ],
   "GuiCreateWorld": [
-    "gui11 small full deltas"
+    "formatter11 actual string callsites",
+    "gui11 final input hover and save workflows",
+    "gui11 small full deltas",
+    "worldname11 modified UTF16 persistence"
   ],
   "Block": [
     "chunk11 tile ownership",
@@ -482,5 +487,60 @@
   ],
   "EntityRenderer": [
     "render11 fog workflow"
+  ],
+  "ItemPotion": [
+    "potion11 full names and tooltip delta",
+    "render11 item passes",
+    "render11 held workflow"
+  ],
+  "Minecraft": [
+    "gameplay11 original delta vectors",
+    "gui11 final input hover and save workflows",
+    "gui11 small full deltas",
+    "language11 full drawing actions restart",
+    "minecraft11 conversion startup bridge",
+    "worldname11 modified UTF16 persistence",
+    "worldtype11 names settings and saves"
+  ],
+  "GuiChat": [
+    "gui11 final input hover and save workflows",
+    "gui11 small full deltas",
+    "formatter11 actual string callsites"
+  ],
+  "GuiTextField": [
+    "formatter11 actual string callsites",
+    "gui11 final input hover and save workflows",
+    "gui11 small full deltas",
+    "worldname11 modified UTF16 persistence"
+  ],
+  "GuiContainer": [
+    "gui11 final input hover and save workflows",
+    "gui11 small full deltas",
+    "formatter11 actual string callsites"
+  ],
+  "GuiIngame": [
+    "gui11 final input hover and save workflows",
+    "gui11 small full deltas",
+    "formatter11 actual string callsites"
+  ],
+  "GuiSlotStatsGeneral": [
+    "gui11 final input hover and save workflows",
+    "gui11 small full deltas",
+    "formatter11 actual string callsites"
+  ],
+  "GuiAchievements": [
+    "gui11 final input hover and save workflows",
+    "gui11 small full deltas",
+    "formatter11 actual string callsites"
+  ],
+  "GuiGameOver": [
+    "gui11 final input hover and save workflows",
+    "gui11 small full deltas",
+    "formatter11 actual string callsites"
+  ],
+  "GuiWinGame": [
+    "gui11 final input hover and save workflows",
+    "gui11 small full deltas",
+    "formatter11 actual string callsites"
   ]
 }

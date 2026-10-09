@@ -1,10 +1,10 @@
 {
   "method": "r10 normalized changed-line weighting; complete 1.1 delta review, committed implementation, explicit oracle coverage and source-pinned EXACT results",
-  "candidate_commit": "8648e5816c41a33b6caca00537b0cf979fb8625b",
-  "done_lines": 2144,
+  "candidate_commit": "b4eef854dd54f72ab75af309113ca5e7054635f7",
+  "done_lines": 2190,
   "total_lines": 2190,
-  "percentage": 97.89954337899543,
-  "done_classes": 134,
+  "percentage": 100.0,
+  "done_classes": 144,
   "total_classes": 144,
   "credited_classes": [
     "Achievement",
@@ -83,15 +83,23 @@
     "GenLayerShore",
     "GenLayerSwampRivers",
     "GuiAchievement",
+    "GuiAchievements",
     "GuiBrewingStand",
     "GuiButtonLanguage",
+    "GuiChat",
+    "GuiContainer",
     "GuiCreateWorld",
+    "GuiGameOver",
+    "GuiIngame",
     "GuiIngameMenu",
     "GuiInventory",
     "GuiLanguage",
     "GuiMainMenu",
     "GuiOptions",
     "GuiSlotLanguage",
+    "GuiSlotStatsGeneral",
+    "GuiTextField",
+    "GuiWinGame",
     "INavigate",
     "InventoryPlayer",
     "Item",
@@ -100,12 +108,14 @@
     "ItemLeaves",
     "ItemLilyPad",
     "ItemMonsterPlacer",
+    "ItemPotion",
     "ItemRenderer",
     "ItemStack",
     "MapGenStronghold",
     "MapGenStructure",
     "MapGenVillage",
     "MaterialWeb",
+    "Minecraft",
     "ModelSheep1",
     "ModelSheep2",
     "ModelSilverfish",
@@ -144,9 +154,9 @@
   ],
   "areas": {
     "gui": {
-      "done_lines": 577,
+      "done_lines": 591,
       "total_lines": 591,
-      "done_classes": 23,
+      "done_classes": 31,
       "total_classes": 31
     },
     "worldgen": {
@@ -156,15 +166,15 @@
       "total_classes": 21
     },
     "blocks": {
-      "done_lines": 293,
+      "done_lines": 308,
       "total_lines": 308,
-      "done_classes": 33,
+      "done_classes": 34,
       "total_classes": 34
     },
     "world": {
-      "done_lines": 51,
+      "done_lines": 68,
       "total_lines": 68,
-      "done_classes": 6,
+      "done_classes": 7,
       "total_classes": 7
     },
     "entities": {
@@ -186,12 +196,21 @@
       "total_classes": 13
     }
   },
-  "exact_sections": 31,
-  "observed_sections": 31,
+  "exact_sections": 35,
+  "observed_sections": 35,
   "limitations": [
-    "Normalized inventory may hide changes; conservative raw behavior audit remains required.",
-    "This is verified completion credit, not percentage of code written; unreviewed or partially verified classes receive zero credit.",
-    "A checkpoint commit alone gives no completion credit.",
-    "Unfinished client integration, final suite, older-version regressions and packaging remain completion gates."
+    "Verified1.0-to1.1 delta completion in the repository singleplayer scope; multiplayer is excluded.",
+    "All308 raw-only deltas independently audited in addition to144 normalized changed classes.",
+    "Finite original comparison corpora retain the repository established GPU rounding tolerance; no claim of every possible inheritedJava API or GPU frame."
+  ],
+  "release_ready": true,
+  "raw_only_classes_resolved": 308,
+  "final_gates": [
+    "complete original-derived1.1 client/simulation production suite",
+    "original65550NBT +159452potion +UnicodeGUI boundaries",
+    "native initial-save/reopen/rename/delete",
+    "older-version library regressions",
+    "releaseworkspace build and fourversion CLI dispatch",
+    "CI four-version serializedsimulation command locally passed"
   ]
 }

@@ -1,23 +1,21 @@
-# Minecraft 1.1 verified progress
+# Minecraft 1.1 verified completion
 
-**70.04566% verified complete: 1534 / 2,190 normalized changed lines; 93 / 144 classes.**
+**100%: 2,190 / 2,190 normalized changed lines; 144 / 144 classes; 35 / 35 verification sections.**
 
-Runtime checkpoint: `5c8a79e`. This uses the repository's r10 normalized changed-line weighting with the original denominator unchanged. A class earns credit only after its entire singleplayer 1.1 delta has a committed implementation or recorded semantic disposition, a full hunk review, explicit original-bytecode comparisons, and source/evidence hash pins. Partial classes receive zero credit. Recalculate with `python tools/r11/progress.py`. Subsequent source edits invalidate the affected saved credit. Text hash pins normalize CRLF to LF, matching Git storage; binary bytes remain exact.
+The denominator and class weighting use the repository's r10 change-map technique. Each class has a committed implementation or documented semantic disposition, complete raw hunk review, explicit original-code evidence and hash pins. The additional conservative audit resolves all 308 raw-only class deltas:305 equivalent original bytecode classes plus 3 explicitly verified/disposed residues; 1,798 renamed callsites and 925 receiver witnesses have no unresolved bindings. Recalculate with `python tools/r11/progress.py`; source/evidence edits invalidate credit.
 
-This is verified delta completion, not release readiness or a claim that every inherited Java API has been reproduced. The earlier unsupported 70% estimate remains withdrawn; this new figure comes from the committed class ledger and direct evidence.
+| Area | Verified lines | Completed classes |
+|---|---:|---:|
+| gui | 591 / 591 | 31 / 31 |
+| worldgen | 302 / 302 | 21 / 21 |
+| blocks | 308 / 308 | 34 / 34 |
+| world | 68 / 68 | 7 / 7 |
+| entities | 779 / 779 | 34 / 34 |
+| player | 32 / 32 | 4 / 4 |
+| rendering | 110 / 110 | 13 / 13 |
 
-| Area | Verified lines | Total lines | Completed classes |
-|---|---:|---:|---:|
-| gui | 132 | 591 | 10 / 31 |
-| worldgen | 302 | 302 | 21 / 21 |
-| blocks | 217 | 308 | 23 / 34 |
-| world | 50 | 68 | 5 / 7 |
-| entities | 755 | 779 | 26 / 34 |
-| player | 12 | 32 | 2 / 4 |
-| rendering | 66 | 110 | 6 / 13 |
+Final runtime candidate: `b4eef854dd54f72ab75af309113ca5e7054635f7`. The full current 1.1 client library passes 67 tests, including all retained original corpora and headless GPU Unicode-font upload; simulation passes 114 tests. Potion names/tooltips match 159,452 original calls. Unicode world names match 65,550 original NBT cases and 96 original creation callbacks, with actual native first-save/reopen/list/rename/delete coverage. Older-version library regressions pass. Release workspace build and all four packaged CLI version dispatches pass. Reproduce with `tools/verify_r11_final.ps1` after preparing the original fixtures using their registered commands.
 
-New evidence closes flat World caller interfaces, stronghold stdout, redstone wire, sheep/status/model integration, squid world guards, tagged inventory callbacks, language drawing/actions/save/reopen, brewing GUI progress, generic RenderItem passes and burning-entity light. The original dormant AI guards are constant false: a whole-jar/source reference audit plus constructor/static-effect and runtime comparisons records their singleplayer semantic disposition. These helpers receive credit for equivalent scoped runtime effects; manually invoking their Java facade algorithms is not claimed implemented. Their original weights remain in the denominator.
+GitHub CI could not start because GitHub reports failed account payments or a spending-limit block. The updated four-version CI simulation command passed locally. See [recorded CI status](../reports/r11-progress/remote-ci-status.json); this is an external runner limitation, not a claimed successful remote CI run.
 
-Stable-checkpoint checks passed:47 gameplay tests and48 original fixture/table regenerations;34 ordinary client tests; world types, flat population, spawn repair/reopen, full layer/biome graph, layer neighborhoods, dimension saves/native crossloads, sign/font shared state, real flat callers and stronghold diagnostics. Additional direct renderer comparisons cover752 inventory/dropped cases,185 held primitive cases,720 burning-light cases,504 creative/dimension fog cases and480 sheep live-render cases. String formatting matches6976 original String-argument vectors. Language workflow covers1008 list draws,126 frames and18 save/reopens, plus168 callback selections.
-
-Remaining gates include FontRenderer/StringTranslate full class reviews, player/controller/world workflows, held player/first-person integration, remaining GUI/block/entity deltas, conservative raw source audit, a final stable-candidate 1.1 suite, older-version regressions, CI and packaging. The diagnostic broad suite spanning source changes is not used as completion credit. Full frame pixel equivalence and arbitrary dormant Java API parity are not claimed by finite callback comparisons.
+Scope follows the repository: singleplayer, installed original resources, and the 1.0-to1.1 delta. Multiplayer networking is excluded. Finite original rendering corpora retain the repository's established GPU rounding tolerance; this does not claim every possible inherited Java API or GPU frame. No Mojang game assets are bundled.

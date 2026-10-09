@@ -9,7 +9,12 @@
     "observations": [
       "Reproducer observed exit0; assertions compare original bytecode and production outputs.",
       "57 passed; 0 failed"
-    ]
+    ],
+    "stable_candidate_revalidation": {
+      "report": "reports/r11-progress/final-production11.log",
+      "sha256": "a226c515dbea9c9934ff8a64ae812e164970ffec394d1c479f1331c3eecf3ce2",
+      "reason": "Original fixtures replayed against current production client/simulation code; all cross-version libraries pass. Final targeted source edits preserve previous world/provider/render hunks; original worldtype/native save proof rerun after NBT edit."
+    }
   },
   "gameplay11 fixture authority": {
     "exact": true,
@@ -21,18 +26,23 @@
     "observations": [
       "Reproducer observed exit0; assertions compare original bytecode and production outputs.",
       "ORIGINAL BYTECODE EXACT"
-    ]
+    ],
+    "stable_candidate_revalidation": {
+      "report": "reports/r11-progress/final-production11.log",
+      "sha256": "a226c515dbea9c9934ff8a64ae812e164970ffec394d1c479f1331c3eecf3ce2",
+      "reason": "Original fixtures replayed against current production client/simulation code; all cross-version libraries pass. Final targeted source edits preserve previous world/provider/render hunks; original worldtype/native save proof rerun after NBT edit."
+    }
   },
   "worldtype11 names settings and saves": {
     "exact": true,
     "source_snapshot": "worldgen11",
     "command": "tools/verify_r11_worldtype.ps1",
-    "report": "reports/r11-progress/fast-checkpoint-verify_r11_worldtype.log",
-    "report_sha256": "b47aecb4b4a52f143db7c4dafba1fc8d381fcef7433899bf5bb9314f4ec2f710",
+    "report": "reports/r11-progress/final-worldtype11.log",
+    "report_sha256": "ed2678450843514663fbaa1052bcff0bd0317a0b5efba704fd17e22782c8c6f1",
     "original_jar_sha256": "44bb6ace88fdff460d6c428c4becee8cad52f2622e1f800dab7a70f8a716f75b",
     "observations": [
-      "Reproducer observed exit0; assertions compare original bytecode and production outputs.",
-      "Complete command group passed."
+      "EXACT MATCH: worldtype -1",
+      "Observed successful exit; stable candidate production replays all retained original corpora."
     ]
   },
   "settings11 language persistence": {
@@ -69,7 +79,12 @@
     ],
     "original_jar_sha256": "44bb6ace88fdff460d6c428c4becee8cad52f2622e1f800dab7a70f8a716f75b",
     "report": "reports/r11-progress/progress11-settings-results.json",
-    "report_sha256": "f005ae54561dde4c805f74edf8915f3e4882b98b48619155e024151a0b4bead3"
+    "report_sha256": "f005ae54561dde4c805f74edf8915f3e4882b98b48619155e024151a0b4bead3",
+    "stable_candidate_revalidation": {
+      "report": "reports/r11-progress/final-production11.log",
+      "sha256": "a226c515dbea9c9934ff8a64ae812e164970ffec394d1c479f1331c3eecf3ce2",
+      "reason": "Original fixtures replayed against current production client/simulation code; all cross-version libraries pass. Final targeted source edits preserve previous world/provider/render hunks; original worldtype/native save proof rerun after NBT edit."
+    }
   },
   "biomes11 changed constants": {
     "exact": true,
@@ -81,7 +96,12 @@
     "observations": [
       "Reproducer observed exit0; assertions compare original bytecode and production outputs.",
       "Complete command group passed."
-    ]
+    ],
+    "stable_candidate_revalidation": {
+      "report": "reports/r11-progress/final-production11.log",
+      "sha256": "a226c515dbea9c9934ff8a64ae812e164970ffec394d1c479f1331c3eecf3ce2",
+      "reason": "Original fixtures replayed against current production client/simulation code; all cross-version libraries pass. Final targeted source edits preserve previous world/provider/render hunks; original worldtype/native save proof rerun after NBT edit."
+    }
   },
   "flat11 village layouts maps population": {
     "exact": true,
@@ -93,7 +113,12 @@
     "observations": [
       "Reproducer observed exit0; assertions compare original bytecode and production outputs.",
       "Complete command group passed."
-    ]
+    ],
+    "stable_candidate_revalidation": {
+      "report": "reports/r11-progress/final-production11.log",
+      "sha256": "a226c515dbea9c9934ff8a64ae812e164970ffec394d1c479f1331c3eecf3ce2",
+      "reason": "Original fixtures replayed against current production client/simulation code; all cross-version libraries pass. Final targeted source edits preserve previous world/provider/render hunks; original worldtype/native save proof rerun after NBT edit."
+    }
   },
   "layer11 graph and fixed manager": {
     "exact": true,
@@ -105,7 +130,12 @@
     "observations": [
       "Reproducer observed exit0; assertions compare original bytecode and production outputs.",
       "Complete command group passed."
-    ]
+    ],
+    "stable_candidate_revalidation": {
+      "report": "reports/r11-progress/final-production11.log",
+      "sha256": "a226c515dbea9c9934ff8a64ae812e164970ffec394d1c479f1331c3eecf3ce2",
+      "reason": "Original fixtures replayed against current production client/simulation code; all cross-version libraries pass. Final targeted source edits preserve previous world/provider/render hunks; original worldtype/native save proof rerun after NBT edit."
+    }
   },
   "spawn11 initial repair and reopen": {
     "exact": true,
@@ -117,7 +147,12 @@
     "observations": [
       "Reproducer observed exit0; assertions compare original bytecode and production outputs.",
       "Complete command group passed."
-    ]
+    ],
+    "stable_candidate_revalidation": {
+      "report": "reports/r11-progress/final-production11.log",
+      "sha256": "a226c515dbea9c9934ff8a64ae812e164970ffec394d1c479f1331c3eecf3ce2",
+      "reason": "Original fixtures replayed against current production client/simulation code; all cross-version libraries pass. Final targeted source edits preserve previous world/provider/render hunks; original worldtype/native save proof rerun after NBT edit."
+    }
   },
   "depthfog11 events and RNG": {
     "exact": true,
@@ -129,7 +164,12 @@
     "observations": [
       "Reproducer observed exit0; assertions compare original bytecode and production outputs.",
       "Complete command group passed."
-    ]
+    ],
+    "stable_candidate_revalidation": {
+      "report": "reports/r11-progress/final-production11.log",
+      "sha256": "a226c515dbea9c9934ff8a64ae812e164970ffec394d1c479f1331c3eecf3ce2",
+      "reason": "Original fixtures replayed against current production client/simulation code; all cross-version libraries pass. Final targeted source edits preserve previous world/provider/render hunks; original worldtype/native save proof rerun after NBT edit."
+    }
   },
   "layer11 neighborhood boundaries": {
     "exact": true,
@@ -141,7 +181,12 @@
     "observations": [
       "Reproducer observed exit0; assertions compare original bytecode and production outputs.",
       "Complete command group passed."
-    ]
+    ],
+    "stable_candidate_revalidation": {
+      "report": "reports/r11-progress/final-production11.log",
+      "sha256": "a226c515dbea9c9934ff8a64ae812e164970ffec394d1c479f1331c3eecf3ce2",
+      "reason": "Original fixtures replayed against current production client/simulation code; all cross-version libraries pass. Final targeted source edits preserve previous world/provider/render hunks; original worldtype/native save proof rerun after NBT edit."
+    }
   },
   "dimension11 native and crossloaded saves": {
     "exact": true,
@@ -153,7 +198,12 @@
     "observations": [
       "Reproducer observed exit0; assertions compare original bytecode and production outputs.",
       "Complete command group passed."
-    ]
+    ],
+    "stable_candidate_revalidation": {
+      "report": "reports/r11-progress/final-production11.log",
+      "sha256": "a226c515dbea9c9934ff8a64ae812e164970ffec394d1c479f1331c3eecf3ce2",
+      "reason": "Original fixtures replayed against current production client/simulation code; all cross-version libraries pass. Final targeted source edits preserve previous world/provider/render hunks; original worldtype/native save proof rerun after NBT edit."
+    }
   },
   "tessellator11 packed normal bytes": {
     "exact": true,
@@ -165,7 +215,12 @@
     "observations": [
       "Reproducer observed exit0; assertions compare original bytecode and production outputs.",
       "Complete command group passed."
-    ]
+    ],
+    "stable_candidate_revalidation": {
+      "report": "reports/r11-progress/final-production11.log",
+      "sha256": "a226c515dbea9c9934ff8a64ae812e164970ffec394d1c479f1331c3eecf3ce2",
+      "reason": "Original fixtures replayed against current production client/simulation code; all cross-version libraries pass. Final targeted source edits preserve previous world/provider/render hunks; original worldtype/native save proof rerun after NBT edit."
+    }
   },
   "flat11 real world caller interfaces": {
     "exact": true,
@@ -177,7 +232,12 @@
     "observations": [
       "Reproducer observed exit0; assertions compare original bytecode and production outputs.",
       "Complete command group passed."
-    ]
+    ],
+    "stable_candidate_revalidation": {
+      "report": "reports/r11-progress/final-production11.log",
+      "sha256": "a226c515dbea9c9934ff8a64ae812e164970ffec394d1c479f1331c3eecf3ce2",
+      "reason": "Original fixtures replayed against current production client/simulation code; all cross-version libraries pass. Final targeted source edits preserve previous world/provider/render hunks; original worldtype/native save proof rerun after NBT edit."
+    }
   },
   "stronghold11 diagnostic stdout callers": {
     "exact": true,
@@ -189,7 +249,12 @@
     "observations": [
       "Reproducer observed exit0; assertions compare original bytecode and production outputs.",
       "Complete command group passed."
-    ]
+    ],
+    "stable_candidate_revalidation": {
+      "report": "reports/r11-progress/final-production11.log",
+      "sha256": "a226c515dbea9c9934ff8a64ae812e164970ffec394d1c479f1331c3eecf3ce2",
+      "reason": "Original fixtures replayed against current production client/simulation code; all cross-version libraries pass. Final targeted source edits preserve previous world/provider/render hunks; original worldtype/native save proof rerun after NBT edit."
+    }
   },
   "inventory11 alias and merge callbacks": {
     "exact": true,
@@ -201,7 +266,12 @@
     "observations": [
       "4 passed; 0 failed",
       "Finite direct original bytecode comparison; current source pinned."
-    ]
+    ],
+    "stable_candidate_revalidation": {
+      "report": "reports/r11-progress/final-production11.log",
+      "sha256": "a226c515dbea9c9934ff8a64ae812e164970ffec394d1c479f1331c3eecf3ce2",
+      "reason": "Original fixtures replayed against current production client/simulation code; all cross-version libraries pass. Final targeted source edits preserve previous world/provider/render hunks; original worldtype/native save proof rerun after NBT edit."
+    }
   },
   "dormant11 original scoped reachability": {
     "exact": true,
@@ -213,7 +283,12 @@
     "observations": [
       "Reproducer observed exit0; assertions compare original bytecode and production outputs.",
       "ORIGINAL AI GRAPH SNAPSHOT EXACT"
-    ]
+    ],
+    "stable_candidate_revalidation": {
+      "report": "reports/r11-progress/final-production11.log",
+      "sha256": "a226c515dbea9c9934ff8a64ae812e164970ffec394d1c479f1331c3eecf3ce2",
+      "reason": "Original fixtures replayed against current production client/simulation code; all cross-version libraries pass. Final targeted source edits preserve previous world/provider/render hunks; original worldtype/native save proof rerun after NBT edit."
+    }
   },
   "language11 full drawing actions restart": {
     "exact": true,
@@ -225,7 +300,12 @@
     "observations": [
       "Reproducer observed exit0; assertions compare original bytecode and production outputs.",
       "LANGUAGE WORKFLOW EXACT"
-    ]
+    ],
+    "stable_candidate_revalidation": {
+      "report": "reports/r11-progress/final-production11.log",
+      "sha256": "a226c515dbea9c9934ff8a64ae812e164970ffec394d1c479f1331c3eecf3ce2",
+      "reason": "Original fixtures replayed against current production client/simulation code; all cross-version libraries pass. Final targeted source edits preserve previous world/provider/render hunks; original worldtype/native save proof rerun after NBT edit."
+    }
   },
   "language11 all locale callbacks": {
     "exact": true,
@@ -237,7 +317,12 @@
     "observations": [
       "168",
       "Finite direct original bytecode comparison; current source pinned."
-    ]
+    ],
+    "stable_candidate_revalidation": {
+      "report": "reports/r11-progress/final-production11.log",
+      "sha256": "a226c515dbea9c9934ff8a64ae812e164970ffec394d1c479f1331c3eecf3ce2",
+      "reason": "Original fixtures replayed against current production client/simulation code; all cross-version libraries pass. Final targeted source edits preserve previous world/provider/render hunks; original worldtype/native save proof rerun after NBT edit."
+    }
   },
   "brewing11 GUI progress": {
     "exact": true,
@@ -249,7 +334,12 @@
     "observations": [
       "Reproducer observed exit0; assertions compare original bytecode and production outputs.",
       "brewing EXACT"
-    ]
+    ],
+    "stable_candidate_revalidation": {
+      "report": "reports/r11-progress/final-production11.log",
+      "sha256": "a226c515dbea9c9934ff8a64ae812e164970ffec394d1c479f1331c3eecf3ce2",
+      "reason": "Original fixtures replayed against current production client/simulation code; all cross-version libraries pass. Final targeted source edits preserve previous world/provider/render hunks; original worldtype/native save proof rerun after NBT edit."
+    }
   },
   "render11 burning light": {
     "exact": true,
@@ -261,7 +351,12 @@
     "observations": [
       "Reproducer observed exit0; assertions compare original bytecode and production outputs.",
       "720 burning-light cases"
-    ]
+    ],
+    "stable_candidate_revalidation": {
+      "report": "reports/r11-progress/final-production11.log",
+      "sha256": "a226c515dbea9c9934ff8a64ae812e164970ffec394d1c479f1331c3eecf3ce2",
+      "reason": "Original fixtures replayed against current production client/simulation code; all cross-version libraries pass. Final targeted source edits preserve previous world/provider/render hunks; original worldtype/native save proof rerun after NBT edit."
+    }
   },
   "render11 item passes": {
     "exact": true,
@@ -273,7 +368,12 @@
     "observations": [
       "Reproducer observed exit0; assertions compare original bytecode and production outputs.",
       "383505 comparisons, 0 differences"
-    ]
+    ],
+    "stable_candidate_revalidation": {
+      "report": "reports/r11-progress/final-production11.log",
+      "sha256": "a226c515dbea9c9934ff8a64ae812e164970ffec394d1c479f1331c3eecf3ce2",
+      "reason": "Original fixtures replayed against current production client/simulation code; all cross-version libraries pass. Final targeted source edits preserve previous world/provider/render hunks; original worldtype/native save proof rerun after NBT edit."
+    }
   },
   "sheep11 live models and render pass": {
     "exact": true,
@@ -285,7 +385,12 @@
     "observations": [
       "Reproducer observed exit0; assertions compare original bytecode and production outputs.",
       "Complete command group passed."
-    ]
+    ],
+    "stable_candidate_revalidation": {
+      "report": "reports/r11-progress/final-production11.log",
+      "sha256": "a226c515dbea9c9934ff8a64ae812e164970ffec394d1c479f1331c3eecf3ce2",
+      "reason": "Original fixtures replayed against current production client/simulation code; all cross-version libraries pass. Final targeted source edits preserve previous world/provider/render hunks; original worldtype/native save proof rerun after NBT edit."
+    }
   },
   "formatter11 actual string callsites": {
     "exact": true,
@@ -297,7 +402,12 @@
     "observations": [
       "Reproducer observed exit0; assertions compare original bytecode and production outputs.",
       "Complete command group passed."
-    ]
+    ],
+    "stable_candidate_revalidation": {
+      "report": "reports/r11-progress/final-production11.log",
+      "sha256": "a226c515dbea9c9934ff8a64ae812e164970ffec394d1c479f1331c3eecf3ce2",
+      "reason": "Original fixtures replayed against current production client/simulation code; all cross-version libraries pass. Final targeted source edits preserve previous world/provider/render hunks; original worldtype/native save proof rerun after NBT edit."
+    }
   },
   "render11 held workflow": {
     "exact": true,
@@ -309,7 +419,12 @@
     "observations": [
       "Reproducer observed exit0; assertions compare original bytecode and production outputs.",
       "2640736 raw-bit comparisons, 0 differences"
-    ]
+    ],
+    "stable_candidate_revalidation": {
+      "report": "reports/r11-progress/final-production11.log",
+      "sha256": "a226c515dbea9c9934ff8a64ae812e164970ffec394d1c479f1331c3eecf3ce2",
+      "reason": "Original fixtures replayed against current production client/simulation code; all cross-version libraries pass. Final targeted source edits preserve previous world/provider/render hunks; original worldtype/native save proof rerun after NBT edit."
+    }
   },
   "render11 biped workflow": {
     "exact": true,
@@ -321,7 +436,12 @@
     "observations": [
       "Reproducer observed exit0; assertions compare original bytecode and production outputs.",
       "1681276 values, 0 differences"
-    ]
+    ],
+    "stable_candidate_revalidation": {
+      "report": "reports/r11-progress/final-production11.log",
+      "sha256": "a226c515dbea9c9934ff8a64ae812e164970ffec394d1c479f1331c3eecf3ce2",
+      "reason": "Original fixtures replayed against current production client/simulation code; all cross-version libraries pass. Final targeted source edits preserve previous world/provider/render hunks; original worldtype/native save proof rerun after NBT edit."
+    }
   },
   "render11 silverfish workflow": {
     "exact": true,
@@ -333,7 +453,12 @@
     "observations": [
       "Reproducer observed exit0; assertions compare original bytecode and production outputs.",
       "378469 raw-bit comparisons, 0 mismatches"
-    ]
+    ],
+    "stable_candidate_revalidation": {
+      "report": "reports/r11-progress/final-production11.log",
+      "sha256": "a226c515dbea9c9934ff8a64ae812e164970ffec394d1c479f1331c3eecf3ce2",
+      "reason": "Original fixtures replayed against current production client/simulation code; all cross-version libraries pass. Final targeted source edits preserve previous world/provider/render hunks; original worldtype/native save proof rerun after NBT edit."
+    }
   },
   "render11 sky horizon": {
     "exact": true,
@@ -345,7 +470,12 @@
     "observations": [
       "Reproducer observed exit0; assertions compare original bytecode and production outputs.",
       "2815472 raw-bit comparisons, 0 mismatches"
-    ]
+    ],
+    "stable_candidate_revalidation": {
+      "report": "reports/r11-progress/final-production11.log",
+      "sha256": "a226c515dbea9c9934ff8a64ae812e164970ffec394d1c479f1331c3eecf3ce2",
+      "reason": "Original fixtures replayed against current production client/simulation code; all cross-version libraries pass. Final targeted source edits preserve previous world/provider/render hunks; original worldtype/native save proof rerun after NBT edit."
+    }
   },
   "render11 fog workflow": {
     "exact": true,
@@ -357,7 +487,12 @@
     "observations": [
       "Reproducer observed exit0; assertions compare original bytecode and production outputs.",
       "75676 raw-bit comparisons, 0 mismatches"
-    ]
+    ],
+    "stable_candidate_revalidation": {
+      "report": "reports/r11-progress/final-production11.log",
+      "sha256": "a226c515dbea9c9934ff8a64ae812e164970ffec394d1c479f1331c3eecf3ce2",
+      "reason": "Original fixtures replayed against current production client/simulation code; all cross-version libraries pass. Final targeted source edits preserve previous world/provider/render hunks; original worldtype/native save proof rerun after NBT edit."
+    }
   },
   "font11 full primitive delta": {
     "exact": true,
@@ -369,7 +504,12 @@
     "observations": [
       "Reproducer observed exit0; assertions compare original bytecode and production outputs.",
       "131072 UTF-16 font draws"
-    ]
+    ],
+    "stable_candidate_revalidation": {
+      "report": "reports/r11-progress/final-production11.log",
+      "sha256": "a226c515dbea9c9934ff8a64ae812e164970ffec394d1c479f1331c3eecf3ce2",
+      "reason": "Original fixtures replayed against current production client/simulation code; all cross-version libraries pass. Final targeted source edits preserve previous world/provider/render hunks; original worldtype/native save proof rerun after NBT edit."
+    }
   },
   "gui11 small full deltas": {
     "exact": true,
@@ -381,7 +521,12 @@
     "observations": [
       "Reproducer observed exit0; assertions compare original bytecode and production outputs.",
       "0 failed"
-    ]
+    ],
+    "stable_candidate_revalidation": {
+      "report": "reports/r11-progress/final-production11.log",
+      "sha256": "a226c515dbea9c9934ff8a64ae812e164970ffec394d1c479f1331c3eecf3ce2",
+      "reason": "Original fixtures replayed against current production client/simulation code; all cross-version libraries pass. Final targeted source edits preserve previous world/provider/render hunks; original worldtype/native save proof rerun after NBT edit."
+    }
   },
   "chunk11 tile ownership": {
     "exact": true,
@@ -393,6 +538,59 @@
     "observations": [
       "Reproducer observed exit0; assertions compare original bytecode and production outputs.",
       "1536 cases"
+    ],
+    "stable_candidate_revalidation": {
+      "report": "reports/r11-progress/final-production11.log",
+      "sha256": "a226c515dbea9c9934ff8a64ae812e164970ffec394d1c479f1331c3eecf3ce2",
+      "reason": "Original fixtures replayed against current production client/simulation code; all cross-version libraries pass. Final targeted source edits preserve previous world/provider/render hunks; original worldtype/native save proof rerun after NBT edit."
+    }
+  },
+  "potion11 full names and tooltip delta": {
+    "exact": true,
+    "source_snapshot": "worldgen11",
+    "command": "tools/oracle11/potion_names11.ps1",
+    "report": "reports/r11-progress/potion-names11-repro.log",
+    "report_sha256": "71c3f4301b896309faf91bce047df54d34fde9dc4150d73b05ee3704b6a8dad9",
+    "original_jar_sha256": "44bb6ace88fdff460d6c428c4becee8cad52f2622e1f800dab7a70f8a716f75b",
+    "observations": [
+      "159452",
+      "Observed successful exit; stable candidate production replays all retained original corpora."
+    ]
+  },
+  "minecraft11 conversion startup bridge": {
+    "exact": true,
+    "source_snapshot": "client11",
+    "command": "tools/oracle11/minecraft_convert11.ps1",
+    "report": "reports/r11-progress/minecraft-convert11-repro.log",
+    "report_sha256": "0228d397bf71c4bb990065540b2af365c42758a6831eb656187a4f6280fd3024",
+    "original_jar_sha256": "44bb6ace88fdff460d6c428c4becee8cad52f2622e1f800dab7a70f8a716f75b",
+    "observations": [
+      "MINECRAFT CONVERSION CALLBACK EXACT",
+      "Observed successful exit; stable candidate production replays all retained original corpora."
+    ]
+  },
+  "gui11 final input hover and save workflows": {
+    "exact": true,
+    "source_snapshot": "client11",
+    "command": "tools/oracle11/remaining_gui11.ps1",
+    "report": "reports/r11-progress/remaining-gui11-final-repro.log",
+    "report_sha256": "ea46f476f7b1fc48de9ad26523b17948ccbf77ffa19258331d8554ba5ac9f1f8",
+    "original_jar_sha256": "44bb6ace88fdff460d6c428c4becee8cad52f2622e1f800dab7a70f8a716f75b",
+    "observations": [
+      "0 failed",
+      "Observed successful exit; stable candidate production replays all retained original corpora."
+    ]
+  },
+  "worldname11 modified UTF16 persistence": {
+    "exact": true,
+    "source_snapshot": "worldgen11",
+    "command": "tools/oracle11/verify_worldname_utf16_11.ps1",
+    "report": "reports/r11-progress/worldname-utf16-11-repro.log",
+    "report_sha256": "41c0dac7e372594890de19fe7dd02a182252e774fc41b614add8404483b53233",
+    "original_jar_sha256": "44bb6ace88fdff460d6c428c4becee8cad52f2622e1f800dab7a70f8a716f75b",
+    "observations": [
+      "65550",
+      "Observed successful exit; stable candidate production replays all retained original corpora."
     ]
   }
 }
