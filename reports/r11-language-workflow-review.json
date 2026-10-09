@@ -1,0 +1,77 @@
+{
+  "schema": 1,
+  "new_class_delta_credit_proposed": 96,
+  "source_sha256": {
+    "crates/client11/src/gui/screens/language.rs": "38c5c99206de3849a5b5c06fa1e097761c63c4c895159b8b689ad1b0a14cc04d",
+    "crates/client11/src/gui/lang.rs": "8fd2a59286ae6f0c6cd3a5cfcba878ad14fc38b2ea2c90a2c2d84f76dcc50cea",
+    "crates/client11/src/gui/font.rs": "3c12f5fe744ad3a79a05c8279d0813a635b7abc01214b3511de781065354f949",
+    "crates/client11/src/gui/settings.rs": "61c01fb9f3e31ad343ce0391494c0ee14bbd0a2be2e4787392e1d0855f81da06",
+    "crates/client11/src/gui/mod.rs": "86efe694608dd478edfcc3d998411bcc0c91f382525ff943cebcf4a92f30819a",
+    "crates/client11/src/gui/slot.rs": "2b1465f5605c13a63e6512061dfa6e9ee4bd4b96fd62508d1399e04379e15d16",
+    "crates/client11/src/texture_packs.rs": "571bbffe6199c815601a216ae8d01a33d2e832feddb23f0628f552cf8c761bf6",
+    "tools/oracle11/probes/LanguageWorkflow11.java": "5df4a6527393228478301d88482a77fcc0a6ff89d84330139d0530f3fecba114",
+    "tools/oracle11/probes/fontdraw/LanguageScreen11.java": "f497f0cb4e7b7122250fcd74a12d5bf1affc53b68afa1bd36589fafac7757dd8",
+    "tools/oracle11/language_workflow11.ps1": "6245354143b6c186e7e75ebaf60775e841fa272db4f2477a8efb10fb7bec44f3"
+  },
+  "original_jar_sha256": "44bb6ace88fdff460d6c428c4becee8cad52f2622e1f800dab7a70f8a716f75b",
+  "evidence": {
+    "language-workflow11-original.log": "61380bb23370d1ac4af4aca3dc69929a84692d5f9529e954d14aa3a9305199c0",
+    "language-workflow11-verification.log": "92521481fa81ea6260cf75c54b02de8ecef33ca830b512e46876816ea28f8495",
+    "language-callbacks11-verification.log": "725689214bab5189fc2fce9be4e26f8f1888fffa9f5aa2950df75bfc82fdee7c"
+  },
+  "fixtures": {
+    "target/r11/language-workflow11.bin": {
+      "sha256": "b5a001b5db9ad995b92564f649ecf6174385ebaa15c5a94c70c1d43c9223b39c",
+      "bytes": 13539254
+    },
+    "target/r11/language-screen11.bin": {
+      "sha256": "0b163daf959b0a03b7ac6950ff2b6b3ad51e2d367d791cdcafe8fc1092de6395",
+      "bytes": 26882
+    }
+  },
+  "classes": [
+    {
+      "class_name": "GuiLanguage",
+      "normalized_delta_lines": 56,
+      "entire_1_1_delta_complete": true,
+      "original_source_sha256": "1b28a50b7a58d21226899652347dcf1a067ab17e92cb595454e7f39c6ba81406",
+      "changed_hunk_coverage": [
+        "Constructor retains same parent/settings; Done returns same parent after actual settings save, proven saved file before original transition and Rust queued transition",
+        "initGui Done6 button geometry/translated text, slot top32/bottom height-61/height18, registered scroll7/8; three resolutions and actual draw geometry",
+        "actionPerformed enabled guard covers disabledDone and disabledscroll; id5 ignored; id6 save+parent; other ids delegate scroll, compared by view geometry for8/8/7",
+        "drawScreen actual list -> pack refresh -> translated title/warning -> buttons, compared original font-strip texture/position/UV/RGBA vertices over126fullframes",
+        "Refresh constructor-1/update decrement/draw+20 schedule with0/1/20updates; original pack-call counter plus actual Rust filesystem-added/removed ZIP observations",
+        "mouseClicked and mouseMovedOrUp delegate unchanged superclass behavior; update super has no added behavior. Literal source review, no inherited reproof requirement"
+      ],
+      "remaining_new_runtime_delta_blockers": [],
+      "criterion": "Entire new class behavior in actual singleplayer installed-language caller domain; finite original-bytecode comparisons plus literal unchanged-super delegation review, not all-input formal proof."
+    },
+    {
+      "class_name": "GuiSlotLanguage",
+      "normalized_delta_lines": 40,
+      "entire_1_1_delta_complete": true,
+      "original_source_sha256": "59c5b1d9961de4f3d2ce938b0f7909e9f3474ad22ef7210439c30011bc0fec0d",
+      "changed_hunk_coverage": [
+        "Constructor exact sorted56language-code/native-name list and fixed slot dimensions; all168selectioncallbacks over3resolutions",
+        "getSize/getContentHeight56/1008, selected currentcode checked for every candidate after every selection",
+        "elementClicked updates original translation singleton, fontUnicode, settingscode, fontBidi and translated Done label for all56installed locales; double-click booleans covered",
+        "drawSlot sets Bidi true for native-name draw, centers at width/2,y+1,white, restores based settingslanguage; actual glyph vertices compare1008list draws acrossLTR/RTL/Unicode active modes",
+        "drawBackground calls original/default background path; fullframe outputs run inherited slot framing under3resolutions. Background generic implementation inherited, new callback delegation literal source reviewed"
+      ],
+      "remaining_new_runtime_delta_blockers": [],
+      "criterion": "Entire new class behavior in actual singleplayer installed-language caller domain; finite original-bytecode comparisons plus literal unchanged-super delegation review, not all-input formal proof."
+    }
+  ],
+  "limits": [
+    "No support claim for externally mutating the singleton language map while the screen is open or malformed/missing jar language resources; installed56locale domain is compared.",
+    "Settings restart uses fresh settings/font initialization from saved options rather than launching a visible Minecraft process. Original UI-return spy reads saved file at actual displayGuiScreen entry; Rust verifies file before consuming queued Display action.",
+    "Original TexturePackList update is a counting fixture seam; Rust verifies actual update filesystem effect. Original FontRenderer and GuiLanguage/GuiSlotLanguage algorithms are unchanged jar bytecode.",
+    "Generic GUI mouse/scroll/render implementations unchanged from inherited versions are not re-proved as additional1.1 delta. Dedicated scroll callback output is covered.",
+    "GuiOptions language-entry102 save/transition branch not added to this workflow; initial options button layout is in callback fixture but no full GuiOptions class completion credit from this handoff."
+  ],
+  "owned_changes": [
+    "crates/client11/src/gui/screens/language.rs (general enabled-action guard plus focused test)",
+    "tools/oracle11/probes/LanguageWorkflow11.java (new)",
+    "tools/oracle11/language_workflow11.ps1 (new)"
+  ]
+}

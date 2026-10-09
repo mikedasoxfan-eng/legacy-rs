@@ -1,0 +1,17 @@
+# Language GUI closure
+
+Both full new class deltas are proposed complete in the actual installed-language singleplayer caller domain: GuiLanguage56normalized lines and GuiSlotLanguage40lines. Detailed hunk mapping, source/probe/fixture/log hashes and boundaries are in `work/gui-language-completion-review11.json` (regenerate with `work/record-language-workflow11.py`). Central ledger untouched.
+
+Focused production Rust vs unchanged original GuiLanguage/GuiSlotLanguage and FontRenderer bytecode PASS:3resolutions,18selections,1008native-name list draws,126fullscreen frames,18Done-save/reopens. Native glyph texture/position/UV/RGBA vertices capture the temporary Bidi mode and restoration. Frames compare title/warning/Done/list drawing, scroll callbacks7/8, refresh timers and original pack-update call counts. Actual Rust pack-folder file insertion/removal proves refresh calls occur at the expected times. Original UI-return spy reads persisted lang at transition; Rust checks the saved file before consuming Display, same retained parent, and fresh settings/font reload. DisabledDone/scroll and id5 are covered.
+
+One runtime fix was required: original gates every action on the supplied button.enabled flag. Rust gated onlyDone; language.rs now returns before dispatch for any existing disabled button. The added disabled-scroll vector compares unchanged view glyph geometry and would fail without the fix.
+
+Fresh original existing callback fixture also PASS:3resolutions/168live selections, all56installed language code/native-name ordering, complete post-selection Unicode/Bidi/Done text and selection mask, initial Options and Language buttons. No expanded inherited suites were run.
+
+Owned file changes ready to commit: `crates/client11/src/gui/screens/language.rs`, `tools/oracle11/probes/LanguageWorkflow11.java`, `tools/oracle11/language_workflow11.ps1`. No other runtime edits or Git writes. Cargo reservation clear.
+
+Original reproducer from repo after sourcing toolchain: `& tools/oracle11/language_workflow11.ps1`. Rust test: set LANGUAGE_WORKFLOW11_FIXTURE to absolute target/r11/language-workflow11.bin, then `cargo test --release -p client11 --lib gui::screens::language::tests::original_language_workflow -- --ignored --nocapture`. Logs: `work/language-workflow11-original.log` and `work/language-workflow11-verification.log`. Existing all-language callback original helper is tools/oracle11/probes/fontdraw/LanguageScreen11.java; LANGUAGE_SCREEN11_FIXTURE selects target/r11/language-screen11.bin for `original_language_callbacks`, log work/language-callbacks11-verification.log.
+
+Source wrapper constructor issues are avoided narrowly: new helper initializes Block before item/stat references, allocates headless Client/Packs fixture objects, uses real GameSettings(mc,dir), and uses established RendererOracle engine/GL capture to execute actual full GUI draws. The old callback helper compiled and ran without further edits; unrelated GUI harness constructors were not changed.
+
+Limits: restart is fresh production settings/font initialization, not a visible process launch. Canonical installed resource domain is covered; externally mutating language lists/missing jar resources is not claimed. Mouse wrappers only delegate inherited GuiScreen methods and are source-reviewed. GuiOptions102 entry-action remains outside this handoff, so no GuiOptions class credit is asserted here.
