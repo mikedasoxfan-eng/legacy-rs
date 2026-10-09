@@ -1,7 +1,8 @@
-param([switch]$SkipPackage)
+param([switch]$SkipPackage,[switch]$PackageOnly)
 $ErrorActionPreference='Stop'
 Push-Location (Split-Path $PSScriptRoot -Parent)
 try {
+ if(!$PackageOnly){
  # Replay freshly retained original fixtures in one compiled production library.
  $fixtures=@{
   FONT_BIDI11_FIXTURE='target/r11/font-bidi-draw11.bin';FONT_WRAP11_FIXTURE='target/r11/font-wrap11.bin';LANGUAGE_SCREEN11_FIXTURE='target/r11/language-screen11.bin'
@@ -26,16 +27,19 @@ try {
   cargo test --workspace --lib -- --test-threads=1
   if($LASTEXITCODE){throw 'Cross-version library regressions failed'}
  }finally{foreach($key in $saved.Keys){[Environment]::SetEnvironmentVariable($key,$saved[$key])}}
+ }
  if(!$SkipPackage){
   cargo build --release --workspace
   if($LASTEXITCODE){throw 'Release workspace packaging build failed'}
   & target/release/beta.exe --version
   if($LASTEXITCODE){throw 'Packaged version smoke failed'}
   foreach($version in @('b1.7.3','b1.8.1','1.0','1.1')) {
-   & target/release/beta.exe --mc $version --help
+   & target/release/beta.exe --help --mc $version
    if($LASTEXITCODE){throw "Packaged version dispatch failed: $version"}
   }
   Get-FileHash target/release/beta.exe -Algorithm SHA256
  }
- Write-Output 'R11 FINAL PRODUCTION SUITE, CROSS-VERSION REGRESSIONS AND PACKAGE CHECKS PASS'
+ if($PackageOnly){Write-Output 'R11 PACKAGE CHECKS PASS'}elseif($SkipPackage){Write-Output 'R11 PRODUCTION SUITE AND CROSS-VERSION REGRESSIONS PASS'}else{Write-Output 'R11 FINAL PRODUCTION SUITE, CROSS-VERSION REGRESSIONS AND PACKAGE CHECKS PASS'}
 }finally{Pop-Location}
+
+
