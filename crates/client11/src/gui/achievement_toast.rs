@@ -18,6 +18,8 @@ pub struct AchievementToast {
 }
 
 impl AchievementToast {
+    #[cfg(test)]
+    pub(crate) fn queued_text(&self)->(&str,&str){(&self.title,&self.text)}
     /// `queueTakenAchievement`
     pub fn queue_taken(&mut self, ui: &Ui, index: usize) {
         self.title = ui.translate("achievement.get");

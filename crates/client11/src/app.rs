@@ -519,7 +519,7 @@ impl App {
     fn shutdown(&mut self, el: &ActiveEventLoop) {
         if self.tx.is_some() {
             if let Some(g) = &self.gpu {
-                g.window.set_title("Minecraft 1.1.0 (Rust) — saving world...");
+                g.window.set_title("Minecraft 1.1 (Rust) — saving world...");
             }
             self.quit_world(true);
             // Wait here: the window is closing.
@@ -1056,9 +1056,9 @@ impl App {
                     Ok(FromWorker::Loading(l)) => {
                         let ls = self.loading.get_or_insert_with(Default::default);
                         match l {
-                            worker::Loading::Title(t) => ls.title = t,
+                            worker::Loading::Title(t) => ls.title = self.gui.as_ref().map_or_else(|| t.clone(), |g| gui::loading::localized_message(t.clone(), &g.ui.lang)),
                             worker::Loading::Text(t) => {
-                                ls.text = t;
+                                ls.text = self.gui.as_ref().map_or_else(|| t.clone(), |g| gui::loading::localized_message(t.clone(), &g.ui.lang));
                                 ls.progress = -1;
                             }
                             worker::Loading::Progress(p) => ls.progress = p,
@@ -1776,7 +1776,7 @@ impl App {
             self.fps_time = Instant::now();
             let p = self.cam.pos;
             gpu.window.set_title(&format!(
-                "Minecraft 1.1.0 (Rust) — {} (seed {}) — {} fps — x {:.1} y {:.1} z {:.1} — {} chunks{}",
+                "Minecraft 1.1 (Rust) — {} (seed {}) — {} fps — x {:.1} y {:.1} z {:.1} — {} chunks{}",
                 self.world_name,
                 self.seed,
                 self.fps,
@@ -1804,7 +1804,7 @@ impl ApplicationHandler for App {
             }
         };
         let attrs = Window::default_attributes()
-            .with_title("Minecraft 1.1.0 (Rust)")
+            .with_title("Minecraft 1.1 (Rust)")
             .with_inner_size(winit::dpi::LogicalSize::new(854.0, 480.0));
         let window = Arc::new(el.create_window(attrs).expect("create window"));
         let mut gpu = Gpu::new(

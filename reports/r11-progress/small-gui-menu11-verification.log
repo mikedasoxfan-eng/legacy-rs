@@ -1,0 +1,9 @@
+
+running 2 tests
+R10GUI2 menudraw EXACT (1752 bytes)
+test gui::screens::main_menu::language_menu11_tests::original_menu_version_decorations ... ok
+SMALL GUI LANGUAGE EXACT: 36 menus,36 options save/parent callbacks,64 language-button visibility/enabled/hover boundaries
+test gui::screens::main_menu::language_menu11_tests::original_menu_options_and_language_button ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 57 filtered out; finished in 0.49s
+

@@ -117,13 +117,39 @@ pub(crate) fn item_cell(ui: &mut Ui, x: i32, y: i32, item: i32) {
 
 struct General;
 
+#[cfg(test)]
+mod language_delta11_tests {
+    use super::*;
+    struct Input{bytes:Vec<u8>,at:usize}
+    impl Input{fn int(&mut self)->i32{let end=self.at+4;let n=i32::from_be_bytes(self.bytes[self.at..end].try_into().unwrap());self.at=end;n}fn text(&mut self)->String{let n=self.int();let units:Vec<_>=(0..n).map(|_|{let end=self.at+2;let n=u16::from_be_bytes(self.bytes[self.at..end].try_into().unwrap());self.at=end;n}).collect();String::from_utf16(&units).unwrap()}}
+    #[test]
+    #[ignore="requires original GUI_STAT_LANGUAGE11_FIXTURE and installed assets"]
+    fn original_registered_stats_and_achievements_after_locale_switch(){
+        let mut input=Input{bytes:std::fs::read(std::env::var("GUI_STAT_LANGUAGE11_FIXTURE").unwrap()).unwrap(),at:0};assert_eq!(input.int(),0x47534c31);let count=input.int();
+        let mut ui=crate::gui::utility_check::fixture_ui("target/r11/stat-language-fixture".into());
+        for _ in 0..count {let code=input.text();ui.set_language(&code).unwrap();for message in ["Switching level","Generating level","Loading level","Building terrain","Simulating world for a bit","Respawning"]{assert_eq!(input.text(),crate::gui::loading::localized_message(message.into(),&ui.lang),"{code} lifecycle {message}");}let general=input.int();assert_eq!(general,23);
+            for index in 0..general as usize {assert_eq!(input.int(),table::GENERAL[index].0);assert_eq!(input.text(),crate::gui::stats::GENERAL_KEYS[index]);assert_eq!(input.text(),general_cells(&ui,index,0,0)[0].text,"{code} stat{index}");}
+            assert_eq!(input.int(),27);for index in 0..27{let achievement=&crate::gui::stats::ACHIEVEMENTS[index];assert_eq!(input.int(),achievement.id);let key=format!("achievement.{}",achievement.key);assert_eq!(input.text(),key);assert_eq!(input.text(),ui.translate(&key));let keys=input.int();for _ in 0..keys{let key=input.int();ui.settings.key_bindings.iter().find(|b|b.description=="key.inventory").unwrap().set_code(key);assert_eq!(input.text(),super::super::achievements::description(&ui,index),"{code} achievement{index} key{key}");}
+                let mut toast=crate::gui::achievement_toast::AchievementToast::default();toast.queue_taken(&ui,index);assert_eq!((input.text(),input.text()),(toast.queued_text().0.into(),toast.queued_text().1.into()));toast.queue_information(&ui,index);assert_eq!((input.text(),input.text()),(toast.queued_text().0.into(),toast.queued_text().1.into()));
+            }
+        }assert_eq!(input.at,input.bytes.len());println!("STAT LANGUAGE EXACT: {count} post-registration locale switches,342lifecycle messages,23general keys/names,27achievement keys/names/queues,12inventory key cases each");
+    }
+    #[test]
+    #[ignore="requires original INVENTORY_POTENCY11_FIXTURE and installed assets"]
+    fn original_inventory_panel_text(){
+        let mut input=Input{bytes:std::fs::read(std::env::var("INVENTORY_POTENCY11_FIXTURE").unwrap()).unwrap(),at:0};assert_eq!(input.int(),0x49505031);let count=input.int();let mut ui=crate::gui::utility_check::fixture_ui("target/r11/inventory-potency-fixture".into());
+        for _ in 0..count{let code=input.text();ui.set_language(&code).unwrap();let (x,y,id,amp)=(input.int(),input.int(),input.int(),input.int());let effect=worldgen::entity::potion::PotionEffect{id,amplifier:amp,duration:4181};let panels=super::super::potion_effects::panels(&ui,x,y,&[effect]);assert_eq!(panels.len(),1);assert_eq!(input.int(),2);for (text,x,y,color) in &panels[0].text{assert_eq!(input.text(),*text,"{code} id{id} amplifier{amp}");assert_eq!((input.int(),input.int(),input.int()),(*x,*y,*color));}}
+        assert_eq!(input.at,input.bytes.len());println!("INVENTORY POTENCY EXACT: {count} original private panel calls,6locales,19potions,7amplifiers,3positions");
+    }
+}
+
 struct GeneralCell { text: String, x: i32, y: i32, color: i32 }
 fn general_cells(ui: &Ui, index: usize, x: i32, y: i32) -> [GeneralCell; 2] {
-    let (id, kind, name) = table::GENERAL[index];
+    let (id, kind, _) = table::GENERAL[index];
     let color = if index % 2 == 0 { 16777215 } else { 9474192 };
     let value = format_stat(kind, ui.stats.get(id));
     let width = ui.string_width(&value);
-    [GeneralCell { text: name.into(), x: x.wrapping_add(2), y: y.wrapping_add(1), color },
+    [GeneralCell { text: ui.translate(crate::gui::stats::GENERAL_KEYS[index]), x: x.wrapping_add(2), y: y.wrapping_add(1), color },
      GeneralCell { text: value, x: x.wrapping_add(2).wrapping_add(213).wrapping_sub(width), y: y.wrapping_add(1), color }]
 }
 

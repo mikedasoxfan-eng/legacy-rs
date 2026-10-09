@@ -13,6 +13,7 @@ pub const KEY_F11: i32 = 87;
 #[derive(Clone, Debug)]
 pub enum ButtonKind {
     Plain,
+    Language,
     /// `GuiSmallButton` (an options toggle when the option is set).
     Small(Option<EnumOptions>),
     /// `GuiSlider`
@@ -34,6 +35,7 @@ pub struct GuiButton {
 }
 
 impl GuiButton {
+    pub fn language(id:i32,x:i32,y:i32)->GuiButton {GuiButton{kind:ButtonKind::Language,..GuiButton::sized(id,x,y,20,20,"")}}
     pub fn new(id: i32, x: i32, y: i32, text: impl Into<String>) -> GuiButton {
         GuiButton::sized(id, x, y, 200, 20, text)
     }
@@ -64,7 +66,7 @@ impl GuiButton {
         match self.kind {
             ButtonKind::Small(o) => o,
             ButtonKind::Slider { option, .. } => Some(option),
-            ButtonKind::Plain => None,
+            ButtonKind::Plain | ButtonKind::Language => None,
         }
     }
 
@@ -89,6 +91,10 @@ impl GuiButton {
         ui.gl.bind_texture(t);
         ui.gl.color4f(1.0, 1.0, 1.0, 1.0);
         let hovered = mx >= self.x && my >= self.y && mx < self.x + self.width && my < self.y + self.height;
+        if matches!(self.kind,ButtonKind::Language) {
+            ui.draw_textured_modal_rect(self.x,self.y,0,106+if hovered{self.height}else{0},self.width,self.height);
+            return;
+        }
         let h = self.hover_state(hovered);
         ui.draw_textured_modal_rect(self.x, self.y, 0, 46 + h * 20, self.width / 2, self.height);
         ui.draw_textured_modal_rect(self.x + self.width / 2, self.y, 200 - self.width / 2, 46 + h * 20, self.width / 2, self.height);

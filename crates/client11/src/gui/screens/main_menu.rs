@@ -7,6 +7,32 @@ use worldgen::math::{self, PI_F32};
 #[path = "main_menu_check10.rs"]
 mod check10;
 pub use check10::check;
+const VERSION_TEXT:&str="Minecraft 1.1";
+
+#[cfg(test)]
+mod language_menu11_tests {
+ use super::*;
+ struct Input{bytes:Vec<u8>,at:usize}
+ impl Input {fn byte(&mut self)->bool{let n=self.bytes[self.at];self.at+=1;n!=0}fn int(&mut self)->i32{let end=self.at+4;let n=i32::from_be_bytes(self.bytes[self.at..end].try_into().unwrap());self.at=end;n}fn text(&mut self)->String{let n=self.int();let units:Vec<_>=(0..n).map(|_|{let end=self.at+2;let n=u16::from_be_bytes(self.bytes[self.at..end].try_into().unwrap());self.at=end;n}).collect();String::from_utf16(&units).unwrap()}fn buttons(&mut self,buttons:&[GuiButton]){assert_eq!(self.int(),buttons.len() as i32);for b in buttons{assert_eq!((self.int(),self.int(),self.int(),self.int(),self.int()),(b.id,b.x,b.y,b.width,b.height));assert_eq!(self.byte(),b.enabled);assert_eq!(self.byte(),b.visible);assert_eq!(self.text(),b.text);}}}
+ fn saved(dir:&std::path::Path)->String{std::fs::read_to_string(dir.join("options.txt")).ok().and_then(|s|s.lines().find_map(|line|line.strip_prefix("lang:").map(str::to_owned))).unwrap_or("<missing>".into())}
+ fn check_child(ui:&mut Ui,parent:Box<dyn Screen>,expected:bool,w:i32,h:i32){
+  let pointer=&*parent as *const dyn Screen as *const ();let Some(crate::gui::Action::DisplayChild(make))=ui.actions.pop() else{assert!(!expected);return;};assert!(expected);let mut child=make(parent);crate::gui::set_world_and_resolution(&mut *child,ui,w,h);assert_eq!(child.base().buttons[0].id,6);child.action_performed(ui,6);match ui.actions.pop().unwrap(){crate::gui::Action::Display(Some(returned))=>assert_eq!((&*returned as *const dyn Screen as *const ()),pointer),_=>panic!("language parent transition")}
+ }
+ #[test]
+ #[ignore="requires original SMALL_GUI_MENUDRAW11_FIXTURE and installed assets"]
+ fn original_menu_version_decorations(){std::fs::create_dir_all("target/r10gui2").unwrap();assert!(crate::gui::check10_round2::check("menudraw",&std::env::var("SMALL_GUI_MENUDRAW11_FIXTURE").unwrap()));}
+ #[test]
+ #[ignore="requires original SMALL_GUI_LANGUAGE11_FIXTURE and installed assets"]
+ fn original_menu_options_and_language_button(){
+  let mut input=Input{bytes:std::fs::read(std::env::var("SMALL_GUI_LANGUAGE11_FIXTURE").unwrap()).unwrap(),at:0};assert_eq!(input.int(),0x53474c31);let mut ui=crate::gui::utility_check::fixture_ui("target/r11/small-gui-menu".into());let mut jar=crate::assets::Jar::open().unwrap();ui.lang.load_languages(&jar.bytes("lang/languages.txt").unwrap());
+  let menus=input.int();for _ in 0..menus{let code=input.text();ui.set_language(&code).unwrap();let(w,h)=(input.int(),input.int());ui.hide_quit_button=input.byte();ui.actions.clear();let mut screen=Box::new(GuiMainMenu::with_splash("fixture"));crate::gui::set_world_and_resolution(&mut *screen,&mut ui,w,h);input.buttons(&screen.base.buttons);screen.action_performed(&mut ui,5);assert_eq!(input.int(),ui.actions.len() as i32);let returned=input.byte();check_child(&mut ui,screen,returned,w,h);}
+  let options=input.int();for case in 0..options {let code=input.text();ui.set_language(&code).unwrap();let(w,h)=(input.int(),input.int());let enabled=input.byte();let dir=std::path::PathBuf::from(format!("target/r11/small-gui-options-{case}"));std::fs::create_dir_all(&dir).unwrap();let _=std::fs::remove_file(dir.join("options.txt"));ui.settings=crate::gui::settings::GameSettings::load(&dir);ui.settings.language=code;ui.actions.clear();let mut screen=Box::new(super::super::options::GuiOptions::new(Box::new(GuiMainMenu::with_splash("parent"))));crate::gui::set_world_and_resolution(&mut *screen,&mut ui,w,h);input.buttons(&screen.base().buttons);screen.base().button(102).enabled=enabled;screen.action_performed(&mut ui,102);assert_eq!(input.int(),ui.actions.len() as i32);let returned=input.byte();assert_eq!(input.text(),saved(&dir));assert_eq!(input.text(),saved(&dir));check_child(&mut ui,screen,returned,w,h);}
+  let ingame=input.int();for _ in 0..ingame{let code=input.text();ui.set_language(&code).unwrap();let(w,h)=(input.int(),input.int());let mut screen=super::super::ingame_menu::GuiIngameMenu::new();crate::gui::set_world_and_resolution(&mut screen,&mut ui,w,h);input.buttons(&screen.base().buttons);}
+  ui.textures.insert("gui/gui.png".into(),0);
+  let buttons=input.int();for _ in 0..buttons {let(x,y,mx,my)=(input.int(),input.int(),input.int(),input.int());let mut button=GuiButton::language(5,x,y);button.visible=input.byte();button.enabled=input.byte();ui.gl.begin_frame();button.draw_button(&mut ui,x+mx,y+my);let count=input.int();assert_eq!(count as usize,ui.gl.draws.len());for draw in &ui.gl.draws{let(x,y,u,v,w,h)=(input.int(),input.int(),input.int(),input.int(),input.int(),input.int());for (index,px,py,tu,tv) in [(0,x,y+h,u,v+h),(1,x+w,y+h,u+w,v+h),(2,x+w,y,u+w,v),(5,x,y,u,v)]{let vertex=&ui.gl.verts[draw.first as usize+index];assert_eq!(vertex.pos,[px as f32,py as f32,0.0]);assert_eq!(vertex.uv,[tu as f32/256.0,tv as f32/256.0]);assert_eq!(vertex.color,[1.0;4]);}}}
+  assert_eq!(input.at,input.bytes.len());println!("SMALL GUI LANGUAGE EXACT: {menus} menus,{options} options save/parent callbacks,{buttons} language-button visibility/enabled/hover boundaries");
+ }
+}
 
 pub struct GuiMainMenu {
     base: ScreenBase,
@@ -129,6 +155,7 @@ impl Screen for GuiMainMenu {
         // Singleplayer only: there is no session to join servers with (mc.session == null).
         mp.enabled = false;
         b.insert(1, mp);
+        b.push(GuiButton::language(5,w/2-124,y+72+12));
     }
 
     fn action_performed(&mut self, ui: &mut Ui, id: i32) {
@@ -137,6 +164,7 @@ impl Screen for GuiMainMenu {
             1 => ui.display_child(|me| Box::new(super::select_world::GuiSelectWorld::new(me))),
             3 => ui.display_child(|me| Box::new(super::texture_packs::GuiTexturePacks::new(me))),
             4 => ui.actions.push(Action::Shutdown),
+            5 => ui.display_child(|me|Box::new(super::language::GuiLanguage::new(me))),
             _ => {}
         }
     }
@@ -161,7 +189,7 @@ impl Screen for GuiMainMenu {
         let splash = self.splash_text.clone();
         ui.draw_centered_string(&splash, 0, -8, 16776960);
         ui.gl.pop_matrix();
-        ui.draw_string("Minecraft 1.1.0", 2, h - 10, 16777215);
+        ui.draw_string(VERSION_TEXT, 2, h - 10, 16777215);
         let c = "Copyright Mojang AB. Do not distribute!";
         let cw = ui.string_width(c);
         ui.draw_string(c, w - cw - 2, h - 10, 16777215);
@@ -191,7 +219,7 @@ impl GuiMainMenu {
             i(out,2);for row in [[0,0,427,240,-2130706433,16777215],[0,0,427,240,0,i32::MIN]] {for n in row {i(out,n);}}
             let rects=g.logo_rectangles(427);i(out,rects.len() as i32);for row in rects {for n in row {i(out,n);}}
             i(out,2);
-            for (text,x,y,color) in [("Minecraft 1.1.0",2,230,16777215),("Copyright Mojang AB. Do not distribute!",427-ui.string_width("Copyright Mojang AB. Do not distribute!")-2,230,16777215)] {s(out,text);for n in [x,y,color] {i(out,n);}}
+            for (text,x,y,color) in [(VERSION_TEXT,2,230,16777215),("Copyright Mojang AB. Do not distribute!",427-ui.string_width("Copyright Mojang AB. Do not distribute!")-2,230,16777215)] {s(out,text);for n in [x,y,color] {i(out,n);}}
         }
     }
 }

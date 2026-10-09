@@ -3,6 +3,9 @@
 
 use std::collections::HashMap;
 
+/// StatList stores keys in 1.1; StatBase translates them when displayed.
+pub const GENERAL_KEYS: [&str;23] = ["stat.startGame","stat.createWorld","stat.loadWorld","stat.joinMultiplayer","stat.leaveGame","stat.playOneMinute","stat.walkOneCm","stat.swimOneCm","stat.fallOneCm","stat.climbOneCm","stat.flyOneCm","stat.diveOneCm","stat.minecartOneCm","stat.boatOneCm","stat.pigOneCm","stat.jump","stat.drop","stat.damageDealt","stat.damageTaken","stat.deaths","stat.mobKills","stat.playerKills","stat.fishCaught"];
+
 pub struct Achievement {
     /// `statId` = 5242880 + index
     pub id: i32,

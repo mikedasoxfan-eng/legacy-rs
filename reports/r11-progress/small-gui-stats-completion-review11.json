@@ -1,0 +1,553 @@
+{
+  "hash_rule": "progress.py canonical CRLF->LF text; binary exact",
+  "read_only_accounting": true,
+  "classes": [
+    {
+      "class_name": "StatBase",
+      "complete_changed_runtime_delta": true,
+      "domain": "Installed original1.1 resources; existing repository singleplayer scope; UI seams stated in evidence",
+      "hunks": [
+        "@@ -6,7 +6,7 @@",
+        "@@ -51,8 +51,12 @@"
+      ],
+      "behaviors": [
+        "Name is stored as translation key; raw getter exposes key. toString translates at use time after language changes. Private visibility is an API restriction, not new runtime functionality."
+      ],
+      "rust_files": [
+        "gui/stats.rs",
+        "gui/screens/stats.rs"
+      ],
+      "evidence": [
+        "stat"
+      ],
+      "authority": [
+        {
+          "path": "retromcp-1.0\\minecraft\\src\\net\\minecraft\\src\\StatBase.java",
+          "sha256": "5570ebd411cf7a9ecf15f092e5d9409c90ce7ce2fb45aa753abffcaf72f17887",
+          "bytes": 1796
+        },
+        {
+          "path": "retromcp-1.1\\minecraft\\src\\net\\minecraft\\src\\StatBase.java",
+          "sha256": "b4d80d4b2d94f4bc22d7bae697973c8338c0b72dacf7a710d996b943c60ef8d4",
+          "bytes": 1889
+        }
+      ]
+    },
+    {
+      "class_name": "StatList",
+      "complete_changed_runtime_delta": true,
+      "domain": "Installed original1.1 resources; existing repository singleplayer scope; UI seams stated in evidence",
+      "hunks": [
+        "@@ -13,29 +13,29 @@",
+        "@@ -167,7 +167,7 @@"
+      ],
+      "behaviors": [
+        "All23general registrations store unchanged literal stat.* keys rather than registration-time translations; actual production general_cells resolves current language. getOneShotStat rename has unchanged lookup behavior."
+      ],
+      "rust_files": [
+        "gui/stats.rs",
+        "gui/screens/stats.rs"
+      ],
+      "evidence": [
+        "stat"
+      ],
+      "authority": [
+        {
+          "path": "retromcp-1.0\\minecraft\\src\\net\\minecraft\\src\\StatList.java",
+          "sha256": "f0945bc870f86abaf42d9785b0c30ea391bd3abef843f04a6b71c49a7af607ef",
+          "bytes": 9399
+        },
+        {
+          "path": "retromcp-1.1\\minecraft\\src\\net\\minecraft\\src\\StatList.java",
+          "sha256": "52cdb995d43566a91ef8c2edb6207a39abc406140427cf0a6fcc34aa8dc3bfef",
+          "bytes": 8665
+        }
+      ]
+    },
+    {
+      "class_name": "Achievement",
+      "complete_changed_runtime_delta": true,
+      "domain": "Installed original1.1 resources; existing repository singleplayer scope; UI seams stated in evidence",
+      "hunks": [
+        "@@ -18,9 +18,9 @@",
+        "@@ -42,7 +42,7 @@",
+        "@@ -52,7 +52,7 @@",
+        "@@ -63,7 +63,7 @@",
+        "@@ -76,10 +76,10 @@"
+      ],
+      "behaviors": [
+        "Store achievement name/description keys; translate name/description after registration at use time; apply formatter only to translated openInventory description. b/d bridge renames retain independent/registration behavior."
+      ],
+      "rust_files": [
+        "gui/stats.rs",
+        "gui/screens/achievements.rs"
+      ],
+      "evidence": [
+        "stat"
+      ],
+      "authority": [
+        {
+          "path": "retromcp-1.0\\minecraft\\src\\net\\minecraft\\src\\Achievement.java",
+          "sha256": "43089d14d007e053ff6a32bf54866fd25622f10fb7e1258dd5fef1faf1fe1ce4",
+          "bytes": 2295
+        },
+        {
+          "path": "retromcp-1.1\\minecraft\\src\\net\\minecraft\\src\\Achievement.java",
+          "sha256": "deee122c7af0fb3e810e17f2696251d980e04321bbfcaca1ffac12a661ff32a9",
+          "bytes": 2233
+        }
+      ]
+    },
+    {
+      "class_name": "StatStringFormatKeyInv",
+      "complete_changed_runtime_delta": true,
+      "domain": "Installed original1.1 resources; existing repository singleplayer scope; UI seams stated in evidence",
+      "hunks": [
+        "@@ -10,6 +10,10 @@"
+      ],
+      "behaviors": [
+        "Actual description caller formats current translated key name and catches exceptions to Error: +localizedmessage. Keyboard positive keys include real E/NONE/RSHIFT/UP/null and out-of-range indices; mouse negative/extreme keys and malformed installed language exceptions checked."
+      ],
+      "rust_files": [
+        "gui/screens/achievements.rs",
+        "gui/screens/options.rs"
+      ],
+      "evidence": [
+        "stat",
+        "formatter6976"
+      ],
+      "authority": [
+        {
+          "path": "retromcp-1.0\\minecraft\\src\\net\\minecraft\\src\\StatStringFormatKeyInv.java",
+          "sha256": "0d6710ad4de1ad008d5947aaa994d1aaacb449fcbb5603af5270bf552abc1b14",
+          "bytes": 394
+        },
+        {
+          "path": "retromcp-1.1\\minecraft\\src\\net\\minecraft\\src\\StatStringFormatKeyInv.java",
+          "sha256": "679171bd096b52374087d3676d9906e751ea21939915a6f2a0d73f03253f3c7e",
+          "bytes": 493
+        }
+      ]
+    },
+    {
+      "class_name": "GuiAchievement",
+      "complete_changed_runtime_delta": true,
+      "domain": "Installed original1.1 resources; existing repository singleplayer scope; UI seams stated in evidence",
+      "hunks": [
+        "@@ -22,14 +22,14 @@"
+      ],
+      "behaviors": [
+        "queue_taken translates achievement name; queue_information translates name and obtains translated/formatted description; queued title/text fields compared directly to original after every language switch."
+      ],
+      "rust_files": [
+        "gui/achievement_toast.rs"
+      ],
+      "evidence": [
+        "stat"
+      ],
+      "authority": [
+        {
+          "path": "retromcp-1.0\\minecraft\\src\\net\\minecraft\\src\\GuiAchievement.java",
+          "sha256": "9ef2e0d69aefc6a9f67c5785ce1fb3a75fa419f501b83138b86e4d11336329ba",
+          "bytes": 3983
+        },
+        {
+          "path": "retromcp-1.1\\minecraft\\src\\net\\minecraft\\src\\GuiAchievement.java",
+          "sha256": "e9629fbbe29407435b67da3d41b1a33e563f122c3b66388ddd500761d5d48088",
+          "bytes": 4059
+        }
+      ]
+    },
+    {
+      "class_name": "GuiInventory",
+      "complete_changed_runtime_delta": true,
+      "domain": "Installed original1.1 resources; existing repository singleplayer scope; UI seams stated in evidence",
+      "hunks": [
+        "@@ -29,7 +29,7 @@",
+        "@@ -49,8 +49,8 @@",
+        "@@ -95,8 +95,8 @@",
+        "@@ -111,14 +111,18 @@"
+      ],
+      "behaviors": [
+        "Only amplifiers1/2/3 append literal II/III/IV; negative/zero/>3 append nothing. Renamed guiLeft/guiTop and Potion status/name APIs retain original fields and semantics. Production panels and position/color arguments match actual unchanged original private panel calls; unchanged icon/duration algorithms do not require new universal proof."
+      ],
+      "rust_files": [
+        "gui/screens/potion_effects.rs",
+        "gui/screens/container.rs"
+      ],
+      "evidence": [
+        "inventory"
+      ],
+      "authority": [
+        {
+          "path": "retromcp-1.0\\minecraft\\src\\net\\minecraft\\src\\GuiInventory.java",
+          "sha256": "94ae555c9b3d80ba68d01ec383c8d6bbaaa4278f7add429f62265a61fadab3fa",
+          "bytes": 4642
+        },
+        {
+          "path": "retromcp-1.1\\minecraft\\src\\net\\minecraft\\src\\GuiInventory.java",
+          "sha256": "22659ff68e700d103a8cb132350c6fcfb8c75b962c3a36a79b07b4c5ba8a7b57",
+          "bytes": 4682
+        }
+      ]
+    },
+    {
+      "class_name": "GuiOptions",
+      "complete_changed_runtime_delta": true,
+      "domain": "Installed original1.1 resources; existing repository singleplayer scope; UI seams stated in evidence",
+      "hunks": [
+        "@@ -35,8 +35,9 @@",
+        "@@ -57,6 +58,11 @@"
+      ],
+      "behaviors": [
+        "Video/control buttons shift up18pixels; language102 inserted; enabled callback saves options before transition and retains parent; disabled102 has no save/transition."
+      ],
+      "rust_files": [
+        "gui/screens/options.rs"
+      ],
+      "evidence": [
+        "menu"
+      ],
+      "authority": [
+        {
+          "path": "retromcp-1.0\\minecraft\\src\\net\\minecraft\\src\\GuiOptions.java",
+          "sha256": "0bece4c5761bf226bd8fb8761fa21a5a9249f619a24c3b148ad776f3eebbed00",
+          "bytes": 2927
+        },
+        {
+          "path": "retromcp-1.1\\minecraft\\src\\net\\minecraft\\src\\GuiOptions.java",
+          "sha256": "14944e08dcafc88b87acffbee7c25614c8dfa52ee08bff2cc72471d9ad397a75",
+          "bytes": 3194
+        }
+      ]
+    },
+    {
+      "class_name": "GuiButtonLanguage",
+      "complete_changed_runtime_delta": true,
+      "domain": "Installed original1.1 resources; existing repository singleplayer scope; UI seams stated in evidence",
+      "hunks": [
+        "@@ -0,0 +1,24 @@"
+      ],
+      "behaviors": [
+        "Constructor20x20 empty button; invisible no draw; visible binds gui/gui.png and white color; half-open hover selects V106or126 even if disabled; actual Rust triangles match original texture rectangle calls."
+      ],
+      "rust_files": [
+        "gui/widgets.rs"
+      ],
+      "evidence": [
+        "menu"
+      ],
+      "authority": [
+        {
+          "path": "retromcp-1.1\\minecraft\\src\\net\\minecraft\\src\\GuiButtonLanguage.java",
+          "sha256": "94695fddfc380ceba1bb2f3e0dc04391963df4e60673662d6aa1f1bdc4401663",
+          "bytes": 783
+        }
+      ]
+    },
+    {
+      "class_name": "GuiMainMenu",
+      "complete_changed_runtime_delta": true,
+      "domain": "Installed original1.1 resources; existing repository singleplayer scope; UI seams stated in evidence",
+      "hunks": [
+        "@@ -82,6 +82,7 @@",
+        "@@ -91,6 +92,10 @@",
+        "@@ -274,7 +279,7 @@"
+      ],
+      "behaviors": [
+        "Add language button5 in both hideQuitButton layouts; callback creates GuiLanguage with same parent. Footer literal Minecraft1.1 fixed and shared production VERSION_TEXT validated by six unchanged original drawScreen calls at logo branch boundaries. Panorama/splash algorithms inherited unchanged."
+      ],
+      "rust_files": [
+        "gui/screens/main_menu.rs",
+        "gui/widgets.rs"
+      ],
+      "evidence": [
+        "menu",
+        "decoration"
+      ],
+      "authority": [
+        {
+          "path": "retromcp-1.0\\minecraft\\src\\net\\minecraft\\src\\GuiMainMenu.java",
+          "sha256": "b6427f999b82504d553fb9803dfd398cee51178d959ec9428b1624fc9dce0afc",
+          "bytes": 10540
+        },
+        {
+          "path": "retromcp-1.1\\minecraft\\src\\net\\minecraft\\src\\GuiMainMenu.java",
+          "sha256": "cd58e056d08b62d9f161fe4e153fac961b477ef77cb5234a33697aa97bea96f7",
+          "bytes": 10726
+        }
+      ]
+    },
+    {
+      "class_name": "GuiIngameMenu",
+      "complete_changed_runtime_delta": true,
+      "domain": "Installed original1.1 resources; existing repository singleplayer scope; UI seams stated in evidence",
+      "hunks": [
+        "@@ -8,13 +8,13 @@",
+        "@@ -56,7 +56,7 @@"
+      ],
+      "behaviors": [
+        "Singleplayer returnToMenu/returnToGame/options button labels translated; actual18original initGui lists match6locales/3sizes. quickSaveWorld rename keeps inherited save behavior. New multiplayer disconnect label excluded only because repo singleplayer scope."
+      ],
+      "rust_files": [
+        "gui/screens/ingame_menu.rs"
+      ],
+      "evidence": [
+        "menu"
+      ],
+      "authority": [
+        {
+          "path": "retromcp-1.0\\minecraft\\src\\net\\minecraft\\src\\GuiIngameMenu.java",
+          "sha256": "be5f1cb27f49a615c12672ac3fa398ffb9dd8a6c79b2e5b7acbf562e99d36050",
+          "bytes": 2418
+        },
+        {
+          "path": "retromcp-1.1\\minecraft\\src\\net\\minecraft\\src\\GuiIngameMenu.java",
+          "sha256": "bbd76959b34b1513b5617e9495cc6b7e1cf812200827cacbc56ac74c54e17f26",
+          "bytes": 2557
+        }
+      ]
+    },
+    {
+      "class_name": "GuiCreateWorld",
+      "complete_changed_runtime_delta": true,
+      "domain": "Installed original1.1 resources; existing repository singleplayer scope; UI seams stated in evidence",
+      "hunks": [
+        "@@ -8,24 +8,25 @@",
+        "@@ -39,17 +40,16 @@",
+        "@@ -73,17 +73,17 @@",
+        "@@ -123,41 +123,41 @@",
+        "@@ -166,18 +166,25 @@",
+        "@@ -190,7 +197,7 @@",
+        "@@ -202,12 +209,12 @@"
+      ],
+      "behaviors": [
+        "Worldtype selector initially enabled although hidden; label uses EnumWorldType translation key; id5 cycles Default/Flat/wraps; selectedtype survives resolution reinit and is passed in actual StartWorld WorldSettings. Existing gamemode/features behavior observed alongside changed selection. Raw variable renames do not add new behavior."
+      ],
+      "rust_files": [
+        "gui/screens/select_world.rs"
+      ],
+      "evidence": [
+        "create"
+      ],
+      "authority": [
+        {
+          "path": "retromcp-1.0\\minecraft\\src\\net\\minecraft\\src\\GuiCreateWorld.java",
+          "sha256": "16c872c53b1e6d67b98e9c7fd6522ebb4ae2a64da76c0d097b32a8c4a39f5583",
+          "bytes": 8812
+        },
+        {
+          "path": "retromcp-1.1\\minecraft\\src\\net\\minecraft\\src\\GuiCreateWorld.java",
+          "sha256": "2c138030548ae6fcb7e4d7d5638dfc777450e9438f5a08ea4b89fe55434a9fde",
+          "bytes": 9172
+        }
+      ]
+    }
+  ],
+  "evidence": {
+    "stat": {
+      "log": "gui-stat-inventory11-verification.log",
+      "fixture": "legacy-rs/target/r11/gui-stat-language11.bin",
+      "proof": "57post-registration locale switches:1311general key/name pairs,1539achievement key/name/queue pairs,18468description key-binding cases,342actual loading::localized_message outputs compared with unchanged original StatCollector",
+      "seams": "Original game jar precedes harness classes. Unchanged LWJGL Keyboard bytecode extracted from unsealed original dependency is loaded before generic KEY18 stub; native DLL loaded, no game algorithm replacements."
+    },
+    "inventory": {
+      "log": "gui-stat-inventory11-verification.log",
+      "fixture": "legacy-rs/target/r11/inventory-potency11.bin",
+      "proof": "2394unchanged private GuiInventory.func_40218_g calls:6locales,19potions,7amplifiers,3positions; Rust actual production panels compared",
+      "seams": "Allocated player/screen fields, one controlled potion in original HashMap, original FontRenderer subclass captures actual text arguments; terrain constructors avoided."
+    },
+    "menu": {
+      "log": "small-gui-menu11-verification.log",
+      "fixture": "legacy-rs/target/r11/small-gui-language11.bin",
+      "proof": "36main-menu button lists/actions,36options button lists and enabled/disabled save/parent callbacks,18pause lists,64language button visible/enabled/hover cases",
+      "seams": "Original Minecraft displayGuiScreen override records target/parent identity and reads saved options at transition. Font/resources valid. GL device recorder captures original rectangle call while original super draw still runs."
+    },
+    "decoration": {
+      "log": "small-gui-menu11-verification.log",
+      "fixture": "legacy-rs/target/r11/small-gui-menudraw11.bin",
+      "proof": "6unchanged GuiMainMenu.drawScreen decoration outputs1752bytes exact; production VERSION_TEXT constant is shared with actual Rust decoration caller",
+      "seams": "Gui drawing spy records actual call arguments. Isolated viewport/copy-texture GL no-ops fill two missing device methods; no original game modifications and no pixel claim."
+    },
+    "create": {
+      "log": "create-world-type-gui11-verification.log",
+      "fixture": "legacy-rs/target/r11/create-world-type-gui11.bin",
+      "proof": "324original init/cycle/resize/start callbacks:6locales,3modes,2feature settings,0/1/2worldtype cycles; all button records at three stages and actual launch WorldSettings",
+      "seams": "Save-format proxy reports no name collision; original startWorld override captures WorldSettings; explicit4181seed avoids inherited unseededRandom nondeterminism."
+    },
+    "formatter6976": {
+      "log": "formatter11-verification.log",
+      "proof": "6976unchanged Java Formatter String cases retained from earlier lane; installed locale malformed syntax/error priority"
+    }
+  },
+  "pins": [
+    {
+      "path": "create-world-type-gui11-verification.log",
+      "sha256": "9be4f7d0cde4a55fd952e99d4c95ddccc93b21997f85817cf28721d3c4799677",
+      "bytes": 13761
+    },
+    {
+      "path": "formatter11-verification.log",
+      "sha256": "ac742df3489f56719a030b4eb8a15b50aa5f4db4639ba6a3e25b7dd3f7ad2eb5",
+      "bytes": 118
+    },
+    {
+      "path": "gui-stat-inventory11-verification.log",
+      "sha256": "af3443c2f9789ea5360b95be2f6dafce7ca3278573f99fa196aba4f614b39898",
+      "bytes": 14295
+    },
+    {
+      "path": "legacy-rs\\crates\\client11\\src\\gui\\achievement_toast.rs",
+      "sha256": "e754552db9a0599c8ecbdbc0204b4d5fda82638612054ff1f87704f6042c0360",
+      "bytes": 3402
+    },
+    {
+      "path": "legacy-rs\\crates\\client11\\src\\gui\\loading.rs",
+      "sha256": "7ef5ec2e430850dd44eee95492bb63bbaaded7b9e7a83d0b81acdb0c9faa4478",
+      "bytes": 3009
+    },
+    {
+      "path": "legacy-rs\\crates\\client11\\src\\gui\\screens\\achievements.rs",
+      "sha256": "d84df7e37cad1e9b78945622873d00724f659dfde8c3aaf4052c91ccadcebe62",
+      "bytes": 12777
+    },
+    {
+      "path": "legacy-rs\\crates\\client11\\src\\gui\\screens\\container.rs",
+      "sha256": "3242c59c57010e2ba88f22a16f8ae512bf9dc92cb4e19265e6923d9ba4a1cc76",
+      "bytes": 20384
+    },
+    {
+      "path": "legacy-rs\\crates\\client11\\src\\gui\\screens\\ingame_menu.rs",
+      "sha256": "daf51e17b8ee8ba76cb09a268220e59093879d233beaaa1c490ca3bd3896ae9b",
+      "bytes": 2950
+    },
+    {
+      "path": "legacy-rs\\crates\\client11\\src\\gui\\screens\\main_menu.rs",
+      "sha256": "6ea3f592626e2a913b6cf3ec4c264991b33b61beacfc572633877290bcb00384",
+      "bytes": 12248
+    },
+    {
+      "path": "legacy-rs\\crates\\client11\\src\\gui\\screens\\options.rs",
+      "sha256": "b0f4a44741002940db8652b973ad100765c9ebcd5eb253665f6995022bfaf2be",
+      "bytes": 11092
+    },
+    {
+      "path": "legacy-rs\\crates\\client11\\src\\gui\\screens\\potion_effects.rs",
+      "sha256": "746d8619b2875951f67f16b492c63be1ea6a59c7d63084988fb8af3ce298edc6",
+      "bytes": 2325
+    },
+    {
+      "path": "legacy-rs\\crates\\client11\\src\\gui\\screens\\select_world.rs",
+      "sha256": "2f80eb0fd9acce883bee40982cc5bc3c12913111b57fe8b1c43f8e352e0a85be",
+      "bytes": 34815
+    },
+    {
+      "path": "legacy-rs\\crates\\client11\\src\\gui\\screens\\stats.rs",
+      "sha256": "5ceb69e5691c1bc7c9cab45162458a066ce958ec4e675d4d4e4daf705e522727",
+      "bytes": 24026
+    },
+    {
+      "path": "legacy-rs\\crates\\client11\\src\\gui\\stats.rs",
+      "sha256": "80fe0c65bbfa6cddb324bfc4a274c96ca2bd4f1cbedee976869e6b6b423697d8",
+      "bytes": 6748
+    },
+    {
+      "path": "legacy-rs\\crates\\client11\\src\\gui\\widgets.rs",
+      "sha256": "8370e7bf294bf4db283bfaaec48968a9c7eab1e9c6596c523862bf7f656d7556",
+      "bytes": 8626
+    },
+    {
+      "path": "legacy-rs\\target\\r11\\create-world-type-gui11.bin",
+      "sha256": "2cee5fd4d85be13652288cab3283c17114c89e0e86fb58917863e9c19eec6b2c",
+      "bytes": 371132
+    },
+    {
+      "path": "legacy-rs\\target\\r11\\gui-stat-language11.bin",
+      "sha256": "32e8d92d757fce4a3605fa62d5f09ee0a8051fe17ae47e3fcf7b251da7b31b87",
+      "bytes": 1900190
+    },
+    {
+      "path": "legacy-rs\\target\\r11\\inventory-potency11.bin",
+      "sha256": "25967275fc8dde2066a1cc2a4cbc80ad922b6bf5ce621bcf3fd161d31e570ac5",
+      "bytes": 224198
+    },
+    {
+      "path": "legacy-rs\\target\\r11\\small-gui-language11.bin",
+      "sha256": "4a742f616551c560fd5559c40b1ab28d8ff66be89fe3165fbbdd3395629f5cd5",
+      "bytes": 38076
+    },
+    {
+      "path": "legacy-rs\\target\\r11\\small-gui-menudraw11.bin",
+      "sha256": "9f992911a3a12438b2557204a0505cb2e249ca4077a4d2c5180a3c96930b4e0e",
+      "bytes": 1752
+    },
+    {
+      "path": "legacy-rs\\tools\\oracle11\\build\\lwjgl-unsealed.jar",
+      "sha256": "ea365adef49aa0e1e75a399c04dd2e23456713554a24622f45887d92e62f84d5",
+      "bytes": 1047154
+    },
+    {
+      "path": "legacy-rs\\tools\\oracle11\\gui2\\Gui2Fixture10.java",
+      "sha256": "617209317d7ef82b474ecd20b800e841bca1fc711a6950c1e20101da142947ae",
+      "bytes": 1720
+    },
+    {
+      "path": "legacy-rs\\tools\\oracle11\\gui2\\Mode_gui2menudraw10.java",
+      "sha256": "8a452e3d2a34a87e824fc49725181bd2cb3213beef3c19c1dd6a94a5a65100fa",
+      "bytes": 1940
+    },
+    {
+      "path": "legacy-rs\\tools\\oracle11\\probes\\CreateWorldType11.java",
+      "sha256": "6255d9afe000d5b6f63fa4f79248eb3086b98956ee16acff9c9f163df2650963",
+      "bytes": 2485
+    },
+    {
+      "path": "legacy-rs\\tools\\oracle11\\probes\\GuiStatLanguage11.java",
+      "sha256": "0d0da591f82b7e068d402d45cde575967dea6e3d00b81bb27f16fd3ae47a580a",
+      "bytes": 2557
+    },
+    {
+      "path": "legacy-rs\\tools\\oracle11\\probes\\InventoryPotency11.java",
+      "sha256": "120ca15e117fd2fd3111d201dba4569e8bc0c1b31b32d3d6eada27257b9ec7f9",
+      "bytes": 2897
+    },
+    {
+      "path": "legacy-rs\\tools\\oracle11\\probes\\SmallGuiLanguage11.java",
+      "sha256": "2befdea5bd0d6a705f244bc66c38a7b757bc792b09e7c566efa887ddab881788",
+      "bytes": 4730
+    },
+    {
+      "path": "legacy-rs\\tools\\oracle11\\small_gui_stats11.ps1",
+      "sha256": "010b11cc1cc19e0d0206e13d91d448a6f72696117ba8de4615d8cacf0f1a3b07",
+      "bytes": 4799
+    },
+    {
+      "path": "legacy-rs\\tools\\retromcp-r11\\minecraft\\jars\\deobfuscated.jar",
+      "sha256": "44bb6ace88fdff460d6c428c4becee8cad52f2622e1f800dab7a70f8a716f75b",
+      "bytes": 4208078
+    },
+    {
+      "path": "small-gui-menu11-verification.log",
+      "sha256": "b43bd137014f44cb89dbf41559a2146c191faef81d687056d39ee0e403f7bd95",
+      "bytes": 469
+    }
+  ],
+  "runtime_changes": [
+    "Potion suffixes",
+    "Dynamic general stats labels",
+    "Achievement formatter catch/key display",
+    "Main-menu language button/navigation/footer",
+    "Pause-menu translated labels"
+  ],
+  "additional_parent_bridge_verification": "57locales*6loading messages=342; no parent app/loading source edits",
+  "pending_classes": {
+    "GuiGameOver": "Rawdelta includes only rename plus multiplayer disconnect packet; singleplayer has no new runtime effect. Needs parent exclusion/class mapping decision; no arbitrary multiplayer workflow expansion.",
+    "GuiSelectWorld": "Raw variable renames only; no new changed runtime behavior.",
+    "GuiVideoSettings": "Raw title field rename only; no new changed runtime behavior."
+  },
+  "limits": [
+    "GPU pixels and device errors are outside draw-call evidence.",
+    "Inherited registration/stat-format/terrain algorithms are not re-proved universally.",
+    "Configured key>=256 returns original ArrayIndexOutOfBoundsException message under1.1 formatter catch; other nonString arbitrary Formatter arguments remain outside live String API."
+  ]
+}

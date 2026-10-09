@@ -332,11 +332,12 @@ impl Screen for GuiAchievements {
 /// `Achievement.getDescription`: "Taking Inventory" names the inventory key
 /// (`StatStringFormatKeyInv`).
 pub fn description(ui: &Ui, i: usize) -> String {
-    let mut desc = ui.translate(&format!("achievement.{}.desc", ACHIEVEMENTS[i].key));
+    let desc = ui.translate(&format!("achievement.{}.desc", ACHIEVEMENTS[i].key));
     if i == 0 {
         let code = ui.settings.key_bindings.iter().find(|binding| binding.description == "key.inventory").unwrap().code();
-        let key = crate::gui::keynames::KEY_NAMES.get(code as usize).copied().flatten().unwrap_or("null");
-        desc = desc.replace("%1$s", key);
+        return match super::options::key_display_string(ui,code).and_then(|key|ui.lang.try_translate_key_format(&desc,&[key])) {
+            Ok(formatted)=>formatted,Err(error)=>format!("Error: {}",error.message)
+        };
     }
     desc
 }

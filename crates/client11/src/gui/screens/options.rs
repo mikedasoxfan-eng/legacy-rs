@@ -207,6 +207,13 @@ fn key_name(ui: &Ui, i: usize) -> String {
     KEY_NAMES.get(code as usize).copied().flatten().unwrap_or("").to_string()
 }
 
+/// GameSettings.getKeyDisplayString for the installed 1.1 language resources.
+pub(crate) fn key_display_string(ui:&Ui,code:i32)->Result<String,crate::gui::lang::FormatError> {
+    if code<0 {ui.lang.try_translate_key_format("key.mouseButton",&[code.wrapping_add(101).to_string()])}
+    else if code>=256 {Err(crate::gui::lang::FormatError{class:"java.lang.ArrayIndexOutOfBoundsException",message:code.to_string()})}
+    else {Ok(KEY_NAMES.get(code as usize).copied().flatten().unwrap_or("null").into())}
+}
+
 impl Screen for GuiControls {
     fn base(&mut self) -> &mut ScreenBase {
         &mut self.base

@@ -38,9 +38,9 @@ impl Screen for GuiIngameMenu {
         let (w, h) = (self.base.width, self.base.height);
         let o = -16;
         let b = &mut self.base.buttons;
-        b.push(GuiButton::new(1, w / 2 - 100, h / 4 + 120 + o, "Save and quit to title"));
-        b.push(GuiButton::new(4, w / 2 - 100, h / 4 + 24 + o, "Back to game"));
-        b.push(GuiButton::new(0, w / 2 - 100, h / 4 + 96 + o, "Options..."));
+        b.push(GuiButton::new(1, w / 2 - 100, h / 4 + 120 + o, ui.translate("menu.returnToMenu")));
+        b.push(GuiButton::new(4, w / 2 - 100, h / 4 + 24 + o, ui.translate("menu.returnToGame")));
+        b.push(GuiButton::new(0, w / 2 - 100, h / 4 + 96 + o, ui.translate("menu.options")));
         b.push(GuiButton::sized(5, w / 2 - 100, h / 4 + 48 + o, 98, 20, ui.translate("gui.achievements")));
         b.push(GuiButton::sized(6, w / 2 + 2, h / 4 + 48 + o, 98, 20, ui.translate("gui.stats")));
     }

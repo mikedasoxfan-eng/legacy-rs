@@ -49,10 +49,7 @@ pub fn panels(ui: &Ui, x: i32, mut y: i32, effects: &[PotionEffect]) -> Vec<Pane
             rectangles.push([x + 6, y + 7, icon % 8 * 18, 198 + icon / 8 * 18, 18, 18]);
         }
         let mut label = ui.translate(worldgen::item10::potion_name(effect.id));
-        if effect.amplifier > 0 {
-            label.push(' ');
-            label.push_str(&ui.translate(&format!("potion.potency.{}", effect.amplifier)));
-        }
+        label.push_str(match effect.amplifier {1=>" II",2=>" III",3=>" IV",_=>""});
         out.push(Panel {
             rectangles,
             text: [

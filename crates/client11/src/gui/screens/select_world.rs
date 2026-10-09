@@ -333,6 +333,20 @@ impl GuiCreateWorld {
     }
 }
 
+#[cfg(test)]
+mod worldtype_gui11_tests {
+ use super::*;
+ struct Input{bytes:Vec<u8>,at:usize}
+ impl Input{fn byte(&mut self)->bool{let n=self.bytes[self.at];self.at+=1;n!=0}fn int(&mut self)->i32{let end=self.at+4;let n=i32::from_be_bytes(self.bytes[self.at..end].try_into().unwrap());self.at=end;n}fn long(&mut self)->i64{let end=self.at+8;let n=i64::from_be_bytes(self.bytes[self.at..end].try_into().unwrap());self.at=end;n}fn text(&mut self)->String{let n=self.int();let units:Vec<_>=(0..n).map(|_|{let end=self.at+2;let n=u16::from_be_bytes(self.bytes[self.at..end].try_into().unwrap());self.at=end;n}).collect();String::from_utf16(&units).unwrap()}fn buttons(&mut self,s:&GuiCreateWorld){assert_eq!(self.int(),s.base.buttons.len() as i32);for b in &s.base.buttons{assert_eq!((self.int(),self.int(),self.int(),self.int(),self.int()),(b.id,b.x,b.y,b.width,b.height));assert_eq!(self.byte(),b.enabled);assert_eq!(self.byte(),b.visible);assert_eq!(self.text(),b.text);}}}
+ #[test]
+ #[ignore="requires original CREATE_WORLD_TYPE11_FIXTURE and installed assets"]
+ fn original_world_type_button_and_start_settings(){
+  let mut input=Input{bytes:std::fs::read(std::env::var("CREATE_WORLD_TYPE11_FIXTURE").unwrap()).unwrap(),at:0};assert_eq!(input.int(),0x43575431);let count=input.int();let mut ui=crate::gui::utility_check::fixture_ui("target/r11/create-world-type-gui".into());
+  for case in 0..count{let code=input.text();ui.set_language(&code).unwrap();let(w,h,mode,feature,cycles)=(input.int(),input.int(),input.int(),input.int(),input.int());let mut g=GuiCreateWorld::new(Box::new(super::super::main_menu::GuiMainMenu::with_splash("parent")));crate::gui::set_world_and_resolution(&mut g,&mut ui,w,h);input.buttons(&g);for _ in 0..mode{g.action_performed(&mut ui,2);}g.action_performed(&mut ui,3);if feature==1{g.action_performed(&mut ui,4);}for _ in 0..cycles{g.action_performed(&mut ui,5);}input.buttons(&g);crate::gui::set_world_and_resolution(&mut g,&mut ui,w+17,h+11);input.buttons(&g);g.seed.text="4181".into();ui.actions.clear();g.action_performed(&mut ui,0);let launched=ui.actions.iter().find_map(|action|match action{crate::gui::Action::StartWorld{settings:Some(settings),..}=>Some(*settings),_=>None});assert_eq!(input.byte(),launched.is_some(),"case{case}");let s=launched.unwrap();assert_eq!((input.long(),input.int(),input.byte(),input.byte()),(s.seed,s.game_mode,s.map_features,s.hardcore),"case{case}");assert_eq!(input.text(),match s.world_type{worldgen::storage::WorldType::Default=>"generator.default",worldgen::storage::WorldType::Flat=>"generator.flat"});
+  }assert_eq!(input.at,input.bytes.len());println!("CREATE WORLD TYPE GUI EXACT: {count} original init/cycle/resize/start callbacks,6locales,3game modes,2features,wrappedtypecycle");
+ }
+}
+
 /// Java 8 Character.digit(char, 10), using its BMP decimal-digit blocks.
 fn decimal_digit(c:u16)->Option<i64> {
     const ZEROES:[u16;35]=[0x0030,0x0660,0x06f0,0x07c0,0x0966,0x09e6,0x0a66,0x0ae6,0x0b66,0x0be6,0x0c66,0x0ce6,0x0d66,0x0e50,0x0ed0,0x0f20,0x1040,0x1090,0x17e0,0x1810,0x1946,0x19d0,0x1a80,0x1a90,0x1b50,0x1bb0,0x1c40,0x1c50,0xa620,0xa8d0,0xa900,0xa9d0,0xaa50,0xabf0,0xff10];

@@ -2,6 +2,20 @@
 
 use super::Ui;
 
+/// Minecraft's translated lifecycle messages, resolved when the event arrives.
+pub fn localized_message(message: String, lang: &super::lang::Lang) -> String {
+    let key = match message.as_str() {
+        "Switching level" => "menu.switchingLevel",
+        "Generating level" => "menu.generatingLevel",
+        "Loading level" => "menu.loadingLevel",
+        "Building terrain" => "menu.generatingTerrain",
+        "Simulating world for a bit" => "menu.simulating",
+        "Respawning" => "menu.respawning",
+        _ => return message,
+    };
+    lang.translate_key(key)
+}
+
 #[derive(Clone, Debug, Default)]
 pub struct LoadingScreen {
     /// `printText` (title)
