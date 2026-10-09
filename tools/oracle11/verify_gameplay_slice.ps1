@@ -18,17 +18,17 @@ $taskJava = $env:ORACLE_JAVA
 if (-not $taskJava) { throw 'Set ORACLE_JAVA to the pinned Java 8u51 executable first.' }
 $taskVersion = (& $taskJava -version 2>&1 | Out-String)
 if ($taskVersion -notmatch '1\.8\.0_51') { throw 'Gameplay oracle execution requires Java 8u51.' }
-$taskSources = @('GameplaySlice11.java', 'BowSlice11.java', 'SheepSlice11.java', 'DoorSlice11.java', 'BlockSlice11.java', 'EggSlice11.java', 'SmallGameplay11.java') | ForEach-Object {
+$taskSources = @('GameplaySlice11.java', 'BowSlice11.java', 'SheepSlice11.java', 'DoorSlice11.java', 'BlockSlice11.java', 'EggSlice11.java', 'SmallGameplay11.java', 'SmallBlocks11.java') | ForEach-Object {
     Join-Path $PSScriptRoot "src/net/minecraft/src/$_"
 }
 & $taskJavac -cp $taskClassPath -d $taskBuild @taskSources
 if ($LASTEXITCODE -ne 0) { throw 'Gameplay fixture compilation failed.' }
-foreach ($taskClass in @('GameplaySlice11', 'BowSlice11', 'SheepSlice11', 'DoorSlice11', 'BlockSlice11', 'EggSlice11', 'SmallGameplay11')) {
+foreach ($taskClass in @('GameplaySlice11', 'BowSlice11', 'SheepSlice11', 'DoorSlice11', 'BlockSlice11', 'EggSlice11', 'SmallGameplay11', 'SmallBlocks11')) {
     & $taskJava -cp ($taskBuild + ';' + $taskClassPath) "net.minecraft.src.$taskClass" $taskVectors *> (Join-Path $taskBuild "$taskClass.log")
     if ($LASTEXITCODE -ne 0) { throw "Original-bytecode fixture $taskClass failed." }
 }
 $taskFiles = @('xp11.txt','offers11.txt','tags11.txt','remainders11.txt','damage11.txt',
-    'bows11.txt','bowenchant11.txt','arrowhits11.txt','arrownbt11.txt','sheep_actions11.txt','sheep_heads11.txt','sheep_ticks11.txt','shearing11.txt','magma11.txt','doors11.txt','blockboxes11.txt','farmland11.txt','farmwalking11.txt','gate11.txt','railadded11.txt','web11.txt','eggs11.txt','eggnames11.txt','creative11.txt','creative11.bin','egguse11.txt','eggstats11.txt','eggstackuse11.txt','egginvalidside11.txt','brewing11.txt','creeperrecords11.txt','recipes11.bin')
+    'bows11.txt','bowenchant11.txt','arrowhits11.txt','arrownbt11.txt','sheep_actions11.txt','sheep_heads11.txt','sheep_ticks11.txt','shearing11.txt','magma11.txt','doors11.txt','blockboxes11.txt','farmland11.txt','farmwalking11.txt','gate11.txt','railadded11.txt','web11.txt','eggs11.txt','eggnames11.txt','creative11.txt','creative11.bin','egguse11.txt','eggstats11.txt','eggstackuse11.txt','egginvalidside11.txt','brewing11.txt','creeperrecords11.txt','snow11.txt','stem11.txt','trapdoor11.txt','detector11.txt','wolfguard11.txt','recipes11.bin')
 foreach ($taskFile in $taskFiles) {
     $taskSource = Join-Path $taskVectors $taskFile
     $taskDestination = if ($taskFile -eq 'recipes11.bin') {

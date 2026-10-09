@@ -95,8 +95,9 @@ pub fn stem(w: &mut World, id: u8, x: i32, y: i32, z: i32, rs: RandSel) {
         }
     }
     let (dx, dz) = [(-1, 0), (1, 0), (0, -1), (0, 1)][w.rng(rs).next_int(4) as usize];
+    let soil = w.get_block_id(x + dx, y - 1, z + dz);
     if w.get_block_id(x + dx, y, z + dz) == AIR
-        && w.get_block_id(x + dx, y - 1, z + dz) == TILLED_FIELD
+        && matches!(soil, TILLED_FIELD | DIRT | GRASS)
     {
         w.set_block_with_notify(x + dx, y, z + dz, fruit);
     }

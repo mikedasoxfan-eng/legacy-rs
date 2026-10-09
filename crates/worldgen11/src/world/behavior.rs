@@ -829,7 +829,7 @@ pub fn cactus_can_stay(w: &mut World, x: i32, y: i32, z: i32) -> bool {
 /// `BlockSnow.canPlaceBlockAt`
 pub fn snow_can_place(w: &mut World, x: i32, y: i32, z: i32) -> bool {
     let below = w.get_block_id(x, y - 1, z);
-    if below != block::AIR && w.is_opaque_cube_instance(below) {
+    if below != block::AIR && (below == block::LEAVES || w.is_opaque_cube_instance(below)) {
         mat(w.get_block_material(x, y - 1, z)).blocks_movement
     } else {
         false

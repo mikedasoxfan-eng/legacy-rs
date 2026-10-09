@@ -3,6 +3,25 @@ use crate::{
     math::{self, floor_double as floor, PI_F32 as PI},
     World,
 };
+
+#[cfg(test)]
+mod wolf_release11_guard_tests {
+    use super::*;
+    #[test]
+    fn wolf_world_guard_matches_original_11_bytecode() {
+        for line in include_str!("../fixtures/wolfguard11.txt").lines() {
+            let v:Vec<i64>=line.split_whitespace().map(|s|s.parse().unwrap()).collect();
+            let mut w=super::super::verify181::world();w.multiplayer_world=v[0]!=0;w.rand.set_seed(42);
+            let mut e=Entity::living(&mut w,"Wolf").unwrap();e.network.multiplayer_entity=v[1]!=0;e.rand.set_seed(42);e.on_ground=v[5]!=0;
+            if v[4]!=0 {e.living.path=Some(super::super::path::PathEntity{points:vec![[5,64,0]],index:0});}
+            let EntityKind::Wolf(s)=&mut e.kind else {unreachable!()};s.shaking=v[2]!=0;s.shake_active=v[3]!=0;s.shake_time=0.75;s.prev_shake_time=0.5;
+            // Original virtual movement/action are suppressed to isolate Wolf's own callback.
+            e.wolf_living(&w);
+            let EntityKind::Wolf(s)=&e.kind else {unreachable!()};
+            assert_eq!([s.shake_active as i64,s.shake_time.to_bits() as i64,s.prev_shake_time.to_bits() as i64,e.rand.state(),w.rand.state()],v[6..],"{line}");
+        }
+    }
+}
 #[derive(Clone, Debug, Default)]
 pub struct GhastState {
     pub course_cooldown: i32,
@@ -561,7 +580,7 @@ impl Entity {
                         matches!(id, 319 | 320 | 363 | 364 | 365 | 366 | 367)
                     }
                 });
-            if !self.network.multiplayer_entity && s.shaking && !s.shake_active && self.living.path.is_none() && self.on_ground {
+            if !w.multiplayer_world && s.shaking && !s.shake_active && self.living.path.is_none() && self.on_ground {
                 s.shake_active = true;
                 s.shake_time = 0.0;
                 s.prev_shake_time = 0.0;

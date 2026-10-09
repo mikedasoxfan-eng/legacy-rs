@@ -443,9 +443,7 @@ impl World {
     /// BlockDetectorRail.setStateIfMinecartInteractsWithRail.
     pub(crate) fn update_detector_rail(&mut self,x:i32,y:i32,z:i32) {
         let meta = self.get_block_metadata(x, y, z);
-        let b=crate::entity::AxisAlignedBB::new(
-            (x as f32+0.125) as f64,y as f64,(z as f32+0.125) as f64,
-            ((x+1) as f32-0.125) as f64,y as f64+0.25,((z+1) as f32-0.125) as f64);
+        let b=detector_box11(x,y,z);
         let occupied=self.entities_within_aabb(None,b).into_iter().any(|id|
             matches!(self.entities[&id].kind,crate::entity::EntityKind::Minecart(..)));
         if occupied != (meta&8!=0) {
@@ -455,4 +453,9 @@ impl World {
         }
         if occupied { self.schedule_block_update(x,y,z,DETECTOR_RAIL,20); }
     }
+}
+
+pub(crate) fn detector_box11(x:i32,y:i32,z:i32)->crate::entity::AxisAlignedBB {
+    crate::entity::AxisAlignedBB::new((x as f32+0.125) as f64,y as f64,(z as f32+0.125) as f64,
+        (x.wrapping_add(1) as f32-0.125) as f64,(y.wrapping_add(1) as f32-0.125) as f64,(z.wrapping_add(1) as f32-0.125) as f64)
 }

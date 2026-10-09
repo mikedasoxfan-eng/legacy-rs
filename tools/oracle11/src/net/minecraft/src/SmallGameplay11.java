@@ -9,7 +9,11 @@ public final class SmallGameplay11 {
   public int getBlockMetadata(int x,int y,int z){return meta;}
   public void setEntityState(Entity e,byte b){}
   public boolean spawnEntityInWorld(Entity e){drops.add(e);return true;}
+  public List getEntitiesWithinAABBExcludingEntity(Entity e,AxisAlignedBB box){return Collections.emptyList();}
  }
+ // Isolate Wolf's own living callback: inherited movement and action are separate class gates.
+ static final class F extends EntityWolf {F(World w){super(w);}protected boolean func_44001_ad(){return false;}public void moveEntityWithHeading(float a,float b){}public boolean handleLavaMovement(){return false;}}
+ static Field wolfField(String key)throws Exception{Field f=EntityWolf.class.getDeclaredField(key);f.setAccessible(true);return f;}
  static final class B extends TileEntityBrewingStand {int dirty;public void onInventoryChanged(){dirty++;}}
  static W world()throws Exception{W w=(W)SheepSlice11.unsafe().allocateInstance(W.class);w.rand=new Random(42);w.drops=new ArrayList<Entity>();w.worldHeight=128;return w;}
  static int get(Object o,String key)throws Exception{Field f=o instanceof B?TileEntityBrewingStand.class.getDeclaredField(key):EntityLiving.class.getDeclaredField(key);f.setAccessible(true);return f.getInt(o);}
@@ -29,6 +33,10 @@ public final class SmallGameplay11 {
   for(int seed=0;seed<200;seed++)for(int source=0;source<3;source++)for(int remote=0;remote<2;remote++){
    W w=world();w.multiplayerWorld=remote!=0;EntityCreeper c=new EntityCreeper(w);c.setPosition(.5,64,.5);c.rand.setSeed(seed);Entity attacker=source==0?new EntitySkeleton(w):source==1?new EntityZombie(w):null;
    c.onDeath(attacker==null?DamageSource.generic:DamageSource.causeMobDamage((EntityLiving)attacker));out.print(seed+" "+source+" "+remote+" "+w.drops.size());for(Entity e:w.drops){ItemStack s=((EntityItem)e).item;out.print(" "+s.itemID+" "+s.stackSize+" "+s.getItemDamage());}out.println(" "+rng(c.rand)+" "+rng(w.rand));
+  }out.close();
+  out=new PrintWriter(new File(dir,"wolfguard11.txt"));
+  for(int remote=0;remote<2;remote++)for(int legacyFlag=0;legacyFlag<2;legacyFlag++)for(int shaking=0;shaking<2;shaking++)for(int active=0;active<2;active++)for(int path=0;path<2;path++)for(int ground=0;ground<2;ground++){
+   W w=world();w.multiplayerWorld=remote!=0;F f=new F(w);f.rand.setSeed(42);f.onGround=ground!=0;wolfField("isShaking").setBoolean(f,shaking!=0);wolfField("field_25052_g").setBoolean(f,active!=0);wolfField("timeWolfIsShaking").setFloat(f,.75F);wolfField("prevTimeWolfIsShaking").setFloat(f,.5F);if(path!=0)f.setPathToEntity(new PathEntity(new PathPoint[]{new PathPoint(5,64,0)}));f.onLivingUpdate();out.println(remote+" "+legacyFlag+" "+shaking+" "+active+" "+path+" "+ground+" "+(wolfField("field_25052_g").getBoolean(f)?1:0)+" "+Float.floatToRawIntBits(wolfField("timeWolfIsShaking").getFloat(f))+" "+Float.floatToRawIntBits(wolfField("prevTimeWolfIsShaking").getFloat(f))+" "+rng(f.rand)+" "+rng(w.rand));
   }out.close();
  }
 }

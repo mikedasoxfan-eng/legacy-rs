@@ -122,9 +122,8 @@ impl World {
             self.set_block_with_notify(x,y,z,0);
             super::behavior::drop_block_as_item(self,96,x,y,z,meta);
         }
-        if changed>0 {let powered=self.is_block_indirectly_getting_powered(x,y,z);
-            if powered || crate::entity::block_hooks::provides_power(changed) {self.trapdoor_powered181(x,y,z,powered);}
-        }
+        let powered=self.is_block_indirectly_getting_powered(x,y,z);
+        if powered || changed>0 && crate::entity::block_hooks::provides_power(changed) || changed==0 {self.trapdoor_powered181(x,y,z,powered);}
     }
     /// BlockFence.func_35303_f: gates join fences in the new renderer.
     pub fn fence_connects181(&mut self, x: i32, y: i32, z: i32) -> bool {
