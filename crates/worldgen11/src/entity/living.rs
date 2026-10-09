@@ -1028,7 +1028,7 @@ impl Entity {
                     .and_then(|id| w.entities.get(&id))
                     .is_some_and(|e| matches!(e.kind, EntityKind::Skeleton))
             {
-                let item = 2256 + self.rand.next_int(2);
+                let item = 2256 + self.rand.next_int(10);
                 self.drop_item(w, item, 1, 0, 0.0);
             }
             // Vanilla's Skeleton sniper achievement is unreachable in this build:
@@ -1226,4 +1226,26 @@ pub fn wrap(mut angle: f32) -> f32 {
         angle -= 360.0;
     }
     angle
+}
+
+#[cfg(test)]
+mod creeper_release11_tests {
+    use super::*;
+    #[test]
+    fn creeper_records_match_original_11_bytecode() {
+        let mut seen=std::collections::BTreeSet::new();
+        for line in include_str!("../fixtures/creeperrecords11.txt").lines() {
+            let expected:Vec<i64>=line.split_whitespace().map(|s|s.parse().unwrap()).collect();
+            let mut w=super::super::verify181::world();w.rand.set_seed(42);w.multiplayer_world=expected[2]!=0;
+            let mut c=Entity::living(&mut w,"Creeper").unwrap();c.set_position(0.5,64.0,0.5);c.rand.set_seed(expected[0]);
+            let attacker=match expected[1]{0=>Some(Entity::living(&mut w,"Skeleton").unwrap()),1=>Some(Entity::living(&mut w,"Zombie").unwrap()),_=>None};
+            let attacker=attacker.map(|e|{let id=e.entity_id;w.entities.insert(id,e);id});
+            c.on_living_death(&mut w,if attacker.is_some(){super::super::damage::DamageSource::entity(super::super::damage::DamageKind::Mob,attacker)}else{super::super::damage::DamageSource::new(super::super::damage::DamageKind::Generic)});
+            let items:Vec<_>=w.loaded_entity_list.iter().filter_map(|id|w.entities[id].dropped_item_stack()).collect();
+            let mut actual=vec![expected[0],expected[1],expected[2],items.len() as i64];
+            for stack in items {actual.extend([stack.id as i64,stack.count as i64,stack.damage as i64]);if (2256..2266).contains(&stack.id){seen.insert(stack.id);}}
+            actual.extend([c.rand.state(),w.rand.state()]);assert_eq!(actual,expected,"{line}");
+        }
+        assert_eq!(seen.into_iter().collect::<Vec<_>>(),(2256..2266).collect::<Vec<_>>());
+    }
 }

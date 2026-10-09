@@ -1,4 +1,4 @@
-//! TileEntityBrewingStand and the brewing container's simulation rules (1.0).
+//! TileEntityBrewingStand and the brewing container's simulation rules (1.1).
 use crate::{
     entity::player::ItemStack,
     nbt::{Compound, Tag},
@@ -120,7 +120,7 @@ impl BrewingStand {
                 update.dirty = true;
             }
         } else if self.can_brew() {
-            self.brew_time = 600;
+            self.brew_time = 400;
             self.ingredient_id = self.items[3].unwrap().id;
         }
         let metadata = self.metadata();
@@ -172,13 +172,31 @@ pub fn transfer_range(index: usize, _stack: ItemStack) -> Option<(usize, usize, 
 mod tests {
     use super::*;
     #[test]
+    fn brewing_timeline_matches_original_11_bytecode() {
+        let mut lines=include_str!("../fixtures/brewing11.txt").lines();
+        for ingredient in [372,353,289] {for damage in [0,16] {for scenario in 0..4 {
+            let mut b=BrewingStand::default();b.items[0]=Some(ItemStack::new(373,1,damage));b.items[2]=Some(ItemStack::new(373,1,damage));b.items[3]=Some(ItemStack::new(ingredient,2,0));let mut metadata=0;
+            for step in 0..402 {
+                if step==200 && scenario==1 {b.items[3]=Some(ItemStack::new(if ingredient==372{353}else{372},2,0));}
+                if step==399 && scenario==2 {b.items[3]=None;}
+                if step==200 && scenario==3 {let n=b.to_nbt((0,0,0));b=BrewingStand::default();b.read_nbt(&n).unwrap();}
+                let update=b.tick();if let Some(value)=update.metadata {metadata=value;}
+                let expected:Vec<i64>=lines.next().unwrap().split_whitespace().map(|s|s.parse().unwrap()).collect();
+                let mut actual=vec![ingredient as i64,damage as i64,scenario,step,b.brew_time as i64,b.ingredient_id as i64,b.bottle_metadata as i64,update.dirty as i64,update.metadata.is_some() as i64,metadata as i64];
+                for stack in b.items {actual.extend(stack.map_or([-1,0,0],|s|[s.id as i64,s.count as i64,s.damage as i64]));}
+                actual.push(crate::JavaRandom::new(42).state());assert_eq!(actual,expected,"ingredient{ingredient} damage{damage} scenario{scenario} tick{step}");
+            }
+        }}}
+        assert!(lines.next().is_none());
+    }
+    #[test]
     fn full_brew_and_abort() {
         let mut b = BrewingStand::default();
         b.items[0] = Some(ItemStack::new(373, 1, 0));
         b.items[3] = Some(ItemStack::new(372, 2, 0));
         assert_eq!(b.tick().metadata, Some(1));
-        assert_eq!(b.brew_time, 600);
-        for _ in 0..600 {
+        assert_eq!(b.brew_time, 400);
+        for _ in 0..400 {
             b.tick();
         }
         assert_eq!(b.items[0].unwrap().damage, 16);
