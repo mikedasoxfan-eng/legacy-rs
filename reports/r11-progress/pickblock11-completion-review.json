@@ -1,0 +1,51 @@
+{
+  "schema": 1,
+  "class_name": "Minecraft",
+  "scope": "Only clickMiddleMouseButton null item guard delta; parent owns other Minecraft hunks. No whole-class completion claimed.",
+  "original_method_delta_exact_null_guard_only": true,
+  "original_old_method_sha256": "82d34eec37538312a39130ce239eeb83ce6d728a2441f712135cdd37a3ea0780",
+  "original_new_method_sha256": "15fc18829cd6def51ec1aed7cc680c87d55f66a63082af51bf554cead7554a6a",
+  "original_method_hunks": [
+    "--- \n",
+    "+++ \n",
+    "@@ -15,7 +15,7 @@\n",
+    " ",
+    " \t\t\tint var2 = 0;",
+    " \t\t\tboolean var3 = false;",
+    "-\t\t\tif(Item.itemsList[var1].getHasSubtypes()) {",
+    "+\t\t\tif(Item.itemsList[var1] != null && Item.itemsList[var1].getHasSubtypes()) {",
+    " \t\t\t\tvar2 = this.theWorld.getBlockMetadata(this.objectMouseOver.blockX, this.objectMouseOver.blockY, this.objectMouseOver.blockZ);",
+    " \t\t\t\tvar3 = true;",
+    " \t\t\t}"
+  ],
+  "fix": "Removed inherited pick_block air earlyreturn. Null item entries receive non-subtype metadata0, still call actual inventory.select_item.",
+  "fixture_authority": "PickBlock11 invokes actual original private Minecraft.clickMiddleMouseButton and actual InventoryPlayer.setCurrentItem. Unsafe only bypasses unrelated application startup, controller construction; World block/metadata storage isolated. Selector subclass captures arguments and then invokes original superclass.",
+  "cases": 30720,
+  "cases_detail": "all256 raw block IDs; metadata-1,0,1,7,32767 (World nibble masks15; inventory metadata retains signed inputs); creative/survival; nohit/blockhit/entityhit; nomatch/hotbar/maininventory/wrongmetadata scenes; remaps grass/doubleslab/bedrock.",
+  "production_verification": "pick_block invokes actual production inventory selector. Checks selected index and all36 unchanged inventory slots against original callback outcomes. Includes air/null entries selecting an already constructed matching hotbar stack. Invalid null-item stacks are boundary fixtures; original loadItemStackFromNBT rejects them, and no wider facade API claim is made.",
+  "test": "entity::player::picking::release11_pick_tests::middle_click_matches_original_11_bytecode",
+  "logs": [
+    "work/pickblock11-tests.log",
+    "work/pickblock11-all-tests.log",
+    "work/pickblock11-oracle.log"
+  ],
+  "results": "56 original_11 tests pass0fail; all55 original fixture regenerations EXACT",
+  "owned_files": [
+    {
+      "path": "crates/worldgen11/src/entity/player/picking.rs",
+      "sha256": "7245b25bb322257ba19e14e9693b6f7de000020e484caf294e588f9cb4c73880"
+    },
+    {
+      "path": "crates/worldgen11/src/fixtures/pickblock11.txt",
+      "sha256": "0e7aeeb9bfa457bb8fe3a2b5317ef8f60652ca0c335c203ec223f5178b07684f"
+    },
+    {
+      "path": "tools/oracle11/src/net/minecraft/src/PickBlock11.java",
+      "sha256": "2f2e56d917150570df6ca79e691dcc02862027020ebb94bbdb4c51ab9167bfb5"
+    },
+    {
+      "path": "tools/oracle11/verify_gameplay_slice.ps1",
+      "sha256": "18d1c4b8acfeeb4c1871fc55ef0bd31a9669e10862cacb1c4bce6ebe40a45de7"
+    }
+  ]
+}
