@@ -10,6 +10,7 @@ mod release11_coordinate_tests {
         for line in include_str!("../fixtures/chunktiles11.txt").lines() {
             let v:Vec<i32>=line.split_whitespace().map(|s|s.parse().unwrap()).collect();
             let mut w=crate::entity::verify181::world();
+            if v[7]!=0 {w.set_block_and_metadata(v[0],70,v[1],v[2] as u8,0);}
             w.scanning_tiles=v[3]!=0;w.multiplayer_world=v[4]!=0;
             let changed=if v[6]!=0 {w.set_block_and_metadata(v[0],70,v[1],v[2] as u8,v[5])}else{w.set_block(v[0],70,v[1],v[2] as u8)};
             let mut observed=vec![changed as i32];
@@ -17,7 +18,7 @@ mod release11_coordinate_tests {
                 observed.push(ids.len() as i32);
                 for id in ids {let (x,y,z)=w.tile_objects[id].position;observed.extend([x,y,z]);}
             }
-            assert_eq!(observed,&v[7..],"{line}");
+            assert_eq!(observed,&v[8..],"{line}");
         }
     }
 }

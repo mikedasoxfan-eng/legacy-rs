@@ -8,4 +8,10 @@ try {
  & $env:ORACLE_JAVA -cp $cp net.minecraft.src.LanguageWorkflow11 target/r11/language-workflow11.bin target/r11/language-workflow11-java
  if($LASTEXITCODE){throw 'Original language workflow failed'}
  Get-FileHash target/r11/language-workflow11.bin
+ $saved=[Environment]::GetEnvironmentVariable('LANGUAGE_WORKFLOW11_FIXTURE')
+ try {
+  $env:LANGUAGE_WORKFLOW11_FIXTURE=(Resolve-Path target/r11/language-workflow11.bin).Path
+  cargo test -p client11 --lib original_language_workflow -- --ignored --nocapture
+  if($LASTEXITCODE){throw 'Language workflow production comparison failed'}
+ } finally {[Environment]::SetEnvironmentVariable('LANGUAGE_WORKFLOW11_FIXTURE',$saved)}
 }finally{Pop-Location}

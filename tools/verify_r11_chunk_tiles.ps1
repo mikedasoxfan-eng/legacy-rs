@@ -13,5 +13,5 @@ try {
  if ($actual -cne $saved) {throw 'Original chunk vectors changed'}
  cargo test -p worldgen11 --lib chunk_tile_coordinates_match_original_11 -- --nocapture
  if ($LASTEXITCODE) {throw 'Chunk tile comparison failed'}
- Write-Output 'R11 CHUNK TILE COORDINATES EXACT: 768 cases'
+ Write-Output 'R11 CHUNK TILE COORDINATES EXACT: 1536 cases'
 } finally {Pop-Location}
