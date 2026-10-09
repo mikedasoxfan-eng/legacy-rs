@@ -845,3 +845,11 @@ fn burning_light_matches_original_11() {
  let pose=super::manager::CameraState::from(&e);d.eq(pose.burning as u32,"burning");let mut manager:super::manager::RenderManager=Default::default();let mut observed=None;let mut queries=0;manager.render_entity(Some(super::manager::class(&e)),Some(pose),partial,|_|{queries+=1;Ok(light)},|event|{if let super::manager::Event::Lightmap(v)=event{observed=Some(v);}Ok(())}).unwrap();let output=observed.unwrap();d.eq(output[0].to_bits(),&format!("case {case} light U"));d.eq(output[1].to_bits(),&format!("case {case} light V"));d.eq(queries,"brightness queried before override"); }
  assert_eq!(d.at,d.data.len());println!("{n} burning-light cases, {} comparisons, {} differences",d.checks,d.bad);assert_eq!(d.bad,0);
 }
+
+#[test]
+#[ignore = "requires original 1.1 creative fog packet"]
+fn creative_fog_matches_original_11() {
+ let path=std::env::var("CREATIVE_FOG11_FIXTURE").unwrap();let mut d=Input{data:std::fs::read(path).unwrap(),at:0,checks:0,bad:0};assert_eq!(d.u(),u32::from_le_bytes(*b"R11F"));assert_eq!(d.u(),1);let n=d.u();
+ for case in 0..n {let dimension=d.u() as i32;let world_type=d.u();let creative=d.u()!=0;let y=d.d();let far=d.f();let mode=d.u() as i32;let light=d.u();let state=crate::render::camera::FogState{has_no_sky:dimension!=0,nether:dimension!=0,flat:world_type==1,creative,..Default::default()};let result=crate::render::camera::fog_release(&state,far,mode<0,crate::render::camera::void_factor(light,y));d.eq(9729,"linear mode");d.eq(result[0].to_bits(),&format!("case {case} start"));d.eq(result[1].to_bits(),&format!("case {case} end"));}
+ assert_eq!(d.at,d.data.len());println!("{n} creative fog cases, {} comparisons, {} differences",d.checks,d.bad);assert_eq!(d.bad,0);
+}

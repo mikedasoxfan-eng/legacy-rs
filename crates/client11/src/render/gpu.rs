@@ -831,7 +831,7 @@ impl Gpu {
         let fog_color = p.fog_color;
         let void_fog = player.map_or(2.0, |v| v.void_fog);
         let fog_state = player.map_or(
-            super::camera::FogState { medium, nether, has_no_sky: nether || p.end, ..Default::default() },
+            super::camera::FogState { medium, nether: nether || p.end, has_no_sky: nether || p.end, ..Default::default() },
             |v| super::camera::FogState { has_no_sky: v.fog.has_no_sky || p.end, ..v.fog },
         );
         let fog = super::camera::fog_release(&fog_state, p.far, false, void_fog);

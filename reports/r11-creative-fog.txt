@@ -1,0 +1,5 @@
+Minecraft 1.1 camera fog integration
+
+Creative capability now suppresses the air void-fog distance clamp, matching EntityRenderer.setupFog. The player's actual capability is carried through the frame FogState. The End also sets the alternate-dimension fog-start flag, as the original provider does; both live-player and fallback camera paths carry it.
+
+Direct unchanged original setupFog calls cover504 inputs across all three dimensions, default/flat world types, creative on/off, seven heights including below zero, two far distances and three rendering modes. tools/verify_r11_creativefog.ps1 reproduces the finite comparison of actual production fog calculation. This covers the changed air/void-fog branch; water/lava/blindness/color/frame pixels require their own existing or subsequent checks.

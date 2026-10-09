@@ -309,8 +309,9 @@ impl View {
                 blindness: e.potion_effect(15).map(|p| p.duration),
                 water_breathing: e.potion_effect(13).is_some(),
                 has_no_sky: self.world.dimension.is_hell_world() || self.entity.player_state().is_some_and(|p| p.dimension == 1),
-                nether: self.world.dimension.is_hell_world(),
+                nether: self.world.dimension.is_hell_world() || self.entity.player_state().is_some_and(|p|p.dimension==1),
                 flat: self.world.info.world_type == worldgen::storage::WorldType::Flat,
+                creative: e.player_state().is_some_and(|p|p.capabilities.creative),
             },
             active_info: self.active_info,
         }

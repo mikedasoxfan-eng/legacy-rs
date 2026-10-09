@@ -211,6 +211,7 @@ fn fog(d: &mut Reader) {
             has_no_sky,
             nether,
             flat: false,
+            creative: false,
         };
         let look = super::sky::look(yaw, pitch, prev_yaw, prev_pitch, t);
         let base = camera::fog_base(sky, super::sky::sunrise_fog(fog, angle, distance, look), distance, rain, thunder);

@@ -356,6 +356,7 @@ pub struct FogState {
     pub has_no_sky: bool,
     pub nether: bool,
     pub flat: bool,
+    pub creative: bool,
 }
 
 /// 1.0 `updateFogColor` after the sky blend, rain and thunder: cloud, liquid and fade colors,
@@ -415,7 +416,7 @@ pub fn fog_release(s: &FogState, far: f32, sky: bool, void: f64) -> [f32; 3] {
         Medium::Lava => [2.0, 0.0, 2.0],
         Medium::Air => {
             let mut distance = far;
-            if !s.has_no_sky && !s.flat && void < 1.0 {
+            if !s.has_no_sky && !s.flat && !s.creative && void < 1.0 {
                 let v = if void < 0.0 { 0.0 } else { void };
                 let near = (100.0f32 * (v * v) as f32).max(5.0);
                 if distance > near {
