@@ -127,6 +127,14 @@ fn coordinates(packed: i32) -> [f32; 2] {
 }
 
 /// `--renderfx-simple-check`: one dump of Mode_render_simple10.
+#[test]
+#[ignore = "requires original 1.1 reused silverfish renderer fixture"]
+fn silverfish_workflow_matches_original_11() {
+    let path = std::env::var("SILVERFISH_WORKFLOW11_FIXTURE").unwrap();
+    assert!(simple_check(&path));
+    assert!(std::fs::read(format!("{path}.stdout")).unwrap().is_empty());
+}
+
 pub fn simple_check(path: &str) -> bool {
     let mut d = Dump { bytes: std::fs::read(path).expect("read renderfx dump"), at: 0, checks: 0, bad: 0 };
     assert_eq!(d.int(), 0x58465231);
