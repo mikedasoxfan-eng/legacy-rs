@@ -711,3 +711,34 @@ mod tests {
         assert!(!crate::world::blocks10::END_PORTAL_ALLOW.load(std::sync::atomic::Ordering::Relaxed));
     }
 }
+#[cfg(test)]
+mod release11_owner_tests {
+ use super::*;
+ #[test]
+ fn dragon_part_attacker_gate_matches_original_11_bytecode() {
+  for line in include_str!("../fixtures/dragonowner11.txt").lines() {
+   let v:Vec<i64>=line.split_whitespace().map(|x|x.parse().unwrap()).collect();
+   let mut w=crate::entity::verify181::world();w.multiplayer_world=v[2]!=0;
+   let mut d=Entity::living(&mut w,"EnderDragon").unwrap();d.set_position(2.0,80.0,-3.0);d.yaw=f32::from_bits(v[4] as u32);d.rand.set_seed(v[3]);
+   let mut p=Entity::player(&mut w,"probe");p.set_position(20.0,80.0,10.0);let pid=p.entity_id;w.entities.insert(pid,p);
+   let mut z=Entity::living(&mut w,"Zombie").unwrap();z.set_position(20.0,80.0,10.0);let zid=z.entity_id;w.entities.insert(zid,z);
+   let a=Entity::arrow(&mut w,0.0,64.0,0.0);
+   let ds=match v[0]{
+    0=>DamageSource::indirect(DamageKind::Arrow,a.entity_id,Some(pid)),
+    1=>DamageSource::indirect(DamageKind::Arrow,a.entity_id,Some(zid)),
+    2=>DamageSource::indirect(DamageKind::Arrow,a.entity_id,None),
+    3=>DamageSource::indirect(DamageKind::Thrown,a.entity_id,Some(pid)),
+    4=>DamageSource::indirect(DamageKind::IndirectMagic,a.entity_id,Some(pid)),
+    5=>DamageSource::indirect(DamageKind::Fireball,a.entity_id,Some(pid)),
+    6=>DamageSource::entity(DamageKind::Player,Some(pid)),
+    7=>DamageSource::entity(DamageKind::Mob,Some(zid)),
+    _=>DamageSource::new(DamageKind::Explosion),
+   };w.rand.set_seed(v[3]);
+   assert_eq!(d.attack_dragon_part(&mut w,v[1]!=0,ds,13),v[5]!=0,"{line}");
+   assert_eq!(d.living.health,v[6] as i32,"{line}");assert_eq!(d.living.hurt_time,v[7] as i32,"{line}");
+   let EntityKind::Dragon(s)=&d.kind else{unreachable!()};
+   assert_eq!(s.target_position.x.to_bits(),v[8] as u64,"{line}");assert_eq!(s.target_position.y.to_bits(),v[9] as u64,"{line}");assert_eq!(s.target_position.z.to_bits(),v[10] as u64,"{line}");
+   assert_eq!(d.rand.next_long(),v[11],"{line}");assert_eq!(w.rand.next_long(),v[12],"{line}");
+  }
+ }
+}

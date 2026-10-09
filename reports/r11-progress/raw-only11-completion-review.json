@@ -1,0 +1,362 @@
+{
+  "schema": 1,
+  "scope": "All308 raw-only candidate class DELTAS, separate from144 normalized changed/new classes. This is full source+original bytecode binding residue authority, not full public-API or inherited-behavior implementation credit.",
+  "counts": {
+    "raw_only_classes": 308,
+    "complete_bytecode_equivalent_classes": 305,
+    "explicit_semantic_residues_closed": 3,
+    "source_name_merge_classes_resolved": 20,
+    "members_compared": 3238,
+    "renamed_field_and_method_callsites": 1798,
+    "renamed_method_reference_signatures": 278,
+    "existing_receiver_hierarchy_witnesses": 925,
+    "unresolved_declaration_bindings": 0,
+    "ambiguous_declaration_aliases": 0,
+    "virtual_dispatch_binding_holds": 0
+  },
+  "authority": {
+    "source_proof": "raw-source-screen11.json fullsourcehunks/SHA/tokens; allsourceSHA values rechecked against supplied original MCP trees by bytecode script",
+    "bytecode_proof": "raw-bindings11.json full originalclassSHA, bothjar/tinymappingSHA, every member comparison, each renamed callsite owner/name/descriptor/resolved declarationowner, allexisting subtype receiver witnesses. Both tiny mappings annotated per declaration (not obfuscated-name matching).",
+    "reproduce": [
+      "python tools/r11/screen_raw_sources11.py --old-mcp <original1.0MCP> --new-mcp <original1.1MCP>",
+      "python tools/r11/audit_raw_bindings11.py --old-mcp <original1.0MCP> --new-mcp <original1.1MCP>",
+      "powershell tools/oracle11/verify_dragon_owner11.ps1 -McpPath <original1.1MCP> (toolchain env sets pinned ORACLE_JAVA8u51)"
+    ]
+  },
+  "compiler_only_equivalences": {
+    "postdecrement": "BiomeCache.cleanupCache, EffectRenderer.updateEffects and ThreadedFileIOBase.func_40568_b: explicit iload/dup/iconst1/isub/istore sequence vs iload/iinc(-1). Both leave original int on operand stack and decrement same local with Java wraparound. No branch/handler enters sequence interiors; all remaining instruction and branch/handler ordinal comparisons exact. Witnesses raw-bindings11.json.compiler_postdecrement_forms.",
+    "max_stack": "Different sufficient stack capacities reflect these encodings; capacities omitted from semantic comparison. Locals count retained, opcode/data/handlers retained.",
+    "interface_order": "ThreadedChunkLoader same IChunkLoader/IThreadedFileIO interface set, onlyorderchange. Java7 has no interface defaultmethods, no getInterfaces consumer in entire source. Original member/dispatch comparison exact.",
+    "debug": "Line/localvariable/sourcefileattributes intentionally excluded. Modified UTF8 constant strings compared as exactbytes."
+  },
+  "twenty_name_merges": [
+    {
+      "class_name": "BiomeCache",
+      "source_sha256_10": "877864219e5a0cdbdc35e85dfa91ad8e7bdb49c8add8c3564b69b86cd3dceae2",
+      "source_sha256_11": "23070b554ddeeb57094e343528438d0fb681f043edb13ae3373a3187b839b60c",
+      "original_class_sha256_10": "23f3bb1240f3bf96ec892780fe7b63d7f49d6e06a6e6af1224633faf11c68a89",
+      "original_class_sha256_11": "8d50f4d0d363b4f9438ea13cb25a1fdb887816c6e14f045c203cb7168a450aa5",
+      "entire_member_bytecode_bindings_and_flags_equivalent": true,
+      "source_hunks_and_alias_map": "raw-source-screen11.json#BiomeCache",
+      "descriptor_qualified_proof": "raw-bindings11.json#classes.BiomeCache",
+      "members_compared": 12,
+      "reason": "Field/getter collisions retain JVM field-vs-method kind; typed overload/bridge collisions retain full owner and descriptor. All full method instructions, operands, constants, flags and handlers compare after exact member renames. BiomeCache alone needs explicitly proved int-local post-decrement compiler canonicalization."
+    },
+    {
+      "class_name": "BiomeCacheBlock",
+      "source_sha256_10": "3087aa6adf8c2289c546d54f9b4e84abbcbec6790413a0026cb533bdd71db7a7",
+      "source_sha256_11": "2197768ce9ccd3f35a97fae682e2662faaa81d65a7814eba691fd54b97a04fff",
+      "original_class_sha256_10": "fc42741eae44ee8b6c48b9a6fa2c7d05da50d52ab1c3ef986a40481969943f45",
+      "original_class_sha256_11": "8aaa8f19b5f0d4528cb74e3668fdfed799e6f127e0bee9d050785569daf00911",
+      "entire_member_bytecode_bindings_and_flags_equivalent": true,
+      "source_hunks_and_alias_map": "raw-source-screen11.json#BiomeCacheBlock",
+      "descriptor_qualified_proof": "raw-bindings11.json#classes.BiomeCacheBlock",
+      "members_compared": 11,
+      "reason": "Field/getter collisions retain JVM field-vs-method kind; typed overload/bridge collisions retain full owner and descriptor. All full method instructions, operands, constants, flags and handlers compare after exact member renames."
+    },
+    {
+      "class_name": "DamageSource",
+      "source_sha256_10": "16b4363c2d01fd5631cc685142f08957cb188ce30d9bbf138500932b3822705c",
+      "source_sha256_11": "0f124b99ba5db8b1191070d0053d87e65119b1b268fd32c5fd7da78caec17465",
+      "original_class_sha256_10": "6ecf5d6fcbe502a187414140be62759dc9446fa2873b9a4927bfc162ef0421ec",
+      "original_class_sha256_11": "9300e0b1983e2184fbde478a4a8eda1fff637a6b6172c92e4a9bd89b3f5b12d7",
+      "entire_member_bytecode_bindings_and_flags_equivalent": true,
+      "source_hunks_and_alias_map": "raw-source-screen11.json#DamageSource",
+      "descriptor_qualified_proof": "raw-bindings11.json#classes.DamageSource",
+      "members_compared": 38,
+      "reason": "Field/getter collisions retain JVM field-vs-method kind; typed overload/bridge collisions retain full owner and descriptor. All full method instructions, operands, constants, flags and handlers compare after exact member renames."
+    },
+    {
+      "class_name": "RegionFile",
+      "source_sha256_10": "565b59b957a6470933f4a3f15cac2af1b421093f3cef806a77cc87b9fe04e1b6",
+      "source_sha256_11": "6321a9be17e532cd2b65707ca36f93b3e32866b0f53a99966058b2f7ac9fc936",
+      "original_class_sha256_10": "cfaf6eda87230095934f00953b5e5d8274cc6c844e42a35e1db7f37d439dcebb",
+      "original_class_sha256_11": "ac9bb73aac124e46d9147c120838a5af29d80f88271588c6f81ea94598dc9ca5",
+      "entire_member_bytecode_bindings_and_flags_equivalent": true,
+      "source_hunks_and_alias_map": "raw-source-screen11.json#RegionFile",
+      "descriptor_qualified_proof": "raw-bindings11.json#classes.RegionFile",
+      "members_compared": 25,
+      "reason": "Field/getter collisions retain JVM field-vs-method kind; typed overload/bridge collisions retain full owner and descriptor. All full method instructions, operands, constants, flags and handlers compare after exact member renames."
+    },
+    {
+      "class_name": "RenderBlaze",
+      "source_sha256_10": "97a0348fb5f093fbb09bb28f7d46da0c59c6f1157d072b60794a578ccb79c1be",
+      "source_sha256_11": "2a2f65e27efbea4926a6fd0937ec0cc9f06b23c2c383638ffd7e5848cf4384b7",
+      "original_class_sha256_10": "bc9a690b50b42147dd5eec9e440f0cd597198f2cb82cf0bfc0b903cf516105f1",
+      "original_class_sha256_11": "14c4632fd09040630de3c44d86e2bf3493e70afb80091e3cee0d2412711a6419",
+      "entire_member_bytecode_bindings_and_flags_equivalent": true,
+      "source_hunks_and_alias_map": "raw-source-screen11.json#RenderBlaze",
+      "descriptor_qualified_proof": "raw-bindings11.json#classes.RenderBlaze",
+      "members_compared": 5,
+      "reason": "Field/getter collisions retain JVM field-vs-method kind; typed overload/bridge collisions retain full owner and descriptor. All full method instructions, operands, constants, flags and handlers compare after exact member renames."
+    },
+    {
+      "class_name": "RenderChicken",
+      "source_sha256_10": "1bf24a311ef40ca73226f67f33756df8459fb70c6c2787674a86047094fd4aa4",
+      "source_sha256_11": "3f13b898b2ece05ed88b4038f696e4ac9183440ec32ea87aa52c326e0d7d62af",
+      "original_class_sha256_10": "e4d0f3b41c10171349953c66cd9936f458de56f9f3e43378104e230b5543219b",
+      "original_class_sha256_11": "48523adfab4571106dda3c35d774d78164943e9978167601e3cbc4c81c43639f",
+      "entire_member_bytecode_bindings_and_flags_equivalent": true,
+      "source_hunks_and_alias_map": "raw-source-screen11.json#RenderChicken",
+      "descriptor_qualified_proof": "raw-bindings11.json#classes.RenderChicken",
+      "members_compared": 6,
+      "reason": "Field/getter collisions retain JVM field-vs-method kind; typed overload/bridge collisions retain full owner and descriptor. All full method instructions, operands, constants, flags and handlers compare after exact member renames."
+    },
+    {
+      "class_name": "RenderCow",
+      "source_sha256_10": "856161296d86c9efff404eeebce9981e7309d21332478f2162e940b2f998baa3",
+      "source_sha256_11": "8489167a7ebcb815ffec34ed33028208d209dcb03db3d49523c822d083c19627",
+      "original_class_sha256_10": "1061c07b0219c6e0ab54727473c74efad7b38fee25c1523e49fcd303aec0ed18",
+      "original_class_sha256_11": "0871212f00ae1060b2723dbd32312570f5b2a59c994ee20928908973aa841320",
+      "entire_member_bytecode_bindings_and_flags_equivalent": true,
+      "source_hunks_and_alias_map": "raw-source-screen11.json#RenderCow",
+      "descriptor_qualified_proof": "raw-bindings11.json#classes.RenderCow",
+      "members_compared": 4,
+      "reason": "Field/getter collisions retain JVM field-vs-method kind; typed overload/bridge collisions retain full owner and descriptor. All full method instructions, operands, constants, flags and handlers compare after exact member renames."
+    },
+    {
+      "class_name": "RenderCreeper",
+      "source_sha256_10": "71adec0439b6d299013b74bc698f2385b6baa9e2f15692d65d1ed9468daacc3a",
+      "source_sha256_11": "c073be2cb4e83921a92f377af33032bdd863aebdbbdbbb150182b222dc2553da",
+      "original_class_sha256_10": "4acc7c99e4d34cc74b170621f1462c231af89bb4fdb55ab6eb0e6baee0a6eafd",
+      "original_class_sha256_11": "f5394a062e0f807450fdb6d1dfb2176d8dbee5bbaf4098948db12ad0bef3fe57",
+      "entire_member_bytecode_bindings_and_flags_equivalent": true,
+      "source_hunks_and_alias_map": "raw-source-screen11.json#RenderCreeper",
+      "descriptor_qualified_proof": "raw-bindings11.json#classes.RenderCreeper",
+      "members_compared": 10,
+      "reason": "Field/getter collisions retain JVM field-vs-method kind; typed overload/bridge collisions retain full owner and descriptor. All full method instructions, operands, constants, flags and handlers compare after exact member renames."
+    },
+    {
+      "class_name": "RenderDragon",
+      "source_sha256_10": "5ae07dee1b53b7be74339d635f719269e013d8072cd326dc015cbd5d3d3f8940",
+      "source_sha256_11": "a801b6dace8afd6609f1b3696ff3aaecd1eca1540792f6f97fe763306175ca6e",
+      "original_class_sha256_10": "d2b8d00e69b20bd85bb50bb639156d6d61dc0c3b44b7e4315260fd32567fdbbf",
+      "original_class_sha256_11": "97b776b032b1df026f976fa5cbf60acc12d7c21645227bc90fe88f3c66381836",
+      "entire_member_bytecode_bindings_and_flags_equivalent": true,
+      "source_hunks_and_alias_map": "raw-source-screen11.json#RenderDragon",
+      "descriptor_qualified_proof": "raw-bindings11.json#classes.RenderDragon",
+      "members_compared": 16,
+      "reason": "Field/getter collisions retain JVM field-vs-method kind; typed overload/bridge collisions retain full owner and descriptor. All full method instructions, operands, constants, flags and handlers compare after exact member renames."
+    },
+    {
+      "class_name": "RenderEnderman",
+      "source_sha256_10": "88b973068ec211946ada7cd0c3fa309365b975b8242d1ae3fdcd183f7f68d87d",
+      "source_sha256_11": "8a54d535858d043975718e70cc1575b2ad237f52ca1978219556613077f8a621",
+      "original_class_sha256_10": "b5f3c9aed46e1aad54b8bdc99943dc29deacea2a8dc443529b97b9b7754a6572",
+      "original_class_sha256_11": "7b76f5ef7607db74a03e7d79a8b49c465e948ae34478f8f8eed4e38b46297e44",
+      "entire_member_bytecode_bindings_and_flags_equivalent": true,
+      "source_hunks_and_alias_map": "raw-source-screen11.json#RenderEnderman",
+      "descriptor_qualified_proof": "raw-bindings11.json#classes.RenderEnderman",
+      "members_compared": 10,
+      "reason": "Field/getter collisions retain JVM field-vs-method kind; typed overload/bridge collisions retain full owner and descriptor. All full method instructions, operands, constants, flags and handlers compare after exact member renames."
+    },
+    {
+      "class_name": "RenderMagmaCube",
+      "source_sha256_10": "24bf57900581639f7ef9ccf2d43a4207121a3aa2fb0b96a8ae15c4e544c37b7b",
+      "source_sha256_11": "781b9dcc60dc1e29c126a758c99b92526aa8f13c00f4e11a8173a46543b73a5b",
+      "original_class_sha256_10": "7ec49b5f845b165679eba42c9c8e70b6331b60ef3750b7d8d61f1b997e35a171",
+      "original_class_sha256_11": "c18c3f9795035ed8e45626612189bc62fba989af6208896100cfd15c61a792cd",
+      "entire_member_bytecode_bindings_and_flags_equivalent": true,
+      "source_hunks_and_alias_map": "raw-source-screen11.json#RenderMagmaCube",
+      "descriptor_qualified_proof": "raw-bindings11.json#classes.RenderMagmaCube",
+      "members_compared": 7,
+      "reason": "Field/getter collisions retain JVM field-vs-method kind; typed overload/bridge collisions retain full owner and descriptor. All full method instructions, operands, constants, flags and handlers compare after exact member renames."
+    },
+    {
+      "class_name": "RenderMooshroom",
+      "source_sha256_10": "0bb0d86c75c441102d9b1b93de0a9dd37590d1ba46cbb65eb2b7c1abd4ec3c3f",
+      "source_sha256_11": "199c4ae902ba6db130612b316c506035953f25a0bcb2d79bc059d504e69d13ed",
+      "original_class_sha256_10": "914e84c13119a8940de99729ed3d7d84ace35fe43413f3d3859d1c2df989a54a",
+      "original_class_sha256_11": "94467334ba06627d54349f38d6a3173c39d00a37392341ab8739ca4ae33d30d2",
+      "entire_member_bytecode_bindings_and_flags_equivalent": true,
+      "source_hunks_and_alias_map": "raw-source-screen11.json#RenderMooshroom",
+      "descriptor_qualified_proof": "raw-bindings11.json#classes.RenderMooshroom",
+      "members_compared": 6,
+      "reason": "Field/getter collisions retain JVM field-vs-method kind; typed overload/bridge collisions retain full owner and descriptor. All full method instructions, operands, constants, flags and handlers compare after exact member renames."
+    },
+    {
+      "class_name": "RenderPig",
+      "source_sha256_10": "3fba8dceba82b9a646871d91934bcb567d8f51a8382ba94a1a19b6d489ae30ff",
+      "source_sha256_11": "285fcc9bdc2aac8ee6e34364406999f8df591b63f8945ac941edd8d52c103abb",
+      "original_class_sha256_10": "39a7ba7bdda0eebbea14fd7c5e56cbbbafae792a83fd7d9392c384367a28de2c",
+      "original_class_sha256_11": "07cc2adedebaf1033612f35b3f14cec1b71383afabca218e28f445f5c68bf136",
+      "entire_member_bytecode_bindings_and_flags_equivalent": true,
+      "source_hunks_and_alias_map": "raw-source-screen11.json#RenderPig",
+      "descriptor_qualified_proof": "raw-bindings11.json#classes.RenderPig",
+      "members_compared": 6,
+      "reason": "Field/getter collisions retain JVM field-vs-method kind; typed overload/bridge collisions retain full owner and descriptor. All full method instructions, operands, constants, flags and handlers compare after exact member renames."
+    },
+    {
+      "class_name": "RenderSheep",
+      "source_sha256_10": "418ab94bc3b15c2e346e7cc20fc9a72b503dd80ef6abd43e2a2c72785a889b74",
+      "source_sha256_11": "d8c067e998220372b5556936892e44110d31d102c0b9ca9773b954434d7a3ae6",
+      "original_class_sha256_10": "3c25952eebdfe0fceee1f4af7eacf6486e6d79e585cba5bb1435573fb9fad346",
+      "original_class_sha256_11": "d071c0f8df4ab6fbf4f21ddb72c2f5f47ac9e6ff96794f4c8aa45597cbf9c535",
+      "entire_member_bytecode_bindings_and_flags_equivalent": true,
+      "source_hunks_and_alias_map": "raw-source-screen11.json#RenderSheep",
+      "descriptor_qualified_proof": "raw-bindings11.json#classes.RenderSheep",
+      "members_compared": 6,
+      "reason": "Field/getter collisions retain JVM field-vs-method kind; typed overload/bridge collisions retain full owner and descriptor. All full method instructions, operands, constants, flags and handlers compare after exact member renames."
+    },
+    {
+      "class_name": "RenderSlime",
+      "source_sha256_10": "791f3a5f56cc296985a10478bf70831b7babd4383514b582c519a1293ec5406f",
+      "source_sha256_11": "86713e3268898a45b83f604dfef184420faecce7dd826c0aaa8a4d7ddd078f4a",
+      "original_class_sha256_10": "197f9748d45ee392289160b892bddedf1bd3a5b9be95d3adbbb070e4d9cb700f",
+      "original_class_sha256_11": "cf3034986a0dbc1d9a875bd663351bfc061355ab394c70b60b7fdf5f1d0fc504",
+      "entire_member_bytecode_bindings_and_flags_equivalent": true,
+      "source_hunks_and_alias_map": "raw-source-screen11.json#RenderSlime",
+      "descriptor_qualified_proof": "raw-bindings11.json#classes.RenderSlime",
+      "members_compared": 6,
+      "reason": "Field/getter collisions retain JVM field-vs-method kind; typed overload/bridge collisions retain full owner and descriptor. All full method instructions, operands, constants, flags and handlers compare after exact member renames."
+    },
+    {
+      "class_name": "RenderSpider",
+      "source_sha256_10": "673fdb93e99072a28e0de3bc86d878bb8621b43f6f6d5a187417a9b5ff72ed39",
+      "source_sha256_11": "9788ed81601b10bd07d02507d15c997ad12df43d62271f7e813baf60ca211062",
+      "original_class_sha256_10": "281c3ec8241c5654338ea0e8358b09d9168ddb89b469434f87cf0256b9ac6062",
+      "original_class_sha256_11": "de19fcd37bdf81cd4405d2cf7fccb29e4ce2afc29aff1884bdd67c063944d197",
+      "entire_member_bytecode_bindings_and_flags_equivalent": true,
+      "source_hunks_and_alias_map": "raw-source-screen11.json#RenderSpider",
+      "descriptor_qualified_proof": "raw-bindings11.json#classes.RenderSpider",
+      "members_compared": 7,
+      "reason": "Field/getter collisions retain JVM field-vs-method kind; typed overload/bridge collisions retain full owner and descriptor. All full method instructions, operands, constants, flags and handlers compare after exact member renames."
+    },
+    {
+      "class_name": "RenderSquid",
+      "source_sha256_10": "6bac0355c0773080ecd3aa8563ba352f92720fc8bd2cd113f4ad0d18a4520e91",
+      "source_sha256_11": "30a6aa50c9ae243a6330e59b9755b59ab414b8a52110d1eaab57a5c5657b123b",
+      "original_class_sha256_10": "b83e1ca6754135047fbe45ab41e90878ba75e716f7c8f1ed5cbef8a7d491f4e3",
+      "original_class_sha256_11": "214aee1ec1425bf2fde39fe5d7377378447b40056ebd27bfe82b20a93b8388b8",
+      "entire_member_bytecode_bindings_and_flags_equivalent": true,
+      "source_hunks_and_alias_map": "raw-source-screen11.json#RenderSquid",
+      "descriptor_qualified_proof": "raw-bindings11.json#classes.RenderSquid",
+      "members_compared": 10,
+      "reason": "Field/getter collisions retain JVM field-vs-method kind; typed overload/bridge collisions retain full owner and descriptor. All full method instructions, operands, constants, flags and handlers compare after exact member renames."
+    },
+    {
+      "class_name": "RenderVillager",
+      "source_sha256_10": "450d7f79cabd5c9991911d97aee51e30b8a580de6d0b5bc33bee1709678161b6",
+      "source_sha256_11": "899c0c47f325ccb3d004ddefbe797467d5315b1929910f1c3da6ba7c69469f2d",
+      "original_class_sha256_10": "3f030942fd4431f81ebb76a519e6601beea7153dd97fecffbecd437c03f2da45",
+      "original_class_sha256_11": "4a811804282cdb7f1a324645ae2e5947f576a75e2bdf889cb12841eb869ec5dd",
+      "entire_member_bytecode_bindings_and_flags_equivalent": true,
+      "source_hunks_and_alias_map": "raw-source-screen11.json#RenderVillager",
+      "descriptor_qualified_proof": "raw-bindings11.json#classes.RenderVillager",
+      "members_compared": 13,
+      "reason": "Field/getter collisions retain JVM field-vs-method kind; typed overload/bridge collisions retain full owner and descriptor. All full method instructions, operands, constants, flags and handlers compare after exact member renames."
+    },
+    {
+      "class_name": "RenderWolf",
+      "source_sha256_10": "f19b0d3e29502304dbfb37f8d782c1606c023f0be891b8c49f39d44fdcba4c6c",
+      "source_sha256_11": "0b0d5e04dffacacaf70ab19959592913ad681e5c22b0429d52054d0a31f279dd",
+      "original_class_sha256_10": "442ab5e9c1c9bde115ad9e110aaecc637ae5cac387fd2cd03a0d07962cb9e584",
+      "original_class_sha256_11": "8f5c098e8088d03189114c70ff26534d3effdee3d8a43095f2d8a4f1919d98ba",
+      "entire_member_bytecode_bindings_and_flags_equivalent": true,
+      "source_hunks_and_alias_map": "raw-source-screen11.json#RenderWolf",
+      "descriptor_qualified_proof": "raw-bindings11.json#classes.RenderWolf",
+      "members_compared": 8,
+      "reason": "Field/getter collisions retain JVM field-vs-method kind; typed overload/bridge collisions retain full owner and descriptor. All full method instructions, operands, constants, flags and handlers compare after exact member renames."
+    },
+    {
+      "class_name": "SaveFormatComparator",
+      "source_sha256_10": "336c10df2f0e9fa77ee62feb9b7a8af054198e585dd0a0b0e4b9bbf2ca9c8d9f",
+      "source_sha256_11": "2c81f3fcdac041214fe3124e156a32abc8f55dba921ec7420228bc08c6441711",
+      "original_class_sha256_10": "9a94212afc45861efe14a219882e42fd49d137f7e084ba4c61d88b60c6b9b8f2",
+      "original_class_sha256_11": "cfae15cae20b8e909fec4b08e2a380ac64b22510625920c3aa3e0a44c8ced8fc",
+      "entire_member_bytecode_bindings_and_flags_equivalent": true,
+      "source_hunks_and_alias_map": "raw-source-screen11.json#SaveFormatComparator",
+      "descriptor_qualified_proof": "raw-bindings11.json#classes.SaveFormatComparator",
+      "members_compared": 16,
+      "reason": "Field/getter collisions retain JVM field-vs-method kind; typed overload/bridge collisions retain full owner and descriptor. All full method instructions, operands, constants, flags and handlers compare after exact member renames."
+    }
+  ],
+  "explicit_residues": [
+    {
+      "class_name": "EntityDragon",
+      "actual_delta": "func_40156_a -> attackEntityFromPart, and invokevirtual DamageSource.getSourceOfDamage()Entity -> DamageSource.getEntity()Entity. Both still exist in1.1, so no global alias substitution accepted for this call.",
+      "semantic_authority": "Original1.0 DamageSource.getSourceOfDamage delegates virtual getEntity; source-wide search finds no overrides. Original1.1 EntityDamageSourceIndirect overrides getSourceOfDamage to return direct projectile, keeps getEntity returning owner. The new Dragon call retains owner-player damage acceptance.",
+      "implementation": "crates/worldgen11/src/entity/dragon.rs::attack_dragon_part already checks source.attacker; unchanged production.",
+      "direct_evidence": "tools/oracle11/verify_dragon_owner11.ps1; DragonOwner11.java calls actual original EntityDragon.attackEntityFromPart and original downstream living damage; 216 source/head/remote/seed/yaw cases. Production test dragon_part_attacker_gate_matches_original_11_bytecode passes health/hurt-time/targetXYZbits/entity+World RNG.",
+      "log": "dragon-owner11-repro.log",
+      "remaining_gap": null
+    },
+    {
+      "class_name": "EnumArmorMaterial",
+      "actual_delta": "Generated values()[LEnumArmorMaterial; flags public-static-final0x19 -> public-static0x09. All four instructions and handlers exact.",
+      "disposition": "Semantically inert in existing singleplayer. Both enum classes are final; static method invocation has no virtual dispatch/subclass receiver. No getModifiers/getDeclaredMethods reflective consumer in entire original1.1 Minecraft source. No runtime rewrite or unavailable Java reflection facade claimed.",
+      "remaining_gap": null
+    },
+    {
+      "class_name": "CraftingManager",
+      "actual_delta": "Constructor getstatic Block.blockGold:LBlock -> Item.goldNugget:LItem at instruction1709; remaining2281 constructor instructions and every other method/member exact.",
+      "implementation": "container/recipes.bin already generated from original1.1 full recipe table and production golden_apple_uses_original_11_recipe_table verified.",
+      "direct_evidence": "tools/oracle11/verify_gameplay_slice.ps1 recipes11.bin exact; work/pickblock11-oracle.log latest full fixture regeneration; production golden apple recipe test.",
+      "remaining_gap": null
+    }
+  ],
+  "manual_source_holds": [
+    {
+      "class_name": "CraftingManager",
+      "whole_source_tokens_equal_after_explicit_changes": true,
+      "explicit_changes": [
+        "single golden-apple recipe ingredient blockGold41->goldNugget371; ALREADY implemented + full originalrecipe bytes and directCraftingManager golden apple production test"
+      ],
+      "symbol_map": {},
+      "old_sha256": "e105d6852eceb11fa97cdde1bbf6481df554e960f650e824755cb83f26fde4bd",
+      "new_sha256": "fe7f37ac356f762d75534bff08b172349a2f37c0f9390e0aaba2671aaa9434cf"
+    },
+    {
+      "class_name": "SaveFormatComparator",
+      "whole_source_tokens_equal_after_explicit_changes": true,
+      "explicit_changes": [
+        "typed comparator overload renamed a; Object.compareTo bridge keepsname and delegates same typed body; field/method sameName requiresConversion disambiguated by Java syntax"
+      ],
+      "symbol_map": {
+        "field_22167_e": "requiresConversion",
+        "field_40595_g": "hardcore",
+        "func_22161_d": "requiresConversion",
+        "func_40594_g": "isHardcoreModeEnabled"
+      },
+      "old_sha256": "336c10df2f0e9fa77ee62feb9b7a8af054198e585dd0a0b0e4b9bbf2ca9c8d9f",
+      "new_sha256": "2c81f3fcdac041214fe3124e156a32abc8f55dba921ec7420228bc08c6441711"
+    },
+    {
+      "class_name": "ThreadedChunkLoader",
+      "whole_source_tokens_equal_after_explicit_changes": true,
+      "explicit_changes": [
+        "same two implemented interfaces reorder only; interfaces unique signatures and no Java7 defaultmethods; no code/compiler dependency on reflection getInterfaces within SPsource. Not a swappedclass identity."
+      ],
+      "symbol_map": {
+        "field_40556_a": "pendingChunkList",
+        "field_40554_b": "pendingChunkCoords",
+        "field_40555_c": "chunkSaveLock",
+        "field_40553_d": "chunkSaveLocation",
+        "func_1141_a": "read",
+        "func_25124_i": "removeUnknownBlocks",
+        "func_40552_a": "queueChunkMap",
+        "func_40740_k": "getChunkCoordIntPair",
+        "field_40573_a": "threadedIOInstance",
+        "func_40567_a": "queueIO",
+        "func_40550_A_": "writeNextIO",
+        "func_40551_a": "writeChunk"
+      },
+      "old_sha256": "27377be061390f644d9baf5196a403e7a47049c7ef7ce8ed41ce3a346fbd0db7",
+      "new_sha256": "aaf6135676b8830048394805a20c580d5dcb73b685c3e2acfdd4b0ce7c4540e5"
+    }
+  ],
+  "remaining_delta_gaps_found": [],
+  "integration_limit": "Meaningfully changed external CALLEE BODIES are dependencies of the144 normalizedclass review, not asserted unchanged by binding equivalence. The source/bytecode audit does not prove all1.1runtime implementation complete or license100percent overall. No ledgers/Git changes.",
+  "owned_files": [
+    "tools/r11/screen_raw_sources11.py",
+    "tools/r11/audit_raw_bindings11.py",
+    "reports/r11-progress/raw-source-screen11.json",
+    "reports/r11-progress/raw-bindings11.json",
+    "reports/r11-progress/raw-only11-completion-review.json",
+    "reports/r11-progress/dragon-owner11-repro.log",
+    "tools/oracle11/src/net/minecraft/src/DragonOwner11.java",
+    "tools/oracle11/verify_dragon_owner11.ps1",
+    "crates/worldgen11/src/fixtures/dragonowner11.txt",
+    "crates/worldgen11/src/entity/dragon.rs (testonly)"
+  ]
+}
