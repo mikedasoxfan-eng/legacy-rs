@@ -1,0 +1,93 @@
+{
+  "outcome": "Nine complete native save/reopen and both-direction crossload comparisons EXACT",
+  "seeds": [
+    0,
+    42,
+    -1
+  ],
+  "world_cases_per_seed": 6,
+  "chunks_per_snapshot": 54,
+  "payload": "Each DEFAULT/FLAT\u00d7savedPlayerDimension0/-1/1 case stores different full array payloads at three shared positive/negative chunk coordinates in all three dimension folders. Snapshot compares blocks, metadata, sky/block light, heightmap, populated flag and chunk coordinates. Metadata includes provider dimension, stored player dimension, world type, seed, game mode, map features, hardcore, save version and spawn.",
+  "copy_constructor": "Original new World(World,provider) calls original WorldInfo(WorldInfo); Rust actual World::for_dimension copies level info and initializes provider type. Both types and all selected metadata compared across18saved cases.",
+  "nether_predicate": "Direct original WorldProviderHell.canCoordinateBeSpawn versus public actual Rust predicate, five coordinate pairs incl i32extrema, followed by raw World.rand and loaded chunk count; false/no draws/no chunks across both world types and three seeds.",
+  "source_sha256": {
+    "crates/worldgen11/src/storage.rs": "3c60d40d22db9b0dd5f66bb0f5b64fdccf2497faad9be833e366eccab9a24b46",
+    "crates/worldgen11/src/scenario.rs": "dd9dc0d569926752e679ef743db0b671d65941029a9e7e51062dc0d1d287cc95",
+    "crates/worldgen11/src/world/mod.rs": "bc6a6777e948aacb68e9581c38ae9b09358abe82af5aaafcb1a5afdebd44a162",
+    "crates/worldgen11/src/world/dimension.rs": "178e1786a5e89cca4abbb710a97ceb8e1d34b54f91687d1e87387643e6cdcb95",
+    "crates/worldgen11/src/bin/genlayer11_probe.rs": "d8210abbbd32f26118b3259bbf587946e4c947b01a20d24faaa8f858d4a6142f",
+    "tools/oracle11/probes/DimensionStorageProbe11.java": "b51f9d1b724b6d9583890e6e10bb6e74aa948c20ba64863de5f50d8853e504b1",
+    "tools/verify_r11_dimstorage.ps1": "31edc030d3dd2d8ca68e998979ae84fc51cf6cb24a67bd607858eb3f197171cd",
+    "tools/retromcp-r11/minecraft/jars/deobfuscated.jar": "44bb6ace88fdff460d6c428c4becee8cad52f2622e1f800dab7a70f8a716f75b"
+  },
+  "results": [
+    {
+      "kind": "rust",
+      "seed": "0",
+      "bytes": 4438546,
+      "sha256": "1f3f5d3adaf3e8953c4357e1f2f2e083ecda792869f6da23a8f9bb9a3bda2e78",
+      "path": "target/r11/dimstorage/5ef8f17868e3416eacd89e0a36f6fc58/0"
+    },
+    {
+      "kind": "java-read-rust",
+      "seed": "0",
+      "bytes": 4438546,
+      "sha256": "1f3f5d3adaf3e8953c4357e1f2f2e083ecda792869f6da23a8f9bb9a3bda2e78",
+      "path": "target/r11/dimstorage/5ef8f17868e3416eacd89e0a36f6fc58/0"
+    },
+    {
+      "kind": "rust-read-java",
+      "seed": "0",
+      "bytes": 4438546,
+      "sha256": "1f3f5d3adaf3e8953c4357e1f2f2e083ecda792869f6da23a8f9bb9a3bda2e78",
+      "path": "target/r11/dimstorage/5ef8f17868e3416eacd89e0a36f6fc58/0"
+    },
+    {
+      "kind": "rust",
+      "seed": "42",
+      "bytes": 4438546,
+      "sha256": "06661790039a275d6da380b94dcab22a709158f71cf529d9eff3f8912abbf537",
+      "path": "target/r11/dimstorage/5ef8f17868e3416eacd89e0a36f6fc58/42"
+    },
+    {
+      "kind": "java-read-rust",
+      "seed": "42",
+      "bytes": 4438546,
+      "sha256": "06661790039a275d6da380b94dcab22a709158f71cf529d9eff3f8912abbf537",
+      "path": "target/r11/dimstorage/5ef8f17868e3416eacd89e0a36f6fc58/42"
+    },
+    {
+      "kind": "rust-read-java",
+      "seed": "42",
+      "bytes": 4438546,
+      "sha256": "06661790039a275d6da380b94dcab22a709158f71cf529d9eff3f8912abbf537",
+      "path": "target/r11/dimstorage/5ef8f17868e3416eacd89e0a36f6fc58/42"
+    },
+    {
+      "kind": "rust",
+      "seed": "-1",
+      "bytes": 4438546,
+      "sha256": "98d817ff5ffaa5c7777eadc4eb6ec7871b40b90d53c1a2bebb3ab08c0ce22a40",
+      "path": "target/r11/dimstorage/5ef8f17868e3416eacd89e0a36f6fc58/-1"
+    },
+    {
+      "kind": "java-read-rust",
+      "seed": "-1",
+      "bytes": 4438546,
+      "sha256": "98d817ff5ffaa5c7777eadc4eb6ec7871b40b90d53c1a2bebb3ab08c0ce22a40",
+      "path": "target/r11/dimstorage/5ef8f17868e3416eacd89e0a36f6fc58/-1"
+    },
+    {
+      "kind": "rust-read-java",
+      "seed": "-1",
+      "bytes": 4438546,
+      "sha256": "98d817ff5ffaa5c7777eadc4eb6ec7871b40b90d53c1a2bebb3ab08c0ce22a40",
+      "path": "target/r11/dimstorage/5ef8f17868e3416eacd89e0a36f6fc58/-1"
+    }
+  ],
+  "limits": [
+    "Canonical decoded chunk/metadata snapshot; compressed NBT, region-sector order, wall timestamps/session lock bytes are not compared.",
+    "No malformed region recovery, entities/tile entities, portal/bed gameplay or rendering claims. Inherited storage algorithms are not re-certified as entire classes.",
+    "World metadata selection in Rust snapshot uses saved info; actual World::open_with_settings selection/preload already covered separately in spawn11-verification.log."
+  ]
+}

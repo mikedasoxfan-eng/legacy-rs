@@ -2,6 +2,8 @@
 use std::io::{BufWriter, Write};
 fn main() {
     let args: Vec<String> = std::env::args().collect();
+    if args.get(3).is_some_and(|s|s=="dimstorage") { dimension_storage(&args); return; }
+    if args.get(3).is_some_and(|s|s=="neighborhood") { neighborhood(&args); return; }
     if args.get(3).is_some_and(|s|s=="spawn") { spawn(&args); return; }
     if args.get(3).is_some_and(|s|s=="worldtype") { world_type(&args); return; }
     if args.get(3).is_some_and(|s|s=="depthfog") { depth_fog(&args); return; }
@@ -14,6 +16,65 @@ fn main() {
             for value in layer.get(x,z,w,h).into_iter().take((w*h) as usize) { out.write_all(&value.to_be_bytes()).unwrap(); }
         }
     }
+}
+fn dimension_storage(args: &[String]) {
+    use worldgen::{World,world::{Dimension,chunk::Chunk},storage::{Storage,LevelInfo,WorldType},entity::player::food::WorldSettings,nbt::{Compound,Tag}};
+    fn metadata(o:&mut Vec<u8>,w:&World) {
+        o.extend(w.dimension.id().to_be_bytes());o.extend(w.info.dimension().to_be_bytes());o.extend(w.info.seed.to_be_bytes());o.push((w.info.world_type==WorldType::Flat) as u8);o.extend(w.info.game_type.to_be_bytes());o.push(w.info.map_features as u8);o.push(w.info.hardcore as u8);o.extend(w.info.version.to_be_bytes());for n in [w.info.spawn.0,w.info.spawn.1,w.info.spawn.2]{o.extend(n.to_be_bytes());}
+    }
+    let seed=args[1].parse().unwrap();let root=std::path::Path::new(&args[4]);let coord=[[0,0],[-17,31],[512,-1024]];
+    if args.get(5).is_none_or(|s|s!="read") {
+        for ty in [WorldType::Default,WorldType::Flat] {for saved_dim in [Dimension::Overworld,Dimension::Nether,Dimension::End] {
+            let dir=root.join(format!("{}-{}",ty.saved_name(),saved_dim.id()));let save=Storage::open_with_players(&dir,false).unwrap();
+            let mut info=LevelInfo::from_settings(WorldSettings::with_hardcore(seed,1,false,true).with_world_type(ty),"saved");info.spawn=(-17,4+saved_dim.id(),31);info.version=19132;
+            let mut p=Compound::new();p.put("Dimension",Tag::Int(saved_dim.id()));info.player=Some(p);save.save_level(&info).unwrap();
+            for dim in [Dimension::Overworld,Dimension::Nether,Dimension::End] {
+                let mut routed=save.for_dimension(dim).unwrap();
+                for (k,[cx,cz]) in coord.into_iter().enumerate() {
+                    let tag=(dim.id()+2)*7+k as i32;let blocks=(0..32768).map(|n|(1+(n+tag)%3) as u8).collect::<Vec<_>>();
+                    let mut c=Chunk::new(cx,cz,blocks.into_boxed_slice());c.populated=true;
+                    for n in 0..c.data.0.len(){c.data.0[n]=(n as i32+tag) as u8;c.sky_light.0[n]=(n as i32*3+tag) as u8;c.block_light.0[n]=(n as i32*5+tag) as u8;}
+                    for n in 0..256 {c.height_map[n]=((n as i32+tag)%128) as u8;}routed.save_chunk(&c,0).unwrap();
+                }
+            }
+        }}
+        worldgen::threaded_io10::FILE_IO.flush();worldgen::region_cache181::clear();
+    }
+    let mut out=Vec::new();
+    for ty in [WorldType::Default,WorldType::Flat] {for saved_dim in [Dimension::Overworld,Dimension::Nether,Dimension::End] {
+        let dir=root.join(format!("{}-{}",ty.saved_name(),saved_dim.id()));let save=Storage::open_with_players(&dir,false).unwrap();let info=save.load_level().unwrap();
+        let actual_dim=Dimension::from_id(info.dimension()).unwrap();let mut w=World::with_dimension(info.seed,seed,actual_dim);w.spawn=info.spawn;w.world_time=info.time;w.info=info;w.set_world_type(w.info.world_type);metadata(&mut out,&w);
+        let copy=w.for_dimension(if saved_dim==Dimension::Overworld {Dimension::Nether}else{Dimension::Overworld},seed);metadata(&mut out,&copy);
+        if saved_dim==Dimension::Nether {
+            w.rand.set_seed(seed);for [x,z] in [[0,0],[-17,31],[512,-1024],[i32::MAX,i32::MIN],[i32::MIN,i32::MAX]]{out.push(w.can_coordinate_be_spawn(x,z) as u8);}
+            out.extend(w.rand.state().to_be_bytes());out.extend((w.chunks.len() as i32).to_be_bytes());
+        }
+        for dim in [Dimension::Overworld,Dimension::Nether,Dimension::End] {
+            let mut routed=save.for_dimension(dim).unwrap();for [cx,cz] in coord {
+                let c=routed.load_chunk(cx,cz);out.push(c.is_some() as u8);if let Some(c)=c {out.extend(c.x.to_be_bytes());out.extend(c.z.to_be_bytes());out.push(c.populated as u8);out.extend(&*c.blocks);out.extend(&*c.data.0);out.extend(&*c.sky_light.0);out.extend(&*c.block_light.0);out.extend(&*c.height_map);}
+            }
+        }
+    }}
+    std::fs::write(&args[2],out).unwrap();
+}
+fn neighborhood(args: &[String]) {
+    fn emit(out:&mut Vec<u8>,kind:u8,salt:i64,seed:i64,x:i32,z:i32,w:i32,h:i32,parent:&[i32]) {
+        let (values,state,world)=worldgen::genlayer::neighborhood_fixture(kind,salt,seed,x,z,w,h,parent);
+        for value in values {out.extend(value.to_be_bytes());}out.extend(state.to_be_bytes());out.extend(world.to_be_bytes());
+    }
+    let seed=args[1].parse().unwrap();let mut out=Vec::new();
+    for kind in 0..3 {for salt in [0,-1,1000] {for [x,z] in [[0,0],[-1,-1],[-19,31],[512,-1024],[i32::MAX,i32::MIN],[i32::MIN,i32::MAX],[i32::MAX-1,i32::MAX-1],[i32::MIN+1,i32::MIN+1]] {
+        for ci in -1..=21 {let center=if ci==21 {255}else{ci};for pattern in 0..32 {
+            let mut p=[if pattern&1==0 {0}else{20};9];p[4]=center;
+            for side in 0..4 {p[[1,5,3,7][side]]=if pattern&(1<<side)==0 {center}else if pattern<16 {0}else{center+1};}
+            emit(&mut out,kind,salt,seed,x,z,1,1,&p);
+        }}
+        for [w,h] in [[3,2],[17,13],[2,3]] {for pattern in 0..3 {
+            let mut p=vec![0;((w+2)*(h+2)) as usize];for j in 0..h+2 {for i in 0..w+2 {let n=(i*13+j*7+pattern)%24;p[(i+j*(w+2)) as usize]=match n {21=>-1,22=>255,23=>6,_=>n};}}
+            emit(&mut out,kind,salt,seed,x,z,w,h,&p);
+        }}
+    }}}
+    std::fs::write(&args[2],out).unwrap();
 }
 fn spawn(args: &[String]) {
     use worldgen::{World,world::Dimension,storage::WorldType};

@@ -23,6 +23,33 @@ fn shore_biome(center: i32, neighbors: [i32; 4]) -> i32 {
     } else { center }
 }
 
+// Shared by the actual getInts loop and the controlled-parent oracle fixture.
+fn neighborhood_cell(kind: Kind, r: &mut Rng, center: i32, neighbors: [i32;4]) -> (i32,i64) {
+    let value=match kind {
+        Kind::Hills => if r.next(3)==0 { hills_biome(center,neighbors) } else {center},
+        Kind::Shore => shore_biome(center,neighbors),
+        Kind::SwampRivers => if center==6 && r.next(6)==0 {7} else {center},
+        _ => unreachable!(),
+    };
+    (value,r.state)
+}
+
+/// Controlled original-parent fixture, using the same cell implementation as Layer::get.
+/// Returns valid output prefix, final cell RNG state and initialized layer world seed.
+#[doc(hidden)]
+pub fn neighborhood_fixture(kind: u8, salt: i64, seed: i64, x: i32, z: i32, w: i32, h: i32, parent: &[i32]) -> (Vec<i32>,i64,i64) {
+    let kind=match kind {0=>Kind::Hills,1=>Kind::Shore,2=>Kind::SwampRivers,_=>panic!("unknown layer")};
+    let l=layer(kind,salt,None,None);l.init(seed);let world=l.world.load(Ordering::Relaxed);
+    let pw=w+2;assert_eq!(parent.len(),((w+2)*(h+2)) as usize);let mut values=Vec::new();let mut state=0;
+    for j in 0..h {for i in 0..w {
+        let at=|dx,dz|parent[(i+dx+(j+dz)*pw) as usize];
+        let mut r=Rng::new(world,x.wrapping_add(i),z.wrapping_add(j));
+        let (value,s)=neighborhood_cell(kind,&mut r,at(1,1),[at(1,0),at(2,1),at(0,1),at(1,2)]);
+        values.push(value);state=s;
+    }}
+    (values,state,world)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -432,14 +459,12 @@ impl Layer {
                             if c == 0 && [at(0, 0), at(2, 0), at(0, 2), at(2, 2)] == [0; 4] && r.next(100) == 0 { c = 14; }
                         } else if matches!(self.kind, Kind::Shore) {
                             let neighbors = [at(1, 0), at(2, 1), at(0, 1), at(1, 2)];
-                            c = shore_biome(c, neighbors);
+                            c = neighborhood_cell(self.kind,&mut r,c,neighbors).0;
                         } else if matches!(self.kind, Kind::Hills) {
-                            if r.next(3) == 0 {
-                                let neighbors = [at(1, 0), at(2, 1), at(0, 1), at(1, 2)];
-                                c = hills_biome(c, neighbors);
-                            }
+                            let neighbors = [at(1, 0), at(2, 1), at(0, 1), at(1, 2)];
+                            c = neighborhood_cell(self.kind,&mut r,c,neighbors).0;
                         } else if matches!(self.kind, Kind::SwampRivers) {
-                            if c == 6 && r.next(6) == 0 { c = 7; }
+                            c = neighborhood_cell(self.kind,&mut r,c,[0;4]).0;
                         } else {
                             let a = at(0, 1);
                             let b = at(2, 1);

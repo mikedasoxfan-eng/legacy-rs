@@ -1,0 +1,63 @@
+{
+  "outcome": "Six complete original-bytecode neighborhood streams EXACT",
+  "per_seed_getInts_calls": 53640,
+  "total_getInts_calls": 321840,
+  "total_single_cell_cases": 317952,
+  "total_mixed_rectangle_output_cells": 301968,
+  "coverage": "Hills/Shore/SwampRivers; centers -1,0..20,255;32cardinal masks (ocean and non-ocean disagreement), diagonal ocean/non-ocean priority;3salts0/-1/1000;8coordinate pairs incl i32 wrap;3mixed rectangle sizes and3patterns; private original chunkSeed/worldGenSeed after each query. Actual Rust getInts and fixture share one cell implementation, with the same RNG instance used by the production loop.",
+  "source_sha256": {
+    "crates/worldgen11/src/genlayer.rs": "0afb744f6913b45d5f09755227960358244f22a7032fae0e938a4605d6afd03e",
+    "crates/worldgen11/src/bin/genlayer11_probe.rs": "8877e5659cd87f555364014bf79f59a2e0325d010b10ba4a7ddb3178007b2a98",
+    "tools/oracle11/probes/NeighborhoodProbe11.java": "0e83d44577ca5114aff1eff55c96be564971eefd304ed8053db6d26ba4a0a412",
+    "tools/verify_r11_neighborhood.ps1": "c670fe8c40b8dad50a2e81bafa80a1a14ee562babd54d1f3f60a33bed0f71d01",
+    "tools/retromcp-r11/minecraft/jars/deobfuscated.jar": "44bb6ace88fdff460d6c428c4becee8cad52f2622e1f800dab7a70f8a716f75b"
+  },
+  "results": [
+    {
+      "seed": "0",
+      "bytes": 1271520,
+      "sha256": "ba32d89a3205f61bef554cc0b0c3b4d91a5b12f4464de13b56f730bd0495b626",
+      "path": "target/r11/neighborhood/94af8ab9635a4982bc9aa265653f5cf3/0"
+    },
+    {
+      "seed": "42",
+      "bytes": 1271520,
+      "sha256": "145b8a5efc4a934c9d42b5f7ac73e3cdc594d8a911e19693fa877b0045685e31",
+      "path": "target/r11/neighborhood/94af8ab9635a4982bc9aa265653f5cf3/42"
+    },
+    {
+      "seed": "-1",
+      "bytes": 1271520,
+      "sha256": "4fcd0d76b5cd37a519e96cc88e5aa290c429a0c16291997f25c8df4fe7fb04b8",
+      "path": "target/r11/neighborhood/94af8ab9635a4982bc9aa265653f5cf3/-1"
+    },
+    {
+      "seed": "123456789",
+      "bytes": 1271520,
+      "sha256": "b961d4922289ce3ed364f631c70f9031e09759161444d494d79fa6a48ea42e0f",
+      "path": "target/r11/neighborhood/94af8ab9635a4982bc9aa265653f5cf3/123456789"
+    },
+    {
+      "seed": "9223372036854775807",
+      "bytes": 1271520,
+      "sha256": "f227aa953ea5e7399320da937c9e34c9ac356545e3bdf366f356a43703b1ca75",
+      "path": "target/r11/neighborhood/94af8ab9635a4982bc9aa265653f5cf3/9223372036854775807"
+    },
+    {
+      "seed": "-9223372036854775808",
+      "bytes": 1271520,
+      "sha256": "31c9698116178bf9c3b400b248a8a68aa6f39350f9f17d2b1b822232d85a3121",
+      "path": "target/r11/neighborhood/94af8ab9635a4982bc9aa265653f5cf3/-9223372036854775808"
+    }
+  ],
+  "graph_regression": {
+    "seed": 0,
+    "bytes": 82384,
+    "original_sha256": "0485bf22dfa46df8c59a342d46683ec69926a1d80cc50d5a62d3342d3a5ac39e",
+    "rust_sha256": "0485bf22dfa46df8c59a342d46683ec69926a1d80cc50d5a62d3342d3a5ac39e"
+  },
+  "limits": [
+    "Finite vectors, not mathematical proof for every possible array/seed. Inherited IntCache tail semantics not a new delta for these classes; valid prefix is compared.",
+    "Fixture parent itself is synthetic; original layer implementations execute directly from unchanged bytecode."
+  ]
+}

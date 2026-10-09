@@ -57,7 +57,7 @@ impl World {
     }
 
     /// `WorldProvider.canCoordinateBeSpawn`
-    pub(crate) fn can_coordinate_be_spawn(&mut self, x: i32, z: i32) -> bool {
+    pub fn can_coordinate_be_spawn(&mut self, x: i32, z: i32) -> bool {
         if self.dimension == crate::world::Dimension::Nether {
             return false;
         }
