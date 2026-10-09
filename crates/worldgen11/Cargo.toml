@@ -1,0 +1,111 @@
+[package]
+name = "worldgen11"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+repository.workspace = true
+publish.workspace = true
+description = "Bit-exact port of the Minecraft 1.1 simulation: world generation, ticking, entities, the player, saves"
+autobins = false
+
+[[bin]]
+name = "genlayer11_probe"
+path = "src/bin/genlayer11_probe.rs"
+
+[[bin]]
+name = "r10entities2_11"
+path = "src/bin/r10entities2.rs"
+
+[[bin]]
+name = "r10blocks3_11"
+path = "src/bin/r10blocks3.rs"
+
+[[bin]]
+name = "playerdamage8_11"
+path = "src/bin/playerdamage8_181.rs"
+
+[[bin]]
+name = "controllerlife11"
+path = "src/bin/controllerlife181.rs"
+
+[[bin]]
+name = "inventorybounds11"
+path = "src/bin/inventorybounds181.rs"
+
+[[bin]]
+name = "playersp11"
+path = "src/bin/playersp181.rs"
+
+[[bin]]
+name = "guichest11"
+path = "src/bin/guichest181.rs"
+
+[[bin]]
+name = "controllermode11"
+path = "src/bin/controllermode181.rs"
+
+[lib]
+name = "worldgen"
+
+[[bin]]
+name = "compare11"
+path = "src/bin/compare.rs"
+
+[[bin]]
+name = "container_compare11"
+path = "src/bin/container_compare.rs"
+
+[[bin]]
+name = "entity_compare11"
+path = "src/bin/entity_compare181.rs"
+
+[dependencies]
+flate2 = "1.1.10"
+
+[[bin]]
+name = "terrain_compare11"
+path = "src/bin/terrain_compare.rs"
+
+[[bin]]
+name = "playercore11"
+path = "src/bin/playercore.rs"
+
+[[bin]]
+name = "creative11"
+path = "src/bin/creative.rs"
+
+[[bin]]
+name = "playertick11"
+path = "src/bin/playertick181.rs"
+
+[[bin]]
+name = "playerlist11"
+path = "src/bin/playerlist181.rs"
+
+[[bin]]
+name = "playercombat11"
+path = "src/bin/playercombat181.rs"
+
+[[bin]]
+name = "controller11"
+path = "src/bin/controller181.rs"
+
+[[bin]]
+name = "chesthooks11"
+path = "src/bin/chesthooks181.rs"
+
+[[bin]]
+name = "playerstate11"
+path = "src/bin/playerstate181.rs"
+
+[[bin]]
+name = "controllerinput11"
+path = "src/bin/controllerinput181.rs"
+
+[[bin]]
+name = "inventoryinterfaces11"
+path = "src/bin/inventoryinterfaces181.rs"
+
+[[bin]]
+name = "r10entities3_11"
+path = "src/bin/r10entities3.rs"

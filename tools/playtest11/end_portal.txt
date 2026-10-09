@@ -1,0 +1,13 @@
+# Walk south into a lit End portal: the player must arrive on the End's obsidian platform
+# (Teleporter.placeInPortal, dimension 1, x 100 z 0) and keep walking there.
+#! setup end_portal
+#! seed 7
+#! expect before 88.5 75.62 256.5 0.01
+#! expect arrived 100 53.62 0 3
+5 key F3 down
+6 key F3 up
+10 shot before
+20 key W down
+45 key W up
+70 shot arrived
+80 quit

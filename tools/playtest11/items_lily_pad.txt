@@ -1,0 +1,10 @@
+# Right-click the surface of water with a lily pad: ItemLilyPad places block 111 on top of the water.
+#! setup items_lily_pad
+#! seed 7
+40 shot before
+42 look 0 300
+48 shot aimed
+50 mouse right down
+52 mouse right up
+70 shot placed
+80 quit

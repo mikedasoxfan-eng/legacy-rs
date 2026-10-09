@@ -1,0 +1,9 @@
+# Every registry entity (except the Ender Dragon) in a grid in front of the player for 200 ticks.
+#! setup mobs_all_entities_soak
+#! seed 7
+10 shot t10
+12 look 0 -60
+20 shot high
+100 shot t100
+200 shot t200
+210 quit

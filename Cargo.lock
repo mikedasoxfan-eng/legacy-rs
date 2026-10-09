@@ -289,6 +289,7 @@ dependencies = [
  "bytemuck",
  "chrono",
  "client10",
+ "client11",
  "client181",
  "cpal",
  "glam",
@@ -318,6 +319,24 @@ dependencies = [
  "windows-sys 0.61.2",
  "winit",
  "worldgen10",
+ "zip",
+]
+
+[[package]]
+name = "client11"
+version = "3.0.2"
+dependencies = [
+ "bytemuck",
+ "chrono",
+ "cpal",
+ "glam",
+ "lewton",
+ "png",
+ "pollster",
+ "wgpu",
+ "windows-sys 0.61.2",
+ "winit",
+ "worldgen11",
  "zip",
 ]
 
@@ -2849,6 +2868,13 @@ dependencies = [
 
 [[package]]
 name = "worldgen10"
+version = "3.0.2"
+dependencies = [
+ "flate2",
+]
+
+[[package]]
+name = "worldgen11"
 version = "3.0.2"
 dependencies = [
  "flate2",

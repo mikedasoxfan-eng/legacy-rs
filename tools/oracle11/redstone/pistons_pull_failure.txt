@@ -1,0 +1,114 @@
+# Extended piston obstruction, pulling a piston, and sticky pull failure.
+place 2 64 0 33 5
+place 2 64 1 69 5
+use 2 64 1
+tick 3
+place 0 64 0 29 5
+place 0 64 1 69 5
+use 0 64 1
+check 0 64 0 5 64 1 4
+state
+use 2 64 1
+check 0 64 0 5 64 1 4
+state
+events
+use 0 64 1
+check 0 64 0 5 64 1 4
+state
+events
+remove 0 64 0
+remove 0 64 1
+remove 1 64 0
+remove 2 64 0
+remove 3 64 0
+place 2 63 0 3 0
+place 0 64 0 29 5
+place 0 64 1 69 5
+use 0 64 1
+tick 3
+place 2 64 0 49 0
+use 0 64 1
+state
+check 0 64 0 4 64 1 4
+state
+events
+remove 0 64 0
+remove 0 64 1
+remove 1 64 0
+remove 2 64 0
+remove 3 64 0
+place 2 63 0 3 0
+place 0 64 0 29 5
+place 0 64 1 69 5
+use 0 64 1
+tick 3
+place 2 64 0 7 0
+use 0 64 1
+state
+check 0 64 0 4 64 1 4
+state
+events
+remove 0 64 0
+remove 0 64 1
+remove 1 64 0
+remove 2 64 0
+remove 3 64 0
+place 2 63 0 3 0
+place 0 64 0 29 5
+place 0 64 1 69 5
+use 0 64 1
+tick 3
+place 2 64 0 54 0
+use 0 64 1
+state
+check 0 64 0 4 64 1 4
+state
+events
+remove 0 64 0
+remove 0 64 1
+remove 1 64 0
+remove 2 64 0
+remove 3 64 0
+place 2 63 0 3 0
+place 0 64 0 29 5
+place 0 64 1 69 5
+use 0 64 1
+tick 3
+place 2 64 0 37 0
+use 0 64 1
+state
+check 0 64 0 4 64 1 4
+state
+events
+remove 0 64 0
+remove 0 64 1
+remove 1 64 0
+remove 2 64 0
+remove 3 64 0
+place 2 63 0 3 0
+place 0 64 0 29 5
+place 0 64 1 69 5
+use 0 64 1
+tick 3
+place 2 64 0 33 4
+use 0 64 1
+state
+check 0 64 0 4 64 1 4
+state
+events
+remove 0 64 0
+remove 0 64 1
+remove 1 64 0
+remove 2 64 0
+remove 3 64 0
+place 2 63 0 3 0
+place 0 64 0 29 5
+place 0 64 1 69 5
+use 0 64 1
+tick 3
+place 2 64 0 29 4
+use 0 64 1
+state
+check 0 64 0 4 64 1 4
+state
+events

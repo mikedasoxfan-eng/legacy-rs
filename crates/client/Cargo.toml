@@ -26,6 +26,7 @@ winit = "0.30.13"
 worldgen = { path = "../worldgen" }
 client181 = { path = "../client181" }
 client10 = { path = "../client10" }
+client11 = { path = "../client11" }
 zip = { version = "8.6.0", default-features = false, features = ["deflate"] }
 
 [build-dependencies]

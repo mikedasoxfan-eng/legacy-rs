@@ -370,13 +370,14 @@ fn main() {
         match args.get(i + 1).map(String::as_str) {
             Some("b1.8.1") => return client181::run(),
             Some("1.0") => return client10::run(),
+            Some("1.1") => return client11::run(),
             Some("b1.8.1e") => {
                 client181::set_enhanced();
                 return client181::run();
             }
             Some("b1.7.3") => {}
             other => {
-                eprintln!("unknown --mc {other:?}: b1.7.3, b1.8.1, b1.8.1e or 1.0");
+                eprintln!("unknown --mc {other:?}: b1.7.3, b1.8.1, b1.8.1e, 1.0 or 1.1");
                 std::process::exit(2);
             }
         }

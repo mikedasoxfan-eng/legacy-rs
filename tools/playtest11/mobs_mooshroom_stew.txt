@@ -1,0 +1,16 @@
+# A bowl right-clicked on a Mooshroom becomes mushroom stew; the Mooshroom stays.
+#! setup mobs_mooshroom_stew
+#! seed 7
+10 shot t10
+12 look 0 80
+20 shot aimed
+22 mouse right down
+24 mouse right up
+30 shot s30
+40 shot sheared
+50 shot s50
+60 shot s60
+70 shot s70
+100 shot t100
+300 shot t300
+310 quit

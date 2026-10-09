@@ -1,0 +1,15 @@
+# Probe resources are synthetic; no Mojang translations are included.
+plain=value
+missing=
+trailing=value=
+multiple=a=b
+ spaced = interior spaces
+!literal=value
+escaped=literal\n\u0041
+continued=literal\
+continuation
+colon:separator
+unicode=Русский עברית العربية 日本語 😀
+duplicate=first
+duplicate=second
+ nonAsciiSpace = preserve 

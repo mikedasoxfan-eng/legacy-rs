@@ -1,0 +1,441 @@
+//! `World.tick` and what it drives: weather, scheduled block updates (`TickUpdates`) and
+//! random block ticks (`updateBlocksAndPlayCaveSounds`).
+
+use super::chunk::LightKind;
+use super::{behavior, RandSel, TickKey, World};
+use crate::biome::Biome;
+use crate::block;
+use crate::math;
+
+// The JVM supplies otherwise unpinned identity hashes for colliding tree bins.
+// Only comparison replays install this stream; normal simulation uses local IDs.
+thread_local! {
+    static REPLAY_IDENTITIES: std::cell::RefCell<Option<std::vec::IntoIter<i32>>> = const { std::cell::RefCell::new(None) };
+}
+pub fn replay_chunk_identities181(identities: Vec<i32>) {
+    REPLAY_IDENTITIES.with(|stream| *stream.borrow_mut() = Some(identities.into_iter()));
+}
+pub fn finish_chunk_identity_replay181() {
+    REPLAY_IDENTITIES.with(|stream| {
+        if let Some(mut identities) = stream.borrow_mut().take() {
+            assert!(identities.next().is_none(), "unused chunk identity hashes");
+        }
+    });
+}
+fn replay_identity181() -> Option<i32> {
+    REPLAY_IDENTITIES.with(|stream| {
+        stream
+            .borrow_mut()
+            .as_mut()
+            .map(|s| s.next().expect("chunk identity stream exhausted"))
+    })
+}
+
+pub use super::java_hash::JavaHashSet;
+
+/// `BiomeGenBase.getEnableSnow`
+fn biome_snows(b: Biome) -> bool {
+    b.enable_snow()
+}
+
+/// `BiomeGenBase.canSpawnLightningBolt`: rain falls (not snow).
+fn biome_rains(b: Biome) -> bool {
+    !b.enable_snow() && b.enable_rain()
+}
+
+/// `WorldProvider.calculateCelestialAngle`
+pub fn celestial_angle(world_time: i64, partial: f32) -> f32 {
+    let t = (world_time % 24000) as i32;
+    let mut a = (t as f32 + partial) / 24000.0f32 - 0.25f32;
+    if a < 0.0 {
+        a += 1.0;
+    }
+    if a > 1.0 {
+        a -= 1.0;
+    }
+    let raw = a;
+    a = 1.0f32 - ((((a as f64) * std::f64::consts::PI).cos() + 1.0) / 2.0) as f32;
+    raw + (a - raw) / 3.0f32
+}
+
+impl World {
+    /// `func_27162_g`: rain strength at a partial tick.
+    pub fn rain_strength(&self, partial: f32) -> f32 {
+        self.prev_raining_strength + (self.raining_strength - self.prev_raining_strength) * partial
+    }
+
+    /// `func_27166_f`
+    pub fn thunder_strength(&self, partial: f32) -> f32 {
+        (self.prev_thundering_strength
+            + (self.thundering_strength - self.prev_thundering_strength) * partial)
+            * self.rain_strength(partial)
+    }
+
+    /// `func_27161_C`
+    pub fn is_raining(&self) -> bool {
+        self.rain_strength(1.0) as f64 > 0.2
+    }
+
+    /// `func_27160_B`
+    pub fn is_thundering(&self) -> bool {
+        self.thunder_strength(1.0) as f64 > 0.9
+    }
+
+    /// `calculateSkylightSubtracted`
+    pub fn calculate_skylight_subtracted(&self, partial: f32) -> i32 {
+        // WorldProviderHell.calculateCelestialAngle is a constant 0.5.
+        let angle = self.dimension.celestial_angle(self.world_time, partial);
+        let mut v =
+            1.0f32 - (math::cos(angle * std::f64::consts::PI as f32 * 2.0f32) * 2.0f32 + 0.5f32);
+        v = v.clamp(0.0, 1.0);
+        v = 1.0f32 - v;
+        v = (v as f64 * (1.0 - (self.rain_strength(partial) * 5.0f32) as f64 / 16.0)) as f32;
+        v = (v as f64 * (1.0 - (self.thunder_strength(partial) * 5.0f32) as f64 / 16.0)) as f32;
+        v = 1.0f32 - v;
+        (v * 11.0f32) as i32
+    }
+
+    /// What the World constructor does after reading level.dat: `calculateInitialSkylight`
+    /// and `func_27163_E` (start at full rain strength if it is raining).
+    pub fn init_weather_and_light(&mut self) {
+        self.skylight_subtracted = self.calculate_skylight_subtracted(1.0);
+        if self.info.raining {
+            self.raining_strength = 1.0;
+            if self.info.thundering {
+                self.thundering_strength = 1.0;
+            }
+        }
+    }
+
+    /// `getBlockLightValue_do(x, y, z, true)`: light with the current sky darkening.
+    pub fn get_block_light_value(&mut self, x: i32, y: i32, z: i32) -> i32 {
+        self.block_light_value_do(x, y, z, true)
+    }
+
+    fn block_light_value_do(&mut self, x: i32, y: i32, z: i32, special: bool) -> i32 {
+        if !(x >= -30000000 && z >= -30000000 && x < 30000000 && z < 30000000) {
+            return 15;
+        }
+        if special {
+            let id = self.get_block_id(x, y, z);
+            if matches!(id, 44 | 60 | 67 | 53) {
+                let mut v = self.block_light_value_do(x, y + 1, z, false);
+                for n in [
+                    self.block_light_value_do(x + 1, y, z, false),
+                    self.block_light_value_do(x - 1, y, z, false),
+                    self.block_light_value_do(x, y, z + 1, false),
+                    self.block_light_value_do(x, y, z - 1, false),
+                ] {
+                    if n > v {
+                        v = n;
+                    }
+                }
+                return v;
+            }
+        }
+        if y < 0 {
+            return 0;
+        }
+        let y = if y >= self.height10 { self.height10.wrapping_sub(1) } else { y };
+        if !self.access_chunk_pub(x >> 4, z >> 4) {
+            return 0; // EmptyChunk
+        }
+        let sub = self.skylight_subtracted;
+        self.chunk(x >> 4, z >> 4)
+            .block_light_value(x & 15, y, z & 15, sub)
+    }
+
+    /// `canBlockBeRainedOn`
+    pub fn can_block_be_rained_on(&mut self, x: i32, y: i32, z: i32) -> bool {
+        if !self.is_raining() {
+            return false;
+        }
+        if !self.can_block_see_the_sky(x, y, z) {
+            return false;
+        }
+        if self.precipitation_height181(x, z) > y {
+            return false;
+        }
+        biome_rains(self.terrain.biome_source.biome_at(x, z))
+    }
+
+    /// `updateWeather`
+    pub(crate) fn update_weather(&mut self) {
+        if self.dimension.has_no_sky() {
+            return;
+        }
+        if self.lightning_flash > 0 {
+            self.lightning_flash -= 1;
+        }
+        let thunder = self.info.thunder_time;
+        if thunder <= 0 {
+            self.info.thunder_time = if self.info.thundering {
+                self.rand.next_int(12000) + 3600
+            } else {
+                self.rand.next_int(168000) + 12000
+            };
+        } else {
+            self.info.thunder_time = thunder - 1;
+            if thunder - 1 <= 0 {
+                self.info.thundering = !self.info.thundering;
+            }
+        }
+        let rain = self.info.rain_time;
+        if rain <= 0 {
+            self.info.rain_time = if self.info.raining {
+                self.rand.next_int(12000) + 12000
+            } else {
+                self.rand.next_int(168000) + 12000
+            };
+        } else {
+            self.info.rain_time = rain - 1;
+            if rain - 1 <= 0 {
+                self.info.raining = !self.info.raining;
+            }
+        }
+        self.prev_raining_strength = self.raining_strength;
+        self.raining_strength = if self.info.raining {
+            (self.raining_strength as f64 + 0.01) as f32
+        } else {
+            (self.raining_strength as f64 - 0.01) as f32
+        };
+        self.raining_strength = self.raining_strength.clamp(0.0, 1.0);
+        self.prev_thundering_strength = self.thundering_strength;
+        self.thundering_strength = if self.info.thundering {
+            (self.thundering_strength as f64 + 0.01) as f32
+        } else {
+            (self.thundering_strength as f64 - 0.01) as f32
+        };
+        self.thundering_strength = self.thundering_strength.clamp(0.0, 1.0);
+    }
+
+    /// `World.tick` (no sleeping players or mob spawning yet).
+    pub fn tick(&mut self) {
+        if self.info.hardcore && self.difficulty < 3 { self.difficulty = 3; }
+        self.terrain.biome_source.cleanup_cache();
+        self.update_weather();
+        self.tick_sleeping_players();
+        crate::profiler::start_section("mobSpawner");
+        self.perform_spawning(
+            self.spawn_hostile_mobs,
+            self.spawn_peaceful_mobs && self.world_time % 400 == 0,
+        );
+        crate::profiler::end_start_section("chunkSource");
+        self.unload_oldest_chunks();
+        let s = self.calculate_skylight_subtracted(1.0);
+        if s != self.skylight_subtracted {
+            self.skylight_subtracted = s;
+            self.renderers_dirty = true; // updateAllRenderers
+        }
+        let t = self.world_time + 1;
+        if t % 40 == 0 {
+            crate::profiler::end_start_section("save");
+            self.save_world(false);
+        }
+        self.world_time = t;
+        crate::profiler::end_start_section("tickPending");
+        self.tick_updates(false);
+        crate::profiler::end_start_section("tickTiles");
+        self.random_ticks();
+        crate::profiler::end_section();
+    }
+
+    /// `TickUpdates`: run due scheduled block updates, at most 1000 per tick.
+    pub fn tick_updates(&mut self, all: bool) -> bool {
+        assert_eq!(
+            self.tick_order.len(),
+            self.pending_ticks.len(),
+            "TickNextTick list out of synch"
+        );
+        let n = self.tick_order.len().min(1000);
+        for _ in 0..n {
+            let &(time, id, key) = self.tick_order.iter().next().expect("tick queue");
+            if !all && time > self.world_time {
+                break;
+            }
+            self.tick_order.remove(&(time, id, key));
+            self.pending_ticks.remove(&key);
+            self.scheduled_tick_set10.remove(key.java_hash181(), key);
+            let r = 8;
+            if self.check_chunks_exist(
+                key.x - r,
+                key.y - r,
+                key.z - r,
+                key.x + r,
+                key.y + r,
+                key.z + r,
+            ) {
+                let cur = self.get_block_id(key.x, key.y, key.z);
+                if cur as i32 == key.block && cur > 0 {
+                    behavior::update_tick(self, cur, key.x, key.y, key.z, RandSel::World);
+                }
+            }
+        }
+        !self.tick_order.is_empty()
+    }
+
+    /// `updateBlocksAndPlayCaveSounds`: random ticks within 7 chunks of every player.
+    fn random_ticks(&mut self) {
+        crate::profiler::start_section("buildList");
+        let mut positions = std::mem::take(&mut self.positions_to_update);
+        positions.clear();
+        for &(px, _, pz) in &self.players {
+            let cx = math::floor_double(px / 16.0);
+            let cz = math::floor_double(pz / 16.0);
+            for dx in -7..=7 {
+                for dz in -7..=7 {
+                    let (x, z) = (dx + cx, dz + cz);
+                    // ChunkCoordIntPair.hashCode in b1.8.1 folds the 64-bit key.
+                    if let Some(identity) = replay_identity181() {
+                        positions.insert_with_identity(x ^ z, identity, (x, z));
+                    } else {
+                        positions.insert(x ^ z, (x, z));
+                    }
+                }
+            }
+        }
+        let list: Vec<(i32, i32)> = positions.iter().collect();
+        self.positions_to_update = positions;
+        crate::profiler::end_section();
+
+        self.tick_active_chunks181(&list, |w, x, z| {
+            biome_snows(w.terrain.biome_source.biome_at(x, z))
+        });
+    }
+
+    /// The per-chunk half of updateBlocksAndPlayCaveSounds. Supplying the biome
+    /// flag separately also permits original-bytecode fixtures with custom biomes.
+    pub(crate) fn tick_active_chunks181(&mut self, list:&[(i32,i32)],_snows:impl FnMut(&mut World,i32,i32)->bool) {
+        if self.sound_counter > 0 { self.sound_counter -= 1; }
+
+        for &(cx, cz) in list {
+            let (x0, z0) = (cx * 16, cz * 16);
+            // getChunkFromChunkCoords: singleplayer loads (and generates) it here.
+            crate::profiler::start_section("getChunk");
+            let real = self.access_chunk_pub(cx, cz);
+            crate::profiler::end_start_section("tickChunk");
+            if real {self.recheck_skylight181(cx,cz);}
+            let block_at = |w: &World, x: i32, y: i32, z: i32| {
+                if real {
+                    let index = x.wrapping_shl(w.x_shift10 as u32) | z.wrapping_shl(w.height_bits10 as u32) | y;
+                    w.chunk(cx, cz).blocks[index as usize]
+                } else {
+                    0
+                }
+            };
+
+            crate::profiler::end_start_section("moodSound");
+            if self.sound_counter == 0 {
+                self.update_lcg = self.update_lcg.wrapping_mul(3).wrapping_add(1013904223);
+                let v = self.update_lcg >> 2;
+                let (x, z, y) = (v & 15, v >> 8 & 15, v >> 16 & self.height_mask10);
+                let id = block_at(self, x, y, z);
+                let (bx, bz) = (x + x0, z + z0);
+                if id == 0
+                    && self.get_full_block_light_value(bx, y, bz) <= self.rand.next_int(8)
+                    && self.get_saved_light_value(LightKind::Sky, bx, y, bz) <= 0
+                {
+                    let (sx, sy, sz) = (bx as f64 + 0.5, y as f64 + 0.5, bz as f64 + 0.5);
+                    if let Some(d) = self.closest_player_dist_sq(sx, sy, sz, 8.0) {
+                        if d > 4.0 {
+                            // playSoundEffect("ambient.cave.cave", 0.7, 0.8 + rand.nextFloat() * 0.2)
+                            let pitch = 0.8 + self.rand.next_float() * 0.2;
+                            self.play_sound(
+                                "ambient.cave.cave",
+                                crate::entity::Vec3D::new(sx, sy, sz),
+                                0.7,
+                                pitch,
+                            );
+                            self.sound_counter = self.rand.next_int(12000) + 6000;
+                        }
+                    }
+                }
+            }
+
+            crate::profiler::end_start_section("thunder");
+            if self.rand.next_int(100000) == 0 && self.is_raining() && self.is_thundering() {
+                self.update_lcg = self.update_lcg.wrapping_mul(3).wrapping_add(1013904223);
+                let v = self.update_lcg >> 2;
+                let (x, z) = (x0 + (v & 15), z0 + (v >> 8 & 15));
+                let y = self.precipitation_height181(x, z);
+                if self.can_block_be_rained_on(x, y, z) {
+                    let bolt = crate::entity::Entity::lightning(self, x as f64, y as f64, z as f64);
+                    self.weather_effects.push(bolt);
+                    self.lightning_strikes.push((x, y, z));
+                    self.lightning_flash = 2;
+                }
+            }
+
+            crate::profiler::end_start_section("iceandsnow");
+            self.update_lcg = self.update_lcg.wrapping_mul(3).wrapping_add(1013904223);
+            let v = self.update_lcg >> 2;
+            let (x, z) = (x0 + (v & 15), z0 + (v >> 8 & 15));
+            let y = self.precipitation_height181(x, z);
+            if self.can_block_freeze(x, y - 1, z, true) {
+                self.set_block_with_notify(x, y - 1, z, block::ICE);
+            }
+            if self.is_raining() && self.can_snow_at(x, y, z) {
+                self.set_block_with_notify(x, y, z, block::SNOW);
+            }
+
+            crate::profiler::end_start_section("checkLight");
+            let light_x=x0+self.rand.next_int(16);
+            let light_y=self.rand.next_int(self.height10);
+            let light_z=z0+self.rand.next_int(16);
+            self.update_all_light181(light_x,light_y,light_z);
+
+            crate::profiler::end_start_section("tickTiles");
+            for _ in 0..20 {
+                self.update_lcg = self.update_lcg.wrapping_mul(3).wrapping_add(1013904223);
+                let v = self.update_lcg >> 2;
+                let (x, z, y) = (v & 15, v >> 8 & 15, v >> 16 & self.height_mask10);
+                let id = block_at(self, x, y, z);
+                if block::props(id).ticks {
+                    behavior::update_tick(self, id, x + x0, y, z + z0, RandSel::World);
+                }
+            }
+            crate::profiler::end_section();
+        }
+    }
+
+    /// `getClosestPlayer(x, y, z, maxDist)` as a squared distance.
+    fn closest_player_dist_sq(&self, x: f64, y: f64, z: f64, max: f64) -> Option<f64> {
+        let mut best: Option<f64> = None;
+        for &(px, py, pz) in &self.players {
+            let d = (px - x) * (px - x) + (py - y) * (py - y) + (pz - z) * (pz - z);
+            if (max < 0.0 || d < max * max) && best.is_none_or(|b| d < b) {
+                best = Some(d);
+            }
+        }
+        best
+    }
+
+    /// `joinEntityInSurroundings` for a player: load the 5x5 chunks around it.
+    pub fn join_player_surroundings(&mut self, px: f64, pz: f64) {
+        let cx = math::floor_double(px / 16.0);
+        let cz = math::floor_double(pz / 16.0);
+        for x in cx - 2..=cx + 2 {
+            for z in cz - 2..=cz + 2 {
+                self.access_chunk_pub(x, z);
+            }
+        }
+    }
+
+    /// Queue a scheduled update entry (for loading saves etc.).
+    pub fn queue_tick(&mut self, key: TickKey, time: i64) {
+        let id = super::next_tick_entry_id181();
+        if let std::collections::hash_map::Entry::Vacant(e) = self.pending_ticks.entry(key) {
+            e.insert((time, id));
+            self.add_scheduled_tick10(key);
+            self.tick_order.insert((time, id, key));
+        }
+    }
+    /// scheduledTickSet.add for a new entry.
+    pub(crate) fn add_scheduled_tick10(&mut self, key: TickKey) {
+        let hash = key.java_hash181();
+        match self.tick_identity_replay10.as_mut().and_then(|q| q.pop_front()) {
+            Some(identity) => self.scheduled_tick_set10.insert_with_identity(hash, identity, key),
+            None => self.scheduled_tick_set10.insert(hash, key),
+        };
+    }
+}

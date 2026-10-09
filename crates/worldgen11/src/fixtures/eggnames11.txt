@@ -1,0 +1,257 @@
+-1|Spawn
+0|Spawn
+1|Spawn Item
+2|Spawn Experience Orb
+3|Spawn
+4|Spawn
+5|Spawn
+6|Spawn
+7|Spawn
+8|Spawn
+9|Spawn Painting
+10|Spawn arrow
+11|Spawn Snowball
+12|Spawn entity.Fireball.name
+13|Spawn entity.SmallFireball.name
+14|Spawn entity.ThrownEnderpearl.name
+15|Spawn entity.EyeOfEnderSignal.name
+16|Spawn
+17|Spawn
+18|Spawn
+19|Spawn
+20|Spawn Block of TNT
+21|Spawn Falling Block
+22|Spawn
+23|Spawn
+24|Spawn
+25|Spawn
+26|Spawn
+27|Spawn
+28|Spawn
+29|Spawn
+30|Spawn
+31|Spawn
+32|Spawn
+33|Spawn
+34|Spawn
+35|Spawn
+36|Spawn
+37|Spawn
+38|Spawn
+39|Spawn
+40|Spawn Minecart
+41|Spawn Boat
+42|Spawn
+43|Spawn
+44|Spawn
+45|Spawn
+46|Spawn
+47|Spawn
+48|Spawn Mob
+49|Spawn Monster
+50|Spawn Creeper
+51|Spawn Skeleton
+52|Spawn Spider
+53|Spawn Giant
+54|Spawn Zombie
+55|Spawn Slime
+56|Spawn Ghast
+57|Spawn Pig Zombie
+58|Spawn Enderman
+59|Spawn Cave Spider
+60|Spawn Silverfish
+61|Spawn Blaze
+62|Spawn Magma Cube
+63|Spawn Ender Dragon
+64|Spawn
+65|Spawn
+66|Spawn
+67|Spawn
+68|Spawn
+69|Spawn
+70|Spawn
+71|Spawn
+72|Spawn
+73|Spawn
+74|Spawn
+75|Spawn
+76|Spawn
+77|Spawn
+78|Spawn
+79|Spawn
+80|Spawn
+81|Spawn
+82|Spawn
+83|Spawn
+84|Spawn
+85|Spawn
+86|Spawn
+87|Spawn
+88|Spawn
+89|Spawn
+90|Spawn Pig
+91|Spawn Sheep
+92|Spawn Cow
+93|Spawn Chicken
+94|Spawn Squid
+95|Spawn Wolf
+96|Spawn Mooshroom
+97|Spawn entity.SnowMan.name
+98|Spawn
+99|Spawn
+100|Spawn
+101|Spawn
+102|Spawn
+103|Spawn
+104|Spawn
+105|Spawn
+106|Spawn
+107|Spawn
+108|Spawn
+109|Spawn
+110|Spawn
+111|Spawn
+112|Spawn
+113|Spawn
+114|Spawn
+115|Spawn
+116|Spawn
+117|Spawn
+118|Spawn
+119|Spawn
+120|Spawn Villager
+121|Spawn
+122|Spawn
+123|Spawn
+124|Spawn
+125|Spawn
+126|Spawn
+127|Spawn
+128|Spawn
+129|Spawn
+130|Spawn
+131|Spawn
+132|Spawn
+133|Spawn
+134|Spawn
+135|Spawn
+136|Spawn
+137|Spawn
+138|Spawn
+139|Spawn
+140|Spawn
+141|Spawn
+142|Spawn
+143|Spawn
+144|Spawn
+145|Spawn
+146|Spawn
+147|Spawn
+148|Spawn
+149|Spawn
+150|Spawn
+151|Spawn
+152|Spawn
+153|Spawn
+154|Spawn
+155|Spawn
+156|Spawn
+157|Spawn
+158|Spawn
+159|Spawn
+160|Spawn
+161|Spawn
+162|Spawn
+163|Spawn
+164|Spawn
+165|Spawn
+166|Spawn
+167|Spawn
+168|Spawn
+169|Spawn
+170|Spawn
+171|Spawn
+172|Spawn
+173|Spawn
+174|Spawn
+175|Spawn
+176|Spawn
+177|Spawn
+178|Spawn
+179|Spawn
+180|Spawn
+181|Spawn
+182|Spawn
+183|Spawn
+184|Spawn
+185|Spawn
+186|Spawn
+187|Spawn
+188|Spawn
+189|Spawn
+190|Spawn
+191|Spawn
+192|Spawn
+193|Spawn
+194|Spawn
+195|Spawn
+196|Spawn
+197|Spawn
+198|Spawn
+199|Spawn
+200|Spawn entity.EnderCrystal.name
+201|Spawn
+202|Spawn
+203|Spawn
+204|Spawn
+205|Spawn
+206|Spawn
+207|Spawn
+208|Spawn
+209|Spawn
+210|Spawn
+211|Spawn
+212|Spawn
+213|Spawn
+214|Spawn
+215|Spawn
+216|Spawn
+217|Spawn
+218|Spawn
+219|Spawn
+220|Spawn
+221|Spawn
+222|Spawn
+223|Spawn
+224|Spawn
+225|Spawn
+226|Spawn
+227|Spawn
+228|Spawn
+229|Spawn
+230|Spawn
+231|Spawn
+232|Spawn
+233|Spawn
+234|Spawn
+235|Spawn
+236|Spawn
+237|Spawn
+238|Spawn
+239|Spawn
+240|Spawn
+241|Spawn
+242|Spawn
+243|Spawn
+244|Spawn
+245|Spawn
+246|Spawn
+247|Spawn
+248|Spawn
+249|Spawn
+250|Spawn
+251|Spawn
+252|Spawn
+253|Spawn
+254|Spawn
+255|Spawn

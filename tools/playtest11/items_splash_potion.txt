@@ -1,0 +1,14 @@
+# Throw a splash poison potion at the ground ahead: EntityPotion shatters, particles show, no crash.
+#! setup items_splash_potion
+#! seed 7
+10 shot before
+11 look 0 300
+15 mouse right down
+17 mouse right up
+22 shot flying
+30 shot splash
+36 shot splash2
+40 key E down
+41 key E up
+45 shot effects
+60 quit

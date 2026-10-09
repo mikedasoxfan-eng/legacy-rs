@@ -1,0 +1,179 @@
+# Texture packs, GuiChat and GUI anaglyph regression scenes.
+saves ../out/guisaves
+packs ../out/packmc
+millis 250
+splash Ported to Rust!
+open texturepacks
+repeatstate off
+mouse -1 -1
+shot packs_list
+pack Oracle.zip
+open texturepacks
+repeatstate off
+shot packs_selected
+open title
+repeatstate off
+shot pack_title
+world 25
+hud health=13 prev=13 item=0 brightness=1
+shot pack_hud
+pack Default
+open chat
+repeatstate on
+shot chat_empty
+key 30 97
+key 48 98
+key 46 99
+key 14 8
+key 0 9731
+shot chat_typed
+update 6
+shot chat_cursor_off
+update 6
+shot chat_cursor_on
+key 30 97
+key 30 97
+key 30 97
+key 30 97
+key 30 97
+key 30 97
+key 30 97
+key 30 97
+key 30 97
+key 30 97
+key 30 97
+key 30 97
+key 30 97
+key 30 97
+key 30 97
+key 30 97
+key 30 97
+key 30 97
+key 30 97
+key 30 97
+key 30 97
+key 30 97
+key 30 97
+key 30 97
+key 30 97
+key 30 97
+key 30 97
+key 30 97
+key 30 97
+key 30 97
+key 30 97
+key 30 97
+key 30 97
+key 30 97
+key 30 97
+key 30 97
+key 30 97
+key 30 97
+key 30 97
+key 30 97
+key 30 97
+key 30 97
+key 30 97
+key 30 97
+key 30 97
+key 30 97
+key 30 97
+key 30 97
+key 30 97
+key 30 97
+key 30 97
+key 30 97
+key 30 97
+key 30 97
+key 30 97
+key 30 97
+key 30 97
+key 30 97
+key 30 97
+key 30 97
+key 30 97
+key 30 97
+key 30 97
+key 30 97
+key 30 97
+key 30 97
+key 30 97
+key 30 97
+key 30 97
+key 30 97
+key 30 97
+key 30 97
+key 30 97
+key 30 97
+key 30 97
+key 30 97
+key 30 97
+key 30 97
+key 30 97
+key 30 97
+key 30 97
+key 30 97
+key 30 97
+key 30 97
+key 30 97
+key 30 97
+key 30 97
+key 30 97
+key 30 97
+key 30 97
+key 30 97
+key 30 97
+key 30 97
+key 30 97
+key 30 97
+key 30 97
+key 30 97
+key 30 97
+key 30 97
+key 30 97
+key 30 97
+key 30 97
+key 30 97
+key 30 97
+key 30 97
+key 30 97
+key 30 97
+key 30 97
+key 30 97
+key 30 97
+shot chat_limit
+key 14 8
+key 48 98
+shot chat_limit_backspace
+key 1 0
+open chat
+repeatstate on
+key 20 116
+key 28 13
+open video
+anaglyph on
+shot anaglyph_video
+pack Oracle.zip
+open texturepacks
+repeatstate off
+shot anaglyph_packs
+sessionless
+open title
+repeatstate off
+shot anaglyph_pack_title
+anaglyph off
+pack Default
+fontstart on
+message §0Black §1Blue §2Green §3Cyan §4Red §5Purple §6Gold §7Grey
+message §8Dark §9Blue §aGreen §bCyan §cRed §dPink §eYellow §fWhite
+hud health=13 prev=13 item=0 brightness=1
+shot anaglyph_start_font
+anaglyph off
+shot anaglyph_font_palette_retained
+open create
+repeatstate on
+open rename World1
+repeatstate on
+open video
+repeatstate off
+texturecheck texture-fx.bin

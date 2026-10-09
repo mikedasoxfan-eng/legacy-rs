@@ -1,0 +1,75 @@
+# --- player-gui round 8: GuiSlot, GuiYesNo and GuiRenameWorld ---
+saves ../out/guisaves
+clear 128
+open select
+mouse 0 0
+shot b10_gui8_select
+mouse 213 50
+click
+mouse 0 0
+shot b10_gui8_selected
+mouse 165 220
+click
+mouse 100 145
+shot b10_gui8_yes_hover
+mouse 290 145
+shot b10_gui8_no_hover
+click
+mouse 0 0
+shot b10_gui8_cancel_return
+open rename World1
+repeatstate on
+mouse 0 0
+shot b10_gui8_rename
+update 13
+shot b10_gui8_rename_cursor
+mouse 112 60
+click 1
+mouse 0 0
+shot b10_gui8_rename_unfocused
+mouse 213 70
+click
+key 14 0
+key 14 0
+key 14 0
+key 14 0
+key 14 0
+key 14 0
+key 14 0
+key 14 0
+key 14 0
+key 14 0
+key 14 0
+key 14 0
+key 14 0
+key 14 0
+key 28 13
+screenstate open
+mouse 0 0
+shot b10_gui8_rename_empty
+key 57 32
+key 57 32
+key 28 13
+screenstate open
+shot b10_gui8_rename_spaces
+key 19 82
+key 18 101
+key 49 110
+key 30 97
+key 50 109
+key 18 101
+key 32 100
+key 57 32
+key 28 13
+repeatstate off
+open select
+shot b10_gui8_renamed_list
+mouse 213 50
+click
+mouse 165 220
+click
+mouse 100 145
+click
+mouse 0 0
+shot b10_gui8_deleted_list
+# --- end player-gui round 8 ---

@@ -1,0 +1,7 @@
+# One Enderman, one Silverfish and one Cave Spider near the player in survival.
+#! setup mobs_enderman_silverfish_cavespider
+#! seed 7
+10 shot t10
+100 shot t100
+300 shot t300
+310 quit

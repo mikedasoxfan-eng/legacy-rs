@@ -1,0 +1,16 @@
+# Nether fortress of seed 7 (start chunk 1,4): portal from Overworld (150,550) -> Nether (18,68), blazes/pigmen/magma cubes.
+#! setup mobs_fortress
+#! seed 7
+#! expect arrived 22 * 80 10
+10 shot before
+20 key W down
+28 key W up
+40 shot in_portal
+140 shot arrived
+150 key W down
+160 key W up
+170 shot out_of_portal
+200 shot n200
+300 shot n300
+440 shot n440
+450 quit

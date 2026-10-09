@@ -1,0 +1,11 @@
+# Shear a mooshroom: it turns into a cow and drops five red mushrooms (EntityMooshroom.interact).
+#! setup items_shears_mooshroom
+#! seed 7
+40 shot before
+45 shot before2
+42 look 0 80
+50 mouse right down
+52 mouse right up
+75 shot sheared
+110 shot later
+120 quit

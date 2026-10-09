@@ -1,0 +1,7 @@
+# A villager wanders in the open for 300 ticks.
+#! setup mobs_villager
+#! seed 7
+10 shot t10
+100 shot t100
+300 shot t300
+310 quit

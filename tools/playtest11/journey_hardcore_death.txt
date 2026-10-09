@@ -1,0 +1,7 @@
+# A hardcore world: the player, with two hearts, falls 20 blocks and dies. GuiGameOver shows its
+# hardcore variant ("Game over!", the hardcore notice, only "Delete world"), which is not pressed.
+#! setup hardcore_death
+#! seed 7
+#! expect dead 88.5 * 256.5 0.5
+100 shot dead
+110 quit

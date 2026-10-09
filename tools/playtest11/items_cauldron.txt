@@ -1,0 +1,22 @@
+# A water bucket on a cauldron fills it (BlockCauldron.onBlockActivated, metadata 3, empty bucket back);
+# a glass bottle then takes water out (water bottle in hand, level 2).
+#! setup items_cauldron
+#! seed 7
+40 shot before
+42 look 0 250
+48 shot empty
+50 mouse right down
+52 mouse right up
+70 shot filled
+72 key Digit2 down
+73 key Digit2 up
+76 mouse right down
+78 mouse right up
+90 shot bottled1
+92 mouse right down
+94 mouse right up
+100 shot bottled
+102 key Digit1 down
+103 key Digit1 up
+110 shot hotbar
+120 quit

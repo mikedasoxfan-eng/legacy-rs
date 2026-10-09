@@ -33,3 +33,17 @@ __pycache__/
 /tools/oracle10/server/build/
 /tools/oracle10/gui/build/
 /tools/oracle10/visual_build/
+
+/tools/retromcp-r11/
+/1.1/
+/shots11/
+/tools/oracle11/build/
+/tools/oracle11/build_try/
+/tools/oracle11/generated/
+/tools/oracle11/out/
+/tools/oracle11/server/build/
+/tools/oracle11/gui/build/
+/tools/oracle11/visual_build/
+
+/tools/oracle11/probes/build/
+/tools/oracle11/probes/fontdraw/build/

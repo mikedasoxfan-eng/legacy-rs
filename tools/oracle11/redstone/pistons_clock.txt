@@ -1,0 +1,12 @@
+# Torch clock driving quasi-connected pistons.
+place 0 64 0 1 0
+place 1 64 0 76 1
+place 1 64 1 55 0
+place 0 64 1 55 0
+place -1 64 1 55 0
+place -1 64 0 55 0
+place 2 64 0 29 5
+place 3 64 0 1 0
+check -1 64 0 5 65 1 100
+state
+events

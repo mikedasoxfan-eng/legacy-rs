@@ -1,0 +1,8 @@
+# Blaze, Cave Spider and Silverfish monster spawners 6 blocks ahead (spinning mob inside, flame/smoke).
+#! setup mobs_spawners
+#! seed 7
+10 shot t10
+60 shot t60
+150 shot t150
+300 shot t300
+310 quit

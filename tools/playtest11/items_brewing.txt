@@ -1,0 +1,39 @@
+# Open a brewing stand, put three water bottles in the bottom slots and a nether wart on top: after the
+# 600 brewing ticks (field_40056_b = 600 in 1.0) (TileEntityBrewingStand) the bottles are awkward potions (373 damage 16).
+#! setup items_brewing
+#! seed 7
+40 shot before
+42 look 0 250
+50 mouse right down
+52 mouse right up
+80 shot screen
+90 move 282 374
+93 mouse left down
+94 mouse left up
+96 move 378 182
+99 mouse left down
+100 mouse left up
+102 move 318 374
+105 mouse left down
+106 mouse left up
+108 move 424 196
+111 mouse left down
+112 mouse left up
+114 move 354 374
+117 mouse left down
+118 mouse left up
+120 move 470 182
+123 mouse left down
+124 mouse left up
+126 move 390 374
+129 mouse left down
+130 mouse left up
+132 move 424 124
+135 mouse left down
+136 mouse left up
+160 shot loaded
+400 shot brewing
+820 shot done
+825 move 378 182
+832 shot hover
+840 quit

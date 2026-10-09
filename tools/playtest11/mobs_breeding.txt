@@ -1,0 +1,27 @@
+# Feed two penned cows wheat; 60+ ticks later a calf appears.
+#! setup mobs_breeding
+#! seed 7
+10 shot t10
+12 look 0 415
+20 shot aim_a
+22 mouse right down
+24 mouse right up
+26 look -300 0
+30 shot aim_b
+32 mouse right down
+34 mouse right up
+40 shot fed
+42 look 300 -355
+44 key S down
+44 key A down
+52 key A up
+60 key S up
+80 shot s80
+110 shot baby
+130 shot s130
+150 shot t150
+190 shot s190
+230 shot s230
+270 shot s270
+300 shot t300
+310 quit

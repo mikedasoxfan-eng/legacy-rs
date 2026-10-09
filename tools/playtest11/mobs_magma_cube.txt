@@ -1,0 +1,7 @@
+# A size-4 and a default Magma Cube hop on flat ground near the player.
+#! setup mobs_magma_cube
+#! seed 7
+10 shot t10
+100 shot t100
+300 shot t300
+310 quit

@@ -1,0 +1,12 @@
+# Draw a bow for 30 ticks and release: an arrow leaves (EntityArrow), one arrow is used up.
+#! setup items_bow
+#! seed 7
+40 shot before
+42 look 0 -60
+45 mouse right down
+60 shot drawing
+75 mouse right up
+78 shot released
+85 shot flying
+110 shot landed
+120 quit

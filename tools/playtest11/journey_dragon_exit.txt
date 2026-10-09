@@ -1,0 +1,26 @@
+# The dragon's death: in the End, the dragon (worn down to 1 health) takes the final hit over the
+# column 6 blocks west of the arrival platform, rises for 200 ticks dropping XP orbs and builds the
+# exit portal (bedrock, End portal pool at y 64, torches, the dragon egg on top: EntityDragon
+# func_41012_a). The player walks west into the pool: the end poem and credits (GuiWinGame); Escape
+# ends them and Minecraft.respawn(false, 0, true) returns the player to the Overworld spawn with the
+# inventory kept (sword, pearls, potion in the hotbar) and the dragon's XP.
+#! setup dragon_exit
+#! seed 7
+#! expect arrived 101.5 66.62 0.5 0.01
+#! expect portal 101.5 66.62 0.5 0.01
+#! expect home 88.5 * 256.5 1
+20 shot arrived
+60 look 0 -320
+100 shot dying
+180 shot exploding
+225 look 0 320
+240 shot portal
+250 key W down
+290 shot walking
+300 key W up
+600 shot logo
+1100 shot poem
+1110 key Escape down
+1111 key Escape up
+1180 shot home
+1190 quit

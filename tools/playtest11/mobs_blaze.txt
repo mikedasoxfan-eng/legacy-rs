@@ -1,0 +1,9 @@
+# A Blaze hovers 5 blocks south of the player in survival and shoots fireballs at them.
+#! setup mobs_blaze
+#! seed 7
+10 shot first
+60 shot t60
+100 shot t100
+160 shot t160
+300 shot t300
+310 quit
