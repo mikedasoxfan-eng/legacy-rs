@@ -7,7 +7,7 @@
       "crates/worldgen11/src/entity/blocks11.rs": "35f21da564c6809b0f64016a3c8bcf544dd1ab37df6976c7e128c6ccafe49299",
       "crates/worldgen11/src/entity/blocks.rs": "f37f8c39e6509678187a6cb2002b28f49f9e0673929262547a004341111cc674",
       "crates/worldgen11/src/entity/physics.rs": "a55d97cebd8a5a3c8e565cae5ad8139b47fbedb5e0b57eaae64730afa91d27a6",
-      "crates/worldgen11/src/world/behavior.rs": "030817bad8cb11c7d8a933d83b66a88de9914b9ea0cf0751e14c27d12a302e0f"
+      "crates/worldgen11/src/world/behavior.rs": "92c3b9745b068376b2f6e9a10bce9201e05babe0d5eb4489df304f5cf931916e"
     },
     "original_source_sha256": {
       "1.0": "ba0e5ff3f7cdda1d45017d7aa29f66cbb0a5db9f2a2c658bfee43427a6072d0d",
@@ -21,8 +21,8 @@
     "reason": "Only damageSourceEntity visibility changes private to protected. Runtime field and methods are unchanged.",
     "rust_source_sha256": {
       "crates/worldgen11/src/entity/mod.rs": "66c8caf5b0997e0fd474e2f722beff76e7d821d49c2f82d464510dde8c8fe2d0",
-      "crates/worldgen11/src/entity/living.rs": "924cd1b4bd7f680f54a550013fe76a2394db6d7ee8fc5d2bfd340dbd23b8a31e",
-      "crates/worldgen11/src/entity/creature.rs": "48e28ef1881ea7cbf3d78495308bc29026a480c355e0ffdcd13ad45c4ac92df0",
+      "crates/worldgen11/src/entity/living.rs": "7af68756414574096138b436b07d44970894eb9964e0d4e2dbfa84e73a3c4abd",
+      "crates/worldgen11/src/entity/creature.rs": "42c7e40430986143fab0b955f4c2c3d3def7abb89295a4ae9d0c990db6bbb159",
       "crates/worldgen11/src/entity/nbt.rs": "2bf61659b89cfb6505c6cdce38a8187d3c5fd3fc119a6f9aa6217c21addf009b"
     },
     "original_source_sha256": {
@@ -124,7 +124,7 @@
     "reason": "The complete behavioral delta adds en_US language default, guarded lang: load and lang: save before key bindings. Particle and display-key identifiers are renames. Five freshly reproduced complete options.txt cases cover defaults, empty and missing values, extra colon, RTL and unknown locale.",
     "rust_source_sha256": {
       "crates/client11/src/gui/settings.rs": "61c01fb9f3e31ad343ce0391494c0ee14bbd0a2be2e4787392e1d0855f81da06",
-      "crates/client11/src/gui/font.rs": "3c12f5fe744ad3a79a05c8279d0813a635b7abc01214b3511de781065354f949"
+      "crates/client11/src/gui/font.rs": "5475fb2b3af9925fef180e525dbae7ea1af8f9833fbf3b481f63d8db6e9c2ed1"
     },
     "original_source_sha256": {
       "1.0": "74b0c1b662728cf3dd4f289db3d6c657c454814ae5ce6566cea78d06a19d6ff3",
@@ -159,7 +159,7 @@
     ],
     "rust_source_sha256": {
       "crates/worldgen11/src/entity/spawn_egg11.rs": "07430c13d6afdf82bac4ed379f11e2c1baf1a99991528fcd34605de2098fa926",
-      "crates/worldgen11/src/entity/item_stack.rs": "03900a6cfc676cd375744543578310481adf1d86266d93d2a7f32bf38118fc41",
+      "crates/worldgen11/src/entity/item_stack.rs": "a18d323cf99b47dc3b112aad5e2c8237acb2be7e370ce4c71fcc2b1eef650e1a",
       "crates/worldgen11/src/entity/player/items.rs": "b409a6375494d5fbc48cff9ab79c0bf5bb46a0fe16d231b696ec093cb1a7fd31"
     },
     "original_source_sha256": {
@@ -362,7 +362,7 @@
       "crates/worldgen11/src/entity/blocks11.rs": "35f21da564c6809b0f64016a3c8bcf544dd1ab37df6976c7e128c6ccafe49299",
       "crates/worldgen11/src/entity/blocks.rs": "f37f8c39e6509678187a6cb2002b28f49f9e0673929262547a004341111cc674",
       "crates/worldgen11/src/entity/physics.rs": "a55d97cebd8a5a3c8e565cae5ad8139b47fbedb5e0b57eaae64730afa91d27a6",
-      "crates/worldgen11/src/world/behavior.rs": "030817bad8cb11c7d8a933d83b66a88de9914b9ea0cf0751e14c27d12a302e0f"
+      "crates/worldgen11/src/world/behavior.rs": "92c3b9745b068376b2f6e9a10bce9201e05babe0d5eb4489df304f5cf931916e"
     },
     "original_source_sha256": {
       "old": "work/retromcp-1.0/minecraft/src/net/minecraft/src/BlockLadder.java",
@@ -390,7 +390,7 @@
       "crates/worldgen11/src/entity/blocks11.rs": "35f21da564c6809b0f64016a3c8bcf544dd1ab37df6976c7e128c6ccafe49299",
       "crates/worldgen11/src/entity/blocks.rs": "f37f8c39e6509678187a6cb2002b28f49f9e0673929262547a004341111cc674",
       "crates/worldgen11/src/entity/physics.rs": "a55d97cebd8a5a3c8e565cae5ad8139b47fbedb5e0b57eaae64730afa91d27a6",
-      "crates/worldgen11/src/world/behavior.rs": "030817bad8cb11c7d8a933d83b66a88de9914b9ea0cf0751e14c27d12a302e0f"
+      "crates/worldgen11/src/world/behavior.rs": "92c3b9745b068376b2f6e9a10bce9201e05babe0d5eb4489df304f5cf931916e"
     },
     "original_source_sha256": {
       "old": "work/retromcp-1.0/minecraft/src/net/minecraft/src/BlockFarmland.java",
@@ -418,7 +418,7 @@
       "crates/worldgen11/src/entity/blocks11.rs": "35f21da564c6809b0f64016a3c8bcf544dd1ab37df6976c7e128c6ccafe49299",
       "crates/worldgen11/src/entity/blocks.rs": "f37f8c39e6509678187a6cb2002b28f49f9e0673929262547a004341111cc674",
       "crates/worldgen11/src/entity/physics.rs": "a55d97cebd8a5a3c8e565cae5ad8139b47fbedb5e0b57eaae64730afa91d27a6",
-      "crates/worldgen11/src/world/behavior.rs": "030817bad8cb11c7d8a933d83b66a88de9914b9ea0cf0751e14c27d12a302e0f"
+      "crates/worldgen11/src/world/behavior.rs": "92c3b9745b068376b2f6e9a10bce9201e05babe0d5eb4489df304f5cf931916e"
     },
     "original_source_sha256": {
       "old": "work/retromcp-1.0/minecraft/src/net/minecraft/src/BlockFenceGate.java",
@@ -472,7 +472,7 @@
       "crates/worldgen11/src/entity/blocks11.rs": "35f21da564c6809b0f64016a3c8bcf544dd1ab37df6976c7e128c6ccafe49299",
       "crates/worldgen11/src/entity/blocks.rs": "f37f8c39e6509678187a6cb2002b28f49f9e0673929262547a004341111cc674",
       "crates/worldgen11/src/entity/physics.rs": "a55d97cebd8a5a3c8e565cae5ad8139b47fbedb5e0b57eaae64730afa91d27a6",
-      "crates/worldgen11/src/world/behavior.rs": "030817bad8cb11c7d8a933d83b66a88de9914b9ea0cf0751e14c27d12a302e0f",
+      "crates/worldgen11/src/world/behavior.rs": "92c3b9745b068376b2f6e9a10bce9201e05babe0d5eb4489df304f5cf931916e",
       "crates/worldgen11/src/world/rails.rs": "21b62be9220db10409e519fc55fb112127d19eb49f6358bac2357f6bcf706c87"
     },
     "original_source_sha256": {
@@ -494,8 +494,8 @@
       }
     ],
     "rust_source_sha256": {
-      "crates/worldgen11/src/entity/block_hooks.rs": "8ff7de09d1073953462dd0370fc3916d79d5c4666fa98a9dca49a6f6381c67e5",
-      "crates/worldgen11/src/world/redstone.rs": "39f84038989abf6b8d18a1454adad3ed939e15e49e229f29dca6b6cee9287de5"
+      "crates/worldgen11/src/entity/block_hooks.rs": "5d44e303bd11321a0857f6a0a0f81dc72e3b7d54e2fd9031affb148a47e033b8",
+      "crates/worldgen11/src/world/redstone.rs": "c1ce5374c6239b4301a457c585fe2e5cad251a42561415ed5be09c26ecd028d2"
     },
     "original_source_sha256": {
       "old": "work/retromcp-1.0/minecraft/src/net/minecraft/src/BlockRedstoneRepeater.java",
@@ -520,8 +520,8 @@
       }
     ],
     "rust_source_sha256": {
-      "crates/worldgen11/src/entity/living.rs": "924cd1b4bd7f680f54a550013fe76a2394db6d7ee8fc5d2bfd340dbd23b8a31e",
-      "crates/worldgen11/src/entity/sheep11.rs": "436e7a546f9e3277bd3f58c97365d5d2b29782fdc4266ceea18c3ca2fc72a866"
+      "crates/worldgen11/src/entity/living.rs": "7af68756414574096138b436b07d44970894eb9964e0d4e2dbfa84e73a3c4abd",
+      "crates/worldgen11/src/entity/sheep11.rs": "0fb6c965f488376431f4b02d1d04a7e41980910879571cee851172da6f31fe1d"
     },
     "original_source_sha256": {
       "old": "work/retromcp-1.0/minecraft/src/net/minecraft/src/EntityMagmaCube.java",
@@ -568,7 +568,7 @@
       }
     ],
     "rust_source_sha256": {
-      "crates/worldgen11/src/container/mod.rs": "b51ddcf497d19220e07aec938f3119d990a65b34f4bb26e441175e03213eacd0"
+      "crates/worldgen11/src/container/mod.rs": "4988df7a76dd7d5361eeb58bada465e635f97882d35ae9be3b1e4f0f9f138eff"
     },
     "original_source_sha256": {
       "old": "work/retromcp-1.0/minecraft/src/net/minecraft/src/SlotCrafting.java",
@@ -885,9 +885,9 @@
       "crates/worldgen11/src/world/dimension.rs": "178e1786a5e89cca4abbb710a97ceb8e1d34b54f91687d1e87387643e6cdcb95",
       "crates/worldgen11/src/scenario.rs": "dd9dc0d569926752e679ef743db0b671d65941029a9e7e51062dc0d1d287cc95",
       "crates/worldgen11/src/world/spawn181.rs": "a6a6da75654fd6d99ebefc019505bc54b023289195f0dda284774cda48059e7c",
-      "crates/client11/src/render/player_view.rs": "07f0172c9dd7e98446726b9602f6303a67933a9067a7b5033d9bca7bd003447b",
-      "crates/client11/src/render/camera.rs": "9155f8d1ba6998a54d37b1e05805874d912b3d950c276bc95581b4a370297f1f",
-      "crates/client11/src/render/gpu.rs": "dc98441efebfdd1a8b12c58d79575b8ea775905b7b067de41d08806eff030174"
+      "crates/client11/src/render/player_view.rs": "578453ace6f163dc21166e934b656295a71cc29cb46bd6c3057d3470fc7abc6b",
+      "crates/client11/src/render/camera.rs": "e3f68a80f1ff913fd85ace1a11fe06949ad1c0117736101a3545208b70ec30ca",
+      "crates/client11/src/render/gpu.rs": "ea0fb91881c5a090f7f1f02beb8859e4fa01b701d8c677bddd69da9f556a3fa6"
     },
     "original_source_sha256": {
       "1.0": "536c4683473312bd6571fc5b57e868b46cf7ee0a2d4c8efbb09517a61de027be",
@@ -1018,7 +1018,7 @@
     "complete_delta_review": true,
     "reason": "Sole hunk: onDeath skeleton record nextInt(2) becomes nextInt(10).",
     "rust_source_sha256": {
-      "crates/worldgen11/src/entity/living.rs": "924cd1b4bd7f680f54a550013fe76a2394db6d7ee8fc5d2bfd340dbd23b8a31e"
+      "crates/worldgen11/src/entity/living.rs": "7af68756414574096138b436b07d44970894eb9964e0d4e2dbfa84e73a3c4abd"
     },
     "original_source_sha256": {
       "1.0": "2fd0efe4d10ed0372c916a4f8f14400356db1f17bb85ad148321bb2c00c317a7",
@@ -1047,7 +1047,7 @@
     "complete_delta_review": true,
     "reason": "canPlaceBlockAt accepts leaves regardless of opacity. Other hunk is World.entityJoinedWorld\u2192spawnEntityInWorld rename; inherited drop behavior unchanged.",
     "rust_source_sha256": {
-      "crates/worldgen11/src/world/behavior.rs": "030817bad8cb11c7d8a933d83b66a88de9914b9ea0cf0751e14c27d12a302e0f",
+      "crates/worldgen11/src/world/behavior.rs": "92c3b9745b068376b2f6e9a10bce9201e05babe0d5eb4489df304f5cf931916e",
       "crates/worldgen11/src/entity/blocks11.rs": "35f21da564c6809b0f64016a3c8bcf544dd1ab37df6976c7e128c6ccafe49299"
     },
     "original_source_sha256": {
@@ -1108,7 +1108,7 @@
     "rust_source_sha256": {
       "crates/client11/src/render/entity/living.rs": "a0a99b1f56cea8b9dca99b685990745df50c6f1a9b9a4ce0a809e1f83b063b1e",
       "crates/client11/src/render/entity/fixed.rs": "bfcea290482baf5c0487758170a2f5a21cbc96c6527b8cd78127df387adf578c",
-      "crates/client11/src/render/entity/object_check.rs": "e791092e07e09dd820ae107754f3b316b9f4a3a16bfff11e3c5e348c50fcee83"
+      "crates/client11/src/render/entity/object_check.rs": "3fcec12caebf7f38faa9b739a9ae4d3eb5685220c4f40ade489618e45d0357e7"
     },
     "original_source_sha256": {
       "1.0": "220a7d516f3a99d01277e1bb202b63f3d8f96ba31229cb86b463fa0ac678cb97",
@@ -1194,9 +1194,9 @@
       }
     ],
     "rust_source_sha256": {
-      "crates/worldgen11/src/entity/sheep11.rs": "436e7a546f9e3277bd3f58c97365d5d2b29782fdc4266ceea18c3ca2fc72a866",
-      "crates/worldgen11/src/entity/living.rs": "924cd1b4bd7f680f54a550013fe76a2394db6d7ee8fc5d2bfd340dbd23b8a31e",
-      "crates/worldgen11/src/entity/creature.rs": "48e28ef1881ea7cbf3d78495308bc29026a480c355e0ffdcd13ad45c4ac92df0"
+      "crates/worldgen11/src/entity/sheep11.rs": "0fb6c965f488376431f4b02d1d04a7e41980910879571cee851172da6f31fe1d",
+      "crates/worldgen11/src/entity/living.rs": "7af68756414574096138b436b07d44970894eb9964e0d4e2dbfa84e73a3c4abd",
+      "crates/worldgen11/src/entity/creature.rs": "42c7e40430986143fab0b955f4c2c3d3def7abb89295a4ae9d0c990db6bbb159"
     },
     "original_source_sha256": {
       "old_sha256": "a30ecc933f3810162553d1be51b264151323e30e906370a8f68aa87989d59525",
@@ -1219,7 +1219,7 @@
       }
     ],
     "rust_source_sha256": {
-      "crates/worldgen11/src/entity/aquatic.rs": "d9ad609c9228275183bac56497af1a54e466555c716b92b530d12cfff7cbad93"
+      "crates/worldgen11/src/entity/aquatic.rs": "f13aaf65a9e1f76317c44f46b145701cab0f4f5830dd33a613edaf564a5cec3b"
     },
     "original_source_sha256": {
       "old_sha256": "ca7d47e9caaa008a711c90f61b18ea406fbe6e43b262bb28092217415aa1151b",
@@ -1250,16 +1250,16 @@
       }
     ],
     "rust_source_sha256": {
-      "crates/worldgen11/src/stack_tags.rs": "f9b11cd3854b0f7848105aa05094689f9c29791615af545ba83fcccebd4b29ec",
-      "crates/worldgen11/src/entity/item_stack.rs": "03900a6cfc676cd375744543578310481adf1d86266d93d2a7f32bf38118fc41",
-      "crates/worldgen11/src/entity/player/inventory.rs": "cd78b3bde423a8f6b466e9e573bc2c31f0aaec9c24889d49d96f2ef7a6635b10",
-      "crates/worldgen11/src/container/mod.rs": "b51ddcf497d19220e07aec938f3119d990a65b34f4bb26e441175e03213eacd0",
-      "crates/worldgen11/src/fixtures/containertags11.txt": "12ef1f159cf7cf89102070bae169f1a969e0a621019665c8bfa1e67e9a757d4f",
-      "crates/worldgen11/src/fixtures/inventoryalias11.txt": "4525562cb3237c030b9f25534ecdc7d25c766aa41440b382f8ec119ae4002a37",
-      "crates/worldgen11/src/fixtures/stacknulltags11.txt": "fe35aaebc99d603d1d71442dc80f593309dd49fefedd6b3fa28604a5e5235551",
-      "crates/worldgen11/src/fixtures/stacknames11.txt": "5ac2a65492aaf4ada58fa80337aa4eaab8d48960b17b151c14722e35fe5499dc",
-      "tools/oracle11/src/net/minecraft/src/InventoryTags11.java": "406357c701edba56562f73c0383816acc2ac74b3ad9c4aa439582c82cdfd5668",
-      "tools/oracle11/verify_gameplay_slice.ps1": "c50342f619cb201f2eb72c5182377280b14dc8adbf98fbb05faf354b77098385"
+      "crates/worldgen11/src/stack_tags.rs": "6867a829c6a8fcfa57399ca059b530eaabb68a5a6df0339b979e9798e5dfaca9",
+      "crates/worldgen11/src/entity/item_stack.rs": "a18d323cf99b47dc3b112aad5e2c8237acb2be7e370ce4c71fcc2b1eef650e1a",
+      "crates/worldgen11/src/entity/player/inventory.rs": "4d913084ea37139bdbbdde71d281a2ddc00b0b3ae2231487003fda5888d88727",
+      "crates/worldgen11/src/container/mod.rs": "4988df7a76dd7d5361eeb58bada465e635f97882d35ae9be3b1e4f0f9f138eff",
+      "crates/worldgen11/src/fixtures/containertags11.txt": "a1cdd081d885273e082b4eb4a78822664089dd47af17a076ec5aeedf0c9a5d20",
+      "crates/worldgen11/src/fixtures/inventoryalias11.txt": "0fc195581233da11077d039f98843818d6bda004a75be91e03a10c0fbbd5dcfa",
+      "crates/worldgen11/src/fixtures/stacknulltags11.txt": "aef279311f6f990bddec72ce585b89403d7f45470e6dd751bf109683621d6df9",
+      "crates/worldgen11/src/fixtures/stacknames11.txt": "420abbcc134db5bb0f040877b29621ddf67a4c8da109c06a24ebbe88e090ba36",
+      "tools/oracle11/src/net/minecraft/src/InventoryTags11.java": "b4a1b4f68ac43d8ebb695a2ecbd37cab4f6699be375a6de1bc6e44741655b0b9",
+      "tools/oracle11/verify_gameplay_slice.ps1": "6b4df779d7445a68baadd5b428c4782881d80e2aa5d53a859bbb9968d102653c"
     },
     "original_source_sha256": {
       "1.0": "6be874340b47a95bd0f3f622a6a149cfff9a2d2f3d2e20835182482c06d79425",
@@ -1290,16 +1290,16 @@
       }
     ],
     "rust_source_sha256": {
-      "crates/worldgen11/src/stack_tags.rs": "f9b11cd3854b0f7848105aa05094689f9c29791615af545ba83fcccebd4b29ec",
-      "crates/worldgen11/src/entity/item_stack.rs": "03900a6cfc676cd375744543578310481adf1d86266d93d2a7f32bf38118fc41",
-      "crates/worldgen11/src/entity/player/inventory.rs": "cd78b3bde423a8f6b466e9e573bc2c31f0aaec9c24889d49d96f2ef7a6635b10",
-      "crates/worldgen11/src/container/mod.rs": "b51ddcf497d19220e07aec938f3119d990a65b34f4bb26e441175e03213eacd0",
-      "crates/worldgen11/src/fixtures/containertags11.txt": "12ef1f159cf7cf89102070bae169f1a969e0a621019665c8bfa1e67e9a757d4f",
-      "crates/worldgen11/src/fixtures/inventoryalias11.txt": "4525562cb3237c030b9f25534ecdc7d25c766aa41440b382f8ec119ae4002a37",
-      "crates/worldgen11/src/fixtures/stacknulltags11.txt": "fe35aaebc99d603d1d71442dc80f593309dd49fefedd6b3fa28604a5e5235551",
-      "crates/worldgen11/src/fixtures/stacknames11.txt": "5ac2a65492aaf4ada58fa80337aa4eaab8d48960b17b151c14722e35fe5499dc",
-      "tools/oracle11/src/net/minecraft/src/InventoryTags11.java": "406357c701edba56562f73c0383816acc2ac74b3ad9c4aa439582c82cdfd5668",
-      "tools/oracle11/verify_gameplay_slice.ps1": "c50342f619cb201f2eb72c5182377280b14dc8adbf98fbb05faf354b77098385"
+      "crates/worldgen11/src/stack_tags.rs": "6867a829c6a8fcfa57399ca059b530eaabb68a5a6df0339b979e9798e5dfaca9",
+      "crates/worldgen11/src/entity/item_stack.rs": "a18d323cf99b47dc3b112aad5e2c8237acb2be7e370ce4c71fcc2b1eef650e1a",
+      "crates/worldgen11/src/entity/player/inventory.rs": "4d913084ea37139bdbbdde71d281a2ddc00b0b3ae2231487003fda5888d88727",
+      "crates/worldgen11/src/container/mod.rs": "4988df7a76dd7d5361eeb58bada465e635f97882d35ae9be3b1e4f0f9f138eff",
+      "crates/worldgen11/src/fixtures/containertags11.txt": "a1cdd081d885273e082b4eb4a78822664089dd47af17a076ec5aeedf0c9a5d20",
+      "crates/worldgen11/src/fixtures/inventoryalias11.txt": "0fc195581233da11077d039f98843818d6bda004a75be91e03a10c0fbbd5dcfa",
+      "crates/worldgen11/src/fixtures/stacknulltags11.txt": "aef279311f6f990bddec72ce585b89403d7f45470e6dd751bf109683621d6df9",
+      "crates/worldgen11/src/fixtures/stacknames11.txt": "420abbcc134db5bb0f040877b29621ddf67a4c8da109c06a24ebbe88e090ba36",
+      "tools/oracle11/src/net/minecraft/src/InventoryTags11.java": "b4a1b4f68ac43d8ebb695a2ecbd37cab4f6699be375a6de1bc6e44741655b0b9",
+      "tools/oracle11/verify_gameplay_slice.ps1": "6b4df779d7445a68baadd5b428c4782881d80e2aa5d53a859bbb9968d102653c"
     },
     "original_source_sha256": {
       "1.0": "ff19223d1a38dacfb85eee68a4faf472c838a442cdb76acc31b6377f0676e8fd",
@@ -1334,16 +1334,16 @@
       }
     ],
     "rust_source_sha256": {
-      "crates/worldgen11/src/stack_tags.rs": "f9b11cd3854b0f7848105aa05094689f9c29791615af545ba83fcccebd4b29ec",
-      "crates/worldgen11/src/entity/item_stack.rs": "03900a6cfc676cd375744543578310481adf1d86266d93d2a7f32bf38118fc41",
-      "crates/worldgen11/src/entity/player/inventory.rs": "cd78b3bde423a8f6b466e9e573bc2c31f0aaec9c24889d49d96f2ef7a6635b10",
-      "crates/worldgen11/src/container/mod.rs": "b51ddcf497d19220e07aec938f3119d990a65b34f4bb26e441175e03213eacd0",
-      "crates/worldgen11/src/fixtures/containertags11.txt": "12ef1f159cf7cf89102070bae169f1a969e0a621019665c8bfa1e67e9a757d4f",
-      "crates/worldgen11/src/fixtures/inventoryalias11.txt": "4525562cb3237c030b9f25534ecdc7d25c766aa41440b382f8ec119ae4002a37",
-      "crates/worldgen11/src/fixtures/stacknulltags11.txt": "fe35aaebc99d603d1d71442dc80f593309dd49fefedd6b3fa28604a5e5235551",
-      "crates/worldgen11/src/fixtures/stacknames11.txt": "5ac2a65492aaf4ada58fa80337aa4eaab8d48960b17b151c14722e35fe5499dc",
-      "tools/oracle11/src/net/minecraft/src/InventoryTags11.java": "406357c701edba56562f73c0383816acc2ac74b3ad9c4aa439582c82cdfd5668",
-      "tools/oracle11/verify_gameplay_slice.ps1": "c50342f619cb201f2eb72c5182377280b14dc8adbf98fbb05faf354b77098385"
+      "crates/worldgen11/src/stack_tags.rs": "6867a829c6a8fcfa57399ca059b530eaabb68a5a6df0339b979e9798e5dfaca9",
+      "crates/worldgen11/src/entity/item_stack.rs": "a18d323cf99b47dc3b112aad5e2c8237acb2be7e370ce4c71fcc2b1eef650e1a",
+      "crates/worldgen11/src/entity/player/inventory.rs": "4d913084ea37139bdbbdde71d281a2ddc00b0b3ae2231487003fda5888d88727",
+      "crates/worldgen11/src/container/mod.rs": "4988df7a76dd7d5361eeb58bada465e635f97882d35ae9be3b1e4f0f9f138eff",
+      "crates/worldgen11/src/fixtures/containertags11.txt": "a1cdd081d885273e082b4eb4a78822664089dd47af17a076ec5aeedf0c9a5d20",
+      "crates/worldgen11/src/fixtures/inventoryalias11.txt": "0fc195581233da11077d039f98843818d6bda004a75be91e03a10c0fbbd5dcfa",
+      "crates/worldgen11/src/fixtures/stacknulltags11.txt": "aef279311f6f990bddec72ce585b89403d7f45470e6dd751bf109683621d6df9",
+      "crates/worldgen11/src/fixtures/stacknames11.txt": "420abbcc134db5bb0f040877b29621ddf67a4c8da109c06a24ebbe88e090ba36",
+      "tools/oracle11/src/net/minecraft/src/InventoryTags11.java": "b4a1b4f68ac43d8ebb695a2ecbd37cab4f6699be375a6de1bc6e44741655b0b9",
+      "tools/oracle11/verify_gameplay_slice.ps1": "6b4df779d7445a68baadd5b428c4782881d80e2aa5d53a859bbb9968d102653c"
     },
     "original_source_sha256": {
       "1.0": "ca9f534b5c4396fa03f863352bd2ef4658e7a78f88347ffb58977a613204d235",
@@ -1374,16 +1374,16 @@
       }
     ],
     "rust_source_sha256": {
-      "crates/worldgen11/src/world/redstone.rs": "39f84038989abf6b8d18a1454adad3ed939e15e49e229f29dca6b6cee9287de5",
-      "crates/worldgen11/src/world/behavior.rs": "030817bad8cb11c7d8a933d83b66a88de9914b9ea0cf0751e14c27d12a302e0f",
-      "crates/worldgen11/src/world/ticks_blocks.rs": "a998f63fce4b7b588a702842a42cf79531177d9cba71b2991640a8eef99e0c1f",
-      "crates/worldgen11/src/entity/block_hooks.rs": "8ff7de09d1073953462dd0370fc3916d79d5c4666fa98a9dca49a6f6381c67e5",
-      "crates/worldgen11/src/fixtures/leavesdrops11.txt": "f2394599ba309faa3de4712537f74745aaa81d939335524fb867f21680631217",
-      "crates/worldgen11/src/fixtures/wireconnect11.txt": "1a441101fbb2bc281e9f49f31e09552a8b4f87fccce777bfcc49f949a2773dc7",
-      "crates/worldgen11/src/fixtures/wirerise11.txt": "3aaf29a4e492b9da44a3685725ed4d60f2732f193c7a201368db0b379258ac03",
-      "crates/worldgen11/src/fixtures/wireremove11.txt": "108b96540f792b6aa63aade9d54479aef9cc746615bbf14365b9cce694c085e7",
-      "tools/oracle11/src/net/minecraft/src/LeavesWire11.java": "9df349d9802ab7eb90b726dc8617189e220cf47928eefc56adfe5a36a2ca7621",
-      "tools/oracle11/verify_gameplay_slice.ps1": "c50342f619cb201f2eb72c5182377280b14dc8adbf98fbb05faf354b77098385"
+      "crates/worldgen11/src/world/redstone.rs": "c1ce5374c6239b4301a457c585fe2e5cad251a42561415ed5be09c26ecd028d2",
+      "crates/worldgen11/src/world/behavior.rs": "92c3b9745b068376b2f6e9a10bce9201e05babe0d5eb4489df304f5cf931916e",
+      "crates/worldgen11/src/world/ticks_blocks.rs": "d08ea42b7b4d53aef02ce54d19a6b39f74763f1c886a8167d4585aaeb28b4c36",
+      "crates/worldgen11/src/entity/block_hooks.rs": "5d44e303bd11321a0857f6a0a0f81dc72e3b7d54e2fd9031affb148a47e033b8",
+      "crates/worldgen11/src/fixtures/leavesdrops11.txt": "7c0469cd7308e9fbe4163cac3f0d4b95cba1516287e23b7ff7434c081ae49981",
+      "crates/worldgen11/src/fixtures/wireconnect11.txt": "f179c22290fcda0ab2c635f9657126f29ed400584a4bb4dce77fa7804605936b",
+      "crates/worldgen11/src/fixtures/wirerise11.txt": "50207f64f11d13227f05c7dab39b9bf7c9c3d2fa3e211d08f42234fda59af62d",
+      "crates/worldgen11/src/fixtures/wireremove11.txt": "a49dbaa9a565133eefd9ea1a4daa8a81ece14690f3379bd627d21f1ce0befa60",
+      "tools/oracle11/src/net/minecraft/src/LeavesWire11.java": "536a6d70fcfd929ea2034d784d2d4a50508b6c004a7a19ecda6aa083fcc14b47",
+      "tools/oracle11/verify_gameplay_slice.ps1": "6b4df779d7445a68baadd5b428c4782881d80e2aa5d53a859bbb9968d102653c"
     },
     "original_source_sha256": {
       "1.0": "a1524a0bda00f28c5d699206eba34a430b0702cad97fc38d3d3c2fd4d03af640",
@@ -1405,8 +1405,8 @@
     ],
     "rust_source_sha256": {
       "crates/client11/src/gui/screens/language.rs": "38c5c99206de3849a5b5c06fa1e097761c63c4c895159b8b689ad1b0a14cc04d",
-      "crates/client11/src/gui/lang.rs": "8fd2a59286ae6f0c6cd3a5cfcba878ad14fc38b2ea2c90a2c2d84f76dcc50cea",
-      "crates/client11/src/gui/font.rs": "3c12f5fe744ad3a79a05c8279d0813a635b7abc01214b3511de781065354f949",
+      "crates/client11/src/gui/lang.rs": "c87ec914c3fcd385c21fcd08a8c02b260c10a70e39037bb5ba91aef38211368f",
+      "crates/client11/src/gui/font.rs": "5475fb2b3af9925fef180e525dbae7ea1af8f9833fbf3b481f63d8db6e9c2ed1",
       "crates/client11/src/gui/settings.rs": "61c01fb9f3e31ad343ce0391494c0ee14bbd0a2be2e4787392e1d0855f81da06",
       "crates/client11/src/gui/mod.rs": "86efe694608dd478edfcc3d998411bcc0c91f382525ff943cebcf4a92f30819a",
       "crates/client11/src/gui/slot.rs": "2b1465f5605c13a63e6512061dfa6e9ee4bd4b96fd62508d1399e04379e15d16",
@@ -1437,8 +1437,8 @@
     ],
     "rust_source_sha256": {
       "crates/client11/src/gui/screens/language.rs": "38c5c99206de3849a5b5c06fa1e097761c63c4c895159b8b689ad1b0a14cc04d",
-      "crates/client11/src/gui/lang.rs": "8fd2a59286ae6f0c6cd3a5cfcba878ad14fc38b2ea2c90a2c2d84f76dcc50cea",
-      "crates/client11/src/gui/font.rs": "3c12f5fe744ad3a79a05c8279d0813a635b7abc01214b3511de781065354f949",
+      "crates/client11/src/gui/lang.rs": "c87ec914c3fcd385c21fcd08a8c02b260c10a70e39037bb5ba91aef38211368f",
+      "crates/client11/src/gui/font.rs": "5475fb2b3af9925fef180e525dbae7ea1af8f9833fbf3b481f63d8db6e9c2ed1",
       "crates/client11/src/gui/settings.rs": "61c01fb9f3e31ad343ce0391494c0ee14bbd0a2be2e4787392e1d0855f81da06",
       "crates/client11/src/gui/mod.rs": "86efe694608dd478edfcc3d998411bcc0c91f382525ff943cebcf4a92f30819a",
       "crates/client11/src/gui/slot.rs": "2b1465f5605c13a63e6512061dfa6e9ee4bd4b96fd62508d1399e04379e15d16",
@@ -1494,11 +1494,11 @@
       "completion_blockers": []
     },
     "rust_source_sha256": {
-      "crates/worldgen11/src/entity/living.rs": "924cd1b4bd7f680f54a550013fe76a2394db6d7ee8fc5d2bfd340dbd23b8a31e",
-      "crates/worldgen11/src/entity/aquatic.rs": "d9ad609c9228275183bac56497af1a54e466555c716b92b530d12cfff7cbad93",
-      "tools/oracle11/src/net/minecraft/src/DormantAi11.java": "06a0d577e385dc4e9fa423e55e6a1b2467e3414dcab9cc7282745f1482deb110",
-      "tools/oracle11/verify_dormant_ai11.ps1": "c127af77cf77f3685f1cb17c342b62655a0697a9467af76238c32fb92e4f27d2",
-      "tools/oracle11/audit_dormant_ai11.py": "6cc90adbc40fd14fe99b65cf27246eaaee4d652373052eb8fbd01c22e1c8fe26"
+      "crates/worldgen11/src/entity/living.rs": "7af68756414574096138b436b07d44970894eb9964e0d4e2dbfa84e73a3c4abd",
+      "crates/worldgen11/src/entity/aquatic.rs": "f13aaf65a9e1f76317c44f46b145701cab0f4f5830dd33a613edaf564a5cec3b",
+      "tools/oracle11/src/net/minecraft/src/DormantAi11.java": "8c3a255b28f9b06806e8897e3b0b22a7ee4dbbb47fef137c343bfb5ea0412448",
+      "tools/oracle11/verify_dormant_ai11.ps1": "0210253e2458f2c7d5cc11b2c510e106eb53e1f5fc68bf53cdc3777c077db7ab",
+      "tools/oracle11/audit_dormant_ai11.py": "ccd6093b2c0d437dba3178b207c2995470795b29687fe02299eb9fd6f7baef0f"
     },
     "original_source_sha256": {
       "class_name": "EntityAIAttackOnCollide",
@@ -1551,11 +1551,11 @@
       "completion_blockers": []
     },
     "rust_source_sha256": {
-      "crates/worldgen11/src/entity/living.rs": "924cd1b4bd7f680f54a550013fe76a2394db6d7ee8fc5d2bfd340dbd23b8a31e",
-      "crates/worldgen11/src/entity/aquatic.rs": "d9ad609c9228275183bac56497af1a54e466555c716b92b530d12cfff7cbad93",
-      "tools/oracle11/src/net/minecraft/src/DormantAi11.java": "06a0d577e385dc4e9fa423e55e6a1b2467e3414dcab9cc7282745f1482deb110",
-      "tools/oracle11/verify_dormant_ai11.ps1": "c127af77cf77f3685f1cb17c342b62655a0697a9467af76238c32fb92e4f27d2",
-      "tools/oracle11/audit_dormant_ai11.py": "6cc90adbc40fd14fe99b65cf27246eaaee4d652373052eb8fbd01c22e1c8fe26"
+      "crates/worldgen11/src/entity/living.rs": "7af68756414574096138b436b07d44970894eb9964e0d4e2dbfa84e73a3c4abd",
+      "crates/worldgen11/src/entity/aquatic.rs": "f13aaf65a9e1f76317c44f46b145701cab0f4f5830dd33a613edaf564a5cec3b",
+      "tools/oracle11/src/net/minecraft/src/DormantAi11.java": "8c3a255b28f9b06806e8897e3b0b22a7ee4dbbb47fef137c343bfb5ea0412448",
+      "tools/oracle11/verify_dormant_ai11.ps1": "0210253e2458f2c7d5cc11b2c510e106eb53e1f5fc68bf53cdc3777c077db7ab",
+      "tools/oracle11/audit_dormant_ai11.py": "ccd6093b2c0d437dba3178b207c2995470795b29687fe02299eb9fd6f7baef0f"
     },
     "original_source_sha256": {
       "class_name": "EntityAIBase",
@@ -1608,11 +1608,11 @@
       "completion_blockers": []
     },
     "rust_source_sha256": {
-      "crates/worldgen11/src/entity/living.rs": "924cd1b4bd7f680f54a550013fe76a2394db6d7ee8fc5d2bfd340dbd23b8a31e",
-      "crates/worldgen11/src/entity/aquatic.rs": "d9ad609c9228275183bac56497af1a54e466555c716b92b530d12cfff7cbad93",
-      "tools/oracle11/src/net/minecraft/src/DormantAi11.java": "06a0d577e385dc4e9fa423e55e6a1b2467e3414dcab9cc7282745f1482deb110",
-      "tools/oracle11/verify_dormant_ai11.ps1": "c127af77cf77f3685f1cb17c342b62655a0697a9467af76238c32fb92e4f27d2",
-      "tools/oracle11/audit_dormant_ai11.py": "6cc90adbc40fd14fe99b65cf27246eaaee4d652373052eb8fbd01c22e1c8fe26"
+      "crates/worldgen11/src/entity/living.rs": "7af68756414574096138b436b07d44970894eb9964e0d4e2dbfa84e73a3c4abd",
+      "crates/worldgen11/src/entity/aquatic.rs": "f13aaf65a9e1f76317c44f46b145701cab0f4f5830dd33a613edaf564a5cec3b",
+      "tools/oracle11/src/net/minecraft/src/DormantAi11.java": "8c3a255b28f9b06806e8897e3b0b22a7ee4dbbb47fef137c343bfb5ea0412448",
+      "tools/oracle11/verify_dormant_ai11.ps1": "0210253e2458f2c7d5cc11b2c510e106eb53e1f5fc68bf53cdc3777c077db7ab",
+      "tools/oracle11/audit_dormant_ai11.py": "ccd6093b2c0d437dba3178b207c2995470795b29687fe02299eb9fd6f7baef0f"
     },
     "original_source_sha256": {
       "class_name": "EntityAILookIdle",
@@ -1668,11 +1668,11 @@
       "completion_blockers": []
     },
     "rust_source_sha256": {
-      "crates/worldgen11/src/entity/living.rs": "924cd1b4bd7f680f54a550013fe76a2394db6d7ee8fc5d2bfd340dbd23b8a31e",
-      "crates/worldgen11/src/entity/aquatic.rs": "d9ad609c9228275183bac56497af1a54e466555c716b92b530d12cfff7cbad93",
-      "tools/oracle11/src/net/minecraft/src/DormantAi11.java": "06a0d577e385dc4e9fa423e55e6a1b2467e3414dcab9cc7282745f1482deb110",
-      "tools/oracle11/verify_dormant_ai11.ps1": "c127af77cf77f3685f1cb17c342b62655a0697a9467af76238c32fb92e4f27d2",
-      "tools/oracle11/audit_dormant_ai11.py": "6cc90adbc40fd14fe99b65cf27246eaaee4d652373052eb8fbd01c22e1c8fe26"
+      "crates/worldgen11/src/entity/living.rs": "7af68756414574096138b436b07d44970894eb9964e0d4e2dbfa84e73a3c4abd",
+      "crates/worldgen11/src/entity/aquatic.rs": "f13aaf65a9e1f76317c44f46b145701cab0f4f5830dd33a613edaf564a5cec3b",
+      "tools/oracle11/src/net/minecraft/src/DormantAi11.java": "8c3a255b28f9b06806e8897e3b0b22a7ee4dbbb47fef137c343bfb5ea0412448",
+      "tools/oracle11/verify_dormant_ai11.ps1": "0210253e2458f2c7d5cc11b2c510e106eb53e1f5fc68bf53cdc3777c077db7ab",
+      "tools/oracle11/audit_dormant_ai11.py": "ccd6093b2c0d437dba3178b207c2995470795b29687fe02299eb9fd6f7baef0f"
     },
     "original_source_sha256": {
       "class_name": "EntityAISwimming",
@@ -1727,11 +1727,11 @@
       "completion_blockers": []
     },
     "rust_source_sha256": {
-      "crates/worldgen11/src/entity/living.rs": "924cd1b4bd7f680f54a550013fe76a2394db6d7ee8fc5d2bfd340dbd23b8a31e",
-      "crates/worldgen11/src/entity/aquatic.rs": "d9ad609c9228275183bac56497af1a54e466555c716b92b530d12cfff7cbad93",
-      "tools/oracle11/src/net/minecraft/src/DormantAi11.java": "06a0d577e385dc4e9fa423e55e6a1b2467e3414dcab9cc7282745f1482deb110",
-      "tools/oracle11/verify_dormant_ai11.ps1": "c127af77cf77f3685f1cb17c342b62655a0697a9467af76238c32fb92e4f27d2",
-      "tools/oracle11/audit_dormant_ai11.py": "6cc90adbc40fd14fe99b65cf27246eaaee4d652373052eb8fbd01c22e1c8fe26"
+      "crates/worldgen11/src/entity/living.rs": "7af68756414574096138b436b07d44970894eb9964e0d4e2dbfa84e73a3c4abd",
+      "crates/worldgen11/src/entity/aquatic.rs": "f13aaf65a9e1f76317c44f46b145701cab0f4f5830dd33a613edaf564a5cec3b",
+      "tools/oracle11/src/net/minecraft/src/DormantAi11.java": "8c3a255b28f9b06806e8897e3b0b22a7ee4dbbb47fef137c343bfb5ea0412448",
+      "tools/oracle11/verify_dormant_ai11.ps1": "0210253e2458f2c7d5cc11b2c510e106eb53e1f5fc68bf53cdc3777c077db7ab",
+      "tools/oracle11/audit_dormant_ai11.py": "ccd6093b2c0d437dba3178b207c2995470795b29687fe02299eb9fd6f7baef0f"
     },
     "original_source_sha256": {
       "class_name": "EntityAITaskEntry",
@@ -1787,11 +1787,11 @@
       "completion_blockers": []
     },
     "rust_source_sha256": {
-      "crates/worldgen11/src/entity/living.rs": "924cd1b4bd7f680f54a550013fe76a2394db6d7ee8fc5d2bfd340dbd23b8a31e",
-      "crates/worldgen11/src/entity/aquatic.rs": "d9ad609c9228275183bac56497af1a54e466555c716b92b530d12cfff7cbad93",
-      "tools/oracle11/src/net/minecraft/src/DormantAi11.java": "06a0d577e385dc4e9fa423e55e6a1b2467e3414dcab9cc7282745f1482deb110",
-      "tools/oracle11/verify_dormant_ai11.ps1": "c127af77cf77f3685f1cb17c342b62655a0697a9467af76238c32fb92e4f27d2",
-      "tools/oracle11/audit_dormant_ai11.py": "6cc90adbc40fd14fe99b65cf27246eaaee4d652373052eb8fbd01c22e1c8fe26"
+      "crates/worldgen11/src/entity/living.rs": "7af68756414574096138b436b07d44970894eb9964e0d4e2dbfa84e73a3c4abd",
+      "crates/worldgen11/src/entity/aquatic.rs": "f13aaf65a9e1f76317c44f46b145701cab0f4f5830dd33a613edaf564a5cec3b",
+      "tools/oracle11/src/net/minecraft/src/DormantAi11.java": "8c3a255b28f9b06806e8897e3b0b22a7ee4dbbb47fef137c343bfb5ea0412448",
+      "tools/oracle11/verify_dormant_ai11.ps1": "0210253e2458f2c7d5cc11b2c510e106eb53e1f5fc68bf53cdc3777c077db7ab",
+      "tools/oracle11/audit_dormant_ai11.py": "ccd6093b2c0d437dba3178b207c2995470795b29687fe02299eb9fd6f7baef0f"
     },
     "original_source_sha256": {
       "class_name": "EntityAITasks",
@@ -1848,11 +1848,11 @@
       "completion_blockers": []
     },
     "rust_source_sha256": {
-      "crates/worldgen11/src/entity/living.rs": "924cd1b4bd7f680f54a550013fe76a2394db6d7ee8fc5d2bfd340dbd23b8a31e",
-      "crates/worldgen11/src/entity/aquatic.rs": "d9ad609c9228275183bac56497af1a54e466555c716b92b530d12cfff7cbad93",
-      "tools/oracle11/src/net/minecraft/src/DormantAi11.java": "06a0d577e385dc4e9fa423e55e6a1b2467e3414dcab9cc7282745f1482deb110",
-      "tools/oracle11/verify_dormant_ai11.ps1": "c127af77cf77f3685f1cb17c342b62655a0697a9467af76238c32fb92e4f27d2",
-      "tools/oracle11/audit_dormant_ai11.py": "6cc90adbc40fd14fe99b65cf27246eaaee4d652373052eb8fbd01c22e1c8fe26"
+      "crates/worldgen11/src/entity/living.rs": "7af68756414574096138b436b07d44970894eb9964e0d4e2dbfa84e73a3c4abd",
+      "crates/worldgen11/src/entity/aquatic.rs": "f13aaf65a9e1f76317c44f46b145701cab0f4f5830dd33a613edaf564a5cec3b",
+      "tools/oracle11/src/net/minecraft/src/DormantAi11.java": "8c3a255b28f9b06806e8897e3b0b22a7ee4dbbb47fef137c343bfb5ea0412448",
+      "tools/oracle11/verify_dormant_ai11.ps1": "0210253e2458f2c7d5cc11b2c510e106eb53e1f5fc68bf53cdc3777c077db7ab",
+      "tools/oracle11/audit_dormant_ai11.py": "ccd6093b2c0d437dba3178b207c2995470795b29687fe02299eb9fd6f7baef0f"
     },
     "original_source_sha256": {
       "class_name": "EntityAIWander",
@@ -1908,11 +1908,11 @@
       "completion_blockers": []
     },
     "rust_source_sha256": {
-      "crates/worldgen11/src/entity/living.rs": "924cd1b4bd7f680f54a550013fe76a2394db6d7ee8fc5d2bfd340dbd23b8a31e",
-      "crates/worldgen11/src/entity/aquatic.rs": "d9ad609c9228275183bac56497af1a54e466555c716b92b530d12cfff7cbad93",
-      "tools/oracle11/src/net/minecraft/src/DormantAi11.java": "06a0d577e385dc4e9fa423e55e6a1b2467e3414dcab9cc7282745f1482deb110",
-      "tools/oracle11/verify_dormant_ai11.ps1": "c127af77cf77f3685f1cb17c342b62655a0697a9467af76238c32fb92e4f27d2",
-      "tools/oracle11/audit_dormant_ai11.py": "6cc90adbc40fd14fe99b65cf27246eaaee4d652373052eb8fbd01c22e1c8fe26"
+      "crates/worldgen11/src/entity/living.rs": "7af68756414574096138b436b07d44970894eb9964e0d4e2dbfa84e73a3c4abd",
+      "crates/worldgen11/src/entity/aquatic.rs": "f13aaf65a9e1f76317c44f46b145701cab0f4f5830dd33a613edaf564a5cec3b",
+      "tools/oracle11/src/net/minecraft/src/DormantAi11.java": "8c3a255b28f9b06806e8897e3b0b22a7ee4dbbb47fef137c343bfb5ea0412448",
+      "tools/oracle11/verify_dormant_ai11.ps1": "0210253e2458f2c7d5cc11b2c510e106eb53e1f5fc68bf53cdc3777c077db7ab",
+      "tools/oracle11/audit_dormant_ai11.py": "ccd6093b2c0d437dba3178b207c2995470795b29687fe02299eb9fd6f7baef0f"
     },
     "original_source_sha256": {
       "class_name": "EntityAIWatchClosest",
@@ -1967,11 +1967,11 @@
       "completion_blockers": []
     },
     "rust_source_sha256": {
-      "crates/worldgen11/src/entity/living.rs": "924cd1b4bd7f680f54a550013fe76a2394db6d7ee8fc5d2bfd340dbd23b8a31e",
-      "crates/worldgen11/src/entity/aquatic.rs": "d9ad609c9228275183bac56497af1a54e466555c716b92b530d12cfff7cbad93",
-      "tools/oracle11/src/net/minecraft/src/DormantAi11.java": "06a0d577e385dc4e9fa423e55e6a1b2467e3414dcab9cc7282745f1482deb110",
-      "tools/oracle11/verify_dormant_ai11.ps1": "c127af77cf77f3685f1cb17c342b62655a0697a9467af76238c32fb92e4f27d2",
-      "tools/oracle11/audit_dormant_ai11.py": "6cc90adbc40fd14fe99b65cf27246eaaee4d652373052eb8fbd01c22e1c8fe26"
+      "crates/worldgen11/src/entity/living.rs": "7af68756414574096138b436b07d44970894eb9964e0d4e2dbfa84e73a3c4abd",
+      "crates/worldgen11/src/entity/aquatic.rs": "f13aaf65a9e1f76317c44f46b145701cab0f4f5830dd33a613edaf564a5cec3b",
+      "tools/oracle11/src/net/minecraft/src/DormantAi11.java": "8c3a255b28f9b06806e8897e3b0b22a7ee4dbbb47fef137c343bfb5ea0412448",
+      "tools/oracle11/verify_dormant_ai11.ps1": "0210253e2458f2c7d5cc11b2c510e106eb53e1f5fc68bf53cdc3777c077db7ab",
+      "tools/oracle11/audit_dormant_ai11.py": "ccd6093b2c0d437dba3178b207c2995470795b29687fe02299eb9fd6f7baef0f"
     },
     "original_source_sha256": {
       "class_name": "EntityJumpHelper",
@@ -2025,11 +2025,11 @@
       "completion_blockers": []
     },
     "rust_source_sha256": {
-      "crates/worldgen11/src/entity/living.rs": "924cd1b4bd7f680f54a550013fe76a2394db6d7ee8fc5d2bfd340dbd23b8a31e",
-      "crates/worldgen11/src/entity/aquatic.rs": "d9ad609c9228275183bac56497af1a54e466555c716b92b530d12cfff7cbad93",
-      "tools/oracle11/src/net/minecraft/src/DormantAi11.java": "06a0d577e385dc4e9fa423e55e6a1b2467e3414dcab9cc7282745f1482deb110",
-      "tools/oracle11/verify_dormant_ai11.ps1": "c127af77cf77f3685f1cb17c342b62655a0697a9467af76238c32fb92e4f27d2",
-      "tools/oracle11/audit_dormant_ai11.py": "6cc90adbc40fd14fe99b65cf27246eaaee4d652373052eb8fbd01c22e1c8fe26"
+      "crates/worldgen11/src/entity/living.rs": "7af68756414574096138b436b07d44970894eb9964e0d4e2dbfa84e73a3c4abd",
+      "crates/worldgen11/src/entity/aquatic.rs": "f13aaf65a9e1f76317c44f46b145701cab0f4f5830dd33a613edaf564a5cec3b",
+      "tools/oracle11/src/net/minecraft/src/DormantAi11.java": "8c3a255b28f9b06806e8897e3b0b22a7ee4dbbb47fef137c343bfb5ea0412448",
+      "tools/oracle11/verify_dormant_ai11.ps1": "0210253e2458f2c7d5cc11b2c510e106eb53e1f5fc68bf53cdc3777c077db7ab",
+      "tools/oracle11/audit_dormant_ai11.py": "ccd6093b2c0d437dba3178b207c2995470795b29687fe02299eb9fd6f7baef0f"
     },
     "original_source_sha256": {
       "class_name": "EntityLookHelper",
@@ -2083,11 +2083,11 @@
       "completion_blockers": []
     },
     "rust_source_sha256": {
-      "crates/worldgen11/src/entity/living.rs": "924cd1b4bd7f680f54a550013fe76a2394db6d7ee8fc5d2bfd340dbd23b8a31e",
-      "crates/worldgen11/src/entity/aquatic.rs": "d9ad609c9228275183bac56497af1a54e466555c716b92b530d12cfff7cbad93",
-      "tools/oracle11/src/net/minecraft/src/DormantAi11.java": "06a0d577e385dc4e9fa423e55e6a1b2467e3414dcab9cc7282745f1482deb110",
-      "tools/oracle11/verify_dormant_ai11.ps1": "c127af77cf77f3685f1cb17c342b62655a0697a9467af76238c32fb92e4f27d2",
-      "tools/oracle11/audit_dormant_ai11.py": "6cc90adbc40fd14fe99b65cf27246eaaee4d652373052eb8fbd01c22e1c8fe26"
+      "crates/worldgen11/src/entity/living.rs": "7af68756414574096138b436b07d44970894eb9964e0d4e2dbfa84e73a3c4abd",
+      "crates/worldgen11/src/entity/aquatic.rs": "f13aaf65a9e1f76317c44f46b145701cab0f4f5830dd33a613edaf564a5cec3b",
+      "tools/oracle11/src/net/minecraft/src/DormantAi11.java": "8c3a255b28f9b06806e8897e3b0b22a7ee4dbbb47fef137c343bfb5ea0412448",
+      "tools/oracle11/verify_dormant_ai11.ps1": "0210253e2458f2c7d5cc11b2c510e106eb53e1f5fc68bf53cdc3777c077db7ab",
+      "tools/oracle11/audit_dormant_ai11.py": "ccd6093b2c0d437dba3178b207c2995470795b29687fe02299eb9fd6f7baef0f"
     },
     "original_source_sha256": {
       "class_name": "EntityMoveHelper",
@@ -2139,11 +2139,11 @@
       "completion_blockers": []
     },
     "rust_source_sha256": {
-      "crates/worldgen11/src/entity/living.rs": "924cd1b4bd7f680f54a550013fe76a2394db6d7ee8fc5d2bfd340dbd23b8a31e",
-      "crates/worldgen11/src/entity/aquatic.rs": "d9ad609c9228275183bac56497af1a54e466555c716b92b530d12cfff7cbad93",
-      "tools/oracle11/src/net/minecraft/src/DormantAi11.java": "06a0d577e385dc4e9fa423e55e6a1b2467e3414dcab9cc7282745f1482deb110",
-      "tools/oracle11/verify_dormant_ai11.ps1": "c127af77cf77f3685f1cb17c342b62655a0697a9467af76238c32fb92e4f27d2",
-      "tools/oracle11/audit_dormant_ai11.py": "6cc90adbc40fd14fe99b65cf27246eaaee4d652373052eb8fbd01c22e1c8fe26"
+      "crates/worldgen11/src/entity/living.rs": "7af68756414574096138b436b07d44970894eb9964e0d4e2dbfa84e73a3c4abd",
+      "crates/worldgen11/src/entity/aquatic.rs": "f13aaf65a9e1f76317c44f46b145701cab0f4f5830dd33a613edaf564a5cec3b",
+      "tools/oracle11/src/net/minecraft/src/DormantAi11.java": "8c3a255b28f9b06806e8897e3b0b22a7ee4dbbb47fef137c343bfb5ea0412448",
+      "tools/oracle11/verify_dormant_ai11.ps1": "0210253e2458f2c7d5cc11b2c510e106eb53e1f5fc68bf53cdc3777c077db7ab",
+      "tools/oracle11/audit_dormant_ai11.py": "ccd6093b2c0d437dba3178b207c2995470795b29687fe02299eb9fd6f7baef0f"
     },
     "original_source_sha256": {
       "class_name": "INavigate",
@@ -2195,11 +2195,11 @@
       "completion_blockers": []
     },
     "rust_source_sha256": {
-      "crates/worldgen11/src/entity/living.rs": "924cd1b4bd7f680f54a550013fe76a2394db6d7ee8fc5d2bfd340dbd23b8a31e",
-      "crates/worldgen11/src/entity/aquatic.rs": "d9ad609c9228275183bac56497af1a54e466555c716b92b530d12cfff7cbad93",
-      "tools/oracle11/src/net/minecraft/src/DormantAi11.java": "06a0d577e385dc4e9fa423e55e6a1b2467e3414dcab9cc7282745f1482deb110",
-      "tools/oracle11/verify_dormant_ai11.ps1": "c127af77cf77f3685f1cb17c342b62655a0697a9467af76238c32fb92e4f27d2",
-      "tools/oracle11/audit_dormant_ai11.py": "6cc90adbc40fd14fe99b65cf27246eaaee4d652373052eb8fbd01c22e1c8fe26"
+      "crates/worldgen11/src/entity/living.rs": "7af68756414574096138b436b07d44970894eb9964e0d4e2dbfa84e73a3c4abd",
+      "crates/worldgen11/src/entity/aquatic.rs": "f13aaf65a9e1f76317c44f46b145701cab0f4f5830dd33a613edaf564a5cec3b",
+      "tools/oracle11/src/net/minecraft/src/DormantAi11.java": "8c3a255b28f9b06806e8897e3b0b22a7ee4dbbb47fef137c343bfb5ea0412448",
+      "tools/oracle11/verify_dormant_ai11.ps1": "0210253e2458f2c7d5cc11b2c510e106eb53e1f5fc68bf53cdc3777c077db7ab",
+      "tools/oracle11/audit_dormant_ai11.py": "ccd6093b2c0d437dba3178b207c2995470795b29687fe02299eb9fd6f7baef0f"
     },
     "original_source_sha256": {
       "class_name": "PathNavigate",
@@ -2265,11 +2265,11 @@
       ]
     },
     "rust_source_sha256": {
-      "crates/worldgen11/src/entity/living.rs": "924cd1b4bd7f680f54a550013fe76a2394db6d7ee8fc5d2bfd340dbd23b8a31e",
-      "crates/worldgen11/src/entity/aquatic.rs": "d9ad609c9228275183bac56497af1a54e466555c716b92b530d12cfff7cbad93",
-      "tools/oracle11/src/net/minecraft/src/DormantAi11.java": "06a0d577e385dc4e9fa423e55e6a1b2467e3414dcab9cc7282745f1482deb110",
-      "tools/oracle11/verify_dormant_ai11.ps1": "c127af77cf77f3685f1cb17c342b62655a0697a9467af76238c32fb92e4f27d2",
-      "tools/oracle11/audit_dormant_ai11.py": "6cc90adbc40fd14fe99b65cf27246eaaee4d652373052eb8fbd01c22e1c8fe26"
+      "crates/worldgen11/src/entity/living.rs": "7af68756414574096138b436b07d44970894eb9964e0d4e2dbfa84e73a3c4abd",
+      "crates/worldgen11/src/entity/aquatic.rs": "f13aaf65a9e1f76317c44f46b145701cab0f4f5830dd33a613edaf564a5cec3b",
+      "tools/oracle11/src/net/minecraft/src/DormantAi11.java": "8c3a255b28f9b06806e8897e3b0b22a7ee4dbbb47fef137c343bfb5ea0412448",
+      "tools/oracle11/verify_dormant_ai11.ps1": "0210253e2458f2c7d5cc11b2c510e106eb53e1f5fc68bf53cdc3777c077db7ab",
+      "tools/oracle11/audit_dormant_ai11.py": "ccd6093b2c0d437dba3178b207c2995470795b29687fe02299eb9fd6f7baef0f"
     },
     "original_source_sha256": {
       "1.0": "8cce2bcfcbbb9dae215a5caa6f57ffcd51047b9dae74e1e189ec457ac9b2958e",
@@ -2313,11 +2313,11 @@
       ]
     },
     "rust_source_sha256": {
-      "crates/worldgen11/src/entity/living.rs": "924cd1b4bd7f680f54a550013fe76a2394db6d7ee8fc5d2bfd340dbd23b8a31e",
-      "crates/worldgen11/src/entity/aquatic.rs": "d9ad609c9228275183bac56497af1a54e466555c716b92b530d12cfff7cbad93",
-      "tools/oracle11/src/net/minecraft/src/DormantAi11.java": "06a0d577e385dc4e9fa423e55e6a1b2467e3414dcab9cc7282745f1482deb110",
-      "tools/oracle11/verify_dormant_ai11.ps1": "c127af77cf77f3685f1cb17c342b62655a0697a9467af76238c32fb92e4f27d2",
-      "tools/oracle11/audit_dormant_ai11.py": "6cc90adbc40fd14fe99b65cf27246eaaee4d652373052eb8fbd01c22e1c8fe26"
+      "crates/worldgen11/src/entity/living.rs": "7af68756414574096138b436b07d44970894eb9964e0d4e2dbfa84e73a3c4abd",
+      "crates/worldgen11/src/entity/aquatic.rs": "f13aaf65a9e1f76317c44f46b145701cab0f4f5830dd33a613edaf564a5cec3b",
+      "tools/oracle11/src/net/minecraft/src/DormantAi11.java": "8c3a255b28f9b06806e8897e3b0b22a7ee4dbbb47fef137c343bfb5ea0412448",
+      "tools/oracle11/verify_dormant_ai11.ps1": "0210253e2458f2c7d5cc11b2c510e106eb53e1f5fc68bf53cdc3777c077db7ab",
+      "tools/oracle11/audit_dormant_ai11.py": "ccd6093b2c0d437dba3178b207c2995470795b29687fe02299eb9fd6f7baef0f"
     },
     "original_source_sha256": {
       "1.0": "b54d87bc48a9554cd8ee2bebccb18fd248a26c048d309d732d0fe4336d1d3eda",
@@ -2353,11 +2353,11 @@
       ]
     },
     "rust_source_sha256": {
-      "crates/worldgen11/src/entity/living.rs": "924cd1b4bd7f680f54a550013fe76a2394db6d7ee8fc5d2bfd340dbd23b8a31e",
-      "crates/worldgen11/src/entity/aquatic.rs": "d9ad609c9228275183bac56497af1a54e466555c716b92b530d12cfff7cbad93",
-      "tools/oracle11/src/net/minecraft/src/DormantAi11.java": "06a0d577e385dc4e9fa423e55e6a1b2467e3414dcab9cc7282745f1482deb110",
-      "tools/oracle11/verify_dormant_ai11.ps1": "c127af77cf77f3685f1cb17c342b62655a0697a9467af76238c32fb92e4f27d2",
-      "tools/oracle11/audit_dormant_ai11.py": "6cc90adbc40fd14fe99b65cf27246eaaee4d652373052eb8fbd01c22e1c8fe26"
+      "crates/worldgen11/src/entity/living.rs": "7af68756414574096138b436b07d44970894eb9964e0d4e2dbfa84e73a3c4abd",
+      "crates/worldgen11/src/entity/aquatic.rs": "f13aaf65a9e1f76317c44f46b145701cab0f4f5830dd33a613edaf564a5cec3b",
+      "tools/oracle11/src/net/minecraft/src/DormantAi11.java": "8c3a255b28f9b06806e8897e3b0b22a7ee4dbbb47fef137c343bfb5ea0412448",
+      "tools/oracle11/verify_dormant_ai11.ps1": "0210253e2458f2c7d5cc11b2c510e106eb53e1f5fc68bf53cdc3777c077db7ab",
+      "tools/oracle11/audit_dormant_ai11.py": "ccd6093b2c0d437dba3178b207c2995470795b29687fe02299eb9fd6f7baef0f"
     },
     "original_source_sha256": {
       "1.0": "6373bd60a780a9f951e4a3ea874e7551e9f981cec9e09477beb44ca7a3bb7286",
@@ -2397,11 +2397,11 @@
       ]
     },
     "rust_source_sha256": {
-      "crates/worldgen11/src/entity/living.rs": "924cd1b4bd7f680f54a550013fe76a2394db6d7ee8fc5d2bfd340dbd23b8a31e",
-      "crates/worldgen11/src/entity/aquatic.rs": "d9ad609c9228275183bac56497af1a54e466555c716b92b530d12cfff7cbad93",
-      "tools/oracle11/src/net/minecraft/src/DormantAi11.java": "06a0d577e385dc4e9fa423e55e6a1b2467e3414dcab9cc7282745f1482deb110",
-      "tools/oracle11/verify_dormant_ai11.ps1": "c127af77cf77f3685f1cb17c342b62655a0697a9467af76238c32fb92e4f27d2",
-      "tools/oracle11/audit_dormant_ai11.py": "6cc90adbc40fd14fe99b65cf27246eaaee4d652373052eb8fbd01c22e1c8fe26"
+      "crates/worldgen11/src/entity/living.rs": "7af68756414574096138b436b07d44970894eb9964e0d4e2dbfa84e73a3c4abd",
+      "crates/worldgen11/src/entity/aquatic.rs": "f13aaf65a9e1f76317c44f46b145701cab0f4f5830dd33a613edaf564a5cec3b",
+      "tools/oracle11/src/net/minecraft/src/DormantAi11.java": "8c3a255b28f9b06806e8897e3b0b22a7ee4dbbb47fef137c343bfb5ea0412448",
+      "tools/oracle11/verify_dormant_ai11.ps1": "0210253e2458f2c7d5cc11b2c510e106eb53e1f5fc68bf53cdc3777c077db7ab",
+      "tools/oracle11/audit_dormant_ai11.py": "ccd6093b2c0d437dba3178b207c2995470795b29687fe02299eb9fd6f7baef0f"
     },
     "original_source_sha256": {
       "1.0": "c92a8bce87c87002a412aedbf08bbc3d2e767e75bc20f2b3da468a4d8e8d5dbf",
@@ -2429,9 +2429,9 @@
     "complete_delta_review": true,
     "reason": "Entire3line delta: query original brightness then override burning entity light with15728880.720direct dispatch cases; live frame shares actual entity state.",
     "rust_source_sha256": {
-      "crates/client11/src/render/entity/manager.rs": "c36c7e06d5eae9dd77793e94361c89157128dca59bbbc126eca7c0d92f58f27e",
-      "crates/client11/src/render/entity/pipeline.rs": "b62a0ae8f7a2354f2147042fe77f4529adf4018c8d0cb1cdf1f3201cec70c1d4",
-      "crates/worldgen11/src/entity/living10.rs": "df0304fad5485ba221faa9209783635f7c727e5fac6e6f372f283f8aa4659e94"
+      "crates/client11/src/render/entity/manager.rs": "b0b8141e5a3bc2fcbf7ee8a7c4f2ce81051fee07fc5b7bdca20117394073abaa",
+      "crates/client11/src/render/entity/pipeline.rs": "f0dbf0b98fb95c57f73a1bbd645d5012c9f34ffbe54f5bf01f7e7b57146914bc",
+      "crates/worldgen11/src/entity/living10.rs": "cc0c78eb1caa1727eb3233e5cfc1226f648e5b355f7eb6e025babcf51b84ddef"
     },
     "original_source_sha256": null,
     "completion_blockers": [],
@@ -2442,10 +2442,10 @@
     "complete_delta_review": true,
     "reason": "Entire41line delta replaces potion-only paths with generic multiple-pass GUI/dropped paths, per-pass icon/color.752cases compare actual production draws, RNG and caller tint; held primitive separately185cases.",
     "rust_source_sha256": {
-      "crates/client11/src/render/entity/item_table.rs": "8c1bba50eb354cc78fb455a18e32a21fb24295ae5bbf976f7522332cdb2f507c",
-      "crates/client11/src/render/entity/gui_item.rs": "5be53898fb7e3d8c10e4aa64f4179328f0f46656a1dc9abc96fb60caaa00fda1",
-      "crates/client11/src/render/entity/objects.rs": "49b531d5caad18527e565a22c8977129c533cf16fb4d9a5fc7caa4e6cb9efdd9",
-      "crates/client11/src/render/entity/bridge.rs": "910ae7101e4496f31f163348d0f73f42d7cf41ed6c03bb4c147a8e8125b7620f"
+      "crates/client11/src/render/entity/item_table.rs": "76479a508637f233a103f793630825c118bd5fc1302b656b122718c0f47460ac",
+      "crates/client11/src/render/entity/gui_item.rs": "d116a3eda4040a9aa1eaec2de9e5c733f945f9a402ea78b1ec6d586c57405432",
+      "crates/client11/src/render/entity/objects.rs": "7cb0b3f9d60a0547cabede78cb5ad347636d7525e7a7dd053eae0486e7fd64e2",
+      "crates/client11/src/render/entity/bridge.rs": "44d0681d4820de249c5a5fa4af2fa904a890e411195973417140ea366abdbfed"
     },
     "original_source_sha256": null,
     "completion_blockers": [],
@@ -2458,9 +2458,9 @@
     "rust_source_sha256": {
       "crates/client11/src/render/entity/models.rs": "cdf34dca08a0d041cebaa8e8dd12693569bba8418313cf4acb14a578ad9a1703",
       "crates/client11/src/render/entity/living.rs": "a0a99b1f56cea8b9dca99b685990745df50c6f1a9b9a4ce0a809e1f83b063b1e",
-      "crates/client11/src/render/entity/raw_living181.rs": "78aabe4a8bcea1d6cd202c0d9a41bdcc97b50f407bdea0f25658cf72471d46cf",
-      "crates/client11/src/render/entity/bridge.rs": "910ae7101e4496f31f163348d0f73f42d7cf41ed6c03bb4c147a8e8125b7620f",
-      "crates/worldgen11/src/entity/sheep11.rs": "436e7a546f9e3277bd3f58c97365d5d2b29782fdc4266ceea18c3ca2fc72a866"
+      "crates/client11/src/render/entity/raw_living181.rs": "be91a22d7022f0176c3cdf06a1dd29f7b9084163e8bc1af3495b65204048ab61",
+      "crates/client11/src/render/entity/bridge.rs": "44d0681d4820de249c5a5fa4af2fa904a890e411195973417140ea366abdbfed",
+      "crates/worldgen11/src/entity/sheep11.rs": "0fb6c965f488376431f4b02d1d04a7e41980910879571cee851172da6f31fe1d"
     },
     "completion_blockers": [],
     "original_source_sha256": {
@@ -2477,9 +2477,9 @@
     "rust_source_sha256": {
       "crates/client11/src/render/entity/models.rs": "cdf34dca08a0d041cebaa8e8dd12693569bba8418313cf4acb14a578ad9a1703",
       "crates/client11/src/render/entity/living.rs": "a0a99b1f56cea8b9dca99b685990745df50c6f1a9b9a4ce0a809e1f83b063b1e",
-      "crates/client11/src/render/entity/raw_living181.rs": "78aabe4a8bcea1d6cd202c0d9a41bdcc97b50f407bdea0f25658cf72471d46cf",
-      "crates/client11/src/render/entity/bridge.rs": "910ae7101e4496f31f163348d0f73f42d7cf41ed6c03bb4c147a8e8125b7620f",
-      "crates/worldgen11/src/entity/sheep11.rs": "436e7a546f9e3277bd3f58c97365d5d2b29782fdc4266ceea18c3ca2fc72a866"
+      "crates/client11/src/render/entity/raw_living181.rs": "be91a22d7022f0176c3cdf06a1dd29f7b9084163e8bc1af3495b65204048ab61",
+      "crates/client11/src/render/entity/bridge.rs": "44d0681d4820de249c5a5fa4af2fa904a890e411195973417140ea366abdbfed",
+      "crates/worldgen11/src/entity/sheep11.rs": "0fb6c965f488376431f4b02d1d04a7e41980910879571cee851172da6f31fe1d"
     },
     "completion_blockers": [],
     "original_source_sha256": {
@@ -2496,9 +2496,9 @@
     "rust_source_sha256": {
       "crates/client11/src/render/entity/models.rs": "cdf34dca08a0d041cebaa8e8dd12693569bba8418313cf4acb14a578ad9a1703",
       "crates/client11/src/render/entity/living.rs": "a0a99b1f56cea8b9dca99b685990745df50c6f1a9b9a4ce0a809e1f83b063b1e",
-      "crates/client11/src/render/entity/raw_living181.rs": "78aabe4a8bcea1d6cd202c0d9a41bdcc97b50f407bdea0f25658cf72471d46cf",
-      "crates/client11/src/render/entity/bridge.rs": "910ae7101e4496f31f163348d0f73f42d7cf41ed6c03bb4c147a8e8125b7620f",
-      "crates/worldgen11/src/entity/sheep11.rs": "436e7a546f9e3277bd3f58c97365d5d2b29782fdc4266ceea18c3ca2fc72a866"
+      "crates/client11/src/render/entity/raw_living181.rs": "be91a22d7022f0176c3cdf06a1dd29f7b9084163e8bc1af3495b65204048ab61",
+      "crates/client11/src/render/entity/bridge.rs": "44d0681d4820de249c5a5fa4af2fa904a890e411195973417140ea366abdbfed",
+      "crates/worldgen11/src/entity/sheep11.rs": "0fb6c965f488376431f4b02d1d04a7e41980910879571cee851172da6f31fe1d"
     },
     "completion_blockers": [],
     "original_source_sha256": {

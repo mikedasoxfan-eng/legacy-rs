@@ -8,6 +8,14 @@ only changes receive the same no-behavior credit supported by r10. No fuzzy mapp
 import argparse, hashlib, json, subprocess
 from pathlib import Path
 ROOT=Path(__file__).resolve().parents[2]
+TEXT_SUFFIXES={'.rs','.txt','.toml','.json','.py','.ps1','.java','.log','.md','.yml','.yaml','.sh','.tsv','.csv'}
+def pinned_digest(path):
+ data=path.read_bytes()
+ # Git stores text as LF (.gitattributes); terminal tools may write CRLF locally.
+ # Normalize only text line endings so checkout platform cannot invalidate evidence.
+ if path.suffix.lower() in TEXT_SUFFIXES:data=data.replace(b'\r\n',b'\n')
+ return hashlib.sha256(data).hexdigest()
+
 def main():
  p=argparse.ArgumentParser();p.add_argument('logs',nargs='*',type=Path);p.add_argument('--output',type=Path);a=p.parse_args()
  # Import only the original section parser, without executing r10 main().
@@ -19,7 +27,7 @@ def main():
  snapshots_path=ROOT/'tools/r11/source-snapshots.json'
  snapshots=json.loads(snapshots_path.read_text(encoding='utf-8')) if snapshots_path.exists() else {}
  def unchanged(hashes):
-  return bool(hashes) and all((ROOT/path).is_file() and hashlib.sha256((ROOT/path).read_bytes()).hexdigest()==digest for path,digest in hashes.items())
+  return bool(hashes) and all((ROOT/path).is_file() and pinned_digest(ROOT/path)==digest for path,digest in hashes.items())
  valid={name: unchanged(snapshots.get(record.get('source_snapshot'),record.get('rust_source_sha256',{}))) and unchanged({record['report']:record['report_sha256']}) for name,record in evidence.items()}
  exact={name: record.get('exact') is True and valid[name] for name,record in evidence.items()}
  for log in a.logs:

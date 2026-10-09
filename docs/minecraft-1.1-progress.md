@@ -2,7 +2,7 @@
 
 **70.04566% verified complete: 1534 / 2,190 normalized changed lines; 93 / 144 classes.**
 
-Runtime checkpoint: `5c8a79e`. This uses the repository's r10 normalized changed-line weighting with the original denominator unchanged. A class earns credit only after its entire singleplayer 1.1 delta has a committed implementation or recorded semantic disposition, a full hunk review, explicit original-bytecode comparisons, and source/evidence hash pins. Partial classes receive zero credit. Recalculate with `python tools/r11/progress.py`. Subsequent source edits invalidate the affected saved credit.
+Runtime checkpoint: `5c8a79e`. This uses the repository's r10 normalized changed-line weighting with the original denominator unchanged. A class earns credit only after its entire singleplayer 1.1 delta has a committed implementation or recorded semantic disposition, a full hunk review, explicit original-bytecode comparisons, and source/evidence hash pins. Partial classes receive zero credit. Recalculate with `python tools/r11/progress.py`. Subsequent source edits invalidate the affected saved credit. Text hash pins normalize CRLF to LF, matching Git storage; binary bytes remain exact.
 
 This is verified delta completion, not release readiness or a claim that every inherited Java API has been reproduced. The earlier unsupported 70% estimate remains withdrawn; this new figure comes from the committed class ledger and direct evidence.
 

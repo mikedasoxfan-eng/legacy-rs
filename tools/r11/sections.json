@@ -4,7 +4,7 @@
     "source_snapshot": "worldgen11",
     "command": "cargo test -p worldgen11 original_11 -- --test-threads=1",
     "report": "reports/r11-progress/inventory-tags11-all-tests.log",
-    "report_sha256": "c8c199b59e73c60cfe79690ab0d6b7e20c5605d65fc174e054fab2642c4aa140",
+    "report_sha256": "05379a03ce19013d3928e1ad1323226a7958f60da26eb1448f96b907600e3b14",
     "original_jar_sha256": "44bb6ace88fdff460d6c428c4becee8cad52f2622e1f800dab7a70f8a716f75b",
     "observations": [
       "47 passed; 0 failed",
@@ -16,7 +16,7 @@
     "source_snapshot": "worldgen11",
     "command": "tools/oracle11/verify_gameplay_slice.ps1",
     "report": "reports/r11-progress/inventory-tags11-oracle.log",
-    "report_sha256": "5048429f40bbb30203024bf9cbecf50a216b043e649db5ca18fcbf8c8a951c42",
+    "report_sha256": "c877abd0ef63b0b7ba25bb0976e5fe6fd58d7f7c4b25e7e2d0715e08d86f8778",
     "original_jar_sha256": "44bb6ace88fdff460d6c428c4becee8cad52f2622e1f800dab7a70f8a716f75b",
     "observations": [
       "ORIGINAL BYTECODE EXACT",
@@ -28,7 +28,7 @@
     "source_snapshot": "worldgen11",
     "command": "tools/verify_r11_worldtype.ps1",
     "report": "reports/r11-progress/checkpoint-verify_r11_worldtype.log",
-    "report_sha256": "686e49fe57a627d8599571e6d141f93b0946bf508255e3c299819e79bdc7f6f1",
+    "report_sha256": "e1d25cd343c35b60e286587c43d7a770a143318dec4c2601d3586eb8e5926380",
     "original_jar_sha256": "44bb6ace88fdff460d6c428c4becee8cad52f2622e1f800dab7a70f8a716f75b",
     "observations": [
       "Full reproducer completed with observed terminal exit0 on this checkpoint; its assertions compared original and production outputs. PowerShell Write-Host success lines are in the task transcript."
@@ -38,7 +38,7 @@
     "exact": true,
     "command": "python tools/r11/verify_settings11.py",
     "source_snapshot": "settings11",
-    "log_sha256": "587ac49b1856d9fe56ae6f1e791be409c098ad0f93e15011ae8489f561283f8d",
+    "log_sha256": "f005ae54561dde4c805f74edf8915f3e4882b98b48619155e024151a0b4bead3",
     "observations": [
       {
         "case": "",
@@ -68,14 +68,14 @@
     ],
     "original_jar_sha256": "44bb6ace88fdff460d6c428c4becee8cad52f2622e1f800dab7a70f8a716f75b",
     "report": "reports/r11-progress/progress11-settings-results.json",
-    "report_sha256": "587ac49b1856d9fe56ae6f1e791be409c098ad0f93e15011ae8489f561283f8d"
+    "report_sha256": "f005ae54561dde4c805f74edf8915f3e4882b98b48619155e024151a0b4bead3"
   },
   "biomes11 changed constants": {
     "exact": true,
     "source_snapshot": "worldgen11",
     "command": "tools/verify_r11_layerbiomes.ps1",
     "report": "reports/r11-progress/checkpoint-verify_r11_layerbiomes.log",
-    "report_sha256": "68c9ae85d16ac196e58de1eb65ccaec3a7e81f728f63a065c34e55e722940784",
+    "report_sha256": "a7bdcd8beef7eb995a473c6784d2be31d7b075667b598336b52161e8253de8e4",
     "original_jar_sha256": "44bb6ace88fdff460d6c428c4becee8cad52f2622e1f800dab7a70f8a716f75b",
     "observations": [
       "Full reproducer completed with observed terminal exit0 on this checkpoint; its assertions compared original and production outputs. PowerShell Write-Host success lines are in the task transcript."
@@ -86,7 +86,7 @@
     "source_snapshot": "worldgen11",
     "command": "tools/verify_r11_flat.ps1",
     "report": "reports/r11-progress/checkpoint-verify_r11_flat.log",
-    "report_sha256": "ebc8600f978d8867fb8e6743c0cac571ae17244b2ca0f1f451d8e50304bb7a0c",
+    "report_sha256": "2362a273029ea810befad354a073e05ae3db305a624d179605795ed811de6d73",
     "original_jar_sha256": "44bb6ace88fdff460d6c428c4becee8cad52f2622e1f800dab7a70f8a716f75b",
     "observations": [
       "Full reproducer completed with observed terminal exit0 on this checkpoint; its assertions compared original and production outputs. PowerShell Write-Host success lines are in the task transcript."
@@ -97,7 +97,7 @@
     "source_snapshot": "worldgen11",
     "command": "tools/verify_r11_layerbiomes.ps1",
     "report": "reports/r11-progress/checkpoint-verify_r11_layerbiomes.log",
-    "report_sha256": "68c9ae85d16ac196e58de1eb65ccaec3a7e81f728f63a065c34e55e722940784",
+    "report_sha256": "a7bdcd8beef7eb995a473c6784d2be31d7b075667b598336b52161e8253de8e4",
     "original_jar_sha256": "44bb6ace88fdff460d6c428c4becee8cad52f2622e1f800dab7a70f8a716f75b",
     "observations": [
       "Full reproducer completed with observed terminal exit0 on this checkpoint; its assertions compared original and production outputs. PowerShell Write-Host success lines are in the task transcript."
@@ -108,7 +108,7 @@
     "source_snapshot": "worldgen11",
     "command": "tools/verify_r11_spawn.ps1",
     "report": "reports/r11-progress/checkpoint-verify_r11_spawn.log",
-    "report_sha256": "6f943ac19f70d39a55a7908a078c46e2be242482bafde0b153cdf47d41e44f2a",
+    "report_sha256": "1c1529ab48050cdfcab2c35e716c249f047dbfe992c694270818a0666110da5b",
     "original_jar_sha256": "44bb6ace88fdff460d6c428c4becee8cad52f2622e1f800dab7a70f8a716f75b",
     "observations": [
       "Full reproducer completed with observed terminal exit0 on this checkpoint; its assertions compared original and production outputs. PowerShell Write-Host success lines are in the task transcript."
@@ -119,7 +119,7 @@
     "source_snapshot": "worldgen11",
     "command": "tools/verify_r11_depthfog.ps1",
     "report": "reports/r11-progress/checkpoint-verify_r11_depthfog.log",
-    "report_sha256": "1870e27f6ef7dd1dbf005c5d6aa65b8513df2c1695aec78ed0119922d31aef5b",
+    "report_sha256": "553c3a5d710cdcfaeaff1c15bc643c0756e04b97c2497faae50be6e5a7bc8821",
     "original_jar_sha256": "44bb6ace88fdff460d6c428c4becee8cad52f2622e1f800dab7a70f8a716f75b",
     "observations": [
       "Full reproducer completed with observed terminal exit0 on this checkpoint; its assertions compared original and production outputs. PowerShell Write-Host success lines are in the task transcript."
@@ -130,7 +130,7 @@
     "source_snapshot": "worldgen11",
     "command": "tools/verify_r11_neighborhood.ps1",
     "report": "reports/r11-progress/checkpoint-verify_r11_neighborhood.log",
-    "report_sha256": "c21b10074bf4e170bf287c1d4e4d166e60873f7592bbc97307dc74cb034652bc",
+    "report_sha256": "cb7fd16bea739b09c481671bd738f43774b4ddfa0eba0c44f1140da99aa70515",
     "original_jar_sha256": "44bb6ace88fdff460d6c428c4becee8cad52f2622e1f800dab7a70f8a716f75b",
     "observations": [
       "Full reproducer completed with observed terminal exit0 on this checkpoint; its assertions compared original and production outputs. PowerShell Write-Host success lines are in the task transcript."
@@ -141,7 +141,7 @@
     "source_snapshot": "worldgen11",
     "command": "tools/verify_r11_dimstorage.ps1",
     "report": "reports/r11-progress/checkpoint-verify_r11_dimstorage.log",
-    "report_sha256": "1870e27f6ef7dd1dbf005c5d6aa65b8513df2c1695aec78ed0119922d31aef5b",
+    "report_sha256": "553c3a5d710cdcfaeaff1c15bc643c0756e04b97c2497faae50be6e5a7bc8821",
     "original_jar_sha256": "44bb6ace88fdff460d6c428c4becee8cad52f2622e1f800dab7a70f8a716f75b",
     "observations": [
       "Full reproducer completed with observed terminal exit0 on this checkpoint; its assertions compared original and production outputs. PowerShell Write-Host success lines are in the task transcript."
@@ -152,7 +152,7 @@
     "source_snapshot": "client11",
     "command": "tools/verify_r11_signfont.ps1",
     "report": "reports/r11-progress/checkpoint-verify_r11_signfont.log",
-    "report_sha256": "5306087bcbe0881cd20e91d432b77cc97d46486329159559251880f883d7dd76",
+    "report_sha256": "75708b3f7809a53b67197442fd8779dd56a4e358bdbe40f837182193356ff358",
     "original_jar_sha256": "44bb6ace88fdff460d6c428c4becee8cad52f2622e1f800dab7a70f8a716f75b",
     "observations": [
       "Full reproducer completed with observed terminal exit0 on this checkpoint; its assertions compared original and production outputs. PowerShell Write-Host success lines are in the task transcript."
@@ -163,7 +163,7 @@
     "source_snapshot": "worldgen11",
     "command": "tools/verify_r11_flatcallers.ps1",
     "report": "reports/r11-progress/checkpoint-verify_r11_flatcallers.log",
-    "report_sha256": "0a427f4621fe0766ae4ae4ec88a9b0faa11559fbcbb888f0996b2d137df8624c",
+    "report_sha256": "4b9f00aedd53d596ccb6c4b2416ad4fa85a0b4766c96395293b29857f1d663a9",
     "original_jar_sha256": "44bb6ace88fdff460d6c428c4becee8cad52f2622e1f800dab7a70f8a716f75b",
     "observations": [
       "Full reproducer completed with observed terminal exit0 on this checkpoint; its assertions compared original and production outputs. PowerShell Write-Host success lines are in the task transcript."
@@ -174,7 +174,7 @@
     "source_snapshot": "worldgen11",
     "command": "tools/verify_r11_strongholdstdout.ps1",
     "report": "reports/r11-progress/checkpoint-verify_r11_strongholdstdout.log",
-    "report_sha256": "3c90f23f5f5faca5b61d4245550bcf42fb797e6a8be43f48deab684a3ce81d99",
+    "report_sha256": "235c600351bca8f14b94cda89497ccfcd9f6d3b7d4d46424772486213fd71ba7",
     "original_jar_sha256": "44bb6ace88fdff460d6c428c4becee8cad52f2622e1f800dab7a70f8a716f75b",
     "observations": [
       "Full reproducer completed with observed terminal exit0 on this checkpoint; its assertions compared original and production outputs. PowerShell Write-Host success lines are in the task transcript."
@@ -185,7 +185,7 @@
     "source_snapshot": "worldgen11",
     "command": "cargo test -p worldgen11 container::release11_tag_tests",
     "report": "reports/r11-progress/inventory-tags11-tests.log",
-    "report_sha256": "9f0138ac3ba2a91ec67a2f98033eac912f548e047c92b83c83d83a50c96ae9a3",
+    "report_sha256": "629b01407e089cf62d9d4ceb2c655cb5b1aa21cf330779c458274d1d6a9730eb",
     "original_jar_sha256": "44bb6ace88fdff460d6c428c4becee8cad52f2622e1f800dab7a70f8a716f75b",
     "observations": [
       "4 passed; 0 failed",
@@ -197,7 +197,7 @@
     "source_snapshot": "worldgen11",
     "command": "tools/oracle11/verify_dormant_ai11.ps1",
     "report": "reports/r11-progress/ai-dormant11-oracle.log",
-    "report_sha256": "5dff8f8e8c7e9e9b56d016b51950b13176e2d8f9cd655f8ee9746f4eb21de179",
+    "report_sha256": "4c9ed852a0e93b87f41f4c51dfada0d6d9165e8e57aa41c14d60aabd1686f140",
     "original_jar_sha256": "44bb6ace88fdff460d6c428c4becee8cad52f2622e1f800dab7a70f8a716f75b",
     "observations": [
       "EXACT",
@@ -209,7 +209,7 @@
     "source_snapshot": "client11",
     "command": "tools/oracle11/language_workflow11.ps1",
     "report": "reports/r11-progress/language-workflow11-verification.log",
-    "report_sha256": "92521481fa81ea6260cf75c54b02de8ecef33ca830b512e46876816ea28f8495",
+    "report_sha256": "70321b747839aa7f20de863d4c30b571d9665653c373653cab1f60bd5a6d6a4f",
     "original_jar_sha256": "44bb6ace88fdff460d6c428c4becee8cad52f2622e1f800dab7a70f8a716f75b",
     "observations": [
       "LANGUAGE WORKFLOW EXACT",
@@ -221,7 +221,7 @@
     "source_snapshot": "client11",
     "command": "tools/verify_r11_text.ps1",
     "report": "reports/r11-progress/language-callbacks11-verification.log",
-    "report_sha256": "725689214bab5189fc2fce9be4e26f8f1888fffa9f5aa2950df75bfc82fdee7c",
+    "report_sha256": "94518b3b5afb5df7b526a2a2dc94cc215178a7dc1a617ab2cde78fe552d836db",
     "original_jar_sha256": "44bb6ace88fdff460d6c428c4becee8cad52f2622e1f800dab7a70f8a716f75b",
     "observations": [
       "168",
@@ -233,7 +233,7 @@
     "source_snapshot": "client11",
     "command": "tools/verify_r11_brewing_gui.ps1",
     "report": "reports/r11-progress/client11-render-checkpoint.log",
-    "report_sha256": "b952791c8ab2ae3875cd27da0d0a53dbd5d910321be930c115ecfef829fb8131",
+    "report_sha256": "1b85ae07c7c96ac4914c5901de45f7462f13d07b6613d6cc62a5c89625cacc9f",
     "original_jar_sha256": "44bb6ace88fdff460d6c428c4becee8cad52f2622e1f800dab7a70f8a716f75b",
     "observations": [
       "brewing EXACT",
@@ -245,7 +245,7 @@
     "source_snapshot": "client11",
     "command": "tools/verify_r11_burninglight.ps1",
     "report": "reports/r11-progress/client11-render-checkpoint.log",
-    "report_sha256": "b952791c8ab2ae3875cd27da0d0a53dbd5d910321be930c115ecfef829fb8131",
+    "report_sha256": "1b85ae07c7c96ac4914c5901de45f7462f13d07b6613d6cc62a5c89625cacc9f",
     "original_jar_sha256": "44bb6ace88fdff460d6c428c4becee8cad52f2622e1f800dab7a70f8a716f75b",
     "observations": [
       "720 burning-light cases",
@@ -257,7 +257,7 @@
     "source_snapshot": "client11",
     "command": "tools/verify_r11_itempasses.ps1",
     "report": "reports/r11-progress/itempass11-test.log",
-    "report_sha256": "d92a545e75c08a2ec790c017b26dae51696bc36f4743a95562b9a418776c07e9",
+    "report_sha256": "60a46996d928057215aaa9c5f5e95ea7f50ceab89b5e355073fa1f01fe56c1c3",
     "original_jar_sha256": "44bb6ace88fdff460d6c428c4becee8cad52f2622e1f800dab7a70f8a716f75b",
     "observations": [
       "383505 comparisons, 0 differences",
@@ -269,7 +269,7 @@
     "source_snapshot": "client11",
     "command": "tools/verify_r11_sheep_render.ps1",
     "report": "reports/r11-progress/checkpoint-verify_r11_sheep_render.log",
-    "report_sha256": "7ca7967b0a52e1261ac427f6182fd934cbb20eb72fef46489e98c9dd1e926fe8",
+    "report_sha256": "82b7821554c83245fe32cb3e76993cd4a615bdb8077b1fd28c4470fa50c7440f",
     "observations": [
       "2974920 comparisons, 0 differences"
     ]
@@ -279,7 +279,7 @@
     "source_snapshot": "client11",
     "command": "tools/verify_r11_formatter.ps1",
     "report": "reports/r11-progress/checkpoint-verify_r11_formatter.log",
-    "report_sha256": "2018b31d3f26e4e3fdb901826988eb335302caecad273cf977d602ae2e51f631",
+    "report_sha256": "ac742df3489f56719a030b4eb8a15b50aa5f4db4639ba6a3e25b7dd3f7ad2eb5",
     "observations": [
       "6976 original vectors, 0 differences"
     ]
