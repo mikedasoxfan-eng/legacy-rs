@@ -51428,6 +51428,16 @@
       "owner": "net/minecraft/src/AchievementList",
       "old_class_sha256": "10898205a50e12b1de2e346be3ba600b7d219e43436e272b4118351913db76d5",
       "new_class_sha256": "bec59c8bc0302cfbc4a7f0d28922baf15b782a0fd2e3e64cbb7c7a85d199c3a3",
+      "original_hierarchy": {
+        "superclass": "java/lang/Object",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "java/lang/Object",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 35,
       "exact": true,
       "differences": []
@@ -51437,6 +51447,16 @@
       "owner": "net/minecraft/src/ActiveRenderInfo",
       "old_class_sha256": "16bf6dffe87a92898e9c7b8f9f2f427e7f9e718e8b8d0c8cc66af33a0ace357c",
       "new_class_sha256": "86b40ca623066fe45b6005930ebdeecd7f708dd58b8e87a75a8baa108bfb162c",
+      "original_hierarchy": {
+        "superclass": "java/lang/Object",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "java/lang/Object",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 17,
       "exact": true,
       "differences": []
@@ -51446,6 +51466,16 @@
       "owner": "net/minecraft/src/AxisAlignedBB",
       "old_class_sha256": "8fffe71d2ae46185753c58fd4abea89e422cc2319c1a63827ec849025dcdc990",
       "new_class_sha256": "aa86b4138be2a0c1229f818376a110a218d0f9ef05b51d9979fc8ccf802c4620",
+      "original_hierarchy": {
+        "superclass": "java/lang/Object",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "java/lang/Object",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 33,
       "exact": true,
       "differences": []
@@ -51455,6 +51485,16 @@
       "owner": "net/minecraft/src/BiomeCache",
       "old_class_sha256": "23f3bb1240f3bf96ec892780fe7b63d7f49d6e06a6e6af1224633faf11c68a89",
       "new_class_sha256": "8d50f4d0d363b4f9438ea13cb25a1fdb887816c6e14f045c203cb7168a450aa5",
+      "original_hierarchy": {
+        "superclass": "java/lang/Object",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "java/lang/Object",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 12,
       "exact": true,
       "differences": []
@@ -51464,6 +51504,16 @@
       "owner": "net/minecraft/src/BiomeCacheBlock",
       "old_class_sha256": "fc42741eae44ee8b6c48b9a6fa2c7d05da50d52ab1c3ef986a40481969943f45",
       "new_class_sha256": "8aaa8f19b5f0d4528cb74e3668fdfed799e6f127e0bee9d050785569daf00911",
+      "original_hierarchy": {
+        "superclass": "java/lang/Object",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "java/lang/Object",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 11,
       "exact": true,
       "differences": []
@@ -51473,6 +51523,16 @@
       "owner": "net/minecraft/src/BiomeDecorator",
       "old_class_sha256": "84833b136e4f983ca3e4fa1dc7c8ddd84dd695ccb48eb5f30fe37957cd1a64a6",
       "new_class_sha256": "9bc8fa1deff940fe142a089eb826629dc527cfa201c90145f0140dceacec05ed",
+      "original_hierarchy": {
+        "superclass": "java/lang/Object",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "java/lang/Object",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 43,
       "exact": true,
       "differences": []
@@ -51482,6 +51542,16 @@
       "owner": "net/minecraft/src/BiomeEndDecorator",
       "old_class_sha256": "7b8cfec2b958b9aefcf97d012010c0f415735f0ba14cf91641d755d274047777",
       "new_class_sha256": "507069b0279c60159e794b450b0e9ca5a016bf75a1410e1463f997d0e66a19f0",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/BiomeDecorator",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/BiomeDecorator",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 3,
       "exact": true,
       "differences": []
@@ -51491,6 +51561,16 @@
       "owner": "net/minecraft/src/BiomeGenMushroomIsland",
       "old_class_sha256": "5ca1da8f86e24ac0112e310e0485e4aee5aae43972dc41d56782dbfe09bf48c6",
       "new_class_sha256": "e1d6cf2ea38e434d301f25c183e171e4efce7266dc89f03917f5437abfd3367e",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/BiomeGenBase",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/BiomeGenBase",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 1,
       "exact": true,
       "differences": []
@@ -51500,6 +51580,16 @@
       "owner": "net/minecraft/src/BlockBrewingStand",
       "old_class_sha256": "c40b9dec015030a1fdbf4f32f26469c6e23701e2d8618e18b3b70c036fc7031f",
       "new_class_sha256": "91f6d7125531cfbf9a1a2cec3e97d0f1966b800f9951fef86998e0dca923dbee",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/BlockContainer",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/BlockContainer",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 12,
       "exact": true,
       "differences": []
@@ -51509,6 +51599,16 @@
       "owner": "net/minecraft/src/BlockCake",
       "old_class_sha256": "97963b1d90a50d413dd5b638c894352969c9968abde4bdfcb01ead020d1deac0",
       "new_class_sha256": "489237d5f0569380c844788f7a4d759db22f9a1ae7dcb08f8e8c5fa7daa94aea",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/Block",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/Block",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 17,
       "exact": true,
       "differences": []
@@ -51518,6 +51618,16 @@
       "owner": "net/minecraft/src/BlockCauldron",
       "old_class_sha256": "338ad439ea7b8496167f75fe96097ecfcfc2d3b4c34118f969dfac0a6b15dc2b",
       "new_class_sha256": "204ddaed8bab6823ffa6df3b28216de2dbe9e4263b2f94a698dbdc22ba187dae",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/Block",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/Block",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 9,
       "exact": true,
       "differences": []
@@ -51527,6 +51637,16 @@
       "owner": "net/minecraft/src/BlockChest",
       "old_class_sha256": "858c3ba263cb4d93cc237b20f3052d2707660e202c00efe1877e197d30fef85f",
       "new_class_sha256": "f59112cf1b323fc9e3397878aecbddcee37dcc6750eae1b10b79630eabeb44bc",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/BlockContainer",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/BlockContainer",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 16,
       "exact": true,
       "differences": []
@@ -51536,6 +51656,16 @@
       "owner": "net/minecraft/src/BlockContainer",
       "old_class_sha256": "3659b4a7c41fb8d9f0748198d3fda184f531013108217c4e7259fb38f3167312",
       "new_class_sha256": "b6bf02044668f30dc6db07685633c0d8c065df30ab36235a5a4309955a75c659",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/Block",
+        "interfaces": [],
+        "flags": 1057
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/Block",
+        "interfaces": [],
+        "flags": 1057
+      },
       "members_compared": 6,
       "exact": true,
       "differences": []
@@ -51545,6 +51675,16 @@
       "owner": "net/minecraft/src/BlockCrops",
       "old_class_sha256": "6bf7325350902742601c30a4401879d0cb63fd2fb38f850bc699811cb91aee2a",
       "new_class_sha256": "05a82f83b7979933ee437a81df31b25d92f481d338e0d01fa2211c9a081ee313",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/BlockFlower",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/BlockFlower",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 10,
       "exact": true,
       "differences": []
@@ -51554,6 +51694,16 @@
       "owner": "net/minecraft/src/BlockDispenser",
       "old_class_sha256": "43effdeb1236f360d93c85c739a0f0865f4814fd29f18061522e028f7edb55fe",
       "new_class_sha256": "cc5f459bbe43efd0a2bb3356248ba7aa41c3d8434e959f4740c0243dc6547092",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/BlockContainer",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/BlockContainer",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 15,
       "exact": true,
       "differences": []
@@ -51563,6 +51713,16 @@
       "owner": "net/minecraft/src/BlockDragonEgg",
       "old_class_sha256": "f39fcfed9b64729f42448a3fe7edd61ba0e1d6c86a2eb5dd962e400b88410a16",
       "new_class_sha256": "77e1d0ce915c44a24efbb65f30dbb39dfa44d2db2cbecb72760de675654fe3a4",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/Block",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/Block",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 13,
       "exact": true,
       "differences": []
@@ -51572,6 +51732,16 @@
       "owner": "net/minecraft/src/BlockEnchantmentTable",
       "old_class_sha256": "8bf9155dd1dc893d8397f6decd6de22a2780907ed661b816fc23bca210e58a8a",
       "new_class_sha256": "d5596abfdd0c71322a9b8312a58d0092e8e4ea06fa86baed2ff625b30fb3370f",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/BlockContainer",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/BlockContainer",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 8,
       "exact": true,
       "differences": []
@@ -51581,6 +51751,16 @@
       "owner": "net/minecraft/src/BlockEndPortal",
       "old_class_sha256": "f74cd69be7730b1cef7aa1daef86afe292556e1992467b8a5681e5a77204b491",
       "new_class_sha256": "ea1a67276c3e2a33a9c9e8c0357f13ede10d22c6f41b5179a4068a59002e43da",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/BlockContainer",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/BlockContainer",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 14,
       "exact": true,
       "differences": []
@@ -51590,6 +51770,16 @@
       "owner": "net/minecraft/src/BlockEndPortalFrame",
       "old_class_sha256": "853ad8115b425e63e6eda44e546926a39b6d013178f606fc28383b286bb63630",
       "new_class_sha256": "acd103afb2b7dfd4a4bd46b1cc2e2c376ee73541214173ea968a64630c528548",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/Block",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/Block",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 9,
       "exact": true,
       "differences": []
@@ -51599,6 +51789,16 @@
       "owner": "net/minecraft/src/BlockFlowing",
       "old_class_sha256": "9f27106574eb633ff9f9541bb287f67935f08d3219184207a00eb3c1b064de13",
       "new_class_sha256": "1982b0a8ec2098337770b0fd937265be29ec112dcd33d8f95a92baa61630f650",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/BlockFluid",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/BlockFluid",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 13,
       "exact": true,
       "differences": []
@@ -51608,6 +51808,16 @@
       "owner": "net/minecraft/src/BlockFurnace",
       "old_class_sha256": "5d4d84c163d1faa7b4990df36865ba0b394ac769f0c046189f620a99b32752e6",
       "new_class_sha256": "384e9f1484dee3575df4fdc0c4216e1a37fa61fa45ae46d40ebbc043c3a01e56",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/BlockContainer",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/BlockContainer",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 16,
       "exact": true,
       "differences": []
@@ -51617,6 +51827,16 @@
       "owner": "net/minecraft/src/BlockGlowStone",
       "old_class_sha256": "585dbcf36be6d96e1501955586a4ad7f37e07937534766a1b9cf7c275147b582",
       "new_class_sha256": "68d7eea6a287eeb0ce76bfd7a195c18151dc90eecc2cb26f3a5e0dbe76f496e1",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/Block",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/Block",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 4,
       "exact": true,
       "differences": []
@@ -51626,6 +51846,16 @@
       "owner": "net/minecraft/src/BlockIce",
       "old_class_sha256": "c2dbd940ca23d55901b6a7bb7959cd0aa53656ab0de5c552abaf522ca3ae5feb",
       "new_class_sha256": "e285df82f6bad6ee412dadec4029f9e6fe44f3606c2873a054e0e7c72d74da93",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/BlockBreakable",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/BlockBreakable",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 8,
       "exact": true,
       "differences": []
@@ -51635,6 +51865,16 @@
       "owner": "net/minecraft/src/BlockJukeBox",
       "old_class_sha256": "15b79cb1adf4ebde10066a63581b2d5b37d029cd0efa2308581e646a086cba94",
       "new_class_sha256": "f9e5e9f3590d4b597f6f5ec284713b9142cb246ceaf7bc08743382582859172b",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/BlockContainer",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/BlockContainer",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 8,
       "exact": true,
       "differences": []
@@ -51644,6 +51884,16 @@
       "owner": "net/minecraft/src/BlockLilyPad",
       "old_class_sha256": "c3397ece3a2228834634540f0b0625beed98965a4347d43e809209118f44c4f9",
       "new_class_sha256": "2ba69850120d447aab637ed450a113198a1c10d39a6f0be3228fd18755c4b756",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/BlockFlower",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/BlockFlower",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 9,
       "exact": true,
       "differences": []
@@ -51653,6 +51903,16 @@
       "owner": "net/minecraft/src/BlockMelon",
       "old_class_sha256": "a5b4f42afc30685ad6e6d783c98bceffac43575d071deafbd8e877cfc4a41362",
       "new_class_sha256": "f5297c4363590114f8479d2d81bfd5194b7cb00c05144fd07ee862e5d8916106",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/Block",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/Block",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 6,
       "exact": true,
       "differences": []
@@ -51662,6 +51922,16 @@
       "owner": "net/minecraft/src/BlockMushroom",
       "old_class_sha256": "4d9dd5b2659cbd436f84bd959e6d6d91862e29894c8b30bb413d37b07350b606",
       "new_class_sha256": "8714293e99878d33b8bc34822be0a9cc0bab445a4d6b5701fd61ddcf6d92a7e6",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/BlockFlower",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/BlockFlower",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 5,
       "exact": true,
       "differences": []
@@ -51671,6 +51941,16 @@
       "owner": "net/minecraft/src/BlockMushroomCap",
       "old_class_sha256": "8969782607a4f836870090b9ed5d169e9ef5b186164b20f09c9a86bc2cbad0bc",
       "new_class_sha256": "f8233b64ac736c9298ca80bec281f0ad7a0af3674e5c46930b7d3d53d1c4125b",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/Block",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/Block",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 5,
       "exact": true,
       "differences": []
@@ -51680,6 +51960,16 @@
       "owner": "net/minecraft/src/BlockOre",
       "old_class_sha256": "cf80b9dd0785674ce83024a3d4776dae2f6e97f1c5bda6db32b2ca606ff59d57",
       "new_class_sha256": "76e4045fe2a69f748cccc7885c502d188da73732ce93563bb5030e3055b31115",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/Block",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/Block",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 5,
       "exact": true,
       "differences": []
@@ -51689,6 +51979,16 @@
       "owner": "net/minecraft/src/BlockPane",
       "old_class_sha256": "83f146692c00766c2755cc07712a941391c0b4da49b407ce45a9644e7a466f8a",
       "new_class_sha256": "2427f70605e87fbb4cb3293359b0a4ca6bfddb82a958bf5ca43b91e9c3c2d8a0",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/Block",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/Block",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 13,
       "exact": true,
       "differences": []
@@ -51698,6 +51998,16 @@
       "owner": "net/minecraft/src/BlockPistonBase",
       "old_class_sha256": "dd4d5dd33f5925f3adee5ebc2f082bbd1d7a6641d02cbd1c6348b0042a1702e4",
       "new_class_sha256": "207a9ee3be34f470007cb6e0b3adeb5faa0dcf23c1ed6903a632621693239a1f",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/Block",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/Block",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 24,
       "exact": true,
       "differences": []
@@ -51707,6 +52017,16 @@
       "owner": "net/minecraft/src/BlockPistonMoving",
       "old_class_sha256": "34009e35d1d7bcc22ae11df604b7d977e7b753cc46d3be4473a7ee58f9a3244e",
       "new_class_sha256": "45f1142aae1a94ac29c2de3645255559c86301b7cbef2e0aaea15b35cce0a9ff",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/BlockContainer",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/BlockContainer",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 18,
       "exact": true,
       "differences": []
@@ -51716,6 +52036,16 @@
       "owner": "net/minecraft/src/BlockPumpkin",
       "old_class_sha256": "e2b4cf0937d0801c49eed3bb38bccac9bb6e57651338545f28e39f3b70217bbf",
       "new_class_sha256": "7881f40d2289c8b03d9ff255a1a088dcd1372ef58601f29a28cecdbe0fe2cde3",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/Block",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/Block",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 7,
       "exact": true,
       "differences": []
@@ -51725,6 +52055,16 @@
       "owner": "net/minecraft/src/BlockRedstoneOre",
       "old_class_sha256": "f74b589ab2be9e1464bce14d9965a1ae9954b65da99ee84c38f1c9c4e230cd0f",
       "new_class_sha256": "c8da4e2a0549a154a122c86a5b8da3a57910e455b6a732efc91cb4438be8da25",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/Block",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/Block",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 14,
       "exact": true,
       "differences": []
@@ -51734,6 +52074,16 @@
       "owner": "net/minecraft/src/BlockSand",
       "old_class_sha256": "49b8f51cd9a7dea4bb17c14d6d1ed7fdfa671a79645ae5bc242f77819a0a879b",
       "new_class_sha256": "3170879d6b663d2f8eb68f0cbc95a18091c23242c4a0bab6f3961546f3d1a389",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/Block",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/Block",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 9,
       "exact": true,
       "differences": []
@@ -51743,6 +52093,16 @@
       "owner": "net/minecraft/src/BlockSilverfish",
       "old_class_sha256": "2e9721cc359adc0509ee51bdf724837bddc30bddba99766343de900d725b7e00",
       "new_class_sha256": "8cb44058077a549468cc246bcd3f0cd0f26e8cf6c4d2b133203cdb0b2d4bb17a",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/Block",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/Block",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 8,
       "exact": true,
       "differences": []
@@ -51752,6 +52112,16 @@
       "owner": "net/minecraft/src/BlockStationary",
       "old_class_sha256": "82b2e929561c1bbf326f7df6a5d4be379b664f370786bf032bb4d1da48b5b0ca",
       "new_class_sha256": "b1826be42bb13427fc5243297ab9e338fd666bea3553d615487b6f82b730fe64",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/BlockFluid",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/BlockFluid",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 5,
       "exact": true,
       "differences": []
@@ -51761,6 +52131,16 @@
       "owner": "net/minecraft/src/BlockStep",
       "old_class_sha256": "abf99fa348e25d0c21c445acaf7e85d158cc06e5d88ad31c01180f90441946fb",
       "new_class_sha256": "b3f3ca43b0a88c3e4f180030d095dba1c53ad393fbea3f7028eda9e737c0151e",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/Block",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/Block",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 14,
       "exact": true,
       "differences": []
@@ -51770,6 +52150,16 @@
       "owner": "net/minecraft/src/BlockTNT",
       "old_class_sha256": "71a9344d84037a3061c923c5f1e07a3ba6e489e3d3b9d52f1244f962fb288efb",
       "new_class_sha256": "d80e7c83bdcd138fc9c6de71d122fa82e3496ffe2fe8cbf6b87db9f2819ea8f5",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/Block",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/Block",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 10,
       "exact": true,
       "differences": []
@@ -51779,6 +52169,16 @@
       "owner": "net/minecraft/src/BlockTallGrass",
       "old_class_sha256": "0d893099aae350e6a90158555b05888fa5241b205aa92efa11aefd2520107ea5",
       "new_class_sha256": "4cf40b739ddb7f499c82e003cee19d9cba0af90429d0fd5c813cc9efee63007c",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/BlockFlower",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/BlockFlower",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 8,
       "exact": true,
       "differences": []
@@ -51788,6 +52188,16 @@
       "owner": "net/minecraft/src/BlockTorch",
       "old_class_sha256": "5e4b397f16d894381107d3fe8a322a3d057806604f4c62626a21c75e80a25d33",
       "new_class_sha256": "f3af1694bdb9dca3f15c2d013e9e26671795ee644447d26118a1af707159e645",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/Block",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/Block",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 14,
       "exact": true,
       "differences": []
@@ -51797,6 +52207,16 @@
       "owner": "net/minecraft/src/BlockVine",
       "old_class_sha256": "ac1907249226b1d6a25cd669c5bd425900b2e5276fb099e7edf09659cafc96d0",
       "new_class_sha256": "c108abf142895382a64b6e248139a1b7f3d8587c05e264b880028d6088981794",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/Block",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/Block",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 19,
       "exact": true,
       "differences": []
@@ -51806,6 +52226,16 @@
       "owner": "net/minecraft/src/ChunkBlockMap",
       "old_class_sha256": "009c78bb995bf6038c025c89265c0248e1dc4e1b0f99093de0faff5a54e293db",
       "new_class_sha256": "df5efd36f9cd79126b428ae60f0e3484e2c5ce3ae48a0cc055d952f8fd6d17d0",
+      "original_hierarchy": {
+        "superclass": "java/lang/Object",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "java/lang/Object",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 4,
       "exact": true,
       "differences": []
@@ -51815,6 +52245,20 @@
       "owner": "net/minecraft/src/ChunkCache",
       "old_class_sha256": "74c631567b299085d70cc93c1da598227ed895b5c8bd7ebc2c3875c573b0e6e9",
       "new_class_sha256": "32ff38374415e8746bc01429d80787632a23de44ab9381f781cff98da59e16db",
+      "original_hierarchy": {
+        "superclass": "java/lang/Object",
+        "interfaces": [
+          "net/minecraft/src/IBlockAccess"
+        ],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "java/lang/Object",
+        "interfaces": [
+          "net/minecraft/src/IBlockAccess"
+        ],
+        "flags": 33
+      },
       "members_compared": 21,
       "exact": true,
       "differences": []
@@ -51824,6 +52268,20 @@
       "owner": "net/minecraft/src/ChunkCoordinates",
       "old_class_sha256": "a6a50a4464131ce59bf7be951817f69f80f1aa2db32fa09ff1660b1dc3d3adad",
       "new_class_sha256": "d8ca4316d91fac68aa6eb7f0b05153435215c4c2d1b0c1de70a644ad14fa723b",
+      "original_hierarchy": {
+        "superclass": "java/lang/Object",
+        "interfaces": [
+          "java/lang/Comparable"
+        ],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "java/lang/Object",
+        "interfaces": [
+          "java/lang/Comparable"
+        ],
+        "flags": 33
+      },
       "members_compared": 11,
       "exact": true,
       "differences": []
@@ -51833,6 +52291,20 @@
       "owner": "net/minecraft/src/ChunkFile",
       "old_class_sha256": "1fab2ae78a073adab156fd49586d3d75cff2e8e1992f53d934d7e5e193a8e8a3",
       "new_class_sha256": "9f906d2b36649d925164af78d729a22fc4dd0ca4985934bf5c9b277491b2b200",
+      "original_hierarchy": {
+        "superclass": "java/lang/Object",
+        "interfaces": [
+          "java/lang/Comparable"
+        ],
+        "flags": 32
+      },
+      "new_hierarchy": {
+        "superclass": "java/lang/Object",
+        "interfaces": [
+          "java/lang/Comparable"
+        ],
+        "flags": 32
+      },
       "members_compared": 9,
       "exact": true,
       "differences": []
@@ -51842,6 +52314,20 @@
       "owner": "net/minecraft/src/ChunkLoader",
       "old_class_sha256": "49e93af0ea7ca13f109fd58a0ad70e1958ab1e442fb997e32075fb04f971744b",
       "new_class_sha256": "8404a3aad7993e87484e6089c74b44a9b36134493fa40fc24d86ca3d298121d1",
+      "original_hierarchy": {
+        "superclass": "java/lang/Object",
+        "interfaces": [
+          "net/minecraft/src/IChunkLoader"
+        ],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "java/lang/Object",
+        "interfaces": [
+          "net/minecraft/src/IChunkLoader"
+        ],
+        "flags": 33
+      },
       "members_compared": 11,
       "exact": true,
       "differences": []
@@ -51851,6 +52337,20 @@
       "owner": "net/minecraft/src/ChunkProvider",
       "old_class_sha256": "1095bd57848582ae85dd5407d76057dc59fb632678bf6e013b63cf2831b35792",
       "new_class_sha256": "13d7d845f182bc96912801c4df07374c0d7956746616177f853e5678d2415dbc",
+      "original_hierarchy": {
+        "superclass": "java/lang/Object",
+        "interfaces": [
+          "net/minecraft/src/IChunkProvider"
+        ],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "java/lang/Object",
+        "interfaces": [
+          "net/minecraft/src/IChunkProvider"
+        ],
+        "flags": 33
+      },
       "members_compared": 23,
       "exact": true,
       "differences": []
@@ -51860,6 +52360,20 @@
       "owner": "net/minecraft/src/ChunkProviderEnd",
       "old_class_sha256": "05c9e356889602d8d65abadb24f5bed9c302cc75b4b80a92b6742550df23bb80",
       "new_class_sha256": "8ad6c4309ba3965c869e4cda197b507c7fb30803c694c8405124b230fd31de46",
+      "original_hierarchy": {
+        "superclass": "java/lang/Object",
+        "interfaces": [
+          "net/minecraft/src/IChunkProvider"
+        ],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "java/lang/Object",
+        "interfaces": [
+          "net/minecraft/src/IChunkProvider"
+        ],
+        "flags": 33
+      },
       "members_compared": 29,
       "exact": true,
       "differences": []
@@ -51869,6 +52383,20 @@
       "owner": "net/minecraft/src/ChunkProviderHell",
       "old_class_sha256": "3ed170349e94c0f2194b302b951cbf34ef838271912d759eae82ec5b7ef468ac",
       "new_class_sha256": "352d14e655d1761df5f78fc8a24f95525b1f11704ccc3876baca45e318945c1a",
+      "original_hierarchy": {
+        "superclass": "java/lang/Object",
+        "interfaces": [
+          "net/minecraft/src/IChunkProvider"
+        ],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "java/lang/Object",
+        "interfaces": [
+          "net/minecraft/src/IChunkProvider"
+        ],
+        "flags": 33
+      },
       "members_compared": 34,
       "exact": true,
       "differences": []
@@ -51878,6 +52406,20 @@
       "owner": "net/minecraft/src/ChunkProviderLoadOrGenerate",
       "old_class_sha256": "7446992451ded6c24784b67983bc41f802cb0974e5e153311bf8fbc3a6e73fc2",
       "new_class_sha256": "e407e19beb90f3f8d3fda0c550d88d09fb2f67dfefb5fcd3e3aba6922502de77",
+      "original_hierarchy": {
+        "superclass": "java/lang/Object",
+        "interfaces": [
+          "net/minecraft/src/IChunkProvider"
+        ],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "java/lang/Object",
+        "interfaces": [
+          "net/minecraft/src/IChunkProvider"
+        ],
+        "flags": 33
+      },
       "members_compared": 25,
       "exact": true,
       "differences": []
@@ -51887,6 +52429,16 @@
       "owner": "net/minecraft/src/ColorizerWater",
       "old_class_sha256": "fa2c17bd99899ff40cc89da99aecf8742595065dbe2de949fc55ecfcbee37723",
       "new_class_sha256": "a9ad8594a166c03a2ebe7382d06d13c825968a2f294449bf6f0cb913061b5a1d",
+      "original_hierarchy": {
+        "superclass": "java/lang/Object",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "java/lang/Object",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 4,
       "exact": true,
       "differences": []
@@ -51896,6 +52448,16 @@
       "owner": "net/minecraft/src/ComponentMineshaftCorridor",
       "old_class_sha256": "9a448138accc51c7576621fb7beb8916bee3c6f4faedda9be62d9dbb0ad17b4c",
       "new_class_sha256": "6379a990f640d6d7badff34b5828d0bf4c1161b6c9a6095b6401a3571a98a20c",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/StructureComponent",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/StructureComponent",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 8,
       "exact": true,
       "differences": []
@@ -51905,6 +52467,16 @@
       "owner": "net/minecraft/src/ComponentMineshaftCross",
       "old_class_sha256": "29f6d36bb10e422c72774f4c45ea29a75176e95a1a1ec5c0213fa819b6096598",
       "new_class_sha256": "17f2b4b274557c7e0321079166d8af1239fedaa23d672bfde89522537d9b5c0e",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/StructureComponent",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/StructureComponent",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 6,
       "exact": true,
       "differences": []
@@ -51914,6 +52486,16 @@
       "owner": "net/minecraft/src/ComponentMineshaftRoom",
       "old_class_sha256": "a059ecd98a049a43f31dce5e10961ccc2fda8506e08f09401e60ab142f84710c",
       "new_class_sha256": "523cb1f79a03b0934e1e0910b9030b2e006c4b8b7f3540ca06c396832dba8195",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/StructureComponent",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/StructureComponent",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 4,
       "exact": true,
       "differences": []
@@ -51923,6 +52505,16 @@
       "owner": "net/minecraft/src/ComponentMineshaftStairs",
       "old_class_sha256": "8835c840f9878fab6fdb58d84b8ec85dd692a143a0f2b788b007273f6027108f",
       "new_class_sha256": "5721fa138b74cdc2e8f860f4659f1ffdea086821973979cc1e66c332df91c5c7",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/StructureComponent",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/StructureComponent",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 4,
       "exact": true,
       "differences": []
@@ -51932,6 +52524,16 @@
       "owner": "net/minecraft/src/ComponentNetherBridgeCorridor3",
       "old_class_sha256": "562f9fcfc85b500dfb69b2df9131ad20196a379398dc9df6ea93894386b4828c",
       "new_class_sha256": "5536cfa0a8b7ef23cdf78079cd89fbe2b94a2d42315de07871d06f0656605ea5",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/ComponentNetherBridgePiece",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/ComponentNetherBridgePiece",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 4,
       "exact": true,
       "differences": []
@@ -51941,6 +52543,16 @@
       "owner": "net/minecraft/src/ComponentNetherBridgeNetherStalkRoom",
       "old_class_sha256": "09f8d4c11241b2b3180b4382d4349a2696de0022f039bc8c8dc5855ac639ad16",
       "new_class_sha256": "3e83a5d19447687346bde40b84c998e28c1aee09f9c60122bac6b59a98dea567",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/ComponentNetherBridgePiece",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/ComponentNetherBridgePiece",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 4,
       "exact": true,
       "differences": []
@@ -51950,6 +52562,16 @@
       "owner": "net/minecraft/src/ComponentNetherBridgePiece",
       "old_class_sha256": "557db37c4c7460bcda5088e76d10cc138185d84bfb8b767abf151ed9df085e88",
       "new_class_sha256": "916c82121d9760704513aa062ad485285aeb672a05a399eb64f546fa0117a9c5",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/StructureComponent",
+        "interfaces": [],
+        "flags": 1056
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/StructureComponent",
+        "interfaces": [],
+        "flags": 1056
+      },
       "members_compared": 8,
       "exact": true,
       "differences": []
@@ -51959,6 +52581,16 @@
       "owner": "net/minecraft/src/ComponentStronghold",
       "old_class_sha256": "662e3a5181c49f4e0c4c271e5a3821e9b863fb755fa3bf14e025569d47a2d277",
       "new_class_sha256": "0cffeddf3a5e3263a077acbd4ece9e2d588827c0a2ff12fe31dc5e1390c6ae55",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/StructureComponent",
+        "interfaces": [],
+        "flags": 1056
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/StructureComponent",
+        "interfaces": [],
+        "flags": 1056
+      },
       "members_compared": 7,
       "exact": true,
       "differences": []
@@ -51968,6 +52600,16 @@
       "owner": "net/minecraft/src/ComponentStrongholdLibrary",
       "old_class_sha256": "24206fe83ae99a0abee26d37d8aceffd7403db829518a4ed3c61c651b91d6c65",
       "new_class_sha256": "fba9d121a5bb7e5c1aafaaab26b6946a99a4be953b73f1d9d0dc6197fe926965",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/ComponentStronghold",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/ComponentStronghold",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 8,
       "exact": true,
       "differences": []
@@ -51977,6 +52619,16 @@
       "owner": "net/minecraft/src/ComponentStrongholdPortalRoom",
       "old_class_sha256": "adca38c1dca012aaa7362fdcdd2f3bbdeaae9e3b867a599027b3589eb0053217",
       "new_class_sha256": "882d6137541df489ab54b690d3b5fd66c24214088d225b7542fe9b11d5922f1f",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/ComponentStronghold",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/ComponentStronghold",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 5,
       "exact": true,
       "differences": []
@@ -51986,6 +52638,16 @@
       "owner": "net/minecraft/src/ComponentStrongholdPrison",
       "old_class_sha256": "2a9784bf6fd45648bbcf969a8e0d0fc5bb0cb1e23acb7dba1f378dd98bad1f2e",
       "new_class_sha256": "c0393ef3358e2e8baf4105b144a5b40909aa0bc3504bb412668440b5b842d00d",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/ComponentStronghold",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/ComponentStronghold",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 5,
       "exact": true,
       "differences": []
@@ -51995,6 +52657,16 @@
       "owner": "net/minecraft/src/ComponentStrongholdRoomCrossing",
       "old_class_sha256": "359fe1b1ddc7e5dd153f31631b21973a8c46dcb502409ae82d3d15b3755b3001",
       "new_class_sha256": "931c25159f47f866be6a0d61474bd139cae9d54fdfbad498d7fd9b16797e255f",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/ComponentStronghold",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/ComponentStronghold",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 8,
       "exact": true,
       "differences": []
@@ -52004,6 +52676,16 @@
       "owner": "net/minecraft/src/ComponentStrongholdStairsStraight",
       "old_class_sha256": "56934f36a24a3360a32d56f6e5aba016371de4b93950dcef3bc9bb75d41dcb0e",
       "new_class_sha256": "4a64fa80443d7e8523208a6cc1fa45b797ffeeae6a608cba9d0bd428501706cd",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/ComponentStronghold",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/ComponentStronghold",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 5,
       "exact": true,
       "differences": []
@@ -52013,6 +52695,16 @@
       "owner": "net/minecraft/src/ComponentVillageChurch",
       "old_class_sha256": "29795929d05d2789bb504d635f727bf85b606e482dce9e5bde6a14b0bf374aaf",
       "new_class_sha256": "a29dad0707054ea73834415ec9d98c8ae0ccb10c77f5eb8233c4a57c18b638fa",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/ComponentVillage",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/ComponentVillage",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 6,
       "exact": true,
       "differences": []
@@ -52022,6 +52714,16 @@
       "owner": "net/minecraft/src/ComponentVillageField",
       "old_class_sha256": "fd27992d68b412c5ecf1e50873c99991e1d20d49b18bd374481922ae70c82479",
       "new_class_sha256": "701ec3ca2db65703707f254e8b517f9079fada7452f0810f3af92d1b902e68f4",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/ComponentVillage",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/ComponentVillage",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 5,
       "exact": true,
       "differences": []
@@ -52031,6 +52733,16 @@
       "owner": "net/minecraft/src/ComponentVillageField2",
       "old_class_sha256": "425d804c8891f7dc5cacb0681d06690a2e3ed8fbcf39ae6661c38c8934c22d91",
       "new_class_sha256": "40dbdb88e4b04241a29741d1df1064382338f0aae09b0489e26be9adb6c973f7",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/ComponentVillage",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/ComponentVillage",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 5,
       "exact": true,
       "differences": []
@@ -52040,6 +52752,16 @@
       "owner": "net/minecraft/src/ComponentVillageHall",
       "old_class_sha256": "bb6830c869d3c77ca1682e513e343a7392d92d7361b5e27be5193a1dc69b114c",
       "new_class_sha256": "92fbedf94b9e6b6c789f0f6a0d5bf5589d4318e6cb99cc2bab0e554c5bec0374",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/ComponentVillage",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/ComponentVillage",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 6,
       "exact": true,
       "differences": []
@@ -52049,6 +52771,16 @@
       "owner": "net/minecraft/src/ComponentVillageHouse1",
       "old_class_sha256": "949921e464261e924e919f3da8e8f5d755e333c1f7a418f347aa5df255e078fc",
       "new_class_sha256": "23442cc1b1b38e1621cc2817627bdc34beb18917b8c50a75b2d738f52eb2806a",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/ComponentVillage",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/ComponentVillage",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 6,
       "exact": true,
       "differences": []
@@ -52058,6 +52790,16 @@
       "owner": "net/minecraft/src/ComponentVillageHouse3",
       "old_class_sha256": "7f296ded77d30b07e4eaee8f09c7a38fe48f54afb033943d32e8526fd34b6036",
       "new_class_sha256": "a074383069c2f1781a8472c000c5a38419524a84a995389469d4b0881e96a539",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/ComponentVillage",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/ComponentVillage",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 5,
       "exact": true,
       "differences": []
@@ -52067,6 +52809,16 @@
       "owner": "net/minecraft/src/ComponentVillageHouse4_Garden",
       "old_class_sha256": "1d0db45ea98adb6e75188e3342d019ff2768346861912be4d8b0057eae437c77",
       "new_class_sha256": "4a84611f7341fd691205054625edc2b0470d43b208fc42c3904cb4d4db498cf3",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/ComponentVillage",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/ComponentVillage",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 6,
       "exact": true,
       "differences": []
@@ -52076,6 +52828,16 @@
       "owner": "net/minecraft/src/ComponentVillagePathGen",
       "old_class_sha256": "a323de7a69b09be10cdc18561f564be1e0d44e5be83a4c9021aeef26522e0c66",
       "new_class_sha256": "beed34a7f0da44bb11f059601fe4a16a81a46c1a5592230b08aad75a74aa40a5",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/ComponentVillageRoadPiece",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/ComponentVillageRoadPiece",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 5,
       "exact": true,
       "differences": []
@@ -52085,6 +52847,16 @@
       "owner": "net/minecraft/src/ComponentVillageTorch",
       "old_class_sha256": "888bb93a596337f88602a6965b0a92bab3b3b7910ee92e1c39b924b95544afc7",
       "new_class_sha256": "cd7121184d843e6db290efee9966881fd31a0a2ff0709ab6df02b64c85ed09fa",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/ComponentVillage",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/ComponentVillage",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 5,
       "exact": true,
       "differences": []
@@ -52094,6 +52866,16 @@
       "owner": "net/minecraft/src/ComponentVillageWell",
       "old_class_sha256": "1ba7d284917dcb9ad1981386ac5b8e74d4c3831a1589567a17c8e066a6cbbc1a",
       "new_class_sha256": "bcab430d14cc4f74b63ed010e8e3592a7664297d143e00238844723da3c5f207",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/ComponentVillage",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/ComponentVillage",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 5,
       "exact": true,
       "differences": []
@@ -52103,6 +52885,16 @@
       "owner": "net/minecraft/src/ComponentVillageWoodHut",
       "old_class_sha256": "1af3cb9c34389a7d21c2c891c8d58859287c1f30c38b22ca3116ba427950ce5c",
       "new_class_sha256": "45e3d14fb64d29d2aaced708c5cd63d405fa7e2d2d46c28e737ce00dc6615f15",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/ComponentVillage",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/ComponentVillage",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 7,
       "exact": true,
       "differences": []
@@ -52112,6 +52904,16 @@
       "owner": "net/minecraft/src/CompressedStreamTools",
       "old_class_sha256": "1641d73c97628db176977b937ea9fd076824e782a8703cd6c925aa7fe482ea18",
       "new_class_sha256": "94d03ae884bd9d662fa978457ad5154840a4e514803c12d367c01c1eaa9d8406",
+      "original_hierarchy": {
+        "superclass": "java/lang/Object",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "java/lang/Object",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 10,
       "exact": true,
       "differences": []
@@ -52121,6 +52923,16 @@
       "owner": "net/minecraft/src/ContainerBrewingStand",
       "old_class_sha256": "5fef5df8e20217c426389e0001bb2e9498520a751ba92535102d080baacef7a3",
       "new_class_sha256": "9cad057fcfdbe65592cf10230748425e27c29527fe1ba0489d58fecfdd3157dd",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/Container",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/Container",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 7,
       "exact": true,
       "differences": []
@@ -52130,6 +52942,16 @@
       "owner": "net/minecraft/src/ContainerEnchantment",
       "old_class_sha256": "3ae6c5c70e2cbcc592764494d99a516a8078c5cfd340711973b7dcde6ae46b22",
       "new_class_sha256": "5a17f665ecdd7b66a1f4a8436da8f617c35a267889b65df86ee282b8aa6cc3a9",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/Container",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/Container",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 16,
       "exact": true,
       "differences": []
@@ -52139,6 +52961,16 @@
       "owner": "net/minecraft/src/DamageSource",
       "old_class_sha256": "6ecf5d6fcbe502a187414140be62759dc9446fa2873b9a4927bfc162ef0421ec",
       "new_class_sha256": "9300e0b1983e2184fbde478a4a8eda1fff637a6b6172c92e4a9bd89b3f5b12d7",
+      "original_hierarchy": {
+        "superclass": "java/lang/Object",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "java/lang/Object",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 38,
       "exact": true,
       "differences": []
@@ -52148,6 +52980,16 @@
       "owner": "net/minecraft/src/DataWatcher",
       "old_class_sha256": "8626d1afc84b925650c96f16e7c62a1b5eb6aa1d65fc15776e8945fdfeafce4b",
       "new_class_sha256": "981aaed7ff56b3d1ca0def192834228d2406852563db1805d34bb9d8dd95f76e",
+      "original_hierarchy": {
+        "superclass": "java/lang/Object",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "java/lang/Object",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 16,
       "exact": true,
       "differences": []
@@ -52157,6 +52999,16 @@
       "owner": "net/minecraft/src/DragonPart",
       "old_class_sha256": "315d6332a7ec120a25e4f50596af216f5ccb080ece54d571e3dcb8fab4a656be",
       "new_class_sha256": "d519c5240e59acdd70b6283c578dc919a132daceb2f455b15b13e3b969b3bb16",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/Entity",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/Entity",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 9,
       "exact": true,
       "differences": []
@@ -52166,6 +53018,16 @@
       "owner": "net/minecraft/src/EffectRenderer",
       "old_class_sha256": "3dd86385cbc59267c60ee1ce62448f27c36cf1fa4b94afa692c0756bc917c977",
       "new_class_sha256": "6786592315af7a397086acbf624ee230a2a9f217ac07260e9fed2d590e52f8f8",
+      "original_hierarchy": {
+        "superclass": "java/lang/Object",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "java/lang/Object",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 13,
       "exact": true,
       "differences": []
@@ -52175,6 +53037,16 @@
       "owner": "net/minecraft/src/EmptyChunk",
       "old_class_sha256": "a00d57942636e0845ac820f63b65d88bc84d117348d71ae5aacbba926274cec4",
       "new_class_sha256": "fbb7c4f919bb99eb8c9277e5af553e1cb4b44a8fd2addff33b5529656fa24291",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/Chunk",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/Chunk",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 33,
       "exact": true,
       "differences": []
@@ -52184,6 +53056,16 @@
       "owner": "net/minecraft/src/EnchantmentDamage",
       "old_class_sha256": "aebd1bd19baed8a7d1fb18c1cdd6d11d4e898ff379753f4c89ad27ddacacf34e",
       "new_class_sha256": "32d830db90296e662a620d844da7e03e5be4481b640e8055110a3d306f2ebd64",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/Enchantment",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/Enchantment",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 13,
       "exact": true,
       "differences": []
@@ -52193,6 +53075,16 @@
       "owner": "net/minecraft/src/EnchantmentData",
       "old_class_sha256": "29ebbf6dcf495c0add9de11d391d728f9cc23da87a84a82e244465681726bc79",
       "new_class_sha256": "035a94b277e0f5d95f3c022fb157cc7195fa2f7f7cda7d4e3a65ed4ff850eb16",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/WeightedRandomChoice",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/WeightedRandomChoice",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 3,
       "exact": true,
       "differences": []
@@ -52202,6 +53094,16 @@
       "owner": "net/minecraft/src/EnchantmentProtection",
       "old_class_sha256": "234c439b171892bbe1e753d769722a6fb26cd405f3004cbfc9ea3c00fb68567c",
       "new_class_sha256": "ab96edbc1beb86a435e7f1b698b3d36fff0447090b9df4fc43f255d824934bf8",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/Enchantment",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/Enchantment",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 13,
       "exact": true,
       "differences": []
@@ -52211,6 +53113,16 @@
       "owner": "net/minecraft/src/EntityAuraFX",
       "old_class_sha256": "bcaba4c3d96e8262add2d218c6378d9280f38ff48a97d1a7e5b25c0a6d631e5d",
       "new_class_sha256": "46ca33d8904b54c5053d0260c74497c800b7c652f217f65bccaa772d09b38be0",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/EntityFX",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/EntityFX",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 2,
       "exact": true,
       "differences": []
@@ -52220,6 +53132,16 @@
       "owner": "net/minecraft/src/EntityBlaze",
       "old_class_sha256": "aeb9083209aa961029d5754147357fa6e139344c3ca15afa47d927ba8657d805",
       "new_class_sha256": "efa90b4495d8895ab52b1ec4a69e6954d0b4342d32a1c6d83cb58c0493fad878",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/EntityMob",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/EntityMob",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 24,
       "exact": true,
       "differences": []
@@ -52229,6 +53151,16 @@
       "owner": "net/minecraft/src/EntityBoat",
       "old_class_sha256": "1fd3d737831a01ad6d09e38f3559fe1d44ee5078d025af1a6459924ba875051f",
       "new_class_sha256": "9ff2f91700cbf0081ce966d24da7cb47af01241a787837ab139b20f940bdb5f2",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/Entity",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/Entity",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 34,
       "exact": true,
       "differences": []
@@ -52238,6 +53170,16 @@
       "owner": "net/minecraft/src/EntityBreakingFX",
       "old_class_sha256": "338f0987d8396ff2a46f7e21c448ff8761111aa274db14c5cc3b457b4957d2cf",
       "new_class_sha256": "935f687dc71420791d97c789b5c4a8d94207a19c55278b05aa13adb8eafb939d",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/EntityFX",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/EntityFX",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 4,
       "exact": true,
       "differences": []
@@ -52247,6 +53189,16 @@
       "owner": "net/minecraft/src/EntityBubbleFX",
       "old_class_sha256": "1c14cdad1a0a25a0921c33bb682a4b3c4cb6a37e533ec8f907c3d81860244554",
       "new_class_sha256": "6ddaae4dc8bdb3e4da4a4674ff392a1ec49778f5e215a1b56b9ea43e98c8c81d",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/EntityFX",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/EntityFX",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 2,
       "exact": true,
       "differences": []
@@ -52256,6 +53208,16 @@
       "owner": "net/minecraft/src/EntityChicken",
       "old_class_sha256": "739d617869b22a5f097af2834c92149ad9adff16864ff725ce31aea5816d10d2",
       "new_class_sha256": "2e360a579ff1f410b11aa9664cecefb01f8df20b3a0e9b1b2e74409c57d8ebb9",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/EntityAnimal",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/EntityAnimal",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 19,
       "exact": true,
       "differences": []
@@ -52265,6 +53227,16 @@
       "owner": "net/minecraft/src/EntityCloudFX",
       "old_class_sha256": "0039c4a1e481ed138c65e3de39ede287f54b047c5d860fa312d7fe12a74416ac",
       "new_class_sha256": "6d1a441b6d797388e8fcdca0a24dc3c1b9211648878c4c507cb38b06c1ff1cc8",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/EntityFX",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/EntityFX",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 4,
       "exact": true,
       "differences": []
@@ -52274,6 +53246,16 @@
       "owner": "net/minecraft/src/EntityCow",
       "old_class_sha256": "e03e32afcd998b523a45662003899703012fb0de30b292bf181c211b6792da0d",
       "new_class_sha256": "c1c3f3025155135c01e74684ee92cb7dfe7ae9549eb65da44b37a3ac941820c0",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/EntityAnimal",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/EntityAnimal",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 12,
       "exact": true,
       "differences": []
@@ -52283,6 +53265,16 @@
       "owner": "net/minecraft/src/EntityCritFX",
       "old_class_sha256": "42c62c083ee3cdad248fc650bf26e9d4b99ba04d251d8e1d6312bed37209fd8a",
       "new_class_sha256": "d5d3e57aaf10f728f720c75432043324bbe93e8a9e2abc8853608033dce0c17e",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/EntityFX",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/EntityFX",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 6,
       "exact": true,
       "differences": []
@@ -52292,6 +53284,16 @@
       "owner": "net/minecraft/src/EntityDiggingFX",
       "old_class_sha256": "6dbde0051ef1111891f6caaabba1b579935e8bfc4c4ec22a68e77da5fa7422ff",
       "new_class_sha256": "6f15282d4fd4ee75d52774c7f03a90b71c839d7662f45c72b00c2cab7c30cb7a",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/EntityFX",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/EntityFX",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 5,
       "exact": true,
       "differences": []
@@ -52301,6 +53303,16 @@
       "owner": "net/minecraft/src/EntityDragon",
       "old_class_sha256": "6cfb8c287b74181f59f9c23690ca6bb98962700b6da4a7751f212e0428694fee",
       "new_class_sha256": "4150d185713493d325508eeb6f06d760bdd143a374345d7e4b65c5f798ef81dc",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/EntityDragonBase",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/EntityDragonBase",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 38,
       "exact": false,
       "differences": [
@@ -53514,6 +54526,16 @@
       "owner": "net/minecraft/src/EntityDragonBase",
       "old_class_sha256": "3153160e553ae39c42a076462cca8b25ea0b18e03566359849bffaeed679cbdd",
       "new_class_sha256": "186a480aeb39b359dc184e23ded51007a9aa83c9934071c030969c5202b46b10",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/EntityLiving",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/EntityLiving",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 6,
       "exact": true,
       "differences": []
@@ -53523,6 +54545,16 @@
       "owner": "net/minecraft/src/EntityDropParticleFX",
       "old_class_sha256": "41c61b979148831ce1729062ee070d5291946843ff69d8bdc78537628051ef0c",
       "new_class_sha256": "bf827ee4d14446acd7ee7c2591b4417dd774e71da4b91d99d1527b4884bc5285",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/EntityFX",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/EntityFX",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 7,
       "exact": true,
       "differences": []
@@ -53532,6 +54564,16 @@
       "owner": "net/minecraft/src/EntityEgg",
       "old_class_sha256": "2378469afe9c7a75f0e78735f64b6bbc7184e7d0e6567b884ad21a47bc74e696",
       "new_class_sha256": "a6f7300f5ea27806bb29568a7d440a825bcf52dfff08f6c1c024682127401c9c",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/EntityThrowable",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/EntityThrowable",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 4,
       "exact": true,
       "differences": []
@@ -53541,6 +54583,16 @@
       "owner": "net/minecraft/src/EntityEnchantmentTableParticleFX",
       "old_class_sha256": "5307c76d24d8fac6c1327f7842ede3d51d7f7af3a53385cf85faea1b4d210587",
       "new_class_sha256": "134c12fe19861f9376e9afea88326c2d6c40d1fbef4f724263198b653243ef98",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/EntityFX",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/EntityFX",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 9,
       "exact": true,
       "differences": []
@@ -53550,6 +54602,16 @@
       "owner": "net/minecraft/src/EntityEnderEye",
       "old_class_sha256": "c5c4f106057440a3fc4d7c8b4c1820c232be2762e6d868b53285ceaf81247b90",
       "new_class_sha256": "e54c3bd1ce41889c91ad123bba9b33d2111e656cf100a047779b2aecc5d1077f",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/Entity",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/Entity",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 19,
       "exact": true,
       "differences": []
@@ -53559,6 +54621,16 @@
       "owner": "net/minecraft/src/EntityEnderPearl",
       "old_class_sha256": "add4d493180e53ede8a0c7bdd3dd5e6f73034790cfbf5d33756a886506d8a42a",
       "new_class_sha256": "340d11327620a0f019372bc610760f3034e6f037b07ad35322cf0711f07b1b44",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/EntityThrowable",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/EntityThrowable",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 4,
       "exact": true,
       "differences": []
@@ -53568,6 +54640,16 @@
       "owner": "net/minecraft/src/EntityExplodeFX",
       "old_class_sha256": "0a64bce7f0c52cad0e21e4668bf8e81d97641d980316f3399f4b18d5fe1285df",
       "new_class_sha256": "070c97bfdb4529d0ddb6d73c0219f77da206b06abae773bffb1cbf622d49734e",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/EntityFX",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/EntityFX",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 3,
       "exact": true,
       "differences": []
@@ -53577,6 +54659,16 @@
       "owner": "net/minecraft/src/EntityFX",
       "old_class_sha256": "e20d50fcfbe799cc3a80ddb193bc5fc14b24ce03357734a59fdc75dbac2dfb17",
       "new_class_sha256": "72ec221bf2b4cb14be66a2842b3b3e7dda728296c9fa82f08bf38d501f603fe4",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/Entity",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/Entity",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 29,
       "exact": true,
       "differences": []
@@ -53586,6 +54678,16 @@
       "owner": "net/minecraft/src/EntityFireball",
       "old_class_sha256": "5e851fa333d2b018473f24fbcf211367df017f3504a74852bb2e3df559da8324",
       "new_class_sha256": "88a2787a1cfc6cc3ea1b682f106795aaa8782fae81f9abdb334b0392d868c1ff",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/Entity",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/Entity",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 26,
       "exact": true,
       "differences": []
@@ -53595,6 +54697,16 @@
       "owner": "net/minecraft/src/EntityFishHook",
       "old_class_sha256": "6e00cd5934c2ee038768741a96c135da28fa9807c211048aedf1f12dc9dc6845",
       "new_class_sha256": "ecdde8c737179c1e396a7757e0908eba1ccfa2de53b19811c334a410f4b3946e",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/Entity",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/Entity",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 33,
       "exact": true,
       "differences": []
@@ -53604,6 +54716,16 @@
       "owner": "net/minecraft/src/EntityFlameFX",
       "old_class_sha256": "68087f4c5d9e372b5ae41d31cc5fd769f1fcc109aaafea3da44802e908fc9669",
       "new_class_sha256": "cf034906a82c443831fb1db636f318a6358d52a455e189b4aef056c4b30ceed3",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/EntityFX",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/EntityFX",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 6,
       "exact": true,
       "differences": []
@@ -53613,6 +54735,20 @@
       "owner": "net/minecraft/src/EntityGhast",
       "old_class_sha256": "d1fe01a003dbc3b68752b8128f7024fd4903c6f0992e36f5c482022f685bb6ce",
       "new_class_sha256": "c19ca38aaa2800a10dbfc0700cb7a89738780540cd39e0dcee945829c7d4c925",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/EntityFlying",
+        "interfaces": [
+          "net/minecraft/src/IMob"
+        ],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/EntityFlying",
+        "interfaces": [
+          "net/minecraft/src/IMob"
+        ],
+        "flags": 33
+      },
       "members_compared": 23,
       "exact": true,
       "differences": []
@@ -53622,6 +54758,16 @@
       "owner": "net/minecraft/src/EntityHeartFX",
       "old_class_sha256": "6b37e249ff8f688048d65e4f75e7af5310b76ee532a590061a4c564548cb500b",
       "new_class_sha256": "2842d51ebdc1e7d6eb8b36325d032e6c6bd0c3ea389b7ac4b4f236931393cb5a",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/EntityFX",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/EntityFX",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 5,
       "exact": true,
       "differences": []
@@ -53631,6 +54777,16 @@
       "owner": "net/minecraft/src/EntityLavaFX",
       "old_class_sha256": "b777540fa67a65b0f1a3da753833af3da68ae1e07f09ef7688f26f82e4dae6fb",
       "new_class_sha256": "621c18536a8d49bd76e4df19de2a19b8de548cb4f57787ab08944a7cc0d6f2f6",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/EntityFX",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/EntityFX",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 6,
       "exact": true,
       "differences": []
@@ -53640,6 +54796,20 @@
       "owner": "net/minecraft/src/EntityMinecart",
       "old_class_sha256": "9eff646a0c9e456e96f7d7c6906671697b189b513840e3b3ba65195b3302021d",
       "new_class_sha256": "f90c873285ce3bcfd9f3692b8a3a7c04264817fee29060fdb4383bcd6b63e48d",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/Entity",
+        "interfaces": [
+          "net/minecraft/src/IInventory"
+        ],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/Entity",
+        "interfaces": [
+          "net/minecraft/src/IInventory"
+        ],
+        "flags": 33
+      },
       "members_compared": 57,
       "exact": true,
       "differences": []
@@ -53649,6 +54819,16 @@
       "owner": "net/minecraft/src/EntityMooshroom",
       "old_class_sha256": "83e9ade2129d37b28428973f3891a7e6a27cc29afa272a434073a1d5abf42fa4",
       "new_class_sha256": "e5c8ba6e9cf0bdee90909057ee5d62167e816c6e296f68fd8087e9298faf6790",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/EntityCow",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/EntityCow",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 3,
       "exact": true,
       "differences": []
@@ -53658,6 +54838,16 @@
       "owner": "net/minecraft/src/EntityNoteFX",
       "old_class_sha256": "129ffe14992b9284ed5ed1da3371bc7857128d2efaa3d631b7e99e9dd9ede5fe",
       "new_class_sha256": "dcbaa23815807ad2a8e43a8596a7b7fa8f3bc016021b2289e6aecc76b87ea743",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/EntityFX",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/EntityFX",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 5,
       "exact": true,
       "differences": []
@@ -53667,6 +54857,16 @@
       "owner": "net/minecraft/src/EntityPainting",
       "old_class_sha256": "c210632574b5032b8285f9fc59bdbb8d7a16bfa77f340aa4812fa04180c54e41",
       "new_class_sha256": "a12536169b2f6cdb3d6b226a2461d690e3babc6120e38cca571297defa58da62",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/Entity",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/Entity",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 20,
       "exact": true,
       "differences": []
@@ -53676,6 +54876,16 @@
       "owner": "net/minecraft/src/EntityPig",
       "old_class_sha256": "de1ca6a48486e6bcf9ae129bfb9786816706cbdf4413e3455680a60f0a0478fe",
       "new_class_sha256": "581ec54bdad064cba51f94232d3ccb5fd7634f925bcba290790c60dd8d09183b",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/EntityAnimal",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/EntityAnimal",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 15,
       "exact": true,
       "differences": []
@@ -53685,6 +54895,16 @@
       "owner": "net/minecraft/src/EntityPortalFX",
       "old_class_sha256": "b2e4fbc615d88e42113bda4295bfee6fe31e9f36b42306d33ac68dab5a52c0b2",
       "new_class_sha256": "9aede86f2365728f8878913ae3186463f7430c602e71d2b094cbda4522e3b9ce",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/EntityFX",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/EntityFX",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 9,
       "exact": true,
       "differences": []
@@ -53694,6 +54914,16 @@
       "owner": "net/minecraft/src/EntityPotion",
       "old_class_sha256": "fcf9353a5eda94cdc767b8dfea9811b6a29db1d6125304bc25e847f5cec4ce24",
       "new_class_sha256": "854d80ec5a82c4c65e099586ff1d76d12f3838363ac15e421638052eb1433f4c",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/EntityThrowable",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/EntityThrowable",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 9,
       "exact": true,
       "differences": []
@@ -53703,6 +54933,16 @@
       "owner": "net/minecraft/src/EntityRainFX",
       "old_class_sha256": "a3b26dbd79e5099bbeabb52f7b34ce09891cb8c052aa50dbe7f62f065c0e00e2",
       "new_class_sha256": "c407871fbd3e71a5b4d96c6c73f342be82477c5bc9b59d8ae7a8785a1e464a7b",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/EntityFX",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/EntityFX",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 3,
       "exact": true,
       "differences": []
@@ -53712,6 +54952,16 @@
       "owner": "net/minecraft/src/EntityReddustFX",
       "old_class_sha256": "84095069e141abb47fa7d78114c41cb864160557b0772d7e1a0aa874711b6175",
       "new_class_sha256": "1a8beff1f120134fec2df681de18e412aca352db147cb9a57f3cbe96b7c845cb",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/EntityFX",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/EntityFX",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 5,
       "exact": true,
       "differences": []
@@ -53721,6 +54971,16 @@
       "owner": "net/minecraft/src/EntitySkeleton",
       "old_class_sha256": "1e4c7f8d546f4007ad0c707c4c583ede13f777b9a49579af434cef29a8910b0f",
       "new_class_sha256": "6bb58d2693f0c62cea5a310cb6b66f333605a4bb395c9c178546f36a1ded119a",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/EntityMob",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/EntityMob",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 17,
       "exact": true,
       "differences": []
@@ -53730,6 +54990,16 @@
       "owner": "net/minecraft/src/EntitySmallFireball",
       "old_class_sha256": "c3e87822926e7f14ef854b8828d3426a3ef526d16376e3eca80f782250255678",
       "new_class_sha256": "d539fc37c17ea174e9ed9bb9e78f945d6bf97dce6e265b6e27ab80824b873292",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/EntityFireball",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/EntityFireball",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 6,
       "exact": true,
       "differences": []
@@ -53739,6 +55009,16 @@
       "owner": "net/minecraft/src/EntitySmokeFX",
       "old_class_sha256": "c0f5c2d7545b0ce6e48f93f7f8159e7fc0b35b3b40823a22602e0da70d98848b",
       "new_class_sha256": "624153f7aea92364f14c475ad68bfad74d679754ad54466eb0b85fb82a739e46",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/EntityFX",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/EntityFX",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 5,
       "exact": true,
       "differences": []
@@ -53748,6 +55028,16 @@
       "owner": "net/minecraft/src/EntitySnowShovelFX",
       "old_class_sha256": "74df3b1241398838b2a0f5fea745a5bb05c7dae5a62664d3b9672f6b17fd2583",
       "new_class_sha256": "2f654851d9216cb2493b1ab1274c3ca1164738796e64154da34637ac06ed99e2",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/EntityFX",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/EntityFX",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 5,
       "exact": true,
       "differences": []
@@ -53757,6 +55047,16 @@
       "owner": "net/minecraft/src/EntitySnowball",
       "old_class_sha256": "ddfefca30719bd0ea219bb54b4a954b4f176c5e8d788fc16fbb34fb10f4eaf70",
       "new_class_sha256": "f3a257ec8a57c7c50ac140e6d3b3ed6c8845226ad20f1eac57adb247c41ed5a4",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/EntityThrowable",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/EntityThrowable",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 4,
       "exact": true,
       "differences": []
@@ -53766,6 +55066,16 @@
       "owner": "net/minecraft/src/EntitySnowman",
       "old_class_sha256": "d028f90439b31c72f75a04d30d3d2fd50b4d92452f31c8b7e7150c98225c9d27",
       "new_class_sha256": "eb1401df6b65722f9a558a1bbb79fc49addffd151ee6bbc0ad7861f699467b36",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/EntitySnowmanBase",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/EntitySnowmanBase",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 8,
       "exact": true,
       "differences": []
@@ -53775,6 +55085,20 @@
       "owner": "net/minecraft/src/EntitySorter",
       "old_class_sha256": "16669a56286745bf017e983ecdb8541f44a17e16474890f218055d83366fdb9b",
       "new_class_sha256": "1edffcc2ea9728b8e3a9ce1984ac01c2f753cbe6bf74180083b56a2e1afac7c8",
+      "original_hierarchy": {
+        "superclass": "java/lang/Object",
+        "interfaces": [
+          "java/util/Comparator"
+        ],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "java/lang/Object",
+        "interfaces": [
+          "java/util/Comparator"
+        ],
+        "flags": 33
+      },
       "members_compared": 6,
       "exact": true,
       "differences": []
@@ -53784,6 +55108,16 @@
       "owner": "net/minecraft/src/EntitySpellParticleFX",
       "old_class_sha256": "97797c519953a606bd87125e89b4b9e2090c5c01e09844e443f0b05777005dcc",
       "new_class_sha256": "d5628c36ad5c064da092826d89c99f742c55f65770abba4a4c2ffd96209b8df6",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/EntityFX",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/EntityFX",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 5,
       "exact": true,
       "differences": []
@@ -53793,6 +55127,16 @@
       "owner": "net/minecraft/src/EntitySpider",
       "old_class_sha256": "c3fe5e8936e84a30eb69a5c90cc50038aef8e8762a4706c1340f83e483163a02",
       "new_class_sha256": "9bf86e7a334d0a454e6bb06c748ab78bff0c70084e8e2e071c04bccf0d1a17c4",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/EntityMob",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/EntityMob",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 23,
       "exact": true,
       "differences": []
@@ -53802,6 +55146,16 @@
       "owner": "net/minecraft/src/EntitySplashFX",
       "old_class_sha256": "484596c479aa9fe3c4d69b4340f2feda3cf33948587a80808cdf14db37298142",
       "new_class_sha256": "e32df81e2c851a1cb4018ae998811cf041b28b6b5f06dce2f6a13d10c2e5973f",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/EntityRainFX",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/EntityRainFX",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 1,
       "exact": true,
       "differences": []
@@ -53811,6 +55165,16 @@
       "owner": "net/minecraft/src/EntitySuspendFX",
       "old_class_sha256": "6b5f4c35550d6457714adde02da97f217eadbeaddddf3ebb5b709ad4d2dbc1be",
       "new_class_sha256": "d1c6a908bd8a65ea2fc0a9faa15927ed7237cd44542a3cb378be1cee1bc79bb1",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/EntityFX",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/EntityFX",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 2,
       "exact": true,
       "differences": []
@@ -53820,6 +55184,16 @@
       "owner": "net/minecraft/src/EntityThrowable",
       "old_class_sha256": "208c4b20c2445bf4796776cdb67592ca8f5eee47a7799ed07908e11eebbd30c6",
       "new_class_sha256": "5376865585f4e927417b6757d067dddca15f39b92dad3a8a9102a4a1c51c9041",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/Entity",
+        "interfaces": [],
+        "flags": 1057
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/Entity",
+        "interfaces": [],
+        "flags": 1057
+      },
       "members_compared": 25,
       "exact": true,
       "differences": []
@@ -53829,6 +55203,16 @@
       "owner": "net/minecraft/src/EntityVillager",
       "old_class_sha256": "92d719065cbf16cdb960f786717a79074951c3f162f2efcba3ac04a5b2b2ca5d",
       "new_class_sha256": "bba217741c7193d3319041432a62294a58e2b7254d749f7ee1df00783fc25f55",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/EntityCreature",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/EntityCreature",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 12,
       "exact": true,
       "differences": []
@@ -53838,6 +55222,16 @@
       "owner": "net/minecraft/src/EntityWaterMob",
       "old_class_sha256": "8678d87b7e886fc34af0f0a4bf55656b4334fd7d4c76ecab218113acccbb6c53",
       "new_class_sha256": "d009f5ac9d370ff849cea36d9bf7a1568425d7185fc9ea7be89b45e5c8b2fe71",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/EntityCreature",
+        "interfaces": [],
+        "flags": 1057
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/EntityCreature",
+        "interfaces": [],
+        "flags": 1057
+      },
       "members_compared": 8,
       "exact": true,
       "differences": []
@@ -53847,6 +55241,16 @@
       "owner": "net/minecraft/src/EnumArmorMaterial",
       "old_class_sha256": "e03f1946bf6eb7032856b2346808e6cd002988a2b69a01100cf7d164bdd3e4f2",
       "new_class_sha256": "153957d9314e8272818e4eb3d5466dd8c84687fddc9e4715b219da3bc7bb2c2f",
+      "original_hierarchy": {
+        "superclass": "java/lang/Enum",
+        "interfaces": [],
+        "flags": 16433
+      },
+      "new_hierarchy": {
+        "superclass": "java/lang/Enum",
+        "interfaces": [],
+        "flags": 16433
+      },
       "members_compared": 16,
       "exact": false,
       "differences": [
@@ -53962,6 +55366,16 @@
       "owner": "net/minecraft/src/Explosion",
       "old_class_sha256": "1df200d34c7ce75ab2a4fe0ac3dd14e9ae9b01a9335a56c778c0d8254ef56369",
       "new_class_sha256": "bbc12843a4f7568ad5bf63966b57b3efc99de1a09b9eb399ba1a0d302fe9ee7e",
+      "original_hierarchy": {
+        "superclass": "java/lang/Object",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "java/lang/Object",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 12,
       "exact": true,
       "differences": []
@@ -53971,6 +55385,16 @@
       "owner": "net/minecraft/src/GenLayerDownfall",
       "old_class_sha256": "f16ecd5747bcaeb60accb787e5040d7a7f191359ea61bfa8972bf46d063101c3",
       "new_class_sha256": "df1aa0b1be00459074a98024511a232ba7a371526b8b956c89bf826203d9dfb6",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/GenLayer",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/GenLayer",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 2,
       "exact": true,
       "differences": []
@@ -53980,6 +55404,16 @@
       "owner": "net/minecraft/src/GenLayerDownfallMix",
       "old_class_sha256": "5f2e42d27352c189040261bbc096564ee84283b841172826185a55cb536be8a7",
       "new_class_sha256": "6c52cbbcd75cde6f57fee6db53c149d089e79cede51e669edc0695bab4958cb6",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/GenLayer",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/GenLayer",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 4,
       "exact": true,
       "differences": []
@@ -53989,6 +55423,16 @@
       "owner": "net/minecraft/src/GenLayerIsland",
       "old_class_sha256": "ccc5c9f9bf93ec0db87f600ae00d8ffd5e855c1daeda812a11e9029878be1eb2",
       "new_class_sha256": "e3a3ac8db26a9fe9d642f62460c50fef69b5a00a5845190f80c07b4df445a281",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/GenLayer",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/GenLayer",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 2,
       "exact": true,
       "differences": []
@@ -53998,6 +55442,16 @@
       "owner": "net/minecraft/src/GenLayerMushroomIsland",
       "old_class_sha256": "811d609826e2a53d7d66ab39a990e19986aa0e7e51787e211b022392e5b665f1",
       "new_class_sha256": "fcc008b6fa2cba9a6b03936d782e55a2e139b8ba0549627c7f5d4698de56bffc",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/GenLayer",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/GenLayer",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 2,
       "exact": true,
       "differences": []
@@ -54007,6 +55461,16 @@
       "owner": "net/minecraft/src/GenLayerRiver",
       "old_class_sha256": "41f491874c6a677efc4daa638c66e0cf422b5526128830a5aad0fab2565395d7",
       "new_class_sha256": "bddcaf11f93659b2b6b9d607bd23f898136fb6fe3fe8f9facf054db4a8ae37fd",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/GenLayer",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/GenLayer",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 2,
       "exact": true,
       "differences": []
@@ -54016,6 +55480,16 @@
       "owner": "net/minecraft/src/GenLayerRiverInit",
       "old_class_sha256": "ec1c3fd38272c0b2f73530ccf2fbb2dc45b034ede508c2e674056d14d4028a12",
       "new_class_sha256": "4f6110caf21b0a75bcb694d1896292c5a6bc62452cc21b9d3606054cc7392619",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/GenLayer",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/GenLayer",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 2,
       "exact": true,
       "differences": []
@@ -54025,6 +55499,16 @@
       "owner": "net/minecraft/src/GenLayerRiverMix",
       "old_class_sha256": "c3e0009d3d454340302ee34518f3357a5ce1f983fe4d6b57810e62d123bf4473",
       "new_class_sha256": "47e6c67b1fbe5aebdff2cc466adf5177ddd525709fe54d88a30e6c254af0a476",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/GenLayer",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/GenLayer",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 5,
       "exact": true,
       "differences": []
@@ -54034,6 +55518,16 @@
       "owner": "net/minecraft/src/GenLayerSmooth",
       "old_class_sha256": "66f3015e4b9f74b6a8ae934dcc81aba725551f08e5b74136ea86ee2e961b606e",
       "new_class_sha256": "3162a9976cbc939bb319c3377d0c7c63bee698f9982d2af713b37eba7a163561",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/GenLayer",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/GenLayer",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 2,
       "exact": true,
       "differences": []
@@ -54043,6 +55537,16 @@
       "owner": "net/minecraft/src/GenLayerSmoothZoom",
       "old_class_sha256": "ef57b15bf29ac58079ee571440c0eb922288ef3ff82b636cfdfef54537c2562f",
       "new_class_sha256": "23f39400c7b518e63bea590993f1cee28887743eaebe5a37593c2a5cac7738ee",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/GenLayer",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/GenLayer",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 3,
       "exact": true,
       "differences": []
@@ -54052,6 +55556,16 @@
       "owner": "net/minecraft/src/GenLayerSnow",
       "old_class_sha256": "aec185d6ca35408274eaf309b89ea0fe6856348c4164b2d3cb1b15a0cb18c662",
       "new_class_sha256": "45492c7330e2225e93f69603eaa972e7994741446e8ceac8e973169d18c60f63",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/GenLayer",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/GenLayer",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 2,
       "exact": true,
       "differences": []
@@ -54061,6 +55575,16 @@
       "owner": "net/minecraft/src/GenLayerTemperature",
       "old_class_sha256": "e939eb88bac2f04c916f72b0d5a49ae23ac51e47023c19e23c9bc4bb5764800a",
       "new_class_sha256": "5d32c0519712425473875cbdcd6a259176eef789b39f04c7653eff276c510e7b",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/GenLayer",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/GenLayer",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 2,
       "exact": true,
       "differences": []
@@ -54070,6 +55594,16 @@
       "owner": "net/minecraft/src/GenLayerTemperatureMix",
       "old_class_sha256": "45150a316e4c82e0e490a41621f7e70b2feb28d907a39d8f8da1fa895ceee18e",
       "new_class_sha256": "2d2876929fdcdbc2bf5dca25620a2348ac6f45ad2337a2a2c70b58c3ba4b2d11",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/GenLayer",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/GenLayer",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 4,
       "exact": true,
       "differences": []
@@ -54079,6 +55613,16 @@
       "owner": "net/minecraft/src/GenLayerVillageLandscape",
       "old_class_sha256": "ace2a9019411033ceb0aa1ad214302c42ef6f33abbdd5d0eab24da010a9113ab",
       "new_class_sha256": "3adb7fe9ff61505cf9b899925c3be165d0a9ec09d5448ac86786f2287187e803",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/GenLayer",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/GenLayer",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 3,
       "exact": true,
       "differences": []
@@ -54088,6 +55632,16 @@
       "owner": "net/minecraft/src/GenLayerZoom",
       "old_class_sha256": "992b00dbbbbd89d8cc00143d21f895db748250ae74b8deaf5452eb66342b15f1",
       "new_class_sha256": "c9dbd847d72aeca708e150547bd3703082a6ef0a3b60190faa50c8ad514a5e15",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/GenLayer",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/GenLayer",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 5,
       "exact": true,
       "differences": []
@@ -54097,6 +55651,16 @@
       "owner": "net/minecraft/src/GenLayerZoomFuzzy",
       "old_class_sha256": "beaed54a7363ab15779c6442e7aaf71f17c0e97bd630bb15d0949c42a7e5229d",
       "new_class_sha256": "f101319c8e9f18f23c3c7a9ffb8767bed9c41b9e61f6ddb3dd265279efce7b27",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/GenLayer",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/GenLayer",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 4,
       "exact": true,
       "differences": []
@@ -54106,6 +55670,16 @@
       "owner": "net/minecraft/src/GenLayerZoomVoronoi",
       "old_class_sha256": "611b6b1d38ca5068111afe1638e335955b333d57cacf36825e697cdea0dab53e",
       "new_class_sha256": "480838463bf79682b8af489ea41cc5dbde0b4efc589b616709682c10ad7e8393",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/GenLayer",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/GenLayer",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 2,
       "exact": true,
       "differences": []
@@ -54115,6 +55689,16 @@
       "owner": "net/minecraft/src/Gui",
       "old_class_sha256": "7c0afddaf4d26e8f5f1838b13cbce3f96b7b7df76a4e0c7d509b8bb659fa37db",
       "new_class_sha256": "a0b279b8d5d33c0f302a31d3aa1a6673d46a042d7f1f3617a55d7e61396c7589",
+      "original_hierarchy": {
+        "superclass": "java/lang/Object",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "java/lang/Object",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 9,
       "exact": true,
       "differences": []
@@ -54124,6 +55708,16 @@
       "owner": "net/minecraft/src/GuiContainerCreative",
       "old_class_sha256": "530f9e9860fcd06c49e3b4975a5e3a2a57b37b87d20dccd667766aa2c078797d",
       "new_class_sha256": "05fa2188d6159aa58251fd91fd637030d758d26096e7376bd48ff6c4131c8eb2",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/GuiContainer",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/GuiContainer",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 15,
       "exact": true,
       "differences": []
@@ -54133,6 +55727,16 @@
       "owner": "net/minecraft/src/GuiEnchantment",
       "old_class_sha256": "88fb7ad093d83bf9f805ae862dea26a8ab1db9ac9533c790c7a2c7e3443c0084",
       "new_class_sha256": "764ed7fe54d5dfe5611245dc5fe4093baaa3d3ade65f3daf88cd0af4a57d315f",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/GuiContainer",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/GuiContainer",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 19,
       "exact": true,
       "differences": []
@@ -54142,6 +55746,16 @@
       "owner": "net/minecraft/src/GuiSavingLevelString",
       "old_class_sha256": "53e0fd4d409f21e98343929a5a484cf1e7de83f26c19df5d9003bb183f8e09f7",
       "new_class_sha256": "fbe1ae2703bc13bb9a93b0ddb43b577508de0f756c10bddc8104f280edc014a7",
+      "original_hierarchy": {
+        "superclass": "java/lang/Object",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "java/lang/Object",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 3,
       "exact": true,
       "differences": []
@@ -54151,6 +55765,16 @@
       "owner": "net/minecraft/src/GuiSelectWorld",
       "old_class_sha256": "1e5024525589599dbaff0ddac696a1885185ce17be1e185f73be5ff2ca1446be",
       "new_class_sha256": "2687a2e0442dafd64b948dcf8bde016db007c4cf07e3b4362197f44327fb05fe",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/GuiScreen",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/GuiScreen",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 34,
       "exact": true,
       "differences": []
@@ -54160,6 +55784,16 @@
       "owner": "net/minecraft/src/GuiTexturePacks",
       "old_class_sha256": "6ff1d83e317c44fdeba97a05591d4d983d0fe1879c39252cd4dfe3b6c201bfcb",
       "new_class_sha256": "4baebde8d3ca019377d7580e711e029da2146e3cdffaa8c19b8defcf528a911c",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/GuiScreen",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/GuiScreen",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 25,
       "exact": true,
       "differences": []
@@ -54169,6 +55803,16 @@
       "owner": "net/minecraft/src/GuiVideoSettings",
       "old_class_sha256": "f3b81b4ff7cb60a64dde356c91a4610d9b49af0a714330e037618d065b6f6154",
       "new_class_sha256": "a563d5be9cd6569d650ed4a9aea5aa639757d195733c4c335403f709c36ef344",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/GuiScreen",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/GuiScreen",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 10,
       "exact": true,
       "differences": []
@@ -54178,6 +55822,16 @@
       "owner": "net/minecraft/src/GuiWorldSlot",
       "old_class_sha256": "59f29fc605a7a101d338055b28bd375ae65fd81bff3effcdea7525f4aa03c0d3",
       "new_class_sha256": "9885bb33371276622ae833e283465faace8abaef40a5826fb0ab38e43840deb5",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/GuiSlot",
+        "interfaces": [],
+        "flags": 32
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/GuiSlot",
+        "interfaces": [],
+        "flags": 32
+      },
       "members_compared": 8,
       "exact": true,
       "differences": []
@@ -54187,6 +55841,16 @@
       "owner": "net/minecraft/src/IBlockAccess",
       "old_class_sha256": "7019c6c473ed7aed3ce545e73be1af25e0a9e189f665ba52bf50449bceda91f8",
       "new_class_sha256": "526f5957742a0fe67e3c2654053bea6bbee5365fae705caed30bfa1bf90c0f8d",
+      "original_hierarchy": {
+        "superclass": "java/lang/Object",
+        "interfaces": [],
+        "flags": 1537
+      },
+      "new_hierarchy": {
+        "superclass": "java/lang/Object",
+        "interfaces": [],
+        "flags": 1537
+      },
       "members_compared": 12,
       "exact": true,
       "differences": []
@@ -54196,6 +55860,16 @@
       "owner": "net/minecraft/src/ISaveFormat",
       "old_class_sha256": "1a25e5ab1f1a6a5b3861d41a072d47fd1e1e9d18b692eb596eab17a513c31536",
       "new_class_sha256": "1b980391c1f875d8d8c2a7c9728319be502f10bb56d486921ae5dc5ea83f8639",
+      "original_hierarchy": {
+        "superclass": "java/lang/Object",
+        "interfaces": [],
+        "flags": 1537
+      },
+      "new_hierarchy": {
+        "superclass": "java/lang/Object",
+        "interfaces": [],
+        "flags": 1537
+      },
       "members_compared": 9,
       "exact": true,
       "differences": []
@@ -54205,6 +55879,16 @@
       "owner": "net/minecraft/src/ISaveHandler",
       "old_class_sha256": "d7581754ca96bc5695ea0428ab07e9683145e660fa184d88951a7ca7f1dbdb08",
       "new_class_sha256": "2143dfc38d52e1604fc1020728db7d72a2dcb1b6cf915ab1fc9956a857f100c7",
+      "original_hierarchy": {
+        "superclass": "java/lang/Object",
+        "interfaces": [],
+        "flags": 1537
+      },
+      "new_hierarchy": {
+        "superclass": "java/lang/Object",
+        "interfaces": [],
+        "flags": 1537
+      },
       "members_compared": 7,
       "exact": true,
       "differences": []
@@ -54214,6 +55898,16 @@
       "owner": "net/minecraft/src/IThreadedFileIO",
       "old_class_sha256": "0563802c698d2b8c4e74647ef20727a16b08946ed2e73f91d3e94188a66b973a",
       "new_class_sha256": "c11a637133ae81938750b7bbef3a5f33b16918f6fbe0deb9c8b3780f20b9b7b8",
+      "original_hierarchy": {
+        "superclass": "java/lang/Object",
+        "interfaces": [],
+        "flags": 1537
+      },
+      "new_hierarchy": {
+        "superclass": "java/lang/Object",
+        "interfaces": [],
+        "flags": 1537
+      },
       "members_compared": 1,
       "exact": true,
       "differences": []
@@ -54223,6 +55917,16 @@
       "owner": "net/minecraft/src/IntCache",
       "old_class_sha256": "8fb504411f949510d497af641afe34d857baa5dc706a545ed8c98704182cf407",
       "new_class_sha256": "89f84766aacafad5641c81dda9186f2747ab6be2a8e4980348d06277cca84e7e",
+      "original_hierarchy": {
+        "superclass": "java/lang/Object",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "java/lang/Object",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 9,
       "exact": true,
       "differences": []
@@ -54232,6 +55936,16 @@
       "owner": "net/minecraft/src/ItemAppleGold",
       "old_class_sha256": "511879de68a53a57a60f8e6a74cdf7c667737c293dc9e15e33460456084df7b3",
       "new_class_sha256": "52b43fa5518bf09452e4546eb41533981dd379dfbaba7caf180c362d5d1d5de5",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/ItemFood",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/ItemFood",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 3,
       "exact": true,
       "differences": []
@@ -54241,6 +55955,16 @@
       "owner": "net/minecraft/src/ItemArmor",
       "old_class_sha256": "452341d9581d47af3abc75916908d50b467ec5b1b50aa52e138bf8ced277fc5a",
       "new_class_sha256": "19e6538888d8962954f5dabd22bbbb2e59471fc5fd28109cae0f7b38e6aa205d",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/Item",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/Item",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 9,
       "exact": true,
       "differences": []
@@ -54250,6 +55974,16 @@
       "owner": "net/minecraft/src/ItemBed",
       "old_class_sha256": "eb47bec5f7df1fe85228ccd7ee7e26c70ddeb3c236be3931977647373d46f9b0",
       "new_class_sha256": "11019925a00414fa15612a5cf0f1b00c66d7ed295ab466bc246af78395e99e66",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/Item",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/Item",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 2,
       "exact": true,
       "differences": []
@@ -54259,6 +55993,16 @@
       "owner": "net/minecraft/src/ItemBlock",
       "old_class_sha256": "781757cd425755c56ea6aa3e373865e050dab8041934a8f522483857fb733344",
       "new_class_sha256": "b14b95cd888fa6401ead68b34add3d8f3f0fd4409dad9625d08f99c9824b0708",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/Item",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/Item",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 6,
       "exact": true,
       "differences": []
@@ -54268,6 +56012,16 @@
       "owner": "net/minecraft/src/ItemBoat",
       "old_class_sha256": "63ca0c64bed59b1bbb20afcd36219b86e626dd4e121d8b07597481a7de1e733e",
       "new_class_sha256": "86b9f1d144e9f233576056cb6533368aba47972dc29493aa0a5b9f099dd7ebd3",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/Item",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/Item",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 2,
       "exact": true,
       "differences": []
@@ -54277,6 +56031,16 @@
       "owner": "net/minecraft/src/ItemBucket",
       "old_class_sha256": "595899f4af79479924b617ef0ad3e1d74b5bce36d5db2385f84e58232bec4e9c",
       "new_class_sha256": "dee9d419d973bcce16c9a8162601f53898e6c64fa474dd98be4e676d9c679f94",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/Item",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/Item",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 3,
       "exact": true,
       "differences": []
@@ -54286,6 +56050,16 @@
       "owner": "net/minecraft/src/ItemCloth",
       "old_class_sha256": "aba568d31e886617122c2d7c2a684374d7d1777b2ad87ccf5ecc79e0840b2c73",
       "new_class_sha256": "5d286a7f8249e8eb4c9fa79347006fc5831dc6a9e335945ef409de485b93a0d5",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/ItemBlock",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/ItemBlock",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 4,
       "exact": true,
       "differences": []
@@ -54295,6 +56069,16 @@
       "owner": "net/minecraft/src/ItemDoor",
       "old_class_sha256": "ca1fe073555ba36acf6625d41e1a760d75e13a2f393b284258855d3aed497859",
       "new_class_sha256": "59b19e675bd3880b6668ba1e0d0f9b7299a1e9ef8b3e04dfd21a207fd720aa19",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/Item",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/Item",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 4,
       "exact": true,
       "differences": []
@@ -54304,6 +56088,16 @@
       "owner": "net/minecraft/src/ItemDye",
       "old_class_sha256": "ee934f724e407b030435ee430d262e76bb2817bc2b2cc37b923a58726cdad4f8",
       "new_class_sha256": "dc37325fa55d7dee38c41b0e921adc5acf55ff55318f268945a756023e96d873",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/Item",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/Item",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 8,
       "exact": true,
       "differences": []
@@ -54313,6 +56107,16 @@
       "owner": "net/minecraft/src/ItemEgg",
       "old_class_sha256": "2f458a41d70fcc60a95857ca5f17ab2d6958dcb00c844a66a743fd284e2b7751",
       "new_class_sha256": "9d15561646f8f7dd6eb4cf2e100cf7623c466907269d396455a7d9326ac79ee5",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/Item",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/Item",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 2,
       "exact": true,
       "differences": []
@@ -54322,6 +56126,16 @@
       "owner": "net/minecraft/src/ItemEnderEye",
       "old_class_sha256": "9539a094bde23491cd56df20ad6bffc87ad250f27911046a9bbf170f4b3d53c2",
       "new_class_sha256": "0a37df7fbfd44d97fa58787c20cc3f65c43a21ad1675fe31495ea8513a9158ab",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/Item",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/Item",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 3,
       "exact": true,
       "differences": []
@@ -54331,6 +56145,16 @@
       "owner": "net/minecraft/src/ItemEnderPearl",
       "old_class_sha256": "959681cfed5c3eef86300125ca09047faa09b808c024719a472e459674617996",
       "new_class_sha256": "0d629c3439c3a28232312ebbaf5967c6c8d9ac001809c5bcd6deba666c32a5e5",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/Item",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/Item",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 2,
       "exact": true,
       "differences": []
@@ -54340,6 +56164,16 @@
       "owner": "net/minecraft/src/ItemFishingRod",
       "old_class_sha256": "180676fa929f18f38cf4d2a943448535f003c6b1273998faf0f790d88e461d4a",
       "new_class_sha256": "72c9ab8487ff39a3158522b8d5123f056825faf4ec64ff0561269f1677f94449",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/Item",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/Item",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 4,
       "exact": true,
       "differences": []
@@ -54349,6 +56183,16 @@
       "owner": "net/minecraft/src/ItemFlintAndSteel",
       "old_class_sha256": "c938fd658c6b8c3d08df50af834694aade802197a1c2eaa5a4dde6358fa70fd2",
       "new_class_sha256": "a7ffb5ae0ebae3fde2c72fc20ea477348e77a6d5c4f46c5ef7caf5bf2b4243b3",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/Item",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/Item",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 2,
       "exact": true,
       "differences": []
@@ -54358,6 +56202,16 @@
       "owner": "net/minecraft/src/ItemFood",
       "old_class_sha256": "097d523feaca707d8bd8b88a0c7db2bba8f9363c58087c8b42196f7759b3f076",
       "new_class_sha256": "ea776fb46e6d1fe82eeea4d5370eab9568a355906bd1a95618efa5fe73ad39d6",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/Item",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/Item",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 21,
       "exact": true,
       "differences": []
@@ -54367,6 +56221,16 @@
       "owner": "net/minecraft/src/ItemGlassBottle",
       "old_class_sha256": "2e2d9ab242c76677a9425b8a5313fcfe168bd254eebe4055f3399f5b941e9c9b",
       "new_class_sha256": "dd4ef9f29b8544c2142f40b6a3e26d2ed241609d42000c22b42649a255284694",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/Item",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/Item",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 2,
       "exact": true,
       "differences": []
@@ -54376,6 +56240,16 @@
       "owner": "net/minecraft/src/ItemHoe",
       "old_class_sha256": "7d9196fe0c80bae87259de7bf8b927b5cd9a663a48d38fcb39dbd61d898b7aab",
       "new_class_sha256": "0f827d0464a7d668d06653d5036a72b4a2a6b8f0bf68567c965398f58755c626",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/Item",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/Item",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 3,
       "exact": true,
       "differences": []
@@ -54385,6 +56259,16 @@
       "owner": "net/minecraft/src/ItemMetadata",
       "old_class_sha256": "2093b9c5eb476dc68c065661ccbdd36b2d36a0f8a3189e3f0d74182f9ff0a82e",
       "new_class_sha256": "d939b8f6fc38ba1108c7a6b90042f6b5a8d5dff7169285686f638e2abc5d9179",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/ItemBlock",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/ItemBlock",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 4,
       "exact": true,
       "differences": []
@@ -54394,6 +56278,16 @@
       "owner": "net/minecraft/src/ItemMinecart",
       "old_class_sha256": "c94bf61ed0add345d41f9db65128ab38fc92a4be484e155da47300ceafec5e04",
       "new_class_sha256": "74cea4ec3258e1860fbf2b1978381dbebd94ceba1edb61be2d329da4cdc690a3",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/Item",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/Item",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 3,
       "exact": true,
       "differences": []
@@ -54403,6 +56297,16 @@
       "owner": "net/minecraft/src/ItemPainting",
       "old_class_sha256": "28ded63733aa7fcf5470495a377151787b3adf94d652d5963186dd7efe772b0a",
       "new_class_sha256": "88521eff2325b07c698959a2539730a41e354f3be588ac1af2cca4a6c71661b7",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/Item",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/Item",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 2,
       "exact": true,
       "differences": []
@@ -54412,6 +56316,16 @@
       "owner": "net/minecraft/src/ItemPiston",
       "old_class_sha256": "142f7f75b99a3dad3a9d83429207c0dadacff88a21dd75cc1dd4b2889bd67b62",
       "new_class_sha256": "19389b335ce6baa62314c8ad1e46d3e630f0573b8dfb3cbf984860456904833c",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/ItemBlock",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/ItemBlock",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 2,
       "exact": true,
       "differences": []
@@ -54421,6 +56335,16 @@
       "owner": "net/minecraft/src/ItemRecord",
       "old_class_sha256": "77cce1c3cc15157ec53b5960e5ac1273f9b7df7da8783c3c3a116ec4bdbf598d",
       "new_class_sha256": "2a5b021bba0c1ae13d1f4cdfbf711793497e8a2f12fabec71a05c36a37d29a31",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/Item",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/Item",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 5,
       "exact": true,
       "differences": []
@@ -54430,6 +56354,16 @@
       "owner": "net/minecraft/src/ItemRedstone",
       "old_class_sha256": "6186bfb19948b85d6f5909ac2e196546a9dd135c29b284c2963dc1f0a7e3c0a8",
       "new_class_sha256": "577696cb1c68087f5b0f2123226430ae6fa885882bb6912f6a615305062deabb",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/Item",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/Item",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 2,
       "exact": true,
       "differences": []
@@ -54439,6 +56373,16 @@
       "owner": "net/minecraft/src/ItemReed",
       "old_class_sha256": "4d0af13c80b5f5514e377e29f1c24064c11d5ca8a41dc6c02493baf35a53480d",
       "new_class_sha256": "a8d0a8b22640477a6b65a2c3ee7622fd5bdef1ddedbabf0d8eb8f7e5e93613e7",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/Item",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/Item",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 3,
       "exact": true,
       "differences": []
@@ -54448,6 +56392,16 @@
       "owner": "net/minecraft/src/ItemSapling",
       "old_class_sha256": "7850ac93134ed5a97903a30509b1cbcdf7f4eb929d6c169ea8aed2c4dd7ecd1c",
       "new_class_sha256": "b972d37676876b08abde273562ede13d2160dc8fd28399de0916e8acdcd5aa4e",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/ItemBlock",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/ItemBlock",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 3,
       "exact": true,
       "differences": []
@@ -54457,6 +56411,16 @@
       "owner": "net/minecraft/src/ItemSeeds",
       "old_class_sha256": "36cb35a2a0019dd69840834e3b5c42084a82292f577839752b691eee2496b581",
       "new_class_sha256": "28d053d906e884dad94c56e2421ae19e2dd64172a1c0e217dc00ce0caf338550",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/Item",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/Item",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 4,
       "exact": true,
       "differences": []
@@ -54466,6 +56430,16 @@
       "owner": "net/minecraft/src/ItemSign",
       "old_class_sha256": "21d86db2eb413498cc999b042b497a1f0b2256c8d41eaabf01475f6f311b313a",
       "new_class_sha256": "1738b6a0aa55149749175c75d48d6d3380cb6a40fc658b96d9c8e1f3cd7e745b",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/Item",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/Item",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 2,
       "exact": true,
       "differences": []
@@ -54475,6 +56449,16 @@
       "owner": "net/minecraft/src/ItemSlab",
       "old_class_sha256": "9f3f3fbbfc1a1d5449c4bab22c5474c27f8e5627fba26e54ade5fedb9107af74",
       "new_class_sha256": "f6323257a23842a4df601895875956e75740e40c24ce0cb9516b35fc3e1039b4",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/ItemBlock",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/ItemBlock",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 5,
       "exact": true,
       "differences": []
@@ -54484,6 +56468,16 @@
       "owner": "net/minecraft/src/ItemSnowball",
       "old_class_sha256": "190ceaefa21cf32d742c126e139d4b7b12e4d34ad830d7b97a8b643b599efa3e",
       "new_class_sha256": "a285f47465ba6773ba11a877ba61debd841669c0f7b7f772513d0c254d08583b",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/Item",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/Item",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 2,
       "exact": true,
       "differences": []
@@ -54493,6 +56487,16 @@
       "owner": "net/minecraft/src/LayerIsland",
       "old_class_sha256": "0ba06656fc194d80ff074484c5073c0869c20809c17acfa98309d0abf6a56202",
       "new_class_sha256": "8c7044c1715e512da008b120fb2f33a6f4a83bab128441d844dcd6c7476eea3e",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/GenLayer",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/GenLayer",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 2,
       "exact": true,
       "differences": []
@@ -54502,6 +56506,16 @@
       "owner": "net/minecraft/src/LongHashMap",
       "old_class_sha256": "e2777fd5427c2ad72fced6c77d7f542ca7925a046ee8d2c2cc4435728a8a7815",
       "new_class_sha256": "5e3f11f6c06960587a83ad4001576b2c78554f5f182a1457dfc6136c699e9de1",
+      "original_hierarchy": {
+        "superclass": "java/lang/Object",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "java/lang/Object",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 20,
       "exact": true,
       "differences": []
@@ -54511,6 +56525,16 @@
       "owner": "net/minecraft/src/LongHashMapEntry",
       "old_class_sha256": "2105007679fa4c1b1980a04711ef9c3bdf92569f913e64e53ecc9942458f76ea",
       "new_class_sha256": "eb44ea346b12da66322625268d1e8366feba0f4f84da691757df52c574b1601e",
+      "original_hierarchy": {
+        "superclass": "java/lang/Object",
+        "interfaces": [],
+        "flags": 32
+      },
+      "new_hierarchy": {
+        "superclass": "java/lang/Object",
+        "interfaces": [],
+        "flags": 32
+      },
       "members_compared": 10,
       "exact": true,
       "differences": []
@@ -54520,6 +56544,16 @@
       "owner": "net/minecraft/src/MapData",
       "old_class_sha256": "37129625400e1b9cb8064d4f7af2110e1d1af5a3396879acdcea79a74f34d827",
       "new_class_sha256": "c556660bd1c5e407c1742231c05496ec8518e631f946cdad2b2a139414aa1590",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/WorldSavedData",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/WorldSavedData",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 15,
       "exact": true,
       "differences": []
@@ -54529,6 +56563,16 @@
       "owner": "net/minecraft/src/MapGenBase",
       "old_class_sha256": "d85a748c356f15a26008a09752ab2078435254409b9d989b4e6dcf2215579aaf",
       "new_class_sha256": "97a6884c14a2cf1cb7af007db7590c7038a47197463b968487f5ccb4f108c6f7",
+      "original_hierarchy": {
+        "superclass": "java/lang/Object",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "java/lang/Object",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 6,
       "exact": true,
       "differences": []
@@ -54538,6 +56582,16 @@
       "owner": "net/minecraft/src/MapGenCaves",
       "old_class_sha256": "e2fd9b09c00a071e4f549adc565da87a2bcb0337d70064a2893c1769ae42c272",
       "new_class_sha256": "cd116fdb941c5937f2f2189ccf92c22ccb8d49591d39f78fb58edb387180b0a8",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/MapGenBase",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/MapGenBase",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 4,
       "exact": true,
       "differences": []
@@ -54547,6 +56601,16 @@
       "owner": "net/minecraft/src/MapGenCavesHell",
       "old_class_sha256": "6dfde2b7f6d9197f881038d6f0c3a8a45caaef48794a5df5e2043f66b1b84532",
       "new_class_sha256": "c3e631d9c8b137be11fb2bc588c391007d94b09c1fb226a1cde139551feb491c",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/MapGenBase",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/MapGenBase",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 4,
       "exact": true,
       "differences": []
@@ -54556,6 +56620,16 @@
       "owner": "net/minecraft/src/MapGenRavine",
       "old_class_sha256": "14918364410a8b1044a477b2a05e0f395ab8d5723bf39ecf604902d083235806",
       "new_class_sha256": "6a0d4a8790ff584abd026a6e4f22632ad62bc4373f99f9228b52b0e012509e0e",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/MapGenBase",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/MapGenBase",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 4,
       "exact": true,
       "differences": []
@@ -54565,6 +56639,16 @@
       "owner": "net/minecraft/src/MapStorage",
       "old_class_sha256": "3c2a6fc75377e65e0af854247edf0b8ddf25fcfc0d382871b041af44a319871b",
       "new_class_sha256": "33d996f0bbfbb274c38d8eb37ef65a7855f67ad06e1c0734b3152c25e3b09c42",
+      "original_hierarchy": {
+        "superclass": "java/lang/Object",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "java/lang/Object",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 11,
       "exact": true,
       "differences": []
@@ -54574,6 +56658,16 @@
       "owner": "net/minecraft/src/Material",
       "old_class_sha256": "b7e01ba47f9c05ba17beb5196b91130b2e0705ca4bf27a81ca0d0752f0e8c204",
       "new_class_sha256": "5f641384231dcb727eb085bed11c7c8b8245ba989b234315b969e5cb78fd205b",
+      "original_hierarchy": {
+        "superclass": "java/lang/Object",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "java/lang/Object",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 53,
       "exact": true,
       "differences": []
@@ -54583,6 +56677,16 @@
       "owner": "net/minecraft/src/MathHelper",
       "old_class_sha256": "74e9ac801e2eb4b539ffb6b85eb4ba6275ac469e0423c2a3bfd28aa7079758fa",
       "new_class_sha256": "bf7f4d1448d3b2596aa1b16953576bf7814f668d974ee813cf00fb0f6cb2df8a",
+      "original_hierarchy": {
+        "superclass": "java/lang/Object",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "java/lang/Object",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 18,
       "exact": true,
       "differences": []
@@ -54592,6 +56696,16 @@
       "owner": "net/minecraft/src/ModelBase",
       "old_class_sha256": "0264e7ae540b16a9b7768e0ea1c46dbd453cc4770f553243d2513627852a86e5",
       "new_class_sha256": "c4f3438e3193256c601f5d61877b0608b541a4e9d2abf0881f00e2168d8a840f",
+      "original_hierarchy": {
+        "superclass": "java/lang/Object",
+        "interfaces": [],
+        "flags": 1057
+      },
+      "new_hierarchy": {
+        "superclass": "java/lang/Object",
+        "interfaces": [],
+        "flags": 1057
+      },
       "members_compared": 13,
       "exact": true,
       "differences": []
@@ -54601,6 +56715,16 @@
       "owner": "net/minecraft/src/ModelBiped",
       "old_class_sha256": "920d7898a9198c831bcb16e80264252df4ab51ecd9a9a47e9944c74ae8ee2110",
       "new_class_sha256": "1f25329df627558b166b1e907ad503de8ef4b0d1929571a1e04bd9412aad7222",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/ModelBase",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/ModelBase",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 20,
       "exact": true,
       "differences": []
@@ -54610,6 +56734,16 @@
       "owner": "net/minecraft/src/ModelDragon",
       "old_class_sha256": "9140c1cf45cfd6b05779453ab4fd3000dd2763f3dfacdc8b807c3b8d2a8f5ee2",
       "new_class_sha256": "c59d0955e3492104917b0a8cffcd17a0fe9b19238e43c6c37e01ace6f5d2cb90",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/ModelBase",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/ModelBase",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 18,
       "exact": true,
       "differences": []
@@ -54619,6 +56753,16 @@
       "owner": "net/minecraft/src/ModelSkeleton",
       "old_class_sha256": "15300293b844e68190cbf747d1142b6c136eca154df3809083c9b8af2552bd2d",
       "new_class_sha256": "ab319f86f713fa14a9cc128ecc027002868ec06a8474bc9145f7e2869bd011b9",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/ModelZombie",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/ModelZombie",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 2,
       "exact": true,
       "differences": []
@@ -54628,6 +56772,16 @@
       "owner": "net/minecraft/src/ModelWolf",
       "old_class_sha256": "aad22db56fa591708b90b1df9b8d4408a9f61fc13ae5258a8ea44b3a7fd2d06b",
       "new_class_sha256": "e70fc9771e0ca66b6ad615efd622b5e01f0a84071760fd9e3e156a1cc19e6d67",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/ModelBase",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/ModelBase",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 12,
       "exact": true,
       "differences": []
@@ -54637,6 +56791,16 @@
       "owner": "net/minecraft/src/NBTBase",
       "old_class_sha256": "b5859a62d59a1f357588d15cc736cbcfbb51d9b1ee687cff7a08f303e158ee06",
       "new_class_sha256": "2764ccb96c40e574756d664e4df6db47a4ea437d13f603f2b36fb98775004b6a",
+      "original_hierarchy": {
+        "superclass": "java/lang/Object",
+        "interfaces": [],
+        "flags": 1057
+      },
+      "new_hierarchy": {
+        "superclass": "java/lang/Object",
+        "interfaces": [],
+        "flags": 1057
+      },
       "members_compared": 13,
       "exact": true,
       "differences": []
@@ -54646,6 +56810,16 @@
       "owner": "net/minecraft/src/NBTTagByte",
       "old_class_sha256": "fc809d79338fad96e2b17d99cb58464242df80c0b4452e23fb26328282b5e692",
       "new_class_sha256": "c0d5969a8000c546a1fca6d840b722e7f667cdfee78718185759893a1f9af676",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/NBTBase",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/NBTBase",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 9,
       "exact": true,
       "differences": []
@@ -54655,6 +56829,16 @@
       "owner": "net/minecraft/src/NBTTagByteArray",
       "old_class_sha256": "746b737dcd1ceac2ac2a6db5b5cf48c7a6483cc7bb420db684ad0721ec7e2b5e",
       "new_class_sha256": "7609a3b2f0cfbc0c62ee333a10a7d55ba28542dde69fcca72af22abd094f4e94",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/NBTBase",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/NBTBase",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 9,
       "exact": true,
       "differences": []
@@ -54664,6 +56848,16 @@
       "owner": "net/minecraft/src/NBTTagCompound",
       "old_class_sha256": "3387166cc1f2de37cf2b9201bedb649279b25a1054e86fd3f395636ea726eb48",
       "new_class_sha256": "4a4951bbfe7d6699e904675d712c9ab9be7f2f0a5308eefe4c776fc58e9bce63",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/NBTBase",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/NBTBase",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 34,
       "exact": true,
       "differences": []
@@ -54673,6 +56867,16 @@
       "owner": "net/minecraft/src/NBTTagDouble",
       "old_class_sha256": "2eef03cef30495576160ed41d7b178372621dd9854c642835fddc03f8c22e8d3",
       "new_class_sha256": "ea9825aad768271185ce223af749689450132b7b51c4b6911c88c76495448587",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/NBTBase",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/NBTBase",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 9,
       "exact": true,
       "differences": []
@@ -54682,6 +56886,16 @@
       "owner": "net/minecraft/src/NBTTagEnd",
       "old_class_sha256": "bc54f3a9d4ffeb350f4c1de33260112d5c3b262ea846730a8bf0e50370ea1670",
       "new_class_sha256": "c4160438a2292c8429de911aefbf32775e9ae5160831973b7051d653b1b154a3",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/NBTBase",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/NBTBase",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 7,
       "exact": true,
       "differences": []
@@ -54691,6 +56905,16 @@
       "owner": "net/minecraft/src/NBTTagFloat",
       "old_class_sha256": "e5ec87b934dbf72e907ca8c021f9036545540d95597cc0a79e1e4b596d4de2f7",
       "new_class_sha256": "822936fc58a364fb7ce0dd09b6858c5f0afbf762005ff21f24bc92114fb8f4b3",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/NBTBase",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/NBTBase",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 9,
       "exact": true,
       "differences": []
@@ -54700,6 +56924,16 @@
       "owner": "net/minecraft/src/NBTTagInt",
       "old_class_sha256": "16e51abfd287f9881bfe467164c9b22a126a7c892e5f512e2332c075e4280f3b",
       "new_class_sha256": "316dcf142c8e9dd8a508cb469d8a5219ebcff200f5203a5060482c9031459618",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/NBTBase",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/NBTBase",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 9,
       "exact": true,
       "differences": []
@@ -54709,6 +56943,16 @@
       "owner": "net/minecraft/src/NBTTagList",
       "old_class_sha256": "56a6b6a2c135175d257493fbc4d3c53742352024902c29f7215a04e8c3840c04",
       "new_class_sha256": "693dc45363c45d47395979e9898037ec4f4d8915372a2ebf97e87fb47cfed46d",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/NBTBase",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/NBTBase",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 13,
       "exact": true,
       "differences": []
@@ -54718,6 +56962,16 @@
       "owner": "net/minecraft/src/NBTTagLong",
       "old_class_sha256": "e755ab0088193088f75c863b1102d60c7063d04dc508c32ce60722101ef41afe",
       "new_class_sha256": "0a6b255fdc210905d1877bebf820f5f7e06829c2d2549fe709ce5bc01a538e65",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/NBTBase",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/NBTBase",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 9,
       "exact": true,
       "differences": []
@@ -54727,6 +56981,16 @@
       "owner": "net/minecraft/src/NBTTagShort",
       "old_class_sha256": "664e8893732087425a58067e540519a4699ca194d557ec9ef0809998d2983ce3",
       "new_class_sha256": "ac5aae504dcec97958fe896216d8f7ed74d061cbc6e1f1b36617bea5491e0ac7",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/NBTBase",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/NBTBase",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 9,
       "exact": true,
       "differences": []
@@ -54736,6 +57000,16 @@
       "owner": "net/minecraft/src/NBTTagString",
       "old_class_sha256": "c980a98fdc646171b75d9092c190c822532dbe77348043240b55eb65be36f58d",
       "new_class_sha256": "798515562ec4dfba43a8166c0d952846e44ef078228bac1bb11819be4c9eb9f2",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/NBTBase",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/NBTBase",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 9,
       "exact": true,
       "differences": []
@@ -54745,6 +57019,20 @@
       "owner": "net/minecraft/src/NextTickListEntry",
       "old_class_sha256": "126dd86eba11ef13a1d2d851b3b06102e0cb61723cbd94963e11bf9cfa944673",
       "new_class_sha256": "b083a6cbfe21e5011f77e299a587d35b6a6b27c9c2290107ceef5a5a8280770d",
+      "original_hierarchy": {
+        "superclass": "java/lang/Object",
+        "interfaces": [
+          "java/lang/Comparable"
+        ],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "java/lang/Object",
+        "interfaces": [
+          "java/lang/Comparable"
+        ],
+        "flags": 33
+      },
       "members_compared": 14,
       "exact": true,
       "differences": []
@@ -54754,6 +57042,16 @@
       "owner": "net/minecraft/src/PlayerCapabilities",
       "old_class_sha256": "e3058cce0054f66022d15d9c4e531fd38506aa691e869eac54957884f8d12d83",
       "new_class_sha256": "ee93dd1022af61e198619976fc0b8e66246d078381c077d6a6b79122c7508bb3",
+      "original_hierarchy": {
+        "superclass": "java/lang/Object",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "java/lang/Object",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 7,
       "exact": true,
       "differences": []
@@ -54763,6 +57061,16 @@
       "owner": "net/minecraft/src/PlayerController",
       "old_class_sha256": "17fa8c84edec93f48a15492f132efea3d6151706883be9a40d9ab058a8a739c3",
       "new_class_sha256": "3cf7c1220d3efefe99908d7a46838c03b51b0a518508b2e7558c23e968a7911c",
+      "original_hierarchy": {
+        "superclass": "java/lang/Object",
+        "interfaces": [],
+        "flags": 1057
+      },
+      "new_hierarchy": {
+        "superclass": "java/lang/Object",
+        "interfaces": [],
+        "flags": 1057
+      },
       "members_compared": 30,
       "exact": true,
       "differences": []
@@ -54772,6 +57080,16 @@
       "owner": "net/minecraft/src/PlayerControllerCreative",
       "old_class_sha256": "ee6f1256c8657d4ca99237b4f7f0b10320ba0a16bb173e4cc5365529d876b54c",
       "new_class_sha256": "f4f4378a36e7214668cee520d4ecf819afaed153a1d968bc7b8cbb72b5fb507a",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/PlayerController",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/PlayerController",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 16,
       "exact": true,
       "differences": []
@@ -54781,6 +57099,16 @@
       "owner": "net/minecraft/src/PlayerControllerSP",
       "old_class_sha256": "7e896dbcfeb54593cfcac86da5e0dccd58b9fa9c2d67b3069f2efb5c70c72a74",
       "new_class_sha256": "bfe39c7c652c22c853df56271e969ee903bf22648c746fc5c22eb7a8b897dfcf",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/PlayerController",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/PlayerController",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 21,
       "exact": true,
       "differences": []
@@ -54790,6 +57118,16 @@
       "owner": "net/minecraft/src/Potion",
       "old_class_sha256": "da327eaa573714be748011c1835556f86d3e7ea96d24bcef71c83aa7ee3efadf",
       "new_class_sha256": "72d353904bf0f4937b9e834915fd6f53dc8e00627afa62878df38e8a2b84ba6d",
+      "original_hierarchy": {
+        "superclass": "java/lang/Object",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "java/lang/Object",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 59,
       "exact": true,
       "differences": []
@@ -54799,6 +57137,16 @@
       "owner": "net/minecraft/src/PotionEffect",
       "old_class_sha256": "de337f33ffcc54f34e519de75a5ae5db8fcb94186870fbc1ff15e186945172e6",
       "new_class_sha256": "05be7d4035329ac1d5357c8f517291ebc1f8976eed90474168c5acf2c571c14a",
+      "original_hierarchy": {
+        "superclass": "java/lang/Object",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "java/lang/Object",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 16,
       "exact": true,
       "differences": []
@@ -54808,6 +57156,16 @@
       "owner": "net/minecraft/src/PotionHealth",
       "old_class_sha256": "4534a770974540052c1507db8f62d7d1e3c443b9b0cd1783879def1c95d177d9",
       "new_class_sha256": "726d0aaa49128af60588466b710a992ea227789f3caf3f3d41b163b94a232656",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/Potion",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/Potion",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 3,
       "exact": true,
       "differences": []
@@ -54817,6 +57175,16 @@
       "owner": "net/minecraft/src/PotionHelper",
       "old_class_sha256": "4bcb8a384dbf22cd21ebe91ec2deb2423da5349d1baaac394993325a79cb2744",
       "new_class_sha256": "520300e60b41b5889848f9478044e3793b217da1ef5ab5f8d22e470ccf55f50e",
+      "original_hierarchy": {
+        "superclass": "java/lang/Object",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "java/lang/Object",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 31,
       "exact": true,
       "differences": []
@@ -54826,6 +57194,20 @@
       "owner": "net/minecraft/src/ProfilerResult",
       "old_class_sha256": "09abe128cdfac21a613eef41e722579a13aa5bee0f2f2f0fe83b3376ec68c152",
       "new_class_sha256": "1f5880a45b8e9f37c722ea27257f8aa425089fc6cff527c1638e0b8ea43c1dc4",
+      "original_hierarchy": {
+        "superclass": "java/lang/Object",
+        "interfaces": [
+          "java/lang/Comparable"
+        ],
+        "flags": 49
+      },
+      "new_hierarchy": {
+        "superclass": "java/lang/Object",
+        "interfaces": [
+          "java/lang/Comparable"
+        ],
+        "flags": 49
+      },
       "members_compared": 7,
       "exact": true,
       "differences": []
@@ -54835,6 +57217,20 @@
       "owner": "net/minecraft/src/RecipeSorter",
       "old_class_sha256": "4209e8909a9bd487ac78f6861de65383330e184993691d401556f31815d9b9fe",
       "new_class_sha256": "b4482657aed3eca2a2fc7f6ac6c9c217e4ef9c0126831684a9be8cfed3b30227",
+      "original_hierarchy": {
+        "superclass": "java/lang/Object",
+        "interfaces": [
+          "java/util/Comparator"
+        ],
+        "flags": 32
+      },
+      "new_hierarchy": {
+        "superclass": "java/lang/Object",
+        "interfaces": [
+          "java/util/Comparator"
+        ],
+        "flags": 32
+      },
       "members_compared": 4,
       "exact": true,
       "differences": []
@@ -54844,6 +57240,16 @@
       "owner": "net/minecraft/src/RegionFile",
       "old_class_sha256": "cfaf6eda87230095934f00953b5e5d8274cc6c844e42a35e1db7f37d439dcebb",
       "new_class_sha256": "ac9bb73aac124e46d9147c120838a5af29d80f88271588c6f81ea94598dc9ca5",
+      "original_hierarchy": {
+        "superclass": "java/lang/Object",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "java/lang/Object",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 25,
       "exact": true,
       "differences": []
@@ -54853,6 +57259,16 @@
       "owner": "net/minecraft/src/Render",
       "old_class_sha256": "a72fe2e0f24a6939bfc541b356726bd76a777ee3152b398e5b7dd3e400ca12ad",
       "new_class_sha256": "5ac8b49ef4b40e69e300a55f2660356c8de93bc8424b796651eb4f93fef61ef5",
+      "original_hierarchy": {
+        "superclass": "java/lang/Object",
+        "interfaces": [],
+        "flags": 1057
+      },
+      "new_hierarchy": {
+        "superclass": "java/lang/Object",
+        "interfaces": [],
+        "flags": 1057
+      },
       "members_compared": 18,
       "exact": true,
       "differences": []
@@ -54862,6 +57278,16 @@
       "owner": "net/minecraft/src/RenderArrow",
       "old_class_sha256": "1ae41b844632740462f3ac45dd1f6346479035eef1f7524a6c703b395db6dc9f",
       "new_class_sha256": "2c0bce3dfd4e8b4a6fa34212863812557acf74e8def85880a30bfb5f72cab99c",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/Render",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/Render",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 3,
       "exact": true,
       "differences": []
@@ -54871,6 +57297,16 @@
       "owner": "net/minecraft/src/RenderBlaze",
       "old_class_sha256": "bc9a690b50b42147dd5eec9e440f0cd597198f2cb82cf0bfc0b903cf516105f1",
       "new_class_sha256": "14c4632fd09040630de3c44d86e2bf3493e70afb80091e3cee0d2412711a6419",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/RenderLiving",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/RenderLiving",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 5,
       "exact": true,
       "differences": []
@@ -54880,6 +57316,16 @@
       "owner": "net/minecraft/src/RenderBlocks",
       "old_class_sha256": "0724633e2b9767e84cea24ec56799eba43dd883c950d6d876f92f4f7aea577b0",
       "new_class_sha256": "ac5f0a7e46bf0e9516e5848b1cd5fc29b08d622fc00521c5b4ea18adafedef08",
+      "original_hierarchy": {
+        "superclass": "java/lang/Object",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "java/lang/Object",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 150,
       "exact": true,
       "differences": []
@@ -54889,6 +57335,16 @@
       "owner": "net/minecraft/src/RenderBoat",
       "old_class_sha256": "20941529325e83aebb043bdf8478a281fad5a3dd47b0ae8b5e95ed8c3081d824",
       "new_class_sha256": "b966f4f516f7c2a90942703d2582123625d1208fb50bb2c3d8d7e1fff0342657",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/Render",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/Render",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 4,
       "exact": true,
       "differences": []
@@ -54898,6 +57354,16 @@
       "owner": "net/minecraft/src/RenderChicken",
       "old_class_sha256": "e4d0f3b41c10171349953c66cd9936f458de56f9f3e43378104e230b5543219b",
       "new_class_sha256": "48523adfab4571106dda3c35d774d78164943e9978167601e3cbc4c81c43639f",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/RenderLiving",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/RenderLiving",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 6,
       "exact": true,
       "differences": []
@@ -54907,6 +57373,16 @@
       "owner": "net/minecraft/src/RenderCow",
       "old_class_sha256": "1061c07b0219c6e0ab54727473c74efad7b38fee25c1523e49fcd303aec0ed18",
       "new_class_sha256": "0871212f00ae1060b2723dbd32312570f5b2a59c994ee20928908973aa841320",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/RenderLiving",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/RenderLiving",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 4,
       "exact": true,
       "differences": []
@@ -54916,6 +57392,16 @@
       "owner": "net/minecraft/src/RenderCreeper",
       "old_class_sha256": "4acc7c99e4d34cc74b170621f1462c231af89bb4fdb55ab6eb0e6baee0a6eafd",
       "new_class_sha256": "f5394a062e0f807450fdb6d1dfb2176d8dbee5bbaf4098948db12ad0bef3fe57",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/RenderLiving",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/RenderLiving",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 10,
       "exact": true,
       "differences": []
@@ -54925,6 +57411,16 @@
       "owner": "net/minecraft/src/RenderDragon",
       "old_class_sha256": "d2b8d00e69b20bd85bb50bb639156d6d61dc0c3b44b7e4315260fd32567fdbbf",
       "new_class_sha256": "97b776b032b1df026f976fa5cbf60acc12d7c21645227bc90fe88f3c66381836",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/RenderLiving",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/RenderLiving",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 16,
       "exact": true,
       "differences": []
@@ -54934,6 +57430,16 @@
       "owner": "net/minecraft/src/RenderEnchantmentTable",
       "old_class_sha256": "09f8a9a52898480301e076f6dea06bef282180545002a520a6f7c0491de5fc1e",
       "new_class_sha256": "21a6941a972413dcb39fb169023748b2986df42fea5cb6c0ff4eb1c862e3cd9d",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/TileEntitySpecialRenderer",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/TileEntitySpecialRenderer",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 4,
       "exact": true,
       "differences": []
@@ -54943,6 +57449,16 @@
       "owner": "net/minecraft/src/RenderEndPortal",
       "old_class_sha256": "a8074d09541f1448ce7ba2cf3c834cd9a75938857ff829ac05694f19cdfd2dd0",
       "new_class_sha256": "5cb46603fe67f07a9720520276cbeca8f38b10823f91ee0c6bf057cac5124e0e",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/TileEntitySpecialRenderer",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/TileEntitySpecialRenderer",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 5,
       "exact": true,
       "differences": []
@@ -54952,6 +57468,16 @@
       "owner": "net/minecraft/src/RenderEnderCrystal",
       "old_class_sha256": "2bd0ac378730c6bdbb2e8405f36965f7636a530858669287609e3c0d72151956",
       "new_class_sha256": "9c4ad2c37d31a2900ac51c3e184bf61f3d8cb3fa3fa0628901e83d86b01bc7cb",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/Render",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/Render",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 5,
       "exact": true,
       "differences": []
@@ -54961,6 +57487,16 @@
       "owner": "net/minecraft/src/RenderEnderman",
       "old_class_sha256": "b5f3c9aed46e1aad54b8bdc99943dc29deacea2a8dc443529b97b9b7754a6572",
       "new_class_sha256": "7b76f5ef7607db74a03e7d79a8b49c465e948ae34478f8f8eed4e38b46297e44",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/RenderLiving",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/RenderLiving",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 10,
       "exact": true,
       "differences": []
@@ -54970,6 +57506,16 @@
       "owner": "net/minecraft/src/RenderFallingSand",
       "old_class_sha256": "814b70d50a9b4e1b862092009af4ffae5686068dca4637e146fc3862a178c4d3",
       "new_class_sha256": "37a2bfe23f11a939baac1a2b51c682037327ab376383bfdb04cb2ad255620e7f",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/Render",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/Render",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 4,
       "exact": true,
       "differences": []
@@ -54979,6 +57525,16 @@
       "owner": "net/minecraft/src/RenderFireball",
       "old_class_sha256": "e82bfb87160ca550261d81cc5013b826b14f3e1322a6caaa6f360cc9be149a3e",
       "new_class_sha256": "4c54179d56097c29d339b70b94ce6ccae75544c6160ef245604ad1c7d69abd44",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/Render",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/Render",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 4,
       "exact": true,
       "differences": []
@@ -54988,6 +57544,16 @@
       "owner": "net/minecraft/src/RenderFish",
       "old_class_sha256": "892574dc7a2a813f0a6749c1598705e2cbaa97b0083a0d63d526f3e25aa0722b",
       "new_class_sha256": "390796f9f6feffc0cc942eb7c7c2b4fabe0518d844393fe075fa210063c75185",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/Render",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/Render",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 3,
       "exact": true,
       "differences": []
@@ -54997,6 +57563,16 @@
       "owner": "net/minecraft/src/RenderGhast",
       "old_class_sha256": "8cbce80d6fcdb07b8c66af6c6c1fdad6462e42be93a9d6cec080d45e4d4ffb6c",
       "new_class_sha256": "3e5daafbbd6579234378fc30f39249a8a0dd2247ea317333ab6d0cc67fe59993",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/RenderLiving",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/RenderLiving",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 3,
       "exact": true,
       "differences": []
@@ -55006,6 +57582,16 @@
       "owner": "net/minecraft/src/RenderGiantZombie",
       "old_class_sha256": "036c044815d2325438d1fc67929a140e83af07c5fa85b6915dbbd5e9a128a3a8",
       "new_class_sha256": "98038a4108ee9cb2edd9e767607796b0c75a2cfe840714c02a69419743c28ac3",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/RenderLiving",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/RenderLiving",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 4,
       "exact": true,
       "differences": []
@@ -55015,6 +57601,16 @@
       "owner": "net/minecraft/src/RenderLightningBolt",
       "old_class_sha256": "63afe9b60e5e579cf4d790ce35fc63f61bd82d6f77725ff80158e4bf24c43a57",
       "new_class_sha256": "a62621612d38bba6c61113e9553373ae1f1738dab00a21bc7de333283956d9bf",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/Render",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/Render",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 3,
       "exact": true,
       "differences": []
@@ -55024,6 +57620,16 @@
       "owner": "net/minecraft/src/RenderMagmaCube",
       "old_class_sha256": "7ec49b5f845b165679eba42c9c8e70b6331b60ef3750b7d8d61f1b997e35a171",
       "new_class_sha256": "c18c3f9795035ed8e45626612189bc62fba989af6208896100cfd15c61a792cd",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/RenderLiving",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/RenderLiving",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 7,
       "exact": true,
       "differences": []
@@ -55033,6 +57639,16 @@
       "owner": "net/minecraft/src/RenderMinecart",
       "old_class_sha256": "1970ea069738a1c9fabbe7fb02e3918a3aca6efdf28de5ccb14e56071e6c53e2",
       "new_class_sha256": "24a759abc8f469dc070cce9a9a842724c4e8038fecec09e8dfb6886fdd1d4ccb",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/Render",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/Render",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 4,
       "exact": true,
       "differences": []
@@ -55042,6 +57658,16 @@
       "owner": "net/minecraft/src/RenderMooshroom",
       "old_class_sha256": "914e84c13119a8940de99729ed3d7d84ace35fe43413f3d3859d1c2df989a54a",
       "new_class_sha256": "94467334ba06627d54349f38d6a3173c39d00a37392341ab8739ca4ae33d30d2",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/RenderLiving",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/RenderLiving",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 6,
       "exact": true,
       "differences": []
@@ -55051,6 +57677,16 @@
       "owner": "net/minecraft/src/RenderPainting",
       "old_class_sha256": "49c8bd368a6a331c29577e9f8e8df618f25324a17a9ccbdb3d06f9d750e3496e",
       "new_class_sha256": "4c2e523a60bae9541655732306c49c483c1c7e5cc5a392358237407b8cfe90ef",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/Render",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/Render",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 6,
       "exact": true,
       "differences": []
@@ -55060,6 +57696,16 @@
       "owner": "net/minecraft/src/RenderPig",
       "old_class_sha256": "39a7ba7bdda0eebbea14fd7c5e56cbbbafae792a83fd7d9392c384367a28de2c",
       "new_class_sha256": "07cc2adedebaf1033612f35b3f14cec1b71383afabca218e28f445f5c68bf136",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/RenderLiving",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/RenderLiving",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 6,
       "exact": true,
       "differences": []
@@ -55069,6 +57715,16 @@
       "owner": "net/minecraft/src/RenderSheep",
       "old_class_sha256": "3c25952eebdfe0fceee1f4af7eacf6486e6d79e585cba5bb1435573fb9fad346",
       "new_class_sha256": "d071c0f8df4ab6fbf4f21ddb72c2f5f47ac9e6ff96794f4c8aa45597cbf9c535",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/RenderLiving",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/RenderLiving",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 6,
       "exact": true,
       "differences": []
@@ -55078,6 +57734,16 @@
       "owner": "net/minecraft/src/RenderSlime",
       "old_class_sha256": "197f9748d45ee392289160b892bddedf1bd3a5b9be95d3adbbb070e4d9cb700f",
       "new_class_sha256": "cf3034986a0dbc1d9a875bd663351bfc061355ab394c70b60b7fdf5f1d0fc504",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/RenderLiving",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/RenderLiving",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 6,
       "exact": true,
       "differences": []
@@ -55087,6 +57753,16 @@
       "owner": "net/minecraft/src/RenderSnowMan",
       "old_class_sha256": "9e6188e75293eed609145d8328e891f73d132b341d490fc6de108c2f386b28e3",
       "new_class_sha256": "9bc69c2f87b07204b3c7108f3dcc873cd2b96e68dac2331f8b55fd117b80a90d",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/RenderLiving",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/RenderLiving",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 4,
       "exact": true,
       "differences": []
@@ -55096,6 +57772,16 @@
       "owner": "net/minecraft/src/RenderSnowball",
       "old_class_sha256": "c949c5d23b293a96100b07b46e183ed1772b18f8e1493127c36665831cf20725",
       "new_class_sha256": "3ebd36aef4955ff2ef93aa037fb714a2742b07e63a158f983c75aa8f5f301633",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/Render",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/Render",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 4,
       "exact": true,
       "differences": []
@@ -55105,6 +57791,20 @@
       "owner": "net/minecraft/src/RenderSorter",
       "old_class_sha256": "32ca2081b7682a38220432e7c8a4a5e13c388085204fc91262a49dc17c4708a7",
       "new_class_sha256": "16222cc24172ce05f87f717ad5425dad088cd3a87b55cda3dd472d82c4c80b3f",
+      "original_hierarchy": {
+        "superclass": "java/lang/Object",
+        "interfaces": [
+          "java/util/Comparator"
+        ],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "java/lang/Object",
+        "interfaces": [
+          "java/util/Comparator"
+        ],
+        "flags": 33
+      },
       "members_compared": 4,
       "exact": true,
       "differences": []
@@ -55114,6 +57814,16 @@
       "owner": "net/minecraft/src/RenderSpider",
       "old_class_sha256": "281c3ec8241c5654338ea0e8358b09d9168ddb89b469434f87cf0256b9ac6062",
       "new_class_sha256": "de19fcd37bdf81cd4405d2cf7fccb29e4ce2afc29aff1884bdd67c063944d197",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/RenderLiving",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/RenderLiving",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 7,
       "exact": true,
       "differences": []
@@ -55123,6 +57833,16 @@
       "owner": "net/minecraft/src/RenderSquid",
       "old_class_sha256": "b83e1ca6754135047fbe45ab41e90878ba75e716f7c8f1ed5cbef8a7d491f4e3",
       "new_class_sha256": "214aee1ec1425bf2fde39fe5d7377378447b40056ebd27bfe82b20a93b8388b8",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/RenderLiving",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/RenderLiving",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 10,
       "exact": true,
       "differences": []
@@ -55132,6 +57852,16 @@
       "owner": "net/minecraft/src/RenderTNTPrimed",
       "old_class_sha256": "ba17b19b691987aba42bb9545bcf00dcc73ac878b700725226252e630764061e",
       "new_class_sha256": "d7eff294f9eadc983ad537e1dfe40aa9e612c08a506a499b3d4242dbe27adaa2",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/Render",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/Render",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 4,
       "exact": true,
       "differences": []
@@ -55141,6 +57871,16 @@
       "owner": "net/minecraft/src/RenderVillager",
       "old_class_sha256": "3f030942fd4431f81ebb76a519e6601beea7153dd97fecffbecd437c03f2da45",
       "new_class_sha256": "4a811804282cdb7f1a324645ae2e5947f576a75e2bdf889cb12841eb869ec5dd",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/RenderLiving",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/RenderLiving",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 13,
       "exact": true,
       "differences": []
@@ -55150,6 +57890,16 @@
       "owner": "net/minecraft/src/RenderWolf",
       "old_class_sha256": "442ab5e9c1c9bde115ad9e110aaecc637ae5cac387fd2cd03a0d07962cb9e584",
       "new_class_sha256": "8f5c098e8088d03189114c70ff26534d3effdee3d8a43095f2d8a4f1919d98ba",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/RenderLiving",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/RenderLiving",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 8,
       "exact": true,
       "differences": []
@@ -55159,6 +57909,16 @@
       "owner": "net/minecraft/src/RenderXPOrb",
       "old_class_sha256": "73314789cec40651f54edb61e347be9a38dcb528870500132bd2f7d4e10955ec",
       "new_class_sha256": "4650cb16b6438cb368d24fea736cf235a9e7ec3c2b718df41e91fc0dd00f7279",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/Render",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/Render",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 5,
       "exact": true,
       "differences": []
@@ -55168,6 +57928,16 @@
       "owner": "net/minecraft/src/SaveConverterMcRegion",
       "old_class_sha256": "6deb48158372fb1ae5c77c1d29a8838754b8dc9e1e9f9e30a4320c685e618e2d",
       "new_class_sha256": "3aa5018b5988da83a7f19644aa560614e4b2b191fc1e8324f5f22b1447956d90",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/SaveFormatOld",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/SaveFormatOld",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 10,
       "exact": true,
       "differences": []
@@ -55177,6 +57947,20 @@
       "owner": "net/minecraft/src/SaveFormatOld",
       "old_class_sha256": "1b6105b3002a04505c38ce5cae877820a371e87a03b0a32710d991142724c970",
       "new_class_sha256": "089dc119c52e1a6820e20adb3fd3b52df9b43d0ece9819ee756622049e984491",
+      "original_hierarchy": {
+        "superclass": "java/lang/Object",
+        "interfaces": [
+          "net/minecraft/src/ISaveFormat"
+        ],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "java/lang/Object",
+        "interfaces": [
+          "net/minecraft/src/ISaveFormat"
+        ],
+        "flags": 33
+      },
       "members_compared": 12,
       "exact": true,
       "differences": []
@@ -55186,6 +57970,20 @@
       "owner": "net/minecraft/src/SaveHandler",
       "old_class_sha256": "7f171a78a44761724e8933d8f5dfda67b33b6c41acdecda698dd596fb0511b7a",
       "new_class_sha256": "8aed7951ad8a69956129e31268ecff71d8b9117267a43c57e97d6bfb321a9d4c",
+      "original_hierarchy": {
+        "superclass": "java/lang/Object",
+        "interfaces": [
+          "net/minecraft/src/ISaveHandler"
+        ],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "java/lang/Object",
+        "interfaces": [
+          "net/minecraft/src/ISaveHandler"
+        ],
+        "flags": 33
+      },
       "members_compared": 17,
       "exact": true,
       "differences": []
@@ -55195,6 +57993,16 @@
       "owner": "net/minecraft/src/SlotBrewingStandIngredient",
       "old_class_sha256": "e672edb85fe119b13c21ddd29709372c9daf6fccfaacc89e71e9bae5fbee2808",
       "new_class_sha256": "964e13a324a113a64bcad31f7462b34d19d236dbdb42905dee483fec2ed67354",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/Slot",
+        "interfaces": [],
+        "flags": 32
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/Slot",
+        "interfaces": [],
+        "flags": 32
+      },
       "members_compared": 4,
       "exact": true,
       "differences": []
@@ -55204,6 +58012,20 @@
       "owner": "net/minecraft/src/SorterStatsBlock",
       "old_class_sha256": "4a91adda5a16ed729f1b9d9aa0409cb110a4120410d2ee3f3558032398a8fa81",
       "new_class_sha256": "eb7f29dfc50aa574700d7d5bfef97863e0c46584f7ad657c7a5df919599458af",
+      "original_hierarchy": {
+        "superclass": "java/lang/Object",
+        "interfaces": [
+          "java/util/Comparator"
+        ],
+        "flags": 32
+      },
+      "new_hierarchy": {
+        "superclass": "java/lang/Object",
+        "interfaces": [
+          "java/util/Comparator"
+        ],
+        "flags": 32
+      },
       "members_compared": 5,
       "exact": true,
       "differences": []
@@ -55213,6 +58035,20 @@
       "owner": "net/minecraft/src/SorterStatsItem",
       "old_class_sha256": "b7d586bda69fdc20c199fba00b8515e0666466db90fddadcd40a5a364295d803",
       "new_class_sha256": "539a359bd7f96f5856ffb264ebc03bdca32d329b7b84cfd623d906cdb2277792",
+      "original_hierarchy": {
+        "superclass": "java/lang/Object",
+        "interfaces": [
+          "java/util/Comparator"
+        ],
+        "flags": 32
+      },
+      "new_hierarchy": {
+        "superclass": "java/lang/Object",
+        "interfaces": [
+          "java/util/Comparator"
+        ],
+        "flags": 32
+      },
       "members_compared": 5,
       "exact": true,
       "differences": []
@@ -55222,6 +58058,16 @@
       "owner": "net/minecraft/src/SpawnerAnimals",
       "old_class_sha256": "d83362220e50a908ae5f3979d5a77f9061b8241343dd766ac2bbb72032cba4dc",
       "new_class_sha256": "0deb6fb7fa999e83c5c3a1ca491da4d4e4e306b8c09454ad912afdfdcbc1fe3d",
+      "original_hierarchy": {
+        "superclass": "java/lang/Object",
+        "interfaces": [],
+        "flags": 49
+      },
+      "new_hierarchy": {
+        "superclass": "java/lang/Object",
+        "interfaces": [],
+        "flags": 49
+      },
       "members_compared": 9,
       "exact": true,
       "differences": []
@@ -55231,6 +58077,16 @@
       "owner": "net/minecraft/src/StatFileWriter",
       "old_class_sha256": "88dfd5f0c2557378a85fb4f447d144b10a724b6f45b47df93112c3a172cb33a2",
       "new_class_sha256": "856f8bd9a90a86613ce0ad0e03a93bb6886fb6eef587654682b70b5b97d0ff17",
+      "original_hierarchy": {
+        "superclass": "java/lang/Object",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "java/lang/Object",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 19,
       "exact": true,
       "differences": []
@@ -55240,6 +58096,16 @@
       "owner": "net/minecraft/src/StructureComponent",
       "old_class_sha256": "3f62caa60dad0aae2162edca5e33ea85533fc16f76d88beee924361a98baee33",
       "new_class_sha256": "7f4e69dd9ae6cd74cead296b706de5bf9bcb5d2ecda0d01f1a44c0fb88dfa6b3",
+      "original_hierarchy": {
+        "superclass": "java/lang/Object",
+        "interfaces": [],
+        "flags": 1057
+      },
+      "new_hierarchy": {
+        "superclass": "java/lang/Object",
+        "interfaces": [],
+        "flags": 1057
+      },
       "members_compared": 27,
       "exact": true,
       "differences": []
@@ -55249,6 +58115,16 @@
       "owner": "net/minecraft/src/StructurePieceTreasure",
       "old_class_sha256": "06179ec8ace261151374030b804663a539380f8a57c4d712ce5b964eafb83516",
       "new_class_sha256": "4d8a962948d39b7bc14f77af2a5385bba6a6979abdd3d8d240334e37f015db99",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/WeightedRandomChoice",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/WeightedRandomChoice",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 5,
       "exact": true,
       "differences": []
@@ -55258,6 +58134,16 @@
       "owner": "net/minecraft/src/StructureStart",
       "old_class_sha256": "d1204e1225c2287d86076d28517b8ec2680ca929bf9db1f397c82560fca5aa3a",
       "new_class_sha256": "ee3270615f2d71602ad13f6fd54d1239116fe9c5832c17d32a7c4d5225e17c14",
+      "original_hierarchy": {
+        "superclass": "java/lang/Object",
+        "interfaces": [],
+        "flags": 1057
+      },
+      "new_hierarchy": {
+        "superclass": "java/lang/Object",
+        "interfaces": [],
+        "flags": 1057
+      },
       "members_compared": 10,
       "exact": true,
       "differences": []
@@ -55267,6 +58153,16 @@
       "owner": "net/minecraft/src/Teleporter",
       "old_class_sha256": "dbb8a6f1980f624e375fc072fcd2ba301edec5e88d5877ab634f3f1acb5b71a7",
       "new_class_sha256": "ebc92dc348bbee8bef15419cbfedd65003a3891fe1408d67c806fd9c9374bba3",
+      "original_hierarchy": {
+        "superclass": "java/lang/Object",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "java/lang/Object",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 5,
       "exact": true,
       "differences": []
@@ -55276,6 +58172,16 @@
       "owner": "net/minecraft/src/TextureCompassFX",
       "old_class_sha256": "03b2d7c91bf972001d005481a75ca83b051a11c54e269a686b7124235caca655",
       "new_class_sha256": "ec9752391d8dedf86241f26c257eda3fe3c183fbffbbee1e39b70b34a4d11942",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/TextureFX",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/TextureFX",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 6,
       "exact": true,
       "differences": []
@@ -55285,6 +58191,16 @@
       "owner": "net/minecraft/src/TexturePackBase",
       "old_class_sha256": "58b06a4f7015352967386352464bd60fa25bc858602fb7c59f6bbefe4355b578",
       "new_class_sha256": "2854c9c4daa85e75f1209b630cb202ada667b401d2787db3aeed39f8cec74a3c",
+      "original_hierarchy": {
+        "superclass": "java/lang/Object",
+        "interfaces": [],
+        "flags": 1057
+      },
+      "new_hierarchy": {
+        "superclass": "java/lang/Object",
+        "interfaces": [],
+        "flags": 1057
+      },
       "members_compared": 11,
       "exact": true,
       "differences": []
@@ -55294,6 +58210,16 @@
       "owner": "net/minecraft/src/TexturePackList",
       "old_class_sha256": "6d0d4ce1a1126374d9631b196bc75fcc4e05f724b44f8a658ffc4770fc573e8c",
       "new_class_sha256": "e4b64bca3020426ac5e28a48e4fabd8cfd2bdae7e271a291194b926ffcc03ced",
+      "original_hierarchy": {
+        "superclass": "java/lang/Object",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "java/lang/Object",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 11,
       "exact": true,
       "differences": []
@@ -55303,6 +58229,16 @@
       "owner": "net/minecraft/src/TextureWatchFX",
       "old_class_sha256": "18a560424962c7d38655e2ebf6a773a6513ff12bcda8a84ccae70a4b43e70ecd",
       "new_class_sha256": "70ce7234009af4dce8035fa18d87ee39a9a6bada9dbd410dc19fbcef84daeb64",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/TextureFX",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/TextureFX",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 7,
       "exact": true,
       "differences": []
@@ -55312,6 +58248,16 @@
       "owner": "net/minecraft/src/TextureWaterFlowFX",
       "old_class_sha256": "b4e5ed00e900bfdfa5aa9ba120cdd5e8c5a1dda3d1932b579310d347c06a324e",
       "new_class_sha256": "ea65ed7710c8056b51d34129cd7c05fa63d738e74d9e96e83a4ed74b8edfc27a",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/TextureFX",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/TextureFX",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 7,
       "exact": true,
       "differences": []
@@ -55321,6 +58267,22 @@
       "owner": "net/minecraft/src/ThreadedChunkLoader",
       "old_class_sha256": "b6639ee8cc8e203da6965470f9416fa36b8e81f389e1a90a7087415492e299e2",
       "new_class_sha256": "39ec9a5a00ee0b51778f9ef1d3bf436d96584fef947ac95970a46f7ffcd22186",
+      "original_hierarchy": {
+        "superclass": "java/lang/Object",
+        "interfaces": [
+          "net/minecraft/src/IChunkLoader",
+          "net/minecraft/src/IThreadedFileIO"
+        ],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "java/lang/Object",
+        "interfaces": [
+          "net/minecraft/src/IThreadedFileIO",
+          "net/minecraft/src/IChunkLoader"
+        ],
+        "flags": 33
+      },
       "members_compared": 13,
       "exact": true,
       "differences": []
@@ -55330,6 +58292,20 @@
       "owner": "net/minecraft/src/ThreadedFileIOBase",
       "old_class_sha256": "9e1b802461f1cb455646ea61c4a7c7dcd919cd1b725f07e9e5ea70f80140d29f",
       "new_class_sha256": "3ca48819937ce06c1d5570baefd6815b483229fa43e5eccf6b6ffcd1345daf56",
+      "original_hierarchy": {
+        "superclass": "java/lang/Object",
+        "interfaces": [
+          "java/lang/Runnable"
+        ],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "java/lang/Object",
+        "interfaces": [
+          "java/lang/Runnable"
+        ],
+        "flags": 33
+      },
       "members_compared": 11,
       "exact": true,
       "differences": []
@@ -55339,6 +58315,16 @@
       "owner": "net/minecraft/src/TileEntity",
       "old_class_sha256": "d7c615ad45a141cc9f6378a6a857e18619643f10aea35e0da95262f04d022e72",
       "new_class_sha256": "f366d1d6aae40a618484c28ab69e4cb2ff9a4ea6f746cf9ec0d3be086246319b",
+      "original_hierarchy": {
+        "superclass": "java/lang/Object",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "java/lang/Object",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 25,
       "exact": true,
       "differences": []
@@ -55348,6 +58334,20 @@
       "owner": "net/minecraft/src/TileEntityChest",
       "old_class_sha256": "e9ff3d8068f039c5c0baba190613114b4bcab07ef26181e1e7a77e6caffb9f0f",
       "new_class_sha256": "c66ba2dddb3c75de2bfc6a63c7390ae2a59e31a8be93b6cfb3b366590d7f4070",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/TileEntity",
+        "interfaces": [
+          "net/minecraft/src/IInventory"
+        ],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/TileEntity",
+        "interfaces": [
+          "net/minecraft/src/IInventory"
+        ],
+        "flags": 33
+      },
       "members_compared": 27,
       "exact": true,
       "differences": []
@@ -55357,6 +58357,16 @@
       "owner": "net/minecraft/src/TileEntityChestRenderer",
       "old_class_sha256": "ad278d45a36a61dd8ae2dc190a1b6aae6e88e859665ace179648cf9a2acf592c",
       "new_class_sha256": "546f935ae2957e3451a926b0e503340f510eadb82ef7d192f7b034c94cf66393",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/TileEntitySpecialRenderer",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/TileEntitySpecialRenderer",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 5,
       "exact": true,
       "differences": []
@@ -55366,6 +58376,16 @@
       "owner": "net/minecraft/src/TileEntityMobSpawner",
       "old_class_sha256": "106aced2b79154bb9200e4a5961b59b8a059854dc7fdf2fce0c84c631cf752b6",
       "new_class_sha256": "c91e749fd9ac3b48bc98bbb8c34b03f5757d9d7b1da0bdbf39709bd5cdce9e85",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/TileEntity",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/TileEntity",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 12,
       "exact": true,
       "differences": []
@@ -55375,6 +58395,16 @@
       "owner": "net/minecraft/src/TileEntityMobSpawnerRenderer",
       "old_class_sha256": "e480e975c05a075bd97287ca522a3088abd503fd7f2f812beb79339c03d947b2",
       "new_class_sha256": "006e39ce640661aec9a68a347a90033e0a567a70da489d26fd93d45f088848c9",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/TileEntitySpecialRenderer",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/TileEntitySpecialRenderer",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 4,
       "exact": true,
       "differences": []
@@ -55384,6 +58414,16 @@
       "owner": "net/minecraft/src/TileEntityPiston",
       "old_class_sha256": "69dcaafb2326a8c5099671fa641050f8de6bb66bd936912fe310c5a86686dc1d",
       "new_class_sha256": "4784b75996b78d54bfccac05cc5b76e08ca50a2140e1c4ff13ac1148a5a7b48f",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/TileEntity",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/TileEntity",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 25,
       "exact": true,
       "differences": []
@@ -55393,6 +58433,16 @@
       "owner": "net/minecraft/src/TileEntityRendererPiston",
       "old_class_sha256": "480b56a44f30246e76441e37898965cbac58c76ad9497f185e714436caab833a",
       "new_class_sha256": "78645a33e8158adb7e76d59c48699c667fadcb67c4e439972a08c017ade548a2",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/TileEntitySpecialRenderer",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/TileEntitySpecialRenderer",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 5,
       "exact": true,
       "differences": []
@@ -55402,6 +58452,16 @@
       "owner": "net/minecraft/src/TileEntitySignRenderer",
       "old_class_sha256": "ca48793f00bf7e0758043605d694a8a724ebb4d7d20b970de74b8bc596eb943e",
       "new_class_sha256": "54722a2d54d131b9081007d36dd8de67d6e0fb56d5a2fe0d8dd7bc3f5fb01a59",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/TileEntitySpecialRenderer",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/TileEntitySpecialRenderer",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 4,
       "exact": true,
       "differences": []
@@ -55411,6 +58471,16 @@
       "owner": "net/minecraft/src/WeightedRandom",
       "old_class_sha256": "a728454a2869ae72dfe4f26924278263b6429893809563f33c7ad29f4753290b",
       "new_class_sha256": "cf09458a74e73cad5d89aa5b60384fbbe5af63e9a9d5ed6a34efc53f358646d9",
+      "original_hierarchy": {
+        "superclass": "java/lang/Object",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "java/lang/Object",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 7,
       "exact": true,
       "differences": []
@@ -55420,6 +58490,16 @@
       "owner": "net/minecraft/src/WeightedRandomChoice",
       "old_class_sha256": "b3b258a0a307dd59df9ba924e67329c592e8a3a9fe36e737ee40626f588cae9f",
       "new_class_sha256": "50ecd36610e5f0cfafcd9f5bed3f5d0e16ecc70eb02d5101355aa6a620e622c9",
+      "original_hierarchy": {
+        "superclass": "java/lang/Object",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "java/lang/Object",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 2,
       "exact": true,
       "differences": []
@@ -55429,6 +58509,16 @@
       "owner": "net/minecraft/src/WorldGenBigMushroom",
       "old_class_sha256": "92860791a80828d46b44366e267f1f5b265fd00698c32ced66aa41c289a109f3",
       "new_class_sha256": "2014b744a4ece35936191e9a7a739ec05ba14155a2c67a2131144e594d367afa",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/WorldGenerator",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/WorldGenerator",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 4,
       "exact": true,
       "differences": []
@@ -55438,6 +58528,16 @@
       "owner": "net/minecraft/src/WorldGenForest",
       "old_class_sha256": "b91af661113db3396262cf34251081905313c94970588ba52a763f6d054be9c6",
       "new_class_sha256": "9d6a7b58dd3534023aaca1b2882379b633f9cb1388377eccbe151a48591d2d1f",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/WorldGenerator",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/WorldGenerator",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 2,
       "exact": true,
       "differences": []
@@ -55447,6 +58547,16 @@
       "owner": "net/minecraft/src/WorldGenSpikes",
       "old_class_sha256": "5e3f08e0aeb7143bb4283bec6fc1dc38dfa6ca897865c14a9c84067033c10b23",
       "new_class_sha256": "606028c4f104dfca44b21926f4b6ed7f88273441d0ef025383fbb44b4a16c955",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/WorldGenerator",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/WorldGenerator",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 3,
       "exact": true,
       "differences": []
@@ -55456,6 +58566,16 @@
       "owner": "net/minecraft/src/WorldGenSwamp",
       "old_class_sha256": "a21c9e9a9b0d176b55a3da1b9b4cbc1d545fb00b3b7675440f8f874e3f274057",
       "new_class_sha256": "420dd1acb31a5874fd388fe826b18d43c9fbdca31da7c027521a8b9c68e5f301",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/WorldGenerator",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/WorldGenerator",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 3,
       "exact": true,
       "differences": []
@@ -55465,6 +58585,16 @@
       "owner": "net/minecraft/src/WorldGenTaiga1",
       "old_class_sha256": "129990fb65165d8fa6e80584d4be3268e56ce18f065b7b1f109d00385233241f",
       "new_class_sha256": "31dd169e3dce21d5f56d1aef7614185f0de7821145ef2292f9950a1396fcd0c5",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/WorldGenerator",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/WorldGenerator",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 2,
       "exact": true,
       "differences": []
@@ -55474,6 +58604,16 @@
       "owner": "net/minecraft/src/WorldGenTaiga2",
       "old_class_sha256": "ee6541e47820d5d3bb0df44d6498c215a19a7bb2a7e8800dd9e03dd700de8719",
       "new_class_sha256": "026d32a53daa6937adcf36185a0b0030970bc549b63f8e57a2a1eee94a799a53",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/WorldGenerator",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/WorldGenerator",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 2,
       "exact": true,
       "differences": []
@@ -55483,6 +58623,16 @@
       "owner": "net/minecraft/src/WorldGenTrees",
       "old_class_sha256": "ccc845596b4e603873f18ede48f5dd58e17733a6e3de178ab29d694e58e8dc2c",
       "new_class_sha256": "6fe16d978dd3b7877a2147ca06f0c4b76cf7d52a52dca0dde6af003a3d714ba5",
+      "original_hierarchy": {
+        "superclass": "net/minecraft/src/WorldGenerator",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "net/minecraft/src/WorldGenerator",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 2,
       "exact": true,
       "differences": []
@@ -55492,6 +58642,16 @@
       "owner": "net/minecraft/src/CraftingManager",
       "old_class_sha256": "4a0efac06a8e1f5813c5aae100f431f3815753848992156cde737150d4377860",
       "new_class_sha256": "b15b6545c8e05343dae8ebb5b07d3d8984745a4cac70a4df92f4e986637421a2",
+      "original_hierarchy": {
+        "superclass": "java/lang/Object",
+        "interfaces": [],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "java/lang/Object",
+        "interfaces": [],
+        "flags": 33
+      },
       "members_compared": 9,
       "exact": false,
       "differences": [
@@ -84793,11 +87953,98 @@
       "owner": "net/minecraft/src/SaveFormatComparator",
       "old_class_sha256": "9a94212afc45861efe14a219882e42fd49d137f7e084ba4c61d88b60c6b9b8f2",
       "new_class_sha256": "cfae15cae20b8e909fec4b08e2a380ac64b22510625920c3aa3e0a44c8ced8fc",
+      "original_hierarchy": {
+        "superclass": "java/lang/Object",
+        "interfaces": [
+          "java/lang/Comparable"
+        ],
+        "flags": 33
+      },
+      "new_hierarchy": {
+        "superclass": "java/lang/Object",
+        "interfaces": [
+          "java/lang/Comparable"
+        ],
+        "flags": 33
+      },
       "members_compared": 16,
       "exact": true,
       "differences": []
     }
   ],
+  "explicit_residue_assertions": [
+    {
+      "class_name": "EntityDragon",
+      "exactly_one_changed_instruction": 77,
+      "old": [
+        182,
+        [
+          [
+            10,
+            "net/minecraft/src/DamageSource",
+            "getSourceOfDamage",
+            "()Lnet/minecraft/src/Entity;",
+            "net/minecraft/src/DamageSource"
+          ]
+        ]
+      ],
+      "new": [
+        182,
+        [
+          [
+            10,
+            "net/minecraft/src/DamageSource",
+            "getEntity",
+            "()Lnet/minecraft/src/Entity;",
+            "net/minecraft/src/DamageSource"
+          ]
+        ]
+      ],
+      "entire_remaining_members_flags_code_handlers_exact": true
+    },
+    {
+      "class_name": "CraftingManager",
+      "exactly_one_changed_instruction": 1709,
+      "old": [
+        178,
+        [
+          [
+            9,
+            "net/minecraft/src/Block",
+            "blockGold",
+            "Lnet/minecraft/src/Block;",
+            "net/minecraft/src/Block"
+          ]
+        ]
+      ],
+      "new": [
+        178,
+        [
+          [
+            9,
+            "net/minecraft/src/Item",
+            "goldNugget",
+            "Lnet/minecraft/src/Item;",
+            "net/minecraft/src/Item"
+          ]
+        ]
+      ],
+      "entire_remaining_members_flags_code_handlers_exact": true
+    },
+    {
+      "class_name": "EnumArmorMaterial",
+      "only_change": "values accessflag FINAL removed; PUBLIC STATIC retained; class FINAL retained; entire code and handlers identical"
+    }
+  ],
+  "getSourceOfDamage_original_jar_declarations": {
+    "1.0": [
+      "net/minecraft/src/DamageSource"
+    ],
+    "1.1": [
+      "net/minecraft/src/EntityDamageSourceIndirect",
+      "net/minecraft/src/DamageSource"
+    ]
+  },
   "compiler_postdecrement_forms": [
     {
       "version": 0,

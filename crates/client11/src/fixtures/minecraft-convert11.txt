@@ -1,0 +1,1 @@
+0|0|true|false|DEFAULT|1|legacy-save|Existing world

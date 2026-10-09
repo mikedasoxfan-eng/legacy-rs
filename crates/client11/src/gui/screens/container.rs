@@ -21,6 +21,20 @@ pub type GuiCrafting = GuiContainer;
 pub type GuiChest = GuiContainer;
 pub type GuiFurnace = GuiContainer;
 pub type GuiDispenser = GuiContainer;
+
+#[cfg(test)]
+mod remaining_gui11_tests {
+ use super::*;
+ use crate::gui::widgets::{GuiButton,ButtonKind};
+ #[test]
+ #[ignore="requires original CONTAINER_RELEASE11_FIXTURE and installed assets"]
+ fn original_inherited_container_release() {
+  let bytes=std::fs::read(std::env::var("CONTAINER_RELEASE11_FIXTURE").unwrap()).unwrap();let mut at=0;fn int(b:&[u8],a:&mut usize)->i32{let n=i32::from_be_bytes(b[*a..*a+4].try_into().unwrap());*a+=4;n}fn bit(b:&[u8],a:&mut usize)->bool{let n=b[*a];*a+=1;n!=0}
+  assert_eq!(int(&bytes,&mut at),0x43524c31);let count=int(&bytes,&mut at);let mut ui=crate::gui::utility_check::fixture_ui("target/r11/container-release".into());
+  for _ in 0..count {let selected=bit(&bytes,&mut at);let dragging=bit(&bytes,&mut at);let button=int(&bytes,&mut at);let snapshot=worldgen::container::Container::new(ContainerKind::Player,0).snapshot(&worldgen::entity::player::InventoryPlayer::default());let mut screen=GuiContainer::new(&snapshot);let mut slider=GuiButton::slider(1,0,0,crate::gui::settings::EnumOptions::Music,"",0.5);if let ButtonKind::Slider{dragging:flag,..}=&mut slider.kind{*flag=dragging;}screen.base.buttons.push(slider);screen.base.selected=selected.then_some(0);for (x,y,b) in [(-17,91,button),(11,-23,0)]{screen.mouse_moved_or_up(&mut ui,x,y,b);assert_eq!(screen.base.selected.is_some(),bit(&bytes,&mut at));let actual=matches!(screen.base.buttons[0].kind,ButtonKind::Slider{dragging:true,..});assert_eq!(actual,bit(&bytes,&mut at));}}
+  assert_eq!(at,bytes.len());println!("CONTAINER RELEASE EXACT: {count} original inherited release vectors");
+ }
+}
 impl GuiContainer {
     pub fn new(snapshot: &ContainerSnapshot) -> Self {
         Self {

@@ -379,10 +379,9 @@ fn run(opts: WorldOptions, mut col: Colorizers, mut video: VideoSettings, rx: Re
     if let Some(dir) = opts.dir.as_deref() {
         if worldgen::convert::is_old_map_format(dir) {
             worldgen::convert::convert_map_format(dir, &mut progress);
-            // convertMapFormat restarts through startWorld with WorldSettings(0,0,true).
+            // Minecraft.convertMapFormat explicitly selects DEFAULT when restarting.
             open_seed=0;
-            open_settings=Some(worldgen::entity::player::food::WorldSettings {seed:0,game_mode:0,map_features:true,
-                hardcore: false, world_type: worldgen::storage::WorldType::Default,});
+            open_settings=Some(converted_world_settings());
         }
     }
     progress(worldgen::scenario::LoadStep::Title("Switching level"));
@@ -1192,4 +1191,21 @@ fn biome_source(world: &World) -> BiomeSource {
 fn fresh_seed() -> i64 {
     let nanos = std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).map_or(0, |d| d.as_nanos() as i64);
     worldgen::JavaRandom::new(nanos ^ 0x5DEECE66D).next_long()
+}
+
+fn converted_world_settings() -> worldgen::entity::player::food::WorldSettings {
+    worldgen::entity::player::food::WorldSettings { seed: 0, game_mode: 0,
+        map_features: true, hardcore: false, world_type: worldgen::storage::WorldType::Default }
+}
+
+#[cfg(test)]
+mod conversion11_tests {
+    #[test]
+    fn original_minecraft_convert_callback_settings() {
+        let original=include_str!("fixtures/minecraft-convert11.txt").trim();
+        let settings=super::converted_world_settings();
+        let actual=format!("{}|{}|{}|{}|{}",settings.seed,settings.game_mode,settings.map_features,
+            settings.hardcore,if settings.world_type==worldgen::storage::WorldType::Default {"DEFAULT"} else {"FLAT"});
+        assert_eq!(actual,original.split('|').take(5).collect::<Vec<_>>().join("|"));
+    }
 }

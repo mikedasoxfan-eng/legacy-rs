@@ -4,6 +4,20 @@
 use super::gl::{Factor, Shade};
 use super::Ui;
 
+fn debug_version_line(debug: &str) -> String { format!("Minecraft 1.1 ({debug})") }
+
+#[cfg(test)]
+mod remaining_gui11_tests {
+    #[test]
+    #[ignore="requires original INGAME_VERSION11_FIXTURE"]
+    fn original_debug_version_literal() {
+        let bytes=std::fs::read(std::env::var("INGAME_VERSION11_FIXTURE").unwrap()).unwrap();let mut at=0;
+        fn int(b:&[u8],at:&mut usize)->i32 {let n=i32::from_be_bytes(b[*at..*at+4].try_into().unwrap());*at+=4;n}
+        fn text(b:&[u8],at:&mut usize)->String {let n=int(b,at);String::from_utf16(&(0..n).map(|_|{let n=u16::from_be_bytes(b[*at..*at+2].try_into().unwrap());*at+=2;n}).collect::<Vec<_>>()).unwrap()}
+        assert_eq!(int(&bytes,&mut at),0x49475631);let count=int(&bytes,&mut at);for _ in 0..count{let debug=text(&bytes,&mut at);assert_eq!(super::debug_version_line(&debug),text(&bytes,&mut at));assert_eq!((int(&bytes,&mut at),int(&bytes,&mut at),int(&bytes,&mut at)),(2,2,16777215));}assert_eq!(at,bytes.len());println!("HUD VERSION EXACT: {count} original renderGameOverlay debug font calls");
+    }
+}
+
 /// The player state the overlay reads (`EntityPlayerSP` / `InventoryPlayer`).
 #[derive(Clone, Debug)]
 pub struct HudPlayer {
@@ -318,7 +332,7 @@ impl GuiIngame {
 
         if ui.settings.show_debug_info {
             ui.gl.push_matrix();
-            ui.draw_string(&format!("Minecraft 1.1.0 ({})", debug.fps_line), 2, 2, 16777215,);
+            ui.draw_string(&debug_version_line(&debug.fps_line), 2, 2, 16777215,);
             ui.draw_string(&debug.renders, 2, 12, 16777215);
             ui.draw_string(&debug.entities, 2, 22, 16777215);
             ui.draw_string(&debug.particles, 2, 32, 16777215);

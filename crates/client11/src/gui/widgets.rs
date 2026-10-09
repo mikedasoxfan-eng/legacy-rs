@@ -168,6 +168,10 @@ pub struct GuiTextField {
     pub width: i32,
     pub height: i32,
     pub text: String,
+    // Retain Java UTF-16 input for display and subsequent edits. Public String
+    // consumers receive the usual replacement for an incomplete surrogate pair.
+    text_units: Vec<u16>,
+    text_snapshot: String,
     pub max_length: usize,
     cursor_counter: i32,
     pub focused: bool,
@@ -176,7 +180,10 @@ pub struct GuiTextField {
 
 impl GuiTextField {
     pub fn new(x: i32, y: i32, w: i32, h: i32, text: impl Into<String>) -> GuiTextField {
-        GuiTextField { x, y, width: w, height: h, text: text.into(), max_length: 0, cursor_counter: 0, focused: false, enabled: true }
+        let text = text.into();
+        let text_units = text.encode_utf16().collect();
+        let text_snapshot = text.clone();
+        GuiTextField { x, y, width: w, height: h, text, text_units, text_snapshot, max_length: 0, cursor_counter: 0, focused: false, enabled: true }
     }
 
     pub fn update_cursor_counter(&mut self) {
@@ -185,32 +192,47 @@ impl GuiTextField {
 
     /// `textboxKeyTyped`; returns true if Tab asked the screen to select the next field.
     pub fn key_typed(&mut self, ui: &Ui, c: char, key: i32, clipboard: impl FnOnce() -> Option<String>) -> bool {
+        let clip = if self.enabled && self.focused && c == '\u{16}' { clipboard() } else { None };
+        let mut next = false;
+        for &unit in c.encode_utf16(&mut [0; 2]).iter() { next |= self.key_unit(ui, unit, key, clip.as_deref()); }
+        next
+    }
+
+    pub(crate) fn key_unit(&mut self, ui: &Ui, unit: u16, key: i32, clipboard: Option<&str>) -> bool {
+        if self.text != self.text_snapshot { self.text_units = self.text.encode_utf16().collect(); }
         let mut next = false;
         if self.enabled && self.focused {
-            if c == '\t' {
+            if unit == 9 {
                 next = true;
             }
-            if c == '\u{16}' {
-                let clip = clipboard().unwrap_or_default();
-                let len = self.text.encode_utf16().count() as i32;
+            if unit == 22 {
+                let clip: Vec<u16> = clipboard.unwrap_or_default().encode_utf16().collect();
+                let len = self.text_units.len() as i32;
                 let mut n = 32 - len;
-                let clip_len = clip.chars().count() as i32;
+                let clip_len = clip.len() as i32;
                 if n > clip_len {
                     n = clip_len;
                 }
                 if n > 0 {
-                    self.text.extend(clip.chars().take(n as usize));
+                    self.text_units.extend_from_slice(&clip[..n as usize]);
                 }
             }
-            if key == KEY_BACK && !self.text.is_empty() {
-                self.text.pop();
+            if key == KEY_BACK && !self.text_units.is_empty() {
+                self.text_units.pop();
             }
-            let len = self.text.chars().count();
-            if ui.font_allows(c) && (len < self.max_length || self.max_length == 0) {
-                self.text.push(c);
+            let len = self.text_units.len();
+            let allowed = unit > 32 || char::from_u32(unit as u32).is_some_and(|c| ui.font_allows(c));
+            if allowed && (len < self.max_length || self.max_length == 0) {
+                self.text_units.push(unit);
             }
         }
+        self.text = String::from_utf16_lossy(&self.text_units);
+        self.text_snapshot = self.text.clone();
         next
+    }
+
+    pub(crate) fn display_units(&self) -> Vec<u16> {
+        if self.text == self.text_snapshot { self.text_units.clone() } else { self.text.encode_utf16().collect() }
     }
 
     pub fn mouse_clicked(&mut self, x: i32, y: i32, _button: i32) {
@@ -231,11 +253,12 @@ impl GuiTextField {
         let ty = self.y + (self.height - 8) / 2;
         if self.enabled {
             let cursor = self.focused && self.cursor_counter / 6 % 2 == 0;
-            let s = format!("{}{}", self.text, if cursor { "_" } else { "" });
-            ui.draw_string(&s, self.x + 4, ty, 14737632);
+            let mut s = self.display_units();
+            if cursor { s.push(b'_' as u16); }
+            ui.font.draw_utf16_with_shadow(&mut ui.gl, &s, self.x + 4, ty, 14737632);
         } else {
-            let s = self.text.clone();
-            ui.draw_string(&s, self.x + 4, ty, 7368816);
+            let s = self.display_units();
+            ui.font.draw_utf16_with_shadow(&mut ui.gl, &s, self.x + 4, ty, 7368816);
         }
     }
 }
