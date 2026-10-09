@@ -3,6 +3,23 @@
 All notable changes to legacy-rs (formerly beta-rs). Versions follow [Semantic Versioning](https://semver.org);
 "exact" always means checked bit for bit against the original bytecode of that version.
 
+## [3.1.0] - 2026-10-09
+
+### Added
+- Minecraft **1.1** in the version picker and `--mc 1.1`, with its own `1.1/` data directory.
+- Superflat world selection and persistence, spawn eggs, language selection, Unicode and bidirectional text, and the original 1.1 gameplay/world/rendering changes.
+- Completed original-code audit of the 1.0-to-1.1 delta, including raw-only class changes and renamed callsite binding checks.
+- Playing, building, version and verification documentation, with an indexed reports directory and a dedicated release verification report.
+
+### Changed
+- Rewrote the README for all four supported versions and current downloads; removed development progress badges and tables.
+- Published a Windows ZIP alongside the standalone executable and offline inventory editor, with SHA-256 checksums.
+
+### Verified
+- Retained 1.1 production client suite: 67 tests; simulation: 114 tests; cross-version workspace libraries: 249 tests.
+- Original potion names/tooltips: 159,452 calls; world-name NBT: 65,550 cases; Unicode world creation: 96 callbacks; achievement tooltips: 3,021 callbacks.
+- Release packaging checks and evidence provenance are recorded in [the v3.1.0 report](reports/releases/v3.1.0.md). Older releases' historical full oracle suites remain recorded separately.
+
 ## [3.0.2] - 2026-10-06
 
 Minecraft 1.0 fixes found by playing through the new features in the real client: new end-to-end

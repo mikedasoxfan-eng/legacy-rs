@@ -3,7 +3,7 @@ resolver = "2"
 members = ["crates/*"]
 
 [workspace.package]
-version = "3.0.2"
+version = "3.1.0"
 edition = "2021"
 authors = ["logiu"]
 repository = "https://github.com/mikedasoxfan-eng/legacy-rs"

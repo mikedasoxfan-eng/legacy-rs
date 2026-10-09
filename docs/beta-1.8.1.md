@@ -37,7 +37,7 @@ tools/
   oracle181/          the reference harness for the original b1.8.1 bytecode (Mode_*.java)
   b181/               progress tooling: changes.json (every class b1.8.1 added or
                       changed), coverage.json (which checks cover each class),
-                      progress.py (the README progress block)
+                      progress.py (historical class-coverage ledger)
 ```
 
 ## How "done" is counted
@@ -45,8 +45,8 @@ tools/
 `tools/b181/changes.json` lists every class that b1.8.1 added or changed compared with
 b1.7.3, with the number of changed lines. A class counts as done only when its port is
 merged **and** every oracle section that covers it (`tools/b181/coverage.json`) is EXACT in
-the latest run. The README's progress block is computed from those two files by
-`tools/b181/progress.py`; nothing in it is estimated.
+the latest run. The historical class ledger is computed from those two files by
+`tools/b181/progress.py`. The project README no longer publishes development progress.
 
 Not counted, as for Beta 1.7.3:
 - multiplayer-only classes (`tools/b181/out_of_scope.json`);
