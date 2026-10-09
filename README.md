@@ -60,6 +60,15 @@ matching. Every other screen is compared with zero tolerance.
 Oracle checks (`tools/verify181.sh`): **1059 of 1067** sections exact.
 <!-- b181-progress:end -->
 
+## Minecraft 1.1 development
+
+Minecraft 1.1 is available as a development port through `beta.exe --mc 1.1`
+or the version picker. Install release 1.1 through the Minecraft launcher first;
+the client reads your local game assets and stores its saves/options in `1.1\`.
+Verification is still in progress. The audited completion method and checkpoint
+are documented in [Minecraft 1.1 progress](docs/minecraft-1.1-progress.md).
+The finished-version verification claims below do not yet apply to 1.1.
+
 <!-- r10-progress:start -->
 ## Minecraft 1.0 progress
 
