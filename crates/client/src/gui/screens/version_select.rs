@@ -29,7 +29,7 @@ impl Screen for GuiVersionSelect {
         self.base.buttons.push(GuiButton::new(0, w / 2 - 100, h / 4 + 48, "Minecraft Beta 1.7.3"));
         self.base.buttons.push(GuiButton::new(1, w / 2 - 100, h / 4 + 72, "Minecraft Beta 1.8.1"));
         self.base.buttons.push(GuiButton::new(4, w / 2 - 100, h / 4 + 96, "Minecraft 1.0"));
-        self.base.buttons.push(GuiButton::new(5, w / 2 - 100, h / 4 + 120, "Minecraft 1.1 (development)"));
+        self.base.buttons.push(GuiButton::new(5, w / 2 - 100, h / 4 + 120, "Minecraft 1.1"));
         // Beta 1.8.1 Enhanced (id 3, `--mc b1.8.1e`) gets its button once it is finished.
         self.base.buttons.push(GuiButton::new(2, w / 2 - 100, h / 4 + 144 + 12, "Quit"));
     }

@@ -22,7 +22,7 @@
     "reproduce": "tools/oracle11/verify_worldname_utf16_11.ps1 -McpPath <original1.1MCP> aftertoolchain env",
     "log": "reports/r11-progress/worldname-utf16-11-repro.log"
   },
-  "parent_integration_required": "scenario::open_with_settings must call info.set_name_utf16 before firstsave_world_indirectly fornewworld; constructor presently saves before returning. Parent owns scenario/worker/GUI integration. Existing levels already decode/save sidecar via storage. Ordinary new names keep None. Use setter when replacing rawname toclear sidecar.",
+  "parent_integration_required": false,
   "explicit_limits": [
     "NBT compound/root KEY strings keep existingstrict UTF16 handling; reachable LevelName key is fixedASCII. Malformed PAYLOAD units preserved. No arbitrary malformed key API claimed.",
     "No renderer/client/accounting/Git edits; parent owns firstsave integration."
@@ -43,5 +43,6 @@
     "tools/oracle11/src/net/minecraft/src/WorldNameUtf16_11.java": "f2b01f60b3baeb0cea0b9c0a63c1830ffc46f430b5f2cb6e2c5bdfc47489d02a",
     "tools/oracle11/verify_worldname_utf16_11.ps1": "da8160e80d852ae065d5d6b1e9c1aa7897f48879db0de402731c7194e77f25f1",
     "reports/r11-progress/worldname-utf16-11-repro.log": "ee7fc5be62934c3d9932b7b6908ab789664ad2501bb68ce10aa1eab12b030013"
-  }
+  },
+  "parent_integration_verified": "scenario::open_with_utf16_settings sets rawname before preload and first save; actual worker transports name_utf16. Native high/low surrogate firstsave/reopen/list/rename/delete passes; final client suite covers production GUI consumers."
 }

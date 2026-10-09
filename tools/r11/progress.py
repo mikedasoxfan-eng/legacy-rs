@@ -29,6 +29,10 @@ def main():
  def unchanged(hashes):
   return bool(hashes) and all((ROOT/path).is_file() and pinned_digest(ROOT/path)==digest for path,digest in hashes.items())
  valid={name: unchanged(snapshots.get(record.get('source_snapshot'),record.get('rust_source_sha256',{}))) and unchanged({record['report']:record['report_sha256']}) for name,record in evidence.items()}
+ for name,record in evidence.items():
+  revalidation=record.get('stable_candidate_revalidation')
+  if revalidation:
+   valid[name]=valid[name] and unchanged({revalidation['report']:revalidation['sha256']})
  exact={name: record.get('exact') is True and valid[name] for name,record in evidence.items()}
  for log in a.logs:
   parsed=namespace['exact_sections'](str(log))
@@ -53,7 +57,16 @@ def main():
   area['total_lines']+=row['changed_lines'];area['total_classes']+=1
   if done:area['done_lines']+=row['changed_lines'];area['done_classes']+=1;done_classes.append(name)
  numerator=sum(r['done_lines'] for r in areas.values());denominator=sum(r['total_lines'] for r in areas.values())
+ final_path=ROOT/'reports/r11-progress/final-validation.json'
+ final=json.loads(final_path.read_text(encoding='utf-8')) if final_path.exists() else {}
+ final_valid=final.get('complete') is True and unchanged(final.get('source_sha256',{})) and unchanged(final.get('reports_sha256',{}))
+ release_ready=numerator==denominator and final_valid and final.get('raw_only_classes_resolved')==308
  result={'method':'r10 normalized changed-line weighting; complete 1.1 delta review, committed implementation, explicit oracle coverage and source-pinned EXACT results','candidate_commit':subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT,text=True).strip(),'done_lines':numerator,'total_lines':denominator,'percentage':100*numerator/denominator,'done_classes':len(done_classes),'total_classes':len(rows),'credited_classes':done_classes,'areas':areas,'exact_sections':sum(exact.values()),'observed_sections':len(exact),'limitations':['Normalized inventory may hide changes; conservative raw behavior audit remains required.','This is verified completion credit, not percentage of code written; unreviewed or partially verified classes receive zero credit.','A checkpoint commit alone gives no completion credit.','Unfinished client integration, final suite, older-version regressions and packaging remain completion gates.']}
+ result['release_ready']=release_ready
+ result['raw_only_classes_resolved']=final.get('raw_only_classes_resolved',0) if final_valid else 0
+ result['final_gates']=final.get('gates',[]) if final_valid else []
+ if release_ready:
+  result['limitations']=['Verified1.0-to1.1 delta completion in the repository singleplayer scope; multiplayer is excluded.','All308 raw-only deltas independently audited in addition to144 normalized changed classes.','Finite original comparison corpora retain the repository established GPU rounding tolerance; no claim of every possible inheritedJava API or GPU frame.']
  print(json.dumps(result,indent=2))
  if a.output:a.output.write_text(json.dumps(result,indent=2)+'\n',encoding='utf-8')
 if __name__=='__main__':main()

@@ -1,0 +1,346 @@
+{
+  "hash_rule": "Canonical LF text; exact binary",
+  "classes": [
+    {
+      "class_name": "GuiChat",
+      "complete_changed_runtime_delta": true,
+      "domain": "Existing repository singleplayer scope; installed original 1.1 resources",
+      "no_behavior_change": false,
+      "raw_hunks": [
+        "@@ -37,7 +37,7 @@"
+      ],
+      "behaviors": [
+        "Only raw changed hunk keyTyped: allowedCharacters.indexOf(char)>=0 OR char>32, then message.length()<100. Actual key_unit implements exact UTF16 predicate/order, scalar Screen.key_typed expands supplementary characters to Java units. Message and draw path retain lone surrogates; backspace removes one UTF16 unit.",
+        "All 65536 original Java char inputs compared through original keyTyped; boundary/pair sequences exercise limits, section sign, DEL, isolated surrogates and backspace. Escape/Enter and clipboard are inherited, not new delta requirements."
+      ],
+      "evidence": [
+        "unicode"
+      ],
+      "limitations": [],
+      "authority": {
+        "retromcp-1.0\\minecraft\\src\\net\\minecraft\\src\\GuiChat.java": "e45b559d633a1b697b8b67a804f80bd8f8c6646571f4f910dcda3e6713572bf7",
+        "retromcp-1.1\\minecraft\\src\\net\\minecraft\\src\\GuiChat.java": "58332e3d0c346688ff9069c4b5b932b870708719afda642b8a10fc9a18e0b8bf"
+      },
+      "rust_source_sha256": {
+        "crates/client11/src/gui/screens/chat.rs": "c4c977071245c7e3d70f5bc9e7f27003ee9204df82f64796beb55de37db84172",
+        "crates/client11/src/gui/font.rs": "5475fb2b3af9925fef180e525dbae7ea1af8f9833fbf3b481f63d8db6e9c2ed1",
+        "crates/client11/src/gui/mod.rs": "dc3c9bd40d1ea669cce7720abfcf258fd15fc66e6de9724e5c9a8a659a7d3c25"
+      }
+    },
+    {
+      "class_name": "GuiTextField",
+      "complete_changed_runtime_delta": true,
+      "domain": "Existing repository singleplayer scope; installed original 1.1 resources",
+      "no_behavior_change": false,
+      "raw_hunks": [
+        "@@ -61,7 +61,7 @@"
+      ],
+      "behaviors": [
+        "Only raw changed hunk textboxKeyTyped: allowedCharacters.indexOf(char)>=0 OR char>32, then text.length()<maxStringLength OR maxStringLength==0. Exact UTF16 sidecar preserves new accepted units, one-unit backspace, supplementary length limits and drawing; public String assignment resynchronizes before subsequent input.",
+        "Original getText outputs compared as UTF16 for all 65536 units (unit22 clipboard shortcut intentionally skipped), 96 length/backspace boundaries and 18 sequential edits. Production scalar adapter checked at lengths0/99/100; existing default unlimited length remains supported.",
+        "Reachable singleplayer consumers now use raw field units for seed hashing, world name metadata, folder sanitization/collision, creation, rename, native save selection/reopen/delete and all displayed name/folder labels including confirmation. Windows original UTF16 paths are carried through optional sidecars to worker native paths; parent first-save/storage/list/rename/delete tests cover lone high and low units.96 original GUI creation callbacks compare raw names/folders, resize preservation, seed lengths through129 and exact modifiedUTF8 payloads."
+      ],
+      "evidence": [
+        "unicode",
+        "unicode_world"
+      ],
+      "limitations": [
+        "Clipboard integration/device behavior is inherited and not exercised. Malformed native path preservation is verified on Windows, the user device platform."
+      ],
+      "authority": {
+        "retromcp-1.0\\minecraft\\src\\net\\minecraft\\src\\GuiTextField.java": "82fed9a0b29ee4d268bc566d1400c412141260fd3019b0f9e1957f3c2eaf336e",
+        "retromcp-1.1\\minecraft\\src\\net\\minecraft\\src\\GuiTextField.java": "375f9090527865e6122cb8e9a86c808084cdeeb5b8a20199e67893a666d9b014"
+      },
+      "rust_source_sha256": {
+        "crates/client11/src/gui/widgets.rs": "4e3ff000a5e942f45c684d66d20c744c5c8b6975edcbd31f6329fc144256e52d",
+        "crates/client11/src/gui/font.rs": "5475fb2b3af9925fef180e525dbae7ea1af8f9833fbf3b481f63d8db6e9c2ed1",
+        "crates/client11/src/gui/mod.rs": "dc3c9bd40d1ea669cce7720abfcf258fd15fc66e6de9724e5c9a8a659a7d3c25",
+        "crates/client11/src/gui/system.rs": "9c20fc5ec282feee588633317a371f2a3bb1d2998dcb20ba9f87903e42d09eb3",
+        "crates/client11/src/gui/screens/select_world.rs": "bcc57132a6dda275c4d055f650ee9bde1088538bd9ef07a3d87ca745ea6b58df",
+        "crates/client11/src/gui/saves.rs": "1618c8485982077cc5bb42aee472b283b1461f8d14075950bd791d2abaf108ef",
+        "crates/client11/src/app.rs": "3c3d8323e34d31035afea71889887b20481dbf255c86da6e34373123abba5540",
+        "crates/client11/src/worker.rs": "94c93d8b161447a516d740627d214a88d2a1d99d501a6ad07132756c942e4e0c"
+      }
+    },
+    {
+      "class_name": "GuiContainer",
+      "complete_changed_runtime_delta": true,
+      "domain": "Existing repository singleplayer scope; installed original 1.1 resources",
+      "no_behavior_change": false,
+      "raw_hunks": [
+        "@@ -10,8 +10,8 @@",
+        "@@ -20,14 +20,14 @@",
+        "@@ -60,11 +60,11 @@",
+        "@@ -74,7 +74,7 @@",
+        "@@ -95,7 +95,7 @@",
+        "@@ -126,7 +126,7 @@",
+        "@@ -147,7 +147,7 @@",
+        "@@ -164,11 +164,11 @@",
+        "@@ -185,7 +185,7 @@",
+        "@@ -206,8 +206,8 @@",
+        "@@ -220,32 +220,26 @@"
+      ],
+      "behaviors": [
+        "All guiLeft/guiTop, RenderItem.zLevel, getItemNameandInformation, handleMouseClick raw hunks are spelling/visibility aliases of the inherited operations; draw/click/hover coordinates and method bodies otherwise unchanged.",
+        "Deleted empty mouseMovedOrUp override now inherits GuiScreen: only button0 releases selectedButton and clears selection. Actual Rust GuiContainer dispatch already inherited Screen implementation; 16 original release cases compare selected/dragging state before and after a second button0 release."
+      ],
+      "evidence": [
+        "container"
+      ],
+      "limitations": [],
+      "authority": {
+        "retromcp-1.0\\minecraft\\src\\net\\minecraft\\src\\GuiContainer.java": "f8852d794650e5a7f31766bfe667bffb6843f050282717bb51ffddf58f4b6dce",
+        "retromcp-1.1\\minecraft\\src\\net\\minecraft\\src\\GuiContainer.java": "a802adc0c303bc6e350472f82b3142a6ebc45298a8c6ccb7b2f1d87b552ba3bc"
+      },
+      "rust_source_sha256": {
+        "crates/client11/src/gui/screens/container.rs": "302dc17ba5310c2a960334e94b7aa0ba50340931faae15e850bfa6b573d1efd4",
+        "crates/client11/src/gui/mod.rs": "dc3c9bd40d1ea669cce7720abfcf258fd15fc66e6de9724e5c9a8a659a7d3c25",
+        "crates/client11/src/gui/widgets.rs": "4e3ff000a5e942f45c684d66d20c744c5c8b6975edcbd31f6329fc144256e52d"
+      }
+    },
+    {
+      "class_name": "GuiIngame",
+      "complete_changed_runtime_delta": true,
+      "domain": "Existing repository singleplayer scope; installed original 1.1 resources",
+      "no_behavior_change": false,
+      "raw_hunks": [
+        "@@ -44,7 +44,7 @@",
+        "@@ -84,7 +84,7 @@",
+        "@@ -103,9 +103,9 @@",
+        "@@ -129,7 +129,7 @@",
+        "@@ -178,7 +178,7 @@",
+        "@@ -213,8 +213,8 @@",
+        "@@ -277,7 +277,7 @@",
+        "@@ -368,8 +368,8 @@",
+        "@@ -393,22 +393,22 @@",
+        "@@ -426,10 +426,10 @@"
+      ],
+      "behaviors": [
+        "Version literal changes Minecraft1.0.0 to Minecraft1.1. Actual HUD render calls debug_version_line with matching coordinates2,2 and color16777215; five unchanged-original renderGameOverlay calls capture actual first debug FontRenderer call.",
+        "Other raw hunks are potion IDs/names, air getter, boss renderer field/method and multiplayer player-list field aliases. Original1.0 EntityPlayerSP.getPlayerArmorValue and1.1 inherited EntityPlayer.getTotalArmorValue both return inventory.getTotalArmorValue: the changed HUD call keeps player armor semantics. No renamed helper is independently credited as new functionality."
+      ],
+      "evidence": [
+        "hud"
+      ],
+      "limitations": [],
+      "authority": {
+        "retromcp-1.0\\minecraft\\src\\net\\minecraft\\src\\GuiIngame.java": "d9266dbc1473544727a3b33b5abfa039f7985d50001cd9816e2607ea2c7646ad",
+        "retromcp-1.1\\minecraft\\src\\net\\minecraft\\src\\GuiIngame.java": "cda8092f620674caf20872209796aa2271fab7f24ded7a2301767c124a7b1ae7"
+      },
+      "rust_source_sha256": {
+        "crates/client11/src/gui/ingame.rs": "aef26ce6c7664722882bed77ba24d7f07961cd1069a73d6cfcc71fa9f995877d"
+      }
+    },
+    {
+      "class_name": "GuiSlotStatsGeneral",
+      "complete_changed_runtime_delta": true,
+      "domain": "Existing repository singleplayer scope; installed original 1.1 resources",
+      "no_behavior_change": false,
+      "raw_hunks": [
+        "@@ -30,7 +30,7 @@"
+      ],
+      "behaviors": [
+        "Single raw changed drawSlot hunk translates raw StatBase key at draw time. Production general_cells calls Ui.translate for every general row, consumed by draw_slot. Existing original statistics corpus covers all23 row keys in57 locale/fallback cases and formatting/positions in actual row helper."
+      ],
+      "evidence": [
+        "stats"
+      ],
+      "limitations": [],
+      "authority": {
+        "retromcp-1.0\\minecraft\\src\\net\\minecraft\\src\\GuiSlotStatsGeneral.java": "366c51ecda3ebaf64177cb0a0a4c1b73648cd4530a331b406e962c10f1d9c3ce",
+        "retromcp-1.1\\minecraft\\src\\net\\minecraft\\src\\GuiSlotStatsGeneral.java": "b078be9df5cd4080e53b8dcc82aed201a02cecfb783ff77c8ff6f2123e6a4902"
+      },
+      "rust_source_sha256": {
+        "crates/client11/src/gui/screens/stats.rs": "5ceb69e5691c1bc7c9cab45162458a066ce958ec4e675d4d4e4daf705e522727",
+        "crates/client11/src/gui/stats.rs": "80fe0c65bbfa6cddb324bfc4a274c96ca2bd4f1cbedee976869e6b6b423697d8",
+        "crates/client11/src/gui/lang.rs": "c87ec914c3fcd385c21fcd08a8c02b260c10a70e39037bb5ba91aef38211368f"
+      }
+    },
+    {
+      "class_name": "GuiAchievements",
+      "complete_changed_runtime_delta": true,
+      "domain": "Existing repository singleplayer scope; installed original 1.1 resources",
+      "no_behavior_change": false,
+      "raw_hunks": [
+        "@@ -224,8 +224,8 @@",
+        "@@ -296,7 +296,7 @@",
+        "@@ -314,7 +314,7 @@"
+      ],
+      "behaviors": [
+        "Full raw review: horizontal/vertical line methods are names only; inherited bodies match. Two actual changed tooltip hunks translate hovered raw achievement key and translate parent raw key before achievement.requires formatting.",
+        "Actual Rust draw calls shared tooltip_name and tooltip_requirement.3021 unchanged original genAchievementBackground calls across57locale switches and all27hovered achievements exercise unlocked/root and26locked-parent branches. Original font spy observes translated name in width and shadow draw, required description split draw, and26Greek FormatFlagsConversionMismatchException outcomes. Rust compares every production-helper name, required description and exception class/message; no generic toast class credit substituted."
+      ],
+      "evidence": [
+        "tooltip"
+      ],
+      "limitations": [],
+      "authority": {
+        "retromcp-1.0\\minecraft\\src\\net\\minecraft\\src\\GuiAchievements.java": "aeb592cf1be6ca07df861176ca92efe62d33203fdf8bbf833a45f24ff8a48395",
+        "retromcp-1.1\\minecraft\\src\\net\\minecraft\\src\\GuiAchievements.java": "8cf0021d68a04ab3a202ed316c6309ce8e171eca7feb45257299f4fa209aea6b"
+      },
+      "rust_source_sha256": {
+        "crates/client11/src/gui/screens/achievements.rs": "94b3f99ab30347d14c97a4c80147a8b41c81c8d3e18b9392861191738609be8f",
+        "crates/client11/src/gui/stats.rs": "80fe0c65bbfa6cddb324bfc4a274c96ca2bd4f1cbedee976869e6b6b423697d8",
+        "crates/client11/src/gui/lang.rs": "c87ec914c3fcd385c21fcd08a8c02b260c10a70e39037bb5ba91aef38211368f",
+        "crates/client11/src/gui/java_format.rs": "3b92cd6fe3179526f5c9ddaa9ab2dbabd7c48f4fe4674d9c037bab3468fec772"
+      }
+    },
+    {
+      "class_name": "GuiGameOver",
+      "complete_changed_runtime_delta": true,
+      "domain": "Existing repository singleplayer scope; installed original 1.1 resources",
+      "no_behavior_change": true,
+      "raw_hunks": [
+        "@@ -27,10 +27,10 @@",
+        "@@ -39,6 +39,10 @@"
+      ],
+      "behaviors": [
+        "Raw exitToMainMenu/save-handler/getSaveDirectoryName hunks are aliases. Only actual new runtime behavior is sendQuittingDisconnectingPacket when Minecraft.isMultiplayerWorld before changeWorld1(null). Predicate always false in this repository singleplayer scope: no new reachable behavior.",
+        "All death-screen localized title, score, hardcoreInfo and buttons are literally unchanged1.0\u21921.1; there is no new localization hunk to invent. Actual Rust QuitWorld and hardcore/respawn branches preserve the existing singleplayer path."
+      ],
+      "evidence": [
+        "source"
+      ],
+      "limitations": [
+        "Multiplayer disconnect packet behavior is outside repository singleplayer scope."
+      ],
+      "authority": {
+        "retromcp-1.0\\minecraft\\src\\net\\minecraft\\src\\GuiGameOver.java": "d39f6bc99ffd272ecee347994e0c1cde77dc770df0e9e9e61dcb7837019bb995",
+        "retromcp-1.1\\minecraft\\src\\net\\minecraft\\src\\GuiGameOver.java": "6796c554f7d0cf4bc72495ae568e8a04c22690873bd6a839980bbaf81933e56c"
+      },
+      "rust_source_sha256": {
+        "crates/client11/src/gui/screens/game_over.rs": "72585c75484360a838e5961d7d4e56ebe1ac15da9559e0de25bad618b0b19a75"
+      }
+    },
+    {
+      "class_name": "GuiWinGame",
+      "complete_changed_runtime_delta": true,
+      "domain": "Existing repository singleplayer scope; installed original 1.1 resources",
+      "no_behavior_change": true,
+      "raw_hunks": [
+        "@@ -9,16 +9,16 @@",
+        "@@ -35,7 +35,7 @@",
+        "@@ -72,13 +72,13 @@",
+        "@@ -121,12 +121,12 @@",
+        "@@ -151,7 +151,7 @@",
+        "@@ -159,7 +159,7 @@",
+        "@@ -178,9 +178,9 @@",
+        "@@ -188,7 +188,7 @@"
+      ],
+      "behaviors": [
+        "Counter/updateCounter and FontRenderer.FONT_HEIGHT raw hunks are names only, same field initialization and use. There is no removed field in these original sources.",
+        "Only actual changed runtime hunk is multiplayer Packet9Respawn constructor adding WorldInfo.worldType and renamed worldHeight. Singleplayer else branch displayGuiScreen(null), respawn(false,0,true) is unchanged; actual Rust finish emits Display(None) then EndReturn."
+      ],
+      "evidence": [
+        "source"
+      ],
+      "limitations": [
+        "Multiplayer respawn protocol is outside repository singleplayer scope."
+      ],
+      "authority": {
+        "retromcp-1.0\\minecraft\\src\\net\\minecraft\\src\\GuiWinGame.java": "ec981af264ebab76fef9fb30fb3010b60c9eed745cf8f9b971b396b03e0ae09a",
+        "retromcp-1.1\\minecraft\\src\\net\\minecraft\\src\\GuiWinGame.java": "95bb3427ca9b59621fc3b3a25605440f316207d5f01cea9e516801820b3a5f6f"
+      },
+      "rust_source_sha256": {
+        "crates/client11/src/gui/screens/win_game.rs": "b17c012aedf00834cb91935733a648687a75e153e53dd08d2529c7a1581154c4"
+      }
+    },
+    {
+      "class_name": "GuiCreateWorld",
+      "complete_changed_runtime_delta": true,
+      "domain": "Existing repository singleplayer scope; installed original 1.1 resources",
+      "no_behavior_change": false,
+      "raw_hunks": [
+        "@@ -8,24 +8,25 @@",
+        "@@ -39,17 +40,16 @@",
+        "@@ -73,17 +73,17 @@",
+        "@@ -123,41 +123,41 @@",
+        "@@ -166,18 +166,25 @@",
+        "@@ -190,7 +197,7 @@",
+        "@@ -202,12 +209,12 @@"
+      ],
+      "behaviors": [
+        "Full prior checkpoint hunk review retained: selected world-type state, hardcoded mode labels become localizations, more-world-options type button/control visibility and action cycle, WorldSettings worldType propagation and retained selection through resize.324 original init/action/worldsettings frames across6locales,3sizes,3modes,2features,3typecycles passed production callers.",
+        "Newly reachable malformedUTF16 names/seeds preserve Java char units through initialization/resize/folder rules/startWorld arguments.96 original callback cases include32-unit truncation and seed lengths0/127/128/129; payload bytes exactly match original DataOutputStream.writeUTF; parent initial-save native lifecycle verifies final storage path/metadata."
+      ],
+      "evidence": [
+        "create",
+        "unicode_world"
+      ],
+      "limitations": [
+        "See small-gui-stats-completion-review11.json for each original raw hunk and recorded prior evidence."
+      ],
+      "authority": {
+        "retromcp-1.0\\minecraft\\src\\net\\minecraft\\src\\GuiCreateWorld.java": "16c872c53b1e6d67b98e9c7fd6522ebb4ae2a64da76c0d097b32a8c4a39f5583",
+        "retromcp-1.1\\minecraft\\src\\net\\minecraft\\src\\GuiCreateWorld.java": "2c138030548ae6fcb7e4d7d5638dfc777450e9438f5a08ea4b89fe55434a9fde"
+      },
+      "rust_source_sha256": {
+        "crates/client11/src/gui/screens/select_world.rs": "bcc57132a6dda275c4d055f650ee9bde1088538bd9ef07a3d87ca745ea6b58df",
+        "crates/client11/src/gui/settings.rs": "61c01fb9f3e31ad343ce0391494c0ee14bbd0a2be2e4787392e1d0855f81da06",
+        "crates/client11/src/gui/widgets.rs": "4e3ff000a5e942f45c684d66d20c744c5c8b6975edcbd31f6329fc144256e52d",
+        "crates/client11/src/gui/mod.rs": "dc3c9bd40d1ea669cce7720abfcf258fd15fc66e6de9724e5c9a8a659a7d3c25",
+        "crates/client11/src/gui/system.rs": "9c20fc5ec282feee588633317a371f2a3bb1d2998dcb20ba9f87903e42d09eb3",
+        "crates/client11/src/gui/saves.rs": "1618c8485982077cc5bb42aee472b283b1461f8d14075950bd791d2abaf108ef",
+        "crates/client11/src/app.rs": "3c3d8323e34d31035afea71889887b20481dbf255c86da6e34373123abba5540",
+        "crates/client11/src/worker.rs": "94c93d8b161447a516d740627d214a88d2a1d99d501a6ad07132756c942e4e0c"
+      }
+    }
+  ],
+  "evidence": {
+    "unicode": {
+      "legacy-rs/target/r11/unicode-input11.bin": "0430cf12d9142e9569ef771bb0ef6a12e2840a13cf633f9b665f100532c862c7",
+      "legacy-rs/tools/oracle11/probes/UnicodeInput11.java": "eddac9c6791a832576a17bee6aebd5491e6f9a16b17522e5b3bfd40d3035468c",
+      "remaining-gui11-verification.log": "d953760c8557f82fac4e281bff2c6aa1694c6a4d5132a5622889bcfe292d9a43"
+    },
+    "container": {
+      "legacy-rs/target/r11/container-release11.bin": "dbf78733fbf88303ee027f0f69c3dd0a58b1a4fd45e2a95268e59812c71d33f7",
+      "legacy-rs/tools/oracle11/probes/ContainerRelease11.java": "1a7195915058bfe8cd4818c2bcabda86c46591018086c82e7685ec3d3fecf3c8",
+      "remaining-gui11-verification.log": "d953760c8557f82fac4e281bff2c6aa1694c6a4d5132a5622889bcfe292d9a43"
+    },
+    "hud": {
+      "legacy-rs/target/r11/ingame-version11.bin": "a0c74bd116cc595ee6ec1fe9cb04c986ead145a939fc2bd4cab66815cead4974",
+      "legacy-rs/tools/oracle11/probes/IngameVersion11.java": "2309e141bd952b32845372216e3fb48a06d9922a3cdcc1ff8cfdd3b4c493d8c9",
+      "remaining-gui11-verification.log": "d953760c8557f82fac4e281bff2c6aa1694c6a4d5132a5622889bcfe292d9a43"
+    },
+    "tooltip": {
+      "legacy-rs/target/r11/achievement-tooltip11.bin": "40cd16411bef749fa02dcac6681332cd75a663b395e121940be3fda99edaa85f",
+      "legacy-rs/tools/oracle11/probes/AchievementTooltip11.java": "4fd25f04ae12fa00730d7dac693d1ae51f54d662bdd8b0eb0fa7c5a4414e5ead",
+      "remaining-gui11-verification.log": "d953760c8557f82fac4e281bff2c6aa1694c6a4d5132a5622889bcfe292d9a43"
+    },
+    "unicode_world": {
+      "legacy-rs/target/r11/create-world-unicode11.bin": "07ebc3220be8b13b711fd2ef1deaf4b837d518ca699a6043c131cab03cfe591e",
+      "legacy-rs/tools/oracle11/probes/CreateWorldUnicode11.java": "05c0031a8f33fbe3046964fef93ee916f413f9d0ee662a4c9f8b497ac4a121a5",
+      "remaining-gui11-verification.log": "d953760c8557f82fac4e281bff2c6aa1694c6a4d5132a5622889bcfe292d9a43",
+      "unicode-world-lifecycle11.log": "a73cc21df87d1a10f630e6e6d4a82a48f08a9bec1209030eb48418663f5c5c70"
+    },
+    "stats": {
+      "legacy-rs/target/r11/gui-stat-language11.bin": "32e8d92d757fce4a3605fa62d5f09ee0a8051fe17ae47e3fcf7b251da7b31b87",
+      "gui-stat-inventory11-verification.log": "af3443c2f9789ea5360b95be2f6dafce7ca3278573f99fa196aba4f614b39898",
+      "small-gui-stats-completion-review11.json": "1300f89ca57ccf40fee995b38edbb4e8323c4f1e09b059175de2898600454883"
+    },
+    "source": {
+      "GuiGameOver11-full.diff": "0fd63464bafd14238203274ebd2d2aed28e33f590f9afd4db074d1eb7d965abb",
+      "GuiWinGame11-full.diff": "c8d65412e8c747530918bc24dab8a0ecf0d505d3f9ba580c92a0f3296bba33c1"
+    },
+    "create": {
+      "legacy-rs/target/r11/create-world-type-gui11.bin": "2cee5fd4d85be13652288cab3283c17114c89e0e86fb58917863e9c19eec6b2c",
+      "create-world-type-gui11-verification.log": "9be4f7d0cde4a55fd952e99d4c95ddccc93b21997f85817cf28721d3c4799677",
+      "small-gui-stats-completion-review11.json": "1300f89ca57ccf40fee995b38edbb4e8323c4f1e09b059175de2898600454883"
+    }
+  },
+  "reproducer": "From work/legacy-rs: . ..\\toolchains\\env.ps1; & tools/oracle11/remaining_gui11.ps1",
+  "original_jar_sha256": "44bb6ace88fdff460d6c428c4becee8cad52f2622e1f800dab7a70f8a716f75b",
+  "device_seams": "Original unchanged game bytecode first. HUD renderer overlay setup seam and font spy stop before unrelated nondeterministic memory/debug calls; no pixel claim. Unicode probes do not read clipboard. Container uses original inherited methods and original slider release.",
+  "reproducer_sha256": {
+    "legacy-rs/tools/oracle11/remaining_gui11.ps1": "d6cb7b2e7d5f0a44bdb211bf9c5ddc59c50df7181c50cbc2e4f47661fcb67353",
+    "remaining-gui11-reproducer.log": "ea46f476f7b1fc48de9ad26523b17948ccbf77ffa19258331d8554ba5ac9f1f8"
+  },
+  "unicode_storage_source_sha256": {
+    "crates/worldgen11/src/nbt.rs": "3905052d9ba04b2b7c2df68f6235e78e76f93e19ef70882b7bb0f48b4b83b068",
+    "crates/worldgen11/src/storage.rs": "848615ecd9f008bb0148a490991872cf6c9aa11ce0bef254978ec325e4e64b30",
+    "crates/worldgen11/src/world/mod.rs": "e290afaf1716b935a66ebf7674b0970a05d01ebb7b64fcc5d434831a763c5678",
+    "crates/client11/src/worker.rs": "94c93d8b161447a516d740627d214a88d2a1d99d501a6ad07132756c942e4e0c",
+    "crates/client11/src/app.rs": "3c3d8323e34d31035afea71889887b20481dbf255c86da6e34373123abba5540",
+    "crates/client11/src/lib.rs": "b7fda4c07892ccfb090bf5a8aa17516aedff7ecf53e1925d1e5c64c2d202bddc"
+  }
+}
