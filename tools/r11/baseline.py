@@ -119,8 +119,12 @@ def report():
         if player:
             rust=next((Path(a) for a in record['arguments'] if a.endswith('.bin') and 'rust' in a),rust)
         if java.exists() and rust.exists():
-            offset = int(re.search(r'byte (\d+)',old)[1])
-            new = playertick_difference(java.read_bytes(),rust.read_bytes()) if player else terrain_difference('terrainround2',arguments,java.read_bytes(),rust.read_bytes(),offset)
+            if player:
+                new = playertick_difference(java.read_bytes(),rust.read_bytes())
+            else:
+                offset_match = re.search(r'byte (\d+)',old)
+                if offset_match is None: continue
+                new = terrain_difference('terrainround2',arguments,java.read_bytes(),rust.read_bytes(),int(offset_match[1]))
             if new: diagnostic_updates[old]=new
     # Decode remaining embedded event/bulk fields from retained original dumps.
     from diagnose_dump10 import event_difference, arrays_difference, legacy_paths_difference
@@ -137,7 +141,9 @@ def report():
             if arg.endswith('.bin'):candidates.extend([Path(arg.replace('-java','-rust')),Path(arg).with_suffix('.rust.bin')])
         rust=next((path for path in candidates if path.exists() and 'rust' in path.name and path.resolve()!=java.resolve()),None)
         if rust is None:continue
-        j=java.read_bytes();r=rust.read_bytes();offset=int(re.search(r'byte (\d+)',old)[1])
+        offset_match=re.search(r'byte (\d+)',old)
+        if offset_match is None:continue
+        j=java.read_bytes();r=rust.read_bytes();offset=int(offset_match[1])
         actual=next((i for i,(a,b) in enumerate(zip(j,r)) if a!=b),min(len(j),len(r)))
         if actual!=offset:continue
         new=event_difference(j,r,offset)
@@ -222,7 +228,7 @@ def report():
     OUT.mkdir(parents=True, exist_ok=True)
     (OUT / 'sections.json').write_text(json.dumps(rows, indent=2))
     text = ['# Minecraft 1.1 harness baseline', '',
-            'Measured against the current worldgen11/client11 code. EXACT means a comparison passed; DIFFERS includes oracle/checker failures explicitly identified below. A run failure is not evidence of a completed simulation comparison. Field diagnostics use the first serialized difference; pixel diagnostics use the first changed RGB pixel. Pure group headings without output are omitted in favor of their individual child comparisons. Completed supplemental rechecks supersede matching master rows after fixture corrections; the rows identify the recheck suite. Repeated supplemental rows are omitted when their corrected result is already represented. All measured runtimes include the original observed run, including failures.', '',
+            'Diagnostic run spanning worldgen11/client11 source changes; not a stable-candidate certification. EXACT means a comparison passed; DIFFERS includes oracle/checker failures explicitly identified below. A run failure is not evidence of a completed simulation comparison. Field diagnostics use the first serialized difference; pixel diagnostics use the first changed RGB pixel. Pure group headings without output are omitted in favor of their individual child comparisons. Completed supplemental rechecks supersede matching master rows after fixture corrections; the rows identify the recheck suite. Repeated supplemental rows are omitted when their corrected result is already represented. All measured runtimes include the original observed run, including failures.', '',
             '| Suite | Section | Result | Evidence | First difference / run failure |',
             '| --- | --- | --- | --- | --- |']
     for row in rows:
