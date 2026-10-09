@@ -1,0 +1,426 @@
+tools\oracle11\probes\SkyHorizonProbe11.java:29: warning: Unsafe is internal proprietary API and may be removed in a future release
+        Block.stone.getClass();Field field=sun.misc.Unsafe.class.getDeclaredField("theUnsafe");field.setAccessible(true);sun.misc.Unsafe u=(sun.misc.Unsafe)field.get(null);
+                                                   ^
+tools\oracle11\probes\SkyHorizonProbe11.java:29: warning: Unsafe is internal proprietary API and may be removed in a future release
+        Block.stone.getClass();Field field=sun.misc.Unsafe.class.getDeclaredField("theUnsafe");field.setAccessible(true);sun.misc.Unsafe u=(sun.misc.Unsafe)field.get(null);
+                                                                                                                                 ^
+tools\oracle11\probes\SkyHorizonProbe11.java:29: warning: Unsafe is internal proprietary API and may be removed in a future release
+        Block.stone.getClass();Field field=sun.misc.Unsafe.class.getDeclaredField("theUnsafe");field.setAccessible(true);sun.misc.Unsafe u=(sun.misc.Unsafe)field.get(null);
+                                                                                                                                                    ^
+3 warnings
+27 achievements
+174 recipes
+Original RenderGlobal sky: 128 default/flat dimension, phase, rain, star, sunrise, anaglyph and below-horizon cases
+warning: use of deprecated method `std::sync::atomic::Atomic::<u32>::fetch_update`: renamed to `try_update` for consistency
+  --> crates\worldgen11\src\decorator10.rs:53:20
+   |
+53 |     assert!(ACTIVE.fetch_update(Ordering::SeqCst, Ordering::SeqCst,
+   |                    ^^^^^^^^^^^^
+   |
+   = note: `#[warn(deprecated)]` on by default
+help: replace the use of the deprecated method
+   |
+53 -     assert!(ACTIVE.fetch_update(Ordering::SeqCst, Ordering::SeqCst,
+53 +     assert!(ACTIVE.try_update(Ordering::SeqCst, Ordering::SeqCst,
+   |
+
+warning: function `use_neighbor_brightness` is never used
+ --> crates\worldgen11\src\world\release10.rs:5:15
+  |
+5 | pub(crate) fn use_neighbor_brightness(id: u8) -> bool {
+  |               ^^^^^^^^^^^^^^^^^^^^^^^
+  |
+  = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: `worldgen11` (lib) generated 2 warnings (run `cargo fix --lib -p worldgen11` to apply 1 suggestion)
+warning: variable does not need to be mutable
+   --> crates\client11\src\gui\font.rs:175:72
+    |
+175 |     pub fn render_utf16(&self, gl: &mut Gl, s: &[u16], x: i32, y: i32, mut color: i32, shadow: bool) -> f32 {
+    |                                                                        ----^^^^^
+    |                                                                        |
+    |                                                                        help: remove this `mut`
+    |
+    = note: `#[warn(unused_mut)]` (part of `#[warn(unused)]`) on by default
+
+warning: variable does not need to be mutable
+   --> crates\client11\src\playtest\journey.rs:280:17
+    |
+280 |             let mut put = |w: &mut World, x: i32, y: i32, z: i32, id: u8, meta: i32| {
+    |                 ----^^^
+    |                 |
+    |                 help: remove this `mut`
+
+warning: variable does not need to be mutable
+   --> crates\client11\src\playtest\journey.rs:333:13
+    |
+333 |         let mut place = |w: &mut World, mut e: Entity| {
+    |             ----^^^^^
+    |             |
+    |             help: remove this `mut`
+
+warning: methods `is_ingame_menu` and `is_container` are never used
+   --> crates\client11\src\gui\mod.rs:567:8
+    |
+498 | pub trait Screen {
+    |           ------ methods in this trait
+...
+567 |     fn is_ingame_menu(&self) -> bool {
+    |        ^^^^^^^^^^^^^^
+...
+570 |     fn is_container(&self) -> bool {
+    |        ^^^^^^^^^^^^
+    |
+    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: methods `index` and `wrapped_draw_lines` are never used
+   --> crates\client11\src\gui\font.rs:117:8
+    |
+ 23 | impl FontRenderer {
+    | ----------------- methods in this implementation
+...
+117 |     fn index(&self, c: char) -> Option<usize> {
+    |        ^^^^^
+...
+280 |     pub fn wrapped_draw_lines(&self,s:&str,width:i32)->Vec<String>{let mut out=Vec::new();self.visit_wrapped_units(&s.encode_utf16(...
+    |            ^^^^^^^^^^^^^^^^^^
+
+warning: variant `DstColor` is never constructed
+  --> crates\client11\src\gui\gl.rs:20:5
+   |
+14 | pub enum Factor {
+   |          ------ variant in this enum
+...
+20 |     DstColor,
+   |     ^^^^^^^^
+   |
+   = note: `Factor` has derived impls for the traits `Debug` and `Clone`, but these are intentionally ignored during dead code analysis
+
+warning: methods `disable_color`, `set_color_opaque_f`, and `quad_uv` are never used
+   --> crates\client11\src\gui\gl.rs:278:12
+    |
+123 | impl Gl {
+    | ------- methods in this implementation
+...
+278 |     pub fn disable_color(&mut self) {
+    |            ^^^^^^^^^^^^^
+...
+311 |     pub fn set_color_opaque_f(&mut self, r: f32, g: f32, b: f32) {
+    |            ^^^^^^^^^^^^^^^^^^
+...
+516 |     pub fn quad_uv(
+    |            ^^^^^^^
+
+warning: method `clear_chat_messages` is never used
+   --> crates\client11\src\gui\ingame.rs:155:12
+    |
+119 | impl GuiIngame {
+    | -------------- method in this implementation
+...
+155 |     pub fn clear_chat_messages(&mut self) {
+    |            ^^^^^^^^^^^^^^^^^^^
+
+warning: method `translation_entries` is never used
+  --> crates\client11\src\gui\lang.rs:26:12
+   |
+15 | impl Lang {
+   | --------- method in this implementation
+...
+26 |     pub fn translation_entries(&self) -> Vec<(&str, &str)> {
+   |            ^^^^^^^^^^^^^^^^^^^
+
+warning: method `delete_texture` is never used
+   --> crates\client11\src\gui\render.rs:299:12
+    |
+111 | impl GuiRenderer {
+    | ---------------- method in this implementation
+...
+299 |     pub fn delete_texture(&mut self, device: &wgpu::Device, queue: &wgpu::Queue, id: TexId) {
+    |            ^^^^^^^^^^^^^^
+
+warning: field `size_on_disk` is never read
+  --> crates\client11\src\gui\saves.rs:13:9
+   |
+ 9 | pub struct SaveEntry {
+   |            --------- field in this struct
+...
+13 |     pub size_on_disk: i64,
+   |         ^^^^^^^^^^^^
+   |
+   = note: `SaveEntry` has derived impls for the traits `Debug` and `Clone`, but these are intentionally ignored during dead code analysis
+
+warning: type alias `GuiInventory` is never used
+  --> crates\client11\src\gui\screens\container.rs:19:10
+   |
+19 | pub type GuiInventory = GuiContainer;
+   |          ^^^^^^^^^^^^
+
+warning: type alias `GuiCrafting` is never used
+  --> crates\client11\src\gui\screens\container.rs:20:10
+   |
+20 | pub type GuiCrafting = GuiContainer;
+   |          ^^^^^^^^^^^
+
+warning: type alias `GuiChest` is never used
+  --> crates\client11\src\gui\screens\container.rs:21:10
+   |
+21 | pub type GuiChest = GuiContainer;
+   |          ^^^^^^^^
+
+warning: type alias `GuiFurnace` is never used
+  --> crates\client11\src\gui\screens\container.rs:22:10
+   |
+22 | pub type GuiFurnace = GuiContainer;
+   |          ^^^^^^^^^^
+
+warning: type alias `GuiDispenser` is never used
+  --> crates\client11\src\gui\screens\container.rs:23:10
+   |
+23 | pub type GuiDispenser = GuiContainer;
+   |          ^^^^^^^^^^^^
+
+warning: function `java_float_string` is never used
+   --> crates\client11\src\gui\screens\select_world.rs:144:8
+    |
+144 | pub fn java_float_string(f: f32) -> String {
+    |        ^^^^^^^^^^^^^^^^^
+
+warning: method `take_binding_presses` is never used
+   --> crates\client11\src\gui\settings.rs:209:12
+    |
+198 | impl GameSettings {
+    | ----------------- method in this implementation
+...
+209 |     pub fn take_binding_presses(&mut self,name:&str)->i32 {
+    |            ^^^^^^^^^^^^^^^^^^^^
+
+warning: method `take_all_presses` is never used
+   --> crates\client11\src\gui\settings.rs:420:12
+    |
+408 | impl KeyBinding {
+    | --------------- method in this implementation
+...
+420 |     pub fn take_all_presses(&self)->i32 {let mut s=self.state.lock().unwrap();let n=s.press_count;s.press_count=0;n}
+    |            ^^^^^^^^^^^^^^^^
+
+warning: constant `KEY_TAB` is never used
+ --> crates\client11\src\gui\widgets.rs:9:11
+  |
+9 | pub const KEY_TAB: i32 = 15;
+  |           ^^^^^^^
+
+warning: constant `KEY_RETURN` is never used
+  --> crates\client11\src\gui\widgets.rs:10:11
+   |
+10 | pub const KEY_RETURN: i32 = 28;
+   |           ^^^^^^^^^^
+
+warning: constant `KEY_F11` is never used
+  --> crates\client11\src\gui\widgets.rs:11:11
+   |
+11 | pub const KEY_F11: i32 = 87;
+   |           ^^^^^^^
+
+warning: methods `options` and `mouse_pressed` are never used
+   --> crates\client11\src\gui\widgets.rs:65:12
+    |
+ 37 | impl GuiButton {
+    | -------------- methods in this implementation
+...
+ 65 |     pub fn options(&self) -> Option<EnumOptions> {
+    |            ^^^^^^^
+...
+137 |     pub fn mouse_pressed(&self, x: i32, y: i32) -> bool {
+    |            ^^^^^^^^^^^^^
+
+warning: function `brightness_table` is never used
+   --> crates\client11\src\render\mod.rs:168:8
+    |
+168 | pub fn brightness_table() -> [f32; 16] {
+    |        ^^^^^^^^^^^^^^^^
+
+warning: field `clim` is never read
+  --> crates\client11\src\render\access.rs:21:5
+   |
+10 | pub struct Access<'a> {
+   |            ------ field in this struct
+...
+21 |     clim: RefCell<Vec<worldgen::Biome>>,
+   |     ^^^^
+
+warning: method `water_color10` is never used
+   --> crates\client11\src\render\access.rs:146:12
+    |
+ 24 | impl<'a> Access<'a> {
+    | ------------------- method in this implementation
+...
+146 |     pub fn water_color10(&self,x:i32,z:i32)->u32 {if self.biomes.borrow_mut().biome_at(x,z)==worldgen::Biome::Swampland {14745456} ...
+    |            ^^^^^^^^^^^^^
+
+warning: function `lightmap_coords` is never used
+  --> crates\client11\src\render\opengl_helper.rs:35:8
+   |
+35 | pub fn lightmap_coords(packed: i32) -> (f32, f32) {
+   |        ^^^^^^^^^^^^^^^
+
+warning: method `random_part` is never used
+  --> crates\client11\src\render\entity\models.rs:94:12
+   |
+82 | impl Model {
+   | ---------- method in this implementation
+...
+94 |     pub fn random_part(&self, random: &mut worldgen::JavaRandom) -> &ModelRenderer {
+   |            ^^^^^^^^^^^
+
+warning: field `light` is never read
+  --> crates\client11\src\render\entity\objects.rs:21:9
+   |
+19 |     Falling {
+   |     ------- field in this variant
+20 |         block: u8,
+21 |         light: [f32; 7],
+   |         ^^^^^
+   |
+   = note: `ObjectKind` has derived impls for the traits `Debug` and `Clone`, but these are intentionally ignored during dead code analysis
+
+warning: field `visible` is never read
+  --> crates\client11\src\render\entity\objects.rs:30:9
+   |
+26 |     Arrow {
+   |     ----- field in this variant
+...
+30 |         visible: bool,
+   |         ^^^^^^^
+   |
+   = note: `ObjectKind` has derived impls for the traits `Debug` and `Clone`, but these are intentionally ignored during dead code analysis
+
+warning: function `embedded_arrows` is never used
+  --> crates\client11\src\render\entity\raw_living181.rs:10:8
+   |
+10 | pub fn embedded_arrows(g: &mut Fixed, m: &Model, id: i32, count: i32, partial: f32) {
+   |        ^^^^^^^^^^^^^^^
+
+warning: function `render` is never used
+   --> crates\client11\src\render\first_person.rs:181:8
+    |
+181 | pub fn render(
+    |        ^^^^^^
+
+warning: method `vertices` is never used
+    --> crates\client11\src\render\particles.rs:1144:12
+     |
+ 957 | impl EffectRenderer {
+     | ------------------- method in this implementation
+...
+1144 |     pub fn vertices(
+     |            ^^^^^^^^
+
+warning: method `render` is never used
+   --> crates\client11\src\render\gpu.rs:796:12
+    |
+136 | impl Gpu {
+    | -------- method in this implementation
+...
+796 |     pub fn render(&mut self, p: &FrameParams, capture: bool) -> Option<Image> {
+    |            ^^^^^^
+
+warning: function `draw` is never used
+  --> crates\client11\src\render\sky_release_check.rs:22:8
+   |
+22 | pub fn draw(dimension: i32, anaglyph: bool, angle: f32, rain: f32, stars: f32,
+   |        ^^^^
+
+warning: field `biome` is never read
+  --> crates\client11\src\render\weather.rs:41:9
+   |
+37 | pub struct Column {
+   |            ------ field in this struct
+...
+41 |     pub biome: Biome,
+   |         ^^^^^
+   |
+   = note: `Column` has a derived impl for the trait `Clone`, but this is intentionally ignored during dead code analysis
+
+warning: function `precipitation` is never used
+   --> crates\client11\src\render\weather.rs:187:8
+    |
+187 | pub fn precipitation(
+    |        ^^^^^^^^^^^^^
+
+warning: function `precipitation181` is never used
+   --> crates\client11\src\render\weather.rs:308:8
+    |
+308 | pub fn precipitation181(
+    |        ^^^^^^^^^^^^^^^^
+
+warning: struct `Particle` is never constructed
+   --> crates\client11\src\render\weather.rs:588:8
+    |
+588 | struct Particle {
+    |        ^^^^^^^^
+
+warning: struct `Particles` is never constructed
+   --> crates\client11\src\render\weather.rs:603:12
+    |
+603 | pub struct Particles {
+    |            ^^^^^^^^^
+
+warning: associated items `len`, `new`, `spawn`, `tick`, and `vertices` are never used
+   --> crates\client11\src\render\weather.rs:610:12
+    |
+608 | impl Particles {
+    | -------------- associated items in this implementation
+609 |     /// `EffectRenderer.getStatistics`: particles alive.
+610 |     pub fn len(&self) -> usize {
+    |            ^^^
+...
+614 |     pub fn new(seed: i64) -> Self {
+    |            ^^^
+...
+623 |     pub fn spawn(&mut self, splashes: Vec<Splash>) {
+    |            ^^^^^
+...
+683 |     pub fn tick(&mut self, terrain: &Snapshot) {
+    |            ^^^^
+...
+748 |     pub fn vertices(
+    |            ^^^^^^^^
+
+warning: function `intersects` is never used
+   --> crates\client11\src\render\weather.rs:824:4
+    |
+824 | fn intersects(a: [f64; 6], b: [f64; 6]) -> bool {
+    |    ^^^^^^^^^^
+
+warning: function `move_particle` is never used
+   --> crates\client11\src\render\weather.rs:828:4
+    |
+828 | fn move_particle(p: &mut Particle, s: &Snapshot) -> bool {
+    |    ^^^^^^^^^^^^^
+
+warning: function `collision_boxes` is never used
+   --> crates\client11\src\render\weather.rs:916:4
+    |
+916 | fn collision_boxes(id: u8, meta: u8, pos: [i32; 3]) -> Vec<[f64; 6]> {
+    |    ^^^^^^^^^^^^^^^
+
+warning: method `stop_all` is never used
+   --> crates\client11\src\sound.rs:431:12
+    |
+199 | impl SoundManager {
+    | ----------------- method in this implementation
+...
+431 |     pub fn stop_all(&mut self) {
+    |            ^^^^^^^^
+
+warning: `client11` (lib test) generated 45 warnings (run `cargo fix --lib -p client11 --tests` to apply 3 suggestions)
+    Finished `test` profile [optimized + debuginfo] target(s) in 0.15s
+     Running unittests src\lib.rs (target\debug\deps\client11-c03f2b1fefc3f378.exe)
+
+running 1 test
+GLOBAL SKY10 EXACT: 128 cases, 2815472 raw-bit comparisons, 0 mismatches
+test render::entity::models_release_check::sky_horizon_matches_original_11 ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 58 filtered out; finished in 0.03s
+
+R11 SKY WORKFLOW EXACT

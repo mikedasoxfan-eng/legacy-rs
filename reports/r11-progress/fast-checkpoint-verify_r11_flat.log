@@ -1,0 +1,110 @@
+    Blocking waiting for file lock on build directory
+   Compiling worldgen11 v3.0.2 (C:\Users\Robbie\Documents\Codex\2026-10-09\https-github-com-mikedasoxfan-eng-legacy\work\legacy-rs\crates\worldgen11)
+warning: use of deprecated method `std::sync::atomic::Atomic::<u32>::fetch_update`: renamed to `try_update` for consistency
+  --> crates\worldgen11\src\decorator10.rs:53:20
+   |
+53 |     assert!(ACTIVE.fetch_update(Ordering::SeqCst, Ordering::SeqCst,
+   |                    ^^^^^^^^^^^^
+   |
+   = note: `#[warn(deprecated)]` on by default
+help: replace the use of the deprecated method
+   |
+53 -     assert!(ACTIVE.fetch_update(Ordering::SeqCst, Ordering::SeqCst,
+53 +     assert!(ACTIVE.try_update(Ordering::SeqCst, Ordering::SeqCst,
+   |
+
+warning: function `use_neighbor_brightness` is never used
+ --> crates\worldgen11\src\world\release10.rs:5:15
+  |
+5 | pub(crate) fn use_neighbor_brightness(id: u8) -> bool {
+  |               ^^^^^^^^^^^^^^^^^^^^^^^
+  |
+  = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: `worldgen11` (lib) generated 2 warnings (run `cargo fix --lib -p worldgen11` to apply 1 suggestion)
+    Finished `release` profile [optimized + debuginfo] target(s) in 58.88s
+27 achievements
+174 recipes
+EXACT MATCH (44859 bytes)
+27 achievements
+174 recipes
+EXACT MATCH (3777169 bytes)
+27 achievements
+174 recipes
+EXACT MATCH (11065728 bytes)
+27 achievements
+174 recipes
+EXACT MATCH (171345 bytes)
+27 achievements
+174 recipes
+EXACT MATCH (11064158 bytes)
+27 achievements
+174 recipes
+EXACT MATCH (49891 bytes)
+27 achievements
+174 recipes
+EXACT MATCH (3746199 bytes)
+27 achievements
+174 recipes
+EXACT MATCH (11065468 bytes)
+27 achievements
+174 recipes
+EXACT MATCH (77790 bytes)
+27 achievements
+174 recipes
+EXACT MATCH (11063047 bytes)
+27 achievements
+174 recipes
+EXACT MATCH (47883 bytes)
+27 achievements
+174 recipes
+EXACT MATCH (3527590 bytes)
+27 achievements
+174 recipes
+EXACT MATCH (11065014 bytes)
+27 achievements
+174 recipes
+EXACT MATCH (117750 bytes)
+27 achievements
+174 recipes
+EXACT MATCH (11063084 bytes)
+27 achievements
+174 recipes
+rust: 9 chunks in 705.10µs
+9 chunks (4 populated), 0 chests/spawners, 0 pending ticks
+EXACT MATCH
+EXACT MATCH: flat population and world RNG
+27 achievements
+174 recipes
+rust: 36 chunks in 8.67ms
+36 chunks (25 populated), 3 chests/spawners, 642 pending ticks
+EXACT MATCH
+EXACT MATCH: flat population and world RNG
+27 achievements
+174 recipes
+rust: 36 chunks in 8.14ms
+36 chunks (25 populated), 0 chests/spawners, 792 pending ticks
+EXACT MATCH
+EXACT MATCH: flat population and world RNG
+27 achievements
+174 recipes
+rust: 36 chunks in 7.81ms
+36 chunks (25 populated), 3 chests/spawners, 585 pending ticks
+EXACT MATCH
+EXACT MATCH: flat population and world RNG
+27 achievements
+174 recipes
+rust: 25 chunks in 51.09ms
+25 chunks (16 populated), 0 chests/spawners, 9930 pending ticks
+EXACT MATCH
+27 achievements
+174 recipes
+rust: 25 chunks in 48.36ms
+25 chunks (16 populated), 0 chests/spawners, 6325 pending ticks
+EXACT MATCH
+27 achievements
+174 recipes
+rust: 25 chunks in 49.64ms
+25 chunks (16 populated), 0 chests/spawners, 7943 pending ticks
+EXACT MATCH
+R11 FLAT AND POPULATED GRID EXACT

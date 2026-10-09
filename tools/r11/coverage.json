@@ -316,5 +316,171 @@
   ],
   "RenderLiving": [
     "sheep11 live models and render pass"
+  ],
+  "EntityCaveSpider": [
+    "gameplay11 original delta vectors",
+    "gameplay11 fixture authority"
+  ],
+  "EntityCreature": [
+    "gameplay11 original delta vectors",
+    "gameplay11 fixture authority"
+  ],
+  "EntityGiantZombie": [
+    "gameplay11 original delta vectors",
+    "gameplay11 fixture authority"
+  ],
+  "EntitySilverfish": [
+    "gameplay11 original delta vectors",
+    "gameplay11 fixture authority"
+  ],
+  "EntitySlime": [
+    "gameplay11 original delta vectors",
+    "gameplay11 fixture authority"
+  ],
+  "StepSoundSand": [
+    "gameplay11 original delta vectors",
+    "gameplay11 fixture authority"
+  ],
+  "StepSoundStone": [
+    "gameplay11 original delta vectors",
+    "gameplay11 fixture authority"
+  ],
+  "EntityDamageSource": [
+    "gameplay11 original delta vectors",
+    "gameplay11 fixture authority"
+  ],
+  "EntitySkeleton": [
+    "gameplay11 original delta vectors",
+    "gameplay11 fixture authority"
+  ],
+  "ItemColored": [
+    "gameplay11 original delta vectors",
+    "gameplay11 fixture authority"
+  ],
+  "ItemLeaves": [
+    "gameplay11 original delta vectors",
+    "gameplay11 fixture authority"
+  ],
+  "ItemLilyPad": [
+    "gameplay11 original delta vectors",
+    "gameplay11 fixture authority"
+  ],
+  "EntityAnimal": [
+    "gameplay11 original delta vectors",
+    "gameplay11 fixture authority"
+  ],
+  "EntityDamageSourceIndirect": [
+    "gameplay11 original delta vectors",
+    "gameplay11 fixture authority"
+  ],
+  "BlockFluid": [
+    "gameplay11 original delta vectors",
+    "gameplay11 fixture authority"
+  ],
+  "BlockGrass": [
+    "gameplay11 original delta vectors",
+    "gameplay11 fixture authority"
+  ],
+  "BlockLeaves": [
+    "gameplay11 original delta vectors",
+    "gameplay11 fixture authority"
+  ],
+  "Entity": [
+    "gameplay11 original delta vectors",
+    "gameplay11 fixture authority"
+  ],
+  "EntityPlayer": [
+    "gameplay11 original delta vectors",
+    "gameplay11 fixture authority",
+    "render11 item passes",
+    "render11 held workflow"
+  ],
+  "EntityPlayerSP": [
+    "gameplay11 original delta vectors",
+    "gameplay11 fixture authority"
+  ],
+  "Item": [
+    "gameplay11 original delta vectors",
+    "gameplay11 fixture authority",
+    "render11 item passes",
+    "render11 held workflow"
+  ],
+  "FontRenderer": [
+    "font11 full primitive delta",
+    "language11 full drawing actions restart",
+    "formatter11 actual string callsites",
+    "tessellator11 packed normal bytes"
+  ],
+  "StringTranslate": [
+    "font11 full primitive delta",
+    "language11 full drawing actions restart",
+    "formatter11 actual string callsites",
+    "tessellator11 packed normal bytes"
+  ],
+  "StatBase": [
+    "gui11 small full deltas"
+  ],
+  "StatList": [
+    "gui11 small full deltas"
+  ],
+  "Achievement": [
+    "gui11 small full deltas"
+  ],
+  "StatStringFormatKeyInv": [
+    "gui11 small full deltas",
+    "formatter11 actual string callsites"
+  ],
+  "GuiAchievement": [
+    "gui11 small full deltas"
+  ],
+  "GuiInventory": [
+    "gui11 small full deltas"
+  ],
+  "GuiOptions": [
+    "gui11 small full deltas"
+  ],
+  "GuiButtonLanguage": [
+    "gui11 small full deltas"
+  ],
+  "GuiMainMenu": [
+    "gui11 small full deltas"
+  ],
+  "GuiIngameMenu": [
+    "gui11 small full deltas"
+  ],
+  "GuiCreateWorld": [
+    "gui11 small full deltas"
+  ],
+  "Block": [
+    "chunk11 tile ownership",
+    "gameplay11 original delta vectors"
+  ],
+  "Chunk": [
+    "chunk11 tile ownership",
+    "gameplay11 original delta vectors"
+  ],
+  "ItemRenderer": [
+    "render11 held workflow",
+    "render11 item passes"
+  ],
+  "RenderPlayer": [
+    "render11 held workflow"
+  ],
+  "RenderBiped": [
+    "render11 biped workflow",
+    "render11 item passes"
+  ],
+  "ModelSilverfish": [
+    "render11 silverfish workflow"
+  ],
+  "RenderSilverfish": [
+    "render11 silverfish workflow"
+  ],
+  "RenderGlobal": [
+    "render11 sky horizon",
+    "render11 item passes"
+  ],
+  "EntityRenderer": [
+    "render11 fog workflow"
   ]
 }

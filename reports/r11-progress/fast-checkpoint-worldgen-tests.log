@@ -1,0 +1,283 @@
+   Compiling worldgen11 v3.0.2 (C:\Users\Robbie\Documents\Codex\2026-10-09\https-github-com-mikedasoxfan-eng-legacy\work\legacy-rs\crates\worldgen11)
+warning: use of deprecated method `std::sync::atomic::Atomic::<u32>::fetch_update`: renamed to `try_update` for consistency
+  --> crates\worldgen11\src\decorator10.rs:53:20
+   |
+53 |     assert!(ACTIVE.fetch_update(Ordering::SeqCst, Ordering::SeqCst,
+   |                    ^^^^^^^^^^^^
+   |
+   = note: `#[warn(deprecated)]` on by default
+help: replace the use of the deprecated method
+   |
+53 -     assert!(ACTIVE.fetch_update(Ordering::SeqCst, Ordering::SeqCst,
+53 +     assert!(ACTIVE.try_update(Ordering::SeqCst, Ordering::SeqCst,
+   |
+
+warning: function `use_neighbor_brightness` is never used
+ --> crates\worldgen11\src\world\release10.rs:5:15
+  |
+5 | pub(crate) fn use_neighbor_brightness(id: u8) -> bool {
+  |               ^^^^^^^^^^^^^^^^^^^^^^^
+  |
+  = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: `worldgen11` (lib test) generated 2 warnings (run `cargo fix --lib -p worldgen11 --tests` to apply 1 suggestion)
+warning: `worldgen11` (lib) generated 2 warnings (2 duplicates)
+warning: function `canonical` is never used
+  --> crates\worldgen11\tests\entities.rs:19:4
+   |
+19 | fn canonical(nbt: &Compound) -> Vec<u8> {
+   |    ^^^^^^^^^
+   |
+   = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: function `same_compound` is never used
+   --> crates\worldgen11\tests\entities.rs:129:4
+    |
+129 | fn same_compound(tag:&Tag,expected:&Compound)->bool {
+    |    ^^^^^^^^^^^^^
+
+warning: `worldgen11` (test "entities") generated 2 warnings
+    Finished `test` profile [optimized + debuginfo] target(s) in 11.54s
+     Running unittests src\lib.rs (target\debug\deps\worldgen-84cc2955c35980b0.exe)
+
+running 57 tests
+test block::visual181::release11_tint_tests::block_neighborhood_tints_match_original_11_bytecode ... ok
+test container::brewing::tests::brewing_timeline_matches_original_11_bytecode ... ok
+test container::release11_tag_tests::nullable_stack_tags_match_original_11_bytecode ... ok
+test container::release11_tag_tests::stack_tag_root_names_match_original_11_bytecode ... ok
+test container::release11_tag_tests::tagged_inventory_copy_independence_matches_original_11_bytecode ... ok
+test container::release11_tag_tests::tagged_slot_click_and_shift_match_original_11_bytecode ... ok
+test container::release_11_tests::crafting_remainders_match_original_11_bytecode ... ok
+test container::release_11_tests::golden_apple_uses_original_11_recipe_table ... ok
+test enchantment::tests::bow_enchantment_selection_matches_original_11_bytecode ... ok
+test enchantment::tests::offers_match_original_11_bytecode_and_rng_tail ... ok
+test entity::animal::release11_delta_tests::animal_search_matches_original_11_bytecode ... ok
+test entity::animal::release11_delta_tests::animal_target_clear_matches_original_11_bytecode ... ok
+test entity::aquatic::release11_guard_tests::living_action_guards_match_original_11_bytecode ... ok
+test entity::aquatic::release11_guard_tests::squid_motion_guards_match_original_11_bytecode ... ok
+test entity::blocks11::tests::block_boxes_match_original_11_bytecode ... ok
+test entity::blocks11::tests::detector_height_matches_original_11_bytecode ... ok
+test entity::blocks11::tests::farmland_landings_match_original_11_bytecode ... ok
+test entity::blocks11::tests::farmland_walking_matches_original_11_bytecode ... ok
+test entity::blocks11::tests::gate_notifications_match_original_11_bytecode ... ok
+test entity::blocks11::tests::powered_rail_additions_match_original_11_bytecode ... ok
+test entity::blocks11::tests::snow_support_matches_original_11_bytecode ... ok
+test entity::blocks11::tests::stem_soils_match_original_11_bytecode ... ok
+test entity::blocks11::tests::trapdoor_neighbors_match_original_11_bytecode ... ok
+test entity::blocks11::tests::web_distance_matches_original_11_bytecode ... ok
+test entity::damage::release11_tests::indirect_source_and_skeleton_death_match_original_11_bytecode ... ok
+test entity::damage::release11_tests::lethal_arrow_impact_delivers_original_11_sniper_callback ... ok
+test entity::living::creeper_release11_tests::creeper_records_match_original_11_bytecode ... ok
+test entity::nbt::arrow_release_11_nbt_tests::arrow_nbt_matches_original_11_bytecode ... ok
+test entity::physics::release11_landing_tests::landing_boundaries_match_original_11_bytecode ... ok
+test entity::physics::release11_landing_tests::movement_landing_uses_original_11_block_callback ... ok
+test entity::player::block_hooks::release11_door_tests::doors_match_original_11_bytecode ... ok
+test entity::player::damage_release_11_tests::damage_matches_original_11_bytecode_single_armor_pass ... ok
+test entity::player::food::release_tests::experience_matches_original_11_bytecode_vectors ... ok
+test entity::player::mechanics::bow_release_11_tests::bow_release_matches_original_11_bytecode ... ok
+test entity::player::mechanics::release11_golden_food_tests::golden_apple_finish_matches_original_11_bytecode ... ok
+test entity::player::picking::release11_pick_tests::middle_click_matches_original_11_bytecode ... ok
+test entity::projectile::release_11_impact_tests::arrow_impact_matches_original_11_bytecode ... ok
+test entity::sheep11::tests::magma_drops_match_original_11_bytecode ... ok
+test entity::sheep11::tests::shearing_matches_original_11_bytecode ... ok
+test entity::sheep11::tests::sheep_actions_match_original_11_bytecode ... ok
+test entity::sheep11::tests::sheep_head_boundaries_match_original_11_bytecode ... ok
+test entity::sheep11::tests::sheep_status_jump_and_movement_match_original_11_bytecode ... ok
+test entity::sheep11::tests::sheep_tick_growth_order_matches_original_11_bytecode ... ok
+test entity::spawn_egg11::tests::creative_inventory_matches_original_11_bytecode ... ok
+test entity::spawn_egg11::tests::egg_constructor_save_tick_matches_original_11_bytecode ... ok
+test entity::spawn_egg11::tests::egg_invalid_side_matches_original_11_bytecode ... ok
+test entity::spawn_egg11::tests::egg_metadata_matches_original_11_bytecode ... ok
+test entity::spawn_egg11::tests::egg_names_match_original_11_bytecode ... ok
+test entity::spawn_egg11::tests::egg_spawns_match_original_11_bytecode ... ok
+test entity::spawn_egg11::tests::egg_stack_use_and_statistics_match_original_11_bytecode ... ok
+test entity::special::wolf_release11_guard_tests::wolf_world_guard_matches_original_11_bytecode ... ok
+test stack_tags::tests::stackable_tags_and_inventory_match_original_11_bytecode ... ok
+test world::behavior::leaves_release11_tests::leaves_drops_and_decay_match_original_11_bytecode ... ok
+test world::redstone::release11_tests::wire_connections_match_original_11_bytecode ... ok
+test world::redstone::release11_tests::wire_removal_notifications_match_original_11_bytecode ... ok
+test world::redstone::release11_tests::wire_rising_updates_match_original_11_bytecode ... ok
+test world::tile_lifecycle::release11_coordinate_tests::chunk_tile_coordinates_match_original_11 ... ok
+
+test result: ok. 57 passed; 0 failed; 0 ignored; 0 measured; 55 filtered out; finished in 4.66s
+
+     Running unittests src\bin\chesthooks181.rs (target\debug\deps\chesthooks11-9b2a29adae8b6124.exe)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src\bin\compare.rs (target\debug\deps\compare11-a99230f6a1acd248.exe)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src\bin\container_compare.rs (target\debug\deps\container_compare11-07c54e30ff8a7e27.exe)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src\bin\controller181.rs (target\debug\deps\controller11-c3b664033abd32c9.exe)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src\bin\controllerinput181.rs (target\debug\deps\controllerinput11-1afb94dcf49312b1.exe)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src\bin\controllerlife181.rs (target\debug\deps\controllerlife11-3230c161c25e2821.exe)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src\bin\controllermode181.rs (target\debug\deps\controllermode11-cd5a3e0cff831774.exe)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src\bin\creative.rs (target\debug\deps\creative11-4ec35677a5a1134f.exe)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src\bin\entity_compare181.rs (target\debug\deps\entity_compare11-447417fd9755616b.exe)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src\bin\genlayer11_probe.rs (target\debug\deps\genlayer11_probe-00cd6c32b6f39afb.exe)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src\bin\guichest181.rs (target\debug\deps\guichest11-75293fcaf52e7959.exe)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src\bin\inventorybounds181.rs (target\debug\deps\inventorybounds11-80e61f584e0369c2.exe)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src\bin\inventoryinterfaces181.rs (target\debug\deps\inventoryinterfaces11-ee166e48eab7e0cf.exe)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src\bin\playercombat181.rs (target\debug\deps\playercombat11-e43b1dcafdd885ad.exe)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src\bin\playercore.rs (target\debug\deps\playercore11-ab2fbcbdfd3fb680.exe)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src\bin\playerdamage8_181.rs (target\debug\deps\playerdamage8_11-92439b30c811a421.exe)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src\bin\playerlist181.rs (target\debug\deps\playerlist11-29bb9ac83860ecd2.exe)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src\bin\playersp181.rs (target\debug\deps\playersp11-1633d20dd543c4cc.exe)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src\bin\playerstate181.rs (target\debug\deps\playerstate11-36b4d028cdfc229e.exe)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src\bin\playertick181.rs (target\debug\deps\playertick11-e06aa9233cac6cc5.exe)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src\bin\r10blocks3.rs (target\debug\deps\r10blocks3_11-18d2e64a0ff3e8cb.exe)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src\bin\r10entities2.rs (target\debug\deps\r10entities2_11-5c69348cf9c39bec.exe)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src\bin\r10entities3.rs (target\debug\deps\r10entities3_11-f4731261e3441fc9.exe)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src\bin\terrain_compare.rs (target\debug\deps\terrain_compare11-b42f4c47c63ee3d1.exe)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests\blocks10.rs (target\debug\deps\blocks10-5d15616d28fb0a90.exe)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 16 filtered out; finished in 0.00s
+
+     Running tests\containers.rs (target\debug\deps\containers-b94cf59e4f715401.exe)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 7 filtered out; finished in 0.00s
+
+     Running tests\effects.rs (target\debug\deps\effects-0c8dc45c00835683.exe)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 1 filtered out; finished in 0.00s
+
+     Running tests\entities.rs (target\debug\deps\entities-a73b4ac3e73d9340.exe)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 2 filtered out; finished in 0.00s
+
+     Running tests\nether_dimension.rs (target\debug\deps\nether_dimension-1c975d6042d054d6.exe)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 4 filtered out; finished in 0.00s
+
+     Running tests\player.rs (target\debug\deps\player-00e1b0fb172363ef.exe)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 3 filtered out; finished in 0.00s
+

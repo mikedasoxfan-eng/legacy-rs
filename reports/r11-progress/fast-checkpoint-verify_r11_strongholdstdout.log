@@ -1,0 +1,47 @@
+warning: use of deprecated method `std::sync::atomic::Atomic::<u32>::fetch_update`: renamed to `try_update` for consistency
+  --> crates\worldgen11\src\decorator10.rs:53:20
+   |
+53 |     assert!(ACTIVE.fetch_update(Ordering::SeqCst, Ordering::SeqCst,
+   |                    ^^^^^^^^^^^^
+   |
+   = note: `#[warn(deprecated)]` on by default
+help: replace the use of the deprecated method
+   |
+53 -     assert!(ACTIVE.fetch_update(Ordering::SeqCst, Ordering::SeqCst,
+53 +     assert!(ACTIVE.try_update(Ordering::SeqCst, Ordering::SeqCst,
+   |
+
+warning: function `use_neighbor_brightness` is never used
+ --> crates\worldgen11\src\world\release10.rs:5:15
+  |
+5 | pub(crate) fn use_neighbor_brightness(id: u8) -> bool {
+  |               ^^^^^^^^^^^^^^^^^^^^^^^
+  |
+  = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: `worldgen11` (lib) generated 2 warnings (run `cargo fix --lib -p worldgen11` to apply 1 suggestion)
+    Finished `release` profile [optimized + debuginfo] target(s) in 0.06s
+27 achievements
+174 recipes
+EXACT MATCH: strongholdstdout 0 bin FA28518C8510239E4E34AB2836252B0BB05BECF972C61EDA54FC75EAC1C46C75 (484 bytes)
+EXACT MATCH: strongholdstdout 0 txt 7BA77EA520534FD8A5FDE59C9305FCF3B4C0D9A5F29436ACDA942F8C4FBCE8E2 (648 bytes)
+27 achievements
+174 recipes
+EXACT MATCH: strongholdstdout 42 bin C368BD7279E6E83634E77732D39ADCB6DE08FAC807184C424998B1E0D4B90790 (484 bytes)
+EXACT MATCH: strongholdstdout 42 txt 45109D3EE49C00FBF808F423588DCD219F6500EF7CEDB2B90FF2FF044D6D0814 (653 bytes)
+27 achievements
+174 recipes
+EXACT MATCH: strongholdstdout -1 bin 6D3AEC9E4C85BA1FDFD287939247C700C15ABA073241A3E4944EA707937AF934 (484 bytes)
+EXACT MATCH: strongholdstdout -1 txt 2B29C8DB02EAAAE6A9CAB9D8DCC072C1E81B17C454BD5A32C79BAD18BF4B42E4 (648 bytes)
+27 achievements
+174 recipes
+EXACT MATCH: strongholdstdout 123456789 bin 0807C3E58E7EC0C004107FD7C2E911BBD650AFAFA7BBF6CB2C6FCFECFC77F883 (484 bytes)
+EXACT MATCH: strongholdstdout 123456789 txt DEB3022E65691694278D6ACFA7391488E2856ECD417283D078437FB16FB2FF32 (805 bytes)
+27 achievements
+174 recipes
+EXACT MATCH: strongholdstdout 9223372036854775807 bin F493BD1B6824C8C80186E7AB91B210086CFEB28515F9ECE80C22504E45B306DA (484 bytes)
+EXACT MATCH: strongholdstdout 9223372036854775807 txt 7004AA9656DF40E1B252B60866AFE01C76F5F16AB2C3F73FA6696C62DC533332 (653 bytes)
+27 achievements
+174 recipes
+EXACT MATCH: strongholdstdout -9223372036854775808 bin 521479DBD2D245A873F4233309A836F7A5F72DDB66ACED5462B5E94E33D60A04 (484 bytes)
+EXACT MATCH: strongholdstdout -9223372036854775808 txt A5687841031B297A89C8260BD6CEDBF70DBB4E48BC353F6573C9C23F3163463F (795 bytes)

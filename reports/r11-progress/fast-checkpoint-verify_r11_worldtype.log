@@ -1,0 +1,78 @@
+   Compiling worldgen11 v3.0.2 (C:\Users\Robbie\Documents\Codex\2026-10-09\https-github-com-mikedasoxfan-eng-legacy\work\legacy-rs\crates\worldgen11)
+warning: use of deprecated method `std::sync::atomic::Atomic::<u32>::fetch_update`: renamed to `try_update` for consistency
+  --> crates\worldgen11\src\decorator10.rs:53:20
+   |
+53 |     assert!(ACTIVE.fetch_update(Ordering::SeqCst, Ordering::SeqCst,
+   |                    ^^^^^^^^^^^^
+   |
+   = note: `#[warn(deprecated)]` on by default
+help: replace the use of the deprecated method
+   |
+53 -     assert!(ACTIVE.fetch_update(Ordering::SeqCst, Ordering::SeqCst,
+53 +     assert!(ACTIVE.try_update(Ordering::SeqCst, Ordering::SeqCst,
+   |
+
+warning: function `use_neighbor_brightness` is never used
+ --> crates\worldgen11\src\world\release10.rs:5:15
+  |
+5 | pub(crate) fn use_neighbor_brightness(id: u8) -> bool {
+  |               ^^^^^^^^^^^^^^^^^^^^^^^
+  |
+  = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: `worldgen11` (lib) generated 2 warnings (run `cargo fix --lib -p worldgen11` to apply 1 suggestion)
+    Finished `release` profile [optimized + debuginfo] target(s) in 18.66s
+27 achievements
+174 recipes
+java.lang.ClassCastException: net.minecraft.src.NBTTagInt cannot be cast to net.minecraft.src.NBTTagString
+	at net.minecraft.src.NBTTagCompound.getString(NBTTagCompound.java:124)
+	at net.minecraft.src.WorldInfo.<init>(WorldInfo.java:39)
+	at net.minecraft.src.SaveHandler.loadWorldInfo(SaveHandler.java:99)
+	at net.minecraft.src.WorldTypeProbe11.main(WorldTypeProbe11.java:47)
+java.lang.ClassCastException: net.minecraft.src.NBTTagInt cannot be cast to net.minecraft.src.NBTTagString
+	at net.minecraft.src.NBTTagCompound.getString(NBTTagCompound.java:124)
+	at net.minecraft.src.WorldInfo.<init>(WorldInfo.java:39)
+	at net.minecraft.src.SaveHandler.loadWorldInfo(SaveHandler.java:99)
+	at net.minecraft.src.WorldTypeProbe11.main(WorldTypeProbe11.java:48)
+java.lang.ClassCastException: net.minecraft.src.NBTTagInt cannot be cast to net.minecraft.src.NBTTagString
+	at net.minecraft.src.NBTTagCompound.getString(NBTTagCompound.java:124)
+	at net.minecraft.src.WorldInfo.<init>(WorldInfo.java:39)
+	at net.minecraft.src.SaveHandler.loadWorldInfo(SaveHandler.java:111)
+	at net.minecraft.src.WorldTypeProbe11.main(WorldTypeProbe11.java:48)
+EXACT MATCH: worldtype 0 572C59A4BC4118EB082BC3CABD6F7398ABDF36549DBB49B6D0C3EE91CEDA2B76 (1327 bytes) target/r11/worldtype/ae2b9799ce724dc495435e6f8a11aaa4/0
+27 achievements
+174 recipes
+java.lang.ClassCastException: net.minecraft.src.NBTTagInt cannot be cast to net.minecraft.src.NBTTagString
+	at net.minecraft.src.NBTTagCompound.getString(NBTTagCompound.java:124)
+	at net.minecraft.src.WorldInfo.<init>(WorldInfo.java:39)
+	at net.minecraft.src.SaveHandler.loadWorldInfo(SaveHandler.java:99)
+	at net.minecraft.src.WorldTypeProbe11.main(WorldTypeProbe11.java:47)
+java.lang.ClassCastException: net.minecraft.src.NBTTagInt cannot be cast to net.minecraft.src.NBTTagString
+	at net.minecraft.src.NBTTagCompound.getString(NBTTagCompound.java:124)
+	at net.minecraft.src.WorldInfo.<init>(WorldInfo.java:39)
+	at net.minecraft.src.SaveHandler.loadWorldInfo(SaveHandler.java:99)
+	at net.minecraft.src.WorldTypeProbe11.main(WorldTypeProbe11.java:48)
+java.lang.ClassCastException: net.minecraft.src.NBTTagInt cannot be cast to net.minecraft.src.NBTTagString
+	at net.minecraft.src.NBTTagCompound.getString(NBTTagCompound.java:124)
+	at net.minecraft.src.WorldInfo.<init>(WorldInfo.java:39)
+	at net.minecraft.src.SaveHandler.loadWorldInfo(SaveHandler.java:111)
+	at net.minecraft.src.WorldTypeProbe11.main(WorldTypeProbe11.java:48)
+EXACT MATCH: worldtype 42 703A4C0216F079813FBC60E70C9AC8F6CA42FC595791994C6CBD2B9F75CE8645 (1327 bytes) target/r11/worldtype/ae2b9799ce724dc495435e6f8a11aaa4/42
+27 achievements
+174 recipes
+java.lang.ClassCastException: net.minecraft.src.NBTTagInt cannot be cast to net.minecraft.src.NBTTagString
+	at net.minecraft.src.NBTTagCompound.getString(NBTTagCompound.java:124)
+	at net.minecraft.src.WorldInfo.<init>(WorldInfo.java:39)
+	at net.minecraft.src.SaveHandler.loadWorldInfo(SaveHandler.java:99)
+	at net.minecraft.src.WorldTypeProbe11.main(WorldTypeProbe11.java:47)
+java.lang.ClassCastException: net.minecraft.src.NBTTagInt cannot be cast to net.minecraft.src.NBTTagString
+	at net.minecraft.src.NBTTagCompound.getString(NBTTagCompound.java:124)
+	at net.minecraft.src.WorldInfo.<init>(WorldInfo.java:39)
+	at net.minecraft.src.SaveHandler.loadWorldInfo(SaveHandler.java:99)
+	at net.minecraft.src.WorldTypeProbe11.main(WorldTypeProbe11.java:48)
+java.lang.ClassCastException: net.minecraft.src.NBTTagInt cannot be cast to net.minecraft.src.NBTTagString
+	at net.minecraft.src.NBTTagCompound.getString(NBTTagCompound.java:124)
+	at net.minecraft.src.WorldInfo.<init>(WorldInfo.java:39)
+	at net.minecraft.src.SaveHandler.loadWorldInfo(SaveHandler.java:111)
+	at net.minecraft.src.WorldTypeProbe11.main(WorldTypeProbe11.java:48)
+EXACT MATCH: worldtype -1 B88AAD45D1D29F49550E4BD7CFA6EF78B7BAAE85A72899E4BFC735FC94A8E141 (1327 bytes) target/r11/worldtype/ae2b9799ce724dc495435e6f8a11aaa4/-1
