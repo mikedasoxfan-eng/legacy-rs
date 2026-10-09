@@ -1,0 +1,85 @@
+{
+  "schema": 1,
+  "candidate_commit": "5d4d28365998935e54607b5d02bb6bb1f5a1632b",
+  "owned_source_sha256": {
+    "crates/worldgen11/src/world/redstone.rs": "39f84038989abf6b8d18a1454adad3ed939e15e49e229f29dca6b6cee9287de5",
+    "crates/worldgen11/src/world/behavior.rs": "030817bad8cb11c7d8a933d83b66a88de9914b9ea0cf0751e14c27d12a302e0f",
+    "crates/worldgen11/src/world/ticks_blocks.rs": "a998f63fce4b7b588a702842a42cf79531177d9cba71b2991640a8eef99e0c1f",
+    "crates/worldgen11/src/entity/block_hooks.rs": "8ff7de09d1073953462dd0370fc3916d79d5c4666fa98a9dca49a6f6381c67e5",
+    "crates/worldgen11/src/fixtures/leavesdrops11.txt": "f2394599ba309faa3de4712537f74745aaa81d939335524fb867f21680631217",
+    "crates/worldgen11/src/fixtures/wireconnect11.txt": "1a441101fbb2bc281e9f49f31e09552a8b4f87fccce777bfcc49f949a2773dc7",
+    "crates/worldgen11/src/fixtures/wirerise11.txt": "3aaf29a4e492b9da44a3685725ed4d60f2732f193c7a201368db0b379258ac03",
+    "crates/worldgen11/src/fixtures/wireremove11.txt": "108b96540f792b6aa63aade9d54479aef9cc746615bbf14365b9cce694c085e7",
+    "tools/oracle11/src/net/minecraft/src/LeavesWire11.java": "9df349d9802ab7eb90b726dc8617189e220cf47928eefc56adfe5a36a2ca7621",
+    "tools/oracle11/verify_gameplay_slice.ps1": "e43a40b7038780d59c2b76caabc9f8607701a72598de1c1230bf6d783ebb43b9"
+  },
+  "classes": [
+    {
+      "class_name": "BlockRedstoneWire",
+      "entire_1_1_delta_covered": true,
+      "whole_inherited_java_api_verified": false,
+      "all_delta_hunk_coverage": [
+        {
+          "delta": "old<current or current0 enqueues7 HashSet ordered notifications, including rising nonzero strengths",
+          "evidence": "wirerise11.txt32 original private calculateCurrentChanges calls vs production wire_calculate; final strength, exact Java HashSet order, RNG; controlled raw snapshot avoids invoking placement callbacks during input initialization"
+        },
+        {
+          "delta": "four horizontal onBlockRemoval notifications added before propagation",
+          "evidence": "wireremove11.txt4 original whole callbacks records all6 ordered coordinates/blockID; same ordered production helper; actual production wire_removed matches pending torch callback count for a torch2blocks away, remote modes and RNG"
+        },
+        {
+          "delta": "repeater directional branch before generic provider branch",
+          "evidence": "wireconnect11.txt1152 original isPowerProviderOrWire queries vs production wire_neighbor;8IDs,16metadata and sides-2..6"
+        }
+      ],
+      "old_sha256": "a1524a0bda00f28c5d699206eba34a430b0702cad97fc38d3d3c2fd4d03af640",
+      "new_sha256": "a67a71bbf18f3cec713bea23591687180e16da5f7802bac9a45638626d841382",
+      "completion_blockers": []
+    },
+    {
+      "class_name": "BlockLeaves",
+      "entire_1_1_delta_covered": false,
+      "verified_delta": "Original post-base oak-only apple nextInt200 on server, all shared drop callers through production drop function; inherited remote decay guard additionally restored after oracle exposed it",
+      "evidence": "leavesdrops11.txt16000 original dropBlockAsItemWithChance/updateTick vs actual production drop/decay calls; ordered actual sapling/apple entities, damage/count, exact XYZdouble bits,pickupdelay, resulting block and World RNG; metadata0..3,fortune0/3,chance0/1,server/remote,400seeds",
+      "old_sha256": "ae62bffc4d055f03897cc2e4b5d38d046b8e68e7fe1fae97b4187354b7ffbe7a",
+      "new_sha256": "c5259f1850d220fa90e30a29f98647fc3f345ba85702d0018502129f82167170",
+      "completion_blockers": [
+        "Parent3x3 foliage tint direct evidence and caller coverage must be merged for fullclass disposition"
+      ],
+      "limitations": [
+        "Normal harvest/explosion call shared drop function by source inspection; no additional original full explosion/player harvest trajectory generated in this bounded slice"
+      ]
+    }
+  ],
+  "verification": {
+    "tests": {
+      "path": "work/leaves-wire11-tests.log",
+      "sha256": "7576c9835e887a961b6284ba4b21e7ec6fdd6d84ad9961eaec5e5fba0225190a",
+      "result": "43passed,0failed,55filtered serial original_11"
+    },
+    "oracle": {
+      "path": "work/leaves-wire11-oracle.log",
+      "sha256": "9ded137323c8300fa3db0e8664a30faa9c3e38ccee4020db673cdb46d62a813d",
+      "result": "44 original fixture/table regenerations EXACT"
+    }
+  },
+  "fixtures": {
+    "leavesdrops11.txt": {
+      "rows": 16000,
+      "sha256": "f2394599ba309faa3de4712537f74745aaa81d939335524fb867f21680631217"
+    },
+    "wireconnect11.txt": {
+      "rows": 1152,
+      "sha256": "1a441101fbb2bc281e9f49f31e09552a8b4f87fccce777bfcc49f949a2773dc7"
+    },
+    "wirerise11.txt": {
+      "rows": 32,
+      "sha256": "3aaf29a4e492b9da44a3685725ed4d60f2732f193c7a201368db0b379258ac03"
+    },
+    "wireremove11.txt": {
+      "rows": 4,
+      "sha256": "108b96540f792b6aa63aade9d54479aef9cc746615bbf14365b9cce694c085e7"
+    }
+  },
+  "parent_action": "Commit focused runtime/probes/fixtures, merge owned tint evidence, register current committed hashes. No Git or client writes by this lane."
+}

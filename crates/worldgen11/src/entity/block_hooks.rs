@@ -94,11 +94,8 @@ impl World {
         if id == 0 {
             return false;
         }
-        if provides_power(id) && side!=-1 {
-            return true;
-        }
         if id != 93 && id != 94 {
-            return false;
+            return provides_power(id) && side != -1;
         }
         let meta = self.get_block_metadata(x, y, z);
         side==(meta&3) || side == [2, 3, 0, 1][(meta & 3) as usize]

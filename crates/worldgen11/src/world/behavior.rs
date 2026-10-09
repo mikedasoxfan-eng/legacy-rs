@@ -1030,6 +1030,10 @@ pub fn drop_block_with_chance_fortune(w:&mut World,id:u8,x:i32,y:i32,z:i32,meta:
             }
         }
     }
+    // BlockLeaves runs the apple draw after its inherited sapling drop routine.
+    if id == block::LEAVES && meta & 3 == 0 && w.rand.next_int(200) == 0 {
+        crate::entity::player::block_hooks::drop_stack(w,x,y,z,crate::entity::player::ItemStack::new(260,1,0));
+    }
     if matches!(id, 59 | block::PUMPKIN_STEM | block::MELON_STEM) {
         for _ in 0..if id==59{3+fortune}else{3} {
             if w.rand.next_int(15) <= meta {
@@ -1071,4 +1075,17 @@ pub fn quantity_dropped_fortune(w:&mut World,id:u8,fortune:i32)->i32 {
         103=>(quantity_dropped(w,id)+w.rand.next_int(fortune+1)).min(9),
         _=>quantity_dropped(w,id),
     }
+}
+
+#[cfg(test)]
+mod leaves_release11_tests {
+ use super::*;
+ #[test]
+ fn leaves_drops_and_decay_match_original_11_bytecode(){let mut w=crate::entity::verify181::world();let mut apples=0;
+  for line in include_str!("../fixtures/leavesdrops11.txt").lines(){let v:Vec<i64>=line.split_whitespace().map(|s|s.parse().unwrap()).collect();w.entities.clear();w.loaded_entity_list.clear();w.dropped_items.clear();w.multiplayer_world=v[5]!=0;w.editing_blocks=true;w.set_block_and_metadata(0,64,0,18,v[2] as i32|8);w.editing_blocks=false;w.rand.set_seed(v[1]);
+   if v[0]==0{drop_block_with_chance_fortune(&mut w,18,0,64,0,v[2] as i32,f32::from_bits(v[4] as u32),v[3] as i32);}else{super::super::ticks_blocks::leaves(&mut w,0,64,0);}
+   assert_eq!(w.get_block_id(0,64,0) as i64,v[6],"{line}");let mut actual=Vec::new();for id in &w.loaded_entity_list{let e=&w.entities[id];if let Some(stack)=e.dropped_item_stack(){apples+=usize::from(stack.id==260);let crate::entity::EntityKind::Item{pickup_delay,..}=&e.kind else{unreachable!()};actual.extend([stack.id as i64,stack.count as i64,stack.damage as i64,e.pos.x.to_bits() as i64,e.pos.y.to_bits() as i64,e.pos.z.to_bits() as i64,*pickup_delay as i64]);}}
+   assert_eq!(actual.len()/7,v[7] as usize,"{line}");assert_eq!(actual,&v[8..v.len()-1],"Ordered actual entity drops: {line}");assert_eq!(w.rand.state(),v[v.len()-1],"{line}");
+  }assert!(apples>0,"Original vectors must actually exercise the new apple drop");
+ }
 }

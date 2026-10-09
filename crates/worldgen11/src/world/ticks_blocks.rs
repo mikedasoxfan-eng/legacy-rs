@@ -33,6 +33,7 @@ pub fn grass(w: &mut World, x: i32, y: i32, z: i32, rs: RandSel) {
 /// `BlockLeaves.updateTick`: decay leaves flagged by a removed log once no log is within
 /// 4 steps through leaves.
 pub fn leaves(w: &mut World, x: i32, y: i32, z: i32) {
+    if w.multiplayer_world { return; }
     let meta = w.get_block_metadata(x, y, z);
     if meta & 8 == 0 || meta & 4 != 0 {
         return;

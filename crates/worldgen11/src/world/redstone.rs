@@ -20,6 +20,11 @@ fn chunk_position_hash(x: i32, y: i32, z: i32) -> i32 {
 
 const WIRE: u8 = 55;
 
+/// Original release1.1 removal notification order, before current propagation.
+fn wire_removal_notifications11(x:i32,y:i32,z:i32)->[(i32,i32,i32);6] {
+    [(x,y+1,z),(x,y-1,z),(x+1,y,z),(x-1,y,z),(x,y,z+1),(x,y,z-1)]
+}
+
 impl World {
     // ------------------------------------------------------------------ wire
 
@@ -105,7 +110,7 @@ impl World {
                     self.wire_calculate(nx, ny, nz, x, y, z);
                 }
             }
-            if old == 0 || current == 0 {
+            if old < current || current == 0 {
                 for (px, py, pz) in [
                     (x, y, z),
                     (x - 1, y, z),
@@ -158,8 +163,9 @@ impl World {
     /// `BlockRedstoneWire.onBlockRemoval`
     pub(crate) fn wire_removed(&mut self, x: i32, y: i32, z: i32) {
         if self.multiplayer_world {return;}
-        self.notify_blocks_of_neighbor_change(x, y + 1, z, WIRE);
-        self.notify_blocks_of_neighbor_change(x, y - 1, z, WIRE);
+        for (px,py,pz) in wire_removal_notifications11(x,y,z) {
+            self.notify_blocks_of_neighbor_change(px,py,pz,WIRE);
+        }
         self.wire_update(x, y, z);
         self.notify_wire_around(x, y, z);
     }
@@ -341,4 +347,17 @@ fn neighbour(x: i32, z: i32, k: i32) -> (i32, i32) {
         2 => (x, z - 1),
         _ => (x, z + 1),
     }
+}
+
+#[cfg(test)]
+mod release11_tests {
+ use super::*;
+ fn put(w:&mut World,x:i32,id:u8,meta:i32){let c=w.chunks.get_mut(&(0,0)).unwrap();c.blocks[super::super::chunk::idx(x,64,0)]=id;c.data.set(x,64,0,meta);}
+ fn values(line:&str)->Vec<i64>{line.split_whitespace().map(|s|s.parse().unwrap()).collect()}
+ #[test]
+ fn wire_connections_match_original_11_bytecode(){let mut w=crate::entity::verify181::world();w.editing_blocks=true;for line in include_str!("../fixtures/wireconnect11.txt").lines(){let v=values(line);put(&mut w,0,v[0] as u8,v[1] as i32);assert_eq!(w.wire_neighbor(0,64,0,v[2] as i32) as i64,v[3],"{line}");}}
+ #[test]
+ fn wire_rising_updates_match_original_11_bytecode(){let mut w=crate::entity::verify181::world();for line in include_str!("../fixtures/wirerise11.txt").lines(){let v=values(line);w.editing_blocks=true;put(&mut w,0,55,v[0] as i32);put(&mut w,1,if v[1]!=0 {69}else{0},8);w.editing_blocks=false;w.wire_updates.clear();w.rand.set_seed(42);w.wire_calculate(0,64,0,0,64,0);assert_eq!(w.get_block_metadata(0,64,0) as i64,v[2],"{line}");let positions:Vec<i64>=w.wire_updates.iter().flat_map(|(x,y,z)|[x as i64,y as i64,z as i64]).collect();assert_eq!(positions.len()/3,v[3] as usize,"{line}");assert_eq!(positions,&v[4..v.len()-1],"Original HashSet order: {line}");assert_eq!(w.rand.state(),v[v.len()-1],"{line}");}}
+ #[test]
+ fn wire_removal_notifications_match_original_11_bytecode(){let mut w=crate::entity::verify181::world();for line in include_str!("../fixtures/wireremove11.txt").lines(){let v=values(line);w.editing_blocks=true;w.set_block_and_metadata(2,64,0,if v[1]!=0 {76}else{0},5);w.editing_blocks=false;w.multiplayer_world=v[0]!=0;w.pending_ticks.clear();w.rand.set_seed(42);w.wire_removed(0,64,0);assert_eq!(w.pending_ticks.len() as i64,v[3],"Actual neighboring torch callback: {line}");let transcript:Vec<i64>=if w.multiplayer_world{Vec::new()}else{wire_removal_notifications11(0,64,0).into_iter().flat_map(|(x,y,z)|[x as i64,y as i64,z as i64,55]).collect()};assert_eq!(transcript.len()/4,v[2] as usize,"{line}");assert_eq!(transcript,&v[4..v.len()-1],"Ordered calls used by production wire_removed: {line}");assert_eq!(w.rand.state(),v[v.len()-1],"{line}");}}
 }
