@@ -47,3 +47,4 @@ __pycache__/
 
 /tools/oracle11/probes/build/
 /tools/oracle11/probes/fontdraw/build/
+/crates/client11/target/
