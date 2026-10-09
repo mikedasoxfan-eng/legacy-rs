@@ -828,3 +828,11 @@ pub fn check(path: &str) -> bool {
     );
     d.bad == 0
 }
+#[cfg(test)]
+mod release11_workflow_tests {
+ #[test]
+ #[ignore = "requires original 1.1 full held workflow fixture"]
+ fn held_workflows_match_original_11() {
+  assert!(super::check(&std::env::var("HELD_WORKFLOW11_FIXTURE").unwrap()));
+ }
+}
