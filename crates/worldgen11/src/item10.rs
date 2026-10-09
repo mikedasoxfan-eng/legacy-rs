@@ -148,23 +148,17 @@ impl PotionItem {
         if damage == 0 {
             return translate("item.emptyPotion.name").trim_matches(|c: char| c <= '\u{20}').into();
         }
-        let base = if damage & 16384 != 0 {
-            format!(
-                "{} {}",
-                translate("potion.prefix.grenade").trim_matches(|c: char| c <= '\u{20}'),
-                base_name
-            )
-        } else {
-            base_name.into()
-        };
         if let Some(effects) = self.effects_snapshot(damage).filter(|e| !e.is_empty()) {
+            let prefix = if damage & 16384 != 0 {
+                format!("{} ", translate("potion.prefix.grenade").trim_matches(|c: char| c <= '\u{20}'))
+            } else { String::new() };
             format!(
-                "{} {}",
-                base,
+                "{}{}",
+                prefix,
                 translate(&format!("{}.postfix", potion_name(effects[0].id))).trim_matches(|c: char| c <= '\u{20}')
             )
         } else {
-            format!("{} {}", translate(&ph::prefix(damage)).trim_matches(|c: char| c <= '\u{20}'), base)
+            format!("{} {}", translate(&ph::prefix(damage)).trim_matches(|c: char| c <= '\u{20}'), base_name.trim_matches(|c: char| c <= '\u{20}'))
         }
     }
     pub fn tooltip(&mut self, damage: i32, translate: impl Fn(&str) -> String) -> Vec<String> {
