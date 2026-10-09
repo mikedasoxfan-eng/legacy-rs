@@ -1,0 +1,1226 @@
+{
+  "schema": 1,
+  "original_jar_sha256": "44bb6ace88fdff460d6c428c4becee8cad52f2622e1f800dab7a70f8a716f75b",
+  "source_file_count": 961,
+  "guard_declarations": [
+    {
+      "class_name": "EntityLiving",
+      "line": 905,
+      "body": "return false;",
+      "source_sha256": "2bab565edf3e65bfd3dbeb87e95bef2c915140f0088d6b0909038b2417739030"
+    },
+    {
+      "class_name": "EntityPigZombie",
+      "line": 18,
+      "body": "return false;",
+      "source_sha256": "5c42ee6c73b33f9225b06c244da481906611ff621a2e881579b0c72637041c5c"
+    },
+    {
+      "class_name": "EntityZombie",
+      "line": 24,
+      "body": "return false;",
+      "source_sha256": "73917163284545c337d2d65e589c00b07d69ca15161bfe5a12c7a7bd6830cdc6"
+    }
+  ],
+  "all_jar_guard_declarations": [
+    {
+      "method": "func_46006_aR",
+      "descriptor": "()Z",
+      "code_hex": "03ac",
+      "class_name": "EntityLiving"
+    },
+    {
+      "method": "func_46006_aR",
+      "descriptor": "()Z",
+      "code_hex": "03ac",
+      "class_name": "EntityPigZombie"
+    },
+    {
+      "method": "func_46006_aR",
+      "descriptor": "()Z",
+      "code_hex": "03ac",
+      "class_name": "EntityZombie"
+    }
+  ],
+  "constant_pool_method_reference_scan": "Every class in original jar; conservative references may include unused CP entries, but no external callers occur",
+  "original_method_references": [
+    {
+      "caller_class": "EntityAIAttackOnCollide",
+      "target_class": "EntityAIBase",
+      "target_method": "<init>",
+      "descriptor": "()V"
+    },
+    {
+      "caller_class": "EntityAIAttackOnCollide",
+      "target_class": "EntityAIAttackOnCollide",
+      "target_method": "func_46079_a",
+      "descriptor": "(I)V"
+    },
+    {
+      "caller_class": "EntityAIAttackOnCollide",
+      "target_class": "EntityAIAttackOnCollide",
+      "target_method": "func_46090_h",
+      "descriptor": "()Lnet/minecraft/src/EntityLiving;"
+    },
+    {
+      "caller_class": "EntityAIAttackOnCollide",
+      "target_class": "EntityMob",
+      "target_method": "func_46012_aJ",
+      "descriptor": "()Lnet/minecraft/src/INavigate;"
+    },
+    {
+      "caller_class": "EntityAIAttackOnCollide",
+      "target_class": "EntityMob",
+      "target_method": "func_46013_aQ",
+      "descriptor": "()F"
+    },
+    {
+      "caller_class": "EntityAIAttackOnCollide",
+      "target_class": "INavigate",
+      "target_method": "func_46070_a",
+      "descriptor": "(Lnet/minecraft/src/EntityLiving;F)V"
+    },
+    {
+      "caller_class": "EntityAIAttackOnCollide",
+      "target_class": "EntityMob",
+      "target_method": "func_46008_aG",
+      "descriptor": "()Lnet/minecraft/src/EntityLookHelper;"
+    },
+    {
+      "caller_class": "EntityAIAttackOnCollide",
+      "target_class": "EntityLookHelper",
+      "target_method": "func_46141_a",
+      "descriptor": "(Lnet/minecraft/src/Entity;FF)V"
+    },
+    {
+      "caller_class": "EntityAIAttackOnCollide",
+      "target_class": "EntityMob",
+      "target_method": "func_46007_aL",
+      "descriptor": "()Lnet/minecraft/src/EntityLiving;"
+    },
+    {
+      "caller_class": "EntityAIAttackOnCollide",
+      "target_class": "EntityAIBase",
+      "target_method": "func_46083_c",
+      "descriptor": "()I"
+    },
+    {
+      "caller_class": "EntityAIAttackOnCollide",
+      "target_class": "EntityAIBase",
+      "target_method": "func_46079_a",
+      "descriptor": "(I)V"
+    },
+    {
+      "caller_class": "EntityAIAttackOnCollide",
+      "target_class": "EntityAIBase",
+      "target_method": "func_46077_d",
+      "descriptor": "()V"
+    },
+    {
+      "caller_class": "EntityAIAttackOnCollide",
+      "target_class": "EntityAIBase",
+      "target_method": "func_46080_e",
+      "descriptor": "()V"
+    },
+    {
+      "caller_class": "EntityAIAttackOnCollide",
+      "target_class": "EntityAIBase",
+      "target_method": "func_46078_f",
+      "descriptor": "()Z"
+    },
+    {
+      "caller_class": "EntityAIAttackOnCollide",
+      "target_class": "EntityAIBase",
+      "target_method": "func_46084_g",
+      "descriptor": "()Z"
+    },
+    {
+      "caller_class": "EntityAIBase",
+      "target_class": "EntityAIBase",
+      "target_method": "func_46082_a",
+      "descriptor": "()Z"
+    },
+    {
+      "caller_class": "EntityAILookIdle",
+      "target_class": "EntityAIBase",
+      "target_method": "<init>",
+      "descriptor": "()V"
+    },
+    {
+      "caller_class": "EntityAILookIdle",
+      "target_class": "EntityAILookIdle",
+      "target_method": "func_46079_a",
+      "descriptor": "(I)V"
+    },
+    {
+      "caller_class": "EntityAILookIdle",
+      "target_class": "EntityLiving",
+      "target_method": "func_46004_aK",
+      "descriptor": "()Ljava/util/Random;"
+    },
+    {
+      "caller_class": "EntityAILookIdle",
+      "target_class": "EntityLiving",
+      "target_method": "func_46008_aG",
+      "descriptor": "()Lnet/minecraft/src/EntityLookHelper;"
+    },
+    {
+      "caller_class": "EntityAILookIdle",
+      "target_class": "EntityLookHelper",
+      "target_method": "func_46143_a",
+      "descriptor": "(DDDFF)V"
+    },
+    {
+      "caller_class": "EntityAILookIdle",
+      "target_class": "EntityAIBase",
+      "target_method": "func_46083_c",
+      "descriptor": "()I"
+    },
+    {
+      "caller_class": "EntityAILookIdle",
+      "target_class": "EntityAIBase",
+      "target_method": "func_46079_a",
+      "descriptor": "(I)V"
+    },
+    {
+      "caller_class": "EntityAILookIdle",
+      "target_class": "EntityAIBase",
+      "target_method": "func_46077_d",
+      "descriptor": "()V"
+    },
+    {
+      "caller_class": "EntityAILookIdle",
+      "target_class": "EntityAIBase",
+      "target_method": "func_46078_f",
+      "descriptor": "()Z"
+    },
+    {
+      "caller_class": "EntityAISwimming",
+      "target_class": "EntityAIBase",
+      "target_method": "<init>",
+      "descriptor": "()V"
+    },
+    {
+      "caller_class": "EntityAISwimming",
+      "target_class": "EntityAISwimming",
+      "target_method": "func_46079_a",
+      "descriptor": "(I)V"
+    },
+    {
+      "caller_class": "EntityAISwimming",
+      "target_class": "EntityLiving",
+      "target_method": "func_46004_aK",
+      "descriptor": "()Ljava/util/Random;"
+    },
+    {
+      "caller_class": "EntityAISwimming",
+      "target_class": "EntityLiving",
+      "target_method": "func_46005_aI",
+      "descriptor": "()Lnet/minecraft/src/EntityJumpHelper;"
+    },
+    {
+      "caller_class": "EntityAISwimming",
+      "target_class": "EntityJumpHelper",
+      "target_method": "func_46129_a",
+      "descriptor": "()V"
+    },
+    {
+      "caller_class": "EntityAISwimming",
+      "target_class": "EntityAIBase",
+      "target_method": "func_46083_c",
+      "descriptor": "()I"
+    },
+    {
+      "caller_class": "EntityAISwimming",
+      "target_class": "EntityAIBase",
+      "target_method": "func_46079_a",
+      "descriptor": "(I)V"
+    },
+    {
+      "caller_class": "EntityAISwimming",
+      "target_class": "EntityAIBase",
+      "target_method": "func_46081_b",
+      "descriptor": "()V"
+    },
+    {
+      "caller_class": "EntityAISwimming",
+      "target_class": "EntityAIBase",
+      "target_method": "func_46077_d",
+      "descriptor": "()V"
+    },
+    {
+      "caller_class": "EntityAISwimming",
+      "target_class": "EntityAIBase",
+      "target_method": "func_46078_f",
+      "descriptor": "()Z"
+    },
+    {
+      "caller_class": "EntityAISwimming",
+      "target_class": "EntityAIBase",
+      "target_method": "func_46084_g",
+      "descriptor": "()Z"
+    },
+    {
+      "caller_class": "EntityAITasks",
+      "target_class": "EntityAITaskEntry",
+      "target_method": "<init>",
+      "descriptor": "(Lnet/minecraft/src/EntityAITasks;ILnet/minecraft/src/EntityAIBase;)V"
+    },
+    {
+      "caller_class": "EntityAITasks",
+      "target_class": "EntityAIBase",
+      "target_method": "func_46084_g",
+      "descriptor": "()Z"
+    },
+    {
+      "caller_class": "EntityAITasks",
+      "target_class": "EntityAITasks",
+      "target_method": "func_46116_a",
+      "descriptor": "(Lnet/minecraft/src/EntityAITaskEntry;)Z"
+    },
+    {
+      "caller_class": "EntityAITasks",
+      "target_class": "EntityAIBase",
+      "target_method": "func_46077_d",
+      "descriptor": "()V"
+    },
+    {
+      "caller_class": "EntityAITasks",
+      "target_class": "EntityAIBase",
+      "target_method": "func_46082_a",
+      "descriptor": "()Z"
+    },
+    {
+      "caller_class": "EntityAITasks",
+      "target_class": "EntityAIBase",
+      "target_method": "func_46080_e",
+      "descriptor": "()V"
+    },
+    {
+      "caller_class": "EntityAITasks",
+      "target_class": "EntityAIBase",
+      "target_method": "func_46081_b",
+      "descriptor": "()V"
+    },
+    {
+      "caller_class": "EntityAITasks",
+      "target_class": "EntityAITasks",
+      "target_method": "func_46117_a",
+      "descriptor": "(Lnet/minecraft/src/EntityAITaskEntry;Lnet/minecraft/src/EntityAITaskEntry;)Z"
+    },
+    {
+      "caller_class": "EntityAITasks",
+      "target_class": "EntityAIBase",
+      "target_method": "func_46078_f",
+      "descriptor": "()Z"
+    },
+    {
+      "caller_class": "EntityAITasks",
+      "target_class": "EntityAIBase",
+      "target_method": "func_46083_c",
+      "descriptor": "()I"
+    },
+    {
+      "caller_class": "EntityAIWander",
+      "target_class": "EntityAIBase",
+      "target_method": "<init>",
+      "descriptor": "()V"
+    },
+    {
+      "caller_class": "EntityAIWander",
+      "target_class": "EntityAIWander",
+      "target_method": "func_46079_a",
+      "descriptor": "(I)V"
+    },
+    {
+      "caller_class": "EntityAIWander",
+      "target_class": "EntityCreature",
+      "target_method": "func_46011_aM",
+      "descriptor": "()I"
+    },
+    {
+      "caller_class": "EntityAIWander",
+      "target_class": "EntityCreature",
+      "target_method": "func_46004_aK",
+      "descriptor": "()Ljava/util/Random;"
+    },
+    {
+      "caller_class": "EntityAIWander",
+      "target_class": "EntityAIWander",
+      "target_method": "func_46096_h",
+      "descriptor": "()Lnet/minecraft/src/Vec3D;"
+    },
+    {
+      "caller_class": "EntityAIWander",
+      "target_class": "EntityCreature",
+      "target_method": "func_46012_aJ",
+      "descriptor": "()Lnet/minecraft/src/INavigate;"
+    },
+    {
+      "caller_class": "EntityAIWander",
+      "target_class": "INavigate",
+      "target_method": "func_46072_b",
+      "descriptor": "()Z"
+    },
+    {
+      "caller_class": "EntityAIWander",
+      "target_class": "EntityCreature",
+      "target_method": "func_46013_aQ",
+      "descriptor": "()F"
+    },
+    {
+      "caller_class": "EntityAIWander",
+      "target_class": "INavigate",
+      "target_method": "func_46071_a",
+      "descriptor": "(DDDF)V"
+    },
+    {
+      "caller_class": "EntityAIWander",
+      "target_class": "EntityAIBase",
+      "target_method": "func_46083_c",
+      "descriptor": "()I"
+    },
+    {
+      "caller_class": "EntityAIWander",
+      "target_class": "EntityAIBase",
+      "target_method": "func_46079_a",
+      "descriptor": "(I)V"
+    },
+    {
+      "caller_class": "EntityAIWander",
+      "target_class": "EntityAIBase",
+      "target_method": "func_46081_b",
+      "descriptor": "()V"
+    },
+    {
+      "caller_class": "EntityAIWander",
+      "target_class": "EntityAIBase",
+      "target_method": "func_46077_d",
+      "descriptor": "()V"
+    },
+    {
+      "caller_class": "EntityAIWander",
+      "target_class": "EntityAIBase",
+      "target_method": "func_46078_f",
+      "descriptor": "()Z"
+    },
+    {
+      "caller_class": "EntityAIWatchClosest",
+      "target_class": "EntityAIBase",
+      "target_method": "<init>",
+      "descriptor": "()V"
+    },
+    {
+      "caller_class": "EntityAIWatchClosest",
+      "target_class": "EntityAIWatchClosest",
+      "target_method": "func_46079_a",
+      "descriptor": "(I)V"
+    },
+    {
+      "caller_class": "EntityAIWatchClosest",
+      "target_class": "EntityLiving",
+      "target_method": "func_46004_aK",
+      "descriptor": "()Ljava/util/Random;"
+    },
+    {
+      "caller_class": "EntityAIWatchClosest",
+      "target_class": "EntityLiving",
+      "target_method": "func_46008_aG",
+      "descriptor": "()Lnet/minecraft/src/EntityLookHelper;"
+    },
+    {
+      "caller_class": "EntityAIWatchClosest",
+      "target_class": "EntityLookHelper",
+      "target_method": "func_46143_a",
+      "descriptor": "(DDDFF)V"
+    },
+    {
+      "caller_class": "EntityAIWatchClosest",
+      "target_class": "EntityAIBase",
+      "target_method": "func_46083_c",
+      "descriptor": "()I"
+    },
+    {
+      "caller_class": "EntityAIWatchClosest",
+      "target_class": "EntityAIBase",
+      "target_method": "func_46079_a",
+      "descriptor": "(I)V"
+    },
+    {
+      "caller_class": "EntityAIWatchClosest",
+      "target_class": "EntityAIBase",
+      "target_method": "func_46078_f",
+      "descriptor": "()Z"
+    },
+    {
+      "caller_class": "EntityJumpHelper",
+      "target_class": "EntityLiving",
+      "target_method": "func_46003_g",
+      "descriptor": "(Z)V"
+    },
+    {
+      "caller_class": "EntityLiving",
+      "target_class": "EntityAITasks",
+      "target_method": "<init>",
+      "descriptor": "()V"
+    },
+    {
+      "caller_class": "EntityLiving",
+      "target_class": "EntityLookHelper",
+      "target_method": "<init>",
+      "descriptor": "(Lnet/minecraft/src/EntityLiving;)V"
+    },
+    {
+      "caller_class": "EntityLiving",
+      "target_class": "EntityMoveHelper",
+      "target_method": "<init>",
+      "descriptor": "(Lnet/minecraft/src/EntityLiving;F)V"
+    },
+    {
+      "caller_class": "EntityLiving",
+      "target_class": "EntityJumpHelper",
+      "target_method": "<init>",
+      "descriptor": "(Lnet/minecraft/src/EntityLiving;)V"
+    },
+    {
+      "caller_class": "EntityLiving",
+      "target_class": "PathNavigate",
+      "target_method": "<init>",
+      "descriptor": "(Lnet/minecraft/src/EntityLiving;Lnet/minecraft/src/World;)V"
+    },
+    {
+      "caller_class": "EntityLiving",
+      "target_class": "EntityLiving",
+      "target_method": "func_46006_aR",
+      "descriptor": "()Z"
+    },
+    {
+      "caller_class": "EntityLiving",
+      "target_class": "EntityLiving",
+      "target_method": "func_46014_aS",
+      "descriptor": "()V"
+    },
+    {
+      "caller_class": "EntityLiving",
+      "target_class": "EntityAITasks",
+      "target_method": "func_46115_a",
+      "descriptor": "()V"
+    },
+    {
+      "caller_class": "EntityLiving",
+      "target_class": "INavigate",
+      "target_method": "func_46069_a",
+      "descriptor": "()V"
+    },
+    {
+      "caller_class": "EntityLiving",
+      "target_class": "EntityMoveHelper",
+      "target_method": "func_46034_a",
+      "descriptor": "()V"
+    },
+    {
+      "caller_class": "EntityLiving",
+      "target_class": "EntityLookHelper",
+      "target_method": "func_46142_a",
+      "descriptor": "()V"
+    },
+    {
+      "caller_class": "EntityLiving",
+      "target_class": "EntityJumpHelper",
+      "target_method": "func_46130_b",
+      "descriptor": "()V"
+    },
+    {
+      "caller_class": "EntityLookHelper",
+      "target_class": "EntityLookHelper",
+      "target_method": "func_46144_a",
+      "descriptor": "(FFF)F"
+    },
+    {
+      "caller_class": "EntityMoveHelper",
+      "target_class": "EntityLiving",
+      "target_method": "func_46010_f",
+      "descriptor": "(F)V"
+    },
+    {
+      "caller_class": "EntityMoveHelper",
+      "target_class": "EntityLiving",
+      "target_method": "func_46003_g",
+      "descriptor": "(Z)V"
+    },
+    {
+      "caller_class": "EntityZombie",
+      "target_class": "EntityAISwimming",
+      "target_method": "<init>",
+      "descriptor": "(Lnet/minecraft/src/EntityLiving;)V"
+    },
+    {
+      "caller_class": "EntityZombie",
+      "target_class": "EntityAITasks",
+      "target_method": "func_46118_a",
+      "descriptor": "(ILnet/minecraft/src/EntityAIBase;)V"
+    },
+    {
+      "caller_class": "EntityZombie",
+      "target_class": "EntityAIAttackOnCollide",
+      "target_method": "<init>",
+      "descriptor": "(Lnet/minecraft/src/EntityMob;Lnet/minecraft/src/World;F)V"
+    },
+    {
+      "caller_class": "EntityZombie",
+      "target_class": "EntityAIWander",
+      "target_method": "<init>",
+      "descriptor": "(Lnet/minecraft/src/EntityCreature;)V"
+    },
+    {
+      "caller_class": "EntityZombie",
+      "target_class": "EntityAIWatchClosest",
+      "target_method": "<init>",
+      "descriptor": "(Lnet/minecraft/src/EntityLiving;Lnet/minecraft/src/World;F)V"
+    },
+    {
+      "caller_class": "EntityZombie",
+      "target_class": "EntityAILookIdle",
+      "target_method": "<init>",
+      "descriptor": "(Lnet/minecraft/src/EntityLiving;)V"
+    },
+    {
+      "caller_class": "PathNavigate",
+      "target_class": "EntityLiving",
+      "target_method": "func_46009_aH",
+      "descriptor": "()Lnet/minecraft/src/EntityMoveHelper;"
+    },
+    {
+      "caller_class": "PathNavigate",
+      "target_class": "EntityMoveHelper",
+      "target_method": "func_46033_a",
+      "descriptor": "(F)V"
+    },
+    {
+      "caller_class": "PathNavigate",
+      "target_class": "EntityMoveHelper",
+      "target_method": "func_46035_a",
+      "descriptor": "(DDD)V"
+    }
+  ],
+  "external_callers": [],
+  "source_references": {
+    "EntityAIAttackOnCollide": [
+      {
+        "class_name": "EntityAIAttackOnCollide",
+        "line": 3,
+        "source": "public class EntityAIAttackOnCollide extends EntityAIBase {"
+      },
+      {
+        "class_name": "EntityAIAttackOnCollide",
+        "line": 10,
+        "source": "public EntityAIAttackOnCollide(EntityMob var1, World var2, float var3) {"
+      },
+      {
+        "class_name": "EntityZombie",
+        "line": 10,
+        "source": "this.field_46019_bU.func_46118_a(2, new EntityAIAttackOnCollide(this, var1, 16.0F));"
+      }
+    ],
+    "EntityAIBase": [
+      {
+        "class_name": "EntityAIAttackOnCollide",
+        "line": 3,
+        "source": "public class EntityAIAttackOnCollide extends EntityAIBase {"
+      },
+      {
+        "class_name": "EntityAIBase",
+        "line": 3,
+        "source": "abstract class EntityAIBase {"
+      },
+      {
+        "class_name": "EntityAILookIdle",
+        "line": 3,
+        "source": "public class EntityAILookIdle extends EntityAIBase {"
+      },
+      {
+        "class_name": "EntityAISwimming",
+        "line": 3,
+        "source": "public class EntityAISwimming extends EntityAIBase {"
+      },
+      {
+        "class_name": "EntityAITaskEntry",
+        "line": 4,
+        "source": "public EntityAIBase field_46114_a;"
+      },
+      {
+        "class_name": "EntityAITaskEntry",
+        "line": 8,
+        "source": "public EntityAITaskEntry(EntityAITasks var1, int var2, EntityAIBase var3) {"
+      },
+      {
+        "class_name": "EntityAITasks",
+        "line": 10,
+        "source": "public void func_46118_a(int var1, EntityAIBase var2) {"
+      },
+      {
+        "class_name": "EntityAIWander",
+        "line": 5,
+        "source": "public class EntityAIWander extends EntityAIBase {"
+      },
+      {
+        "class_name": "EntityAIWatchClosest",
+        "line": 3,
+        "source": "public class EntityAIWatchClosest extends EntityAIBase {"
+      }
+    ],
+    "EntityAILookIdle": [
+      {
+        "class_name": "EntityAILookIdle",
+        "line": 3,
+        "source": "public class EntityAILookIdle extends EntityAIBase {"
+      },
+      {
+        "class_name": "EntityAILookIdle",
+        "line": 9,
+        "source": "public EntityAILookIdle(EntityLiving var1) {"
+      },
+      {
+        "class_name": "EntityZombie",
+        "line": 13,
+        "source": "this.field_46019_bU.func_46118_a(4, new EntityAILookIdle(this));"
+      }
+    ],
+    "func_46004_aK": [
+      {
+        "class_name": "EntityAILookIdle",
+        "line": 15,
+        "source": "return this.field_46089_a.func_46004_aK().nextFloat() < 0.02F;"
+      },
+      {
+        "class_name": "EntityAILookIdle",
+        "line": 23,
+        "source": "double var1 = Math.PI * 2.0D * this.field_46089_a.func_46004_aK().nextDouble();"
+      },
+      {
+        "class_name": "EntityAILookIdle",
+        "line": 26,
+        "source": "this.field_46086_d = 20 + this.field_46089_a.func_46004_aK().nextInt(20);"
+      },
+      {
+        "class_name": "EntityAISwimming",
+        "line": 12,
+        "source": "return this.field_46106_a.func_46004_aK().nextFloat() < 0.8F && (this.field_46106_a.isInWater() || this.field_46106_a.handleLavaMovement());"
+      },
+      {
+        "class_name": "EntityAIWander",
+        "line": 19,
+        "source": "} else if(this.field_46100_a.func_46004_aK().nextInt(120) != 0) {"
+      },
+      {
+        "class_name": "EntityAIWander",
+        "line": 43,
+        "source": "Random var1 = this.field_46100_a.func_46004_aK();"
+      },
+      {
+        "class_name": "EntityAIWatchClosest",
+        "line": 18,
+        "source": "if(this.field_46105_a.func_46004_aK().nextFloat() >= 0.02F) {"
+      },
+      {
+        "class_name": "EntityAIWatchClosest",
+        "line": 31,
+        "source": "this.field_46102_e = 40 + this.field_46105_a.func_46004_aK().nextInt(40);"
+      },
+      {
+        "class_name": "EntityLiving",
+        "line": 114,
+        "source": "public Random func_46004_aK() {"
+      }
+    ],
+    "EntityAISwimming": [
+      {
+        "class_name": "EntityAISwimming",
+        "line": 3,
+        "source": "public class EntityAISwimming extends EntityAIBase {"
+      },
+      {
+        "class_name": "EntityAISwimming",
+        "line": 6,
+        "source": "public EntityAISwimming(EntityLiving var1) {"
+      },
+      {
+        "class_name": "EntityZombie",
+        "line": 9,
+        "source": "this.field_46019_bU.func_46118_a(1, new EntityAISwimming(this));"
+      }
+    ],
+    "EntityAITaskEntry": [
+      {
+        "class_name": "EntityAITaskEntry",
+        "line": 3,
+        "source": "class EntityAITaskEntry {"
+      },
+      {
+        "class_name": "EntityAITaskEntry",
+        "line": 8,
+        "source": "public EntityAITaskEntry(EntityAITasks var1, int var2, EntityAIBase var3) {"
+      },
+      {
+        "class_name": "EntityAITasks",
+        "line": 11,
+        "source": "this.field_46120_a.add(new EntityAITaskEntry(this, var1, var2));"
+      },
+      {
+        "class_name": "EntityAITasks",
+        "line": 19,
+        "source": "EntityAITaskEntry var3;"
+      },
+      {
+        "class_name": "EntityAITasks",
+        "line": 23,
+        "source": "var3 = (EntityAITaskEntry)var2.next();"
+      },
+      {
+        "class_name": "EntityAITasks",
+        "line": 38,
+        "source": "var3 = (EntityAITaskEntry)var2.next();"
+      },
+      {
+        "class_name": "EntityAITasks",
+        "line": 45,
+        "source": "var3 = (EntityAITaskEntry)var2.next();"
+      },
+      {
+        "class_name": "EntityAITasks",
+        "line": 57,
+        "source": "private boolean func_46116_a(EntityAITaskEntry var1) {"
+      },
+      {
+        "class_name": "EntityAITasks",
+        "line": 61,
+        "source": "EntityAITaskEntry var3 = (EntityAITaskEntry)var2.next();"
+      },
+      {
+        "class_name": "EntityAITasks",
+        "line": 76,
+        "source": "private boolean func_46117_a(EntityAITaskEntry var1, EntityAITaskEntry var2) {"
+      }
+    ],
+    "EntityAITasks": [
+      {
+        "class_name": "EntityAITaskEntry",
+        "line": 6,
+        "source": "final EntityAITasks field_46113_c;"
+      },
+      {
+        "class_name": "EntityAITaskEntry",
+        "line": 8,
+        "source": "public EntityAITaskEntry(EntityAITasks var1, int var2, EntityAIBase var3) {"
+      },
+      {
+        "class_name": "EntityAITasks",
+        "line": 6,
+        "source": "public class EntityAITasks {"
+      },
+      {
+        "class_name": "EntityLiving",
+        "line": 63,
+        "source": "protected EntityAITasks field_46019_bU = new EntityAITasks();"
+      }
+    ],
+    "EntityAIWander": [
+      {
+        "class_name": "EntityAIWander",
+        "line": 5,
+        "source": "public class EntityAIWander extends EntityAIBase {"
+      },
+      {
+        "class_name": "EntityAIWander",
+        "line": 11,
+        "source": "public EntityAIWander(EntityCreature var1) {"
+      },
+      {
+        "class_name": "EntityZombie",
+        "line": 11,
+        "source": "this.field_46019_bU.func_46118_a(3, new EntityAIWander(this));"
+      }
+    ],
+    "func_46011_aM": [
+      {
+        "class_name": "EntityAIWander",
+        "line": 17,
+        "source": "if(this.field_46100_a.func_46011_aM() >= 100) {"
+      },
+      {
+        "class_name": "EntityLiving",
+        "line": 122,
+        "source": "public int func_46011_aM() {"
+      }
+    ],
+    "EntityAIWatchClosest": [
+      {
+        "class_name": "EntityAIWatchClosest",
+        "line": 3,
+        "source": "public class EntityAIWatchClosest extends EntityAIBase {"
+      },
+      {
+        "class_name": "EntityAIWatchClosest",
+        "line": 10,
+        "source": "public EntityAIWatchClosest(EntityLiving var1, World var2, float var3) {"
+      },
+      {
+        "class_name": "EntityZombie",
+        "line": 12,
+        "source": "this.field_46019_bU.func_46118_a(4, new EntityAIWatchClosest(this, var1, 8.0F));"
+      }
+    ],
+    "EntityJumpHelper": [
+      {
+        "class_name": "EntityJumpHelper",
+        "line": 3,
+        "source": "public class EntityJumpHelper {"
+      },
+      {
+        "class_name": "EntityJumpHelper",
+        "line": 7,
+        "source": "public EntityJumpHelper(EntityLiving var1) {"
+      },
+      {
+        "class_name": "EntityLiving",
+        "line": 61,
+        "source": "private EntityJumpHelper field_46021_am;"
+      },
+      {
+        "class_name": "EntityLiving",
+        "line": 88,
+        "source": "this.field_46021_am = new EntityJumpHelper(this);"
+      },
+      {
+        "class_name": "EntityLiving",
+        "line": 106,
+        "source": "public EntityJumpHelper func_46005_aI() {"
+      }
+    ],
+    "EntityLookHelper": [
+      {
+        "class_name": "EntityLiving",
+        "line": 59,
+        "source": "private EntityLookHelper field_46017_d;"
+      },
+      {
+        "class_name": "EntityLiving",
+        "line": 86,
+        "source": "this.field_46017_d = new EntityLookHelper(this);"
+      },
+      {
+        "class_name": "EntityLiving",
+        "line": 98,
+        "source": "public EntityLookHelper func_46008_aG() {"
+      },
+      {
+        "class_name": "EntityLookHelper",
+        "line": 3,
+        "source": "public class EntityLookHelper {"
+      },
+      {
+        "class_name": "EntityLookHelper",
+        "line": 12,
+        "source": "public EntityLookHelper(EntityLiving var1) {"
+      }
+    ],
+    "EntityMoveHelper": [
+      {
+        "class_name": "EntityLiving",
+        "line": 60,
+        "source": "private EntityMoveHelper field_46018_e;"
+      },
+      {
+        "class_name": "EntityLiving",
+        "line": 87,
+        "source": "this.field_46018_e = new EntityMoveHelper(this, this.moveSpeed);"
+      },
+      {
+        "class_name": "EntityLiving",
+        "line": 102,
+        "source": "public EntityMoveHelper func_46009_aH() {"
+      },
+      {
+        "class_name": "EntityMoveHelper",
+        "line": 3,
+        "source": "public class EntityMoveHelper {"
+      },
+      {
+        "class_name": "EntityMoveHelper",
+        "line": 11,
+        "source": "public EntityMoveHelper(EntityLiving var1, float var2) {"
+      }
+    ],
+    "INavigate": [
+      {
+        "class_name": "EntityLiving",
+        "line": 62,
+        "source": "private INavigate field_46022_an;"
+      },
+      {
+        "class_name": "EntityLiving",
+        "line": 110,
+        "source": "public INavigate func_46012_aJ() {"
+      },
+      {
+        "class_name": "INavigate",
+        "line": 3,
+        "source": "public interface INavigate {"
+      },
+      {
+        "class_name": "PathNavigate",
+        "line": 3,
+        "source": "public class PathNavigate implements INavigate {"
+      }
+    ],
+    "PathNavigate": [
+      {
+        "class_name": "EntityLiving",
+        "line": 89,
+        "source": "this.field_46022_an = new PathNavigate(this, var1);"
+      },
+      {
+        "class_name": "PathNavigate",
+        "line": 3,
+        "source": "public class PathNavigate implements INavigate {"
+      },
+      {
+        "class_name": "PathNavigate",
+        "line": 9,
+        "source": "public PathNavigate(EntityLiving var1, World var2) {"
+      }
+    ],
+    "func_46006_aR": [
+      {
+        "class_name": "EntityLiving",
+        "line": 860,
+        "source": "if(this.func_46006_aR()) {"
+      },
+      {
+        "class_name": "EntityLiving",
+        "line": 905,
+        "source": "protected boolean func_46006_aR() {"
+      },
+      {
+        "class_name": "EntityPigZombie",
+        "line": 18,
+        "source": "protected boolean func_46006_aR() {"
+      },
+      {
+        "class_name": "EntityZombie",
+        "line": 24,
+        "source": "protected boolean func_46006_aR() {"
+      }
+    ],
+    "func_46014_aS": [
+      {
+        "class_name": "EntityLiving",
+        "line": 861,
+        "source": "this.func_46014_aS();"
+      },
+      {
+        "class_name": "EntityLiving",
+        "line": 960,
+        "source": "protected void func_46014_aS() {"
+      }
+    ],
+    "field_46015_bf": [
+      {
+        "class_name": "EntityLiving",
+        "line": 15,
+        "source": "public float field_46015_bf = 0.0F;"
+      },
+      {
+        "class_name": "EntityLiving",
+        "line": 94,
+        "source": "this.field_46015_bf = this.rotationYaw;"
+      },
+      {
+        "class_name": "EntityLiving",
+        "line": 224,
+        "source": "this.field_46016_bg = this.field_46015_bf;"
+      },
+      {
+        "class_name": "EntityLiving",
+        "line": 864,
+        "source": "this.field_46015_bf = this.rotationYaw;"
+      }
+    ],
+    "field_46016_bg": [
+      {
+        "class_name": "EntityLiving",
+        "line": 16,
+        "source": "public float field_46016_bg = 0.0F;"
+      },
+      {
+        "class_name": "EntityLiving",
+        "line": 224,
+        "source": "this.field_46016_bg = this.field_46015_bf;"
+      }
+    ],
+    "field_46020_bQ": [
+      {
+        "class_name": "EntityLiving",
+        "line": 53,
+        "source": "protected EntityLiving field_46020_bQ = null;"
+      },
+      {
+        "class_name": "EntityLiving",
+        "line": 119,
+        "source": "return this.field_46020_bQ;"
+      },
+      {
+        "class_name": "EntityLiving",
+        "line": 963,
+        "source": "if(this.field_46020_bQ != null && !this.field_46020_bQ.isEntityAlive()) {"
+      },
+      {
+        "class_name": "EntityLiving",
+        "line": 964,
+        "source": "this.field_46020_bQ = null;"
+      },
+      {
+        "class_name": "EntityMob",
+        "line": 39,
+        "source": "this.field_46020_bQ = var3 instanceof EntityLiving ? (EntityLiving)var3 : null;"
+      }
+    ]
+  },
+  "constructor_audit": [
+    {
+      "class_name": "EntityAIAttackOnCollide",
+      "source_sha256": "b57e58cc7b8468871c9099b25522c82034a979726b8165cb26cd8ef38c16bff7",
+      "static_initializer": false,
+      "constructor_bytecode": "0: aload_0\n       1: invokespecial #23                 // Method net/minecraft/src/EntityAIBase.\"<init>\":()V\n       4: aload_0\n       5: iconst_0\n       6: putfield      #25                 // Field field_46091_d:I\n       9: aload_0\n      10: aload_1\n      11: putfield      #27                 // Field field_46093_b:Lnet/minecraft/src/EntityMob;\n      14: aload_0\n      15: aload_2\n      16: putfield      #29                 // Field field_46095_a:Lnet/minecraft/src/World;\n      19: aload_0\n      20: fload_3\n      21: putfield      #31                 // Field field_46092_e:F\n      24: aload_0\n      25: iconst_3\n      26: invokevirtual #35                 // Method func_46079_a:(I)V\n      29: return",
+      "constructor_calls": [
+        "net/minecraft/src/EntityAIBase.\"<init>\":()V",
+        "func_46079_a:(I)V"
+      ],
+      "effect_disposition": "Only own fields, referenced position/speed reads, superclass Object/AIBase constructor, local ArrayList allocation and own mutex setter; no entity allocation/RNG/World call/static write"
+    },
+    {
+      "class_name": "EntityAIBase",
+      "source_sha256": "4a51e74796f30a38e0a60e8cdacc853ae36c6063f35ed6ddefb952a864058e76",
+      "static_initializer": false,
+      "constructor_bytecode": "",
+      "constructor_calls": [],
+      "effect_disposition": "Only own fields, referenced position/speed reads, superclass Object/AIBase constructor, local ArrayList allocation and own mutex setter; no entity allocation/RNG/World call/static write"
+    },
+    {
+      "class_name": "EntityAILookIdle",
+      "source_sha256": "c895913292ae613aef02ee702be1e8f21d78062a4ef599df3907c2cd77ce6c5a",
+      "static_initializer": false,
+      "constructor_bytecode": "0: aload_0\n       1: invokespecial #18                 // Method net/minecraft/src/EntityAIBase.\"<init>\":()V\n       4: aload_0\n       5: iconst_0\n       6: putfield      #20                 // Field field_46086_d:I\n       9: aload_0\n      10: aload_1\n      11: putfield      #22                 // Field field_46089_a:Lnet/minecraft/src/EntityLiving;\n      14: aload_0\n      15: iconst_3\n      16: invokevirtual #26                 // Method func_46079_a:(I)V\n      19: return",
+      "constructor_calls": [
+        "net/minecraft/src/EntityAIBase.\"<init>\":()V",
+        "func_46079_a:(I)V"
+      ],
+      "effect_disposition": "Only own fields, referenced position/speed reads, superclass Object/AIBase constructor, local ArrayList allocation and own mutex setter; no entity allocation/RNG/World call/static write"
+    },
+    {
+      "class_name": "EntityAISwimming",
+      "source_sha256": "6148ebd0dda93001d206cc4d63a07ab449acf8368e2055a0f9beb1ab5827e8e3",
+      "static_initializer": false,
+      "constructor_bytecode": "0: aload_0\n       1: invokespecial #13                 // Method net/minecraft/src/EntityAIBase.\"<init>\":()V\n       4: aload_0\n       5: aload_1\n       6: putfield      #15                 // Field field_46106_a:Lnet/minecraft/src/EntityLiving;\n       9: aload_0\n      10: iconst_4\n      11: invokevirtual #19                 // Method func_46079_a:(I)V\n      14: return",
+      "constructor_calls": [
+        "net/minecraft/src/EntityAIBase.\"<init>\":()V",
+        "func_46079_a:(I)V"
+      ],
+      "effect_disposition": "Only own fields, referenced position/speed reads, superclass Object/AIBase constructor, local ArrayList allocation and own mutex setter; no entity allocation/RNG/World call/static write"
+    },
+    {
+      "class_name": "EntityAITaskEntry",
+      "source_sha256": "4cd0e32a0e15c7ae9d2228d2ecc8ac05aff3a573f77c9e9bb4a3120677e1e0f6",
+      "static_initializer": false,
+      "constructor_bytecode": "0: aload_0\n       1: aload_1\n       2: putfield      #18                 // Field field_46113_c:Lnet/minecraft/src/EntityAITasks;\n       5: aload_0\n       6: invokespecial #21                 // Method java/lang/Object.\"<init>\":()V\n       9: aload_0\n      10: iload_2\n      11: putfield      #23                 // Field field_46112_b:I\n      14: aload_0\n      15: aload_3\n      16: putfield      #25                 // Field field_46114_a:Lnet/minecraft/src/EntityAIBase;\n      19: return",
+      "constructor_calls": [
+        "java/lang/Object.\"<init>\":()V"
+      ],
+      "effect_disposition": "Only own fields, referenced position/speed reads, superclass Object/AIBase constructor, local ArrayList allocation and own mutex setter; no entity allocation/RNG/World call/static write"
+    },
+    {
+      "class_name": "EntityAITasks",
+      "source_sha256": "ee5314343906e26b1c2648fc3fc8eaf12391e55408e2252381515bd97b6c7b1f",
+      "static_initializer": false,
+      "constructor_bytecode": "0: aload_0\n       1: invokespecial #12                 // Method java/lang/Object.\"<init>\":()V\n       4: aload_0\n       5: new           #14                 // class java/util/ArrayList\n       8: dup\n       9: invokespecial #15                 // Method java/util/ArrayList.\"<init>\":()V\n      12: putfield      #17                 // Field field_46120_a:Ljava/util/ArrayList;\n      15: aload_0\n      16: new           #14                 // class java/util/ArrayList\n      19: dup\n      20: invokespecial #15                 // Method java/util/ArrayList.\"<init>\":()V\n      23: putfield      #19                 // Field field_46119_b:Ljava/util/ArrayList;\n      26: return",
+      "constructor_calls": [
+        "java/lang/Object.\"<init>\":()V",
+        "java/util/ArrayList.\"<init>\":()V",
+        "java/util/ArrayList.\"<init>\":()V"
+      ],
+      "effect_disposition": "Only own fields, referenced position/speed reads, superclass Object/AIBase constructor, local ArrayList allocation and own mutex setter; no entity allocation/RNG/World call/static write"
+    },
+    {
+      "class_name": "EntityAIWander",
+      "source_sha256": "92d88158a70e786613ab00ffb334b9ce46bf2abd2a1a37e619d63ff0d2c0ed34",
+      "static_initializer": false,
+      "constructor_bytecode": "0: aload_0\n       1: invokespecial #17                 // Method net/minecraft/src/EntityAIBase.\"<init>\":()V\n       4: aload_0\n       5: aload_1\n       6: putfield      #19                 // Field field_46100_a:Lnet/minecraft/src/EntityCreature;\n       9: aload_0\n      10: iconst_3\n      11: invokevirtual #23                 // Method func_46079_a:(I)V\n      14: return",
+      "constructor_calls": [
+        "net/minecraft/src/EntityAIBase.\"<init>\":()V",
+        "func_46079_a:(I)V"
+      ],
+      "effect_disposition": "Only own fields, referenced position/speed reads, superclass Object/AIBase constructor, local ArrayList allocation and own mutex setter; no entity allocation/RNG/World call/static write"
+    },
+    {
+      "class_name": "EntityAIWatchClosest",
+      "source_sha256": "7aeb36a05feb39046370f1e6a3ff9c5d7d4a0e37e85cb57fb3834c8c0ba6f2b2",
+      "static_initializer": false,
+      "constructor_bytecode": "0: aload_0\n       1: invokespecial #22                 // Method net/minecraft/src/EntityAIBase.\"<init>\":()V\n       4: aload_0\n       5: aload_1\n       6: putfield      #24                 // Field field_46105_a:Lnet/minecraft/src/EntityLiving;\n       9: aload_0\n      10: aload_2\n      11: putfield      #26                 // Field field_46104_c:Lnet/minecraft/src/World;\n      14: aload_0\n      15: fload_3\n      16: putfield      #28                 // Field field_46101_d:F\n      19: aload_0\n      20: iconst_3\n      21: invokevirtual #32                 // Method func_46079_a:(I)V\n      24: return",
+      "constructor_calls": [
+        "net/minecraft/src/EntityAIBase.\"<init>\":()V",
+        "func_46079_a:(I)V"
+      ],
+      "effect_disposition": "Only own fields, referenced position/speed reads, superclass Object/AIBase constructor, local ArrayList allocation and own mutex setter; no entity allocation/RNG/World call/static write"
+    },
+    {
+      "class_name": "EntityJumpHelper",
+      "source_sha256": "8f024ddbb4673a45050db90a7ea005a3cc724b6f82b1fe169afd884d778e1372",
+      "static_initializer": false,
+      "constructor_bytecode": "0: aload_0\n       1: invokespecial #15                 // Method java/lang/Object.\"<init>\":()V\n       4: aload_0\n       5: iconst_0\n       6: putfield      #17                 // Field field_46131_b:Z\n       9: aload_0\n      10: aload_1\n      11: putfield      #19                 // Field field_46132_a:Lnet/minecraft/src/EntityLiving;\n      14: return",
+      "constructor_calls": [
+        "java/lang/Object.\"<init>\":()V"
+      ],
+      "effect_disposition": "Only own fields, referenced position/speed reads, superclass Object/AIBase constructor, local ArrayList allocation and own mutex setter; no entity allocation/RNG/World call/static write"
+    },
+    {
+      "class_name": "EntityLookHelper",
+      "source_sha256": "8fff09bf17c1d9a52762f0ecf8238713130b6cac0d0b7fc2a41cd90615aa31fd",
+      "static_initializer": false,
+      "constructor_bytecode": "0: aload_0\n       1: invokespecial #22                 // Method java/lang/Object.\"<init>\":()V\n       4: aload_0\n       5: iconst_0\n       6: putfield      #24                 // Field field_46147_d:Z\n       9: aload_0\n      10: aload_1\n      11: putfield      #26                 // Field field_46151_a:Lnet/minecraft/src/EntityLiving;\n      14: return",
+      "constructor_calls": [
+        "java/lang/Object.\"<init>\":()V"
+      ],
+      "effect_disposition": "Only own fields, referenced position/speed reads, superclass Object/AIBase constructor, local ArrayList allocation and own mutex setter; no entity allocation/RNG/World call/static write"
+    },
+    {
+      "class_name": "EntityMoveHelper",
+      "source_sha256": "140f9673e0699ea21aafc6b203f881c30492666f1c852bc7b5e03f9ffe85cc24",
+      "static_initializer": false,
+      "constructor_bytecode": "0: aload_0\n       1: invokespecial #22                 // Method java/lang/Object.\"<init>\":()V\n       4: aload_0\n       5: iconst_0\n       6: putfield      #24                 // Field field_46036_f:Z\n       9: aload_0\n      10: aload_1\n      11: putfield      #26                 // Field field_46041_a:Lnet/minecraft/src/EntityLiving;\n      14: aload_0\n      15: aload_1\n      16: getfield      #31                 // Field net/minecraft/src/EntityLiving.posX:D\n      19: putfield      #33                 // Field field_46039_b:D\n      22: aload_0\n      23: aload_1\n      24: getfield      #36                 // Field net/minecraft/src/EntityLiving.posY:D\n      27: putfield      #38                 // Field field_46040_c:D\n      30: aload_0\n      31: aload_1\n      32: getfield      #41                 // Field net/minecraft/src/EntityLiving.posZ:D\n      35: putfield      #43                 // Field field_46037_d:D\n      38: aload_0\n      39: fload_2\n      40: putfield      #45                 // Field field_46038_e:F\n      43: return",
+      "constructor_calls": [
+        "java/lang/Object.\"<init>\":()V"
+      ],
+      "effect_disposition": "Only own fields, referenced position/speed reads, superclass Object/AIBase constructor, local ArrayList allocation and own mutex setter; no entity allocation/RNG/World call/static write"
+    },
+    {
+      "class_name": "INavigate",
+      "source_sha256": "1d57d1f299527bd99820b3ba0070a42499429745779b235ff514c6e5c7c61f5e",
+      "static_initializer": false,
+      "constructor_bytecode": "",
+      "constructor_calls": [],
+      "effect_disposition": "Interface has no constructor"
+    },
+    {
+      "class_name": "PathNavigate",
+      "source_sha256": "531bc6b8b431dea97c7a0f1e86841c34b51b5c7c1555c4c380076292b9055848",
+      "static_initializer": false,
+      "constructor_bytecode": "0: aload_0\n       1: invokespecial #22                 // Method java/lang/Object.\"<init>\":()V\n       4: aload_0\n       5: aload_1\n       6: putfield      #24                 // Field field_46076_a:Lnet/minecraft/src/EntityLiving;\n       9: aload_0\n      10: aload_2\n      11: putfield      #26                 // Field field_46074_b:Lnet/minecraft/src/World;\n      14: return",
+      "constructor_calls": [
+        "java/lang/Object.\"<init>\":()V"
+      ],
+      "effect_disposition": "Only own fields, referenced position/speed reads, superclass Object/AIBase constructor, local ArrayList allocation and own mutex setter; no entity allocation/RNG/World call/static write"
+    }
+  ],
+  "original_javap_sha256": "41dc5d6fcba5b765d0e66af23573766b414ea4c0be4ebbcc4c236dac7c1a3068",
+  "scope": "Source and original-bytecode reachability/effects proof. Missing Rust public helper APIs are not declared implemented."
+}

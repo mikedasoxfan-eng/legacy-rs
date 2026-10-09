@@ -1,0 +1,574 @@
+{
+  "schema": 1,
+  "scope_authority": "Parent instruction: existing singleplayer runtime excludes unreachable internals unless reachable caller uses them; no public Java API parity requirement",
+  "scope": "Entire1.1 changed singleplayer effects only, not facade API implementation",
+  "candidate_commit": "5d4d28365998935e54607b5d02bb6bb1f5a1632b",
+  "class_count": 17,
+  "classes": [
+    {
+      "class_name": "EntityAIAttackOnCollide",
+      "entire_singleplayer_delta_effects_covered": true,
+      "disposition": "Unreachable runtime helper APIs; observable constructor/static effects equivalent in scoped Rust runtime",
+      "rust_java_facade_api_implemented": false,
+      "runtime_api_scope": "Excluded: original constant-false guards prevent pipeline invocation; no other callers anywhere in original jar/source. Public Java helper API parity is outside authorized singleplayer scope.",
+      "constructor_authority": {
+        "class_name": "EntityAIAttackOnCollide",
+        "source_sha256": "b57e58cc7b8468871c9099b25522c82034a979726b8165cb26cd8ef38c16bff7",
+        "static_initializer": false,
+        "constructor_bytecode": "0: aload_0\n       1: invokespecial #23                 // Method net/minecraft/src/EntityAIBase.\"<init>\":()V\n       4: aload_0\n       5: iconst_0\n       6: putfield      #25                 // Field field_46091_d:I\n       9: aload_0\n      10: aload_1\n      11: putfield      #27                 // Field field_46093_b:Lnet/minecraft/src/EntityMob;\n      14: aload_0\n      15: aload_2\n      16: putfield      #29                 // Field field_46095_a:Lnet/minecraft/src/World;\n      19: aload_0\n      20: fload_3\n      21: putfield      #31                 // Field field_46092_e:F\n      24: aload_0\n      25: iconst_3\n      26: invokevirtual #35                 // Method func_46079_a:(I)V\n      29: return",
+        "constructor_calls": [
+          "net/minecraft/src/EntityAIBase.\"<init>\":()V",
+          "func_46079_a:(I)V"
+        ],
+        "effect_disposition": "Only own fields, referenced position/speed reads, superclass Object/AIBase constructor, local ArrayList allocation and own mutex setter; no entity allocation/RNG/World call/static write"
+      },
+      "bytecode_graph": "work/ai-dormant11-static-review.json: original_method_references + all_jar_guard_declarations + external_callers[]",
+      "direct_original_runtime": "tools/r11/data/ai_dormant11.txt240 graph cases; existing eggstate11.bin960 state/save/tick cases and production focused test",
+      "observable_effects": [
+        "No static initializers",
+        "No EntityID allocation or global/static writes",
+        "No entity/World RNG draws",
+        "No World method calls",
+        "Local owner/World references and scalar reads/default fields only",
+        "Zombie ordered local registration priorities1,2,3,4,4; active selector list remains empty and helper/task state unchanged through actual ticks"
+      ],
+      "limitations": [
+        "No dormant task/controller algorithms are claimed implemented or compared if manually invoked",
+        "Allocation failure/OOM or reflective Java API observability is outside existing singleplayer scope"
+      ],
+      "completion_blockers": []
+    },
+    {
+      "class_name": "EntityAIBase",
+      "entire_singleplayer_delta_effects_covered": true,
+      "disposition": "Unreachable runtime helper APIs; observable constructor/static effects equivalent in scoped Rust runtime",
+      "rust_java_facade_api_implemented": false,
+      "runtime_api_scope": "Excluded: original constant-false guards prevent pipeline invocation; no other callers anywhere in original jar/source. Public Java helper API parity is outside authorized singleplayer scope.",
+      "constructor_authority": {
+        "class_name": "EntityAIBase",
+        "source_sha256": "4a51e74796f30a38e0a60e8cdacc853ae36c6063f35ed6ddefb952a864058e76",
+        "static_initializer": false,
+        "constructor_bytecode": "",
+        "constructor_calls": [],
+        "effect_disposition": "Only own fields, referenced position/speed reads, superclass Object/AIBase constructor, local ArrayList allocation and own mutex setter; no entity allocation/RNG/World call/static write"
+      },
+      "bytecode_graph": "work/ai-dormant11-static-review.json: original_method_references + all_jar_guard_declarations + external_callers[]",
+      "direct_original_runtime": "tools/r11/data/ai_dormant11.txt240 graph cases; existing eggstate11.bin960 state/save/tick cases and production focused test",
+      "observable_effects": [
+        "No static initializers",
+        "No EntityID allocation or global/static writes",
+        "No entity/World RNG draws",
+        "No World method calls",
+        "Local owner/World references and scalar reads/default fields only",
+        "Zombie ordered local registration priorities1,2,3,4,4; active selector list remains empty and helper/task state unchanged through actual ticks"
+      ],
+      "limitations": [
+        "No dormant task/controller algorithms are claimed implemented or compared if manually invoked",
+        "Allocation failure/OOM or reflective Java API observability is outside existing singleplayer scope"
+      ],
+      "completion_blockers": []
+    },
+    {
+      "class_name": "EntityAILookIdle",
+      "entire_singleplayer_delta_effects_covered": true,
+      "disposition": "Unreachable runtime helper APIs; observable constructor/static effects equivalent in scoped Rust runtime",
+      "rust_java_facade_api_implemented": false,
+      "runtime_api_scope": "Excluded: original constant-false guards prevent pipeline invocation; no other callers anywhere in original jar/source. Public Java helper API parity is outside authorized singleplayer scope.",
+      "constructor_authority": {
+        "class_name": "EntityAILookIdle",
+        "source_sha256": "c895913292ae613aef02ee702be1e8f21d78062a4ef599df3907c2cd77ce6c5a",
+        "static_initializer": false,
+        "constructor_bytecode": "0: aload_0\n       1: invokespecial #18                 // Method net/minecraft/src/EntityAIBase.\"<init>\":()V\n       4: aload_0\n       5: iconst_0\n       6: putfield      #20                 // Field field_46086_d:I\n       9: aload_0\n      10: aload_1\n      11: putfield      #22                 // Field field_46089_a:Lnet/minecraft/src/EntityLiving;\n      14: aload_0\n      15: iconst_3\n      16: invokevirtual #26                 // Method func_46079_a:(I)V\n      19: return",
+        "constructor_calls": [
+          "net/minecraft/src/EntityAIBase.\"<init>\":()V",
+          "func_46079_a:(I)V"
+        ],
+        "effect_disposition": "Only own fields, referenced position/speed reads, superclass Object/AIBase constructor, local ArrayList allocation and own mutex setter; no entity allocation/RNG/World call/static write"
+      },
+      "bytecode_graph": "work/ai-dormant11-static-review.json: original_method_references + all_jar_guard_declarations + external_callers[]",
+      "direct_original_runtime": "tools/r11/data/ai_dormant11.txt240 graph cases; existing eggstate11.bin960 state/save/tick cases and production focused test",
+      "observable_effects": [
+        "No static initializers",
+        "No EntityID allocation or global/static writes",
+        "No entity/World RNG draws",
+        "No World method calls",
+        "Local owner/World references and scalar reads/default fields only",
+        "Zombie ordered local registration priorities1,2,3,4,4; active selector list remains empty and helper/task state unchanged through actual ticks"
+      ],
+      "limitations": [
+        "No dormant task/controller algorithms are claimed implemented or compared if manually invoked",
+        "Allocation failure/OOM or reflective Java API observability is outside existing singleplayer scope"
+      ],
+      "completion_blockers": []
+    },
+    {
+      "class_name": "EntityAISwimming",
+      "entire_singleplayer_delta_effects_covered": true,
+      "disposition": "Unreachable runtime helper APIs; observable constructor/static effects equivalent in scoped Rust runtime",
+      "rust_java_facade_api_implemented": false,
+      "runtime_api_scope": "Excluded: original constant-false guards prevent pipeline invocation; no other callers anywhere in original jar/source. Public Java helper API parity is outside authorized singleplayer scope.",
+      "constructor_authority": {
+        "class_name": "EntityAISwimming",
+        "source_sha256": "6148ebd0dda93001d206cc4d63a07ab449acf8368e2055a0f9beb1ab5827e8e3",
+        "static_initializer": false,
+        "constructor_bytecode": "0: aload_0\n       1: invokespecial #13                 // Method net/minecraft/src/EntityAIBase.\"<init>\":()V\n       4: aload_0\n       5: aload_1\n       6: putfield      #15                 // Field field_46106_a:Lnet/minecraft/src/EntityLiving;\n       9: aload_0\n      10: iconst_4\n      11: invokevirtual #19                 // Method func_46079_a:(I)V\n      14: return",
+        "constructor_calls": [
+          "net/minecraft/src/EntityAIBase.\"<init>\":()V",
+          "func_46079_a:(I)V"
+        ],
+        "effect_disposition": "Only own fields, referenced position/speed reads, superclass Object/AIBase constructor, local ArrayList allocation and own mutex setter; no entity allocation/RNG/World call/static write"
+      },
+      "bytecode_graph": "work/ai-dormant11-static-review.json: original_method_references + all_jar_guard_declarations + external_callers[]",
+      "direct_original_runtime": "tools/r11/data/ai_dormant11.txt240 graph cases; existing eggstate11.bin960 state/save/tick cases and production focused test",
+      "observable_effects": [
+        "No static initializers",
+        "No EntityID allocation or global/static writes",
+        "No entity/World RNG draws",
+        "No World method calls",
+        "Local owner/World references and scalar reads/default fields only",
+        "Zombie ordered local registration priorities1,2,3,4,4; active selector list remains empty and helper/task state unchanged through actual ticks"
+      ],
+      "limitations": [
+        "No dormant task/controller algorithms are claimed implemented or compared if manually invoked",
+        "Allocation failure/OOM or reflective Java API observability is outside existing singleplayer scope"
+      ],
+      "completion_blockers": []
+    },
+    {
+      "class_name": "EntityAITaskEntry",
+      "entire_singleplayer_delta_effects_covered": true,
+      "disposition": "Unreachable runtime helper APIs; observable constructor/static effects equivalent in scoped Rust runtime",
+      "rust_java_facade_api_implemented": false,
+      "runtime_api_scope": "Excluded: original constant-false guards prevent pipeline invocation; no other callers anywhere in original jar/source. Public Java helper API parity is outside authorized singleplayer scope.",
+      "constructor_authority": {
+        "class_name": "EntityAITaskEntry",
+        "source_sha256": "4cd0e32a0e15c7ae9d2228d2ecc8ac05aff3a573f77c9e9bb4a3120677e1e0f6",
+        "static_initializer": false,
+        "constructor_bytecode": "0: aload_0\n       1: aload_1\n       2: putfield      #18                 // Field field_46113_c:Lnet/minecraft/src/EntityAITasks;\n       5: aload_0\n       6: invokespecial #21                 // Method java/lang/Object.\"<init>\":()V\n       9: aload_0\n      10: iload_2\n      11: putfield      #23                 // Field field_46112_b:I\n      14: aload_0\n      15: aload_3\n      16: putfield      #25                 // Field field_46114_a:Lnet/minecraft/src/EntityAIBase;\n      19: return",
+        "constructor_calls": [
+          "java/lang/Object.\"<init>\":()V"
+        ],
+        "effect_disposition": "Only own fields, referenced position/speed reads, superclass Object/AIBase constructor, local ArrayList allocation and own mutex setter; no entity allocation/RNG/World call/static write"
+      },
+      "bytecode_graph": "work/ai-dormant11-static-review.json: original_method_references + all_jar_guard_declarations + external_callers[]",
+      "direct_original_runtime": "tools/r11/data/ai_dormant11.txt240 graph cases; existing eggstate11.bin960 state/save/tick cases and production focused test",
+      "observable_effects": [
+        "No static initializers",
+        "No EntityID allocation or global/static writes",
+        "No entity/World RNG draws",
+        "No World method calls",
+        "Local owner/World references and scalar reads/default fields only",
+        "Zombie ordered local registration priorities1,2,3,4,4; active selector list remains empty and helper/task state unchanged through actual ticks"
+      ],
+      "limitations": [
+        "No dormant task/controller algorithms are claimed implemented or compared if manually invoked",
+        "Allocation failure/OOM or reflective Java API observability is outside existing singleplayer scope"
+      ],
+      "completion_blockers": []
+    },
+    {
+      "class_name": "EntityAITasks",
+      "entire_singleplayer_delta_effects_covered": true,
+      "disposition": "Unreachable runtime helper APIs; observable constructor/static effects equivalent in scoped Rust runtime",
+      "rust_java_facade_api_implemented": false,
+      "runtime_api_scope": "Excluded: original constant-false guards prevent pipeline invocation; no other callers anywhere in original jar/source. Public Java helper API parity is outside authorized singleplayer scope.",
+      "constructor_authority": {
+        "class_name": "EntityAITasks",
+        "source_sha256": "ee5314343906e26b1c2648fc3fc8eaf12391e55408e2252381515bd97b6c7b1f",
+        "static_initializer": false,
+        "constructor_bytecode": "0: aload_0\n       1: invokespecial #12                 // Method java/lang/Object.\"<init>\":()V\n       4: aload_0\n       5: new           #14                 // class java/util/ArrayList\n       8: dup\n       9: invokespecial #15                 // Method java/util/ArrayList.\"<init>\":()V\n      12: putfield      #17                 // Field field_46120_a:Ljava/util/ArrayList;\n      15: aload_0\n      16: new           #14                 // class java/util/ArrayList\n      19: dup\n      20: invokespecial #15                 // Method java/util/ArrayList.\"<init>\":()V\n      23: putfield      #19                 // Field field_46119_b:Ljava/util/ArrayList;\n      26: return",
+        "constructor_calls": [
+          "java/lang/Object.\"<init>\":()V",
+          "java/util/ArrayList.\"<init>\":()V",
+          "java/util/ArrayList.\"<init>\":()V"
+        ],
+        "effect_disposition": "Only own fields, referenced position/speed reads, superclass Object/AIBase constructor, local ArrayList allocation and own mutex setter; no entity allocation/RNG/World call/static write"
+      },
+      "bytecode_graph": "work/ai-dormant11-static-review.json: original_method_references + all_jar_guard_declarations + external_callers[]",
+      "direct_original_runtime": "tools/r11/data/ai_dormant11.txt240 graph cases; existing eggstate11.bin960 state/save/tick cases and production focused test",
+      "observable_effects": [
+        "No static initializers",
+        "No EntityID allocation or global/static writes",
+        "No entity/World RNG draws",
+        "No World method calls",
+        "Local owner/World references and scalar reads/default fields only",
+        "Zombie ordered local registration priorities1,2,3,4,4; active selector list remains empty and helper/task state unchanged through actual ticks"
+      ],
+      "limitations": [
+        "No dormant task/controller algorithms are claimed implemented or compared if manually invoked",
+        "Allocation failure/OOM or reflective Java API observability is outside existing singleplayer scope"
+      ],
+      "completion_blockers": []
+    },
+    {
+      "class_name": "EntityAIWander",
+      "entire_singleplayer_delta_effects_covered": true,
+      "disposition": "Unreachable runtime helper APIs; observable constructor/static effects equivalent in scoped Rust runtime",
+      "rust_java_facade_api_implemented": false,
+      "runtime_api_scope": "Excluded: original constant-false guards prevent pipeline invocation; no other callers anywhere in original jar/source. Public Java helper API parity is outside authorized singleplayer scope.",
+      "constructor_authority": {
+        "class_name": "EntityAIWander",
+        "source_sha256": "92d88158a70e786613ab00ffb334b9ce46bf2abd2a1a37e619d63ff0d2c0ed34",
+        "static_initializer": false,
+        "constructor_bytecode": "0: aload_0\n       1: invokespecial #17                 // Method net/minecraft/src/EntityAIBase.\"<init>\":()V\n       4: aload_0\n       5: aload_1\n       6: putfield      #19                 // Field field_46100_a:Lnet/minecraft/src/EntityCreature;\n       9: aload_0\n      10: iconst_3\n      11: invokevirtual #23                 // Method func_46079_a:(I)V\n      14: return",
+        "constructor_calls": [
+          "net/minecraft/src/EntityAIBase.\"<init>\":()V",
+          "func_46079_a:(I)V"
+        ],
+        "effect_disposition": "Only own fields, referenced position/speed reads, superclass Object/AIBase constructor, local ArrayList allocation and own mutex setter; no entity allocation/RNG/World call/static write"
+      },
+      "bytecode_graph": "work/ai-dormant11-static-review.json: original_method_references + all_jar_guard_declarations + external_callers[]",
+      "direct_original_runtime": "tools/r11/data/ai_dormant11.txt240 graph cases; existing eggstate11.bin960 state/save/tick cases and production focused test",
+      "observable_effects": [
+        "No static initializers",
+        "No EntityID allocation or global/static writes",
+        "No entity/World RNG draws",
+        "No World method calls",
+        "Local owner/World references and scalar reads/default fields only",
+        "Zombie ordered local registration priorities1,2,3,4,4; active selector list remains empty and helper/task state unchanged through actual ticks"
+      ],
+      "limitations": [
+        "No dormant task/controller algorithms are claimed implemented or compared if manually invoked",
+        "Allocation failure/OOM or reflective Java API observability is outside existing singleplayer scope"
+      ],
+      "completion_blockers": []
+    },
+    {
+      "class_name": "EntityAIWatchClosest",
+      "entire_singleplayer_delta_effects_covered": true,
+      "disposition": "Unreachable runtime helper APIs; observable constructor/static effects equivalent in scoped Rust runtime",
+      "rust_java_facade_api_implemented": false,
+      "runtime_api_scope": "Excluded: original constant-false guards prevent pipeline invocation; no other callers anywhere in original jar/source. Public Java helper API parity is outside authorized singleplayer scope.",
+      "constructor_authority": {
+        "class_name": "EntityAIWatchClosest",
+        "source_sha256": "7aeb36a05feb39046370f1e6a3ff9c5d7d4a0e37e85cb57fb3834c8c0ba6f2b2",
+        "static_initializer": false,
+        "constructor_bytecode": "0: aload_0\n       1: invokespecial #22                 // Method net/minecraft/src/EntityAIBase.\"<init>\":()V\n       4: aload_0\n       5: aload_1\n       6: putfield      #24                 // Field field_46105_a:Lnet/minecraft/src/EntityLiving;\n       9: aload_0\n      10: aload_2\n      11: putfield      #26                 // Field field_46104_c:Lnet/minecraft/src/World;\n      14: aload_0\n      15: fload_3\n      16: putfield      #28                 // Field field_46101_d:F\n      19: aload_0\n      20: iconst_3\n      21: invokevirtual #32                 // Method func_46079_a:(I)V\n      24: return",
+        "constructor_calls": [
+          "net/minecraft/src/EntityAIBase.\"<init>\":()V",
+          "func_46079_a:(I)V"
+        ],
+        "effect_disposition": "Only own fields, referenced position/speed reads, superclass Object/AIBase constructor, local ArrayList allocation and own mutex setter; no entity allocation/RNG/World call/static write"
+      },
+      "bytecode_graph": "work/ai-dormant11-static-review.json: original_method_references + all_jar_guard_declarations + external_callers[]",
+      "direct_original_runtime": "tools/r11/data/ai_dormant11.txt240 graph cases; existing eggstate11.bin960 state/save/tick cases and production focused test",
+      "observable_effects": [
+        "No static initializers",
+        "No EntityID allocation or global/static writes",
+        "No entity/World RNG draws",
+        "No World method calls",
+        "Local owner/World references and scalar reads/default fields only",
+        "Zombie ordered local registration priorities1,2,3,4,4; active selector list remains empty and helper/task state unchanged through actual ticks"
+      ],
+      "limitations": [
+        "No dormant task/controller algorithms are claimed implemented or compared if manually invoked",
+        "Allocation failure/OOM or reflective Java API observability is outside existing singleplayer scope"
+      ],
+      "completion_blockers": []
+    },
+    {
+      "class_name": "EntityJumpHelper",
+      "entire_singleplayer_delta_effects_covered": true,
+      "disposition": "Unreachable runtime helper APIs; observable constructor/static effects equivalent in scoped Rust runtime",
+      "rust_java_facade_api_implemented": false,
+      "runtime_api_scope": "Excluded: original constant-false guards prevent pipeline invocation; no other callers anywhere in original jar/source. Public Java helper API parity is outside authorized singleplayer scope.",
+      "constructor_authority": {
+        "class_name": "EntityJumpHelper",
+        "source_sha256": "8f024ddbb4673a45050db90a7ea005a3cc724b6f82b1fe169afd884d778e1372",
+        "static_initializer": false,
+        "constructor_bytecode": "0: aload_0\n       1: invokespecial #15                 // Method java/lang/Object.\"<init>\":()V\n       4: aload_0\n       5: iconst_0\n       6: putfield      #17                 // Field field_46131_b:Z\n       9: aload_0\n      10: aload_1\n      11: putfield      #19                 // Field field_46132_a:Lnet/minecraft/src/EntityLiving;\n      14: return",
+        "constructor_calls": [
+          "java/lang/Object.\"<init>\":()V"
+        ],
+        "effect_disposition": "Only own fields, referenced position/speed reads, superclass Object/AIBase constructor, local ArrayList allocation and own mutex setter; no entity allocation/RNG/World call/static write"
+      },
+      "bytecode_graph": "work/ai-dormant11-static-review.json: original_method_references + all_jar_guard_declarations + external_callers[]",
+      "direct_original_runtime": "tools/r11/data/ai_dormant11.txt240 graph cases; existing eggstate11.bin960 state/save/tick cases and production focused test",
+      "observable_effects": [
+        "No static initializers",
+        "No EntityID allocation or global/static writes",
+        "No entity/World RNG draws",
+        "No World method calls",
+        "Local owner/World references and scalar reads/default fields only",
+        "Zombie ordered local registration priorities1,2,3,4,4; active selector list remains empty and helper/task state unchanged through actual ticks"
+      ],
+      "limitations": [
+        "No dormant task/controller algorithms are claimed implemented or compared if manually invoked",
+        "Allocation failure/OOM or reflective Java API observability is outside existing singleplayer scope"
+      ],
+      "completion_blockers": []
+    },
+    {
+      "class_name": "EntityLookHelper",
+      "entire_singleplayer_delta_effects_covered": true,
+      "disposition": "Unreachable runtime helper APIs; observable constructor/static effects equivalent in scoped Rust runtime",
+      "rust_java_facade_api_implemented": false,
+      "runtime_api_scope": "Excluded: original constant-false guards prevent pipeline invocation; no other callers anywhere in original jar/source. Public Java helper API parity is outside authorized singleplayer scope.",
+      "constructor_authority": {
+        "class_name": "EntityLookHelper",
+        "source_sha256": "8fff09bf17c1d9a52762f0ecf8238713130b6cac0d0b7fc2a41cd90615aa31fd",
+        "static_initializer": false,
+        "constructor_bytecode": "0: aload_0\n       1: invokespecial #22                 // Method java/lang/Object.\"<init>\":()V\n       4: aload_0\n       5: iconst_0\n       6: putfield      #24                 // Field field_46147_d:Z\n       9: aload_0\n      10: aload_1\n      11: putfield      #26                 // Field field_46151_a:Lnet/minecraft/src/EntityLiving;\n      14: return",
+        "constructor_calls": [
+          "java/lang/Object.\"<init>\":()V"
+        ],
+        "effect_disposition": "Only own fields, referenced position/speed reads, superclass Object/AIBase constructor, local ArrayList allocation and own mutex setter; no entity allocation/RNG/World call/static write"
+      },
+      "bytecode_graph": "work/ai-dormant11-static-review.json: original_method_references + all_jar_guard_declarations + external_callers[]",
+      "direct_original_runtime": "tools/r11/data/ai_dormant11.txt240 graph cases; existing eggstate11.bin960 state/save/tick cases and production focused test",
+      "observable_effects": [
+        "No static initializers",
+        "No EntityID allocation or global/static writes",
+        "No entity/World RNG draws",
+        "No World method calls",
+        "Local owner/World references and scalar reads/default fields only",
+        "Zombie ordered local registration priorities1,2,3,4,4; active selector list remains empty and helper/task state unchanged through actual ticks"
+      ],
+      "limitations": [
+        "No dormant task/controller algorithms are claimed implemented or compared if manually invoked",
+        "Allocation failure/OOM or reflective Java API observability is outside existing singleplayer scope"
+      ],
+      "completion_blockers": []
+    },
+    {
+      "class_name": "EntityMoveHelper",
+      "entire_singleplayer_delta_effects_covered": true,
+      "disposition": "Unreachable runtime helper APIs; observable constructor/static effects equivalent in scoped Rust runtime",
+      "rust_java_facade_api_implemented": false,
+      "runtime_api_scope": "Excluded: original constant-false guards prevent pipeline invocation; no other callers anywhere in original jar/source. Public Java helper API parity is outside authorized singleplayer scope.",
+      "constructor_authority": {
+        "class_name": "EntityMoveHelper",
+        "source_sha256": "140f9673e0699ea21aafc6b203f881c30492666f1c852bc7b5e03f9ffe85cc24",
+        "static_initializer": false,
+        "constructor_bytecode": "0: aload_0\n       1: invokespecial #22                 // Method java/lang/Object.\"<init>\":()V\n       4: aload_0\n       5: iconst_0\n       6: putfield      #24                 // Field field_46036_f:Z\n       9: aload_0\n      10: aload_1\n      11: putfield      #26                 // Field field_46041_a:Lnet/minecraft/src/EntityLiving;\n      14: aload_0\n      15: aload_1\n      16: getfield      #31                 // Field net/minecraft/src/EntityLiving.posX:D\n      19: putfield      #33                 // Field field_46039_b:D\n      22: aload_0\n      23: aload_1\n      24: getfield      #36                 // Field net/minecraft/src/EntityLiving.posY:D\n      27: putfield      #38                 // Field field_46040_c:D\n      30: aload_0\n      31: aload_1\n      32: getfield      #41                 // Field net/minecraft/src/EntityLiving.posZ:D\n      35: putfield      #43                 // Field field_46037_d:D\n      38: aload_0\n      39: fload_2\n      40: putfield      #45                 // Field field_46038_e:F\n      43: return",
+        "constructor_calls": [
+          "java/lang/Object.\"<init>\":()V"
+        ],
+        "effect_disposition": "Only own fields, referenced position/speed reads, superclass Object/AIBase constructor, local ArrayList allocation and own mutex setter; no entity allocation/RNG/World call/static write"
+      },
+      "bytecode_graph": "work/ai-dormant11-static-review.json: original_method_references + all_jar_guard_declarations + external_callers[]",
+      "direct_original_runtime": "tools/r11/data/ai_dormant11.txt240 graph cases; existing eggstate11.bin960 state/save/tick cases and production focused test",
+      "observable_effects": [
+        "No static initializers",
+        "No EntityID allocation or global/static writes",
+        "No entity/World RNG draws",
+        "No World method calls",
+        "Local owner/World references and scalar reads/default fields only",
+        "Zombie ordered local registration priorities1,2,3,4,4; active selector list remains empty and helper/task state unchanged through actual ticks"
+      ],
+      "limitations": [
+        "No dormant task/controller algorithms are claimed implemented or compared if manually invoked",
+        "Allocation failure/OOM or reflective Java API observability is outside existing singleplayer scope"
+      ],
+      "completion_blockers": []
+    },
+    {
+      "class_name": "INavigate",
+      "entire_singleplayer_delta_effects_covered": true,
+      "disposition": "Unreachable runtime helper APIs; observable constructor/static effects equivalent in scoped Rust runtime",
+      "rust_java_facade_api_implemented": false,
+      "runtime_api_scope": "Excluded: original constant-false guards prevent pipeline invocation; no other callers anywhere in original jar/source. Public Java helper API parity is outside authorized singleplayer scope.",
+      "constructor_authority": {
+        "class_name": "INavigate",
+        "source_sha256": "1d57d1f299527bd99820b3ba0070a42499429745779b235ff514c6e5c7c61f5e",
+        "static_initializer": false,
+        "constructor_bytecode": "",
+        "constructor_calls": [],
+        "effect_disposition": "Interface has no constructor"
+      },
+      "bytecode_graph": "work/ai-dormant11-static-review.json: original_method_references + all_jar_guard_declarations + external_callers[]",
+      "direct_original_runtime": "tools/r11/data/ai_dormant11.txt240 graph cases; existing eggstate11.bin960 state/save/tick cases and production focused test",
+      "observable_effects": [
+        "No static initializers",
+        "No EntityID allocation or global/static writes",
+        "No entity/World RNG draws",
+        "No World method calls",
+        "Local owner/World references and scalar reads/default fields only",
+        "Zombie ordered local registration priorities1,2,3,4,4; active selector list remains empty and helper/task state unchanged through actual ticks"
+      ],
+      "limitations": [
+        "No dormant task/controller algorithms are claimed implemented or compared if manually invoked",
+        "Allocation failure/OOM or reflective Java API observability is outside existing singleplayer scope"
+      ],
+      "completion_blockers": []
+    },
+    {
+      "class_name": "PathNavigate",
+      "entire_singleplayer_delta_effects_covered": true,
+      "disposition": "Unreachable runtime helper APIs; observable constructor/static effects equivalent in scoped Rust runtime",
+      "rust_java_facade_api_implemented": false,
+      "runtime_api_scope": "Excluded: original constant-false guards prevent pipeline invocation; no other callers anywhere in original jar/source. Public Java helper API parity is outside authorized singleplayer scope.",
+      "constructor_authority": {
+        "class_name": "PathNavigate",
+        "source_sha256": "531bc6b8b431dea97c7a0f1e86841c34b51b5c7c1555c4c380076292b9055848",
+        "static_initializer": false,
+        "constructor_bytecode": "0: aload_0\n       1: invokespecial #22                 // Method java/lang/Object.\"<init>\":()V\n       4: aload_0\n       5: aload_1\n       6: putfield      #24                 // Field field_46076_a:Lnet/minecraft/src/EntityLiving;\n       9: aload_0\n      10: aload_2\n      11: putfield      #26                 // Field field_46074_b:Lnet/minecraft/src/World;\n      14: return",
+        "constructor_calls": [
+          "java/lang/Object.\"<init>\":()V"
+        ],
+        "effect_disposition": "Only own fields, referenced position/speed reads, superclass Object/AIBase constructor, local ArrayList allocation and own mutex setter; no entity allocation/RNG/World call/static write"
+      },
+      "bytecode_graph": "work/ai-dormant11-static-review.json: original_method_references + all_jar_guard_declarations + external_callers[]",
+      "direct_original_runtime": "tools/r11/data/ai_dormant11.txt240 graph cases; existing eggstate11.bin960 state/save/tick cases and production focused test",
+      "observable_effects": [
+        "No static initializers",
+        "No EntityID allocation or global/static writes",
+        "No entity/World RNG draws",
+        "No World method calls",
+        "Local owner/World references and scalar reads/default fields only",
+        "Zombie ordered local registration priorities1,2,3,4,4; active selector list remains empty and helper/task state unchanged through actual ticks"
+      ],
+      "limitations": [
+        "No dormant task/controller algorithms are claimed implemented or compared if manually invoked",
+        "Allocation failure/OOM or reflective Java API observability is outside existing singleplayer scope"
+      ],
+      "completion_blockers": []
+    },
+    {
+      "class_name": "EntityLiving",
+      "entire_singleplayer_delta_effects_covered": true,
+      "disposition": "All changed observable singleplayer behavior covered; no-reader storage and unreachable helper APIs explicitly excluded",
+      "rust_java_facade_api_implemented": false,
+      "old_source_sha256": "8cce2bcfcbbb9dae215a5caa6f57ffcd51047b9dae74e1e189ec457ac9b2958e",
+      "new_source_sha256": "2bab565edf3e65bfd3dbeb87e95bef2c915140f0088d6b0909038b2417739030",
+      "all_delta_hunk_coverage": [
+        {
+          "delta": "constructor new helper and task-manager allocations",
+          "authority": "13 constructor bytecode reviews and240 detached-constructor no-effect assertions; seeded960 original production constructor/save/tick parity; inherited Math.random calls unchanged"
+        },
+        {
+          "delta": "new guards/AI dispatch func_46006_aR,func_46014_aS; old flagremoved",
+          "authority": "Alljar method declarations exactly3 guards iconst_0 ireturn. Sole new-pipeline caller guarded. Actual Rust world-mode guard fixed; living_guard11.txt directbase/PlayerSP and production callback checks; no public dormant-helper API emulation claimed"
+        },
+        {
+          "delta": "new field_46015_bf/field_46016_bg plus constructor/onEntityUpdate/onLivingUpdate writes",
+          "authority": "Full original source scan: references confined EntityLiving; previous field only written, current field only read to copy into previous. No client, renderer, NBT or gameplay consumer; new assignments do not consume RNG. Omitted dead storage semantically equivalent for authorized scope"
+        },
+        {
+          "delta": "new field_46020_bQ and helper getter",
+          "authority": "Only EntityMob assigns, getter read by dormant EntityAIAttackOnCollide and guarded newpipeline clear. Entire original source reference set attached; no reachable observable consumer"
+        },
+        {
+          "delta": "new helper getters/rand/age/movement setter/speed APIs",
+          "authority": "Original wholejar CP references show all callers confined dormant graph; return/store field-only bodies. Missing Rust facade APIs excluded, not claimed implemented"
+        },
+        {
+          "delta": "knockBack motionY += (double)0.4F becomes += (double)var8",
+          "authority": "Same method initializes var8=0.4F before arithmetic and never changes it; exact constant substitution with identical double promotion, no runtime delta"
+        },
+        {
+          "delta": "all other changed field/method/callee names and access modifiers",
+          "authority": "Old/new full source diff attached. CarryoverDamage/experience/air/fire/potion/child/armor/sound/attack names preserve bodies; getVerticalFaceSpeed protected\u2192public body40 unchanged. No additional instruction/control/literal delta."
+        }
+      ],
+      "complete_source_diff": "--- 1.0/EntityLiving\n+++ 1.1/EntityLiving\n@@ -5,4 +5,5 @@\n import java.util.Iterator;\n import java.util.List;\n+import java.util.Random;\n \n public abstract class EntityLiving extends Entity {\n@@ -12,4 +13,6 @@\n \tpublic float renderYawOffset = 0.0F;\n \tpublic float prevRenderYawOffset = 0.0F;\n+\tpublic float field_46015_bf = 0.0F;\n+\tpublic float field_46016_bg = 0.0F;\n \tprotected float field_9362_u;\n \tprotected float field_9361_v;\n@@ -24,5 +27,4 @@\n \tprotected int scoreValue = 0;\n \tprotected float field_9345_F = 0.0F;\n-\tpublic boolean isMultiplayerEntity = false;\n \tpublic float landMovementFactor = 0.1F;\n \tpublic float jumpMovementFactor = 0.02F;\n@@ -31,5 +33,5 @@\n \tprotected int health = this.getMaxHealth();\n \tpublic int prevHealth;\n-\tprotected int field_40129_bA;\n+\tprotected int carryoverDamage;\n \tprivate int livingSoundTime;\n \tpublic int hurtTime;\n@@ -41,5 +43,5 @@\n \tpublic float cameraPitch;\n \tprotected boolean unused_flag = false;\n-\tprotected int field_35171_bJ;\n+\tprotected int experienceValue;\n \tpublic int field_9326_T = -1;\n \tpublic float field_9325_U = (float)(Math.random() * (double)0.9F + (double)0.1F);\n@@ -47,11 +49,17 @@\n \tpublic float field_704_R;\n \tpublic float field_703_S;\n-\tprotected EntityPlayer field_34904_b = null;\n-\tprotected int field_34905_c = 0;\n-\tpublic int field_35172_bP = 0;\n-\tpublic int field_35173_bQ = 0;\n+\tprotected EntityPlayer attackingPlayer = null;\n+\tprotected int recentlyHit = 0;\n+\tprotected EntityLiving field_46020_bQ = null;\n+\tpublic int arrowHitTempCounter = 0;\n+\tpublic int arrowHitTimer = 0;\n \tprotected HashMap activePotionsMap = new HashMap();\n \tprivate boolean field_39001_b = true;\n \tprivate int field_39002_c;\n+\tprivate EntityLookHelper field_46017_d;\n+\tprivate EntityMoveHelper field_46018_e;\n+\tprivate EntityJumpHelper field_46021_am;\n+\tprivate INavigate field_46022_an;\n+\tprotected EntityAITasks field_46019_bU = new EntityAITasks();\n \tprotected int newPosRotationIncrements;\n \tprotected double newPosX;\n@@ -76,9 +84,42 @@\n \t\tsuper(var1);\n \t\tthis.preventEntitySpawning = true;\n+\t\tthis.field_46017_d = new EntityLookHelper(this);\n+\t\tthis.field_46018_e = new EntityMoveHelper(this, this.moveSpeed);\n+\t\tthis.field_46021_am = new EntityJumpHelper(this);\n+\t\tthis.field_46022_an = new PathNavigate(this, var1);\n \t\tthis.field_9363_r = (float)(Math.random() + 1.0D) * 0.01F;\n \t\tthis.setPosition(this.posX, this.posY, this.posZ);\n \t\tthis.field_9365_p = (float)Math.random() * 12398.0F;\n \t\tthis.rotationYaw = (float)(Math.random() * (double)((float)Math.PI) * 2.0D);\n+\t\tthis.field_46015_bf = this.rotationYaw;\n \t\tthis.stepHeight = 0.5F;\n+\t}\n+\n+\tpublic EntityLookHelper func_46008_aG() {\n+\t\treturn this.field_46017_d;\n+\t}\n+\n+\tpublic EntityMoveHelper func_46009_aH() {\n+\t\treturn this.field_46018_e;\n+\t}\n+\n+\tpublic EntityJumpHelper func_46005_aI() {\n+\t\treturn this.field_46021_am;\n+\t}\n+\n+\tpublic INavigate func_46012_aJ() {\n+\t\treturn this.field_46022_an;\n+\t}\n+\n+\tpublic Random func_46004_aK() {\n+\t\treturn this.rand;\n+\t}\n+\n+\tpublic EntityLiving func_46007_aL() {\n+\t\treturn this.field_46020_bQ;\n+\t}\n+\n+\tpublic int func_46011_aM() {\n+\t\treturn this.entityAge;\n \t}\n \n@@ -114,5 +155,5 @@\n \t\tString var1 = this.getLivingSound();\n \t\tif(var1 != null) {\n-\t\t\tthis.worldObj.playSoundAtEntity(this, var1, this.getSoundVolume(), this.func_40123_ac());\n+\t\t\tthis.worldObj.playSoundAtEntity(this, var1, this.getSoundVolume(), this.getSoundPitch());\n \t\t}\n \n@@ -131,12 +172,12 @@\n \t\t}\n \n-\t\tif(this.func_40047_D() || this.worldObj.multiplayerWorld) {\n-\t\t\tthis.func_40045_B();\n-\t\t}\n-\n-\t\tif(this.isEntityAlive() && this.isInsideOfMaterial(Material.water) && !this.canBreatheUnderwater() && !this.activePotionsMap.containsKey(Integer.valueOf(Potion.potionWaterBreathing.id))) {\n-\t\t\tthis.func_41003_g(this.func_40116_f(this.func_41001_Z()));\n-\t\t\tif(this.func_41001_Z() == -20) {\n-\t\t\t\tthis.func_41003_g(0);\n+\t\tif(this.isImmuneToFire() || this.worldObj.multiplayerWorld) {\n+\t\t\tthis.extinguish();\n+\t\t}\n+\n+\t\tif(this.isEntityAlive() && this.isInsideOfMaterial(Material.water) && !this.canBreatheUnderwater() && !this.activePotionsMap.containsKey(Integer.valueOf(Potion.waterBreathing.id))) {\n+\t\t\tthis.setAir(this.decreaseAirSupply(this.getAir()));\n+\t\t\tif(this.getAir() == -20) {\n+\t\t\t\tthis.setAir(0);\n \n \t\t\t\tfor(int var1 = 0; var1 < 8; ++var1) {\n@@ -150,7 +191,7 @@\n \t\t\t}\n \n-\t\t\tthis.func_40045_B();\n+\t\t\tthis.extinguish();\n \t\t} else {\n-\t\t\tthis.func_41003_g(300);\n+\t\t\tthis.setAir(300);\n \t\t}\n \n@@ -169,11 +210,11 @@\n \n \t\tif(this.health <= 0) {\n-\t\t\tthis.func_40120_m_();\n-\t\t}\n-\n-\t\tif(this.field_34905_c > 0) {\n-\t\t\t--this.field_34905_c;\n+\t\t\tthis.onDeathUpdate();\n+\t\t}\n+\n+\t\tif(this.recentlyHit > 0) {\n+\t\t\t--this.recentlyHit;\n \t\t} else {\n-\t\t\tthis.field_34904_b = null;\n+\t\t\tthis.attackingPlayer = null;\n \t\t}\n \n@@ -181,4 +222,5 @@\n \t\tthis.field_9359_x = this.field_9360_w;\n \t\tthis.prevRenderYawOffset = this.renderYawOffset;\n+\t\tthis.field_46016_bg = this.field_46015_bf;\n \t\tthis.prevRotationYaw = this.rotationYaw;\n \t\tthis.prevRotationPitch = this.rotationPitch;\n@@ -186,15 +228,15 @@\n \t}\n \n-\tprotected void func_40120_m_() {\n+\tprotected void onDeathUpdate() {\n \t\t++this.deathTime;\n \t\tif(this.deathTime == 20) {\n \t\t\tint var1;\n-\t\t\tif(!this.worldObj.multiplayerWorld && (this.field_34905_c > 0 || this.func_35163_av()) && !this.func_40127_l()) {\n-\t\t\t\tvar1 = this.func_36001_a(this.field_34904_b);\n+\t\t\tif(!this.worldObj.multiplayerWorld && (this.recentlyHit > 0 || this.isPlayer()) && !this.isChild()) {\n+\t\t\t\tvar1 = this.getExperiencePoints(this.attackingPlayer);\n \n \t\t\t\twhile(var1 > 0) {\n \t\t\t\t\tint var2 = EntityXPOrb.getXPSplit(var1);\n \t\t\t\t\tvar1 -= var2;\n-\t\t\t\t\tthis.worldObj.entityJoinedWorld(new EntityXPOrb(this.worldObj, this.posX, this.posY, this.posZ, var2));\n+\t\t\t\t\tthis.worldObj.spawnEntityInWorld(new EntityXPOrb(this.worldObj, this.posX, this.posY, this.posZ, var2));\n \t\t\t\t}\n \t\t\t}\n@@ -213,13 +255,13 @@\n \t}\n \n-\tprotected int func_40116_f(int var1) {\n+\tprotected int decreaseAirSupply(int var1) {\n \t\treturn var1 - 1;\n \t}\n \n-\tprotected int func_36001_a(EntityPlayer var1) {\n-\t\treturn this.field_35171_bJ;\n-\t}\n-\n-\tprotected boolean func_35163_av() {\n+\tprotected int getExperiencePoints(EntityPlayer var1) {\n+\t\treturn this.experienceValue;\n+\t}\n+\n+\tprotected boolean isPlayer() {\n \t\treturn false;\n \t}\n@@ -255,12 +297,12 @@\n \tpublic void onUpdate() {\n \t\tsuper.onUpdate();\n-\t\tif(this.field_35172_bP > 0) {\n-\t\t\tif(this.field_35173_bQ <= 0) {\n-\t\t\t\tthis.field_35173_bQ = 60;\n-\t\t\t}\n-\n-\t\t\t--this.field_35173_bQ;\n-\t\t\tif(this.field_35173_bQ <= 0) {\n-\t\t\t\t--this.field_35172_bP;\n+\t\tif(this.arrowHitTempCounter > 0) {\n+\t\t\tif(this.arrowHitTimer <= 0) {\n+\t\t\t\tthis.arrowHitTimer = 60;\n+\t\t\t}\n+\n+\t\t\t--this.arrowHitTimer;\n+\t\t\tif(this.arrowHitTimer <= 0) {\n+\t\t\t\t--this.arrowHitTempCounter;\n \t\t\t}\n \t\t}\n@@ -389,5 +431,5 @@\n \t\t\tif(this.health <= 0) {\n \t\t\t\treturn false;\n-\t\t\t} else if(var1.func_40543_k() && this.isPotionActive(Potion.potionFireReistance)) {\n+\t\t\t} else if(var1.fireDamage() && this.isPotionActive(Potion.fireResistance)) {\n \t\t\t\treturn false;\n \t\t\t} else {\n@@ -414,11 +456,11 @@\n \t\t\t\tif(var4 != null) {\n \t\t\t\t\tif(var4 instanceof EntityPlayer) {\n-\t\t\t\t\t\tthis.field_34905_c = 60;\n-\t\t\t\t\t\tthis.field_34904_b = (EntityPlayer)var4;\n+\t\t\t\t\t\tthis.recentlyHit = 60;\n+\t\t\t\t\t\tthis.attackingPlayer = (EntityPlayer)var4;\n \t\t\t\t\t} else if(var4 instanceof EntityWolf) {\n \t\t\t\t\t\tEntityWolf var5 = (EntityWolf)var4;\n-\t\t\t\t\t\tif(var5.isWolfTamed()) {\n-\t\t\t\t\t\t\tthis.field_34905_c = 60;\n-\t\t\t\t\t\t\tthis.field_34904_b = null;\n+\t\t\t\t\t\tif(var5.isTamed()) {\n+\t\t\t\t\t\t\tthis.recentlyHit = 60;\n+\t\t\t\t\t\t\tthis.attackingPlayer = null;\n \t\t\t\t\t\t}\n \t\t\t\t\t}\n@@ -445,10 +487,10 @@\n \t\t\t\tif(this.health <= 0) {\n \t\t\t\t\tif(var3) {\n-\t\t\t\t\t\tthis.worldObj.playSoundAtEntity(this, this.getDeathSound(), this.getSoundVolume(), this.func_40123_ac());\n+\t\t\t\t\t\tthis.worldObj.playSoundAtEntity(this, this.getDeathSound(), this.getSoundVolume(), this.getSoundPitch());\n \t\t\t\t\t}\n \n \t\t\t\t\tthis.onDeath(var1);\n \t\t\t\t} else if(var3) {\n-\t\t\t\t\tthis.worldObj.playSoundAtEntity(this, this.getHurtSound(), this.getSoundVolume(), this.func_40123_ac());\n+\t\t\t\t\tthis.worldObj.playSoundAtEntity(this, this.getHurtSound(), this.getSoundVolume(), this.getSoundPitch());\n \t\t\t\t}\n \n@@ -458,6 +500,6 @@\n \t}\n \n-\tprivate float func_40123_ac() {\n-\t\treturn this.func_40127_l() ? (this.rand.nextFloat() - this.rand.nextFloat()) * 0.2F + 1.5F : (this.rand.nextFloat() - this.rand.nextFloat()) * 0.2F + 1.0F;\n+\tprivate float getSoundPitch() {\n+\t\treturn this.isChild() ? (this.rand.nextFloat() - this.rand.nextFloat()) * 0.2F + 1.5F : (this.rand.nextFloat() - this.rand.nextFloat()) * 0.2F + 1.0F;\n \t}\n \n@@ -467,5 +509,5 @@\n \t}\n \n-\tprotected int func_40119_ar() {\n+\tpublic int getTotalArmorValue() {\n \t\treturn 0;\n \t}\n@@ -474,11 +516,11 @@\n \t}\n \n-\tprotected int func_40115_d(DamageSource var1, int var2) {\n-\t\tif(!var1.unblockable()) {\n-\t\t\tint var3 = 25 - this.func_40119_ar();\n-\t\t\tint var4 = var2 * var3 + this.field_40129_bA;\n+\tprotected int applyArmorCalculations(DamageSource var1, int var2) {\n+\t\tif(!var1.isUnblockable()) {\n+\t\t\tint var3 = 25 - this.getTotalArmorValue();\n+\t\t\tint var4 = var2 * var3 + this.carryoverDamage;\n \t\t\tthis.func_40125_g(var2);\n \t\t\tvar2 = var4 / 25;\n-\t\t\tthis.field_40129_bA = var4 % 25;\n+\t\t\tthis.carryoverDamage = var4 % 25;\n \t\t}\n \n@@ -486,11 +528,11 @@\n \t}\n \n-\tprotected int func_40128_b(DamageSource var1, int var2) {\n-\t\tif(this.isPotionActive(Potion.potionResistance)) {\n-\t\t\tint var3 = (this.getActivePotionEffect(Potion.potionResistance).getAmplifier() + 1) * 5;\n+\tprotected int applyPotionDamageCalculations(DamageSource var1, int var2) {\n+\t\tif(this.isPotionActive(Potion.resistance)) {\n+\t\t\tint var3 = (this.getActivePotionEffect(Potion.resistance).getAmplifier() + 1) * 5;\n \t\t\tint var4 = 25 - var3;\n-\t\t\tint var5 = var2 * var4 + this.field_40129_bA;\n+\t\t\tint var5 = var2 * var4 + this.carryoverDamage;\n \t\t\tvar2 = var5 / 25;\n-\t\t\tthis.field_40129_bA = var5 % 25;\n+\t\t\tthis.carryoverDamage = var5 % 25;\n \t\t}\n \n@@ -499,6 +541,6 @@\n \n \tprotected void damageEntity(DamageSource var1, int var2) {\n-\t\tvar2 = this.func_40115_d(var1, var2);\n-\t\tvar2 = this.func_40128_b(var1, var2);\n+\t\tvar2 = this.applyArmorCalculations(var1, var2);\n+\t\tvar2 = this.applyPotionDamageCalculations(var1, var2);\n \t\tthis.health -= var2;\n \t}\n@@ -528,5 +570,5 @@\n \t\tthis.motionZ /= 2.0D;\n \t\tthis.motionX -= var3 / (double)var7 * (double)var8;\n-\t\tthis.motionY += (double)0.4F;\n+\t\tthis.motionY += (double)var8;\n \t\tthis.motionZ -= var5 / (double)var7 * (double)var8;\n \t\tif(this.motionY > (double)0.4F) {\n@@ -553,6 +595,6 @@\n \t\t\t}\n \n-\t\t\tif(!this.func_40127_l()) {\n-\t\t\t\tthis.dropFewItems(this.field_34905_c > 0, var3);\n+\t\t\tif(!this.isChild()) {\n+\t\t\t\tthis.dropFewItems(this.recentlyHit > 0, var3);\n \t\t\t}\n \t\t}\n@@ -758,4 +800,16 @@\n \t}\n \n+\tpublic void func_46010_f(float var1) {\n+\t\tthis.moveForward = var1;\n+\t}\n+\n+\tpublic void func_46003_g(boolean var1) {\n+\t\tthis.isJumping = var1;\n+\t}\n+\n+\tpublic float func_46013_aQ() {\n+\t\treturn this.moveSpeed;\n+\t}\n+\n \tpublic void onLivingUpdate() {\n \t\tif(this.field_39003_d > 0) {\n@@ -803,6 +857,11 @@\n \t\t\tthis.moveForward = 0.0F;\n \t\t\tthis.randomYawVelocity = 0.0F;\n-\t\t} else if(!this.isMultiplayerEntity) {\n-\t\t\tthis.updateEntityActionState();\n+\t\t} else if(this.func_44001_ad()) {\n+\t\t\tif(this.func_46006_aR()) {\n+\t\t\t\tthis.func_46014_aS();\n+\t\t\t} else {\n+\t\t\t\tthis.updateEntityActionState();\n+\t\t\t\tthis.field_46015_bf = this.rotationYaw;\n+\t\t\t}\n \t\t}\n \n@@ -827,5 +886,5 @@\n \t\tthis.randomYawVelocity *= 0.9F;\n \t\tfloat var15 = this.landMovementFactor;\n-\t\tthis.landMovementFactor *= this.func_35166_t_();\n+\t\tthis.landMovementFactor *= this.getSpeedModifier();\n \t\tthis.moveEntityWithHeading(this.moveStrafing, this.moveForward);\n \t\tthis.landMovementFactor = var15;\n@@ -844,9 +903,17 @@\n \t}\n \n+\tprotected boolean func_46006_aR() {\n+\t\treturn false;\n+\t}\n+\n+\tprotected boolean func_44001_ad() {\n+\t\treturn !this.worldObj.multiplayerWorld;\n+\t}\n+\n \tprotected boolean isMovementBlocked() {\n \t\treturn this.health <= 0;\n \t}\n \n-\tpublic boolean func_35162_ad() {\n+\tpublic boolean isBlocking() {\n \t\treturn false;\n \t}\n@@ -854,6 +921,6 @@\n \tprotected void jump() {\n \t\tthis.motionY = (double)0.42F;\n-\t\tif(this.isPotionActive(Potion.potionJump)) {\n-\t\t\tthis.motionY += (double)((float)(this.getActivePotionEffect(Potion.potionJump).getAmplifier() + 1) * 0.1F);\n+\t\tif(this.isPotionActive(Potion.jump)) {\n+\t\t\tthis.motionY += (double)((float)(this.getActivePotionEffect(Potion.jump).getAmplifier() + 1) * 0.1F);\n \t\t}\n \n@@ -889,4 +956,18 @@\n \t\t}\n \n+\t}\n+\n+\tprotected void func_46014_aS() {\n+\t\t++this.entityAge;\n+\t\tthis.despawnEntity();\n+\t\tif(this.field_46020_bQ != null && !this.field_46020_bQ.isEntityAlive()) {\n+\t\t\tthis.field_46020_bQ = null;\n+\t\t}\n+\n+\t\tthis.field_46019_bU.func_46115_a();\n+\t\tthis.field_46022_an.func_46069_a();\n+\t\tthis.field_46018_e.func_46034_a();\n+\t\tthis.field_46017_d.func_46142_a();\n+\t\tthis.field_46021_am.func_46130_b();\n \t}\n \n@@ -930,5 +1011,5 @@\n \t}\n \n-\tprotected int getVerticalFaceSpeed() {\n+\tpublic int getVerticalFaceSpeed() {\n \t\treturn 40;\n \t}\n@@ -1160,7 +1241,7 @@\n \n \tpublic boolean func_40126_a(PotionEffect var1) {\n-\t\tif(this.func_40124_t() == EnumCreatureAttribute.UNDEAD) {\n+\t\tif(this.getCreatureAttribute() == EnumCreatureAttribute.UNDEAD) {\n \t\t\tint var2 = var1.getPotionID();\n-\t\t\tif(var2 == Potion.potionRegeneration.id || var2 == Potion.potionPoison.id) {\n+\t\t\tif(var2 == Potion.regeneration.id || var2 == Potion.poison.id) {\n \t\t\t\treturn false;\n \t\t\t}\n@@ -1170,6 +1251,6 @@\n \t}\n \n-\tpublic boolean func_40122_aP() {\n-\t\treturn this.func_40124_t() == EnumCreatureAttribute.UNDEAD;\n+\tpublic boolean isEntityUndead() {\n+\t\treturn this.getCreatureAttribute() == EnumCreatureAttribute.UNDEAD;\n \t}\n \n@@ -1190,12 +1271,12 @@\n \t}\n \n-\tprotected float func_35166_t_() {\n+\tprotected float getSpeedModifier() {\n \t\tfloat var1 = 1.0F;\n-\t\tif(this.isPotionActive(Potion.potionSpeed)) {\n-\t\t\tvar1 *= 1.0F + 0.2F * (float)(this.getActivePotionEffect(Potion.potionSpeed).getAmplifier() + 1);\n-\t\t}\n-\n-\t\tif(this.isPotionActive(Potion.potionSlowdown)) {\n-\t\t\tvar1 *= 1.0F - 0.15F * (float)(this.getActivePotionEffect(Potion.potionSlowdown).getAmplifier() + 1);\n+\t\tif(this.isPotionActive(Potion.moveSpeed)) {\n+\t\t\tvar1 *= 1.0F + 0.2F * (float)(this.getActivePotionEffect(Potion.moveSpeed).getAmplifier() + 1);\n+\t\t}\n+\n+\t\tif(this.isPotionActive(Potion.moveSlowdown)) {\n+\t\t\tvar1 *= 1.0F - 0.15F * (float)(this.getActivePotionEffect(Potion.moveSlowdown).getAmplifier() + 1);\n \t\t}\n \n@@ -1203,13 +1284,13 @@\n \t}\n \n-\tpublic void func_40113_j(double var1, double var3, double var5) {\n+\tpublic void teleportToLocation(double var1, double var3, double var5) {\n \t\tthis.setLocationAndAngles(var1, var3, var5, this.rotationYaw, this.rotationPitch);\n \t}\n \n-\tpublic boolean func_40127_l() {\n+\tpublic boolean isChild() {\n \t\treturn false;\n \t}\n \n-\tpublic EnumCreatureAttribute func_40124_t() {\n+\tpublic EnumCreatureAttribute getCreatureAttribute() {\n \t\treturn EnumCreatureAttribute.UNDEFINED;\n \t}\n",
+      "completion_blockers": [],
+      "limitations": [
+        "No inherited unchanged Java API reproof; no manually invoked dormant helper API parity",
+        "EntityLiving rendering/client integration does not read newly introduced dead yaw fields in original release"
+      ]
+    },
+    {
+      "class_name": "EntityZombie",
+      "entire_singleplayer_delta_effects_covered": true,
+      "disposition": "All changed observable singleplayer behavior covered; no-reader storage and unreachable helper APIs explicitly excluded",
+      "rust_java_facade_api_implemented": false,
+      "old_source_sha256": "b54d87bc48a9554cd8ee2bebccb18fd248a26c048d309d732d0fe4336d1d3eda",
+      "new_source_sha256": "73917163284545c337d2d65e589c00b07d69ca15161bfe5a12c7a7bd6830cdc6",
+      "all_delta_hunk_coverage": [
+        {
+          "delta": "constructor five task allocations/registration",
+          "authority": "Original graph serializes exact task types, priorities1,2,3,4,4 and mutex/default fields; no World/RNG/EntityID/NBT effect; selectors remain inactive"
+        },
+        {
+          "delta": "func_46006_aR returnsfalse",
+          "authority": "Original bytecode iconst_0/ireturn and all20mob virtual resolution probes; inherited oldAI retained"
+        },
+        {
+          "delta": "getTotalArmorValue protectednumbered\u2192publicnamed, fire and creatureattribute names",
+          "authority": "Bodies/literals unchanged2/8/UNDEAD. No additional behavior delta"
+        }
+      ],
+      "complete_source_diff": "--- 1.0/EntityZombie\n+++ 1.1/EntityZombie\n@@ -7,4 +7,9 @@\n \t\tthis.moveSpeed = 0.5F;\n \t\tthis.attackStrength = 4;\n+\t\tthis.field_46019_bU.func_46118_a(1, new EntityAISwimming(this));\n+\t\tthis.field_46019_bU.func_46118_a(2, new EntityAIAttackOnCollide(this, var1, 16.0F));\n+\t\tthis.field_46019_bU.func_46118_a(3, new EntityAIWander(this));\n+\t\tthis.field_46019_bU.func_46118_a(4, new EntityAIWatchClosest(this, var1, 8.0F));\n+\t\tthis.field_46019_bU.func_46118_a(4, new EntityAILookIdle(this));\n \t}\n \n@@ -13,6 +18,10 @@\n \t}\n \n-\tprotected int func_40119_ar() {\n+\tpublic int getTotalArmorValue() {\n \t\treturn 2;\n+\t}\n+\n+\tprotected boolean func_46006_aR() {\n+\t\treturn false;\n \t}\n \n@@ -21,5 +30,5 @@\n \t\t\tfloat var1 = this.getEntityBrightness(1.0F);\n \t\t\tif(var1 > 0.5F && this.worldObj.canBlockSeeTheSky(MathHelper.floor_double(this.posX), MathHelper.floor_double(this.posY), MathHelper.floor_double(this.posZ)) && this.rand.nextFloat() * 30.0F < (var1 - 0.4F) * 2.0F) {\n-\t\t\t\tthis.func_40046_d(8);\n+\t\t\t\tthis.setFire(8);\n \t\t\t}\n \t\t}\n@@ -44,5 +53,5 @@\n \t}\n \n-\tpublic EnumCreatureAttribute func_40124_t() {\n+\tpublic EnumCreatureAttribute getCreatureAttribute() {\n \t\treturn EnumCreatureAttribute.UNDEAD;\n \t}\n",
+      "completion_blockers": [],
+      "limitations": [
+        "No inherited unchanged Java API reproof; no manually invoked dormant helper API parity",
+        "EntityLiving rendering/client integration does not read newly introduced dead yaw fields in original release"
+      ]
+    },
+    {
+      "class_name": "EntityPigZombie",
+      "entire_singleplayer_delta_effects_covered": true,
+      "disposition": "All changed observable singleplayer behavior covered; no-reader storage and unreachable helper APIs explicitly excluded",
+      "rust_java_facade_api_implemented": false,
+      "old_source_sha256": "6373bd60a780a9f951e4a3ea874e7551e9f981cec9e09477beb44ca7a3bb7286",
+      "new_source_sha256": "5c42ee6c73b33f9225b06c244da481906611ff621a2e881579b0c72637041c5c",
+      "all_delta_hunk_coverage": [
+        {
+          "delta": "onlynew override func_46006_aR returnsfalse",
+          "authority": "Original class sole addedhunk; original bytecode guard false and inherited Zombie graph effects covered in both original and production constructor/save/tick traces"
+        }
+      ],
+      "complete_source_diff": "--- 1.0/EntityPigZombie\n+++ 1.1/EntityPigZombie\n@@ -14,4 +14,8 @@\n \t\tthis.attackStrength = 5;\n \t\tthis.isImmuneToFire = true;\n+\t}\n+\n+\tprotected boolean func_46006_aR() {\n+\t\treturn false;\n \t}\n \n",
+      "completion_blockers": [],
+      "limitations": [
+        "No inherited unchanged Java API reproof; no manually invoked dormant helper API parity",
+        "EntityLiving rendering/client integration does not read newly introduced dead yaw fields in original release"
+      ]
+    },
+    {
+      "class_name": "EntityMob",
+      "entire_singleplayer_delta_effects_covered": true,
+      "disposition": "All changed observable singleplayer behavior covered; no-reader storage and unreachable helper APIs explicitly excluded",
+      "rust_java_facade_api_implemented": false,
+      "old_source_sha256": "c92a8bce87c87002a412aedbf08bbc3d2e767e75bc20f2b3da468a4d8e8d5dbf",
+      "new_source_sha256": "f028cb13108937352d25da9ca6a20ea066acba4932e40f7845867e05d4cc763a",
+      "all_delta_hunk_coverage": [
+        {
+          "delta": "new attack target store field_46020_bQ",
+          "authority": "Pure reference assignment ornull; only getter+dormantAI read it, no reachable caller observes; no world/RNG/state effect in authorized scope"
+        },
+        {
+          "delta": "experience and potion renames; two method access widenings",
+          "authority": "Inherited bodies unchanged, no gameplay control/literal delta"
+        }
+      ],
+      "complete_source_diff": "--- 1.0/EntityMob\n+++ 1.1/EntityMob\n@@ -6,5 +6,5 @@\n \tpublic EntityMob(World var1) {\n \t\tsuper(var1);\n-\t\tthis.field_35171_bJ = 5;\n+\t\tthis.experienceValue = 5;\n \t}\n \n@@ -37,4 +37,5 @@\n \t\t\t\tif(var3 != this) {\n \t\t\t\t\tthis.entityToAttack = var3;\n+\t\t\t\t\tthis.field_46020_bQ = var3 instanceof EntityLiving ? (EntityLiving)var3 : null;\n \t\t\t\t}\n \n@@ -48,12 +49,12 @@\n \t}\n \n-\tprotected boolean attackEntityAsMob(Entity var1) {\n+\tpublic boolean attackEntityAsMob(Entity var1) {\n \t\tint var2 = this.attackStrength;\n-\t\tif(this.isPotionActive(Potion.potionDamageBoost)) {\n-\t\t\tvar2 += 3 << this.getActivePotionEffect(Potion.potionDamageBoost).getAmplifier();\n+\t\tif(this.isPotionActive(Potion.damageBoost)) {\n+\t\t\tvar2 += 3 << this.getActivePotionEffect(Potion.damageBoost).getAmplifier();\n \t\t}\n \n-\t\tif(this.isPotionActive(Potion.potionWeakness)) {\n-\t\t\tvar2 -= 2 << this.getActivePotionEffect(Potion.potionWeakness).getAmplifier();\n+\t\tif(this.isPotionActive(Potion.weakness)) {\n+\t\t\tvar2 -= 2 << this.getActivePotionEffect(Potion.weakness).getAmplifier();\n \t\t}\n \n@@ -69,5 +70,5 @@\n \t}\n \n-\tprotected float getBlockPathWeight(int var1, int var2, int var3) {\n+\tpublic float getBlockPathWeight(int var1, int var2, int var3) {\n \t\treturn 0.5F - this.worldObj.getLightBrightness(var1, var2, var3);\n \t}\n",
+      "completion_blockers": [],
+      "limitations": [
+        "No inherited unchanged Java API reproof; no manually invoked dormant helper API parity",
+        "EntityLiving rendering/client integration does not read newly introduced dead yaw fields in original release"
+      ]
+    }
+  ],
+  "authority": {
+    "static_review_path": "work/ai-dormant11-static-review.json",
+    "static_review_sha256": "e0e0713684a543a505588c16358cffa20ea256596b3036b0523f778578b891e1",
+    "jar_sha256": "44bb6ace88fdff460d6c428c4becee8cad52f2622e1f800dab7a70f8a716f75b",
+    "runtime": "MojangJava8u51",
+    "seed_hook": "Only original Entity Random initializer seam; prepare_eggstate11.py restoration proves all original method bodies/offsets retained",
+    "graph_fixture_sha256": "af2df936ab5a6f1c3fc7a40a35ccc4ee703e8e0b5935da69472109773aca3ccf",
+    "graph_cases": 240,
+    "original_save_rejected_cases": 2,
+    "save_rejection_scope": "Original rejects dead entities after20ticks; those cases prove ctor+tick graph but skip reload, matching original960-case fixture behavior",
+    "state_fixture_sha256": "c84675810f23c091c15153e4bfcee2914f43454b3eb935516dfca4dc1d1e64cf",
+    "state_cases": 960,
+    "oracle_log_sha256": "5dff8f8e8c7e9e9b56d016b51950b13176e2d8f9cd655f8ee9746f4eb21de179",
+    "focused_production_log_sha256": "c131f6949ab3670c8da7f5ebe7cbcd7d7d46ad33cbd9faee9933df0b7aafa923",
+    "focused_production_result": "1 passed,0failed; actual960-case constructor/save/tick fixture test"
+  },
+  "reproduction": [
+    ". work/toolchains/env.ps1",
+    "tools/oracle11/verify_dormant_ai11.ps1",
+    "python tools/oracle11/audit_dormant_ai11.py ORIGINAL_MCP OUTPUT_JSON"
+  ],
+  "source_hashes": {
+    "crates/worldgen11/src/entity/living.rs": "924cd1b4bd7f680f54a550013fe76a2394db6d7ee8fc5d2bfd340dbd23b8a31e",
+    "crates/worldgen11/src/entity/aquatic.rs": "d9ad609c9228275183bac56497af1a54e466555c716b92b530d12cfff7cbad93",
+    "tools/oracle11/src/net/minecraft/src/DormantAi11.java": "06a0d577e385dc4e9fa423e55e6a1b2467e3414dcab9cc7282745f1482deb110",
+    "tools/oracle11/verify_dormant_ai11.ps1": "c127af77cf77f3685f1cb17c342b62655a0697a9467af76238c32fb92e4f27d2",
+    "tools/oracle11/audit_dormant_ai11.py": "6cc90adbc40fd14fe99b65cf27246eaaee4d652373052eb8fbd01c22e1c8fe26"
+  },
+  "new_runtime_changes": "None needed: no reachable missing AI algorithms discovered",
+  "parent_registration": "Register explicit singleplayer semantic dispositions, not missing APIs asimplemented; current commit/hash evidence required."
+}
