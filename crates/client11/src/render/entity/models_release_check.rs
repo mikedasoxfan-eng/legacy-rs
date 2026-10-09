@@ -845,17 +845,24 @@ pub fn block_inventory_check(path: &str) -> bool {
 /// Full sky draws and final GL state, with world color/time values supplied by the fixture.
 pub fn global_sky_check(path: &str) -> bool {
     let mut d = Dump { bytes: std::fs::read(path).expect("sky dump"), at: 0, checks: 0, bad: 0 };
-    assert_eq!(d.int(), 0x30314752); assert_eq!(d.int(), 1);
+    assert_eq!(d.int(), 0x30314752); let version=d.int(); assert!(version==1 || version==2);
     let count = d.int();
     for case in 0..count {
         let dimension=d.int(); let anaglyph=d.int()!=0; let angle=d.float(); let rain=d.float(); let stars=d.float();
         let phase=d.int(); let height=f64::from_bits(u64::from_le_bytes(d.take())); let rgb=std::array::from_fn(|_|d.float());
-        let gl=crate::render::sky_release_check::draw(dimension,anaglyph,angle,rain,stars,phase,height,rgb);
+        let horizon=if version==2 {f64::from_bits(u64::from_le_bytes(d.take()))} else {63.0};
+        let gl=crate::render::sky_release_check::draw_with_horizon(dimension,anaglyph,angle,rain,stars,phase,height,rgb,horizon);
         d.full_draws(&gl,&format!("sky[{case}]"));
     }
     assert_eq!(d.at,d.bytes.len(),"sky EOF");
     println!("GLOBAL SKY10 {}: {count} cases, {} raw-bit comparisons, {} mismatches",if d.bad==0 {"EXACT"}else{"DIFFER"},d.checks,d.bad);
     d.bad==0
+}
+
+#[test]
+#[ignore = "requires original 1.1 sky horizon fixture"]
+fn sky_horizon_matches_original_11() {
+    assert!(global_sky_check(&std::env::var("SKY_HORIZON11_FIXTURE").unwrap()));
 }
 
 

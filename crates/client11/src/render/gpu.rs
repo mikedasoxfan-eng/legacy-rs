@@ -948,8 +948,8 @@ impl Gpu {
         };
         let star_b = sky::star_brightness(p.celestial) * (1.0f32 - p.rain);
         let stars_u = Uniforms { color: [star_b; 4], ..sunmoon_u };
-        // RenderGlobal.renderSky: thePlayer.getPosition(partial).yCoord - 63.
-        let void_depth = p.cam_pos.y - p.horizon;
+        // RenderGlobal.renderSky: interpolated player height minus world horizon.
+        let void_depth = super::sky_release::void_depth(p.cam_pos.y, p.horizon);
         let void_u = Uniforms {
             view_proj: view_proj.to_cols_array_2d(),
             fog_view: rot.to_cols_array_2d(),

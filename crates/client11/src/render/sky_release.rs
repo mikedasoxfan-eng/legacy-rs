@@ -2,6 +2,9 @@
 use super::Vertex;
 use super::entity::fixed::{self, Op};
 
+/// RenderGlobal uses the world's horizon (zero for flat worlds).
+pub fn void_depth(height: f64, horizon: f64) -> f64 { height - horizon }
+
 pub fn sun_quad() -> [Vertex; 6] {
     let points = [[-30.0,100.0,-30.0],[30.0,100.0,-30.0],[30.0,100.0,30.0],[-30.0,100.0,30.0]];
     let uv = [[0.0,0.0],[1.0,0.0],[1.0,1.0],[0.0,1.0]];

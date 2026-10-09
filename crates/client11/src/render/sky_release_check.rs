@@ -21,6 +21,10 @@ fn quad(gl: &mut Fixed, vertices: [Vertex; 6], color: bool) {
 }
 pub fn draw(dimension: i32, anaglyph: bool, angle: f32, rain: f32, stars: f32,
             phase: i32, height: f64, rgb: [f32; 3]) -> Fixed {
+    draw_with_horizon(dimension, anaglyph, angle, rain, stars, phase, height, rgb, 63.0)
+}
+pub fn draw_with_horizon(dimension: i32, anaglyph: bool, angle: f32, rain: f32, stars: f32,
+            phase: i32, height: f64, rgb: [f32; 3], horizon: f64) -> Fixed {
     let mut gl = Fixed::new(1.0);
     if dimension == -1 { return gl; }
     if dimension == 1 {
@@ -63,7 +67,7 @@ pub fn draw(dimension: i32, anaglyph: bool, angle: f32, rain: f32, stars: f32,
     }
     gl.material = [1.0; 4]; gl.enable(16, false); gl.pop();
     gl.enable(8, false); gl.material = [0.0, 0.0, 0.0, 1.0];
-    let depth = height - 63.0;
+    let depth = sky_release::void_depth(height, horizon);
     if depth < 0.0 {
         gl.push(); gl.translate(0.0, 12.0, 0.0);
         positions(&mut gl, &sky::sky_plane(-16.0, false), false); gl.pop();
