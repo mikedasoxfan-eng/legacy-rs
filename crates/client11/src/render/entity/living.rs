@@ -84,6 +84,8 @@ pub struct RenderState {
     pub saddled: bool,
     pub sheared: bool,
     pub fleece_color: usize,
+    pub sheep_head_position: f32,
+    pub sheep_head_angle: f32,
     /// EntityCreeper.setCreeperFlashTime(partial).
     pub creeper_flash: f32,
     pub powered: bool,
@@ -164,6 +166,8 @@ impl RenderState {
             saddled: false,
             sheared: false,
             fleece_color: 0,
+            sheep_head_position: 0.0,
+            sheep_head_angle: 0.0,
             creeper_flash: 0.0,
             powered: false,
             slime_size: 1,
@@ -629,6 +633,7 @@ fn render_with_lighting(s: &RenderState, camera: DVec3, normalize: bool) -> Vec<
         1.0 / 16.0,
     ];
     main.set_living_animations(pose[0], pose[1], s.partial, &s.wolf);
+    main.set_sheep_animations(s.sheep_head_position, s.sheep_head_angle);
     main.set_rotation_angles(pose);
     let mut brightness = s.brightness;
     if s.kind == MobKind::Wolf && s.wolf_shaking {
@@ -698,6 +703,7 @@ fn render_with_lighting(s: &RenderState, camera: DVec3, normalize: bool) -> Vec<
         m.on_ground = s.attack;
         m.is_riding = s.riding;
         m.is_child = s.is_child;
+        m.set_sheep_animations(s.sheep_head_position, s.sheep_head_angle);
         m.set_rotation_angles(pose);
         let offset = if pass == Pass::Additive {
             s.age * 0.01

@@ -707,6 +707,61 @@ pub fn biped_release_check(path: &str) -> bool {
     d.bad == 0
 }
 
+#[test]
+#[ignore = "requires original 1.1 sheep renderer fixture"]
+fn sheep_live_bridge_models_and_renderer_match_original_11() {
+    use super::models::{Model, ModelKind};
+    use worldgen::entity::{Entity, EntityKind};
+    let path = std::env::var("SHEEP_RENDER11_FIXTURE").unwrap();
+    let mut d = Input { data: std::fs::read(path).unwrap(), at: 0, checks: 0, bad: 0 };
+    assert_eq!(d.u(), 0x534d3131);
+    let n = d.u();
+    let mut world = worldgen::World::new(0, 0);
+    let mut body = Model::new(ModelKind::Sheep);
+    let mut wool = Model::new(ModelKind::SheepFur);
+    for case in 0..n {
+        let time = d.u() as i32;
+        let partial = d.f();
+        let child = d.u() != 0; let sheared = d.u() != 0; let hurt = d.u() != 0;
+        let color = d.u() as u8; let brightness = d.f(); let packed = d.u() as i32;
+        let mut e = Entity::living(&mut world, "Sheep").unwrap();
+        e.set_growing_age(if child { -24000 } else { 0 });
+        e.kind = EntityKind::Sheep { sheared, fleece_color: color };
+        e.living.sheep_graze_timer = time; e.entity_id = 337 * case as i32;
+        e.set_position(0.25, 70.5, -2.75);
+        e.prev_pos.x = 0.1; e.prev_pos.y = 70.4; e.prev_pos.z = -2.9;
+        e.last_tick_pos = e.prev_pos;
+        e.living.prev_render_yaw_offset = -33.0; e.living.render_yaw_offset = 17.0;
+        e.prev_yaw = -75.0; e.yaw = 35.0; e.prev_pitch = -12.25; e.pitch = 37.5;
+        e.living.prev_limb_amount = 0.2; e.living.limb_amount = 0.9; e.living.limb_swing = 3.75;
+        e.ticks_existed = 31; e.living.prev_swing_progress = 0.15; e.living.swing_progress = 0.65;
+        e.living.hurt_time = if hurt { 3 } else { 0 };
+        let mut s = super::bridge::render_state(&e, partial, 1.0).unwrap();
+        s.overlay_brightness = brightness;
+        d.eq(s.sheep_head_position.to_bits(), "live sheep head position");
+        d.eq(s.sheep_head_angle.to_bits(), "live sheep head angle");
+        let pose = [s.limb_swing * if child { 3.0 } else { 1.0 }, s.limb_amount,
+                    s.age, s.yaw - s.body_yaw, s.pitch, 0.0625];
+        for m in [&mut body, &mut wool] {
+            m.set_sheep_animations(s.sheep_head_position, s.sheep_head_angle);
+            m.set_rotation_angles(pose);
+            for value in [m["head"].rotation_point_y, m["head"].rotate_angle_x, m["head"].rotate_angle_y] {
+                d.eq(value.to_bits(), "original sheep model head");
+            }
+        }
+        let g = super::raw_living181::render(&s, [0.0, 64.0, 0.0], false);
+        assert_eq!(d.u() as usize, g.draws.len(), "sheep {case} draw count");
+        for (i, draw) in g.draws.iter().enumerate() { d.draw(draw, &format!("sheep {case} draw {i}")); }
+        let lights = super::raw_living181::packed_brightnesses(&g.draws, packed);
+        assert_eq!(d.u() as usize, lights.len());
+        for light in lights { d.eq(light as u32, "sheep draw light"); }
+    }
+    assert_eq!(d.at, d.data.len());
+    println!("SHEEP LIVE RENDER {}: {n} cases, {} comparisons, {} differences",
+        if d.bad == 0 { "EXACT" } else { "DIFFER" }, d.checks, d.bad);
+    assert_eq!(d.bad, 0);
+}
+
 /// Release 1.0 RenderLiving with baby animals (Mode_render_child4_10).
 pub fn child_living_check(path: &str) -> bool {
     use super::living::{MobKind, RenderState};

@@ -217,6 +217,7 @@ fn general(s: &RenderState, camera: [f64; 3], normalize: bool) -> Fixed {
         0.0625,
     ];
     m.set_living_animations(pose[0], pose[1], s.partial, &s.wolf);
+    m.set_sheep_animations(s.sheep_head_position, s.sheep_head_angle);
     m.set_rotation_angles(pose);
     if s.kind == MobKind::MagmaCube {m.magma_animation(s.slime_squish, s.slime_squish, 0.0);}
     g.push();
@@ -311,6 +312,7 @@ fn general(s: &RenderState, camera: [f64; 3], normalize: bool) -> Fixed {
         model.on_ground = s.attack;
         model.is_riding = s.riding;
         model.is_child = s.is_child;
+        model.set_sheep_animations(s.sheep_head_position, s.sheep_head_angle);
         model.set_rotation_angles(pose);
         (texture, model)
     });

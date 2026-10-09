@@ -63,6 +63,8 @@ pub struct Model {
     pub is_sneak: bool,
     pub carrying: bool,
     pub screaming: bool,
+    /// ModelSheep1/2 retain the EntitySheep head pitch between prepare and pose.
+    pub sheep_head_angle: f32,
 }
 
 impl Index<&str> for Model {
@@ -119,6 +121,7 @@ impl Model {
             is_sneak: false,
             carrying: false,
             screaming: false,
+            sheep_head_angle: 0.0,
         };
         match kind {
             ModelKind::Dragon | ModelKind::Villager | ModelKind::SnowMan | ModelKind::Blaze | ModelKind::MagmaCube | ModelKind::EnderCrystal | ModelKind::Book => m.init_release(inflate, offset),
@@ -189,7 +192,9 @@ impl Model {
             }
             ModelKind::Quadruped | ModelKind::Pig | ModelKind::SheepFur | ModelKind::Sheep => {
                 self.pose_quadruped(p);
-
+                if matches!(self.kind, ModelKind::SheepFur | ModelKind::Sheep) {
+                    self["head"].rotate_angle_x = self.sheep_head_angle;
+                }
             }
             ModelKind::Cow => {
                 self.pose_quadruped(p);
@@ -1016,6 +1021,14 @@ impl Model {
             self.insert_part(format!("squidTentacles[{i}]"), part);
         }
     }
+    /// ModelSheep1/2.setLivingAnimations, using the live EntitySheep getters.
+    pub fn set_sheep_animations(&mut self, head_position: f32, head_angle: f32) {
+        if matches!(self.kind, ModelKind::SheepFur | ModelKind::Sheep) {
+            self["head"].rotation_point_y = 6.0f32 + head_position * 9.0f32;
+            self.sheep_head_angle = head_angle;
+        }
+    }
+
     /// `ModelWolf.setLivingAnimations`: standing/sitting, tail wag, begging and wet shake.
     pub fn set_living_animations(&mut self, var2: f32, var3: f32, var4: f32, wolf: &WolfAnimation) {
         if self.kind != ModelKind::Wolf {

@@ -84,6 +84,8 @@ pub fn render_state(e: &Entity, partial: f32, brightness: f32) -> Option<RenderS
         } => {
             s.sheared = *sheared;
             s.fleece_color = *fleece_color as usize & 15;
+            s.sheep_head_position = e.sheep_head_position11(partial);
+            s.sheep_head_angle = e.sheep_head_angle11(partial);
         }
         EntityKind::Creeper { powered, .. } => {
             s.creeper_flash = e.creeper_flash(partial);
