@@ -199,6 +199,63 @@ pub fn sign_check(path: &str) -> bool {
     println!("sign renderers: {} values, {} differences", d.checks, d.bad);
     d.bad == 0
 }
+
+#[cfg(test)]
+mod sign_font11_tests {
+    use super::*;
+    #[test]
+    #[ignore="requires original NORMAL_PACK11_FIXTURE"]
+    fn original_normal_packing() {
+        let bytes=std::fs::read(std::env::var("NORMAL_PACK11_FIXTURE").unwrap()).unwrap();
+        let words:Vec<_>=bytes.chunks_exact(4).map(|word|u32::from_le_bytes(word.try_into().unwrap())).collect();
+        assert_eq!(words.len(),1+words[0] as usize*5);
+        for (index,record) in words[1..].chunks_exact(5).enumerate() {
+            let normal=glam::Vec3::new(f32::from_bits(record[0]),f32::from_bits(record[1]),f32::from_bits(record[2]));
+            assert_eq!(super::super::living::pack_normal(normal),record[3],"vector {index}: {normal:?}");
+            let mut fixed=super::super::fixed::Fixed::new(1.0);fixed.set_normal(normal.x,normal.y,normal.z);
+            assert_eq!(fixed.vertex_normal,Some(record[3]));assert_eq!(record[4],1);
+        }
+        println!("NORMAL PACK EXACT: {} original Tessellator vectors",words[0]);
+    }
+    fn phase(input: &mut Input, draws: &[Draw], case: &str) {
+        let default=input.u();
+        let pages:Vec<_>=(0..256).map(|_|input.u()).collect();
+        assert_eq!(input.u() as usize,draws.len(),"{case} draw count");
+        for (index,draw) in draws.iter().enumerate() {
+            let texture=u32::from_le_bytes(input.data[input.at..input.at+4].try_into().unwrap());
+            let logical=if texture==default {14} else if let Some(page)=pages.iter().position(|&id|id!=0 && id==texture) {0x8000_0000|page as u32} else {texture};
+            // Normalize allocator identities only; retain glyph page identity.
+            input.data[input.at..input.at+4].copy_from_slice(&logical.to_le_bytes());
+            input.draw(draw,&format!("{case} draw {index}"));
+        }
+    }
+    #[test]
+    #[ignore="requires original SIGN_FONT11_FIXTURE and installed 1.1 assets"]
+    fn original_sign_then_gui_shared_font() {
+        let mut input=Input{data:std::fs::read(std::env::var("SIGN_FONT11_FIXTURE").unwrap()).unwrap(),at:0,checks:0,bad:0};
+        assert_eq!(input.u(),0x53463131);let cases=input.u();
+        let mut jar=crate::assets::Jar::open().unwrap();
+        let mut font=crate::gui::font::FontRenderer::new(&jar.image("font/default.png").unwrap(),14,&jar.text("font.txt").unwrap());
+        for case in 0..cases {
+            font.unicode=input.u()!=0;font.bidi=input.u()!=0;
+            let (block,metadata,edited)=(input.u() as u8,input.u() as i32,input.u() as i32);
+            let seed=i64::from_le_bytes(input.bytes());
+            let text=std::array::from_fn(|_|{let n=input.u();String::from_utf16(&(0..n).map(|_|input.u() as u16).collect::<Vec<_>>()).unwrap()});
+            let sign=worldgen::sign::Sign{text,line_being_edited:edited,editable:true};
+            *font.random.lock().unwrap()=worldgen::JavaRandom::new(seed);
+            let world_font=font.world_snapshot();
+            assert!(std::sync::Arc::ptr_eq(&font.random,&world_font.random));
+            let world=crate::render::sign::render_with_font(&sign,block,metadata,[-0.25,10.5,3.75],0.73,&world_font);
+            phase(&mut input,&world.draws,&format!("sign {case}"));
+            let mut gui=super::super::fixed::Fixed::new(1.0);
+            font.draw_fixed(&mut gui,"§kABC אב",7,11,0x7fabcdef);
+            phase(&mut input,&gui.draws,&format!("GUI after sign {case}"));
+            assert_eq!(font.random.lock().unwrap().next_long(),i64::from_le_bytes(input.bytes()),"shared RNG case {case}");
+        }
+        assert_eq!(input.at,input.data.len());assert_eq!(input.bad,0);
+        println!("SIGN FONT EXACT: {cases} world/GUI sequences, {} bit comparisons",input.checks);
+    }
+}
 pub fn painting_check(path: &str) -> bool {
     let mut d = Input {
         data: std::fs::read(path).unwrap(),

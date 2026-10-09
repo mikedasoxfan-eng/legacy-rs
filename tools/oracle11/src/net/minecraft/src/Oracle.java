@@ -84,6 +84,8 @@ public class Oracle {
         if(mode.equals("maps")){DecorationOracle.maps(a[1]);return;}
         if(mode.equals("paintingrenderers")){DecorationOracle.paintingRenderers(a[1]);return;}
         if(mode.equals("signrenderers")){DecorationOracle.signRenderers(a[1]);return;}
+        if(mode.equals("signfont11")){SignFont11.main(new String[]{a[1]});return;}
+        if(mode.equals("normalpack11")){NormalPack11.main(new String[]{a[1]});return;}
         if (mode.equals("pickuprenderersfast")) { ParticleOracle.pickupDraws(a[1],false);
         } else if (mode.equals("musaudio")) { SoundOracle.run(a[1]);
         } else if (mode.equals("pickuprenderers")) { ParticleOracle.pickupDraws(a[1]);

@@ -4,19 +4,20 @@
 use super::gl::{Gl, TexId};
 use crate::render::gpu::Image;
 
+#[derive(Clone)]
 pub struct FontRenderer {
     char_width: [i32; 256],
     pub line_height: i32,
-    pub random: std::sync::Mutex<worldgen::JavaRandom>,
+    pub random: std::sync::Arc<std::sync::Mutex<worldgen::JavaRandom>>,
     pub texture: TexId,
     /// `ChatAllowedCharacters.allowedCharacters` (from `font.txt`).
-    allowed: Vec<char>,
+    allowed: std::sync::Arc<Vec<char>>,
     /// The 32 color display lists: 16 normal then 16 shadow colors.
     colors: [[f32; 3]; 32],
-    glyph_sizes: Vec<i8>,
+    glyph_sizes: std::sync::Arc<Vec<i8>>,
     pub unicode: bool,
     pub bidi: bool,
-    pub glyph_pages: std::sync::Mutex<[Option<TexId>; 256]>,
+    pub glyph_pages: std::sync::Arc<std::sync::Mutex<[Option<TexId>; 256]>>,
 }
 
 impl FontRenderer {
@@ -65,7 +66,7 @@ impl FontRenderer {
             }
             *c = [r as f32 / 255.0, g as f32 / 255.0, b as f32 / 255.0];
         }
-        let allowed = font_txt
+        let allowed: Vec<char> = font_txt
             .lines()
             .filter(|l| !l.starts_with('#'))
             .flat_map(|l| l.chars())
@@ -73,8 +74,17 @@ impl FontRenderer {
         let glyph_sizes = crate::assets::Jar::open().and_then(|mut jar| jar.bytes("font/glyph_sizes.bin"))
             .expect("Minecraft 1.1 glyph_sizes.bin").into_iter().map(|value| value as i8).collect::<Vec<_>>();
         assert_eq!(glyph_sizes.len(), 65536);
-        FontRenderer { char_width, texture, allowed, colors, glyph_sizes, unicode:false, bidi:false,
-            glyph_pages:std::sync::Mutex::new([None;256]), line_height: 8, random: std::sync::Mutex::new(worldgen::JavaRandom::new(0)) }
+        FontRenderer { char_width, texture, allowed:allowed.into(), colors, glyph_sizes:glyph_sizes.into(), unicode:false, bidi:false,
+            glyph_pages:std::sync::Arc::new(std::sync::Mutex::new([None;256])), line_height: 8, random: std::sync::Arc::new(std::sync::Mutex::new(worldgen::JavaRandom::new(0))) }
+    }
+
+    /// Capture the current language/font configuration for renderWorld. The world
+    /// and following GUI draws retain one obfuscation RNG and glyph-page cache.
+    pub fn world_snapshot(&self) -> Self {
+        let mut font = self.clone();
+        // Fixed's texture namespace identifies the same default font by 14.
+        font.texture = 14;
+        font
     }
 
     pub fn allows(&self, c: char) -> bool {

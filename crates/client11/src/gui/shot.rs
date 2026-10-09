@@ -163,6 +163,8 @@ pub fn run(script: &str, out_dir: &std::path::Path) -> Result<(), String> {
                 sys.ui.settings.anaglyph = rest == "on";
                 let mut jar = crate::assets::Jar::open()?;
                 sys.ui.font = super::font::FontRenderer::new_with_anaglyph(&jar.image("font/default.png")?, sys.ui.texture("font/default.png"), &jar.text("font.txt")?, sys.ui.settings.anaglyph,);
+                sys.ui.font.unicode=sys.ui.lang.unicode();
+                sys.ui.font.bidi=super::lang::Lang::language_is_bidi(&sys.ui.settings.language);
                 sys.refresh_textures(&device, &queue)?;
             }
             "message" => ingame.add_chat_message(&sys.ui, rest.into()),

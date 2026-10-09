@@ -8,6 +8,38 @@ use std::collections::HashMap;
 use std::ops::Range;
 use wgpu::util::DeviceExt;
 
+#[cfg(test)]
+mod unicode_sign_tests {
+    use super::*;
+    #[test]
+    #[ignore="requires headless GPU adapter and installed 1.1 assets"]
+    fn unicode_sign_pages_upload_headlessly() {
+        let instance=wgpu::Instance::new(wgpu::InstanceDescriptor::new_without_display_handle());
+        let adapter=pollster::block_on(instance.request_adapter(&wgpu::RequestAdapterOptions {
+            power_preference:wgpu::PowerPreference::HighPerformance,compatible_surface:None,
+            force_fallback_adapter:false,apply_limit_buckets:false,
+        })).unwrap();
+        let (device,queue)=pollster::block_on(adapter.request_device(&wgpu::DeviceDescriptor::default())).unwrap();
+        let mut jar=crate::assets::Jar::open().unwrap();
+        let default=jar.image("font/default.png").unwrap();
+        let sign_image=jar.image("item/sign.png").unwrap();
+        let mut font=crate::gui::font::FontRenderer::new(&default,14,&jar.text("font.txt").unwrap());
+        font.unicode=true;font.bidi=true;
+        let sign=worldgen::sign::Sign {text:["日本語".into(),"אב (ABC)".into(),"ا١ABC".into(),"".into()],line_being_edited:-1,editable:true};
+        let recorded=crate::render::sign::render_with_font(&sign,63,0,[0.0;3],1.0,&font.world_snapshot());
+        let batches:Vec<_>=recorded.draws.iter().map(|draw|draw.batch()).collect();
+        let pages:std::collections::HashSet<_>=batches.iter().filter_map(|batch|batch.texture.filter(|name|name.starts_with("font/glyph_"))).collect();
+        assert!(pages.len()>=4,"multiple Unicode pages must be exercised");
+        let mut pipeline=EntityPipeline::new(&device,&queue,wgpu::TextureFormat::Rgba8Unorm,
+            [("font/default.png",&default),("item/sign.png",&sign_image)]);
+        assert!(pages.iter().all(|name|!pipeline.textures.contains_key(*name)));
+        pipeline.upload(&device,&queue,batches,Mat4::IDENTITY,[0.0;3],0.0);
+        assert!(pages.iter().all(|name|pipeline.textures.contains_key(*name)));
+        assert!(pipeline.draws.iter().all(|draw|pipeline.textures.contains_key(&draw.texture)));
+        println!("UNICODE SIGN GPU UPLOAD: {} pages, {} draws, no missing textures",pages.len(),pipeline.draws.len());
+    }
+}
+
 #[repr(C)]
 #[derive(Clone, Copy, bytemuck::Pod, bytemuck::Zeroable)]
 struct Uniforms {
@@ -56,6 +88,7 @@ pub struct EntityPipeline {
     pub angler: Option<worldgen::entity::Entity>,
     pub third_person: bool,
     pub signs: Vec<crate::render::sign::Snapshot>,
+    pub world_font: Option<crate::gui::font::FontRenderer>,
     /// Batches whose vertices carry their own lightmap brightness (batch index, per vertex).
     vertex_lights: Vec<(usize, Vec<u32>)>,
     pub books: Vec<super::render_release::BookTile>,
@@ -414,6 +447,7 @@ impl EntityPipeline {
             angler: None,
             third_person: false,
             signs: Vec::new(),
+            world_font: None,
             vertex_lights: Vec::new(),
             books: Vec::new(),
             portals: Vec::new(),
@@ -673,7 +707,8 @@ impl EntityPipeline {
         }
         for s in &self.signs {
             let relative=std::array::from_fn(|i|s.position[i] as f64-camera[i] as f64);
-            let g=crate::render::sign::render(&s.sign,s.block,s.metadata,relative,s.brightness);
+            let font=self.world_font.as_ref().unwrap_or_else(|| crate::render::sign::font());
+            let g=crate::render::sign::render_with_font(&s.sign,s.block,s.metadata,relative,s.brightness,font);
             batches.extend(g.draws.iter().map(|d|d.batch()));
             lights.resize(batches.len(), s.light);
         }
@@ -755,6 +790,12 @@ impl EntityPipeline {
         let mut projected:HashMap<usize,Vec<[f32;3]>>=std::mem::take(&mut self.projective_uvs).into_iter().collect();
         let mut per_vertex: std::collections::HashMap<usize, Vec<u32>> = std::mem::take(&mut self.vertex_lights).into_iter().collect();
         for (i, b) in batches.into_iter().enumerate() {
+            if let Some(name)=b.texture.filter(|name|name.starts_with("font/glyph_") && !self.textures.contains_key(*name)) {
+                // FontRenderer loads Unicode pages from the client jar on first use.
+                let mut jar=crate::assets::Jar::open().expect("Unicode sign font jar");
+                let image=jar.image(name).unwrap_or_else(|error|panic!("{name}: {error}"));
+                self.replace_texture(device,queue,name,&image);
+            }
             let start = all.len() as u32;
             uvq.extend(projected.remove(&i).unwrap_or_else(||b.vertices.iter().map(|v|[v.uv[0],v.uv[1],1.0]).collect()));
             all.extend_from_slice(&b.vertices);

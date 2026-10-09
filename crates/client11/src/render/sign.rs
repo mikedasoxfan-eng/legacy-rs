@@ -29,6 +29,9 @@ pub fn models() -> [ModelRenderer; 2] {
     [m.parts["signBoard"].clone(), m.parts["signStick"].clone()]
 }
 pub fn render(sign: &Sign, block: u8, metadata: i32, position: [f64; 3], brightness: f32) -> Fixed {
+    render_with_font(sign, block, metadata, position, brightness, font())
+}
+pub fn render_with_font(sign: &Sign, block: u8, metadata: i32, position: [f64; 3], brightness: f32, font: &crate::gui::font::FontRenderer) -> Fixed {
     let mut g = Fixed::new(brightness);
     let [x, y, z] = position.map(|v| v as f32);
     let scale = 2.0f32 / 3.0;
@@ -64,7 +67,6 @@ pub fn render(sign: &Sign, block: u8, metadata: i32, position: [f64; 3], brightn
     g.scale(text_scale, -text_scale, text_scale);
     g.normal = [0.0, 0.0, -text_scale];
     g.enable(32, false);
-    let font = font();
     for (i, text) in sign.text.iter().enumerate() {
         let text = if i as i32 == sign.line_being_edited {
             format!("> {text} <")

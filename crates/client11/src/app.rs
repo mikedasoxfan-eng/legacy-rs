@@ -1706,6 +1706,7 @@ impl App {
             chunks: format!("ServerChunkCache: {} Drop: 0", self.chunks_loaded),
             ..memory_info()
         };
+        gpu.entities.world_font=Some(gui.ui.font.world_snapshot());
         let shot = gpu.render_with_overlay(&params, capture, &mut |device, queue, view, size| {
             // renderWorld's final func_35810_a disables unit 1, retaining its
             // binding and last first-person glMultiTexCoord for GUI model draws.

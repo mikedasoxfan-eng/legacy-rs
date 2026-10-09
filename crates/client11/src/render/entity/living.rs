@@ -464,7 +464,7 @@ pub fn pack_normal(n: Vec3) -> u32 {
     let x = (n.x * 127.0) as i32 as i8 as i32;
     let y = (n.y * 127.0) as i32 as i8 as i32;
     let z = (n.z * 127.0) as i32 as i8 as i32;
-    (x | (y << 8) | (z << 16)) as u32
+    ((x & 255) | ((y & 255) << 8) | ((z & 255) << 16)) as u32
 }
 
 pub fn tessellator_normal(q: &TexturedQuad) -> Vec3 {
