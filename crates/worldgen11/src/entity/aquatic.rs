@@ -155,9 +155,11 @@ impl Entity {
                     s.speed *= 0.9;
                     s.yaw_speed *= 0.99;
                 }
-                self.motion.x = (s.motion_x * s.speed) as f64;
-                self.motion.y = (s.motion_y * s.speed) as f64;
-                self.motion.z = (s.motion_z * s.speed) as f64;
+                if !w.multiplayer_world {
+                    self.motion.x = (s.motion_x * s.speed) as f64;
+                    self.motion.y = (s.motion_y * s.speed) as f64;
+                    self.motion.z = (s.motion_z * s.speed) as f64;
+                }
                 let horizontal =
                     (self.motion.x * self.motion.x + self.motion.z * self.motion.z).sqrt() as f32;
                 self.living.render_yaw_offset +=
@@ -173,10 +175,12 @@ impl Entity {
                     * 0.1;
             } else {
                 s.tentacle_angle = math::sin(s.rotation).abs() * PI * 0.25;
-                self.motion.x = 0.0;
-                self.motion.y -= 0.08;
-                self.motion.y *= 0.98f32 as f64;
-                self.motion.z = 0.0;
+                if !w.multiplayer_world {
+                    self.motion.x = 0.0;
+                    self.motion.y -= 0.08;
+                    self.motion.y *= 0.98f32 as f64;
+                    self.motion.z = 0.0;
+                }
                 s.pitch = (s.pitch as f64 + (-90.0 - s.pitch) as f64 * 0.02) as f32;
             }
         }
@@ -224,4 +228,33 @@ impl Entity {
             *squish *= if magma { 0.9 } else { 0.6 };
         }
     }
+}
+
+#[cfg(test)]
+mod release11_guard_tests {
+ use super::*;
+ #[test]
+ fn squid_motion_guards_match_original_11_bytecode(){
+  let mut w=crate::entity::verify181::world();
+  for line in include_str!("../fixtures/squid_guard11.txt").lines(){
+   let v:Vec<i64>=line.split_whitespace().map(|s|s.parse().unwrap()).collect();w.multiplayer_world=v[0]!=0;
+   w.editing_blocks=true;for x in -1..=1 {for z in -1..=1 {for y in 63..=65 {w.set_block_and_metadata(x,y,z,if v[2]!=0 {9}else{0},0);}}}w.editing_blocks=false;
+   let mut e=Entity::living(&mut w,"Squid").unwrap();e.set_position(0.0,64.0,0.0);e.network.multiplayer_entity=v[1]!=0;e.motion=super::super::Vec3D::new(0.125,0.25,-0.375);e.living.render_yaw_offset=20.0;e.yaw=30.0;e.rand.set_seed(v[4]);
+   let a:Vec<f32>=(1..=14).map(|n|n as f32*0.1).collect();
+   e.kind=EntityKind::Squid(SquidState{pitch:a[0],prev_pitch:a[1],yaw:a[2],prev_yaw:a[3],rotation:f32::from_bits(v[3] as u32),prev_rotation:a[5],tentacle_angle:a[6],prev_tentacle_angle:a[7],speed:a[8],rotation_speed:a[9],yaw_speed:a[10],motion_x:a[11],motion_y:a[12],motion_z:a[13]});
+   e.squid_living_update(&mut w);
+   let EntityKind::Squid(q)=&e.kind else{unreachable!()};
+   let actual:Vec<i64>=[q.pitch,q.prev_pitch,q.yaw,q.prev_yaw,q.rotation,q.prev_rotation,q.tentacle_angle,q.prev_tentacle_angle,q.speed,q.rotation_speed,q.yaw_speed,q.motion_x,q.motion_y,q.motion_z].iter().map(|f|f.to_bits() as i32 as i64).chain([e.motion.x.to_bits() as i64,e.motion.y.to_bits() as i64,e.motion.z.to_bits() as i64,e.living.render_yaw_offset.to_bits() as i32 as i64,e.yaw.to_bits() as i32 as i64,e.rand.next_long()]).collect();
+   assert_eq!(actual,v[5..],"{line}");
+  }
+ }
+ #[test]
+ fn living_action_guards_match_original_11_bytecode(){
+  let mut w=crate::entity::verify181::world();
+  for line in include_str!("../fixtures/living_guard11.txt").lines(){let v:Vec<i64>=line.split_whitespace().map(|s|s.parse().unwrap()).collect();w.multiplayer_world=v[0]!=0;
+   let mut e=Entity::living(&mut w,"Cow").unwrap();e.network.multiplayer_entity=v[1]!=0;assert_eq!(e.runs_living_action11(&w) as i64,v[2],"{line}");
+   let mut p=Entity::player(&mut w,"local");p.network.multiplayer_entity=v[1]!=0;assert_eq!(p.runs_living_action11(&w) as i64,v[3],"{line}");
+   let mut squid=Entity::living(&mut w,"Squid").unwrap();squid.set_position(0.0,64.0,0.0);squid.network.multiplayer_entity=v[1]!=0;squid.living.entity_age=0;squid.living_update(&mut w);assert_eq!(squid.living.entity_age,v[2] as i32,"Actual callback must use the world guard: {line}");
+  }
+ }
 }

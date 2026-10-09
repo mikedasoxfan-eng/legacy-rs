@@ -73,6 +73,18 @@ mod tests {
   for line in include_str!("../fixtures/sheep_heads11.txt").lines(){let v:Vec<i64>=line.split_whitespace().map(|s|s.parse().unwrap()).collect();e.living.sheep_graze_timer=v[0] as i32;let p=f32::from_bits(v[1] as u32);assert_eq!((e.sheep_head_position11(p).to_bits(),e.sheep_head_angle11(p).to_bits()),(v[2] as u32,v[3] as u32),"{line}");}
  }
  #[test]
+ fn sheep_status_jump_and_movement_match_original_11_bytecode(){
+  let mut w=crate::entity::verify181::world();
+  for line in include_str!("../fixtures/sheep_status11.txt").lines(){
+   let v:Vec<i64>=line.split_whitespace().map(|s|s.parse().unwrap()).collect();
+   let mut e=Entity::living(&mut w,"Sheep").unwrap();e.living.sheep_graze_timer=v[0] as i32;
+   e.handle_health_update(&mut w,v[1] as i8);e.motion=super::super::Vec3D::new(0.125,0.25,-0.375);e.yaw=37.5;e.sprinting=v[2]!=0;e.rand.set_seed(42);
+   assert_eq!(e.living.sheep_graze_timer,v[3] as i32,"{line}");assert_eq!(e.movement_ceased11() as i64,v[4],"{line}");
+   e.jump11();assert_eq!([e.motion.x.to_bits() as i64,e.motion.y.to_bits() as i64,e.motion.z.to_bits() as i64],v[5..8],"{line}");
+   assert_eq!(e.velocity_changed as i64,v[8],"{line}");assert_eq!(e.rand.next_long(),v[9],"{line}");
+  }
+ }
+ #[test]
  fn magma_drops_match_original_11_bytecode(){let mut w=crate::entity::verify181::world();
   for line in include_str!("../fixtures/magma11.txt").lines(){let v:Vec<i64>=line.split_whitespace().map(|s|s.parse().unwrap()).collect();w.entities.clear();w.loaded_entity_list.clear();let mut e=Entity::living(&mut w,"LavaSlime").unwrap();if let EntityKind::MagmaCube{size,..}=&mut e.kind {*size=v[1] as i32;}e.rand.set_seed(v[0]);e.drop_few_items_with_looting(&mut w,false,v[2] as i32);let items:Vec<_>=w.entities.values().filter_map(|e|e.dropped_item_stack()).collect();assert_eq!(items.len(),v[3] as usize,"{line}");assert!(items.iter().all(|s|s.id==378 && s.count==1));assert_eq!(e.rand.next_long(),v[4],"{line}");}
  }

@@ -178,13 +178,15 @@ impl Entity {
             self.living.path = w.entity_path_to_xyz(self, x, y, z, 10.0);
         }
     }
+    pub(super) fn movement_ceased11(&self) -> bool {
+        matches!(&self.kind,EntityKind::Wolf(s) if s.flags&1!=0||s.shake_active)
+            || (matches!(self.kind,EntityKind::Sheep {..}) && self.living.sheep_graze_timer > 0)
+    }
     pub(super) fn creature_action_state(&mut self, w: &mut World) {
         if self.living.flee_ticks > 0 {
             self.living.flee_ticks -= 1;
         }
-        self.living.has_attacked =
-            matches!(&self.kind,EntityKind::Wolf(s) if s.flags&1!=0||s.shake_active)
-            || (matches!(self.kind,EntityKind::Sheep {..}) && self.living.sheep_graze_timer > 0);
+        self.living.has_attacked = self.movement_ceased11();
         if self.living.target.is_none() {
             self.living.target = self.find_attack_target(w);
             if let Some((mut p, _, _)) = self.living.target.and_then(|t| self.target_position(w, t))

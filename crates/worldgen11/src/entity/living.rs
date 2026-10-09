@@ -581,50 +581,11 @@ impl Entity {
         self.living.walk_phase += phase;
         self.slime_after_update(w, was_on_ground);
     }
-    pub(super) fn living_update(&mut self, w: &mut World) {
-        if matches!(self.kind, EntityKind::Dragon(..)) {
-            self.dragon_living_update(w);
-            return;
-        }
-        if self.living.jump_delay > 0 {
-            self.living.jump_delay -= 1;
-        }
-        self.interpolate_network(w, true);
-        if matches!(self.kind, EntityKind::Player(..)) {
-            self.player_before_living(w);
-        }
-        self.blaze_before_living(w);
-        self.enderman_before_living(w);
-        self.mob_before_living(w);
-        if self.living.health <= 0 || self.player_state().is_some_and(|s| s.sleeping) {
-            self.living.is_jumping = false;
-            self.living.move_strafing = 0.0;
-            self.living.move_forward = 0.0;
-            self.living.random_yaw_velocity = 0.0;
-        } else if !self.network.multiplayer_entity {
-            match self.kind {
-                EntityKind::Player(..) => self.player_action(),
-                EntityKind::Ghast(..) => self.ghast_action(w),
-                EntityKind::Squid(..) => self.squid_action_state(w),
-                EntityKind::Slime { .. } | EntityKind::MagmaCube { .. } => { self.slime_action_state(w)
-                }
-                _ => {
-                    self.creature_action_state(w);
-                    self.silverfish_after_action(w);
-                    self.sheep_after_action11(w);
-                }
-            }
-        }
-        if self.living.health > 0 && !self.network.multiplayer_entity && matches!(self.kind, EntityKind::Wolf(..)) {
-            self.wolf_after_action(w);
-        }
-        let water = self.is_in_water_query(w);
-        let lava = self.handle_lava_movement(w);
-        if self.living.is_jumping {
-            if water || lava {
-                self.motion.y += 0.04f32 as f64;
-            } else if self.on_ground && self.living.jump_delay == 0 {
-                self.living.jump_delay = 10;
+    /// EntityLiving.func_44001_ad; EntityPlayerSP overrides the guard to true.
+    pub(super) fn runs_living_action11(&self, w: &World) -> bool {
+        matches!(self.kind, EntityKind::Player(..)) || !w.multiplayer_world
+    }
+    pub(super) fn jump11(&mut self) {
                 if !matches!(self.kind, EntityKind::Sheep {..}) || self.living.sheep_graze_timer <= 0 {
                 self.motion.y = if let EntityKind::MagmaCube { size, .. } = self.kind {
                     (0.42f32 + size as f32 * 0.1) as f64
@@ -647,6 +608,52 @@ impl Entity {
                     self.add_exhaustion(if self.sprinting { 0.8 } else { 0.2 });
                 }
                 }
+    }
+    pub(super) fn living_update(&mut self, w: &mut World) {
+        if matches!(self.kind, EntityKind::Dragon(..)) {
+            self.dragon_living_update(w);
+            return;
+        }
+        if self.living.jump_delay > 0 {
+            self.living.jump_delay -= 1;
+        }
+        self.interpolate_network(w, true);
+        if matches!(self.kind, EntityKind::Player(..)) {
+            self.player_before_living(w);
+        }
+        self.blaze_before_living(w);
+        self.enderman_before_living(w);
+        self.mob_before_living(w);
+        if self.living.health <= 0 || self.player_state().is_some_and(|s| s.sleeping) {
+            self.living.is_jumping = false;
+            self.living.move_strafing = 0.0;
+            self.living.move_forward = 0.0;
+            self.living.random_yaw_velocity = 0.0;
+        } else if self.runs_living_action11(w) {
+            match self.kind {
+                EntityKind::Player(..) => self.player_action(),
+                EntityKind::Ghast(..) => self.ghast_action(w),
+                EntityKind::Squid(..) => self.squid_action_state(w),
+                EntityKind::Slime { .. } | EntityKind::MagmaCube { .. } => { self.slime_action_state(w)
+                }
+                _ => {
+                    self.creature_action_state(w);
+                    self.silverfish_after_action(w);
+                    self.sheep_after_action11(w);
+                }
+            }
+        }
+        if self.living.health > 0 && self.runs_living_action11(w) && matches!(self.kind, EntityKind::Wolf(..)) {
+            self.wolf_after_action(w);
+        }
+        let water = self.is_in_water_query(w);
+        let lava = self.handle_lava_movement(w);
+        if self.living.is_jumping {
+            if water || lava {
+                self.motion.y += 0.04f32 as f64;
+            } else if self.on_ground && self.living.jump_delay == 0 {
+                self.jump11();
+                self.living.jump_delay = 10;
             }
         }
         if !self.living.is_jumping {
