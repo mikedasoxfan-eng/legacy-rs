@@ -3,6 +3,25 @@
 use super::{tile::TileEntity, World};
 use crate::block::props;
 
+#[cfg(test)]
+mod release11_coordinate_tests {
+    #[test]
+    fn chunk_tile_coordinates_match_original_11() {
+        for line in include_str!("../fixtures/chunktiles11.txt").lines() {
+            let v:Vec<i32>=line.split_whitespace().map(|s|s.parse().unwrap()).collect();
+            let mut w=crate::entity::verify181::world();
+            w.scanning_tiles=v[3]!=0;w.multiplayer_world=v[4]!=0;
+            let changed=if v[6]!=0 {w.set_block_and_metadata(v[0],70,v[1],v[2] as u8,v[5])}else{w.set_block(v[0],70,v[1],v[2] as u8)};
+            let mut observed=vec![changed as i32];
+            for ids in [&w.loaded_tile_entities,&w.pending_tile_entities] {
+                observed.push(ids.len() as i32);
+                for id in ids {let (x,y,z)=w.tile_objects[id].position;observed.extend([x,y,z]);}
+            }
+            assert_eq!(observed,&v[7..],"{line}");
+        }
+    }
+}
+
 pub type TileId = u64;
 pub struct TileObject {
     pub base181: super::tile_nbt181::TileBase181,
@@ -41,14 +60,14 @@ impl World {
         }
     }
     /// The two Chunk block setters refresh container caches after onBlockAdded.
-    /// Preserve the original fallback's local coordinates passed to World.
+    /// 1.1 fixes both block setters' fallback to use world coordinates.
     pub(crate) fn refresh_changed_block_tile181(&mut self, cx: i32, cz: i32, x: i32, y: i32, z: i32, block: u8, old: u8) {
         // 1.0 Chunk.setBlockID*: these use Chunk.getChunkBlockTileEntity, which
         // (unlike 1.0 World.getBlockTileEntity) never searches addedTileEntityList.
         if props(block).container || (block == 0 && props(old).container) {
             match self.chunk_tile_id10(cx * 16 + x, y, cz * 16 + z) {
                 None => if props(block).container && block != 36 {
-                    self.set_block_tile_entity(x, y, z, TileEntity::for_block(block));
+                    self.set_block_tile_entity(cx*16+x, y, cz*16+z, TileEntity::for_block(block));
                 },
                 Some(id) => self.reset_tile_cache181(id),
             }

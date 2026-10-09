@@ -1,0 +1,730 @@
+{
+  "schema": 1,
+  "scope": "Read-only original-source proof, with exactly enumerated3 Chunk expressions and1 new empty Block callback. Parent owns Chunk production/oracle evidence; this proof does not replace it.",
+  "classes": [
+    {
+      "class_name": "Block",
+      "old_sha256": "64f18844b6af11ae7e983aad7b569ac0323d4c920ed2bb152fc0ee75d56332b4",
+      "new_sha256": "c7aaf63331ad75392f52ab4048e3a7f62198b5256e4a50c99b0c0c99069ea9af",
+      "symbol_map": {
+        "field_41050_bK": "dragonEgg",
+        "func_40198_a": "quantityDroppedWithBonus",
+        "entityJoinedWorld": "spawnEntityInWorld",
+        "func_41049_c_": "createStackedBlock",
+        "func_41033_a": "setBlockNames"
+      },
+      "excluded_behavior_regions": [
+        {
+          "method": "func_43001_a",
+          "change": "new empty default entity-landing callback",
+          "entire_body_empty": true,
+          "proof": "Original9216 landing11 instrumented virtualcallbacks delegate to realBlock implementation; defaultstone/fence outcomes and RNG preserved; actual farmland override verified separately."
+        }
+      ],
+      "entire_source_token_residue_equal": true,
+      "hunk_map": [
+        {
+          "header": "@@ -143,7 +143,7 @@\n",
+          "lines": [
+            " \tpublic static final Block endPortal = (new BlockEndPortal(119, Material.portal)).setHardness(-1.0F).setResistance(6000000.0F);",
+            " \tpublic static final Block endPortalFrame = (new BlockEndPortalFrame(120)).setStepSound(soundGlassFootstep).setLightValue(2.0F / 16.0F).setHardness(-1.0F).setBlockName(\"endPortalFrame\").setRequiresSelfNotify().setResistance(6000000.0F);",
+            " \tpublic static final Block whiteStone = (new Block(121, 175, Material.rock)).setHardness(3.0F).setResistance(15.0F).setStepSound(soundStoneFootstep).setBlockName(\"whiteStone\");",
+            "-\tpublic static final Block field_41050_bK = (new BlockDragonEgg(122, 167)).setHardness(3.0F).setResistance(15.0F).setStepSound(soundStoneFootstep).setLightValue(2.0F / 16.0F).setBlockName(\"dragonEgg\");",
+            "+\tpublic static final Block dragonEgg = (new BlockDragonEgg(122, 167)).setHardness(3.0F).setResistance(15.0F).setStepSound(soundStoneFootstep).setLightValue(2.0F / 16.0F).setBlockName(\"dragonEgg\");",
+            " \tpublic int blockIndexInTexture;",
+            " \tpublic final int blockID;",
+            " \tprotected float blockHardness;"
+          ],
+          "kinds": [
+            "listed symbol renames; exact token residue proof"
+          ]
+        },
+        {
+          "header": "@@ -351,7 +351,7 @@\n",
+          "lines": [
+            " ",
+            " \tpublic void dropBlockAsItemWithChance(World var1, int var2, int var3, int var4, int var5, float var6, int var7) {",
+            " \t\tif(!var1.multiplayerWorld) {",
+            "-\t\t\tint var8 = this.func_40198_a(var7, var1.rand);",
+            "+\t\t\tint var8 = this.quantityDroppedWithBonus(var7, var1.rand);",
+            " ",
+            " \t\t\tfor(int var9 = 0; var9 < var8; ++var9) {",
+            " \t\t\t\tif(var1.rand.nextFloat() <= var6) {"
+          ],
+          "kinds": [
+            "listed symbol renames; exact token residue proof"
+          ]
+        },
+        {
+          "header": "@@ -373,7 +373,7 @@\n",
+          "lines": [
+            " \t\t\tdouble var11 = (double)(var1.rand.nextFloat() * var6) + (double)(1.0F - var6) * 0.5D;",
+            " \t\t\tEntityItem var13 = new EntityItem(var1, (double)var2 + var7, (double)var3 + var9, (double)var4 + var11, var5);",
+            " \t\t\tvar13.delayBeforeCanPickup = 10;",
+            "-\t\t\tvar1.entityJoinedWorld(var13);",
+            "+\t\t\tvar1.spawnEntityInWorld(var13);",
+            " \t\t}",
+            " \t}",
+            " "
+          ],
+          "kinds": [
+            "listed symbol renames; exact token residue proof"
+          ]
+        },
+        {
+          "header": "@@ -557,7 +557,7 @@\n",
+          "lines": [
+            " \t\tvar2.addStat(StatList.mineBlockStatArray[this.blockID], 1);",
+            " \t\tvar2.addExhaustion(0.025F);",
+            " \t\tif(this.renderAsNormalBlock() && !isBlockContainer[this.blockID] && EnchantmentHelper.getSilkTouchModifier(var2.inventory)) {",
+            "-\t\t\tItemStack var8 = this.func_41049_c_(var6);",
+            "+\t\t\tItemStack var8 = this.createStackedBlock(var6);",
+            " \t\t\tif(var8 != null) {",
+            " \t\t\t\tthis.dropBlockAsItem_do(var1, var3, var4, var5, var8);",
+            " \t\t\t}"
+          ],
+          "kinds": [
+            "listed symbol renames; exact token residue proof"
+          ]
+        },
+        {
+          "header": "@@ -568,7 +568,7 @@\n",
+          "lines": [
+            " ",
+            " \t}",
+            " ",
+            "-\tprotected ItemStack func_41049_c_(int var1) {",
+            "+\tprotected ItemStack createStackedBlock(int var1) {",
+            " \t\tint var2 = 0;",
+            " \t\tif(this.blockID >= 0 && this.blockID < Item.itemsList.length && Item.itemsList[this.blockID].getHasSubtypes()) {",
+            " \t\t\tvar2 = var1;"
+          ],
+          "kinds": [
+            "listed symbol renames; exact token residue proof"
+          ]
+        },
+        {
+          "header": "@@ -577,7 +577,7 @@\n",
+          "lines": [
+            " \t\treturn new ItemStack(this.blockID, 1, var2);",
+            " \t}",
+            " ",
+            "-\tpublic int func_40198_a(int var1, Random var2) {",
+            "+\tpublic int quantityDroppedWithBonus(int var1, Random var2) {",
+            " \t\treturn this.quantityDropped(var2);",
+            " \t}",
+            " "
+          ],
+          "kinds": [
+            "listed symbol renames; exact token residue proof"
+          ]
+        },
+        {
+          "header": "@@ -619,6 +619,9 @@\n",
+          "lines": [
+            " ",
+            " \tpublic float getAmbientOcclusionLightValue(IBlockAccess var1, int var2, int var3, int var4) {",
+            " \t\treturn var1.isBlockNormalCube(var2, var3, var4) ? 0.2F : 1.0F;",
+            "+\t}",
+            "+",
+            "+\tpublic void func_43001_a(World var1, int var2, int var3, int var4, Entity var5, float var6) {",
+            " \t}",
+            " ",
+            " \tstatic {"
+          ],
+          "kinds": [
+            "new empty default entity-landing callback"
+          ]
+        },
+        {
+          "header": "@@ -629,7 +632,7 @@\n",
+          "lines": [
+            " \t\tItem.itemsList[sapling.blockID] = (new ItemSapling(sapling.blockID - 256)).setItemName(\"sapling\");",
+            " \t\tItem.itemsList[leaves.blockID] = (new ItemLeaves(leaves.blockID - 256)).setItemName(\"leaves\");",
+            " \t\tItem.itemsList[vine.blockID] = new ItemColored(vine.blockID - 256, false);",
+            "-\t\tItem.itemsList[tallGrass.blockID] = (new ItemColored(tallGrass.blockID - 256, true)).func_41033_a(new String[]{\"shrub\", \"grass\", \"fern\"});",
+            "+\t\tItem.itemsList[tallGrass.blockID] = (new ItemColored(tallGrass.blockID - 256, true)).setBlockNames(new String[]{\"shrub\", \"grass\", \"fern\"});",
+            " \t\tItem.itemsList[waterlily.blockID] = new ItemLilyPad(waterlily.blockID - 256);",
+            " \t\tItem.itemsList[pistonBase.blockID] = new ItemPiston(pistonBase.blockID - 256);",
+            " \t\tItem.itemsList[pistonStickyBase.blockID] = new ItemPiston(pistonStickyBase.blockID - 256);"
+          ],
+          "kinds": [
+            "listed symbol renames; exact token residue proof"
+          ]
+        }
+      ],
+      "whole_inherited_java_api_verified": false
+    },
+    {
+      "class_name": "Chunk",
+      "old_sha256": "a3b5186a9951ed5671c3bae1bfad394ec4394cd26be5c8ed2718026c06139984",
+      "new_sha256": "d2e729e2149adc280d8db1b268372380c123acc5b53af7bd1d50d1d6110fa0d1",
+      "symbol_map": {
+        "field_35472_c": "worldHeight",
+        "field_35473_a": "heightShift",
+        "field_35471_b": "xShift",
+        "func_35839_k": "updateSkylight_do",
+        "func_35144_b": "updateContainingBlockInfo",
+        "func_35455_a": "markEntityForDespawn",
+        "func_40048_X": "getParts",
+        "getFalse": "isEmpty",
+        "func_25124_i": "removeUnknownBlocks",
+        "func_26002_a": "removeUnknownBlockIDs",
+        "func_35840_c": "getPrecipitationHeight",
+        "func_35841_j": "updateSkylight",
+        "func_40740_k": "getChunkCoordIntPair"
+      },
+      "excluded_behavior_regions": [
+        {
+          "method": "setBlockIDWithMetadata",
+          "before": "else if(Block.blocksList[var9] instanceof BlockContainer)",
+          "after": "else if(Block.blocksList[var9] instanceof BlockContainer && var9 != var4)",
+          "change": "remote tile removal only when block ID changes",
+          "replacement_count": 1
+        },
+        {
+          "method": "setBlockIDWithMetadata",
+          "before": "this.worldObj.setBlockTileEntity(var1, var2, var3, var12);",
+          "after": "this.worldObj.setBlockTileEntity(var10, var2, var11, var12);",
+          "change": "fallback tile registration converts localx/z to worldx/z",
+          "replacement_count": 1
+        },
+        {
+          "method": "setBlockID",
+          "before": "this.worldObj.setBlockTileEntity(var1, var2, var3, var11);",
+          "after": "this.worldObj.setBlockTileEntity(var9, var2, var10, var11);",
+          "change": "fallback tile registration converts localx/z to worldx/z",
+          "replacement_count": 1
+        }
+      ],
+      "entire_source_token_residue_equal": true,
+      "hunk_map": [
+        {
+          "header": "@@ -42,7 +42,7 @@\n",
+          "lines": [
+            " \t\tthis.hasEntities = false;",
+            " \t\tthis.lastSaveTime = 0L;",
+            " \t\tthis.field_35846_u = false;",
+            "-\t\tthis.entities = new List[var1.field_35472_c / 16];",
+            "+\t\tthis.entities = new List[var1.worldHeight / 16];",
+            " \t\tthis.worldObj = var1;",
+            " \t\tthis.xPosition = var2;",
+            " \t\tthis.zPosition = var3;"
+          ],
+          "kinds": [
+            "listed symbol renames; exact token residue proof"
+          ]
+        },
+        {
+          "header": "@@ -58,9 +58,9 @@\n",
+          "lines": [
+            " \tpublic Chunk(World var1, byte[] var2, int var3, int var4) {",
+            " \t\tthis(var1, var3, var4);",
+            " \t\tthis.blocks = var2;",
+            "-\t\tthis.data = new NibbleArray(var2.length, var1.field_35473_a);",
+            "-\t\tthis.skylightMap = new NibbleArray(var2.length, var1.field_35473_a);",
+            "-\t\tthis.blocklightMap = new NibbleArray(var2.length, var1.field_35473_a);",
+            "+\t\tthis.data = new NibbleArray(var2.length, var1.heightShift);",
+            "+\t\tthis.skylightMap = new NibbleArray(var2.length, var1.heightShift);",
+            "+\t\tthis.blocklightMap = new NibbleArray(var2.length, var1.heightShift);",
+            " \t}",
+            " ",
+            " \tpublic boolean isAtLocation(int var1, int var2) {"
+          ],
+          "kinds": [
+            "listed symbol renames; exact token residue proof"
+          ]
+        },
+        {
+          "header": "@@ -75,14 +75,14 @@\n",
+          "lines": [
+            " \t}",
+            " ",
+            " \tpublic void generateHeightMap() {",
+            "-\t\tint var1 = this.worldObj.field_35472_c - 1;",
+            "+\t\tint var1 = this.worldObj.worldHeight - 1;",
+            " ",
+            " \t\tfor(int var2 = 0; var2 < 16; ++var2) {",
+            " \t\t\tfor(int var3 = 0; var3 < 16; ++var3) {",
+            " \t\t\t\tthis.precipitationHeightMap[var2 + (var3 << 4)] = -999;",
+            "-\t\t\t\tint var4 = this.worldObj.field_35472_c - 1;",
+            "-",
+            "-\t\t\t\tfor(int var5 = var2 << this.worldObj.field_35471_b | var3 << this.worldObj.field_35473_a; var4 > 0 && Block.lightOpacity[this.blocks[var5 + var4 - 1] & 255] == 0; --var4) {",
+            "+\t\t\t\tint var4 = this.worldObj.worldHeight - 1;",
+            "+",
+            "+\t\t\t\tfor(int var5 = var2 << this.worldObj.xShift | var3 << this.worldObj.heightShift; var4 > 0 && Block.lightOpacity[this.blocks[var5 + var4 - 1] & 255] == 0; --var4) {",
+            " \t\t\t\t}",
+            " ",
+            " \t\t\t\tthis.heightMap[var3 << 4 | var2] = (byte)var4;"
+          ],
+          "kinds": [
+            "listed symbol renames; exact token residue proof"
+          ]
+        },
+        {
+          "header": "@@ -97,16 +97,16 @@\n",
+          "lines": [
+            " \t}",
+            " ",
+            " \tpublic void generateSkylightMap() {",
+            "-\t\tint var1 = this.worldObj.field_35472_c - 1;",
+            "+\t\tint var1 = this.worldObj.worldHeight - 1;",
+            " ",
+            " \t\tint var2;",
+            " \t\tint var3;",
+            " \t\tfor(var2 = 0; var2 < 16; ++var2) {",
+            " \t\t\tfor(var3 = 0; var3 < 16; ++var3) {",
+            "-\t\t\t\tint var4 = this.worldObj.field_35472_c - 1;",
+            "+\t\t\t\tint var4 = this.worldObj.worldHeight - 1;",
+            " ",
+            " \t\t\t\tint var5;",
+            "-\t\t\t\tfor(var5 = var2 << this.worldObj.field_35471_b | var3 << this.worldObj.field_35473_a; var4 > 0 && Block.lightOpacity[this.blocks[var5 + var4 - 1] & 255] == 0; --var4) {",
+            "+\t\t\t\tfor(var5 = var2 << this.worldObj.xShift | var3 << this.worldObj.heightShift; var4 > 0 && Block.lightOpacity[this.blocks[var5 + var4 - 1] & 255] == 0; --var4) {",
+            " \t\t\t\t}",
+            " ",
+            " \t\t\t\tthis.heightMap[var3 << 4 | var2] = (byte)var4;"
+          ],
+          "kinds": [
+            "listed symbol renames; exact token residue proof"
+          ]
+        },
+        {
+          "header": "@@ -116,7 +116,7 @@\n",
+          "lines": [
+            " ",
+            " \t\t\t\tif(!this.worldObj.worldProvider.hasNoSky) {",
+            " \t\t\t\t\tint var6 = 15;",
+            "-\t\t\t\t\tint var7 = this.worldObj.field_35472_c - 1;",
+            "+\t\t\t\t\tint var7 = this.worldObj.worldHeight - 1;",
+            " ",
+            " \t\t\t\t\tdo {",
+            " \t\t\t\t\t\tvar6 -= Block.lightOpacity[this.blocks[var5 + var7] & 255];"
+          ],
+          "kinds": [
+            "listed symbol renames; exact token residue proof"
+          ]
+        },
+        {
+          "header": "@@ -149,8 +149,8 @@\n",
+          "lines": [
+            " \t\tthis.field_40741_v = true;",
+            " \t}",
+            " ",
+            "-\tprivate void func_35839_k() {",
+            "-\t\tif(this.worldObj.doChunksNearChunkExist(this.xPosition * 16 + 8, this.worldObj.field_35472_c / 2, this.zPosition * 16 + 8, 16)) {",
+            "+\tprivate void updateSkylight_do() {",
+            "+\t\tif(this.worldObj.doChunksNearChunkExist(this.xPosition * 16 + 8, this.worldObj.worldHeight / 2, this.zPosition * 16 + 8, 16)) {",
+            " \t\t\tfor(int var1 = 0; var1 < 16; ++var1) {",
+            " \t\t\t\tfor(int var2 = 0; var2 < 16; ++var2) {",
+            " \t\t\t\t\tif(this.updateSkylightColumns[var1 + var2 * 16]) {"
+          ],
+          "kinds": [
+            "listed symbol renames; exact token residue proof"
+          ]
+        },
+        {
+          "header": "@@ -198,7 +198,7 @@\n",
+          "lines": [
+            " \t}",
+            " ",
+            " \tprivate void updateSkylightNeighborHeight(int var1, int var2, int var3, int var4) {",
+            "-\t\tif(var4 > var3 && this.worldObj.doChunksNearChunkExist(var1, this.worldObj.field_35472_c / 2, var2, 16)) {",
+            "+\t\tif(var4 > var3 && this.worldObj.doChunksNearChunkExist(var1, this.worldObj.worldHeight / 2, var2, 16)) {",
+            " \t\t\tfor(int var5 = var3; var5 < var4; ++var5) {",
+            " \t\t\t\tthis.worldObj.updateLightByType(EnumSkyBlock.Sky, var1, var5, var2);",
+            " \t\t\t}"
+          ],
+          "kinds": [
+            "listed symbol renames; exact token residue proof"
+          ]
+        },
+        {
+          "header": "@@ -215,7 +215,7 @@\n",
+          "lines": [
+            " \t\t\tvar5 = var2;",
+            " \t\t}",
+            " ",
+            "-\t\tfor(int var6 = var1 << this.worldObj.field_35471_b | var3 << this.worldObj.field_35473_a; var5 > 0 && Block.lightOpacity[this.blocks[var6 + var5 - 1] & 255] == 0; --var5) {",
+            "+\t\tfor(int var6 = var1 << this.worldObj.xShift | var3 << this.worldObj.heightShift; var5 > 0 && Block.lightOpacity[this.blocks[var6 + var5 - 1] & 255] == 0; --var5) {",
+            " \t\t}",
+            " ",
+            " \t\tif(var5 != var4) {"
+          ],
+          "kinds": [
+            "listed symbol renames; exact token residue proof"
+          ]
+        },
+        {
+          "header": "@@ -227,7 +227,7 @@\n",
+          "lines": [
+            " \t\t\tif(var5 < this.lowestBlockHeight) {",
+            " \t\t\t\tthis.lowestBlockHeight = var5;",
+            " \t\t\t} else {",
+            "-\t\t\t\tvar7 = this.worldObj.field_35472_c - 1;",
+            "+\t\t\t\tvar7 = this.worldObj.worldHeight - 1;",
+            " ",
+            " \t\t\t\tfor(var8 = 0; var8 < 16; ++var8) {",
+            " \t\t\t\t\tfor(var9 = 0; var9 < 16; ++var9) {"
+          ],
+          "kinds": [
+            "listed symbol renames; exact token residue proof"
+          ]
+        },
+        {
+          "header": "@@ -289,7 +289,7 @@\n",
+          "lines": [
+            " \t}",
+            " ",
+            " \tpublic int getBlockID(int var1, int var2, int var3) {",
+            "-\t\treturn this.blocks[var1 << this.worldObj.field_35471_b | var3 << this.worldObj.field_35473_a | var2] & 255;",
+            "+\t\treturn this.blocks[var1 << this.worldObj.xShift | var3 << this.worldObj.heightShift | var2] & 255;",
+            " \t}",
+            " ",
+            " \tpublic boolean setBlockIDWithMetadata(int var1, int var2, int var3, int var4, int var5) {"
+          ],
+          "kinds": [
+            "listed symbol renames; exact token residue proof"
+          ]
+        },
+        {
+          "header": "@@ -300,17 +300,17 @@\n",
+          "lines": [
+            " \t\t}",
+            " ",
+            " \t\tint var8 = this.heightMap[var3 << 4 | var1] & 255;",
+            "-\t\tint var9 = this.blocks[var1 << this.worldObj.field_35471_b | var3 << this.worldObj.field_35473_a | var2] & 255;",
+            "+\t\tint var9 = this.blocks[var1 << this.worldObj.xShift | var3 << this.worldObj.heightShift | var2] & 255;",
+            " \t\tif(var9 == var4 && this.data.getNibble(var1, var2, var3) == var5) {",
+            " \t\t\treturn false;",
+            " \t\t} else {",
+            " \t\t\tint var10 = this.xPosition * 16 + var1;",
+            " \t\t\tint var11 = this.zPosition * 16 + var3;",
+            "-\t\t\tthis.blocks[var1 << this.worldObj.field_35471_b | var3 << this.worldObj.field_35473_a | var2] = (byte)(var6 & 255);",
+            "+\t\t\tthis.blocks[var1 << this.worldObj.xShift | var3 << this.worldObj.heightShift | var2] = (byte)(var6 & 255);",
+            " \t\t\tif(var9 != 0) {",
+            " \t\t\t\tif(!this.worldObj.multiplayerWorld) {",
+            " \t\t\t\t\tBlock.blocksList[var9].onBlockRemoval(this.worldObj, var10, var2, var11);",
+            "-\t\t\t\t} else if(Block.blocksList[var9] instanceof BlockContainer) {",
+            "+\t\t\t\t} else if(Block.blocksList[var9] instanceof BlockContainer && var9 != var4) {",
+            " \t\t\t\t\tthis.worldObj.removeBlockTileEntity(var10, var2, var11);",
+            " \t\t\t\t}",
+            " \t\t\t}"
+          ],
+          "kinds": [
+            "remote tile removal only when block ID changes",
+            "listed symbol renames; exact token residue proof"
+          ]
+        },
+        {
+          "header": "@@ -341,17 +341,17 @@\n",
+          "lines": [
+            " \t\t\t\t\tvar12 = this.getChunkBlockTileEntity(var1, var2, var3);",
+            " \t\t\t\t\tif(var12 == null) {",
+            " \t\t\t\t\t\tvar12 = ((BlockContainer)Block.blocksList[var4]).getBlockEntity();",
+            "-\t\t\t\t\t\tthis.worldObj.setBlockTileEntity(var1, var2, var3, var12);",
+            "+\t\t\t\t\t\tthis.worldObj.setBlockTileEntity(var10, var2, var11, var12);",
+            " \t\t\t\t\t}",
+            " ",
+            " \t\t\t\t\tif(var12 != null) {",
+            "-\t\t\t\t\t\tvar12.func_35144_b();",
+            "+\t\t\t\t\t\tvar12.updateContainingBlockInfo();",
+            " \t\t\t\t\t}",
+            " \t\t\t\t}",
+            " \t\t\t} else if(var9 > 0 && Block.blocksList[var9] instanceof BlockContainer) {",
+            " \t\t\t\tvar12 = this.getChunkBlockTileEntity(var1, var2, var3);",
+            " \t\t\t\tif(var12 != null) {",
+            "-\t\t\t\t\tvar12.func_35144_b();",
+            "+\t\t\t\t\tvar12.updateContainingBlockInfo();",
+            " \t\t\t\t}",
+            " \t\t\t}",
+            " "
+          ],
+          "kinds": [
+            "fallback tile registration converts localx/z to worldx/z",
+            "listed symbol renames; exact token residue proof"
+          ]
+        },
+        {
+          "header": "@@ -368,13 +368,13 @@\n",
+          "lines": [
+            " \t\t}",
+            " ",
+            " \t\tint var7 = this.heightMap[var6] & 255;",
+            "-\t\tint var8 = this.blocks[var1 << this.worldObj.field_35471_b | var3 << this.worldObj.field_35473_a | var2] & 255;",
+            "+\t\tint var8 = this.blocks[var1 << this.worldObj.xShift | var3 << this.worldObj.heightShift | var2] & 255;",
+            " \t\tif(var8 == var4) {",
+            " \t\t\treturn false;",
+            " \t\t} else {",
+            " \t\t\tint var9 = this.xPosition * 16 + var1;",
+            " \t\t\tint var10 = this.zPosition * 16 + var3;",
+            "-\t\t\tthis.blocks[var1 << this.worldObj.field_35471_b | var3 << this.worldObj.field_35473_a | var2] = (byte)(var5 & 255);",
+            "+\t\t\tthis.blocks[var1 << this.worldObj.xShift | var3 << this.worldObj.heightShift | var2] = (byte)(var5 & 255);",
+            " \t\t\tif(var8 != 0) {",
+            " \t\t\t\tBlock.blocksList[var8].onBlockRemoval(this.worldObj, var9, var2, var10);",
+            " \t\t\t}"
+          ],
+          "kinds": [
+            "listed symbol renames; exact token residue proof"
+          ]
+        },
+        {
+          "header": "@@ -401,17 +401,17 @@\n",
+          "lines": [
+            " \t\t\t\t\tvar11 = this.getChunkBlockTileEntity(var1, var2, var3);",
+            " \t\t\t\t\tif(var11 == null) {",
+            " \t\t\t\t\t\tvar11 = ((BlockContainer)Block.blocksList[var4]).getBlockEntity();",
+            "-\t\t\t\t\t\tthis.worldObj.setBlockTileEntity(var1, var2, var3, var11);",
+            "+\t\t\t\t\t\tthis.worldObj.setBlockTileEntity(var9, var2, var10, var11);",
+            " \t\t\t\t\t}",
+            " ",
+            " \t\t\t\t\tif(var11 != null) {",
+            "-\t\t\t\t\t\tvar11.func_35144_b();",
+            "+\t\t\t\t\t\tvar11.updateContainingBlockInfo();",
+            " \t\t\t\t\t}",
+            " \t\t\t\t}",
+            " \t\t\t} else if(var8 > 0 && Block.blocksList[var8] instanceof BlockContainer) {",
+            " \t\t\t\tvar11 = this.getChunkBlockTileEntity(var1, var2, var3);",
+            " \t\t\t\tif(var11 != null) {",
+            "-\t\t\t\t\tvar11.func_35144_b();",
+            "+\t\t\t\t\tvar11.updateContainingBlockInfo();",
+            " \t\t\t\t}",
+            " \t\t\t}",
+            " "
+          ],
+          "kinds": [
+            "fallback tile registration converts localx/z to worldx/z",
+            "listed symbol renames; exact token residue proof"
+          ]
+        },
+        {
+          "header": "@@ -435,7 +435,7 @@\n",
+          "lines": [
+            " \t\t\tif(var6 > 0 && Block.blocksList[var6] instanceof BlockContainer) {",
+            " \t\t\t\tTileEntity var7 = this.getChunkBlockTileEntity(var1, var2, var3);",
+            " \t\t\t\tif(var7 != null) {",
+            "-\t\t\t\t\tvar7.func_35144_b();",
+            "+\t\t\t\t\tvar7.updateContainingBlockInfo();",
+            " \t\t\t\t\tvar7.blockMetadata = var4;",
+            " \t\t\t\t}",
+            " \t\t\t}"
+          ],
+          "kinds": [
+            "listed symbol renames; exact token residue proof"
+          ]
+        },
+        {
+          "header": "@@ -599,7 +599,7 @@\n",
+          "lines": [
+            " ",
+            " \t\twhile(var1.hasNext()) {",
+            " \t\t\tTileEntity var2 = (TileEntity)var1.next();",
+            "-\t\t\tthis.worldObj.func_35455_a(var2);",
+            "+\t\t\tthis.worldObj.markEntityForDespawn(var2);",
+            " \t\t}",
+            " ",
+            " \t\tfor(int var3 = 0; var3 < this.entities.length; ++var3) {"
+          ],
+          "kinds": [
+            "listed symbol renames; exact token residue proof"
+          ]
+        },
+        {
+          "header": "@@ -630,7 +630,7 @@\n",
+          "lines": [
+            " \t\t\t\tEntity var9 = (Entity)var7.get(var8);",
+            " \t\t\t\tif(var9 != var1 && var9.boundingBox.intersectsWith(var2)) {",
+            " \t\t\t\t\tvar3.add(var9);",
+            "-\t\t\t\t\tEntity[] var10 = var9.func_40048_X();",
+            "+\t\t\t\t\tEntity[] var10 = var9.getParts();",
+            " \t\t\t\t\tif(var10 != null) {",
+            " \t\t\t\t\t\tfor(int var11 = 0; var11 < var10.length; ++var11) {",
+            " \t\t\t\t\t\t\tvar9 = var10[var11];"
+          ],
+          "kinds": [
+            "listed symbol renames; exact token residue proof"
+          ]
+        },
+        {
+          "header": "@@ -696,7 +696,7 @@\n",
+          "lines": [
+            " \t\tint var12;",
+            " \t\tfor(var9 = var2; var9 < var5; ++var9) {",
+            " \t\t\tfor(var10 = var4; var10 < var7; ++var10) {",
+            "-\t\t\t\tvar11 = var9 << this.worldObj.field_35471_b | var10 << this.worldObj.field_35473_a | var3;",
+            "+\t\t\t\tvar11 = var9 << this.worldObj.xShift | var10 << this.worldObj.heightShift | var3;",
+            " \t\t\t\tvar12 = var6 - var3;",
+            " \t\t\t\tSystem.arraycopy(var1, var8, this.blocks, var11, var12);",
+            " \t\t\t\tvar8 += var12;"
+          ],
+          "kinds": [
+            "listed symbol renames; exact token residue proof"
+          ]
+        },
+        {
+          "header": "@@ -707,7 +707,7 @@\n",
+          "lines": [
+            " ",
+            " \t\tfor(var9 = var2; var9 < var5; ++var9) {",
+            " \t\t\tfor(var10 = var4; var10 < var7; ++var10) {",
+            "-\t\t\t\tvar11 = (var9 << this.worldObj.field_35471_b | var10 << this.worldObj.field_35473_a | var3) >> 1;",
+            "+\t\t\t\tvar11 = (var9 << this.worldObj.xShift | var10 << this.worldObj.heightShift | var3) >> 1;",
+            " \t\t\t\tvar12 = (var6 - var3) / 2;",
+            " \t\t\t\tSystem.arraycopy(var1, var8, this.data.data, var11, var12);",
+            " \t\t\t\tvar8 += var12;"
+          ],
+          "kinds": [
+            "listed symbol renames; exact token residue proof"
+          ]
+        },
+        {
+          "header": "@@ -716,7 +716,7 @@\n",
+          "lines": [
+            " ",
+            " \t\tfor(var9 = var2; var9 < var5; ++var9) {",
+            " \t\t\tfor(var10 = var4; var10 < var7; ++var10) {",
+            "-\t\t\t\tvar11 = (var9 << this.worldObj.field_35471_b | var10 << this.worldObj.field_35473_a | var3) >> 1;",
+            "+\t\t\t\tvar11 = (var9 << this.worldObj.xShift | var10 << this.worldObj.heightShift | var3) >> 1;",
+            " \t\t\t\tvar12 = (var6 - var3) / 2;",
+            " \t\t\t\tSystem.arraycopy(var1, var8, this.blocklightMap.data, var11, var12);",
+            " \t\t\t\tvar8 += var12;"
+          ],
+          "kinds": [
+            "listed symbol renames; exact token residue proof"
+          ]
+        },
+        {
+          "header": "@@ -725,7 +725,7 @@\n",
+          "lines": [
+            " ",
+            " \t\tfor(var9 = var2; var9 < var5; ++var9) {",
+            " \t\t\tfor(var10 = var4; var10 < var7; ++var10) {",
+            "-\t\t\t\tvar11 = (var9 << this.worldObj.field_35471_b | var10 << this.worldObj.field_35473_a | var3) >> 1;",
+            "+\t\t\t\tvar11 = (var9 << this.worldObj.xShift | var10 << this.worldObj.heightShift | var3) >> 1;",
+            " \t\t\t\tvar12 = (var6 - var3) / 2;",
+            " \t\t\t\tSystem.arraycopy(var1, var8, this.skylightMap.data, var11, var12);",
+            " \t\t\t\tvar8 += var12;"
+          ],
+          "kinds": [
+            "listed symbol renames; exact token residue proof"
+          ]
+        },
+        {
+          "header": "@@ -736,7 +736,7 @@\n",
+          "lines": [
+            " ",
+            " \t\twhile(var13.hasNext()) {",
+            " \t\t\tTileEntity var14 = (TileEntity)var13.next();",
+            "-\t\t\tvar14.func_35144_b();",
+            "+\t\t\tvar14.updateContainingBlockInfo();",
+            " \t\t}",
+            " ",
+            " \t\treturn var8;"
+          ],
+          "kinds": [
+            "listed symbol renames; exact token residue proof"
+          ]
+        },
+        {
+          "header": "@@ -746,12 +746,12 @@\n",
+          "lines": [
+            " \t\treturn new Random(this.worldObj.getWorldSeed() + (long)(this.xPosition * this.xPosition * 4987142) + (long)(this.xPosition * 5947611) + (long)(this.zPosition * this.zPosition) * 4392871L + (long)(this.zPosition * 389711) ^ var1);",
+            " \t}",
+            " ",
+            "-\tpublic boolean getFalse() {",
+            "+\tpublic boolean isEmpty() {",
+            " \t\treturn false;",
+            " \t}",
+            " ",
+            "-\tpublic void func_25124_i() {",
+            "-\t\tChunkBlockMap.func_26002_a(this.blocks);",
+            "+\tpublic void removeUnknownBlocks() {",
+            "+\t\tChunkBlockMap.removeUnknownBlockIDs(this.blocks);",
+            " \t}",
+            " ",
+            " \tpublic void populateChunk(IChunkProvider var1, IChunkProvider var2, int var3, int var4) {"
+          ],
+          "kinds": [
+            "listed symbol renames; exact token residue proof"
+          ]
+        },
+        {
+          "header": "@@ -773,11 +773,11 @@\n",
+          "lines": [
+            " ",
+            " \t}",
+            " ",
+            "-\tpublic int func_35840_c(int var1, int var2) {",
+            "+\tpublic int getPrecipitationHeight(int var1, int var2) {",
+            " \t\tint var3 = var1 | var2 << 4;",
+            " \t\tint var4 = this.precipitationHeightMap[var3];",
+            " \t\tif(var4 == -999) {",
+            "-\t\t\tint var5 = this.worldObj.field_35472_c - 1;",
+            "+\t\t\tint var5 = this.worldObj.worldHeight - 1;",
+            " \t\t\tvar4 = -1;",
+            " ",
+            " \t\t\twhile(true) {"
+          ],
+          "kinds": [
+            "listed symbol renames; exact token residue proof"
+          ]
+        },
+        {
+          "header": "@@ -799,14 +799,14 @@\n",
+          "lines": [
+            " \t\treturn var4;",
+            " \t}",
+            " ",
+            "-\tpublic void func_35841_j() {",
+            "+\tpublic void updateSkylight() {",
+            " \t\tif(this.field_40741_v && !this.worldObj.worldProvider.hasNoSky) {",
+            "-\t\t\tthis.func_35839_k();",
+            "-\t\t}",
+            "-",
+            "-\t}",
+            "-",
+            "-\tpublic ChunkCoordIntPair func_40740_k() {",
+            "+\t\t\tthis.updateSkylight_do();",
+            "+\t\t}",
+            "+",
+            "+\t}",
+            "+",
+            "+\tpublic ChunkCoordIntPair getChunkCoordIntPair() {",
+            " \t\treturn new ChunkCoordIntPair(this.xPosition, this.zPosition);",
+            " \t}",
+            " }"
+          ],
+          "kinds": [
+            "listed symbol renames; exact token residue proof"
+          ]
+        }
+      ],
+      "whole_inherited_java_api_verified": false
+    }
+  ],
+  "renamed_callee_authority": [
+    {
+      "class_name": "TileEntity",
+      "old_method": "func_35144_b",
+      "new_method": "updateContainingBlockInfo",
+      "body_tokens_equal": true,
+      "old_method_sha256": "0ff2ec77c7effa907d1412cd587d7015cfdaffad960ecaa20bcc997071fd411b",
+      "new_method_sha256": "f0b212b3e9fb131374d60067553c660444403d4bf621b4873284e55c11cea05a"
+    },
+    {
+      "class_name": "ChunkBlockMap",
+      "old_method": "func_26002_a",
+      "new_method": "removeUnknownBlockIDs",
+      "body_tokens_equal": true,
+      "old_method_sha256": "e87819ff72f53f8988d3adbdee37e3e0d4a754eaedae8d4d500c5dcd63c348bf",
+      "new_method_sha256": "34e872a22fb4f46e5f85ebbfb109953566ed3cfea415e18e37b795c890b0214a"
+    },
+    {
+      "class_name": "World",
+      "old_method": "func_35455_a",
+      "new_method": "markEntityForDespawn",
+      "body_tokens_equal": true,
+      "old_method_sha256": "a9f724878a9dd60170343638e2636e314bc1c380a30a1d20f9e7be7331472572",
+      "new_method_sha256": "fd5d2a9404eb0f20f116c663c99ea12ef55c7539b16c56cc7adf4d8141d27566"
+    }
+  ]
+}

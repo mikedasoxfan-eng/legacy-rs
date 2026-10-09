@@ -889,7 +889,7 @@ impl World {
         if old != block::AIR {
             if !self.multiplayer_world {
                 behavior::on_block_removal(self, old, wx, y, wz);
-            } else if block::props(old).container {
+            } else if block::props(old).container && old as i32 != raw_id {
                 self.remove_block_tile_entity(wx, y, wz);
             }
         }
