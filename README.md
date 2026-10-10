@@ -7,7 +7,7 @@
 <sub>Four versions in one singleplayer client. Formerly beta-rs.</sub>
 
 [![release](https://img.shields.io/badge/release-v3.1.0-2ea44f?style=flat&labelColor=3b3b3b)](https://github.com/mikedasoxfan-eng/legacy-rs/releases/tag/v3.1.0)
-[![CI](https://github.com/mikedasoxfan-eng/legacy-rs/actions/workflows/ci.yml/badge.svg)](https://github.com/mikedasoxfan-eng/legacy-rs/actions/workflows/ci.yml)
+[![CI](https://img.shields.io/badge/CI-GitHub_Actions-2088ff?style=flat&logo=githubactions&logoColor=white&labelColor=3b3b3b)](https://github.com/mikedasoxfan-eng/legacy-rs/actions/workflows/ci.yml)
 [![Minecraft](https://img.shields.io/badge/Minecraft-Beta_1.7.3_%2B_Beta_1.8.1_%2B_1.0_%2B_1.1-6aa84f?style=flat&labelColor=3b3b3b)](#versions-and-saves)
 [![Rust](https://img.shields.io/badge/built_with-Rust-b7410e?style=flat&logo=rust&logoColor=white&labelColor=3b3b3b)](#build-from-source)
 [![wgpu](https://img.shields.io/badge/graphics-wgpu-4b6ec2?style=flat&labelColor=3b3b3b)](#architecture)
